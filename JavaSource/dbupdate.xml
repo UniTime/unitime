@@ -14788,4 +14788,17 @@
 	    <mysql>alter table %SCHEMA%.instructor_survey add applied_ts datetime</mysql>
 	    <pgsql>alter table %SCHEMA%.instructor_survey add applied_ts timestamp with time zone</pgsql>
 	</update>
+	<update version="258" date="30-Mar-2023" comment="Table Generator Hibernate Update">
+		<mysql>alter table %SCHEMA%.hibernate_unique_key add sequence_name varchar(100) not null primary key default 'default'</mysql>
+		<pgsql>alter table %SCHEMA%.hibernate_unique_key add sequence_name varchar(100) not null default 'default'</pgsql>
+		<pgsql>alter table %SCHEMA%.hibernate_unique_key add constraint pk_hibernate_unique_key primary key (sequence_name)</pgsql>
+		<plsql>alter table %SCHEMA%.instructional_offering modify instr_offering_perm_id number(20)</plsql>
+		<mysql>alter table %SCHEMA%.instructional_offering modify instr_offering_perm_id decimal(20,0)</mysql>
+		<pgsql>alter table %SCHEMA%.instructional_offering alter instr_offering_perm_id type bigint</pgsql>
+	</update>
+	<update version="259" date="12-Jun-2023" comment="Distribution Type Allow Instructor Survey">
+		<plsql>alter table %SCHEMA%.distribution_type add survey number(1)</plsql>
+		<mysql>alter table %SCHEMA%.distribution_type add survey int(1)</mysql>
+		<pgsql>alter table %SCHEMA%.distribution_type add survey boolean</pgsql>
+	</update>
 </dbupdate>

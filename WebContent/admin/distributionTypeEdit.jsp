@@ -89,6 +89,17 @@
 		</s:if><s:else>
 			<s:hidden name="form.instructorPref"/>			
 		</s:else>
+		<s:if test="form.examPref == false">
+			<tr>
+				<td><loc:message name="fieldAllowInstructorSurvey"/>:</td>
+				<td>
+					<s:checkbox name="form.survey"/>
+					<s:fielderror fieldName="form.survey"/>
+				</td>
+			</tr>
+		</s:if><s:else>
+			<s:hidden name="form.survey"/>			
+		</s:else>
 		<tr>
 			<td><loc:message name="fieldSequencingRequired"/>:</td>
 			<td>

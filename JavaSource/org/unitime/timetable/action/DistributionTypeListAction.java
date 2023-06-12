@@ -75,13 +75,14 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 	    	    		MSG.fieldType(),
 	    	    		MSG.fieldVisible(),
 	    	    		MSG.fieldAllowInstructorPreference(),
+	    	    		MSG.fieldAllowInstructorSurvey(),
 	    	    		MSG.fieldSequencingRequired(),
 	    	    		MSG.fieldAllowPreferences(),
 	    	    		MSG.fieldDepartments(),
 	    	    		MSG.fieldDescription()
 	    	    		},
-	    	    new String[] {"left", "left", "left", "left", "left", "center", "center", "center", "center", "left", "left"}, 
-	    	    new boolean[] {true, true, true, true, true, true, true, true, true, true, true} );
+	    	    new String[] {"left", "left", "left", "left", "left", "center", "center", "center", "center", "center", "left", "left"}, 
+	    	    new boolean[] {true, true, true, true, true, true, true, true, true, true, true, true} );
 	    
 	    WebTable.setOrder(sessionContext,"DistributionTypeList.ord",request.getParameter("ord"),1);
 	    boolean edit = sessionContext.hasPermission(Right.DistributionTypeEdit);
@@ -123,6 +124,7 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 		    		d.isExamPref().booleanValue() ? MSG.itemDistTypeExams() : MSG.itemDistTypeCourses(),
 		    		d.isVisible() ? MSG.yes() : MSG.no(),
 		    		d.isExamPref().booleanValue()? MSG.notApplicable() : d.isInstructorPref().booleanValue() ? MSG.yes() : MSG.no(),
+		    		d.isExamPref() || !d.isInstructorPref() ? MSG.notApplicable() : d.effectiveSurvey() ?  MSG.yes() : MSG.no(),
 		    		d.isSequencingRequired() ? MSG.yes() : MSG.no(),
 		    		allowPref,
 		    		(deptStr.length()==0?"<i>" + MSG.itemAll() + "</i>":deptStr),
@@ -136,6 +138,7 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 		    		Integer.valueOf(d.isExamPref().booleanValue()?1:0),
 		    		d.isVisible(),
 		    		Integer.valueOf(d.isInstructorPref().booleanValue()?1:0),
+		    		Integer.valueOf(d.effectiveSurvey()?1:0),
 		    		Integer.valueOf(d.isSequencingRequired()?1:0),
 		    		null,
 		    		deptCmp,

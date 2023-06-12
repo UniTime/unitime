@@ -99,6 +99,12 @@ public class DistributionTypeEditForm implements UniTimeForm {
 	public void setInstructorPref(boolean instructorPref) {
 		iDistributionType.setInstructorPref(Boolean.valueOf(instructorPref));
 	}
+	public boolean isSurvey() {
+		return (iDistributionType.isSurvey()==null?isInstructorPref():iDistributionType.isSurvey().booleanValue());
+	}
+	public void setSurvey(boolean survey) {
+		iDistributionType.setSurvey(survey);
+	}
     public boolean isExamPref() {
         return (iDistributionType.isExamPref()==null?false:iDistributionType.isExamPref().booleanValue());
     }

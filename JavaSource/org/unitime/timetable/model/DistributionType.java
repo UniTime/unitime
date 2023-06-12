@@ -136,4 +136,8 @@ public class DistributionType extends BaseDistributionType implements Comparable
     public String toString() {
         return getLabel();
     }
+    
+    public boolean effectiveSurvey() {
+    	return Boolean.FALSE.equals(isExamPref()) && Boolean.TRUE.equals(isInstructorPref()) && !Boolean.FALSE.equals(isSurvey());
+    }
 }
