@@ -317,11 +317,11 @@ Hibernate Commons Annotations (hibernate-commons-annotations-6.0.6.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.2.3.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.2.4.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.2.3.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.2.4.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
