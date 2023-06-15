@@ -261,6 +261,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private Date iClassesPastDate = null;
     private int iClassesPastDateIndex = 0;
     private boolean iLoadArrangedHoursPlacements = true;
+    private boolean iReplaceRejectedWithAlternative = false;
+    private boolean iReplacePendingWithAlternative = false;
+    private boolean iReplaceCancelledWitAlternative = false;
+    private boolean iReplaceNotOfferedWithAlternative = false;
     
     public StudentSectioningDatabaseLoader(StudentSolver solver, StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -432,6 +436,11 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iUseAdvisorWaitLists = model.getProperties().getPropertyBoolean("Load.UseAdvisorWaitLists", iUseAdvisorWaitLists);
         iUseAdvisorNoSubs = model.getProperties().getPropertyBoolean("Load.UseAdvisorNoSubs", iUseAdvisorNoSubs);
         iLoadArrangedHoursPlacements = model.getProperties().getPropertyBoolean("Load.ArrangedHoursPlacements", iLoadArrangedHoursPlacements);
+        
+        iReplaceRejectedWithAlternative = model.getProperties().getPropertyBoolean("Load.ReplaceRejectedWithSubstitute", iReplaceRejectedWithAlternative);
+        iReplacePendingWithAlternative = model.getProperties().getPropertyBoolean("Load.ReplacePendingWithSubstitute", iReplacePendingWithAlternative);
+        iReplaceCancelledWitAlternative = model.getProperties().getPropertyBoolean("Load.ReplaceCancelledWithSubstitute", iReplaceCancelledWitAlternative);
+        iReplaceNotOfferedWithAlternative = model.getProperties().getPropertyBoolean("Load.ReplaceNotOfferedWithSubstitute", iReplaceNotOfferedWithAlternative);
     }
     
     public void load() {
@@ -1493,6 +1502,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		Set<CourseOffering> alternatives = new HashSet<CourseOffering>();
 		demands.addAll(s.getCourseDemands());
 		float credit = 0f, assignedCredit = 0f;
+		int skippedNoAltCourseDemands = 0;
         for (CourseDemand cd: demands) {
             if (cd.getFreeTime()!=null) {
             	TimeLocation ft = new TimeLocation(
@@ -1519,22 +1529,27 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 				});
                 crs.addAll(cd.getCourseRequests());
                 float creditThisRequest = 0;
+                int skippedCourseRequests = 0;
                 for (org.unitime.timetable.model.CourseRequest cr: crs) {
                 	if (cr.isRequestRejected() && cr.getClassEnrollments().isEmpty()) {
                 		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has rejected override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		if (iReplaceRejectedWithAlternative) skippedCourseRequests ++;
                 		continue;
                 	}
                 	if (iCheckRequestStatusSkipCancelled && cr.isRequestCancelled() && cr.getClassEnrollments().isEmpty()) {
                 		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has cancelled override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		if (iReplaceCancelledWitAlternative) skippedCourseRequests ++;
                 		continue;
                 	}
                 	if (iCheckRequestStatusSkipPending && (cr.isRequestPending() || cr.isRequestNeeded()) && cr.getClassEnrollments().isEmpty()) {
                 		iProgress.info("Requested course " + cr.getCourseOffering().getCourseName() + " has pending override for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                		if (iReplacePendingWithAlternative) skippedCourseRequests ++;
                 		continue;
                 	}
                     Course course = courseTable.get(cr.getCourseOffering().getUniqueId());
                     if (course==null) {
                         iProgress.warn("Student " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ") requests course " + cr.getCourseOffering().getCourseName() + " that is not loaded.");
+                        if (iReplaceNotOfferedWithAlternative) skippedCourseRequests ++;
                         continue;
                     }
                     if (iIgnoreNotAssigned == IgnoreNotAssigned.all && cr.getClassEnrollments().isEmpty()) {
@@ -1643,13 +1658,22 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         }
                 	}
                 }
-                if (courses.isEmpty()) continue;
+                if (courses.isEmpty()) {
+                	if (skippedCourseRequests > 0 && !cd.isAlternative())
+                		skippedNoAltCourseDemands ++;
+                	continue;
+                }
                 credit += creditThisRequest;
                 boolean alternative = cd.isAlternative() || (iMaxCreditChecking && maxCredit > 0 && credit > maxCredit);
                 if (alternative && iIgnoreNotAssigned == IgnoreNotAssigned.all)
                 	alternative = false;
                 if (alternative && iIgnoreNotAssigned == IgnoreNotAssigned.other && iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty() && !courses.get(0).getName().matches(iMPPCoursesRegExp))
                 	alternative = false;
+                if (alternative && skippedNoAltCourseDemands > 0) {
+                	iProgress.info("Substitude course " + courses.get(0).getName() + " treated as primary due to a skipped course for " + iStudentNameFormat.format(s) + " (" + s.getExternalUniqueId() + ")");
+                	alternative = false;
+                	skippedNoAltCourseDemands --;
+                }
                 CourseRequest request = new CourseRequest(
                         cd.getUniqueId(),
                         cd.getPriority(),
