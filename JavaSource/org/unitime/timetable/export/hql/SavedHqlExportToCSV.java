@@ -334,25 +334,20 @@ public class SavedHqlExportToCSV implements Exporter {
     	if (o == null) return 1;
     	int len = 0;
     	for (TupleElement te: o.getElements()) {
-    		Object x = o.get(te);
-    		if (x == null) {
-    			len++;
-    		} else {
-    			EntityType et = null;
-            	try {
-            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
-            	} catch (IllegalArgumentException e) {}
-            	if (et == null) {
-            		len++;
-            	} else {
-            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
-            		attributes.addAll(et.getSingularAttributes());
-            		for (Attribute sa: attributes) {
-            			if (!skip(sa))
-            				len++;
-            		}
-            	}
-    		}
+        	EntityType et = null;
+        	try {
+        		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
+        	} catch (IllegalArgumentException e) {}
+        	if (et == null) {
+        		len++;
+        	} else {
+        		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+        		attributes.addAll(et.getSingularAttributes());
+        		for (Attribute sa: attributes) {
+        			if (!skip(sa))
+        				len++;
+        		}
+        	}
     	}
     	return len;
     }
@@ -365,8 +360,11 @@ public class SavedHqlExportToCSV implements Exporter {
 	private static void header(String[] ret, Tuple o) {
 		int idx = 0;
 		for (TupleElement te: o.getElements()) {
-        	Object x = o.get(te);
-        	if (x == null) {
+        	EntityType et = null;
+        	try {
+        		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
+        	} catch (IllegalArgumentException e) {}
+        	if (et == null) {
         		if (te.getAlias() == null || te.getAlias().isEmpty()) {
         			if (o.getElements().size() == 1)
         				ret[idx++] = "Result";
@@ -374,28 +372,14 @@ public class SavedHqlExportToCSV implements Exporter {
         				ret[idx++] = "Column" + (idx ++);
         		} else
         			ret[idx++] = te.getAlias();
-    		} else {
-            	EntityType et = null;
-            	try {
-            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
-            	} catch (IllegalArgumentException e) {}
-            	if (et == null) {
-            		if (te.getAlias() == null || te.getAlias().isEmpty()) {
-            			if (o.getElements().size() == 1)
-            				ret[idx++] = "Result";
-            			else
-            				ret[idx++] = "Column" + (idx ++);
-            		} else
-            			ret[idx++] = te.getAlias();
-            	} else {
-            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
-            		attributes.addAll(et.getSingularAttributes());
-            		for (Attribute sa: attributes) {
-            			if (!skip(sa))
-            				ret[idx++] = format(sa.getName());
-            		}
-            	}
-    		}
+        	} else {
+        		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+        		attributes.addAll(et.getSingularAttributes());
+        		for (Attribute sa: attributes) {
+        			if (!skip(sa))
+        				ret[idx++] = format(sa.getName());
+        		}
+        	}
         }
 	}
 	
@@ -407,28 +391,24 @@ public class SavedHqlExportToCSV implements Exporter {
 	private static void line(String[] ret, Tuple o) {
 		int idx = 0;
 		for (TupleElement te: o.getElements()) {
+        	EntityType et = null;
+        	try {
+        		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
+        	} catch (IllegalArgumentException e) {}
         	Object x = o.get(te);
-        	if (x == null) {
-        		ret[idx++] = "";
+        	if (et == null) {
+        		ret[idx++] = toString(x);
         	} else {
-            	EntityType et = null;
-            	try {
-            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
-            	} catch (IllegalArgumentException e) {}
-            	if (et == null) {
-            		ret[idx++] = toString(x);
-            	} else {
-            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
-            		attributes.addAll(et.getSingularAttributes());
-            		for (Attribute sa: attributes) {
-            			if (!skip(sa))
-                			try {
-                				ret[idx++] = toString(((Method)sa.getJavaMember()).invoke(x));
-                			} catch (Exception e) {
-                				ret[idx++] = "";
-                			}
-            		}
-            	}
+        		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+        		attributes.addAll(et.getSingularAttributes());
+        		for (Attribute sa: attributes) {
+        			if (!skip(sa))
+            			try {
+            				ret[idx++] = toString(((Method)sa.getJavaMember()).invoke(x));
+            			} catch (Exception e) {
+            				ret[idx++] = "";
+            			}
+        		}
         	}
         }
 	}

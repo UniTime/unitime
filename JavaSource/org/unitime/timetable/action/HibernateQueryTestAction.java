@@ -414,24 +414,19 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         int idx = 1;
         for (TupleElement te: o.getElements()) {
         	if (hasLink && first != null && first.equals(te)) continue;
-        	Object x = o.get(te);
-        	if (x == null) {
+        	EntityType et = null;
+        	try {
+        		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
+        	} catch (IllegalArgumentException e) {}
+        	if (et == null) {
         		header(s, idx++, te.getAlias());
         	} else {
-        		EntityType et = null;
-            	try {
-            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
-            	} catch (IllegalArgumentException e) {}
-            	if (et == null) {
-            		header(s, idx++, te.getAlias());
-            	} else {
-            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
-            		attributes.addAll(et.getSingularAttributes());
-            		for (Attribute sa: attributes) {
-            			if (!skip(sa))
-            				header(s, idx++, sa.getName());
-            		}
-            	}
+        		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+        		attributes.addAll(et.getSingularAttributes());
+        		for (Attribute sa: attributes) {
+        			if (!skip(sa))
+        				header(s, idx++, sa.getName());
+        		}
         	}
         }
         s.append("</tr>");
@@ -485,27 +480,23 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         for (TupleElement te: o.getElements()) {
         	if (link != null && first != null && first.equals(te)) continue;
         	Object x = o.get(te);
-        	if (x == null) {
-                line(s,null);
+        	EntityType et = null;
+        	try {
+        		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
+        	} catch (IllegalArgumentException e) {}
+        	if (et == null) {
+        		line(s, x);
         	} else {
-            	EntityType et = null;
-            	try {
-            		et = new _RootDAO().getSession().getMetamodel().entity(x.getClass());
-            	} catch (IllegalArgumentException e) {}
-            	if (et == null) {
-            		line(s, x);
-            	} else {
-            		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
-            		attributes.addAll(et.getSingularAttributes());
-            		for (Attribute sa: attributes) {
-            			if (!skip(sa))
-                			try {
-                				line(s, ((Method)sa.getJavaMember()).invoke(x));
-                			} catch (Exception e) {
-                				line(s, null);
-                			}
-            		}
-            	}
+        		TreeSet<Attribute> attributes = new TreeSet<Attribute>(new AttributeComparator());
+        		attributes.addAll(et.getSingularAttributes());
+        		for (Attribute sa: attributes) {
+        			if (!skip(sa))
+            			try {
+            				line(s, ((Method)sa.getJavaMember()).invoke(x));
+            			} catch (Exception e) {
+            				line(s, null);
+            			}
+        		}
         	}
         }
         s.append("</tr>");
