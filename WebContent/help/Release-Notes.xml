@@ -38,5 +38,24 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Solver Load: Replace Pending courses with Substitutes</name>
+			<description>
+				<line>Added ability to treat substitute course demands as primary when a primary course demand was skipped entirely due to one of the following reasons:
+					<line>pending override request (when Load.ReplacePendingWithSubstitute is true, defaults to false)</line>
+					<line>canceled override request (when Load.ReplaceCancelledWithSubstitute is true, defaults to false)</line>
+					<line>rejected override request (when Load.ReplaceRejectedWithSubstitute is true, defaults to false)</line>
+					<line>not offered course (when Load.ReplaceNotOfferedWithSubstitute is true, defaults to false)</line>
+				</line>
+				<line>More precisely, when a course demand is skipped (all its courses are skipped for some reason),
+					and at least one of the courses is skipped due to a reason that is enabled, then
+					<line>Take the top most substitute course demand and treat it as primary.</line>
+					<line>The position of the substitute course is kept (it shows at the bottom of the primary requests instead of at the top of the substitutes).</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 </release-history>
