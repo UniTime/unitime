@@ -1044,7 +1044,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         // Traverse through children
         Set childSubparts = subpart.getChildSubparts();
         if (childSubparts==null || childSubparts.size()==0) return;
-        for (Iterator i=childSubparts.iterator(); i.hasNext(); ) {
+        for (Iterator i=new ArrayList(childSubparts).iterator(); i.hasNext(); ) {
             SchedulingSubpart cs = (SchedulingSubpart) i.next();
             updateParentClasses(cs, subpart, hibSession, notDeletedSubparts);
         }
