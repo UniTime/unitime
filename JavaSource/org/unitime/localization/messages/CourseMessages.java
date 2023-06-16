@@ -4601,7 +4601,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("\nDrop")
 	String columnAcademicSessionEnrollmentDropDeadline();
 	
-	@DefaultMessage("Sectioning\nStatus")
+	@DefaultMessage("Scheduling\nStatus")
 	String columnAcademicSessionSectioningStatus();
 	
 	@DefaultMessage("Default\nIM")
@@ -5176,17 +5176,17 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("The examination timetabling manager can edit all examination data and create examination schedule.")
 	String descExamTimetable();
 
-	@DefaultMessage("Registration:")
+	@DefaultMessage("Course Requests:")
 	String propRegistration();
 	@DefaultMessage("Students are able to use the Student Course Requests page to fill in their course and free time requests.")
 	String descRegistration();
 
-	@DefaultMessage("Assistant:")
+	@DefaultMessage("Scheduling Assistant:")
 	String propAssistant();
 	@DefaultMessage("Unauthenticated users and students are able to use the Student Scheduling Assistant.")
 	String descAssistant();
 
-	@DefaultMessage("Online Sectioning:")
+	@DefaultMessage("Online Scheduling:")
 	String propOnlineSectioning();
 	@DefaultMessage("Online student sectioning is fully enabled (e.g., courses must be locked before a change, conflicting students are automatically re-sectioned).")
 	String descOnlineSectioning();
