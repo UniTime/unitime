@@ -3465,7 +3465,7 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageExaminationReports();
 	
-	@DefaultMessage("Student Sectioning Reports")
+	@DefaultMessage("Student Scheduling Reports")
 	@DoNotTranslate
 	String pageStudentSectioningReports();
 	
@@ -3577,7 +3577,7 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageStudentAccommodations();
 	
-	@DefaultMessage("Student Sectioning Solver Reports")
+	@DefaultMessage("Batch Student Solver Reports")
 	@DoNotTranslate
 	String pageBatchSectioningReports();
 	
@@ -5413,7 +5413,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Appearance: Examinations")
 	String flagAppearanceExaminations();
 	
-	@DefaultMessage("Appearance: Student Sectioning")
+	@DefaultMessage("Appearance: Student Scheduling")
 	String flagAppearanceStudentSectioning();
 	
 	@DefaultMessage("Appearance: Events")
@@ -5527,10 +5527,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room Types")
 	String optionRoomTypes();
 
-	@DefaultMessage("Student Sectioning Status")
+	@DefaultMessage("Student Scheduling Status")
 	String optionStudentSectioningStatus();
 
-	@DefaultMessage("Student Sectioning Statuses")
+	@DefaultMessage("Student Scheduling Statuses")
 	String optionStudentSectioningStatuses();
 
 	@DefaultMessage("Exam Type")
@@ -5753,7 +5753,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Details of {0}")
 	String courseCatalogDialog(String course);
 	
-	@DefaultMessage("Student Sectioning Solver")
+	@DefaultMessage("Student Scheduling Solver")
 	String solverStudent();
 	
 	@DefaultMessage("Examinations Solver")
