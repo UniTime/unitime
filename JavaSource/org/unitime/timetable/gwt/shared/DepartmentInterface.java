@@ -20,7 +20,6 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -237,8 +236,8 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		private boolean iCanExportPdf = true;
 		private boolean iCoursesFundingDepartmentsEnabled = false;
 		private String iAcademicSessionName = null;
-		private HashMap<String, String> iStatuses;
-		private HashMap<Long, String> iExtDepartments;
+		private List<StatusOption> iStatuses;
+		private List<DepartmentOption> iExtDepartments;
 
 		private Boolean iCanEdit = false;
 		private Boolean iCanDelete = false;
@@ -255,11 +254,19 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		public String getAcademicSessionName() { return iAcademicSessionName; }
 		public void setAcademicSessionName(String academicSessionName) { iAcademicSessionName = academicSessionName; }
 		
-		public HashMap<String,String>  getStatusOptions(){ return iStatuses; }
-		public void setStatusOptions(HashMap<String,String> statuses){  iStatuses =statuses; }
+		public List<StatusOption> getStatusOptions(){ return iStatuses; }
+		public void setStatusOptions(List<StatusOption> statuses){  iStatuses =statuses; }
+		public void addStatusOption(StatusOption option) {
+			if (iStatuses == null) iStatuses = new ArrayList<StatusOption>();
+			iStatuses.add(option);
+		}
 		
-		public HashMap<Long, String> getExtDepartmentOptions() { return iExtDepartments; }
-		public void setExtDepartmentOptions(HashMap<Long, String> hashMap) { iExtDepartments = hashMap; }
+		public List<DepartmentOption> getExtDepartmentOptions() { return iExtDepartments; }
+		public void setExtDepartmentOptions(List<DepartmentOption> departments) { iExtDepartments = departments; }
+		public void addExtDepartmentOption(DepartmentOption department) {
+			if (iExtDepartments == null) iExtDepartments = new ArrayList<DepartmentOption>();
+			iExtDepartments.add(department);
+		}
 		
 		public boolean getCanEdit() { return iCanEdit; }
 		public void setCanEdit (boolean canEdit) { iCanEdit = canEdit; }
@@ -271,6 +278,38 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		public void setCanChangeExtManager(boolean canChangeExtManager) { iCanChangeExtManager = canChangeExtManager; }	
 
 	} //end DepartmentPropertiesInterface
+	
+	public static class StatusOption implements IsSerializable {
+		private Long iId;
+		private String iReference, iLabel;
+		
+		public StatusOption() {}
+		public StatusOption(Long id, String ref, String label) {
+			iId = id; iReference = ref; iLabel = label;
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		public String getReference() { return iReference; }
+		public void setReference(String ref) { iReference = ref; }
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+	}
+	
+	public static class DepartmentOption implements IsSerializable {
+		private Long iId;
+		private String iLabel;
+		
+		public DepartmentOption() {}
+		public DepartmentOption(Long id, String label) {
+			iId = id;  iLabel = label;
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+	}
 	
 
 	

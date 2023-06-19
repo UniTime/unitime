@@ -20,47 +20,38 @@
 package org.unitime.timetable.server.departments;
 
 
-import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentOption;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesInterface;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesRequest;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.StatusOption;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.RefTableEntry;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.ReferenceList;
 
 @GwtRpcImplements(DepartmentPropertiesRequest.class)
 public class DepartmentPropertiesBackend implements GwtRpcImplementation<DepartmentPropertiesRequest, DepartmentPropertiesInterface>{
 
-	public HashMap<String, String>  getStatusOptions() { 
-		ReferenceList ref = new ReferenceList();
-		ref.addAll(DepartmentStatusType.findAllForDepartment());
-		HashMap<String,String> map = new HashMap<String,String>();
-		for (RefTableEntry r : ref) {
-			 map.put(r.getReference(),r.getLabel());
-		}
-		return map;
+	public List<StatusOption> getStatusOptions() {
+		List<StatusOption> ret = new ArrayList<StatusOption>();
+		for (DepartmentStatusType status: DepartmentStatusType.findAllForDepartment())
+			ret.add(new StatusOption(status.getUniqueId(), status.getReference(), status.getLabel()));
+		return ret;
 	}
 	
-	   
-		public HashMap<Long, String> getAllDependentDepartments( SessionContext context) { 
-			 TreeSet<Department> departments =  Department.findAllNonExternal(context.getUser().getCurrentAcademicSessionId());
-			 HashMap<Long, String> map = new HashMap<Long,String>();
-			for (Department d: departments){
-				  String deptCode = d.getDepartment().getDeptCode();
-				  String deptName = d.getDepartment().getName();
-				  String displayName = deptCode + " : " +deptName;
-				  map.put(d.getDepartment().getUniqueId(),displayName);
-			}
-			  return map;   
-		}
+	public List<DepartmentOption> getAllDependentDepartments(SessionContext context) {
+		List<DepartmentOption> ret = new ArrayList<DepartmentOption>();
+		for (Department d: Department.findAllNonExternal(context.getUser().getCurrentAcademicSessionId()))
+			ret.add(new DepartmentOption(d.getUniqueId(), d.getLabel()));
+		return ret;
+	}
 
 	@Override
 	public DepartmentPropertiesInterface execute(DepartmentPropertiesRequest request, SessionContext context) {
