@@ -7730,6 +7730,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit <u>S</u>urvey")
 	String buttonEditInstructorSurvey();
 	
+	@DefaultMessage("Delete Survey")
+	String buttonDeleteInstructorSurvey();
+
 	@DefaultMessage("Copy Preferences")
 	String buttonApplyInstructorSurveyPreferences();
 	
@@ -7738,6 +7741,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Existing instructor preferences will be overwritten with the preferences from the instructor survey. Are you ready to do that?")
 	String questionApplyInstructorSurveyPreferences();
+	
+	@DefaultMessage("All the information provided by the instructor will be deleted. Do you ready want to do that?")
+	String questionDeleteInstructorSurveys();
 	
 	@DefaultMessage("Instructor Survey")
 	String fieldInstructorSurvey();

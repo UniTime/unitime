@@ -67,6 +67,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 		private boolean iEditable = true;
 		private boolean iCanApply = true;
 		private boolean iAdmin = true;
+		private boolean iCanDelete = true;
 		private List<AcademicSessionInfo> iSessions = null;
 		private List<AcademicSessionInfo> iSessionsWithPreferences = null;
 		private List<AcademicSessionInfo> iSessionsWithCourses = null;
@@ -101,6 +102,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 				iCustomFields = new ArrayList<CustomField>(data.iCustomFields);
 			iEditable = data.iEditable;
 			iCanApply = data.iCanApply;
+			iCanDelete = data.iCanDelete;
 			iAdmin = data.iAdmin;
 			if (data.iSessions != null)
 				iSessions = new ArrayList<AcademicSessionInfo>(data.iSessions);
@@ -122,6 +124,8 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public boolean isEditable() { return iEditable; }
 		public void setEditable(boolean editable) { iEditable = editable; }
+		public boolean isCanDelete() { return iCanDelete; }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
 		public boolean isCanApply() { return iCanApply; }
 		public void setCanApply(boolean canApply) { iCanApply = canApply; }
 		public boolean isAdmin() { return iAdmin; }
@@ -322,6 +326,20 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean isPopupWarning() { return iPopupWarning; }
 		public void setPopupWarning(boolean popupWarning) { iPopupWarning = popupWarning; }
 		
+		public boolean isEmpty() {
+			if (iCourses != null) {
+				for (Course course: iCourses)
+					if (course.hasCustomFields()) return false;
+			}
+			if (iRoomPrefs != null) {
+				for (Preferences p: iRoomPrefs)
+					if (!p.isEmpty()) return false;
+			}
+			if (iTimePrefs != null && !iTimePrefs.isEmpty()) return false;
+			if (iDistPrefs != null && !iDistPrefs.isEmpty()) return false;
+			return true;
+		}
+		
 		@Override
 		public String toString() {
 			String ret = 
@@ -457,6 +475,19 @@ public class InstructorSurveyInterface implements IsSerializable {
 		public boolean hasSelections() { return iSelections != null && !iSelections.isEmpty(); }
 		public void clearSelections() {
 			if (iSelections != null) iSelections.clear();
+		}
+		public boolean isEmpty() {
+			if (iSelections != null)
+				for (Selection s: iSelections) {
+					if (s.getLevel() != null) return false;
+				}
+			return true;
+		}
+		public boolean hasSelections(boolean showDifferences) {
+			if (showDifferences)
+				return hasSelections();
+			else
+				return !isEmpty();
 		}
 		public List<Selection> getSelections() { return iSelections; }
 		public void addSelection(Selection selection) {
@@ -749,6 +780,16 @@ public class InstructorSurveyInterface implements IsSerializable {
 		
 		public InstructorSurveyApplyRequest() {}
 		public InstructorSurveyApplyRequest(Long instructorId) { iInstructorId = instructorId; }
+		
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+	}
+	
+	public static class InstructorSurveyDeleteRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		private Long iInstructorId;
+		
+		public InstructorSurveyDeleteRequest() {}
+		public InstructorSurveyDeleteRequest(Long instructorId) { iInstructorId = instructorId; }
 		
 		public Long getInstructorId() { return iInstructorId; }
 		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }

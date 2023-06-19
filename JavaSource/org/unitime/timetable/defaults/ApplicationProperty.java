@@ -3279,6 +3279,12 @@ public enum ApplicationProperty {
 			"This property contains a regular expression; courses with course type reference matching this expression are excluded.")
 	@Since(4.8)
 	InstructorSurveyExcludeCourseTypes("unitime.instructorSurvey.excludeCourseTypes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructor Survey: set to true if schedule managers (users with Instructor Survey Admin permission) are allowed to delete a filled-in survey")
+	@Since(4.8)
+	InstructorSurveyManagersCanDelete("unitime.instructorSurvey.managersCanDelete"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")

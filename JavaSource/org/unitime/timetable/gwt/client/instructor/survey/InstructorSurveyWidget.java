@@ -121,6 +121,33 @@ public class InstructorSurveyWidget extends Composite {
 			}
 		});
 		iHeader.setEnabled("survey", false);
+		iHeader.addButton("delete", MESSAGES.buttonDeleteInstructorSurvey(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final Command delete = new Command() {
+					@Override
+					public void execute() {
+						iHeader.showLoading();
+						RPC.execute(new InstructorSurveyInterface.InstructorSurveyDeleteRequest(iInstructorId), new AsyncCallback<GwtRpcResponseNull>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								iHeader.setErrorMessage(caught.getMessage());						
+							}
+							@Override
+							public void onSuccess(GwtRpcResponseNull result) {
+								Window.Location.reload();
+							}
+						});
+					}
+				};
+				if (iSurvey.isEmpty()) {
+					delete.execute();
+				} else {
+					UniTimeConfirmationDialog.confirm(MESSAGES.questionDeleteInstructorSurveys(), delete);
+				}
+			}
+		});
+		iHeader.setEnabled("delete", false);		
 		iHeader.addButton("submit", MESSAGES.buttonSubmitInstructorSurvey(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
@@ -243,6 +270,7 @@ public class InstructorSurveyWidget extends Composite {
 		}
 		iHeader.setEnabled("survey", survey.isEditable());
 		iHeader.setEnabled("submit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() == null);
+		iHeader.setEnabled("delete", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() == null && (survey.isEmpty() || survey.isCanDelete()));
 		iHeader.setEnabled("unsubmit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() != null);
 		iHeader.setEnabled("apply", survey.isCanApply());
 		
@@ -307,11 +335,11 @@ public class InstructorSurveyWidget extends Composite {
 		
 		if (survey.hasRoomPreferences()) {
 			for (Preferences p: survey.getRoomPreferences()) {
-				if (p.hasSelections())
+				if (p.hasSelections(iShowDifferences.getValue()))
 					iForm.addRow(p.getType(), new PreferencesReadOnlyTable(p, survey.getPrefLevels()));
 			}
 		}
-		if (survey.hasDistributionPreferences() && survey.getDistributionPreferences().hasSelections()) {
+		if (survey.hasDistributionPreferences() && survey.getDistributionPreferences().hasSelections(iShowDifferences.getValue())) {
 			iForm.addRow(survey.getDistributionPreferences().getType(), new PreferencesReadOnlyTable(survey.getDistributionPreferences(), survey.getPrefLevels()));
 		}
 		
