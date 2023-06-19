@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.client.departments;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -34,7 +33,9 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentOption;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentPropertiesInterface;
+import org.unitime.timetable.gwt.shared.DepartmentInterface.StatusOption;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.UpdateDepartmentAction;
 
 import com.google.gwt.core.client.GWT;
@@ -453,9 +454,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			iDepartment = new DepartmentInterface();
 			
 			iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
-			for (Entry<String, String> entry : iDepartmentProperties.getStatusOptions().entrySet()) {    
-				iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
-			}
+			for (StatusOption option: iDepartmentProperties.getStatusOptions())
+				iStatusType.getWidget().addItem(option.getLabel(), option.getReference());
 			iAcademicSession.getWidget().setText((iDepartmentProperties.getAcademicSessionName() == null ? "" : iDepartmentProperties.getAcademicSessionName()));
 			
 			//Remove external funding row when switch in config turned off
@@ -490,9 +490,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 			
 			iStatusType.getWidget().clear();
 			iStatusType.getWidget().addItem(MESSAGES.propDepartmentStatusDefault(),"-1");
-			for (Entry<String, String> entry : iDepartmentProperties.getStatusOptions().entrySet()) {    
-				iStatusType.getWidget().addItem(entry.getValue().toString() , entry.getKey().toString());
-			}
+			for (StatusOption option: iDepartmentProperties.getStatusOptions())
+				iStatusType.getWidget().addItem(option.getLabel(), option.getReference());
 		    if(department.getStatusTypeCode() != null){
 		    	 setSelectedValue(iStatusType.getWidget(), department.getStatusTypeCode());
 		    }
@@ -713,9 +712,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		statusTypeOptions.setVisibleItemCount(1);		
 		statusTypeOptions.addItem(MESSAGES.propDefaultDependentStatus(), "");
 
-	for (Entry<String, String> entry : iDepartmentProperties.getStatusOptions().entrySet()) {    
-			statusTypeOptions.addItem(entry.getValue().toString() , entry.getKey().toString());
-		}	
+		for (StatusOption option: iDepartmentProperties.getStatusOptions())
+			statusTypeOptions.addItem(option.getLabel(), option.getReference());
 		return statusTypeOptions;
 	}
 	
@@ -741,8 +739,8 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		departmentOptions.setStyleName("unitime-TextBox");
 		departmentOptions.setVisibleItemCount(1);
 		departmentOptions.addItem(MESSAGES.propDefaultDependentDepartment(), "");
-		for (Entry<Long, String> entry : iDepartmentProperties.getExtDepartmentOptions().entrySet()) {
-			departmentOptions.addItem(entry.getValue().toString() , entry.getKey().toString());
+		for (DepartmentOption dept: iDepartmentProperties.getExtDepartmentOptions()) {
+			departmentOptions.addItem(dept.getLabel(), dept.getId().toString());
 		}	
 		return departmentOptions;
 	}
