@@ -851,6 +851,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Approved")
 	String colApproved();
+	
+	@DefaultMessage("Advised")
+	String colAdvisedTimeStamp();
 
 	@DefaultMessage("Priority")
 	String colPriority();

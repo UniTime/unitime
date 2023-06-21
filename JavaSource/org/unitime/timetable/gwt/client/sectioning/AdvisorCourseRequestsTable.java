@@ -178,7 +178,6 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 					rows.add(row);
 					first = false;
 				}
-				priority ++;
 			} else {
 				WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
 				credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -198,6 +197,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 				row.setId("P" + priority);
 				rows.add(row);
 			}
+			priority ++;
 		}
 		priority = 1;
 		for (Request request: iAdvisorRequests.getAlternatives()) {
@@ -257,7 +257,6 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 					rows.add(row);
 					first = false;
 				}
-				priority ++;
 			} else {
 				WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
 				credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -276,6 +275,7 @@ public class AdvisorCourseRequestsTable extends WebTable implements TakesValue<C
 				row.setId("A" + priority);
 				rows.add(row);
 			}
+			priority ++;
 		}
 		float min = 0, max = 0;
 		for (Request request: iAdvisorRequests.getCourses()) {

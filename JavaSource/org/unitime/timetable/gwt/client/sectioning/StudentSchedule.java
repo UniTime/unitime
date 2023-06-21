@@ -92,6 +92,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private static DateTimeFormat sWLF = DateTimeFormat.getFormat(CONSTANTS.requestWaitListedDateFormat());
+	private static DateTimeFormat sADF = DateTimeFormat.getFormat(CONSTANTS.advisedDateFormat());
 	private ClassAssignmentInterface iAssignment;
 	private UniTimeTabPanel iTabs;
 	private TimeGrid iGrid;
@@ -121,7 +122,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colWaitList(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colNotes(), 1, "300px"),
-				new WebTable.Cell(MESSAGES.colChanges(), 1, "100px")));
+				new WebTable.Cell(MESSAGES.colChanges(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colAdvisedTimeStamp(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colAdvisor(), 1, "100px")));
 		iAdvReqs.setSelectSameIdRows(true);
 		iAdvReqs.addStyleName("unitime-AdvisorCourseRequestsTable");
 		iTabs.add(iAdvReqs, MESSAGES.tabAdvisorRequests(), true);
@@ -447,7 +450,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 										? (request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), "") : new WebTable.Cell(""))
 										: (request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
 									note,
-									new WebTable.Cell(changes)
+									new WebTable.Cell(changes),
+									new WebTable.Cell(rc.getTimeStamp() == null ? "" : sADF.format(rc.getTimeStamp())),
+									new WebTable.Cell(rc.hasChangedBy() ? rc.getChangedBy() : "")
 									);
 							} else {
 								row = new WebTable.Row(
@@ -458,7 +463,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(ToolBox.toString(prefs), true),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
-									new WebTable.Cell(changes)
+									new WebTable.Cell(changes),
+									new WebTable.Cell(rc.getTimeStamp() == null ? "" : sADF.format(rc.getTimeStamp())),
+									new WebTable.Cell(rc.hasChangedBy() ? rc.getChangedBy() : "")
 									);
 							}
 						} else if (rc.isFreeTime()) {
@@ -480,7 +487,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									note,
-									new WebTable.Cell("")
+									new WebTable.Cell(""),
+									new WebTable.Cell(rc.getTimeStamp() == null ? "" : sADF.format(rc.getTimeStamp())),
+									new WebTable.Cell(rc.hasChangedBy() ? rc.getChangedBy() : "")
 									);
 							} else {
 								row = new WebTable.Row(
@@ -491,7 +500,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
-									new WebTable.Cell("")
+									new WebTable.Cell(""),
+									new WebTable.Cell(rc.getTimeStamp() == null ? "" : sADF.format(rc.getTimeStamp())),
+									new WebTable.Cell(rc.hasChangedBy() ? rc.getChangedBy() : "")
 									);
 							}
 						}
@@ -501,7 +512,6 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						rows.add(row);
 						first = false;
 					}
-					priority ++;
 				} else {
 					WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -515,13 +525,16 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						new WebTable.Cell(""),
 						new WebTable.Cell(""),
 						note,
-						new WebTable.Cell("")
+						new WebTable.Cell(""),
+						new WebTable.Cell(request.getTimeStamp() == null ? "" : sADF.format(request.getTimeStamp())),
+						new WebTable.Cell(request.hasChangedBy() ? request.getChangedBy() : "")
 						);
 					if (priority > 1)
 						for (WebTable.Cell cell: row.getCells()) cell.setStyleName("top-border-dashed");
 					row.setId("P" + priority);
 					rows.add(row);
 				}
+				priority ++;
 			}
 			priority = 1;
 			for (Request request: iAssignment.getAdvisorRequest().getAlternatives()) {
@@ -566,7 +579,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
 									note,
-									new WebTable.Cell(changes)
+									new WebTable.Cell(changes),
+									new WebTable.Cell(rc.getTimeStamp() == null ? "" : sADF.format(rc.getTimeStamp())),
+									new WebTable.Cell(rc.hasChangedBy() ? rc.getChangedBy() : "")
 									);
 							} else {
 								row = new WebTable.Row(
@@ -577,7 +592,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 									new WebTable.Cell(ToolBox.toString(prefs), true),
 									new WebTable.Cell(""),
 									new WebTable.Cell(""),
-									new WebTable.Cell(changes)
+									new WebTable.Cell(changes),
+									new WebTable.Cell(rc.getTimeStamp() == null ? "" : sADF.format(rc.getTimeStamp())),
+									new WebTable.Cell(rc.hasChangedBy() ? rc.getChangedBy() : "")
 									);
 							}
 						}
@@ -587,7 +604,6 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						rows.add(row);
 						first = false;
 					}
-					priority ++;
 				} else {
 					WebTable.Cell credit = new WebTable.Cell(request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
 					credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -601,12 +617,15 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 						new WebTable.Cell(""),
 						new WebTable.Cell(""),
 						note,
-						new WebTable.Cell("")
+						new WebTable.Cell(""),
+						new WebTable.Cell(request.getTimeStamp() == null ? "" : sADF.format(request.getTimeStamp())),
+						new WebTable.Cell(request.hasChangedBy() ? request.getChangedBy() : "")
 						);
 					for (WebTable.Cell cell: row.getCells()) cell.setStyleName(priority == 1 ? "top-border-solid" : "top-border-dashed");
 					row.setId("A" + priority);
 					rows.add(row);
 				}
+				priority ++;
 			}
 			float min = 0, max = 0;
 			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
@@ -624,7 +643,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					new WebTable.Cell(MESSAGES.rowTotalPriorityCreditHours(), 2, null),
 					new WebTable.Cell(""),
 					credit,
-					note
+					note,
+					new WebTable.Cell(iAssignment.getAdvisorRequest().getTimeStamp() == null ? "" : sADF.format(iAssignment.getAdvisorRequest().getTimeStamp())),
+					new WebTable.Cell(iAssignment.getAdvisorRequest().hasChangedBy() ? iAssignment.getAdvisorRequest().getChangedBy() : "")
 					);
 			for (WebTable.Cell cell: crow.getCells()) cell.setStyleName("top-border-solid");
 			crow.getCell(0).setStyleName("top-border-solid text-bold");

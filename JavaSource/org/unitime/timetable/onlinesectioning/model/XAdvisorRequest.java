@@ -26,6 +26,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.model.AdvisorCourseRequest;
@@ -48,6 +49,8 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	private XTime iFreeTime;
 	private List<XPreference> iPreferences = null;
 	private Boolean iWaitList, iNoSub;
+	private Date iTimeStamp;
+	private String iChangedBy;
 	
 	public XAdvisorRequest(AdvisorCourseRequest acr, OnlineSectioningHelper helper, BitSet freeTimePattern) {
 		iPriority = acr.getPriority();
@@ -68,6 +71,8 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 		}
 		iWaitList = acr.getWaitlist();
 		iNoSub = acr.getNoSub();
+		iTimeStamp = acr.getTimestamp();
+		iChangedBy = acr.getChangedBy();
 	}
 	
 	public XAdvisorRequest(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -101,6 +106,8 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 		}
 		iWaitList = (Boolean)in.readObject();
 		iNoSub = (Boolean)in.readObject();
+		iTimeStamp = (Date)in.readObject();
+		iChangedBy = (String)in.readObject();
 	}
 
 	@Override
@@ -133,6 +140,8 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 		}
 		out.writeObject(iWaitList);
 		out.writeObject(iNoSub);
+		out.writeObject(iTimeStamp);
+		out.writeObject(iChangedBy);
 	}
 	
 	public int getPriority() { return iPriority; }
@@ -157,6 +166,8 @@ public class XAdvisorRequest implements Comparable<XAdvisorRequest>, Serializabl
 	public Boolean getNoSub() { return iNoSub; }
 	public boolean isNoSub() { return iNoSub != null && iNoSub.booleanValue(); }
 	public boolean isWaitListOrNoSub() { return isWaitList() || isNoSub(); }
+	public Date getTimeStamp() { return iTimeStamp; }
+	public String getChangedBy() { return iChangedBy; }
 	
 	public float getCreditMin() {
 		if (iCredit == null || iCredit.isEmpty()) return 0f;

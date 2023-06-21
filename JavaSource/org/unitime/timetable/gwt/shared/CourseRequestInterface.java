@@ -70,6 +70,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	private Boolean iPinReleased = null;
 	private WaitListMode iMode = null;
 	private CheckCoursesResponse iWaitListChecks = null;
+	private String iChangedBy = null;
+	private Date iTimeStamp = null;
 	
 	public CourseRequestInterface() {}
 	public CourseRequestInterface(StudentSectioningContext cx) {
@@ -373,6 +375,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public void setPinReleased(boolean pinReleased) { iPinReleased = pinReleased; }
 	public boolean hasReleasedPin() { return isPinReleased() && hasPin(); }
 	
+	public boolean hasChangedBy() { return iChangedBy != null && !iChangedBy.isEmpty(); }
+	public String getChangedBy() { return iChangedBy; }
+	public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
+	public boolean hasTimeStamp() { return iTimeStamp != null; }
+	public Date getTimeStamp() { return iTimeStamp; }
+	public void setTimeStamp(Date ts) { iTimeStamp = ts; }
+	
 	public Set<Long> getWaitListedCourseIds() {
 		Set<Long> courseIds = new HashSet<Long>();
 		for (Request request: getCourses()) {
@@ -420,6 +429,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
 		private int iStart;
 		private int iLength;
+		private String iChangedBy = null;
+		private Date iTimeStamp = null;
+		
 		public FreeTime() {}
 		public FreeTime(List<Integer> days, int start, int length) {
 			if (days != null) iDays.addAll(days);
@@ -429,6 +441,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			iDays.addAll(ft.iDays);
 			iStart = ft.iStart;
 			iLength = ft.iLength;
+			iChangedBy = ft.iChangedBy;
+			iTimeStamp = ft.iTimeStamp;
 		}
 		
 		public void addDay(int day) { iDays.add(day); }
@@ -469,6 +483,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
+		
+		public boolean hasChangedBy() { return iChangedBy != null && !iChangedBy.isEmpty(); }
+		public String getChangedBy() { return iChangedBy; }
+		public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
+		public boolean hasTimeStamp() { return iTimeStamp != null; }
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
 		
 		public String toString(String[] shortDays, boolean useAmPm) {
 			return getDaysString(shortDays, "") + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
@@ -589,6 +610,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private Boolean iInactive = null;  
 		private Boolean iCanWaitList = null;
 		private String iWaitListPosition = null;
+		private String iChangedBy = null;
+		private Date iTimeStamp = null;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -635,6 +658,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			iInactive = rc.iInactive;
 			iCanWaitList = rc.iCanWaitList;
 			iWaitListPosition = rc.iWaitListPosition;
+			iChangedBy = rc.iChangedBy;
+			iTimeStamp = rc.iTimeStamp;
 		}
 		
 		public boolean isCourse() { return hasCourseId() || hasCourseName(); }
@@ -830,6 +855,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public void setWaitListPosition(String wlPosition) { iWaitListPosition = wlPosition; }
 		public boolean hasWaitListPosition() { return iWaitListPosition != null && !iWaitListPosition.isEmpty(); }
 		
+		public boolean hasChangedBy() { return iChangedBy != null && !iChangedBy.isEmpty(); }
+		public String getChangedBy() { return iChangedBy; }
+		public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
+		public boolean hasTimeStamp() { return iTimeStamp != null; }
+		public Date getTimeStamp() { return iTimeStamp; }
+		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
+		
 		@Override
 		public int hashCode() {
 			return (isCourse() ? getCourseName() : toString()).toLowerCase().hashCode();
@@ -996,6 +1028,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iAdvisorCredit = null;
 		private String iAdvisorNote = null;
 		private Long iWaitListSwapWithCourseOfferingId = null;
+		private String iChangedBy = null;
 		
 		public Request() {}
 		
@@ -1014,6 +1047,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			iAdvisorCredit = request.iAdvisorCredit;
 			iAdvisorNote = request.iAdvisorNote;
 			iWaitListSwapWithCourseOfferingId = request.iWaitListSwapWithCourseOfferingId;
+			iChangedBy = request.iChangedBy;
 		}
 		
 		public List<RequestedCourse> getRequestedCourse() { return iRequestedCourse; }
@@ -1254,6 +1288,10 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 			return false;
 		}
+		
+		public boolean hasChangedBy() { return iChangedBy != null && !iChangedBy.isEmpty(); }
+		public String getChangedBy() { return iChangedBy; }
+		public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
 		
 		public String toString() {
 			return (hasRequestedCourse() ? iRequestedCourse.toString() : "-") + (isWaitList() ? " (w)" : "");
