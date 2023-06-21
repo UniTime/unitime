@@ -21,12 +21,15 @@ package org.unitime.timetable.onlinesectioning.advisors;
 
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -34,6 +37,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
+import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.AdvisorClassPref;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.AdvisorInstrMthPref;
@@ -50,6 +54,7 @@ import org.unitime.timetable.model.StudentClassPref;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentSectioningPref;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -362,10 +367,14 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				}
 			}
 		}
+		NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+		Map<String, String> nameCache = new HashMap<String, String>();
 		for (AdvisorCourseRequest acr: acrs) {
 			if (skip.contains(acr.getPriority())) continue;
 			if (acr.getPriority() == -1) {
 				request.setCreditNote(acr.getNotes());
+				request.setTimeStamp(acr.getTimestamp());
+				request.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 				continue;
 			}
 			if (r == null || last != acr.getPriority()) {
@@ -397,6 +406,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				r.addRequestedCourse(rc);
 				if (acr.getAlternative() == 0)
 					r.setCritical(acr.getCritical());
+				rc.setTimeStamp(acr.getTimestamp());
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getFreeTime() != null) {
 				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 				ft.setStart(acr.getFreeTime().getStartSlot());
@@ -405,10 +416,14 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 					ft.addDay(day.getIndex());	
 				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
 				r.getRequestedCourse(0).addFreeTime(ft);
+				ft.setTimeStamp(acr.getTimestamp());
+				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getCourse() != null) {
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseName(acr.getCourse());
 				r.addRequestedCourse(rc);
+				rc.setTimeStamp(acr.getTimestamp());
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 			}
 			if (acr.getCredit() != null)
 				r.setAdvisorCredit(acr.getCredit());
@@ -418,7 +433,31 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				r.setWaitList(acr.getWaitlist());
 			if (acr.getNoSub() != null)
 				r.setNoSub(acr.getNoSub());
+			if (acr.getTimestamp() != null) {
+				if (r.getTimeStamp() == null || r.getTimeStamp().before(acr.getTimestamp())) {
+					r.setTimeStamp(acr.getTimestamp());
+					r.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				}
+			}
 		}
+	}
+	
+	public static String getName(Map<String, String> nameCache, String externalUniqueId, Long sessionId, NameFormat format) {
+		if (externalUniqueId == null || externalUniqueId.isEmpty()) return null;
+		String ret = nameCache.get(externalUniqueId);
+		if (ret == null) {
+			Advisor a = Advisor.findByExternalId(externalUniqueId, sessionId);
+			if (a != null && a.getLastName() != null && a.getFirstName() != null) {
+				ret = format.format(a);
+			} else {
+				TimetableManager m = TimetableManager.findByExternalId(externalUniqueId);
+				if (m != null)
+					ret = format.format(m);
+			}
+			if (ret != null)
+				nameCache.put(externalUniqueId, ret);
+		}
+		return ret;
 	}
 	
 	protected static void fillCourseRequests(CourseRequestInterface request, List<XAdvisorRequest> acrs, OnlineSectioningServer server) {
@@ -437,10 +476,14 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				}
 			}
 		}
+		NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+		Map<String, String> nameCache = new HashMap<String, String>();
 		for (XAdvisorRequest acr: acrs) {
 			if (skip.contains(acr.getPriority())) continue;
 			if (acr.getPriority() == -1) {
 				request.setCreditNote(acr.getNote());
+				request.setTimeStamp(acr.getTimeStamp());
+				request.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 				continue;
 			}
 			if (r == null || last != acr.getPriority()) {
@@ -476,6 +519,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				r.addRequestedCourse(rc);
 				if (acr.getAlternative() == 0)
 					r.setCritical(acr.getCritical());
+				rc.setTimeStamp(acr.getTimeStamp());
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getFreeTime() != null) {
 				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 				ft.setStart(acr.getFreeTime().getSlot());
@@ -484,10 +529,14 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 					ft.addDay(day.getIndex());	
 				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
 				r.getRequestedCourse(0).addFreeTime(ft);
+				ft.setTimeStamp(acr.getTimeStamp());
+				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getCourseName() != null) {
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseName(acr.getCourseName());
 				r.addRequestedCourse(rc);
+				rc.setTimeStamp(acr.getTimeStamp());
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
 			}
 			if (acr.getCredit() != null)
 				r.setAdvisorCredit(acr.getCredit());
@@ -497,6 +546,12 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				r.setWaitList(acr.getWaitList());
 			if (acr.getNoSub() != null)
 				r.setNoSub(acr.getNoSub());
+			if (acr.getTimeStamp() != null) {
+				if (r.getTimeStamp() == null || r.getTimeStamp().before(acr.getTimeStamp())) {
+					r.setTimeStamp(acr.getTimeStamp());
+					r.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				}
+			}
 		}
 	}
 	
@@ -514,6 +569,8 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		List<AdvisorCourseRequest> acrs = hibSession.createQuery(
 				"from AdvisorCourseRequest where student = :studentId order by priority, alternative"
 				).setLong("studentId", studentId).list();
+		if (!acrs.isEmpty())
+			request.setSessionId(acrs.get(0).getStudent().getSession().getUniqueId());
 		
 		fillCourseRequests(request, acrs);
 		
