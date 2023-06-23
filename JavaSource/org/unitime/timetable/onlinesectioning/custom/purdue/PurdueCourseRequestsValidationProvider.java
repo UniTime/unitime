@@ -3679,7 +3679,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		if (!isAdvisedNoAlts())
 			for (CourseRequestInterface.Request r: request.getCourses()) {
 				if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
-					if (r.isWaitList() && isWaitListNoAlts()) continue;
+					if ((r.isWaitList() || r.isNoSub()) && isWaitListNoAlts()) continue;
 					RequestedCourse rc = r.getRequestedCourse(0);
 					if (rc.getCourseId() != null && !rc.isReadOnly()) {
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
