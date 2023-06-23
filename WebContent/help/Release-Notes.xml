@@ -103,6 +103,13 @@
 				<line>This is to prevent speed / out-of-memory issues, especially when one-of-each is used as it can lead to a lot of individual constraints.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Department: Fixes to the new GWT-based page</name>
+			<description>
+				<line>Department Status: sort the list of available departmental statuses</line>
+				<line>Controlling Department Statuses: sort the list of available departments by their code</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
