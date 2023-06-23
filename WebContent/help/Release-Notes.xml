@@ -51,6 +51,19 @@
 				<line>The value is a regular expression that the configuration name must match.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Type: Same Days-Time-Weeks</name>
+			<description>
+				<line>Added Same Days-Time-Weeks distribution type (SAME_DTW).
+					<line>Given classes must be taught at the same time of day, on the same days and on the same weeks (i.e., must have the same date pattern).
+						<line>It is the combination of Same Days, Same Time, and Same Weeks distribution preferences.</line>
+					</line>
+					<line>When prohibited or (strongly) discouraged: Any pair of classes classes cannot be taught on the same days during the same time and during overlapping date patterns.
+						<line>In other words, the given classes cannot overlap.</line>
+					</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

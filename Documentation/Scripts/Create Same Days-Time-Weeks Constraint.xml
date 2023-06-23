@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Same Days-Time-Weeks Constraint" permission="Distribution Types" engine="ECMAScript" created="June 23, 2023">
+  <description><![CDATA[Same Days-Time-Weeks: Given classes must be taught at the same time of day, on the same days and on the same weeks (i.e., must have the same date pattern).<br>
+It is the combination of Same Days, Same Time, and Same Weeks distribution preferences.<br>
+When prohibited or (strongly) discouraged: Any pair of classes classes cannot be taught on the same days during the same time and during overlapping date patterns.<br>
+In other words, the given classes cannot overlap.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setString('reference', 'SAME_DTW').uniqueResult();
+if (type == null) {
+  log.info('Creating Same Days-Time-Weeks constraint...');
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('SAME_DTW');
+} else {
+  log.warn('Constraint Same Days-Time-Weeks already exists.');
+}
+type.setLabel('Same Days-Time-Weeks');
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('P43210R');
+type.setDescr('Given classes must be taught at the same time of day, on the same days and on the same weeks (i.e., must have the same date pattern).<br>It is the combination of Same Days, Same Time, and Same Weeks distribution preferences.<br>When prohibited or (strongly) discouraged: Any pair of classes classes cannot be taught on the same days during the same time and during overlapping date patterns.<br>In other words, the given classes cannot overlap.');
+type.setAbbreviation('Same Days-Time-Weeks');
+type.setInstructorPref(false);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);]]></body>
+</script>
