@@ -1131,12 +1131,12 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					changed = true;
 				}
 				if (changed) {
-					if (c.getUniqueId() == null)
-						getHibSession().persist(c);
+					if (instructor.getUniqueId() == null)
+						getHibSession().persist(instructor);
 					else
-						getHibSession().merge(c);
+						getHibSession().merge(instructor);
 					getHibSession().flush();
-					getHibSession().refresh(c);
+					getHibSession().refresh(instructor);
 		        	ChangeLog.addChange(getHibSession(), getManager(), session, instructor, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(), c.getSchedulingSubpart().getControllingCourseOffering().getDepartment());
 				}	            
 			}
@@ -1902,11 +1902,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					throw new Exception(ioc.getCourseName() + " " + type + " " + suffix + " 'class' does not have matching 'subpart'");
 				}
 				
-				if (elementInstructor(classElement, clazz)){
-					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' instructor data changed");
-					changed = true;
-				}
-				
 				DatePattern dp = null;
 				if (classElement.element("time") != null && classElement.element("time").attributeValue("datePattern") != null) {
 					dp = DatePattern.findByName(session, classElement.element("time").attributeValue("datePattern"));
@@ -1942,6 +1937,11 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						getHibSession().persist(clazz);
 					else
 						getHibSession().merge(clazz);
+				}
+				
+				if (elementInstructor(classElement, clazz)){
+					addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' instructor data changed");
+					changed = true;
 				}
 
 				if (elementMeetsWith(classElement, clazz)){
