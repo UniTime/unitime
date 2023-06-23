@@ -110,6 +110,13 @@
 				<line>Controlling Department Statuses: sort the list of available departments by their code</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Course Offering: Fixes to the new GWT-based page</name>
+			<description>
+				<line>Show Please wait... during loading of the page.</line>
+				<line>Adding coordinators does not need a server call (remember the list of available instructors from the previous call).</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

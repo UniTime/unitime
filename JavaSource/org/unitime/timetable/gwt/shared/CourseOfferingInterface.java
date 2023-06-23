@@ -474,23 +474,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		public String toString() { return (hasSessionId() ? getSessionId().toString() : ""); }
 	}
 	
-	public static class CourseOfferingConstantsRequest implements GwtRpcRequest<CourseOfferingConstantsInterface> {
-		private Boolean iIsEdit = null;
-		private Long iSubjAreaId = null;
-		private Long iCourseOfferingId = null;
-		
-		public CourseOfferingConstantsRequest() {}
-		
-		public Long getSubjAreaId() { return iSubjAreaId; }
-		public void setSubjAreaId(Long subjAreaId) { iSubjAreaId = subjAreaId; }
-		
-		public Long getCourseOfferingId() { return iCourseOfferingId; }
-		public void setCourseOfferingId(Long courseOfferingId) { iCourseOfferingId = courseOfferingId; }
-		
-		public Boolean getIsEdit() { return iIsEdit; }
-		public void setIsEdit(Boolean isEdit) { iIsEdit = isEdit; }
-	}
-	
 	public static class CourseOfferingPropertiesInterface implements GwtRpcResponse {
 		private AcademicSessionInterface iSession = null;
 		private List<SubjectAreaInterface> iSubjectAreas = new ArrayList<SubjectAreaInterface>();
@@ -627,13 +610,6 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	    public void setSubjectAreaEffectiveFundingDept(Long subjectAreaEffectiveFundingDept) { iSubjectAreaEffectiveFundingDept = subjectAreaEffectiveFundingDept; }
 	    
 	    
-	}
-	
-	public static class CourseOfferingConstantsInterface implements GwtRpcResponse {
-		private Integer prefRowsAdded;
-	    
-	    public Integer getPrefRowsAdded() { return prefRowsAdded; }
-	    public void setPrefRowsAdded(Integer prefRowsAdded) { this.prefRowsAdded = prefRowsAdded; }
 	}
 	
 	public static class SubjectAreaInterface implements GwtRpcResponse {
