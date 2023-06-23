@@ -41,7 +41,7 @@ public class DeleteInstructorSurveyBackend implements GwtRpcImplementation<Instr
 		context.checkPermission(di.getDepartment(), Right.InstructorSurveyAdmin);
 		InstructorSurvey is = InstructorSurvey.getInstructorSurvey(di);
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
-		hibSession.remove(is);
+		hibSession.delete(is);
 		hibSession.flush();
 		return new GwtRpcResponseNull();
 	}
