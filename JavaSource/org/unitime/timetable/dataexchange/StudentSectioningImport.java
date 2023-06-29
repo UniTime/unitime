@@ -359,6 +359,7 @@ public class StudentSectioningImport extends BaseImport {
 		        	student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
 		            String maxCred = demographicsElement.attributeValue("maxCredit");
 		            student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
+		            getHibSession().persist(student);
             	} else if (demographicsElement != null) {
 		            Element name = demographicsElement.element("name");
 		            if (name!=null) {

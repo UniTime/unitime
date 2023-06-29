@@ -244,6 +244,7 @@ public class StudentImport extends BaseImport {
             student.setAccomodations(new HashSet<StudentAccomodation>());
             student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
             student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
+            getHibSession().persist(student);
     	} else {
         	if (!eq(fName, student.getFirstName())) {
         		student.setFirstName(fName);
