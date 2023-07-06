@@ -2293,7 +2293,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not Requested")
 	String reqStatusNeeded();
 	
-	@DefaultMessage("Overrride Not Needed")
+	@DefaultMessage("Override Not Needed")
 	String reqStatusNotNeeded();
 
 	@DefaultMessage("Wait-Listed")
@@ -2576,7 +2576,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Request Approvals")
 	String buttonEnrollmentRequestOverrides();
 	
-	@DefaultMessage("Review and request approvals for the above registration errrors.")
+	@DefaultMessage("Review and request approvals for the above registration errors.")
 	String titleEnrollmentRequestOverrides();
 	
 	@DefaultMessage("Close Dialog")
