@@ -115,6 +115,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CourseType;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
@@ -124,8 +125,10 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.OverrideType;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -200,6 +203,7 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.solver.ComputeSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.solver.FindAssignmentAction;
@@ -602,6 +606,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 			NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+			String datePatternFormat = ApplicationProperty.DatePatternFormatUseDates.valueOfSession(cx.getSessionId());
 			for (Class_ clazz: classes) {
 				if (!clazz.isEnabledForStudentScheduling()) {
 					if (cx.getStudentId() != null && allowedClasses == null) {
@@ -674,11 +679,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					a.setStart(p.getTimeLocation().getStartSlot());
 					a.setLength(p.getTimeLocation().getLength());
 					a.setBreakTime(p.getTimeLocation().getBreakTime());
-					a.setDatePattern(p.getTimeLocation().getDatePatternName());
+					a.setDatePattern(XTime.datePatternName(ass, datePatternFormat));
 				}
-				if (ass != null)
+				if (ass != null) {
 					for (Location loc: ass.getRooms())
 						a.addRoom(loc.getUniqueId(), loc.getLabelWithDisplayName());
+				} else {
+		        	for (Iterator<?> i = clazz.effectivePreferences(RoomPref.class).iterator(); i.hasNext(); ) {
+		        		RoomPref rp = (RoomPref)i.next();
+		        		if (PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
+		        			a.addRoom(rp.getRoom().getUniqueId(), rp.getRoom().getLabel());
+		        		}
+		        	}
+					DatePattern pattern = clazz.effectiveDatePattern();
+					if (pattern != null)
+						a.setDatePattern(datePatternName(pattern, datePatternFormat));
+				}
 				/*
 				if (p != null && p.getRoomLocations() != null) {
 					for (RoomLocation rm: p.getRoomLocations()) {
@@ -1592,6 +1608,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							}
 						};
 						NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
+						String datePatternFormat = ApplicationProperty.DatePatternFormatUseDates.value(student.getSession());
 						ClassAssignmentInterface ret = new ClassAssignmentInterface();
 						Hashtable<Long, CourseAssignment> courses = new Hashtable<Long, ClassAssignmentInterface.CourseAssignment>();
 						CourseCreditUnitConfig credit = null;
@@ -1666,7 +1683,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 									clazz.setStart(placement.getTimeLocation().getStartSlot());
 									clazz.setLength(placement.getTimeLocation().getLength());
 									clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
-									clazz.setDatePattern(placement.getTimeLocation().getDatePatternName());
+									clazz.setDatePattern(XTime.datePatternName(enrollment.getClazz().getCommittedAssignment(), datePatternFormat));
 								}
 								if (enrollment.getClazz().getCommittedAssignment() != null)
 									for (Location loc: enrollment.getClazz().getCommittedAssignment().getRooms())
@@ -1679,6 +1696,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 										clazz.addRoom(rm.getId(), rm.getName());
 								}
 								*/
+							} else {
+								for (Iterator<?> i = enrollment.getClazz().effectivePreferences(RoomPref.class).iterator(); i.hasNext(); ) {
+					        		RoomPref rp = (RoomPref)i.next();
+					        		if (PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
+					        			clazz.addRoom(rp.getRoom().getUniqueId(), rp.getRoom().getLabel());
+					        		}
+					        	}
+								DatePattern pattern = enrollment.getClazz().effectiveDatePattern();
+								if (pattern != null)
+									clazz.setDatePattern(datePatternName(pattern, datePatternFormat));
 							}
 							if (enrollment.getClazz().getDisplayInstructor())
 								for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
@@ -4206,4 +4233,14 @@ public class SectioningServlet implements SectioningService, DisposableBean {
         }
 		return false;
 	}
+	
+	protected String datePatternName(DatePattern pattern, String datePatternFormat) {
+    	if ("never".equals(datePatternFormat)) return pattern.getName();
+    	if ("extended".equals(datePatternFormat) && !pattern.isExtended()) return pattern.getName();
+    	if ("alternate".equals(datePatternFormat) && pattern.isAlternate()) return pattern.getName();
+		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
+		Date first = pattern.getStartDate();
+		Date last = pattern.getEndDate();
+		return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+	}	
 }

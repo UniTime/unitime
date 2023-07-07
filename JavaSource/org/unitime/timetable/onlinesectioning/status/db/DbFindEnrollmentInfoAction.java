@@ -82,6 +82,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.FindStudentInfoMatcher;
@@ -740,7 +741,7 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 					a.setStart(assignment.getStartSlot());
 					a.setLength(assignment.getSlotPerMtg());
 					a.setBreakTime(assignment.getBreakTime());
-					a.setDatePattern(assignment.getDatePattern().getName());
+					a.setDatePattern(XTime.datePatternName(assignment, helper.getDatePatternFormat()));
 					for (Location rm: assignment.getRooms())
 						a.addRoom(rm.getUniqueId(), rm.getLabelWithDisplayName());
 				} else {
