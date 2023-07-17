@@ -38,7 +38,6 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
-import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
@@ -112,15 +111,6 @@ public class InstructorSurveyWidget extends Composite {
 				}
 			}
 		});
-		iHeader.addButton("survey", MESSAGES.buttonEditInstructorSurvey(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				UniTimeFrameDialog.openDialog(MESSAGES.sectInstructorSurvey(),
-						"gwt.jsp?page=instructorSurvey&menu=hide&id=" + iSurvey.getExternalId(),
-						"900","90%");
-			}
-		});
-		iHeader.setEnabled("survey", false);
 		iHeader.addButton("delete", MESSAGES.buttonDeleteInstructorSurvey(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -268,7 +258,6 @@ public class InstructorSurveyWidget extends Composite {
 			iForm.clear();
 			iForm.addHeaderRow(iHeader);
 		}
-		iHeader.setEnabled("survey", survey.isEditable());
 		iHeader.setEnabled("submit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() == null);
 		iHeader.setEnabled("delete", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() == null && (survey.isEmpty() || survey.isCanDelete()));
 		iHeader.setEnabled("unsubmit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() != null);

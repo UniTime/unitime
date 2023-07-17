@@ -536,7 +536,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 		
 		InstructorSurvey is = InstructorSurvey.getInstructorSurvey(inst);
 		form.setHasInstructorSurvey(is != null);
-		if (is == null && inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty()) {
+		if (inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty()) {
 			form.setShowInstructorSurvey(sessionContext.hasPermission(inst.getDepartment(), Right.InstructorSurveyAdmin));
 			if (sessionContext.getUser().getExternalUserId().equals(inst.getExternalUniqueId()) && sessionContext.hasPermission(Right.InstructorSurvey))
 				form.setShowInstructorSurvey(true);
