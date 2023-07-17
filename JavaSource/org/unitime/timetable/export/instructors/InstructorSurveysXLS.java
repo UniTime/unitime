@@ -540,6 +540,8 @@ public class InstructorSurveysXLS implements Exporter {
 				TimePatternModel m = ((TimePref) pref).getTimePatternModel();
 				m.setMode("|" + ApplicationProperty.InstructorSurveyTimePreferences.value());
 				time.addAll(timePrefToA(m, (TimePref)pref, (TimePref)otherPref));
+				if (m.hasProgibitedPreferences() && pref.getNote() != null && !pref.getNote().isEmpty())
+					time.add(new A(pref.getNote()));
 			} else if (pref instanceof DistributionPref) {
 				addPreference(dist, pref, other, instructorNameFormat);
 			}
