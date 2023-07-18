@@ -303,7 +303,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                 for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
                     if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
                 if (reportName==null) reportName = "r"+(i+1);
-                String name = session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
+                String name = session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
                 if (iForm.getAll()) {
                     File file = ApplicationProperties.getTempFile(name, PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
                     log("&nbsp;&nbsp;" + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
@@ -438,7 +438,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                     mail.addRecipientBCC(s.nextToken(), null);
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
-                                	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
+                                	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                                     log("&nbsp;&nbsp;" + MSG.infoAttaching("<a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>"));
                                 }
                                 mail.send();
@@ -463,7 +463,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         for (Map.Entry<String, File> entry : output.entrySet()) {
-                        	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
+                        	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                         }
                         mail.send();
                         log(MSG.infoEmailSent());
@@ -492,7 +492,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
+                            mail.addAttachment(report, session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
                             log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
                         } catch (Exception e) {
@@ -522,7 +522,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachment(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
+                            mail.addAttachment(report, session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
                             log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                         } catch (Exception e) {
@@ -541,8 +541,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                 FileInputStream fis = null;
                 ZipOutputStream zip = null;
                 try {
-                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference(), "zip");
-                    log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>"));
+                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference(), "zip");
+                    log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>"));
                     zip = new ZipOutputStream(new FileOutputStream(zipFile));
                     for (Map.Entry<String, File> entry : output.entrySet()) {
                         zip.putNextEntry(new ZipEntry(entry.getKey()));

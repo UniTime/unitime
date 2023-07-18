@@ -92,7 +92,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                 for (int i=0;i<form.getReports().length;i++) {
                     Class reportClass = EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]).getImplementation();
                     String reportName = form.getReportName(EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]));
-                    String name = session.getAcademicTerm()+session.getSessionStartYear()+"_"+form.getReports()[i];
+                    String name = session.getAcademicTerm()+session.getAcademicYear()+"_"+form.getReports()[i];
                 	String ext = PdfLegacyExamReport.getExtension(form.getReportMode().ordinal());
                     form.log(MSG.statusGeneratingReport(reportName));
                     if (form.getAll()) {
@@ -152,7 +152,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                         if (form.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(form.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         for (Map.Entry<String, File> entry : output.entrySet()) {
-                        	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+"_"+entry.getKey());
+                        	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getAcademicYear()+"_"+entry.getKey());
                         }
                         mail.send();
                         form.log(MSG.infoEmailSent());
@@ -169,8 +169,8 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                     FileInputStream fis = null;
                     ZipOutputStream zip = null;
                     try {
-                        File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getSessionStartYear(), "zip");
-                        form.log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+".zip</a>"));
+                        File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getAcademicYear(), "zip");
+                        form.log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getAcademicYear()+".zip</a>"));
                         zip = new ZipOutputStream(new FileOutputStream(zipFile));
                         for (Map.Entry<String, File> entry : output.entrySet()) {
                             zip.putNextEntry(new ZipEntry(entry.getKey()));

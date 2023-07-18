@@ -1148,7 +1148,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 if (perSubject) {
                     for (SubjectArea subject : subjects) {
                         File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+getExtension(mode));
+                            session.getAcademicTerm()+session.getAcademicYear()+examType.getReference()+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+getExtension(mode));
                         long t0 = System.currentTimeMillis();
                         sLog.info("Generating report "+file+" ("+subject.getSubjectAreaAbbreviation()+") ...");
                         List<SubjectArea> subjectList = new ArrayList<SubjectArea>(); subjectList.add(subject);
@@ -1165,7 +1165,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                         sLog.info("Report "+file+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                         if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                             ireports = ((InstructorExamReport)report).printInstructorReports(
-                                    session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                                    session.getAcademicTerm()+session.getAcademicYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
                                             File file = new File(prefix+"."+ext);
@@ -1178,7 +1178,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                                     });
                         } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                             sreports = ((StudentExamReport)report).printStudentReports(
-                                    session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                                    session.getAcademicTerm()+session.getAcademicYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                         public File generate(String prefix, String ext) {
                                             int idx = 0;
                                             File file = new File(prefix+"."+ext);
@@ -1193,7 +1193,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     }
                 } else {
                     File file = new File(new File(ApplicationProperties.getProperty("output",".")),
-                            session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+getExtension(mode));
+                            session.getAcademicTerm()+session.getAcademicYear()+examType.getReference()+"_"+reportName+getExtension(mode));
                     long t0 = System.currentTimeMillis();
                     sLog.info("Generating report "+file+" ...");
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, subjects, exams);
@@ -1204,7 +1204,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                     sLog.info("Report "+file.getName()+" generated in "+sDF.format((t1-t0)/1000.0)+"s.");
                     if (report instanceof InstructorExamReport && "true".equals(System.getProperty("email.instructors","false"))) {
                         ireports = ((InstructorExamReport)report).printInstructorReports(
-                               session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                               session.getAcademicTerm()+session.getAcademicYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                     public File generate(String prefix, String ext) {
                                         int idx = 0;
                                         File file = new File(prefix+"."+ext);
@@ -1217,7 +1217,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                                 });
                     } else if (report instanceof StudentExamReport && "true".equals(System.getProperty("email.students","false"))) {
                         sreports = ((StudentExamReport)report).printStudentReports(
-                                session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
+                                session.getAcademicTerm()+session.getAcademicYear()+examType.getReference(), new InstructorExamReport.FileGenerator() {
                                     public File generate(String prefix, String ext) {
                                         int idx = 0;
                                         File file = new File(prefix+"."+ext);
@@ -1232,7 +1232,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
                 }
             }
             if ("true".equals(System.getProperty("email","false"))) {
-                sendEmails(session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference(), output, outputPerSubject, ireports, sreports);
+                sendEmails(session.getAcademicTerm()+session.getAcademicYear()+examType.getReference(), output, outputPerSubject, ireports, sreports);
             }
             sLog.info("All done.");
         } catch (Exception e) {
