@@ -101,7 +101,7 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 					sessionContext.hasPermission(s, Right.AcademicSessionEdit) ?  "onClick=\"document.location='sessionEdit.action?op=editSession&sessionId=" + s.getSessionId() + "';\"" : null,
 					new String[] {
 						s.equals(defaultSession) ? "<img src='images/accept.png'> " : "&nbsp; ", 
-						s.getAcademicTerm() + " " + s.getSessionStartYear(),
+						s.getAcademicTerm() + " " + s.getAcademicYear(),
 						s.academicInitiativeDisplayString(),
 						df.format(s.getSessionBeginDateTime()).replace(" ", "&nbsp;"),
 						df.format(s.getClassesEndDateTime()).replace(" ", "&nbsp;"),
