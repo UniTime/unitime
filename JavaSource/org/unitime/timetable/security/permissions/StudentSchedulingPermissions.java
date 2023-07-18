@@ -332,7 +332,9 @@ public class StudentSchedulingPermissions {
 	public static class StudentSchedulingCheckStudentOverrides extends SimpleSessionPermission {
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return super.check(user, source) && source.getStatusType().can(Status.StudentsPreRegister) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null;
+			return super.check(user, source) && (
+					(source.getStatusType().can(Status.StudentsPreRegister) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) ||
+					(CustomStudentEnrollmentHolder.isAllowWaitListing() && ApplicationProperty.CustomizationWaitListValidationProvider.value() != null));
 		}
 	}
 	
