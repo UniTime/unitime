@@ -708,18 +708,18 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
-		<hibernate.version>6.2.5.Final</hibernate.version>
+		<hibernate.version>6.2.7.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts2.version>2.5.31</struts2.version>
 		<protobuf.version>3.23.3</protobuf.version>
 		<gwt.version>2.10.0</gwt.version>
-		<spring.version>5.3.28</spring.version>
-		<spring-security.version>5.8.3</spring-security.version>
+		<spring.version>5.3.29</spring.version>
+		<spring-security.version>5.8.5</spring-security.version>
 		<spring-integration.version>5.5.18</spring-integration.version>
 		<servlet.version>3.1.0</servlet.version>
 		<jsp.version>2.3.3</jsp.version>
 		<mail.version>2.1.1</mail.version>
-		<angus-mail.version>2.0.1</angus-mail.version>
+		<angus-mail.version>2.0.2</angus-mail.version>
 		<io.version>2.11.0</io.version>
 		<restlet.version>2.4.3</restlet.version>
 		<log4j.version>2.20.0</log4j.version>
@@ -729,17 +729,17 @@
 		<freemaker.version>2.3.32</freemaker.version>
 		<oracle.version>23.2.0.0</oracle.version>
 		<jython.version>2.7.3</jython.version>
-		<jgroups.version>5.2.14.Final</jgroups.version>
+		<jgroups.version>5.2.16.Final</jgroups.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
 		<joda.version>2.12.5</joda.version>
 		<gson.version>2.10.1</gson.version>
 		<biweekly.version>0.6.7</biweekly.version>
 		<poi.version>5.2.3</poi.version>
 		<dom4j.version>2.1.4</dom4j.version>
-		<jackson.version>2.15.1</jackson.version>
+		<jackson.version>2.15.2</jackson.version>
 		<text.version>1.10.0</text.version>
 		<asm.version>9.5</asm.version>
-		<infinispan-hibernate.version>14.0.11.Final</infinispan-hibernate.version>
+		<infinispan-hibernate.version>14.0.13.Final</infinispan-hibernate.version>
 	</properties>
 
 	<distributionManagement>
