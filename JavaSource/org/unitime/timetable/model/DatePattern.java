@@ -854,4 +854,34 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 	public boolean isPatternSet() {
 		return getDatePatternType() == DatePatternType.PatternSet;
 	}
+	
+    public int getFirstMeeting(int daysOfWeek, int dayOfWeekOffset) {
+        BitSet pattern = getPatternBitSet();
+    	if (daysOfWeek != 0) {
+            int idx = -1;
+            while ((idx = pattern.nextSetBit(1 + idx)) >= 0) {
+                int dow = (idx + dayOfWeekOffset) % 7;
+                if ((daysOfWeek & Constants.DAY_CODES[dow]) != 0) break;
+            }
+            return idx;
+    	} else {
+    		return pattern.nextSetBit(0);
+    	}
+    }
+    
+    public int getLastMeeting(int daysOfWeek, int dayOfWeekOffset) {
+        BitSet pattern = getPatternBitSet();
+    	if (daysOfWeek != 0) {
+    		int idx = -1;
+    		int lastMeeting = 0;
+            while ((idx = pattern.nextSetBit(1 + idx)) >= 0) {
+                int dow = (idx + dayOfWeekOffset) % 7;
+                if ((daysOfWeek & Constants.DAY_CODES[dow]) != 0)
+                	lastMeeting = idx;
+            }
+            return lastMeeting;
+    	} else {
+    		return pattern.length() - 1;
+    	}
+    }	
 }

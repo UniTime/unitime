@@ -34,8 +34,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Overflow;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -48,7 +46,9 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -74,9 +74,12 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	private VerticalPanel iDialogPanel = null;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private String iLastFilter = null;
+	private Timer iFinderTimer;
+	private KeyUpHandler iKeyUpHandler;
 	
 	public CourseFinderDialog() {
 		super(true, false);
+		setEscapeToHide(true);
 		addStyleName("unitime-CourseFinderDialog");
 		setText(MESSAGES.courseSelectionDialog());
 		
@@ -115,7 +118,7 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			}
 		});
 		
-		final Timer finderTimer = new Timer() {
+		iFinderTimer = new Timer() {
             @Override
             public void run() {
             	if (iTabs != null) {
@@ -128,40 +131,28 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
             }
 		};
 		
+		iKeyUpHandler = new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				iFinderTimer.schedule(250);
+			}
+		};
 		iFilter.addKeyUpHandler(new KeyUpHandler() {
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
-				finderTimer.schedule(250);
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					CourseFinderTab tab = getSelectedTab();
-					RequestedCourse rc = (RequestedCourse)(tab == null ? null : tab.getValue());
-					if (rc != null)
-						iFilter.setValue(rc.toString(CONSTANTS));
-					hide();
-					SelectionEvent.fire(CourseFinderDialog.this, getValue());
-					return;
-				} else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-					hide();
-					return;
-				}
-				if (event.isControlKeyDown() || event.isAltKeyDown()) {
-					for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
-						if (event.getNativeKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeKeyCode() == Character.toUpperCase(entry.getKey())) {
-							iTabPanel.selectTab(entry.getValue());
-							event.preventDefault();
-							event.stopPropagation();
-						}
-				}
-				if (iTabs != null) {
-					for (CourseFinderTab tab: iTabs)
-						tab.onKeyUp(event);
+					iFilterSelect.click();
+				} else {
+					iKeyUpHandler.onKeyUp(event);
 				}
 			}
 		});
+		iFilterSelect.addKeyUpHandler(iKeyUpHandler);
 		
 		iFilter.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
+				if (iLastFilter != null && iLastFilter.equals(iFilter.getValue())) return;
 				RequestedCourse value = new RequestedCourse(); value.setCourseName(event.getValue());
 				if (iTabs != null) {
 					for (CourseFinderTab tab: iTabs)
@@ -179,21 +170,8 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			}
 		});
 		
-		iFilter.addBlurHandler(new BlurHandler() {
-			@Override
-			public void onBlur(BlurEvent event) {
-				if (isShowing()) {
-					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-						@Override
-						public void execute() {
-							iFilter.setFocus(true);
-						}
-					});
-				}
-			}
-		});
-		
 		setWidget(iDialogPanel);
+		sinkEvents(Event.ONKEYUP);
 	}
 	
 	@Override
@@ -209,14 +187,16 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 		rc.setCourseName(iFilter.getValue());
 		return rc;
 	}
-
+	
 	@Override
 	public void findCourse() {
 		iFilter.setAriaLabel(isAllowFreeTime() ? ARIA.courseFinderFilterAllowsFreeTime() : ARIA.courseFinderFilter());
 		AriaStatus.getInstance().setText(ARIA.courseFinderDialogOpened());
 		if (iTabs != null)
-			for (CourseFinderTab tab: iTabs)
+			for (CourseFinderTab tab: iTabs) {
+				tab.onBeforeShow();
 				tab.changeTip();
+			}
 		center();
 		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -232,7 +212,7 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			if (!tab.isCourseSelection()) return true;
 		return false;
 	}
-
+	
 	@Override
 	public void setTabs(CourseFinderTab... tabs) {
 		iTabs = tabs;
@@ -255,6 +235,7 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 				Character ch = UniTimeHeaderPanel.guessAccessKey(tab.getName());
 				if (ch != null)
 					iTabAccessKeys.put(ch, tabIndex);
+				iTabPanel.getTabBar().getTab(tabIndex).addKeyUpHandler(iKeyUpHandler);
 				tabIndex ++;
 			}
 			iTabPanel.selectTab(0);
@@ -264,9 +245,9 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			tab.addValueChangeHandler(new ValueChangeHandler<RequestedCourse>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<RequestedCourse> event) {
-					if (event.getSource().equals(tab))
+					if (event.getSource().equals(tab)) {
 						selectTab(tab);
-					else
+					} else
 						tab.setValue(event.getValue());
 					iFilter.setValue(event.getValue() == null ? "" : event.getValue().toString(CONSTANTS));
 				}
@@ -358,4 +339,25 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 	public String getFilter() {
 		return iFilter.getValue();
 	}
+	
+    @Override
+	protected void onPreviewNativeEvent(NativePreviewEvent event) {
+		super.onPreviewNativeEvent(event);
+		if (event.getNativeEvent().getCtrlKey() || event.getNativeEvent().getAltKey()) {
+			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
+				if (event.getNativeEvent().getKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeEvent().getKeyCode() == Character.toUpperCase(entry.getKey())) {
+					iTabPanel.selectTab(entry.getValue());
+					event.getNativeEvent().stopPropagation();
+					event.getNativeEvent().preventDefault();
+				}
+		}
+		if (iTabs != null) {
+			for (CourseFinderTab tab: iTabs)
+				tab.onPreviewNativeEvent(event);
+		}
+		if (event.getTypeInt() == Event.ONKEYDOWN && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER && getSelectedTab() != null && getSelectedTab().isCanSubmit(event)) {
+			iFilterSelect.click();
+			event.cancel();
+		}
+    }
 }

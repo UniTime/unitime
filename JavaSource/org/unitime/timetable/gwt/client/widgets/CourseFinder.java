@@ -21,13 +21,13 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
-import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
@@ -41,13 +41,17 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 	
 	public void setTabs(CourseFinderTab... tabs);
 	
-	public interface CourseFinderTab<E> extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget, KeyUpHandler, HasResponseHandlers, HasEnabled {
+	public interface CourseFinderTab<E> extends HasValue<RequestedCourse>, HasSelectionHandlers<RequestedCourse>, IsWidget, HasResponseHandlers, HasEnabled {
 		public String getName();
 		public void setDataProvider(DataProvider<String, E> provider);
 		public boolean isCourseSelection();
 		public void setCourseDetails(CourseFinderCourseDetails... details);
 		public void changeTip();
 		public CheckBox getRequiredCheckbox();
+		public void reload(RequestedCourse value);
+		public void onPreviewNativeEvent(NativePreviewEvent event);
+		public void onBeforeShow();
+		public boolean isCanSubmit(NativePreviewEvent event);
 	}
 		
 	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget, HasEnabled {

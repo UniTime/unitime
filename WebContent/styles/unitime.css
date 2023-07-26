@@ -720,9 +720,6 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-topright: 5px;
 }
-.gwt-TabBarItem:focus {
-	outline: none;
-}
 .gwt-TabBar .gwt-TabBarItem-selected {
 	border-top: 3px solid #9CB0CE;
 	border-left: 3px solid #9CB0CE;
@@ -7553,4 +7550,60 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-InstructorSurveyPage .pref-not-set {
 	background-color: yellow;
 	font-style: italic;
+}
+
+.unitime-CourseFinderDialog .filter {
+	min-width: 500px;
+}
+
+.unitime-CourseFinderDialog .filter .dates .from {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 2px;
+}
+
+.unitime-CourseFinderDialog .filter .dates .to {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 2px;
+}
+
+.unitime-CourseFinderDialog .filter .credit .from {
+	display: inline-block;
+	vertical-align: top;
+	padding-right: 2px;
+}
+
+.unitime-CourseFinderDialog .filter .credit .to {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 2px;
+}
+
+.unitime-CourseFinderDialog .filter .label-td {
+	width: 80px;
+}
+
+.unitime-CourseFinderDialog .filter .widget-td {
+	width: inherit;
+}
+
+.unitime-CourseFinderDialog .filter .filter-header {
+	display: block;
+	white-space: nowrap;
+}
+
+.unitime-CourseFinderDialog .filter .filter-button {
+	display: inline-block;	
+}
+
+.unitime-CourseFinderDialog .filter .filter-label {
+	display: inline-block;	
+}
+
+.unitime-CourseFinderDialog .filter .filter-text {
+	font-style: italic;
+	padding-left: 10px;	
 }

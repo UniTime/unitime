@@ -37,24 +37,32 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CodeLabel;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Filter;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -87,15 +95,16 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 	private List<RequestedCourse> iCheckedCourses = new ArrayList<RequestedCourse>();
 	private CourseAssignment iLastDetails = null;
 	private boolean iAllowMultiSelection = true;
+	private CourseFinderFilter iFilter;
 	
 	private boolean iShowCourseTitles = false, iShowDefaultSuggestions = false;
 	private boolean iShowWaitLists = true;
 	
-	public CourseFinderMultipleCourses() {
-		this(false, false, false, null, true);
+	public CourseFinderMultipleCourses(StudentSectioningContext context) {
+		this(context, false, false, false, null, true);
 	}
 	
-	public CourseFinderMultipleCourses(boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg, boolean showWaitLists) {
+	public CourseFinderMultipleCourses(StudentSectioningContext context, boolean showCourseTitles, boolean showDefaultSuggestions, boolean showRequired, SpecialRegistrationContext specReg, boolean showWaitLists) {
 		super("courses");
 		
 		iShowCourseTitles = showCourseTitles;
@@ -176,6 +185,19 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 			});
 		}
 
+		iFilter = new CourseFinderFilter(context);
+		iFilter.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Filter>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Filter> event) {
+				if (iLastQuery != null) {
+					RequestedCourse rc = new RequestedCourse();
+					rc.setCourseName(iLastQuery);
+					reload(rc);
+				}
+			}
+		});
+		
+		add(iFilter);
 		add(iCoursesPanel);
 		add(iCourseDetailsTabBar);
 		add(iCourseDetailsPanel);
@@ -245,7 +267,11 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 	}
 
 	@Override
-	public void setValue(RequestedCourse value, final boolean fireEvents) {
+	public void setValue(RequestedCourse value, boolean fireEvents) {
+		setValue(value, fireEvents, false);
+	}
+	
+	public void setValue(RequestedCourse value, final boolean fireEvents, boolean reload) {
 		iCheckedCourses.clear();
 		for (int r = 0; r < iCourses.getRowCount(); r++) {
 			CourseAssignment ca = iCourses.getData(r);
@@ -275,7 +301,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 			iCourses.clearTable(1);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
 			updateCourseDetails();
-		} else if (!query.equals(iLastQuery)) {
+		} else if (!query.equals(iLastQuery) || reload) {
 			iLastQuery = query;
 			iDataProvider.getData(query, new AsyncCallback<Collection<CourseAssignment>>() {
 				public void onFailure(Throwable caught) {
@@ -291,9 +317,24 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 					boolean hasCredit = false, hasNote = false, hasWaitList = false;
 					for (final CourseAssignment record: result) {
 						List<Widget> line = new ArrayList<Widget>();
-						CheckBox ch = new CheckBox();
+						final CheckBox ch = new CheckBox() {
+							@Override
+							  protected void onAttach() {
+								super.onAttach();
+								setTabIndex(-1);
+							}
+						};
 						ch.setValue(iCheckedCourses.contains(new RequestedCourse(record, CONSTANTS.showCourseTitle())));
 						ch.setText(ch.getValue() ? String.valueOf(iCheckedCourses.indexOf(new RequestedCourse(record, CONSTANTS.showCourseTitle())) + 1) : "");
+						ch.addFocusHandler(new FocusHandler() {
+							@Override
+							public void onFocus(FocusEvent event) {
+								int row = iCourses.getRowForWidget(ch);
+								if (row >= 1)
+									iCourses.setSelected(row, true);
+										
+							}
+						});
 						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
@@ -389,8 +430,25 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 
 	public void scrollToSelectedRow() {
 		int row = iCourses.getSelectedRow(); 
-		if (row >= 0)
-			iCourses.getRowFormatter().getElement(row).scrollIntoView();
+		if (row >= 0) {
+			iCourses.getCellFormatter().getElement(row, 0).scrollIntoView();
+		}
+		/*
+		if (iCourses.getSelectedRow() < 0) return;
+		
+		Element scroll = iCoursesPanel.getElement();
+		
+		com.google.gwt.dom.client.Element item = iCourses.getRowFormatter().getElement(iCourses.getSelectedRow());
+		if (item==null) return;
+		
+		int realOffset = 0;
+		while (item !=null && !item.equals(scroll)) {
+			realOffset += item.getOffsetTop();
+			item = item.getOffsetParent();
+		}
+		
+		scroll.setScrollTop(realOffset - scroll.getOffsetHeight() / 2);
+		*/
 	}
 	
 	protected void updateCourseDetails() {
@@ -504,32 +562,46 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		}
 		selectLastTab();
 	}
-
+	
 	@Override
-	public void onKeyUp(KeyUpEvent event) {
-		if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
-		int row = iCourses.getSelectedRow();
-		if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN && isEnabled()) {
-			if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
-				iCourses.setSelected(1, true);
-			else
-				iCourses.setSelected(row + 1, true);
-            scrollToSelectedRow();
-            updateCourseDetails();
-		} else if (event.getNativeKeyCode()==KeyCodes.KEY_UP && isEnabled()) {
-			if (row - 1 < 1)
-				iCourses.setSelected(iCourses.getRowCount() - 1, true);
-			else
-				iCourses.setSelected(row - 1, true);
-			scrollToSelectedRow();
-			updateCourseDetails();
-		} else if (event.isControlKeyDown() || event.isAltKeyDown()) {
+	public void onPreviewNativeEvent(NativePreviewEvent event) {
+		if (event.getNativeEvent().getCtrlKey() || event.getNativeEvent().getAltKey()) {
 			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
-				if (event.getNativeKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeKeyCode() == Character.toUpperCase(entry.getKey())) {
+				if (event.getNativeEvent().getKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeEvent().getKeyCode() == Character.toUpperCase(entry.getKey())) {
 					iCourseDetailsTabBar.selectTab(entry.getValue(), true);
-					event.preventDefault();
-					event.stopPropagation();
+					event.cancel();
 				}
+		}
+		if (event.getTypeInt() == Event.ONKEYDOWN) {
+			if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
+			int row = iCourses.getSelectedRow();
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN && isEnabled() && !iFilter.isPopupShowing()) {
+				if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
+					iCourses.setSelected(1, true);
+				else
+					iCourses.setSelected(row + 1, true);
+	            scrollToSelectedRow();
+	            updateCourseDetails();
+	            event.cancel();
+			} else if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_UP && isEnabled() && !iFilter.isPopupShowing()) {
+				if (row - 1 < 1)
+					iCourses.setSelected(iCourses.getRowCount() - 1, true);
+				else
+					iCourses.setSelected(row - 1, true);
+				scrollToSelectedRow();
+				updateCourseDetails();
+				event.cancel();
+			} else if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_SPACE && isEnabled() && row >= 1) {
+				if (InputElement.is(event.getNativeEvent().getEventTarget())) {
+					InputElement input = (InputElement)InputElement.as(event.getNativeEvent().getEventTarget());
+					if ("checkbox".equals(input.getType())) return;
+				}
+				if (ImageElement.is(event.getNativeEvent().getEventTarget())) return;
+				CheckBox c = (CheckBox)iCourses.getWidget(row, 0);
+				c.setValue(!c.getValue(), true);
+				updateCourseDetails();
+				event.cancel();
+			}
 		}
 	}
 	
@@ -664,4 +736,26 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 	}
 	
 	public String getLastQuery() { return iLastQuery; }
+	
+	@Override
+	public void reload(RequestedCourse value) {
+		setValue(value, false, true);
+	}
+	
+	public CourseRequestInterface.Filter getFilter() {
+		return iFilter.getValue();
+	}
+	public void setFilter(CourseRequestInterface.Filter filter) {
+		iFilter.setValue(filter);
+	}
+	
+	@Override
+	public void onBeforeShow() {
+		iFilter.init();
+	}
+
+	@Override
+	public boolean isCanSubmit(NativePreviewEvent event) {
+		return iFilter.isCanSubmit(event);
+	}
 }

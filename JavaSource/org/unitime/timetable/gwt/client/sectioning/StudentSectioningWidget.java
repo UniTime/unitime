@@ -38,7 +38,7 @@ import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage.Mode;
 import org.unitime.timetable.gwt.client.sectioning.TimeGrid.Meeting;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
-import org.unitime.timetable.gwt.client.widgets.CourseFinderCourses;
+import org.unitime.timetable.gwt.client.widgets.CourseFinderCoursesWithFilter;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDialog;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
@@ -3310,12 +3310,12 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					});
 				}
 			});
-			CourseFinderCourses courses = new CourseFinderCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecRegCx,
+			final CourseFinderCoursesWithFilter courses = new CourseFinderCoursesWithFilter(iContext, CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecRegCx,
 					iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST));
 			courses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					iSectioningService.listCourseOfferings(iContext, source, null, callback);
+					iSectioningService.listCourseOfferings(iContext, courses.getFilter(), source, null, callback);
 				}
 			});
 			CourseFinderDetails details = new CourseFinderDetails();

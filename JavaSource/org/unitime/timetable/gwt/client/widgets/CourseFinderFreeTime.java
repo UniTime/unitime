@@ -34,14 +34,16 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.BodyElement;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
@@ -178,10 +180,6 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 	}
 
 	@Override
-	public void onKeyUp(KeyUpEvent event) {
-	}
-
-	@Override
 	public HandlerRegistration addResponseHandler(ResponseHandler handler) {
 		return addHandler(handler, ResponseEvent.getType());
 	}
@@ -203,4 +201,18 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 
 	@Override
 	public CheckBox getRequiredCheckbox() { return null; }
+	
+	@Override
+	public void reload(RequestedCourse value) {}
+	
+	@Override
+	public void onPreviewNativeEvent(NativePreviewEvent event) {}
+	
+	@Override
+	public void onBeforeShow() {}
+
+	@Override
+	public boolean isCanSubmit(NativePreviewEvent event) {
+		return InputElement.is(event.getNativeEvent().getEventTarget()) || BodyElement.is(event.getNativeEvent().getEventTarget());
+	}
 }
