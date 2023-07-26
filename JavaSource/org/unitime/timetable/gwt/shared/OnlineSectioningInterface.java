@@ -24,9 +24,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -688,6 +691,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Boolean iOnline = null, iSectioning = null;
 		private Long iSessionId = null, iStudentId = null;
 		private String iPin = null;
+		private List<SessionMonth> iSessionDates = null;
 		
 		public StudentSectioningContext() {}
 		public StudentSectioningContext(StudentSectioningContext cx) {
@@ -698,7 +702,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iPin = cx.iPin;
 		}
 		
-		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; iSessionDates = null; }
 		public Long getSessionId() { return iSessionId; }
 		public Long getAcademicSessionId() { return iSessionId; }
 		public void setAcademicSessionId(Long sessionId) { iSessionId = sessionId; }
@@ -717,6 +721,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setPin(String pin) { iPin = pin; }
 		public String getPin() { return iPin; }
 		public boolean hasPin() { return iPin != null && !iPin.isEmpty(); }
+		
+		public void setSessionDates(List<SessionMonth> sessionDates) { iSessionDates = sessionDates; }
+		public boolean hasSessionDates() { return iSessionDates != null; }
+		public List<SessionMonth> getSessionDates() { return iSessionDates; }
 	}
 	
 	public static enum WaitListMode implements IsSerializable, Serializable {

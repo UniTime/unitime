@@ -1993,4 +1993,62 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	public static enum CriticalLevel implements IsSerializable {
 		Critical, Important, Vital;
 	}
+	
+
+	public static class Filter implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private Date iClassFrom, iClassTo;
+		private Integer iDaysFrom, iDaysTo;
+		private Float iCreditMin, iCreditMax;
+		private String iInstructor;		
+		
+		public Filter() {}
+		
+		public Date getClassFrom() { return iClassFrom; }
+		public void setClassFrom(Date classFrom) { iClassFrom = classFrom; }
+		public Date getClassTo() { return iClassTo; }
+		public void setClassTo(Date classTo) { iClassTo = classTo; }
+		public boolean hasDates() { return iClassTo != null || iClassFrom != null; }
+		
+		public void setDaysFrom(Integer days) { iDaysFrom = days; }
+		public Integer getDaysFrom() { return iDaysFrom; }
+		public void setDaysTo(Integer days) { iDaysTo = days; }
+		public Integer getDaysTo() { return iDaysTo; }
+		
+		public Float getCreditMin() { return iCreditMin; }
+		public void setCreditMin(Float creditMin) { iCreditMin = creditMin; }
+		public Float getCreditMax() { return iCreditMax; }
+		public void setCreditMax(Float creditMax) { iCreditMax = creditMax; }
+		public String getInstructor() { return iInstructor; }
+		public boolean hasInstructor() { return iInstructor != null && !iInstructor.isEmpty(); }
+		public void setInstructor(String instructor) { iInstructor = instructor; }
+		
+		public boolean isEmpty() {
+			return iClassFrom == null && iClassTo == null &&
+					iCreditMin == null && iCreditMax == null && 
+					(iInstructor == null || iInstructor.isEmpty());
+		}
+		
+		@Override
+		public String toString() {
+			String ret = "";
+			if (getCreditMin() != null && getCreditMax() != null) {
+				if (getCreditMin().equals(getCreditMax()))
+					ret += (ret.isEmpty() ? "" : " ") + "credit:" + getCreditMin();
+				else
+					ret += (ret.isEmpty() ? "" : " ") + "credit:" + getCreditMin() + ".." + getCreditMax();
+			} else if (getCreditMin() != null) {
+				ret += (ret.isEmpty() ? "" : " ") + "credit:>=" + getCreditMin();
+			} else if (getCreditMax() != null) {
+				ret += (ret.isEmpty() ? "" : " ") + "credit:<=" + getCreditMax();
+			}
+			if (getClassFrom() != null)
+				ret += (ret.isEmpty() ? "" : " ") + "from:" + getClassFrom();
+			if (getClassTo() != null)
+				ret += (ret.isEmpty() ? "" : " ") + "to:" + getClassTo();
+			if (hasInstructor())
+				ret += (ret.isEmpty() ? "" : " ") + "instructor:" + getInstructor();
+			return ret;
+		}
+	}
 }

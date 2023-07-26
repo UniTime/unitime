@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Filter;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
@@ -70,7 +71,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("sectioning.gwt")
 public interface SectioningService extends RemoteService {
-	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, String query, Integer limit) throws SectioningException, PageAccessException;
+	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, Filter filter, String query, Integer limit) throws SectioningException, PageAccessException;
 	Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
 	String retrieveCourseDetails(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;
 	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(StudentSectioningContext cx, String course) throws SectioningException, PageAccessException;

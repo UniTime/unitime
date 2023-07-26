@@ -32,12 +32,13 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
+import org.unitime.timetable.util.NameInterface;
 
 /**
  * @author Tomas Muller
  */
 @SerializeWith(XInstructor.XInstructorSerializer.class)
-public class XInstructor implements Serializable, Externalizable {
+public class XInstructor implements Serializable, Externalizable, NameInterface {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
 	private String iExternalId;
@@ -46,6 +47,7 @@ public class XInstructor implements Serializable, Externalizable {
 	private boolean iAllowOverlap;
 	private boolean iDisplay = true;
 	private boolean iInstructing = false;
+	private String iFName, iMName, iLName, iTitle;
 	
 	public XInstructor() {}
 	
@@ -67,6 +69,10 @@ public class XInstructor implements Serializable, Externalizable {
 				if (tcr.getTeachingClass().equals(instructor.getClassInstructing())) {
 					iAllowOverlap = tcr.isCanOverlap(); break;
 				}
+		iFName = instructor.getInstructor().getFirstName();
+		iMName = instructor.getInstructor().getMiddleName();
+		iLName = instructor.getInstructor().getLastName();
+		iTitle = instructor.getInstructor().getAcademicTitle();
 	}
 	
 	public XInstructor(DepartmentalInstructor instructor, TeachingClassRequest tcr, OnlineSectioningHelper helper) {
@@ -77,6 +83,10 @@ public class XInstructor implements Serializable, Externalizable {
 		iDisplay = false;
 		iAllowOverlap = tcr.isCanOverlap();
 		iInstructing = false;
+		iFName = instructor.getFirstName();
+		iMName = instructor.getMiddleName();
+		iLName = instructor.getLastName();
+		iTitle = instructor.getAcademicTitle();
 	}
 	
 	public XInstructor(Long uniqueId, String externalId, String name, String email, boolean display, boolean allowOverlap, boolean instructing) {
@@ -140,6 +150,10 @@ public class XInstructor implements Serializable, Externalizable {
 		iAllowOverlap = in.readBoolean();
 		iDisplay = in.readBoolean();
 		iInstructing = in.readBoolean();
+		iFName = (String)in.readObject();
+		iMName = (String)in.readObject();
+		iLName = (String)in.readObject();
+		iTitle = (String)in.readObject();
 	}
 
 	@Override
@@ -151,6 +165,35 @@ public class XInstructor implements Serializable, Externalizable {
 		out.writeBoolean(iAllowOverlap);
 		out.writeBoolean(iDisplay);
 		out.writeBoolean(iInstructing);
+		out.writeObject(iFName);
+		out.writeObject(iMName);
+		out.writeObject(iLName);
+		out.writeObject(iTitle);
+	}
+
+	@Override
+	public String getFirstName() {
+		return iFName;
+	}
+
+	@Override
+	public String getMiddleName() {
+		return iMName;
+	}
+
+	@Override
+	public String getLastName() {
+		return iLName;
+	}
+
+	@Override
+	public String getAcademicTitle() {
+		return iTitle;
+	}
+
+	@Override
+	public String getExternalUniqueId() {
+		return iExternalId;
 	}
 	
 	public static class XInstructorSerializer implements Externalizer<XInstructor> {

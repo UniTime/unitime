@@ -176,7 +176,7 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 		listCourseOfferings(new OpExecution<Collection<ClassAssignmentInterface.CourseAssignment>>() {
 			@Override
 			public Collection<ClassAssignmentInterface.CourseAssignment> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
-				return service.listCourseOfferings(cx, helper.getOptinalParameter("query", ""), helper.getOptinalParameterInteger("limit", null));
+				return service.listCourseOfferings(cx, null, helper.getOptinalParameter("query", ""), helper.getOptinalParameterInteger("limit", null));
 			}
 		}, Flag.GET),
 		listAcademicSessions(new OpExecution<Collection<AcademicSessionProvider.AcademicSessionInfo>>() {

@@ -706,11 +706,11 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 				public CourseFinder createCourseFinder() {
 					CourseFinder finder = (alternative ? new CourseFinderDialog() : new SelectAllCourseFinderDialog());
 					
-					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg, true);
+					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(iContext, CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg, true);
 					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-							sSectioningService.listCourseOfferings(iContext, source, null, callback);
+							sSectioningService.listCourseOfferings(iContext, iCourseFinderMultipleCourses.getFilter(), source, null, callback);
 						}
 					});
 					CourseFinderDetails details = new CourseFinderDetails();
@@ -742,7 +742,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			setSuggestions(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					sSectioningService.listCourseOfferings(iContext, source, 20, callback);
+					sSectioningService.listCourseOfferings(iContext, null, source, 20, callback);
 				}
 			});
 			setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {

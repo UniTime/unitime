@@ -530,12 +530,12 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 				public CourseFinder createCourseFinder() {
 					CourseFinder finder = (alternative ? new CourseFinderDialog() : new SelectAllCourseFinderDialog());
 					
-					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg,
+					iCourseFinderMultipleCourses = new CourseFinderMultipleCourses(iContext, CONSTANTS.showCourseTitle(), CONSTANTS.courseFinderSuggestWhenEmpty(), CONSTANTS.courseFinderShowRequired(), iSpecReg,
 							iWaitListMode == WaitListMode.WaitList);
 					iCourseFinderMultipleCourses.setDataProvider(new DataProvider<String, Collection<CourseAssignment>>() {
 						@Override
 						public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-							sSectioningService.listCourseOfferings(iContext, source, null, callback);
+							sSectioningService.listCourseOfferings(iContext, iCourseFinderMultipleCourses.getFilter(), source, null, callback);
 						}
 					});
 					CourseFinderDetails details = new CourseFinderDetails();
@@ -553,6 +553,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 						}
 					});
 					iCourseFinderMultipleCourses.setCourseDetails(details, classes);
+
 					if (getFreeTimes() != null) {
 						CourseFinderFreeTime free = new CourseFinderFreeTime();
 						free.setDataProvider(getFreeTimes());
@@ -560,6 +561,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 					} else {
 						finder.setTabs(iCourseFinderMultipleCourses);
 					}
+					
 					return finder;
 				}
 			});
@@ -567,7 +569,7 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 			setSuggestions(new DataProvider<String, Collection<CourseAssignment>>() {
 				@Override
 				public void getData(String source, AsyncCallback<Collection<CourseAssignment>> callback) {
-					sSectioningService.listCourseOfferings(iContext, source, 20, callback);
+					sSectioningService.listCourseOfferings(iContext, null, source, 20, callback);
 				}
 			});
 			setSectionsProvider(new DataProvider<CourseAssignment, Collection<ClassAssignment>>() {

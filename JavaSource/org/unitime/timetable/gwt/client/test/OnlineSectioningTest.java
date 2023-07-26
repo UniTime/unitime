@@ -537,7 +537,7 @@ public class OnlineSectioningTest extends Composite {
 		
 		private void listCourseOfferings(final String course, final Callback<Collection<CourseAssignment>> callback) {
 			debug("listCourseOfferings(" + course + ")");
-			iSectioningService.listCourseOfferings(iContext, course, 20, new AsyncCallback<Collection<CourseAssignment>>() {
+			iSectioningService.listCourseOfferings(iContext, null, course, 20, new AsyncCallback<Collection<CourseAssignment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					warn("&nbsp;&nbsp;listCourseOfferings(" + course + ") failed: " + caught.getMessage());

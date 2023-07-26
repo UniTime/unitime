@@ -77,6 +77,14 @@ public class NumberBox extends TextBox {
 			return null;
 		}
 	}
+	
+	public Float toFloat() {
+		try {
+			return Float.parseFloat(getValue());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
 
 	public Integer toInteger() {
 		try {

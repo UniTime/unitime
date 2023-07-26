@@ -964,7 +964,10 @@ public interface StudentSectioningMessages extends Messages {
 	 */
 	@DefaultMessage("Course {0} does not exist.")
 	String exceptionCourseDoesNotExist(String course);
-	
+
+	@DefaultMessage("No course {0} matches the provided filter.")
+	String exceptionNoCourseMatchingFilter(String course);
+
 	@DefaultMessage("Academic session {0} does not exist.")
 	String exceptionSessionDoesNotExist(String session);
 	
@@ -3509,4 +3512,52 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Student can NOT be re-scheduled after a course change.")
 	String messageStatusNoReSchedule();
+	
+	@DefaultMessage("Credit:")
+	String propCourseFinderFilterCredit();
+	
+	@DefaultMessage("From: ")
+	String propCourseFinderFilterCreditFrom();
+	
+	@DefaultMessage("- To: ")
+	String propCourseFinderFilterCreditTo();
+	
+	@DefaultMessage("Instructor:")
+	String propCourseFinderFilterInstructor();
+	
+	@DefaultMessage("Filter")
+	String sectCourseFinderFilter();
+	
+	@DefaultMessage("Click to open the filter.")
+	String descCourseFinderFilterClosed();
+	
+	@DefaultMessage("Clock to close the filter.")
+	String descCourseFinderFilterOpened();
+	
+	@DefaultMessage("classes between {0} and {1}")
+	String filterClassesBetweenDates(String fromDate, String toDate);
+	
+	@DefaultMessage("classes from {0}")
+	String filterClassesFromDate(String fromDate);
+	
+	@DefaultMessage("classes to {0}")
+	String filterClassesToDate(String toDate);
+	
+	@DefaultMessage("{0,number,0.#} or more credit")
+	String filterCreditFrom(float credit);
+	
+	@DefaultMessage("{0,number,0.#} or fewer credit")
+	String filterCreditTo(float credit);
+	
+	@DefaultMessage("credit between {0,number,0.#} and {1,number,0.#}")
+	String filterCreditBetween(float creditFrom, float creditTo);
+	
+	@DefaultMessage("{0,number,0.#} credit")
+	String filterCreditEquals(float credit);
+	
+	@DefaultMessage("instructor {0}")
+	String filterInstructor(String instructor);
+	
+	@DefaultMessage("Showing courses with {0}")
+	String messageCourseFinderFilterText(String filter);
 }

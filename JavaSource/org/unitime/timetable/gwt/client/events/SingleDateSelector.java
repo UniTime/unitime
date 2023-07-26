@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionC
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -321,7 +322,12 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		if (sessionId == null) {
 			if (iHint) setHint(MESSAGES.hintNoSession());
 		} else {
-			if (iHint) setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession.getAcademicSessionName()));
+			if (iHint) {
+				if (iAcademicSession != null)
+					setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession.getAcademicSessionName()));
+				else
+					setHint(MESSAGES.waitLoadingData());
+			}
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 
 				@Override
@@ -336,6 +342,41 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 				}
 			});
 		}
+	}
+	
+	public void init(final StudentSectioningContext context) {
+		if (context == null || context.getAcademicSessionId() == null) {
+			if (iHint) setHint(MESSAGES.hintNoSession());
+		} else if (context.hasSessionDates()) {
+			if (iHint) setHint(iFormat.getPattern().toUpperCase());
+			iMonth.setMonths(context.getSessionDates());
+		} else {
+			if (iHint) {
+				if (iAcademicSession != null)
+					setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession.getAcademicSessionName()));
+				else
+					setHint(MESSAGES.waitLoadingData());
+			}
+			final Long sessionId = context.getAcademicSessionId();
+			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					setErrorHint(caught.getMessage());
+				}
+				@Override
+				public void onSuccess(GwtRpcResponseList<SessionMonth> result) {
+					if (sessionId.equals(context.getAcademicSessionId()))
+						context.setSessionDates(result);
+					if (iHint) setHint(iFormat.getPattern().toUpperCase());
+					iMonth.setMonths(result);
+				}
+			});
+		}
+	}
+	
+	public void init(GwtRpcResponseList<SessionMonth> result) {
+		if (iHint) setHint(iFormat.getPattern().toUpperCase());
+		iMonth.setMonths(result);
 	}
 	
 	public static class P extends AbsolutePanel implements HasMouseDownHandlers {
@@ -932,5 +973,9 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	@Override
 	public void setEnabled(boolean enabled) {
 		iPicker.setEnabled(enabled);
+	}
+	
+	public boolean isPopupShowing() {
+		return iPopup.isShowing();
 	}
 }

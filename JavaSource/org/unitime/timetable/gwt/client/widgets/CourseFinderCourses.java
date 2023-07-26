@@ -45,17 +45,20 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.BodyElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -79,7 +82,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	private ScrollPanel iCourseDetailsPanel;
 	private Map<Character, Integer> iTabAccessKeys = new HashMap<Character, Integer>();
 	private CourseFinderCourseDetails[] iDetails = null;
-	private String iLastQuery = null;
+	protected String iLastQuery = null;
 	private P iInstructionalMethodsPanel = null;
 	private Map<Preference, CheckBox> iInstructionalMethods = new HashMap<Preference, CheckBox>();
 	private Set<Preference> iSelectedMethods = new HashSet<Preference>();
@@ -238,9 +241,13 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			if (p.getId().equals(id)) return true;
 		return false;
 	}
-
+	
 	@Override
-	public void setValue(RequestedCourse value, final boolean fireEvents) {
+	public void setValue(RequestedCourse value, boolean fireEvents) {
+		setValue(value, fireEvents, false);
+	}
+
+	public void setValue(RequestedCourse value, final boolean fireEvents, boolean reload) {
 		String query = (value == null || !value.isCourse() ? "" : value.getCourseName());
 		iSelectedMethods.clear();
 		if (iRequired != null) iRequired.setValue(false);
@@ -261,7 +268,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 			iCourses.clearTable(1);
 			iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
 			updateCourseDetails();
-		} else if (!query.equals(iLastQuery)) {
+		} else if (!query.equals(iLastQuery) || reload) {
 			iLastQuery = query;
 			iDataProvider.getData(query, new AsyncCallback<Collection<CourseAssignment>>() {
 				public void onFailure(Throwable caught) {
@@ -459,30 +466,35 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	}
 
 	@Override
-	public void onKeyUp(KeyUpEvent event) {
-		if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
-		int row = iCourses.getSelectedRow();
-		if (event.getNativeKeyCode() == KeyCodes.KEY_DOWN && isEnabled()) {
-			if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
-				iCourses.setSelected(1, true);
-			else
-				iCourses.setSelected(row + 1, true);
-            scrollToSelectedRow();
-            updateCourseDetails();
-		} else if (event.getNativeKeyCode()==KeyCodes.KEY_UP && isEnabled()) {
-			if (row - 1 < 1)
-				iCourses.setSelected(iCourses.getRowCount() - 1, true);
-			else
-				iCourses.setSelected(row - 1, true);
-			scrollToSelectedRow();
-			updateCourseDetails();
-		} else if (event.isControlKeyDown() || event.isAltKeyDown()) {
+	public void onPreviewNativeEvent(NativePreviewEvent event) {
+		if (event.getNativeEvent().getCtrlKey() || event.getNativeEvent().getAltKey()) {
 			for (Map.Entry<Character, Integer> entry: iTabAccessKeys.entrySet())
-				if (event.getNativeKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeKeyCode() == Character.toUpperCase(entry.getKey())) {
+				if (event.getNativeEvent().getKeyCode() == Character.toLowerCase(entry.getKey()) || event.getNativeEvent().getKeyCode() == Character.toUpperCase(entry.getKey())) {
 					iCourseDetailsTabBar.selectTab(entry.getValue(), true);
-					event.preventDefault();
-					event.stopPropagation();
+					event.getNativeEvent().preventDefault();
+					event.getNativeEvent().stopPropagation();
 				}
+		}
+		if (event.getTypeInt() == Event.ONKEYDOWN) {
+			if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
+			int row = iCourses.getSelectedRow();
+			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN && isEnabled()) {
+				if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
+					iCourses.setSelected(1, true);
+				else
+					iCourses.setSelected(row + 1, true);
+	            scrollToSelectedRow();
+	            updateCourseDetails();
+	            event.cancel();
+			} else if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_UP && isEnabled()) {
+				if (row - 1 < 1)
+					iCourses.setSelected(iCourses.getRowCount() - 1, true);
+				else
+					iCourses.setSelected(row - 1, true);
+				scrollToSelectedRow();
+				updateCourseDetails();
+				event.cancel();
+			}
 		}
 	}
 	
@@ -528,5 +540,18 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	
 	public CheckBox getRequiredCheckbox() {
 		return iRequired;
+	}
+
+	@Override
+	public void reload(RequestedCourse value) {
+		setValue(value, false, true);
+	}
+	
+	@Override
+	public void onBeforeShow() {}
+
+	@Override
+	public boolean isCanSubmit(NativePreviewEvent event) {
+		return InputElement.is(event.getNativeEvent().getEventTarget()) || BodyElement.is(event.getNativeEvent().getEventTarget());
 	}
 }

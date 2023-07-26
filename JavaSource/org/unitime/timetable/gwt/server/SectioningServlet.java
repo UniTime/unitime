@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
@@ -41,6 +42,8 @@ import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.type.LongType;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -67,6 +70,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Filter;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
@@ -258,6 +262,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
+import org.unitime.timetable.util.NameInterface;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -313,12 +318,31 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		return server;
 	}
 	
-	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, String query, Integer limit) throws SectioningException, PageAccessException {
+	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, Filter filter, String query, Integer limit) throws SectioningException, PageAccessException {
 		checkContext(cx);
 		if (cx.getSessionId()==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
 		
+		int dayOfWeekOffset = 0;
+		if (filter != null && filter.hasDates()) {
+			Date dpFirstDate = null;
+			if (server != null) {
+				dpFirstDate = server.getAcademicSession().getDatePatternFirstDate();
+				dayOfWeekOffset = server.getAcademicSession().getDayOfWeekOffset();
+			} else {
+				dpFirstDate = AcademicSessionInfo.getDatePatternFirstDay(SessionDAO.getInstance().get(cx.getSessionId()));
+				dayOfWeekOffset = Constants.getDayOfWeek(dpFirstDate);
+			}
+			if (filter.getClassFrom() != null)
+				filter.setDaysFrom(Days.daysBetween(new LocalDate(dpFirstDate), new LocalDate(filter.getClassFrom())).getDays());
+			else
+				filter.setDaysFrom(null);
+			if (filter.getClassTo() != null)
+				filter.setDaysTo(Days.daysBetween(new LocalDate(dpFirstDate), new LocalDate(filter.getClassTo())).getDays());
+			else
+				filter.setDaysTo(null);
+		}
 		CourseMatcher matcher = getCourseMatcher(cx, server);
 		
 		if (server == null || server instanceof DatabaseServer) {
@@ -329,7 +353,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (courses != null && !courses.isEmpty()) {
 						ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 						for (CourseOffering c: courses) {
-							if (matcher.match(new XCourseId(c))) {
+							if (matcher.match(new XCourseId(c)) && matchFilter(filter, c, dayOfWeekOffset)) {
 								CourseAssignment course = new CourseAssignment();
 								course.setCourseId(c.getUniqueId());
 								course.setSubject(c.getSubjectAreaAbbv());
@@ -410,6 +434,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setLong("sessionId", cx.getSessionId())
 					.setCacheable(true).setMaxResults(limit == null || limit <= 0 || parent != null ? Integer.MAX_VALUE : limit).list()) {
 				if (parent != null && !parent.match(new XCourseId(c))) continue;
+				if (!matchFilter(filter, c, dayOfWeekOffset)) continue;
 				CourseAssignment course = new CourseAssignment();
 				course.setCourseId(c.getUniqueId());
 				course.setSubject(c.getSubjectAreaAbbv());
@@ -453,7 +478,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (parent != null && limit != null && limit > 0 && results.size() >= limit) break;
 			}
 			if (results.isEmpty()) {
-				throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
+				if (filter == null || filter.isEmpty())
+					throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
+				else 
+					throw new SectioningException(MSG.exceptionNoCourseMatchingFilter(query));
 			}
 			if (ApplicationProperty.ListCourseOfferingsMatchingCampusFirst.isTrue() && cx.getStudentId() != null) {
 				Student student = StudentDAO.getInstance().get(cx.getStudentId());
@@ -487,7 +515,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		} else {
 			Collection<ClassAssignmentInterface.CourseAssignment> results = null;
 			try {
-				results = server.execute(server.createAction(ListCourseOfferings.class).forQuery(query).withLimit(limit).withMatcher(matcher).forStudent(cx.getStudentId()), currentUser(cx));
+				results = server.execute(server.createAction(ListCourseOfferings.class)
+						.withFilter(filter).forQuery(query).withLimit(limit)
+						.withMatcher(matcher).forStudent(cx.getStudentId()), currentUser(cx));
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (SectioningException e) {
@@ -497,7 +527,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
 			if (results == null || results.isEmpty()) {
-				throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
+				if (filter == null || filter.isEmpty())
+					throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
+				else 
+					throw new SectioningException(MSG.exceptionNoCourseMatchingFilter(query));
 			}
 			return results;
 		}
@@ -4231,6 +4264,86 @@ public class SectioningServlet implements SectioningService, DisposableBean {
         	sLog.warn("Failed to evict cache: " + e.getMessage());
         }
 		return false;
+	}
+	
+	private boolean matchFilter(Filter filter, CourseOffering co, int dayOfWeekOffset) {
+		if (filter == null) return true;
+		if (filter.getCreditMin() != null && co.getCredit() != null) {
+			Float credit = co.getCredit().getMaxCredit();
+			if (credit != null && credit < filter.getCreditMin()) return false;
+		}
+		if (filter.getCreditMax() != null && co.getCredit() != null) {
+			Float credit = co.getCredit().getMinCredit();
+			if (credit != null && credit > filter.getCreditMax()) return false;
+		}
+		if (filter.hasInstructor()) {
+			boolean match = false;
+			cfg: for (InstrOfferingConfig cfg: co.getInstructionalOffering().getInstrOfferingConfigs())
+				for (SchedulingSubpart ss: cfg.getSchedulingSubparts())
+					for (Class_ c: ss.getClasses()) {
+						if (!c.isEnabledForStudentScheduling()) continue;
+						if (matchInstructorName(filter, c) && matchDates(dayOfWeekOffset, filter, c)) { match = true; break cfg; }
+					}
+			if (!match) return false;
+		}
+		if (filter.hasDates()) {
+			boolean match = false;
+			cfg: for (InstrOfferingConfig cfg: co.getInstructionalOffering().getInstrOfferingConfigs()) {
+				for (SchedulingSubpart ss: cfg.getSchedulingSubparts()) {
+					boolean matchClass = false;
+					c: for (Class_ c: ss.getClasses()) {
+						if (!c.isEnabledForStudentScheduling()) continue;
+						if (matchDates(dayOfWeekOffset, filter, c)) {
+							Class_ p = c.getParentClass();
+							while (p != null) {
+								if (!matchDates(dayOfWeekOffset, filter, p)) continue c;
+								p = p.getParentClass();
+							}
+							matchClass = true; break;
+						}
+					}
+					if (!matchClass) continue cfg;
+				}
+				match = true; break;
+			}
+			if (!match) return false;
+		}
+		return true;
+	}
+	
+	private boolean matchInstructorName(Filter filter, Class_ clazz) {
+		if (!filter.hasInstructor()) return true;
+		if (clazz.isDisplayInstructor())
+			for (ClassInstructor ci: clazz.getClassInstructors())
+				if (matchName(filter.getInstructor(), ci.getInstructor())) return true;
+		return false;
+	}
+	
+	private boolean matchDates(int dayOfWeekOffset, Filter filter, Class_ clazz) {
+		if (!filter.hasDates()) return true;
+		Assignment ass = clazz.getCommittedAssignment();
+		if (ass == null) {
+			DatePattern dp = clazz.effectiveDatePattern();
+			if (filter.getDaysFrom() != null && dp != null && dp.getFirstMeeting(0, dayOfWeekOffset) < filter.getDaysFrom()) return false;
+			if (filter.getDaysTo() != null && dp != null && dp.getLastMeeting(0, dayOfWeekOffset) > filter.getDaysTo()) return false;
+		} else {
+			DatePattern dp = ass.getDatePattern();
+			if (filter.getDaysFrom() != null && dp.getFirstMeeting(ass.getDays(), dayOfWeekOffset) < filter.getDaysFrom()) return false;
+			if (filter.getDaysTo() != null && dp.getLastMeeting(ass.getDays(), dayOfWeekOffset) > filter.getDaysTo()) return false;
+		}
+		return true;
+	}
+	
+	private boolean matchName(String instructor, NameInterface name) {
+		for (StringTokenizer s = new StringTokenizer(instructor); s.hasMoreTokens(); ) {
+			String token = s.nextToken().toLowerCase();
+			if (name.getFirstName() != null && name.getFirstName().toLowerCase().startsWith(token)) continue;
+			if (name.getMiddleName() != null && name.getMiddleName().toLowerCase().startsWith(token)) continue;
+			if (name.getLastName() != null && name.getLastName().toLowerCase().startsWith(token)) continue;
+			if (name.getAcademicTitle() != null && name.getAcademicTitle().toLowerCase().startsWith(token)) continue;
+			return false;
+		}
+		return true;
 	}
 	
 	protected String datePatternName(DatePattern pattern, String datePatternFormat) {

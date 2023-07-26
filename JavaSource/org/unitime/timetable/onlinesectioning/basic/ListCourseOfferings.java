@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.cpsolver.ifs.heuristics.RouletteWheelSelection;
 import org.hibernate.criterion.Order;
@@ -35,6 +36,7 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Filter;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
@@ -52,9 +54,15 @@ import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
+import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XReservation;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.util.NameInterface;
 
 /**
  * @author Tomas Muller
@@ -69,6 +77,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	protected Long iStudentId;
 	protected String iFilterIM = null;
 	private transient XStudent iStudent = null;
+	protected Filter iFilter;
 	
 	public ListCourseOfferings forQuery(String query) {
 		iQuery = query; return this;
@@ -88,6 +97,10 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	
 	public ListCourseOfferings forStudent(Long studentId) {
 		iStudentId = studentId; return this;
+	}
+	
+	public ListCourseOfferings withFilter(Filter filter) {
+		iFilter = filter; return this;
 	}
 	
 	public Long getStudentId() {
@@ -179,7 +192,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		ret = new ArrayList<CourseAssignment>();
 		for (XCourseId id: server.findCourses(iQuery, iLimit, iMatcher)) {
 			XCourse course = server.getCourse(id.getCourseId());
-			if (course != null)
+			if (course != null && matchFilter(server, iFilter, course))
 				ret.add(convert(course, server));
 		}
 		return ret;
@@ -193,7 +206,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 				if (courses != null && !courses.isEmpty()) {
 					List<CourseAssignment> ret = new ArrayList<CourseAssignment>();
 					for (XCourse course: courses) {
-						if (course != null && (iMatcher == null || iMatcher.match(course)))
+						if (course != null && (iMatcher == null || iMatcher.match(course)) && matchFilter(server, iFilter, course))
 							ret.add(convert(course, server));
 					}
 					setSelection(ret);
@@ -330,6 +343,107 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 				ca.setSelection(idx++);
 			}
 		}
+	}
+	
+	protected boolean isAllowDisabled(XEnrollments enrollments, XStudent student, XOffering offering, XCourseId course, XConfig config, XSection section) {
+		if (student == null) return false;
+		if (student.isAllowDisabled()) return true;
+		for (XReservation reservation: offering.getReservations())
+			if (reservation.isAllowDisabled() && reservation.isApplicable(student, course) && reservation.isIncluded(offering, config.getConfigId(), section)) {
+				return true;
+			}
+		for (XEnrollment enrollment: enrollments.getEnrollmentsForSection(section.getSectionId()))
+			if (enrollment.getStudentId().equals(getStudentId())) {
+				return true;
+			}
+		return false;
+	}
+	
+	protected boolean matchFilter(OnlineSectioningServer server, Filter filter, XCourse co) {
+		if (filter == null) return true;
+		if (filter.getCreditMin() != null && co.getCreditInfo() != null) {
+			Float credit = co.getCreditInfo().getMaxCredit();
+			if (credit != null && credit < filter.getCreditMin()) return false;
+		}
+		if (filter.getCreditMax() != null && co.getCreditInfo() != null) {
+			Float credit = co.getCreditInfo().getMinCredit();
+			if (credit != null && credit > filter.getCreditMax()) return false;
+		}
+		XOffering io = null;
+		XEnrollments enrl = null;
+		if (filter.hasInstructor()) {
+			if (io == null) io = server.getOffering(co.getOfferingId());
+			boolean match = false;
+			cfg: for (XConfig cfg: io.getConfigs())
+				for (XSubpart ss: cfg.getSubparts())
+					for (XSection c: ss.getSections()) {
+						if (matchInstructorName(filter, c) && matchDates(server, filter, c)) {
+							if (!c.isEnabledForScheduling()) {
+								if (enrl == null) enrl = server.getEnrollments(co.getOfferingId());
+								if (!isAllowDisabled(enrl, iStudent, io, co, cfg, c)) continue;
+							}
+							match = true; break cfg;
+						}
+					}
+			if (!match) return false;
+		}
+		if (filter.hasDates()) {
+			if (io == null) io = server.getOffering(co.getOfferingId());
+			boolean match = false;
+			cfg: for (XConfig cfg: io.getConfigs()) {
+				for (XSubpart ss: cfg.getSubparts()) {
+					boolean matchClass = false;
+					c: for (XSection c: ss.getSections()) {
+						if (matchDates(server, filter, c)) {
+							if (!c.isEnabledForScheduling()) {
+								if (enrl == null) enrl = server.getEnrollments(co.getOfferingId());
+								if (!isAllowDisabled(enrl, iStudent, io, co, cfg, c)) continue;
+							}
+							XSection p = io.getSection(c.getParentId());
+							while (p != null) {
+								if (!matchDates(server, filter, p)) continue c;
+								if (!p.isEnabledForScheduling()) {
+									if (enrl == null) enrl = server.getEnrollments(co.getOfferingId());
+									if (!isAllowDisabled(enrl, iStudent, io, co, cfg, p)) continue c;
+								}
+								p = io.getSection(p.getParentId());
+							}
+							matchClass = true; break;
+						}
+					}
+					if (!matchClass) continue cfg;
+				}
+				match = true; break;
+			}
+			if (!match) return false;
+		}
+		return true;
+	}
+	
+	protected boolean matchInstructorName(Filter filter, XSection clazz) {
+		if (!filter.hasInstructor()) return true;
+		for (XInstructor ci: clazz.getInstructors())
+			if (ci.isAllowDisplay() && matchName(filter.getInstructor(), ci)) return true;
+		return false;
+	}
+	
+	protected boolean matchDates(OnlineSectioningServer server, Filter filter, XSection clazz) {
+		if (!filter.hasDates() || clazz.getTime() == null) return true;
+		if (filter.getDaysFrom() != null && clazz.getTime().getFirstMeeting(server.getAcademicSession().getDayOfWeekOffset()) < filter.getDaysFrom()) return false;
+		if (filter.getDaysTo() != null && clazz.getTime().getLastMeeting(server.getAcademicSession().getDayOfWeekOffset()) > filter.getDaysTo()) return false;
+		return true;
+	}
+	
+	protected boolean matchName(String instructor, NameInterface name) {
+		for (StringTokenizer s = new StringTokenizer(instructor); s.hasMoreTokens(); ) {
+			String token = s.nextToken().toLowerCase();
+			if (name.getFirstName() != null && name.getFirstName().toLowerCase().startsWith(token)) continue;
+			if (name.getMiddleName() != null && name.getMiddleName().toLowerCase().startsWith(token)) continue;
+			if (name.getLastName() != null && name.getLastName().toLowerCase().startsWith(token)) continue;
+			if (name.getAcademicTitle() != null && name.getAcademicTitle().toLowerCase().startsWith(token)) continue;
+			return false;
+		}
+		return true;
 	}
 
 	@Override

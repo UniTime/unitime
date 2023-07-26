@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -68,5 +69,10 @@ public class UniTimeTabPanel extends TabPanel {
 	
 	public int getSelectedTab() {
 		return getTabBar().getSelectedTab();
+	}
+	
+	public void addRight(Widget w, String tabText, boolean asHTML) {
+		HorizontalPanel hp = (HorizontalPanel)getWidget();
+		
 	}
 }

@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Filter;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
@@ -68,7 +69,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public interface SectioningServiceAsync {
-	void listCourseOfferings(StudentSectioningContext cx, String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;
+	void listCourseOfferings(StudentSectioningContext cx, Filter filter, String query, Integer limit, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws SectioningException, PageAccessException;
 	void listAcademicSessions(boolean sectioning, AsyncCallback<Collection<AcademicSessionProvider.AcademicSessionInfo>> callback) throws SectioningException, PageAccessException;
 	void retrieveCourseDetails(StudentSectioningContext cx, String course, AsyncCallback<String> callback) throws SectioningException, PageAccessException;
 	void listClasses(StudentSectioningContext cx, String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws SectioningException, PageAccessException;
