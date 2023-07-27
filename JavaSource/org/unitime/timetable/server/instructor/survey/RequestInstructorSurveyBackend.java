@@ -168,9 +168,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				.setString("externalId", externalId).setMaxResults(1).uniqueResult();
 		ApplicationProperties.setSessionId(sessionId);
 		
-		if (!admin) {
+		if (!admin || externalId.equals(context.getUser().getExternalUserId())) {
 			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
-			if (is != null && is.getSubmitted() != null)
+			if (is != null && is.getSubmitted() != null && !admin)
 				editable = false;
 			if (!editable && is == null) {
 				Session session = SessionDAO.getInstance().get(sessionId);

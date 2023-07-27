@@ -83,7 +83,7 @@ public class InstructorCookie {
 				"|" + (iShowTeachingRequests ? "T" : "F") +
 				"|" + (iShowTeachingAssignments ? "T" : "F") +
 				"|" + (iQuery[0] == null ? "" : iQuery[0]) + "|" + (iQuery[1] == null ? "" : iQuery[1]) + "|" + (iQuery[2] == null ? "" : iQuery[2]) +
-				"|" + (iShowSurveyDetails ? "T" : "F" + "|" + (iHighlightSurveyChanges ? "T": "F"));
+				"|" + (iShowSurveyDetails ? "T" : "F") + "|" + (iHighlightSurveyChanges ? "T": "F");
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:Instructor", cookie, expires);
 	}
