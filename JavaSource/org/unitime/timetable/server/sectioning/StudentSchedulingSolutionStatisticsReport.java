@@ -321,11 +321,12 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }),
         REQUESTED_COURSES(
         		new String[] {
-        				"Requested Courses", "- pre-enrolled",
+        				"Requested Courses", "- pre-enrolled", "- impossible",
         				"Courses per Student", "Assigned Courses", "- 1st choice", "- 2nd choice", "- 3rd choice", "- 4th+ choice", "- substitute"},
         		new String[] {
         				"Total number of requested courses by all students (not counting substitutes or alternatives)",
         				"Percentage of requested courses that were already enrolled (solver was not allowed to change)",
+        				"Percentage of requested courses that have no possible enrollment (e.g., due to having all classes disabled)",
         				"The average number of course requested per student",
         				"Percentage of all course requests satisfied",
         				"Out of the above, the percentage of cases where the 1st choice course was given",
@@ -337,6 +338,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
                 int requests = 0, students = 0, assigned = 0;
                 int fixed = 0, initial = 0;
+                int noenrl = 0;
                 int[] assignedChoice = new int[] {0, 0, 0, 0};
                 int assignedSubst = 0;
                 int assignedChoiceTotal = 0;
@@ -347,6 +349,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
                         if (!r.isAlternative()) requests ++;
                         if (!r.isAlternative() && ((CourseRequest)r).isFixed()) fixed++;
+                        if (!r.isAlternative() && ((CourseRequest)r).computeRandomEnrollments(assignment, 1).isEmpty()) noenrl ++;
                         Enrollment e = r.getAssignment(assignment);
                         if (r.getInitialAssignment() != null && r.getInitialAssignment().equals(e)) initial ++;
                         if (e != null) {
@@ -372,10 +375,12 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                             "",
                             "",
                             "",
+                            "",
                             };
                 return new String[] {
                         sIntFormat.format(requests),
                         (fixed == 0 ? "" : sPercentFormat.format(100.0 * fixed / requests) + "%"),
+                        (noenrl == 0 ? "" : sPercentFormat.format(100.0 * noenrl / requests) + "%"),
                         sDoubleFormat.format(((double)requests)/students),
                         sPercentFormat.format(100.0 * assigned / requests) + "%",
                         sPercentFormat.format(100.0 * assignedChoice[0] / assignedChoiceTotal) + "%",
