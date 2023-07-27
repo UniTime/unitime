@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterf
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Preferences;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Selection;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -141,6 +142,10 @@ public class InstructorSurveyPage extends Composite {
 				LoadingWidget.hideLoading();
 				UniTimeNotifications.error(MESSAGES.failedToLoadPage(t.getMessage()), t);
 				ToolBox.checkAccess(t);
+				iPanel.clear();
+				iHeader = new UniTimeHeaderPanel("");
+				iHeader.setErrorMessage(t.getMessage());
+				iPanel.addRow(iHeader);
 			}
 
 			@Override
@@ -343,8 +348,11 @@ public class InstructorSurveyPage extends Composite {
 			iSessionSelection = new ListBox();
 			for (AcademicSessionInfo session: survey.getSessions()) {
 				iSessionSelection.addItem(session.getName(), session.getSessionId().toString());
-				if (survey.getSessionId().equals(session.getSessionId()))
+				if (survey.getSessionId().equals(session.getSessionId())) {
 					iSessionSelection.setSelectedIndex(iSessionSelection.getItemCount() - 1);
+					UniTimePageHeader.getInstance().getRight().setText(session.getName());
+					UniTimePageHeader.getInstance().getRight().setInfo(null);
+				}
 			}
 			if (iSessionSelection.getItemCount() <= 1)
 				iSessionSelection.setEnabled(false);

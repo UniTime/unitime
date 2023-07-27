@@ -113,14 +113,43 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		if (sessionId == null) {
 			sessionId = context.getUser().getCurrentAcademicSessionId();
 			if (request.hasSession()) {
-				try {
-					sessionId = Long.valueOf(request.getSession());
-				} catch (NumberFormatException e) {
-					Number id = SessionDAO.getInstance().getSession().createQuery(
-							"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session", Number.class
-							).setParameter("session", request.getSession()).setMaxResults(1).setCacheable(true).uniqueResult();
-					if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
-					sessionId = id.longValue();
+				if ("auto".equals(request.getSession())) {
+					Set<Long> sessionIds = new HashSet<Long>();
+					for (UserAuthority ua: context.getUser().getAuthorities()) {
+						if (context.hasPermissionAnyAuthority(Right.InstructorSurvey, ua.getAcademicSession()))
+							sessionIds.add((Long)ua.getAcademicSession().getQualifierId());
+					}
+					if (sessionIds.size() == 1) {
+						sessionId = sessionIds.iterator().next();
+					} else if (!sessionIds.isEmpty()) {
+						for (Session session: SessionDAO.getInstance().getSession().createQuery(
+								"from Session where uniqueId in :ids order by academicInitiative, sessionBeginDateTime", Session.class)
+								.setParameterList("ids", sessionIds, Long.class)
+								.setCacheable(true)
+								.setMaxResults(1).list()) {
+							sessionId = session.getUniqueId();
+							break;
+						}
+					} else {
+						for (Session session: SessionDAO.getInstance().getSession().createQuery(
+								"select session from InstructorSurvey where externalUniqueId = :externalId order by session.academicInitiative, session.sessionBeginDateTime desc", Session.class)
+								.setParameter("externalId", context.getUser().getExternalUserId())
+								.setCacheable(true)
+								.setMaxResults(1).list()) {
+							sessionId = session.getUniqueId();
+							break;
+						}
+					}
+				} else {
+					try {
+						sessionId = Long.valueOf(request.getSession());
+					} catch (NumberFormatException e) {
+						Number id = SessionDAO.getInstance().getSession().createQuery(
+								"select uniqueId from Session where (academicTerm || academicYear) = :session or (academicTerm || academicYear || academicInitiative) = :session", Number.class
+								).setParameter("session", request.getSession()).setMaxResults(1).setCacheable(true).uniqueResult();
+						if (id == null) throw new GwtRpcException(MESSAGES.errorSessionNotFound(request.getSession()));
+						sessionId = id.longValue();
+					}
 				}
 			}
 		}
@@ -137,13 +166,15 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 				).setParameter("sessionId", sessionId)
 				.setParameter("externalId", externalId).setMaxResults(1).uniqueResult();
 		ApplicationProperties.setSessionId(sessionId);
-
+		
 		if (!admin) {
 			editable = context.hasPermissionAnyAuthority(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 			if (is != null && is.getSubmitted() != null)
 				editable = false;
-			if (!editable && is == null)
-				throw new GwtRpcException(MESSAGES.errorInstructorSurveyNotAllowed());
+			if (!editable && is == null) {
+				Session session = SessionDAO.getInstance().get(sessionId);
+				throw new GwtRpcException(MESSAGES.errorInstructorSurveyNotAllowed(session == null ? MESSAGES.notApplicable() : session.getLabel()));
+			}
 		}
 		
 		final InstructorSurveyData survey = new InstructorSurveyData();
@@ -162,11 +193,9 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		if (instructor == null) {
 			Set<Long> sessionIds = new HashSet<Long>();
 			for (UserAuthority ua: context.getUser().getAuthorities()) {
-				if (ua.getRole().equals(context.getUser().getCurrentAuthority().getRole())) {
-					InstructorSurvey x = InstructorSurvey.getInstructorSurvey(externalId, (Long)ua.getAcademicSession().getQualifierId());
-					if (x != null || context.hasPermissionAnySession(Right.InstructorSurvey, ua.getAcademicSession()))
-						sessionIds.add((Long)ua.getAcademicSession().getQualifierId());
-				}
+				InstructorSurvey x = InstructorSurvey.getInstructorSurvey(externalId, (Long)ua.getAcademicSession().getQualifierId());
+				if (x != null || context.hasPermissionAnyAuthority(Right.InstructorSurvey, ua.getAcademicSession()))
+					sessionIds.add((Long)ua.getAcademicSession().getQualifierId());
 			}
 			if (!sessionIds.isEmpty()) {
 				for (Session session: SessionDAO.getInstance().getSession().createQuery(

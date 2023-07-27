@@ -7697,8 +7697,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("The survey has been updated after the preferences have been copied to the instructor.")
 	String surveyUpdatedAfterApply();
 	
-	@DefaultMessage("It is not allowed to submit an instructor survey at the moment.")
-	String errorInstructorSurveyNotAllowed();
+	@DefaultMessage("You are not allowed to submit an instructor survey for {0} at the moment.")
+	String errorInstructorSurveyNotAllowed(String session);
 	
 	@DefaultMessage("Instructor survey cannot be edited at this moment.")
 	String infoInstructorSurveyNotEditable();

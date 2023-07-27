@@ -32,7 +32,7 @@
 				<hasPermission name="HQLReportsCourses"/>
 				<hasPermission name="ClassAssignments"/>
 				<hasPermission name="InstructorDetail"/>
-				<hasPermission name="InstructorSurvey"/>
+				<hasPermission name="InstructorSurvey" authority="session"/>
 			</or>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
