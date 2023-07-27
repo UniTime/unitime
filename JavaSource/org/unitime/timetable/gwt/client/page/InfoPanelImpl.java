@@ -135,6 +135,7 @@ public class InfoPanelImpl extends P implements InfoPanelDisplay {
 	@Override
 	public void setInfo(InfoInterface info) {
 		iInfo.clear(true);
+		iInfo.removeAllRows();
 		int row = 0;
 		if (info != null)
 			for (InfoPairInterface pair: info.getPairs()) {
