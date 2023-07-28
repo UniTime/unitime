@@ -427,7 +427,7 @@ public class InstructorSurveyPage extends Composite {
 				iPanel.addRow("", iTimePrefs.getReason());
 				iTimePrefs.getReason().resizeNotes();
 			}
-			else if (!iTimePrefs.getReason().getText().isEmpty()) {
+			else if (!iTimePrefs.getReason().getText().isEmpty() && survey.getTimePrefs().hasHard()) {
 				iPanel.addRow("", new ReadOnlyNote(iTimePrefs.getReason().getText()));
 			}
 		}
