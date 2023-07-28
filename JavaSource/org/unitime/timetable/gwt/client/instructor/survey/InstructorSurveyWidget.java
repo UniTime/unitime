@@ -294,7 +294,7 @@ public class InstructorSurveyWidget extends Composite {
 			tp.setMode(survey.getTimePrefs().getModes().get(0), true);
 			tp.setEditable(false);
 			iForm.addRow(MESSAGES.propTimePrefs(), tp.getPanel());
-			if (!tp.getReason().getText().isEmpty()) {
+			if (survey.getTimePrefs().hasHard() && !tp.getReason().getText().isEmpty()) {
 				iForm.addRow("", new ReadOnlyNote(tp.getReason().getText()));
 			}
 			if (isShowDifferences()) {

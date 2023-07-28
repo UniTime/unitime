@@ -54,6 +54,9 @@
 			<tr><td><table width="100%">
 				<#if timePrefs??>
 					<tr><td style='vertical-align: top;'>${msg.propTimePrefs()}</td><td>${timePrefs}</td></tr>
+					<#if survey.timePrefs.note?? && survey.timePrefs.hasHard()>
+						<tr><td></td><td style='white-space: pre-wrap; padding-left: 5px;'>${survey.timePrefs.note}</td></tr>
+					</#if>
 				</#if>
 				<#if survey.hasRoomPreferences()>
 					<#list survey.getRoomPreferences() as p>

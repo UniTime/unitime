@@ -194,5 +194,15 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 					if (!neutral.equals(id)) return false;
 			return true;
 		}
+		
+		public boolean hasHard() {
+			if (iModel == null) return false;
+			Long proh = char2id('P');
+			Long req = char2id('R');
+			for (Map<Integer, Long> slot2id: iModel.values())
+				for (Long id: slot2id.values())
+					if (proh.equals(id) || req.equals(id)) return true;
+			return false;
+		}
 	}
 }
