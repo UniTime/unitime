@@ -2521,6 +2521,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				iEligibilityCheck = result;
 				iContext.setStudentId(result == null ? null : result.getStudentId());
 				iSpecRegCx.update(result);
+				iContext.setClassScheduleNotAvailable(result == null ? null : Boolean.valueOf(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CLASS_SCHEDULE_NOT_AVAILABLE)));
 				iCourseRequests.setWaitListMode(
 						result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST) ? WaitListMode.WaitList :
 						result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS) ? WaitListMode.NoSubs : WaitListMode.None);
@@ -2568,8 +2569,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 										&& !result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST));
 								iEligibilityCheck = result;
 								iContext.setStudentId(result == null ? null : result.getStudentId());
-								
 								iSpecRegCx.update(result);
+								iContext.setClassScheduleNotAvailable(result == null ? null : Boolean.valueOf(result.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CLASS_SCHEDULE_NOT_AVAILABLE)));
 								iSchedule.setVisible(iMode.isSectioning()); iSchedule.setEnabled(iMode.isSectioning());
 								iSave.setVisible(!iMode.isSectioning()); iSave.setEnabled(!iMode.isSectioning() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_REGISTER));
 								if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.DEGREE_PLANS)) {
@@ -3057,6 +3058,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	protected void setElibibilityCheckDuringEnrollment(EligibilityCheck check) {
 		iEligibilityCheck = check;
 		iSpecRegCx.update(check);
+		iContext.setClassScheduleNotAvailable(check == null ? null : Boolean.valueOf(check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CLASS_SCHEDULE_NOT_AVAILABLE)));
 		iCourseRequests.setWaitListMode(
 				check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_WAITLIST) ? WaitListMode.WaitList :
 				check.hasFlag(OnlineSectioningInterface.EligibilityCheck.EligibilityFlag.CAN_NO_SUBS) ? WaitListMode.NoSubs : WaitListMode.None);
