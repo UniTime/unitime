@@ -499,10 +499,14 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 	        for (InstructorAttribute attribute: inst.getAttributes())
 	        	form.setAttribute(attribute.getUniqueId(), true);
 			
+	        form.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, inst.getUniqueId()));
+        	form.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, inst.getUniqueId()));
+        	/*
 			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			form.setNextId(next==null?null:next.getUniqueId().toString());
+			*/
 			
 			if (inst.getExternalUniqueId() != null && !inst.getExternalUniqueId().isEmpty()) {
 				List<IdValue> departments = new ArrayList<IdValue>();

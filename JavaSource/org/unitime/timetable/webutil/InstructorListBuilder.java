@@ -20,14 +20,17 @@
 package org.unitime.timetable.webutil;
 
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import org.unitime.commons.web.WebTable;
+import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
@@ -400,10 +403,18 @@ public class InstructorListBuilder {
 				if (back) line[0] = "<A name=\"back\"></A>" + line[0];
 				
 				// Add to web table
-				webTable.addLine("onClick=\"document.location='instructorDetail.action?instructorId=" + di.getUniqueId() + "&deptId=" + deptId + "';\"", line, cmp);
+				webTable.addLine("onClick=\"document.location='instructorDetail.action?instructorId=" + di.getUniqueId() + "&deptId=" + deptId + "';\"", line, cmp,
+						di.getUniqueId().toString());
 			}
 			
 			String tblData = webTable.printTable(order);
+			List<Long> ids = new ArrayList<Long>();
+		    for (Enumeration<WebTableLine> e = webTable.getLines().elements(); e.hasMoreElements(); ) {
+		    	WebTableLine line = e.nextElement();
+		    	if (line.getUniqueId() != null)
+		    		ids.add(Long.parseLong(line.getUniqueId()));
+		    }
+		    Navigation.set(context, Navigation.sInstructionalOfferingLevel, ids);
 			return tblData;
 		}        
     }

@@ -46,6 +46,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 
 /**
  * @author Tomas Muller
@@ -209,14 +210,8 @@ public class InstructorAssignmentPrefAction extends PreferencesAction2<Instructo
         for (InstructorAttribute attribute: inst.getAttributes())
         	form.setAttribute(attribute.getUniqueId(), true);
 		
-		try {
-			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorAssignmentPreferences);
-			form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
-			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorAssignmentPreferences);
-			form.setNextId(next==null?null:next.getUniqueId().toString());
-		} catch (Exception e) {
-			Debug.error(e);
-		}
+        form.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, inst.getUniqueId()));
+    	form.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, inst.getUniqueId()));
 	}
 	
 	protected void doUpdate() throws Exception {

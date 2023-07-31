@@ -27,7 +27,6 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -47,6 +46,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
+import org.unitime.timetable.webutil.Navigation;
 
 
 /** 
@@ -293,14 +293,8 @@ public class InstructorPrefEditAction extends PreferencesAction2<InstructorEditF
 			form.setNote(inst.getNote().trim());
 		}
 		
-		try {
-			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorPreferences);
-			form.setPreviousId(previous==null?null:previous.getUniqueId().toString());
-			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorPreferences);
-			form.setNextId(next==null?null:next.getUniqueId().toString());
-		} catch (Exception e) {
-			Debug.error(e);
-		}
+        form.setPreviousId(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, inst.getUniqueId()));
+    	form.setNextId(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, inst.getUniqueId()));
 	}
 
 }
