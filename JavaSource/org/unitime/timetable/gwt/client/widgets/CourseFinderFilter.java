@@ -78,8 +78,9 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 	private Timer iChangeTimer;
 	private FilterButton iFilterButton;
 	private P iFilterLabel;
-	AbsolutePanel iDates;
+	AbsolutePanel iCredits, iDates;
 	private P iFilterText;
+	private boolean iClassFilter = true;
 	
 	public CourseFinderFilter(StudentSectioningContext context) {
 		iContext = context;
@@ -95,10 +96,10 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				if (event.getValue()) {
-					iFilterLabel.setText(MESSAGES.propSchedulingPrefDates());
+					iFilterLabel.setText(MESSAGES.propCourseFinderFilterCredit());
 					for (int row = 1; row < getRowCount(); row++)
-						getRowFormatter().setVisible(row, true);
-					setWidget(0, 1, iDates);
+						getRowFormatter().setVisible(row, iClassFilter);
+					setWidget(0, 1, iCredits);
 				} else {
 					iFilterLabel.setText(MESSAGES.sectCourseFinderFilter());
 					setWidget(0, 1, iFilterText);
@@ -110,24 +111,24 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 		});
 		iFilterText = new P("filter-text");
 		
+		iCredits = new AbsolutePanel();
+		iCredits.setStyleName("credit");
+		P from = new P("from"); from.setText(MESSAGES.propCourseFinderFilterCreditFrom()); iCredits.add(from);
+		iCreditFrom = new NumberBox(); iCredits.add(iCreditFrom);
+		P to = new P("to"); to.setText(MESSAGES.propCourseFinderFilterCreditTo()); iCredits.add(to);
+		iCreditTo = new NumberBox(); iCredits.add(iCreditTo);
+		addRow(filter, iCredits);
+
 		addStyleName("filter");
 		iDates = new AbsolutePanel();
 		iDates.setStyleName("dates");
-		P from = new P("from"); from.setText(MESSAGES.propSchedulingPrefDatesFrom()); iDates.add(from);
+		from = new P("from"); from.setText(MESSAGES.propSchedulingPrefDatesFrom()); iDates.add(from);
 		iDateFrom = new SingleDateSelector(null);
 		iDates.add(iDateFrom);
-		P to = new P("to"); to.setText(MESSAGES.propSchedulingPrefDatesTo()); iDates.add(to);
+		to = new P("to"); to.setText(MESSAGES.propSchedulingPrefDatesTo()); iDates.add(to);
 		iDateTo = new SingleDateSelector(null);
 		iDates.add(iDateTo);
-		addRow(filter, iDates);
-		
-		AbsolutePanel c = new AbsolutePanel();
-		c.setStyleName("credit");
-		from = new P("from"); from.setText(MESSAGES.propCourseFinderFilterCreditFrom()); c.add(from);
-		iCreditFrom = new NumberBox(); c.add(iCreditFrom);
-		to = new P("to"); to.setText(MESSAGES.propCourseFinderFilterCreditTo()); c.add(to);
-		iCreditTo = new NumberBox(); c.add(iCreditTo);
-		addRow(MESSAGES.propCourseFinderFilterCredit(), c);
+		addRow(MESSAGES.propSchedulingPrefDates(), iDates);
 		
 		iInstructor = new AriaTextBox();
 		iInstructor.setStyleName("gwt-SuggestBox");
@@ -232,6 +233,18 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 					iDateTo.init(result);
 				}
 			});
+		}
+		iClassFilter = (iContext == null || !iContext.isClassScheduleNotAvailable());
+		if (iClassFilter) {
+			for (int row = 1; row < getRowCount(); row++)
+				getRowFormatter().setVisible(row, iFilterButton.getValue());
+		} else {
+			for (int row = 1; row < getRowCount(); row++)
+				getRowFormatter().setVisible(row, false);
+			iDateFrom.setValue(null);
+			iDateTo.setValue(null);
+			iInstructor.setValue("");
+			iFilterText.setText(getFilterText());
 		}
 	}
 	

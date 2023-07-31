@@ -43,6 +43,8 @@ public class CourseRequestEligibility extends CheckEligibility {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	
+	protected Boolean iPermissionCanSeeSchedule;
+	
 	@Override
 	protected void logCheck(OnlineSectioningLog.Action.Builder action, EligibilityCheck check) {
 		for (EligibilityCheck.EligibilityFlag f: EligibilityCheck.EligibilityFlag.values())
@@ -133,6 +135,9 @@ public class CourseRequestEligibility extends CheckEligibility {
 				} else {
 					iCheck.setFlag(EligibilityFlag.CAN_REGISTER, false);
 				}
+				
+				if (!student.getSession().canNoRoleReportClass()) 
+					iCheck.setFlag(EligibilityFlag.CLASS_SCHEDULE_NOT_AVAILABLE, true);
 				
 				StudentSectioningStatus s = StudentSectioningStatus.getPresentStatus(student.getSectioningStatus() != null ? student.getSectioningStatus() : student.getSession().getDefaultSectioningStatus());
 				

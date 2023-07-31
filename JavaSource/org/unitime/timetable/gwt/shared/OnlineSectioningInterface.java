@@ -41,7 +41,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 	
 	public static class EligibilityCheck implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private int iFlags = 0;
+		private long iFlags = 0;
 		private String iMessage = null;
 		private String iCheckboxMessage = null;
 		private Long iSessionId = null, iStudentId = null;
@@ -75,9 +75,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			WAIT_LIST_VALIDATION,
 			SHOW_SCHEDULING_PREFS,
 			SR_NOTE_PER_COURSE,
+			CLASS_SCHEDULE_NOT_AVAILABLE,
 			;
 			
-			public int flag() { return 1 << ordinal(); }
+			public long flag() { return 1l << ordinal(); }
 			
 		}
 		
@@ -557,6 +558,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private boolean iCanRequire = false;
 		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		private Integer iCriticalCheck = null;
+		private Boolean iClassScheduleNotAvailable = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -579,6 +581,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iStudentRequest = clone.iStudentRequest;
 			iAdvisorWaitListedCourseIds = clone.iAdvisorWaitListedCourseIds;
 			iCriticalCheck = clone.iCriticalCheck;
+			iClassScheduleNotAvailable = clone.iClassScheduleNotAvailable;
 		}
 		
 		public Long getStudentId() { return iStudentId; }
@@ -660,6 +663,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean isCriticalCheckCritical() { return iCriticalCheck != null && iCriticalCheck.intValue() == 1; }
 		public boolean isCriticalCheckImportant() { return iCriticalCheck != null && iCriticalCheck.intValue() == 2; }
 		public boolean isCriticalCheckVital() { return iCriticalCheck != null && iCriticalCheck.intValue() == 3; }
+		
+		public boolean isClassScheduleNotAvailable() { return iClassScheduleNotAvailable != null && iClassScheduleNotAvailable.booleanValue(); }
+		public void setClassScheduleNotAvailable(Boolean classScheduleNotAvailable) { iClassScheduleNotAvailable = classScheduleNotAvailable; }
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {
@@ -692,6 +698,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Long iSessionId = null, iStudentId = null;
 		private String iPin = null;
 		private List<SessionMonth> iSessionDates = null;
+		private Boolean iClassScheduleNotAvailable = null;
 		
 		public StudentSectioningContext() {}
 		public StudentSectioningContext(StudentSectioningContext cx) {
@@ -700,6 +707,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iSessionId = cx.iSessionId;
 			iStudentId = cx.iStudentId;
 			iPin = cx.iPin;
+			iClassScheduleNotAvailable = cx.iClassScheduleNotAvailable;
 		}
 		
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; iSessionDates = null; }
@@ -721,6 +729,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setPin(String pin) { iPin = pin; }
 		public String getPin() { return iPin; }
 		public boolean hasPin() { return iPin != null && !iPin.isEmpty(); }
+		
+		public boolean isClassScheduleNotAvailable() { return iClassScheduleNotAvailable != null && iClassScheduleNotAvailable.booleanValue(); }
+		public void setClassScheduleNotAvailable(Boolean classScheduleNotAvailable) { iClassScheduleNotAvailable = classScheduleNotAvailable; }
 		
 		public void setSessionDates(List<SessionMonth> sessionDates) { iSessionDates = sessionDates; }
 		public boolean hasSessionDates() { return iSessionDates != null; }

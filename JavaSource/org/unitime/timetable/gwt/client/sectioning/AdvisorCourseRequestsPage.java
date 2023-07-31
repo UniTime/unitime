@@ -241,6 +241,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iDetails = result;
 						iContext.setStudentId(iDetails == null ? null : iDetails.getStudentId());
 						iSpecRegCx.setCanRequire(iDetails == null || iDetails.isCanRequire());
+						iContext.setClassScheduleNotAvailable(iDetails == null ? null : Boolean.valueOf(iDetails.isClassScheduleNotAvailable()));
 						header.setEnabled("submit", result.isCanUpdate());
 						header.setEnabled("print", !result.isCanUpdate());
 						if (result.isCanUpdate()) checkForLastNotes();
