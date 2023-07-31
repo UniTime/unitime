@@ -318,7 +318,45 @@ public class InstructorSurveyWidget extends Composite {
 						if (day == mode.getLastDay()) break;
 						day = (1 + day) % 7;
 					}
+				} else if (survey.getTimePrefs().getProblem() == Problem.NOT_APPLIED) {
+					RoomSharingDisplayMode mode = survey.getTimePrefs().getModes().get(survey.getTimePrefs().getDefaultMode());
+					int day = mode.getFirstDay();
+					while (true) {
+						for (int slot = mode.getFirstSlot(); slot <= mode.getLastSlot(); slot += mode.getStep()) {
+							InstructorTimePreferences.Cell cell = getCell(tp.getPanel(), day, slot);
+							if (cell == null) continue;
+							if ('2' != survey.getTimePrefs().id2char(survey.getTimePrefs().getOption(day, slot).getId()))
+								cell.addStyleName("preference-changed");
+						}
+						if (day == mode.getLastDay()) break;
+						day = (1 + day) % 7;
+					}
 				}
+			}
+		} else if (isShowDifferences() && survey.getTimePrefs().getProblem() == Problem.LEVEL_CHANGED) {
+			InstructorTimePreferences tp = new InstructorTimePreferences(false);
+			tp.setModel(survey.getTimePrefs());
+			tp.setMode(survey.getTimePrefs().getModes().get(0), true);
+			tp.setEditable(false);
+			iForm.addRow(MESSAGES.propTimePrefs(), tp.getPanel());
+			RoomSharingDisplayMode mode = survey.getTimePrefs().getModes().get(survey.getTimePrefs().getDefaultMode());
+			int day = mode.getFirstDay();
+			while (true) {
+				for (int slot = mode.getFirstSlot(); slot <= mode.getLastSlot(); slot += mode.getStep()) {
+					InstructorTimePreferences.Cell cell = getCell(tp.getPanel(), day, slot);
+					if (cell == null) continue;
+					char ch = '2';
+					try {
+						if (survey.getTimePrefs().getInstructorPattern().length() <= 336)
+							ch = survey.getTimePrefs().getInstructorPattern().charAt(48 * day + slot / 6);
+						else
+							ch = survey.getTimePrefs().getInstructorPattern().charAt(288 * day + slot);
+					} catch (IndexOutOfBoundsException e) {}
+					if (ch != survey.getTimePrefs().id2char(survey.getTimePrefs().getOption(day, slot).getId()))
+						cell.addStyleName("preference-changed");
+				}
+				if (day == mode.getLastDay()) break;
+				day = (1 + day) % 7;
 			}
 		}
 		
