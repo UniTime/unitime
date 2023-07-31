@@ -351,12 +351,18 @@ public class InstructorEditForm extends PreferencesForm  {
     public void setPreviousId(String prevId) {
     	this.prevId = prevId;
     }
+    public void setPreviousId(Long prevId) {
+    	this.prevId = (prevId == null || prevId < 0l? null : prevId.toString());
+    }
     public String getPreviousId() {
     	return prevId;
     }
     
     public void setNextId(String nextId) {
     	this.nextId = nextId;
+    }
+    public void setNextId(Long nextId) {
+    	this.nextId = (nextId == null || nextId < 0l ? null : nextId.toString());
     }
     public String getNextId() {
     	return nextId;
