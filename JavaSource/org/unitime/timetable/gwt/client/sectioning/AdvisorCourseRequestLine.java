@@ -1146,4 +1146,10 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	public void fireEvent(GwtEvent<?> event) {
 		iP.fireEvent(event);
 	}
+	
+	public void clear() {
+		setValue(null);
+		for (CourseSelectionBox course: iCourses)
+			course.clear();
+	}
 }

@@ -739,9 +739,9 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	public void clear() {
 		iTip.setText(CONSTANTS.tips()[(int)(Math.random() * CONSTANTS.tips().length)]);
 		for (CourseRequestLine line: iCourses)
-			line.setValue(null);
+			line.clear();
 		for (CourseRequestLine line: iAlternatives)
-			line.setValue(null);
+			line.clear();
 	}
 	
 	public String getFirstError() {

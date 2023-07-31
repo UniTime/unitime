@@ -554,4 +554,12 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	public boolean isCanSubmit(NativePreviewEvent event) {
 		return InputElement.is(event.getNativeEvent().getEventTarget()) || BodyElement.is(event.getNativeEvent().getEventTarget());
 	}
+
+	@Override
+	public void reset() {
+		iLastQuery = null;
+		iCourses.clearTable(1);
+		iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
+		updateCourseDetails();
+	}
 }

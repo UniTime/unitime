@@ -360,4 +360,13 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 			event.cancel();
 		}
     }
+
+	@Override
+	public void reset() {
+		iFilter.setValue("");
+		iLastFilter = null;
+		if (iTabs != null)
+			for (CourseFinderTab tab: iTabs)
+				tab.reset();
+	}
 }

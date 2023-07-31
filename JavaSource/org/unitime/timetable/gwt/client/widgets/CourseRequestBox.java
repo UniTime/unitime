@@ -983,4 +983,9 @@ public class CourseRequestBox extends P implements CourseSelection {
 		
 		public Preference getPreference() { return iPreference; }
 	}
+	
+	public void clear() {
+		setValue(null);
+		if (iCourseFinder != null) iCourseFinder.reset();
+	}
 }
