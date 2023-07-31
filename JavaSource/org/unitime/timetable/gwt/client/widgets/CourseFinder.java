@@ -52,6 +52,7 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 		public void onPreviewNativeEvent(NativePreviewEvent event);
 		public void onBeforeShow();
 		public boolean isCanSubmit(NativePreviewEvent event);
+		public void reset();
 	}
 		
 	public interface CourseFinderCourseDetails<T, E> extends TakesValue<T>, IsWidget, HasEnabled {
@@ -71,6 +72,8 @@ public interface CourseFinder extends HasValue<RequestedCourse>, HasSelectionHan
 	
 	public void setFilter(String value);
 	public String getFilter();
+	
+	public void reset();
 	
 	public class ResponseEvent extends GwtEvent<ResponseHandler> {
 		static Type<ResponseHandler> TYPE = new Type<ResponseHandler>();

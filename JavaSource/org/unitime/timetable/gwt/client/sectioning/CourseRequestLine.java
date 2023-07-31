@@ -983,4 +983,11 @@ public class CourseRequestLine extends P implements HasValue<Request> {
 		setStyleName("nowaitlist", areArrowsVisible() && !isWaitListVisible());
 		setStyleName("noarrowswaitlist", !areArrowsVisible() && !isWaitListVisible());
 	}
+	
+	public void clear() {
+		setValue(null);
+		for (CourseSelectionBox course: iCourses)
+			course.clear();
+			
+	}
 }

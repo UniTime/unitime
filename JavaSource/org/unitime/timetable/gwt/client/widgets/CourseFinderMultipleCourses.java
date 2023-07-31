@@ -758,4 +758,13 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 	public boolean isCanSubmit(NativePreviewEvent event) {
 		return iFilter.isCanSubmit(event);
 	}
+	
+	@Override
+	public void reset() {
+		iLastQuery = null;
+		iCourses.clearTable(1);
+		iCourses.setEmptyMessage(MESSAGES.courseSelectionNoCourseFilter());
+		updateCourseDetails();
+		iFilter.setValue(null);
+	}
 }

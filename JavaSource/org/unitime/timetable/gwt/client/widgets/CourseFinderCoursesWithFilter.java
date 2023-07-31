@@ -70,4 +70,10 @@ public class CourseFinderCoursesWithFilter extends CourseFinderCourses {
 	public boolean isCanSubmit(NativePreviewEvent event) {
 		return iFilter.isCanSubmit(event);
 	}
+	
+	@Override
+	public void reset() {
+		super.reset();
+		iFilter.setValue(null);
+	}
 }

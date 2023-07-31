@@ -215,4 +215,10 @@ public class CourseFinderFreeTime extends P implements CourseFinder.CourseFinder
 	public boolean isCanSubmit(NativePreviewEvent event) {
 		return InputElement.is(event.getNativeEvent().getEventTarget()) || BodyElement.is(event.getNativeEvent().getEventTarget());
 	}
+
+	@Override
+	public void reset() {
+		iFreeTimePicker.setValue(null);
+		iFreeTimeError.setVisible(false);
+	}
 }
