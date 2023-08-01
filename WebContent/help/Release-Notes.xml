@@ -117,6 +117,12 @@
 				<line>Adding coordinators does not need a server call (remember the list of available instructors from the previous call).</line>
 			</description>
 		</item>
+		<item>
+			<name>Time Preferences: Combination of Instructor Preferences</name>
+			<description>
+				<line>Fixed an issue with combining multiple instructor time preferences on a class.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
