@@ -319,28 +319,25 @@ public class Class_ extends BaseClass_ {
     			if (tp==null) {
     				tp = (TimePref)p2.clone();
     			} else tp.combineWith((TimePref)p2,false);
+    		} else {
+    			Preference p1 = null;
+    			for (Iterator<Preference> j=ret.iterator();j.hasNext();) {
+    				Preference p = j.next();
+    				if (p.isSame(p2)) {
+    					p1 = p; j.remove(); break;
+    				}
+    			}
+    			if (p1==null) {
+    				ret.add(p2);
+    			} else {
+    				Preference combPref = (Preference)p1.clone();
+    				PreferenceCombination com = new MinMaxPreferenceCombination();
+    				com.addPreferenceProlog(p1.getPrefLevel().getPrefProlog());
+    				com.addPreferenceProlog(p2.getPrefLevel().getPrefProlog());
+    				combPref.setPrefLevel(PreferenceLevel.getPreferenceLevel(com.getPreferenceProlog()));
+    				ret.add(combPref);
+    			}
     		}
-    	}
-
-    	for (Iterator<Preference> i=instrPrefs2.iterator();i.hasNext();) {
-    		Preference p2 = i.next();
-    		Preference p1 = null;
-			for (Iterator<Preference> j=ret.iterator();j.hasNext();) {
-				Preference p = j.next();
-				if (p.isSame(p2)) {
-					p1 = p; j.remove(); break;
-				}
-			}
-			if (p1==null) {
-				ret.add(p2);
-			} else {
-				Preference combPref = (Preference)p1.clone();
-				PreferenceCombination com = new MinMaxPreferenceCombination();
-				com.addPreferenceProlog(p1.getPrefLevel().getPrefProlog());
-				com.addPreferenceProlog(p2.getPrefLevel().getPrefProlog());
-				combPref.setPrefLevel(PreferenceLevel.getPreferenceLevel(com.getPreferenceProlog()));
-				ret.add(combPref);
-			}
 		}
 
     	if (tp!=null) ret.add(tp);
