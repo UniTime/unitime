@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -3560,4 +3562,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Showing courses with {0}")
 	String messageCourseFinderFilterText(String filter);
+	
+	@DefaultMessage("Show All Columns")
+	String opShowAllColumns();
 }
