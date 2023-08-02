@@ -208,6 +208,7 @@ public class SectioningStatusPage extends Composite {
 	private boolean iOnline; 
 	
 	private List<Operation> iSortOperations = new ArrayList<Operation>();
+	private List<HideOperation> iHideOperations = new ArrayList<HideOperation>();
 	
 	private List<StudentInfo> iStudentInfos = null;
 	private StudentsInfoVisibleColumns iStudentInfoVisibleColumns = null;
@@ -300,48 +301,67 @@ public class SectioningStatusPage extends Composite {
 							menu.addItem(item);
 						}
 					}
-					
-					if (!iSortOperations.isEmpty()) {
-						if (!first) menu.addSeparator();
-						MenuBar submenu = new MenuBar(true);
-						for (final Operation op: iSortOperations) {
-							String name = op.getName();
-							if (op instanceof HasColumnName)
-								name = ((HasColumnName)op).getColumnName();
-							MenuItem item = new MenuItem(name, true, new Command() {
-								@Override
-								public void execute() {
-									popup.hide();
-									op.execute();
-								}
-							});
-							if (op instanceof AriaOperation)
-								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
-							else
-								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
-							submenu.addItem(item);
-						}
-						MenuItem columns = new MenuItem(MESSAGES.opSort(), submenu);
-						columns.getElement().getStyle().setCursor(Cursor.POINTER);
-						menu.addItem(columns);
+				}
+				
+				if (!iSortOperations.isEmpty()) {
+					if (!first) menu.addSeparator();
+					MenuBar submenu = new MenuBar(true);
+					for (final Operation op: iSortOperations) {
+						String name = op.getName();
+						if (op instanceof HasColumnName)
+							name = ((HasColumnName)op).getColumnName();
+						MenuItem item = new MenuItem(name, true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								op.execute();
+							}
+						});
+						if (op instanceof AriaOperation)
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+						else
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+						submenu.addItem(item);
 					}
-				} else {
-					if (!iSortOperations.isEmpty()) {
-						for (final Operation op: iSortOperations) {
-							String name = op.getName();
-							MenuItem item = new MenuItem(name, true, new Command() {
-								@Override
-								public void execute() {
-									popup.hide();
-									op.execute();
-								}
-							});
-							if (op instanceof AriaOperation)
-								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
-							else
-								Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
-							menu.addItem(item);
-						}
+					MenuItem columns = new MenuItem(MESSAGES.opSort(), submenu);
+					columns.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(columns);
+				}
+				
+				if (!iHideOperations.isEmpty()) {
+					MenuBar submenu = new MenuBar(true);
+					boolean hasHiddenColumn = false;
+					for (final HideOperation op: iHideOperations) {
+						String name = op.getColumnName();
+						MenuItem item = new MenuItem(name, true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								op.execute();
+							}
+						});
+						if (op instanceof AriaOperation)
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+						else
+							Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
+						submenu.addItem(item);
+						if (!op.isColumnVisible())
+							hasHiddenColumn = true;
+					}
+					MenuItem columns = new MenuItem(GWT_MESSAGES.opColumns(), submenu);
+					columns.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(columns);
+					
+					if (hasHiddenColumn) {
+						submenu.addSeparator();
+						submenu.addItem(new MenuItem(MESSAGES.opShowAllColumns(), true, new Command() {
+							@Override
+							public void execute() {
+								popup.hide();
+								for (HideOperation op: iHideOperations)
+									op.showColumn();
+							}
+						}));
 					}
 				}
 				
@@ -1166,6 +1186,7 @@ public class SectioningStatusPage extends Composite {
 		iClassInfos.clear();
 		iSelectedCourseIds.clear();
 		iSortOperations.clear();
+		iHideOperations.clear();
 		iCourseInfoVisibleColums = new CourseInfoVisibleColums(result);
 		List<Widget> header = new ArrayList<Widget>();
 
@@ -1186,6 +1207,7 @@ public class SectioningStatusPage extends Composite {
 
 		UniTimeTableHeader hStart = new UniTimeTableHeader("<br>" + MESSAGES.colDate());
 		header.add(hStart);
+		addHideOperation(0, hStart, MESSAGES.colDate());
 
 		UniTimeTableHeader hRoom = new UniTimeTableHeader(MESSAGES.colConsent() + "<br>" + MESSAGES.colRoom());
 		header.add(hRoom);
@@ -1306,11 +1328,14 @@ public class SectioningStatusPage extends Composite {
 		iPaginationButtons.setVisible(iEnrollmentInfos.size() - 1 > iMaxTableLines && iMaxTableLines > 0);
 		iPrevious.setEnabled(iMaxTableLines > 0 && iEnrollmentInfosFirstLine >= iMaxTableLines);
 		iNext.setEnabled(iMaxTableLines > 0 && iEnrollmentInfosFirstLine + iMaxTableLines < iEnrollmentInfos.size() - 1);
+		for (HideOperation op: iHideOperations)
+			op.fixColumnVisibility();
 	}
 	
 	public void populateStudentTable(List<StudentInfo> result) {
 		iStudentInfos = result; iStudentInfosFirstLine = 0;
 		iSortOperations.clear();
+		iHideOperations.clear();
 		List<Widget> header = new ArrayList<Widget>();
 		
 		if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
@@ -2329,6 +2354,9 @@ public class SectioningStatusPage extends Composite {
 		iPaginationButtons.setVisible(iStudentInfos.size() - 1 > iMaxTableLines && iMaxTableLines > 0);
 		iPrevious.setEnabled(iMaxTableLines > 0 && iStudentInfosFirstLine >= iMaxTableLines);
 		iNext.setEnabled(iMaxTableLines > 0 && iStudentInfosFirstLine + iMaxTableLines < iStudentInfos.size() - 1);
+		
+		for (HideOperation op: iHideOperations)
+			op.fixColumnVisibility();
 	}
 	
 	private void addStudentTableLine(StudentInfo info) {
@@ -2498,6 +2526,7 @@ public class SectioningStatusPage extends Composite {
 	public void populateChangeLog(List<SectioningAction> result) {
 		iSectioningActions = result; iSectioningActionsFirstLine = 0;
 		iSortOperations.clear();
+		iHideOperations.clear();
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		iSectioningActionsVisibleColumns = new SectioningActionsVisibleColumns(result);
@@ -2589,6 +2618,9 @@ public class SectioningStatusPage extends Composite {
 				}
 			});
 		}
+		
+		for (HideOperation op: iHideOperations)
+			op.fixColumnVisibility();
 	}
 	
 	private void addLogTableLine(SectioningAction log, Map<Long,HTML> id2message) {
@@ -2660,6 +2692,82 @@ public class SectioningStatusPage extends Composite {
 		};
 		header.addOperation(op);
 		iSortOperations.add(op);
+		if (sort == EnrollmentComparator.SortBy.COURSE) {
+			addHideOperation(0, header, MESSAGES.colCourse() + " / " + MESSAGES.colClass());
+		} else if (sort == EnrollmentComparator.SortBy.TITLE) {
+			addHideOperation(0, header, MESSAGES.colTitle() + " / " + MESSAGES.colTime());
+		} else if (sort == EnrollmentComparator.SortBy.CONSENT) {
+			addHideOperation(0, header, MESSAGES.colConsent() + " / " + MESSAGES.colRoom());
+		} else addHideOperation(0, header, column);
+	}
+	
+	protected <T> void addHideOperation(final int table, final UniTimeTableHeader header, final String column) {
+		HideOperation op = new HideOperation() {
+			@Override
+			public void execute() {
+				boolean hidden = SectioningStatusCookie.getInstance().isHidden(iOnline, table, column);
+				SectioningStatusCookie.getInstance().setHidden(iOnline, table, column, !hidden);
+				fixColumnVisibility();
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				if (SectioningStatusCookie.getInstance().isHidden(iOnline, table, column))
+					return GWT_MESSAGES.opShowItem(column);
+				else
+					return GWT_MESSAGES.opHideItem(column);
+			}
+			@Override
+			public String getColumnName() {
+				if (SectioningStatusCookie.getInstance().isHidden(iOnline, table, column))
+					return GWT_MESSAGES.opShow(column);
+				else
+					return GWT_MESSAGES.opHide(column);
+			}
+			@Override
+			public void fixColumnVisibility() {
+				boolean visible = !SectioningStatusCookie.getInstance().isHidden(iOnline, table, column);
+				if (table == 0 && iCourseTable.getRowCount() > 0) {
+					for (int col = 0; col < iCourseTable.getCellCount(0); col++)
+						if (iCourseTable.getWidget(0, col) == header) {
+							iCourseTable.setColumnVisible(col, visible);
+							break;
+						}
+				} else if (table == 1 && iStudentTable.getRowCount() > 0) {
+					for (int col = 0; col < iStudentTable.getCellCount(0); col++)
+						if (iStudentTable.getWidget(0, col) == header) {
+							iStudentTable.setColumnVisible(col, visible);
+							break;
+						}
+				} else if (table == 2 && iLogTable.getRowCount() > 0) {
+					for (int col = 0; col < iLogTable.getCellCount(0); col++)
+						if (iLogTable.getWidget(0, col) == header) {
+							iLogTable.setColumnVisible(col, visible);
+							break;
+						}
+				}
+			}
+			@Override
+			public void showColumn() {
+				if (SectioningStatusCookie.getInstance().isHidden(iOnline, table, column)) {
+					SectioningStatusCookie.getInstance().setHidden(iOnline, table, column, false);
+					fixColumnVisibility();
+				}
+			}
+			@Override
+			public boolean isColumnVisible() {
+				return !SectioningStatusCookie.getInstance().isHidden(iOnline, table, column);
+			}
+		};
+		header.addOperation(op);
+		iHideOperations.add(op);
 	}
 	
 	protected void addSortOperation(final UniTimeTableHeader header, final StudentComparator.SortBy sort, final String column) {
@@ -2704,11 +2812,20 @@ public class SectioningStatusPage extends Composite {
 			}
 			@Override
 			public String getColumnName() {
+				if (sort == StudentComparator.SortBy.GROUP && group != null && !group.isEmpty()) return group;
 				return column;
 			}
 		};
 		header.addOperation(op);
 		iSortOperations.add(op);
+		if (sort == StudentComparator.SortBy.ADVISED_CRED || sort == StudentComparator.SortBy.STUDENT) {
+		} else if (sort == StudentComparator.SortBy.ADVISED_PERC) {
+			addHideOperation(1, header, MESSAGES.colAdvisedCredit());
+		} else if (sort == StudentComparator.SortBy.GROUP && group != null && !group.isEmpty()) {
+			addHideOperation(1, header, group);
+		} else {
+			addHideOperation(1, header, column);
+		}
 	}
 	
 	public static class SimpleSuggestion implements Suggestion {
@@ -2773,9 +2890,15 @@ public class SectioningStatusPage extends Composite {
 		};
 		header.addOperation(op);
 		iSortOperations.add(op);
+		addHideOperation(2, header, column);
 	}
 	
 	private static interface SortOperation extends Operation, HasColumnName {}
+	private static interface HideOperation extends Operation, HasColumnName {
+		public void fixColumnVisibility();
+		public void showColumn();
+		public boolean isColumnVisible();
+	}
 	
 	public class SuggestCallback implements AsyncCallback<List<String[]>> {
 		private Request iRequest;

@@ -20,6 +20,8 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.gwt.user.client.Cookies;
 
@@ -37,6 +39,9 @@ public class SectioningStatusCookie {
 	private String iEmailSubject = "", iEmailCC = "";
 	private boolean iAdvisorRequestsEmailStudent;
 	private Boolean iOptionalEmailToggle = null;
+	private Set<String>[] iHide = new Set[] {
+		new HashSet<String>(), new HashSet<String>(), new HashSet<String>(),
+		new HashSet<String>(), new HashSet<String>(), new HashSet<String>()};
 	
 	private SectioningStatusCookie() {
 		try {
@@ -60,6 +65,9 @@ public class SectioningStatusCookie {
 				iEmailAdvisorRequests = "1".equals(params[idx++]);
 				iAdvisorRequestsEmailStudent = "1".equals(params[idx++]);
 				iOptionalEmailToggle = parseBoolean(params[idx++]);
+				for (int i = 0; i < iHide.length; i++)
+					for (String col: params[idx++].split(","))
+						iHide[i].add(col);
 			}
 		} catch (Exception e) {
 		}
@@ -87,6 +95,12 @@ public class SectioningStatusCookie {
 				+ "|" + (iEmailCC == null ? "" : iEmailCC) + "|" + (iEmailSubject == null ? "" : iEmailSubject)
 				+ "|" + (iEmailAdvisorRequests ? "1" : "0") + "|" + (iAdvisorRequestsEmailStudent ? "1" : "0")
 				+ "|" + (iOptionalEmailToggle == null ? "N" : iOptionalEmailToggle.booleanValue() ? "1" : "0");
+		for (int i = 0; i < iHide.length; i++) {
+			String hide = "";
+			for (String col: iHide[i])
+				hide += (hide.isEmpty()?"":",") + col;
+			cookie += "|" + hide;
+		}
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
 		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
 	}
@@ -122,6 +136,18 @@ public class SectioningStatusCookie {
 	public void setSortBy(boolean online, int tab, int ord, String group) {
 		iSortBy[online ? tab : 3 + tab] = ord;
 		iSortByGroup[online ? 0 : 1] = group;
+		save();
+	}
+	
+	public boolean isHidden(boolean online, int tab, String col) {
+		return iHide[online ? tab : 3 + tab].contains(col);
+	}
+	
+	public void setHidden(boolean online, int tab, String col, boolean hidden) {
+		if (hidden)
+			iHide[online ? tab : 3 + tab].add(col);
+		else
+			iHide[online ? tab : 3 + tab].remove(col);
 		save();
 	}
 	
