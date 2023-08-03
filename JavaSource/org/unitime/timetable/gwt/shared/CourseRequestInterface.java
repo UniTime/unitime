@@ -429,9 +429,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
 		private int iStart;
 		private int iLength;
-		private String iChangedBy = null;
-		private Date iTimeStamp = null;
-		
+				
 		public FreeTime() {}
 		public FreeTime(List<Integer> days, int start, int length) {
 			if (days != null) iDays.addAll(days);
@@ -441,8 +439,6 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			iDays.addAll(ft.iDays);
 			iStart = ft.iStart;
 			iLength = ft.iLength;
-			iChangedBy = ft.iChangedBy;
-			iTimeStamp = ft.iTimeStamp;
 		}
 		
 		public void addDay(int day) { iDays.add(day); }
@@ -483,13 +479,6 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
-		
-		public boolean hasChangedBy() { return iChangedBy != null && !iChangedBy.isEmpty(); }
-		public String getChangedBy() { return iChangedBy; }
-		public void setChangedBy(String changedBy) { iChangedBy = changedBy; }
-		public boolean hasTimeStamp() { return iTimeStamp != null; }
-		public Date getTimeStamp() { return iTimeStamp; }
-		public void setTimeStamp(Date ts) { iTimeStamp = ts; }
 		
 		public String toString(String[] shortDays, boolean useAmPm) {
 			return getDaysString(shortDays, "") + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
