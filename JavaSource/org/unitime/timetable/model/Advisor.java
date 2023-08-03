@@ -51,6 +51,12 @@ public class Advisor extends BaseAdvisor implements NameInterface, Comparable<Ad
 				"from Advisor where externalUniqueId = :externalId and session.uniqueId = :sessionId"
 				).setString("externalId", externalId).setLong("sessionId", sessionId).setCacheable(true).setMaxResults(1).uniqueResult();
 	}
+	
+	public static Advisor findByExternalIdForStudent(String externalId, Long studentId) {
+		return (Advisor) AdvisorDAO.getInstance().getSession().createQuery(
+				"select a from Advisor a, Student s where a.externalUniqueId = :externalId and s.uniqueId = :studentId and a.session = s.session"
+				).setString("externalId", externalId).setLong("studentId", studentId).setCacheable(true).setMaxResults(1).uniqueResult();
+	}
     
     public int compareTo(Advisor advisor) {
         int cmp = NameFormat.LAST_FIRST.format(this).compareTo(NameFormat.LAST_FIRST.format(advisor));

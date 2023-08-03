@@ -374,7 +374,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			if (acr.getPriority() == -1) {
 				request.setCreditNote(acr.getNotes());
 				request.setTimeStamp(acr.getTimestamp());
-				request.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				request.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 				continue;
 			}
 			if (r == null || last != acr.getPriority()) {
@@ -407,7 +407,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				if (acr.getAlternative() == 0)
 					r.setCritical(acr.getCritical());
 				rc.setTimeStamp(acr.getTimestamp());
-				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getFreeTime() != null) {
 				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 				ft.setStart(acr.getFreeTime().getStartSlot());
@@ -417,13 +417,13 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
 				r.getRequestedCourse(0).addFreeTime(ft);
 				ft.setTimeStamp(acr.getTimestamp());
-				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getCourse() != null) {
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseName(acr.getCourse());
 				r.addRequestedCourse(rc);
 				rc.setTimeStamp(acr.getTimestamp());
-				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 			}
 			if (acr.getCredit() != null)
 				r.setAdvisorCredit(acr.getCredit());
@@ -436,17 +436,21 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			if (acr.getTimestamp() != null) {
 				if (r.getTimeStamp() == null || r.getTimeStamp().before(acr.getTimestamp())) {
 					r.setTimeStamp(acr.getTimestamp());
-					r.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+					r.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 				}
 			}
 		}
 	}
 	
-	public static String getName(Map<String, String> nameCache, String externalUniqueId, Long sessionId, NameFormat format) {
+	public static String getName(Map<String, String> nameCache, String externalUniqueId, Long studentId, Long sessionId, NameFormat format) {
 		if (externalUniqueId == null || externalUniqueId.isEmpty()) return null;
 		String ret = nameCache.get(externalUniqueId);
 		if (ret == null) {
-			Advisor a = Advisor.findByExternalId(externalUniqueId, sessionId);
+			Advisor a = null;
+			if (sessionId != null) 
+				a = Advisor.findByExternalId(externalUniqueId, sessionId);
+			else if (studentId != null)
+				a = Advisor.findByExternalIdForStudent(externalUniqueId, studentId);
 			if (a != null && a.getLastName() != null && a.getFirstName() != null) {
 				ret = format.format(a);
 			} else {
@@ -483,7 +487,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			if (acr.getPriority() == -1) {
 				request.setCreditNote(acr.getNote());
 				request.setTimeStamp(acr.getTimeStamp());
-				request.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				request.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 				continue;
 			}
 			if (r == null || last != acr.getPriority()) {
@@ -520,7 +524,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				if (acr.getAlternative() == 0)
 					r.setCritical(acr.getCritical());
 				rc.setTimeStamp(acr.getTimeStamp());
-				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getFreeTime() != null) {
 				CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
 				ft.setStart(acr.getFreeTime().getSlot());
@@ -530,13 +534,13 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
 				r.getRequestedCourse(0).addFreeTime(ft);
 				ft.setTimeStamp(acr.getTimeStamp());
-				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 			} else if (acr.getCourseName() != null) {
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseName(acr.getCourseName());
 				r.addRequestedCourse(rc);
 				rc.setTimeStamp(acr.getTimeStamp());
-				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+				rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 			}
 			if (acr.getCredit() != null)
 				r.setAdvisorCredit(acr.getCredit());
@@ -549,7 +553,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 			if (acr.getTimeStamp() != null) {
 				if (r.getTimeStamp() == null || r.getTimeStamp().before(acr.getTimeStamp())) {
 					r.setTimeStamp(acr.getTimeStamp());
-					r.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getAcademicSessionId(), nameFormat));
+					r.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
 				}
 			}
 		}
@@ -585,6 +589,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		
 		CourseRequestInterface request = new CourseRequestInterface();
 		request.setStudentId(student.getStudentId());
+		request.setSessionId(server.getAcademicSession().getUniqueId());
 		request.setPin(student.getPin());
 		request.setPinReleased(student.isPinReleased());
 		
