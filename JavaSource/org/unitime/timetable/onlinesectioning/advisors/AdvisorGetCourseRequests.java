@@ -414,10 +414,20 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				ft.setLength(acr.getFreeTime().getLength());
 				for (DayCode day : DayCode.toDayCodes(acr.getFreeTime().getDayCode()))
 					ft.addDay(day.getIndex());	
-				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
-				r.getRequestedCourse(0).addFreeTime(ft);
-				ft.setTimeStamp(acr.getTimestamp());
-				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
+				RequestedCourse rc = null;
+				if (!r.hasRequestedCourse()) {
+					rc = new RequestedCourse();
+					r.addRequestedCourse(rc);
+					rc.setTimeStamp(acr.getTimestamp());
+					rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
+				} else {
+					rc = r.getRequestedCourse(0);
+					if (acr.getTimestamp() != null && (rc.getTimeStamp() == null || rc.getTimeStamp().before(acr.getTimestamp()))) {
+						rc.setTimeStamp(acr.getTimestamp());
+						rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
+					}
+				}
+				rc.addFreeTime(ft);
 			} else if (acr.getCourse() != null) {
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseName(acr.getCourse());
@@ -531,10 +541,20 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				ft.setLength(acr.getFreeTime().getLength());
 				for (DayCode day : DayCode.toDayCodes(acr.getFreeTime().getDays()))
 					ft.addDay(day.getIndex());	
-				if (!r.hasRequestedCourse()) r.addRequestedCourse(new RequestedCourse());
-				r.getRequestedCourse(0).addFreeTime(ft);
-				ft.setTimeStamp(acr.getTimeStamp());
-				ft.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
+				RequestedCourse rc = null;
+				if (!r.hasRequestedCourse()) {
+					rc = new RequestedCourse();
+					r.addRequestedCourse(rc);
+					rc.setTimeStamp(acr.getTimeStamp());
+					rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
+				} else {
+					rc = r.getRequestedCourse(0);
+					if (acr.getTimeStamp() != null && (rc.getTimeStamp() == null || rc.getTimeStamp().before(acr.getTimeStamp()))) {
+						rc.setTimeStamp(acr.getTimeStamp());
+						rc.setChangedBy(getName(nameCache, acr.getChangedBy(), request.getStudentId(), request.getAcademicSessionId(), nameFormat));
+					}
+				}
+				rc.addFreeTime(ft);
 			} else if (acr.getCourseName() != null) {
 				RequestedCourse rc = new RequestedCourse();
 				rc.setCourseName(acr.getCourseName());
