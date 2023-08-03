@@ -39,6 +39,56 @@
 		</item>
 	</category>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Online Student Scheduling Dashboard: Advisor Recommendation</name>
+			<description>
+				<line>In the table showing the advisor recommendations for a student, added the following two columns:
+					<line>Advised: date and time when the line was added or modified last</line>
+					<line>Advisor: person who advised the student (who added/modified the line last)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Finder, Online Scheduling Dashboard</name>
+			<description>
+				<line>When showing data direcly from the database (online scheduling server is not running)
+					<line>Correct date pattern formatting (using unitime.pattern.format.useDates property)</line>
+					<line>Include date pattern and required room for arrange hours classes</line>
+					<line>This applies to
+						<line>List of classes on the Course Finder dialog</line>
+						<line>Enrollments of a student on the online dashboard (Student dialog)</line>
+						<line>Classes listed on the Enrollments tab</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Finder: Filter</name>
+			<description>
+				<line>Course Finder dialog on the Scheduling Assistant, Course Requests, and Advisor Course Recommendations pages improved.</line>
+				<line>Added Filter section, which allows for filtering courses by:
+					<line>Class start/end date (given course must have an enrollment that does not start before the given From date, or lasts past the To date)</line>
+					<line>Min/max credit</line>
+					<line>Instructor name (given course must have a class with matching instructor name)</line>
+				</line>
+				<line>Notes:
+					<line>Classes that do not display instructors are not considered by the instructor filter.</line>
+					<line>Classes that are not enabled for student scheduling are ignored (both instructor and class dates filters).</line>
+					<line>The filter is ONLY used for the list of courses, it does not guarantee that the student gets a class with the given instructor or within the given dates.</line>
+					<line>When used on the Student Course Requests page or Advisor Course Recommendations page at the time when the schedule of classes has not been published yet,
+						only allow for credit filter (no filtering by class dates or instructor names until the schedule of classes is published).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Show/Hide Columns</name>
+			<description>
+				<line>Added ability to show/hide columns on the dashboard tables (Enrollments, Students, and Change Log).</line>
+			</description>
+		</item>
+	</category>	
+	<category>
 		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Solver Load: Replace Pending courses with Substitutes</name>
@@ -56,6 +106,36 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Solver Reports: Solution Statistics</name>
+			<description>
+				<line>Added Requested Courses - impossible row: percentage of requested courses that have no possible enrollment (e.g., due to having all classes disabled).</line>
+			</description>
+		</item>
 	</category>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Academic Sessions</name>
+			<description>
+				<line>Academic Session column: use academic year (instead of session start year) when identifying an academic session.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination PDF Reports, Enrollment Audit PDF Reports</name>
+			<description>
+				<line>Use academic year (instead of session start year) when naming an output file.</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor Detail</name>
+			<description>
+				<line>Previous/Next buttons on the Instructor Detail page: follow the order in which the instructors were listed on the Instructors page.
+					<line>Instead of using the default order (instructor names).</line>
+				</line>
+				<line>Also applies to Previous/Next buttons on the Edit Instructor, Instructor Assignment Preferences, and Instructor Preferences pages.</line>
+			</description>
+		</item>
+	</category>	
 </release>
 </release-history>
