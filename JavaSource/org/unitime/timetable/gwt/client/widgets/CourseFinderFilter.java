@@ -251,8 +251,8 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 	@Override
 	public Filter getValue() {
 		Filter filter = new Filter();
-		filter.setClassFrom(iDateFrom.getValue());
-		filter.setClassTo(iDateTo.getValue());
+		filter.setClassFrom(iDateFrom.getValueInServerTimeZone());
+		filter.setClassTo(iDateTo.getValueInServerTimeZone());
 		filter.setCreditMin(iCreditFrom.toFloat());
 		filter.setCreditMax(iCreditTo.toFloat());
 		filter.setInstructor(iInstructor.getValue());
@@ -268,8 +268,8 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 			iCreditTo.setValue((Number)null);
 			iInstructor.setValue("");
 		} else {
-			iDateFrom.setValue(filter.getClassFrom());
-			iDateTo.setValue(filter.getClassTo());
+			iDateFrom.setValueInServerTimeZone(filter.getClassFrom());
+			iDateTo.setValueInServerTimeZone(filter.getClassTo());
 			iCreditFrom.setValue(filter.getCreditMin());
 			iCreditTo.setValue(filter.getCreditMax());
 			iInstructor.setValue(filter.hasInstructor() ? filter.getInstructor() : "");
