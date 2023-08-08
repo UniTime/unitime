@@ -28,7 +28,6 @@ import java.util.TreeSet;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -37,6 +36,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 
 /**
  * @author Tomas Muller
@@ -145,7 +145,7 @@ public class ClassCourseComparator implements Comparator {
 
     public int compareClasses(CourseOffering co1, CourseOffering co2, Class_ c1, Class_ c2) {
     	int cmp = 0;
-    	Assignment a1, a2;
+    	AssignmentInfo a1, a2;
     	try {
     		switch (iSortyBy) {
     		case NAME:

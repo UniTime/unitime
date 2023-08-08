@@ -46,7 +46,6 @@ import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -65,6 +64,7 @@ import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
@@ -284,7 +284,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 		    	ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, getCourseTimetablingSolverService().getSolver(), c.getUniqueId(),false);
 		    	if (ca == null) {
 		    		try {
-		    			Assignment a = getClassAssignmentService().getAssignment().getAssignment(c);
+		    			AssignmentInfo a = getClassAssignmentService().getAssignment().getAssignment(c);
 		    			if (a.getUniqueId() != null)
 		    				ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(sessionContext, a.getUniqueId(), false);
 		    		} catch (Exception e) {}
@@ -303,12 +303,12 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 		    	}
 		    	String icon = null, bgColor = null, title = null;
 		    	if (!c.isCancelled() && ci.isLead()) {
-		        	Set<Assignment> conflicts = null;
+		        	Set<AssignmentInfo> conflicts = null;
 		        	try { conflicts = getClassAssignmentService().getAssignment().getConflicts(c.getUniqueId()); } catch (Exception e) {}
 		        	if (conflicts != null && !conflicts.isEmpty()) {
 		        		bgColor = "#fff0f0";
 		    			String s = "";
-		    			for (Assignment x: conflicts) {
+		    			for (AssignmentInfo x: conflicts) {
 		    				if (!s.isEmpty()) s += ", ";
 		    				s += (x.getClassName() + " " + x.getPlacement().getName(CONST.useAmPm())).trim();
 		    			}

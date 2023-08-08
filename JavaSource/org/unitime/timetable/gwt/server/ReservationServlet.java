@@ -47,7 +47,6 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRp
 import org.unitime.timetable.interfaces.ExternalCourseOfferingReservationEditAction;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -96,6 +95,7 @@ import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.reservation.ReservationFilterBackend;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.Constants;
 
@@ -246,7 +246,7 @@ public class ReservationServlet implements ReservationService {
 					clazz.setExternalId(c.getClassSuffix(cc));
 					if (assignments != null) {
 						try {
-							Assignment a = assignments.getAssignment(c);
+							AssignmentInfo a = assignments.getAssignment(c);
 							if (a != null) {
 								clazz.setDate(a.getDatePattern() != null ? a.getDatePattern().getName() : null);
 								if (a.getTimeLocation() != null) {

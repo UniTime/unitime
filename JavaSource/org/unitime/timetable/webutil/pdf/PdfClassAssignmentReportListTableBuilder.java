@@ -28,7 +28,6 @@ import java.util.TreeSet;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -42,6 +41,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -71,7 +71,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 	
 	@Override
 	protected PdfPCell pdfBuildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Assignment a = null;
+    	AssignmentInfo a = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
 				a = classAssignment.getAssignment((Class_)prefGroup);

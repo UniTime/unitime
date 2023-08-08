@@ -82,22 +82,15 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
-import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
-import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.server.solver.ClassAssignmentDetailsBackend;
 import org.unitime.timetable.server.solver.ComputeConflictTableBackend;
 import org.unitime.timetable.server.solver.ComputeSuggestionsBackend;
@@ -731,23 +724,23 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     	return getProperties().getPropertyLongArry("General.SolverGroupId", null);
     }
     
-    private HashSet iDepartmentIds = null;
+    private Set<Long> iDepartmentIds = null;
     @Override
-    public Set getDepartmentIds() {
+    public Set<Long> getDepartmentIds() {
     	if (iDepartmentIds!=null) return iDepartmentIds;
-    	iDepartmentIds = new HashSet();
+    	iDepartmentIds = new HashSet<Long>();
     	Long ownerId[] = getOwnerId();
     	for (int i=0;i<ownerId.length;i++) {
     		SolverGroup sg = (SolverGroupDAO.getInstance()).get(ownerId[i]);
-    		for (Iterator j=sg.getDepartments().iterator();j.hasNext();) {
-    			iDepartmentIds.add(((Department)j.next()).getUniqueId());
+    		for (Department d: sg.getDepartments()) {
+    			iDepartmentIds.add(d.getUniqueId());
     		}
     	}
     	return iDepartmentIds;
     }
     
     @Override
-	public Assignment getAssignment(Class_ clazz) {
+	public AssignmentInfo getAssignment(Class_ clazz) {
 		Department dept = clazz.getManagingDept();
 		if (dept!=null && getDepartmentIds().contains(dept.getUniqueId()))
 			return getAssignment(clazz.getUniqueId());
@@ -755,7 +748,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     }
     
     @Override
-    public Assignment getAssignment(Long classId) {
+    public AssignmentInfo getAssignment(Long classId) {
     	Lock lock = currentSolution().getLock().readLock();
 		lock.lock();
 		try {
@@ -766,41 +759,9 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     			}
     		}
     		if (lecture==null) return null;
-    		Placement placement = (Placement)currentSolution().getAssignment().getValue(lecture);
+    		Placement placement = currentSolution().getAssignment().getValue(lecture);
     		if (placement==null) return null;
-        	Assignment assignment = new Assignment();
-        	assignment.setClassName(lecture.getName());
-    		assignment.setDays(Integer.valueOf(placement.getTimeLocation().getDayCode()));
-    		assignment.setStartSlot(Integer.valueOf(placement.getTimeLocation().getStartSlot()));
-    		if (placement.getTimeLocation().getDatePatternId()!=null) {
-    			assignment.setDatePattern(DatePatternDAO.getInstance().get(placement.getTimeLocation().getDatePatternId()));
-    		}
-    		assignment.setSlotsPerMtg(placement.getTimeLocation().getLength());
-    		assignment.setBreakTime(placement.getTimeLocation().getBreakTime());
-    		HashSet rooms = new HashSet();
-    		if (placement.isMultiRoom()) {
-    			for (RoomLocation r: placement.getRoomLocations()) {
-    				Location room = (LocationDAO.getInstance()).get(r.getId());
-    				if (room!=null) rooms.add(room);
-    			}
-    		} else {
-    			Location room = (LocationDAO.getInstance()).get(placement.getRoomLocation().getId());
-    			if (room!=null) rooms.add(room);
-    		}
-    		assignment.setRooms(rooms);
-    		TimePattern pattern = (TimePatternDAO.getInstance()).get(placement.getTimeLocation().getTimePatternId());
-    		assignment.setTimePattern(pattern);
-    		HashSet instructors = new HashSet();
-    		for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
-    			DepartmentalInstructor instructor = null;
-    			if (ic.getResourceId()!=null) {
-					instructor = (DepartmentalInstructorDAO.getInstance()).get(ic.getResourceId());
-				}
-    			if (instructor!=null) instructors.add(instructor);
-    			
-    		}
-    		assignment.setInstructors(instructors);
-    		return assignment;
+    		return new SolverAssignmentInfo(lecture, placement);
     	} finally {
     		lock.unlock();
     	}
@@ -835,12 +796,11 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     }
 
     @Override
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
-		Hashtable assignments = new Hashtable();
-		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
-			Object classOrClassId = i.next();
+	public Map<Long, AssignmentInfo> getAssignmentTable(Collection classesOrClassIds) {
+		Map<Long, AssignmentInfo> assignments = new HashMap<Long, AssignmentInfo>();
+		for (Object classOrClassId: classesOrClassIds) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
-			Assignment assignment = (classOrClassId instanceof Class_ ? getAssignment((Class_)classOrClassId) : getAssignment((Long)classOrClassId));
+			AssignmentInfo assignment = (classOrClassId instanceof Class_ ? getAssignment((Class_)classOrClassId) : getAssignment((Long)classOrClassId));
 			if (assignment!=null)
 				assignments.put(classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId, assignment);
 		}
@@ -848,15 +808,14 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
     
     @Override
-    public Hashtable getAssignmentTable2(Collection classesOrClassIds) {
+    public Map<Long, AssignmentInfo> getAssignmentTable2(Collection<Long> classesOrClassIds) {
         return getAssignmentTable(classesOrClassIds);
     }
 	
     @Override
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
-		Hashtable infos = new Hashtable();
-		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
-			Object classOrClassId = i.next();
+	public Map<Long, AssignmentPreferenceInfo> getAssignmentInfoTable(Collection classesOrClassIds) {
+		Map<Long, AssignmentPreferenceInfo> infos = new HashMap<Long, AssignmentPreferenceInfo>();
+		for (Object classOrClassId: classesOrClassIds) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			AssignmentPreferenceInfo info = (classOrClassId instanceof Class_ ? getAssignmentInfo((Class_)classOrClassId) : getAssignmentInfo((Long)classOrClassId));
 			if (info!=null)
@@ -866,7 +825,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
     
     @Override
-    public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds) {
+    public Map<Long, AssignmentPreferenceInfo> getAssignmentInfoTable2(Collection<Long> classesOrClassIds) {
         return getAssignmentInfoTable(classesOrClassIds);
     }
 
@@ -1254,7 +1213,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 	}
 
 	@Override
-	public Set<Assignment> getConflicts(Long classId) {
+	public Set<AssignmentInfo> getConflicts(Long classId) {
 		return null;
 	}
 	

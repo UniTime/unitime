@@ -32,13 +32,13 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.util.duration.DurationModel;
 
 
@@ -82,7 +82,7 @@ public class CsvClassAssignmentExport {
 				leadsSb.append(instructor.getName(instructorFormat));
 			}
             String divSec = (showOriginalDivSec ? clazz.getClassSuffix() : clazz.getClassSuffix(co));
-			Assignment assignment = null;
+            AssignmentInfo assignment = null;
 			try {
 				assignment = proxy.getAssignment(clazz);
 			} catch (Exception e) {
@@ -210,7 +210,7 @@ public class CsvClassAssignmentExport {
                 }
             }
             String divSec = (showOriginalDivSec ? clazz.getClassSuffix() : clazz.getClassSuffix(course));
-            Assignment assignment = null;
+            AssignmentInfo assignment = null;
             try {
                 assignment = proxy.getAssignment(clazz);
             } catch (Exception e) {

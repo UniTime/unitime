@@ -73,6 +73,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
@@ -108,9 +109,10 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 				Class_ clazz = Class_DAO.getInstance().get(request.getClassId());
 				if (clazz == null)
 					throw new GwtRpcException(MESSAGES.errorClassDoesNotExist(request.getClassId()));
-				org.unitime.timetable.model.Assignment assignment = solver.getAssignment(clazz);
-				if (assignment == null || assignment.getSolution() == null) return createClassAssignmentDetailsFromClass(cx, clazz);
-				return createClassAssignmentDetailsFromAssignment(cx, assignment, true);
+				AssignmentInfo assignment = solver.getAssignment(clazz);
+				if (assignment != null && assignment instanceof org.unitime.timetable.model.Assignment)
+					return createClassAssignmentDetailsFromAssignment(cx, (org.unitime.timetable.model.Assignment)assignment, true);
+				return createClassAssignmentDetailsFromClass(cx, clazz);
 			} catch (Exception e) {
 				throw new GwtRpcException(e.getMessage(), e);
 			}
@@ -118,9 +120,9 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		
 		ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
 		if (proxy != null) {
-			org.unitime.timetable.model.Assignment assignment = proxy.getAssignment(request.getClassId());
-			if (assignment != null)
-				return createClassAssignmentDetailsFromAssignment(cx, assignment, true);
+			AssignmentInfo assignment = proxy.getAssignment(request.getClassId());
+			if (assignment != null && assignment instanceof org.unitime.timetable.model.Assignment)
+				return createClassAssignmentDetailsFromAssignment(cx, (org.unitime.timetable.model.Assignment)assignment, true);
 			Class_ clazz = Class_DAO.getInstance().get(request.getClassId());
 			if (clazz == null)
 				throw new GwtRpcException(MESSAGES.errorClassDoesNotExist(request.getClassId()));

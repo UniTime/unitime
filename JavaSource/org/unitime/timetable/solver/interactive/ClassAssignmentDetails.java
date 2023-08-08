@@ -73,6 +73,7 @@ import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.server.solver.TimetableGridSolutionHelper;
 import org.unitime.timetable.server.solver.TimetableGridSolverHelper;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
@@ -375,9 +376,10 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
     			org.hibernate.Session hibSession = dao.getSession();
     			Class_ clazz = dao.get(classId, hibSession);
     			if (clazz==null) return null;
-    			Assignment assignment = solver.getAssignment(clazz);
-    			if (assignment==null || assignment.getSolution()==null) return null;
-    			return new ClassAssignmentDetails(assignment.getSolution(),assignment,false,hibSession, instructorNameFormat);
+    			AssignmentInfo assignment = solver.getAssignment(clazz);
+    			if (assignment != null && assignment instanceof Assignment)
+    				return new ClassAssignmentDetails(((Assignment)assignment).getSolution(), (Assignment)assignment,false,hibSession, instructorNameFormat);
+    			return null;
     		} catch (Exception e) {
     			return null;
     		}

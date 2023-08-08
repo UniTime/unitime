@@ -40,6 +40,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -201,11 +202,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return getPreferences(DatePatternPref.class);
     }
     
-    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat) {
+    private String htmlForPrefs(AssignmentInfo assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat) {
     	return htmlForPrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize, nameFormat, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
     }
     
-    private String htmlForPrefs(Assignment assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat, boolean highlightClassPrefs){
+    private String htmlForPrefs(AssignmentInfo assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat, boolean highlightClassPrefs){
        	StringBuffer sb = new StringBuffer();
        	if (prefList != null && !prefList.isEmpty()) {
        		if (prefList.toArray()[0] instanceof TimePref){
@@ -232,7 +233,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForTimePrefs(assignment, prefList, false, false, null, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()));
     }
     
-    private String htmlForTimePrefs(Assignment assignment, Set timePrefList, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
+    private String htmlForTimePrefs(AssignmentInfo assignment, Set timePrefList, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
     	StringBuffer sb = new StringBuffer();
     	for (Iterator i=timePrefList.iterator();i.hasNext();) {
     		TimePref tp = (TimePref)i.next();
@@ -301,11 +302,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, nameFormat, highlightClassPrefs));
     }
 
-    public String getEffectivePrefHtmlForPrefType(Assignment assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
+    public String getEffectivePrefHtmlForPrefType(AssignmentInfo assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
     }
     
-    public String getEffectivePrefHtmlForPrefType(Assignment assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
+    public String getEffectivePrefHtmlForPrefType(AssignmentInfo assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null, highlightClassPrefs));
     }
 

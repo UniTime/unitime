@@ -34,6 +34,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 
 
 /**
@@ -151,9 +152,9 @@ public class DivSecAssignmentComparator implements Comparator {
 			Class_ cc1 = (Class_)c1.getChildClasses().iterator().next();
 			Class_ cc2 = (Class_)c2.getChildClasses().iterator().next();
 			if (iConsiderParentChildRelation || cc1.getSchedulingSubpart().getItype().equals(c1.getSchedulingSubpart().getItype())) {
-				Assignment a1 = null;
+				AssignmentInfo a1 = null;
 				try { a1 = iProxy.getAssignment(cc1); } catch (Exception e) {}
-				Assignment a2 = null;
+				AssignmentInfo a2 = null;
 				try { a2 = iProxy.getAssignment(cc2); } catch (Exception e) {}
 				if (a1==null || a2==null) {
 				if (cc1.getSchedulingSubpart().getItype().equals(c1.getSchedulingSubpart().getItype()))
@@ -189,9 +190,9 @@ public class DivSecAssignmentComparator implements Comparator {
 			if (cmp!=0) return cmp;
 		}
 		
-		Assignment a1 = null;
+		AssignmentInfo a1 = null;
 		try { a1 = iProxy.getAssignment(c1); } catch (Exception e) {}
-		Assignment a2 = null;
+		AssignmentInfo a2 = null;
 		try { a2 = iProxy.getAssignment(c2); } catch (Exception e) {}
 		
 		if (a1!=null && a2!=null) {

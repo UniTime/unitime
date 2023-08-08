@@ -50,6 +50,7 @@ import org.unitime.timetable.model.base.BaseAssignment;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.AssignmentInfoDAO;
 import org.unitime.timetable.model.dao.ConstraintInfoDAO;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.duration.DurationModel;
@@ -61,7 +62,7 @@ import org.unitime.timetable.util.duration.DurationModel;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "assignment")
-public class Assignment extends BaseAssignment {
+public class Assignment extends BaseAssignment implements ClassAssignmentProxy.AssignmentInfo {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -498,19 +499,19 @@ public class Assignment extends BaseAssignment {
         return event;
     }
     
-    public boolean shareDays(Assignment another) {
+    public boolean shareDays(ClassAssignmentProxy.AssignmentInfo another) {
         return ((getDays() & another.getDays()) !=0 );
     }
 
-    public boolean shareHours(Assignment another) {
+    public boolean shareHours(ClassAssignmentProxy.AssignmentInfo another) {
     	return (getStartSlot() + getSlotPerMtg() > another.getStartSlot()) && (another.getStartSlot() + another.getSlotPerMtg() > getStartSlot());
     }
 
-    public boolean shareWeeks(Assignment another) {
+    public boolean shareWeeks(ClassAssignmentProxy.AssignmentInfo another) {
     	return getDatePattern() == null || another.getDatePattern() == null || getDatePattern().getPatternBitSet().intersects(another.getDatePattern().getPatternBitSet());
     }
 
-    public boolean overlaps(Assignment another) {
+    public boolean overlaps(ClassAssignmentProxy.AssignmentInfo another) {
         return shareDays(another) && shareHours(another) && shareWeeks(another);
     }    
     

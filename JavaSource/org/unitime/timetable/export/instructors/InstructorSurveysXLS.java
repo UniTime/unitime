@@ -43,7 +43,6 @@ import org.unitime.timetable.export.XLSPrinter;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Department;
@@ -66,6 +65,7 @@ import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
@@ -434,7 +434,7 @@ public class InstructorSurveysXLS implements Exporter {
 		line[colClass + 2] = new A(room);
 		line[colClass + 3] = new A(dist);
 		if (classAssignment != null) {
-			Assignment a = null;
+			AssignmentInfo a = null;
 			AssignmentPreferenceInfo p = null;
 			try {
 				a = classAssignment.getAssignment(ci.getClassInstructing());

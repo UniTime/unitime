@@ -84,10 +84,10 @@ public interface SolverProxy extends ClassAssignmentProxy, CommonSolverInterface
 	public PerturbationReport getPerturbationReport();
 	public CSVFile export(boolean useAmPm);
 	
-	public Set getDepartmentIds();
+	public Set<Long> getDepartmentIds();
 
-    public Hashtable getAssignmentTable2(Collection classesOrClassIds);
-    public Hashtable getAssignmentInfoTable2(Collection classesOrClassIds);
+    public Map<Long, AssignmentInfo> getAssignmentTable2(Collection<Long> classIds);
+    public Map<Long, AssignmentPreferenceInfo> getAssignmentInfoTable2(Collection<Long> classIds);
     
 	public SuggestionsInterface.ClassAssignmentDetails getClassAssignmentDetails(SuggestionsContext context, Long classId, boolean includeDomain, boolean includeConstraints);
 	public SuggestionsInterface.Suggestion getSelectedSuggestion(SuggestionsContext context, SuggestionsInterface.SelectedAssignmentsRequest request);

@@ -49,7 +49,6 @@ import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -68,6 +67,7 @@ import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
@@ -228,7 +228,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
 
             ClassAssignmentProxy proxy = getClassAssignmentService().getAssignment();
             if (proxy != null) {
-            	Assignment a = proxy.getAssignment(c);
+            	AssignmentInfo a = proxy.getAssignment(c);
             	if (a != null && a.isCommitted() && a.getDatePattern() != null) {
             		if (!a.getDatePattern().equals(c.effectiveDatePattern())) {
             			if (a.getDatePattern().getParents() == null || !a.getDatePattern().getParents().contains(c.effectiveDatePattern())) {
@@ -238,12 +238,12 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
             	}
             }
             
-        	Set<Assignment> conflicts = (proxy == null ? null : proxy.getConflicts(c.getUniqueId()));
+        	Set<AssignmentInfo> conflicts = (proxy == null ? null : proxy.getConflicts(c.getUniqueId()));
         	if (conflicts != null && !conflicts.isEmpty()) {
-        		TreeSet<Assignment> orderedConflicts = new TreeSet<Assignment>(new Comparator<Assignment>() {
+        		TreeSet<AssignmentInfo> orderedConflicts = new TreeSet<AssignmentInfo>(new Comparator<AssignmentInfo>() {
         			ClassComparator cc = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
 					@Override
-					public int compare(Assignment a1, Assignment a2) {
+					public int compare(AssignmentInfo a1, AssignmentInfo a2) {
 						return cc.compare(a1.getClazz(), a2.getClazz());
 					}
 				});
@@ -289,7 +289,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
         		};
         		String nameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
         		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
-        		for (Assignment assignment: orderedConflicts) {
+        		for (AssignmentInfo assignment: orderedConflicts) {
         			String suffix = assignment.getClazz().getClassSuffix();
         			DatePattern dp = assignment.getDatePattern();
         			TimeLocation t = assignment.getTimeLocation();

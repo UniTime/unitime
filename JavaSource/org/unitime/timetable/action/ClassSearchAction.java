@@ -45,7 +45,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.ClassListFormInterface;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -59,6 +58,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
@@ -562,7 +562,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 				
 				if (doFilterAssignedTime) {
 					try {
-						Assignment a = classAssignmentProxy.getAssignment(c);
+						AssignmentInfo a = classAssignmentProxy.getAssignment(c);
 						if (a==null) {
 							continue;
 						}
@@ -585,7 +585,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 				
 				if (doFilterAssignedRoom) {
 					try {
-						Assignment a = classAssignmentProxy.getAssignment(c);
+						AssignmentInfo a = classAssignmentProxy.getAssignment(c);
 						if (a==null) {
 							continue;
 						}

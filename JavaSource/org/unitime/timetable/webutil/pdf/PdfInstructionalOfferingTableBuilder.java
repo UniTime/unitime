@@ -34,7 +34,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.ClassInstructor;
@@ -76,6 +75,7 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -597,7 +597,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     
     protected PdfPCell pdfBuildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Assignment a = null;
+    	AssignmentInfo a = null;
     	AssignmentPreferenceInfo p = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
@@ -652,7 +652,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     
     private PdfPCell pdfBuildTimePrefCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
     	Color color = (isEditable?sEnableColor:sDisableColor);
-		Assignment a = null;
+		AssignmentInfo a = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
 				a = classAssignment.getAssignment((Class_)prefGroup);
@@ -802,7 +802,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	    	boolean unlimited = aClass.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue();
 	    	if (!unlimited) {
 	    		String limitString = null;
-                Assignment a = null;
+                AssignmentInfo a = null;
                 try {
                     if (classAssignment!=null) a = classAssignment.getAssignment(aClass);
                 } catch (Exception e) {}
@@ -1108,7 +1108,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-    		Assignment a = null;
+    		AssignmentInfo a = null;
     		AssignmentPreferenceInfo p = null;
     		try {
     			a = classAssignment.getAssignment(aClass);
@@ -1140,7 +1140,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-    		Assignment a = null;
+    		AssignmentInfo a = null;
     		AssignmentPreferenceInfo p = null;
     		try {
     			a= classAssignment.getAssignment(aClass);
@@ -1170,7 +1170,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
     	if (classAssignment!=null && prefGroup instanceof Class_){
     		Class_ aClass = (Class_) prefGroup;
-    		Assignment a = null;
+    		AssignmentInfo a = null;
    			try {
    				a = classAssignment.getAssignment(aClass);
    			} catch (Exception e) {

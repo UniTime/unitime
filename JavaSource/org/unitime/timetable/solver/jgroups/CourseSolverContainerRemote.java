@@ -23,11 +23,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,7 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -242,19 +244,18 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
     		return iCommitedClassAssignmentProxy.getAssignmentInfo(clazz);
     	}
 
-    	public Assignment getAssignment(Class_ clazz) throws Exception {
+    	public AssignmentInfo getAssignment(Class_ clazz) throws Exception {
     		Department dept = clazz.getManagingDept();
     		if (dept!=null && iRemoteSolverProxy.getDepartmentIds().contains(dept.getUniqueId()))
     			return iRemoteSolverProxy.getAssignment(clazz.getUniqueId());
     		return iCommitedClassAssignmentProxy.getAssignment(clazz);
     	}
 
-        public Hashtable getAssignmentTable(Collection classesOrClassIds) throws Exception {
+        public Map<Long, AssignmentInfo> getAssignmentTable(Collection classesOrClassIds) throws Exception {
             Set deptIds = iRemoteSolverProxy.getDepartmentIds();
-            Hashtable assignments = new Hashtable();
-            Vector solverClassesOrClassIds = new Vector(classesOrClassIds.size());
-            for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
-                Object classOrClassId = i.next();
+            Map<Long, AssignmentInfo> assignments = new HashMap<Long, AssignmentInfo>();
+            List<Long> solverClassIds = new ArrayList<Long>(classesOrClassIds.size());
+            for (Object classOrClassId: classesOrClassIds) {
                 if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
                 Class_ clazz = (classOrClassId instanceof Class_ ? (Class_)classOrClassId : (new Class_DAO()).get((Long)classOrClassId));
                 if (clazz.getManagingDept()==null || !deptIds.contains(clazz.getManagingDept().getUniqueId())) {
@@ -262,20 +263,19 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
                     if (assignment!=null)
                         assignments.put(clazz.getUniqueId(), assignment);
                 } else {
-                    solverClassesOrClassIds.add(clazz.getUniqueId());
+                	solverClassIds.add(clazz.getUniqueId());
                 }
             }
-            if (!solverClassesOrClassIds.isEmpty())
-                assignments.putAll(iRemoteSolverProxy.getAssignmentTable2(solverClassesOrClassIds));
+            if (!solverClassIds.isEmpty())
+                assignments.putAll(iRemoteSolverProxy.getAssignmentTable2(solverClassIds));
             return assignments;
         }
         
-        public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) throws Exception {
+        public Map<Long, AssignmentPreferenceInfo> getAssignmentInfoTable(Collection classesOrClassIds) throws Exception {
             Set deptIds = iRemoteSolverProxy.getDepartmentIds();
-            Hashtable infos = new Hashtable();
-            Vector solverClassesOrClassIds = new Vector(classesOrClassIds.size());
-            for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
-                Object classOrClassId = i.next();
+            Map<Long, AssignmentPreferenceInfo> infos = new HashMap<Long, AssignmentPreferenceInfo>();
+            List<Long> solverClassIds = new ArrayList<Long>(classesOrClassIds.size());
+            for (Object classOrClassId: classesOrClassIds) {
                 if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
                 Class_ clazz = (classOrClassId instanceof Class_ ? (Class_)classOrClassId : (new Class_DAO()).get((Long)classOrClassId));
                 if (clazz.getManagingDept()==null || !deptIds.contains(clazz.getManagingDept().getUniqueId())) {
@@ -283,11 +283,11 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
                     if (info!=null)
                         infos.put(clazz.getUniqueId(), info);
                 } else {
-                    solverClassesOrClassIds.add(clazz.getUniqueId());
+                	solverClassIds.add(clazz.getUniqueId());
                 }
             }
-            if (!solverClassesOrClassIds.isEmpty())
-                infos.putAll(iRemoteSolverProxy.getAssignmentInfoTable2(solverClassesOrClassIds));
+            if (!solverClassIds.isEmpty())
+                infos.putAll(iRemoteSolverProxy.getAssignmentInfoTable2(solverClassIds));
             return infos;
         }
     	

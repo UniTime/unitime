@@ -256,13 +256,13 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 	}
 
 	@Override
-	public Set<Assignment> getConflicts(Long classId) {
+	public Set<AssignmentInfo> getConflicts(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
 		Assignment assignment = getAssignment(clazz);
 		if (assignment == null) return null;
-		Set<Assignment> conflicts = new HashSet<Assignment>();
+		Set<AssignmentInfo> conflicts = new HashSet<AssignmentInfo>();
 		if (assignment.getRooms() != null)
 			for (Location room : assignment.getRooms()) {
 				if (!room.isIgnoreRoomCheck()) {

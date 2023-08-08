@@ -37,7 +37,6 @@ import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.PreferencesForm;
 import org.unitime.timetable.gwt.shared.RoomInterface;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
@@ -89,6 +88,7 @@ import org.unitime.timetable.server.rooms.PeriodPreferencesBackend;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -1107,7 +1107,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 		    tps = form.getTimePatterns();			
 		}
 		
-		Assignment assignment = null;
+		AssignmentInfo assignment = null;
 		
 		if (pg instanceof Class_) {
 			if (sessionContext.hasPermission(Right.ClassAssignments)) {

@@ -1094,7 +1094,7 @@ public class Class_ extends BaseClass_ {
     	if (minLimit == maxLimit) return maxLimit;
 
     	// get assignment
-    	Assignment assignment = null;
+    	ClassAssignmentProxy.AssignmentInfo assignment = null;
     	try {
     		assignment = (proxy == null ? null : proxy.getAssignment(this));
     	} catch (Exception e) {
@@ -1602,7 +1602,7 @@ public class Class_ extends BaseClass_ {
     }
     
     public String buildAssignedTimeHtml(ClassAssignmentProxy proxy){
-		Assignment a = null;
+    	ClassAssignmentProxy.AssignmentInfo a = null;
 		StringBuffer sb = new StringBuffer();
 		try {
 			a = proxy.getAssignment(this);
@@ -1637,10 +1637,10 @@ public class Class_ extends BaseClass_ {
 	}
 
 	public String buildAssignedRoomHtml(ClassAssignmentProxy proxy){
-		Assignment a = null;
+		ClassAssignmentProxy.AssignmentInfo a = null;
 		StringBuffer sb = new StringBuffer();
 		try {
-			a= proxy.getAssignment(this);
+			a = proxy.getAssignment(this);
 		} catch (Exception e) {
 			Debug.error(e);
 		}

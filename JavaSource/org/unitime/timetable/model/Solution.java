@@ -35,12 +35,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1416,7 +1418,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return (Assignment)iAssignmentTable.get(classId);
 	}
 	
-	public Assignment getAssignment(Class_ clazz) {
+	public AssignmentInfo getAssignment(Class_ clazz) {
         if (!getOwner().getDepartments().contains(clazz.getManagingDept()))
             return clazz.getCommittedAssignment();
 		return getAssignment(clazz.getUniqueId());
@@ -1431,20 +1433,20 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return (a==null?null:(AssignmentPreferenceInfo)a.getAssignmentInfo("AssignmentInfo"));
 	}
 	
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
-		Hashtable assignments = new Hashtable();
+	public Map<Long, AssignmentInfo> getAssignmentTable(Collection classesOrClassIds) {
+		HashMap<Long, AssignmentInfo> assignments = new HashMap<Long, AssignmentInfo> ();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
-			Assignment assignment = (classOrClassId instanceof Class_ ? getAssignment((Class_)classOrClassId) : getAssignment((Long)classOrClassId));
+			AssignmentInfo assignment = (classOrClassId instanceof Class_ ? getAssignment((Class_)classOrClassId) : getAssignment((Long)classOrClassId));
 			if (assignment!=null)
 				assignments.put(classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId, assignment);
 		}
 		return assignments;
 	}
 	
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
-		Hashtable infos = new Hashtable();
+	public Map<Long, AssignmentPreferenceInfo> getAssignmentInfoTable(Collection classesOrClassIds) {
+		HashMap<Long, AssignmentPreferenceInfo> infos = new HashMap<Long, AssignmentPreferenceInfo> ();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
@@ -1503,7 +1505,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			for (SchedulingSubpart subpart: config.getSchedulingSubparts())
 				for (Class_ clazz: subpart.getClasses()) {
 					if (clazz.isCancelled()) continue;
-					Assignment assignment = getAssignment(clazz);
+					AssignmentInfo assignment = getAssignment(clazz);
 					if (assignment == null) continue;
 					if (assignment.getRooms() != null)
 						for (Location room : assignment.getRooms()) {
@@ -1534,7 +1536,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 							for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
 								for (ClassInstructor ci : di.getClasses()) {
 									if (ci.equals(instructor) || ci.getClassInstructing().equals(clazz) || !ci.isLead()) continue;
-				            		Assignment a = getAssignment(ci.getClassInstructing());
+				            		AssignmentInfo a = getAssignment(ci.getClassInstructing());
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
 				            			return true;
 				            	}
@@ -1545,7 +1547,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 									.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId())
 									.setParameter("externalId", instructor.getInstructor().getExternalUniqueId())
 									.setCacheable(true).list()) {
-									Assignment a = getAssignment(c);
+									AssignmentInfo a = getAssignment(c);
 				            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a)) return true;
 								}
 							}
@@ -1553,7 +1555,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					
 			        Class_ parent = clazz.getParentClass();
 			        while (parent!=null) {
-			        	Assignment a = getAssignment(parent);
+			        	AssignmentInfo a = getAssignment(parent);
 			        	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
 			        		return true;
 			        	parent = parent.getParentClass();
@@ -1564,7 +1566,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			        	if (ss.getClasses().size() == 1) {
 			        		Class_ child = ss.getClasses().iterator().next();
 			        		if (clazz.equals(child)) continue;
-			        		Assignment a = getAssignment(child);
+			        		AssignmentInfo a = getAssignment(child);
 			        		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
 			        			return true;
 			        	}
@@ -1575,13 +1577,13 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
     
 	@Override
-	public Set<Assignment> getConflicts(Long classId) {
+	public Set<AssignmentInfo> getConflicts(Long classId) {
 		if (classId == null) return null;
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
-		Assignment assignment = getAssignment(clazz);
+		AssignmentInfo assignment = getAssignment(clazz);
 		if (assignment == null) return null;
-		Set<Assignment> conflicts = new HashSet<Assignment>();
+		Set<AssignmentInfo> conflicts = new HashSet<AssignmentInfo>();
 		if (assignment.getRooms() != null)
 			for (Location room : assignment.getRooms()) {
 				if (!room.isIgnoreRoomCheck()) {
@@ -1611,7 +1613,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				for (DepartmentalInstructor di: DepartmentalInstructor.getAllForInstructor(instructor.getInstructor())) {
 					for (ClassInstructor ci : di.getClasses()) {
 						if (ci.equals(instructor) || ci.getClassInstructing().equals(clazz) || !ci.isLead()) continue;
-	            		Assignment a = getAssignment(ci.getClassInstructing());
+						AssignmentInfo a = getAssignment(ci.getClassInstructing());
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a) && !clazz.canShareInstructor(a.getClazz()))
 	            			conflicts.add(a);
 	            	}
@@ -1622,7 +1624,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 						.setParameter("sessionId", instructor.getInstructor().getDepartment().getSessionId())
 						.setParameter("externalId", instructor.getInstructor().getExternalUniqueId())
 						.setCacheable(true).list()) {
-						Assignment a = getAssignment(c);
+						AssignmentInfo a = getAssignment(c);
 	            		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
 	            			conflicts.add(a);
 					}
@@ -1631,7 +1633,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
         Class_ parent = clazz.getParentClass();
         while (parent!=null) {
-        	Assignment a = getAssignment(parent);
+        	AssignmentInfo a = getAssignment(parent);
         	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
     			conflicts.add(a);
         	parent = parent.getParentClass();
@@ -1640,7 +1642,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         Queue<Class_> children = new LinkedList(clazz.getChildClasses());
         Class_ child = null;
         while ((child=children.poll())!=null) {
-        	Assignment a = getAssignment(child);
+        	AssignmentInfo a = getAssignment(child);
         	if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
     			conflicts.add(a);
         	if (!child.getChildClasses().isEmpty())
@@ -1652,7 +1654,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	if (ss.getClasses().size() == 1) {
         		child = ss.getClasses().iterator().next();
         		if (clazz.equals(child)) continue;
-        		Assignment a = getAssignment(child);
+        		AssignmentInfo a = getAssignment(child);
         		if (a != null && !a.getClazz().isCancelled() && assignment.overlaps(a))
         			conflicts.add(a);
         	}

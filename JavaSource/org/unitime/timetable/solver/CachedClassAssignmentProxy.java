@@ -19,15 +19,14 @@
 */
 package org.unitime.timetable.solver;
 
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.Vector;
-import java.util.Enumeration;
+import java.util.HashMap;
 
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 
@@ -38,29 +37,29 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 	private static Object sNULL = Boolean.FALSE;
 	private ClassAssignmentProxy iProxy;
-	private Hashtable iAssignmentTable = new Hashtable();
-	private Hashtable iAssignmentInfoTable = new Hashtable();
+	private Map<Long, Object> iAssignmentTable = new HashMap<Long, Object>();
+	private Map<Long, Object> iAssignmentInfoTable = new HashMap<Long, Object>();
 	
 	public CachedClassAssignmentProxy(ClassAssignmentProxy proxy) {
 		iProxy = proxy;
 	}
 	
-	public Assignment getAssignment(Long classId) {
+	public AssignmentInfo getAssignment(Long classId) {
 		Object cached = iAssignmentTable.get(classId);
 		if (cached!=null) {
-			return (sNULL.equals(cached)?null:(Assignment)cached);
+			return (sNULL.equals(cached)?null:(AssignmentInfo)cached);
 		}
-		Assignment assignment = iProxy.getAssignment(classId);
+		AssignmentInfo assignment = iProxy.getAssignment(classId);
 		iAssignmentTable.put(classId, (assignment==null?sNULL:assignment));
 		return assignment;
 	}
 	
-	public Assignment getAssignment(Class_ clazz) {
+	public AssignmentInfo getAssignment(Class_ clazz) {
 		Object cached = iAssignmentTable.get(clazz.getUniqueId());
 		if (cached!=null) {
-			return (sNULL.equals(cached)?null:(Assignment)cached);
+			return (sNULL.equals(cached)?null:(AssignmentInfo)cached);
 		}
-		Assignment assignment = iProxy.getAssignment(clazz);
+		AssignmentInfo assignment = iProxy.getAssignment(clazz);
 		iAssignmentTable.put(clazz.getUniqueId(), (assignment==null?sNULL:assignment));
 		return assignment;
 	}
@@ -85,26 +84,24 @@ public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 		return info;
 	}
 	
-	public Hashtable getAssignmentTable(Collection classesOrClassIds) {
-		Hashtable assignments = new Hashtable();
-		Vector unknown = new Vector();
-		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
-			Object classOrClassId = i.next();
+	public Map<Long, AssignmentInfo> getAssignmentTable(Collection classesOrClassIds) {
+		Map<Long, AssignmentInfo> assignments = new HashMap<Long, AssignmentInfo>();
+		List<Object> unknown = new ArrayList<Object>();
+		for (Object classOrClassId: classesOrClassIds) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			Long classId = (classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId);
 			Object cached = iAssignmentTable.get(classId);
 			if (cached!=null) {
-				if (!sNULL.equals(cached)) assignments.put(classId, cached);
+				if (!sNULL.equals(cached)) assignments.put(classId, (AssignmentInfo)cached);
 			} else {
 				unknown.add(classOrClassId);
 			}
 		}
-		Hashtable newAssignments = iProxy.getAssignmentTable(unknown);
-		for (Enumeration e=unknown.elements();e.hasMoreElements();) {
-			Object classOrClassId = e.nextElement();
+		Map<Long, AssignmentInfo> newAssignments = iProxy.getAssignmentTable(unknown);
+		for (Object classOrClassId: unknown) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			Long classId = (classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId);
-			Assignment assignment = (Assignment) newAssignments.get(classId);
+			AssignmentInfo assignment = newAssignments.get(classId);
 			iAssignmentTable.put(classId, (assignment==null?sNULL:assignment));
 			if (assignment!=null)
 				assignments.put(classId, assignment);
@@ -112,26 +109,24 @@ public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 		return assignments;
 	}
 	
-	public Hashtable getAssignmentInfoTable(Collection classesOrClassIds) {
-		Hashtable infos = new Hashtable();
-		Vector unknown = new Vector();
-		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
-			Object classOrClassId = i.next();
+	public Map<Long, AssignmentPreferenceInfo> getAssignmentInfoTable(Collection classesOrClassIds) {
+		Map<Long, AssignmentPreferenceInfo> infos = new HashMap<Long, AssignmentPreferenceInfo>();
+		List<Object> unknown = new ArrayList<Object>();
+		for (Object classOrClassId: classesOrClassIds) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			Long classId = (classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId);
 			Object cached = iAssignmentInfoTable.get(classId);
 			if (cached!=null) {
-				if (!sNULL.equals(cached)) infos.put(classId, cached);
+				if (!sNULL.equals(cached)) infos.put(classId, (AssignmentPreferenceInfo)cached);
 			} else {
 				unknown.add(classOrClassId);
 			}
 		}
-		Hashtable newInfos = iProxy.getAssignmentInfoTable(unknown);
-		for (Enumeration e=unknown.elements();e.hasMoreElements();) {
-			Object classOrClassId = e.nextElement();
+		Map<Long, AssignmentPreferenceInfo> newInfos = iProxy.getAssignmentInfoTable(unknown);
+		for (Object classOrClassId: unknown) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			Long classId = (classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId);
-			AssignmentPreferenceInfo info = (AssignmentPreferenceInfo) newInfos.get(classId);
+			AssignmentPreferenceInfo info = newInfos.get(classId);
 			iAssignmentInfoTable.put(classId, (info==null?sNULL:info));
 			if (info!=null)
 				infos.put(classId, info);
@@ -140,14 +135,12 @@ public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 	}
 	
 	public void setCache(Collection classesOrClassIds) {
-		Vector classesOrClassIdsVect = (classesOrClassIds instanceof Vector ? (Vector)classesOrClassIds : new Vector(classesOrClassIds));
-		Hashtable newAssignments = iProxy.getAssignmentTable(classesOrClassIdsVect);
-		Hashtable newInfos = iProxy.getAssignmentInfoTable(classesOrClassIdsVect);
-		for (Enumeration e=classesOrClassIdsVect.elements();e.hasMoreElements();) {
-			Object classOrClassId = e.nextElement();
+		Map<Long, AssignmentInfo> newAssignments = iProxy.getAssignmentTable(classesOrClassIds);
+		Map<Long, AssignmentPreferenceInfo> newInfos = iProxy.getAssignmentInfoTable(classesOrClassIds);
+		for (Object classOrClassId: classesOrClassIds) {
 			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			Long classId = (classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId);
-			Assignment assignment = (Assignment) newAssignments.get(classId);
+			AssignmentInfo assignment = (AssignmentInfo) newAssignments.get(classId);
 			iAssignmentTable.put(classId, (assignment==null?sNULL:assignment));
 			AssignmentPreferenceInfo info = (AssignmentPreferenceInfo) newInfos.get(classId);
 			iAssignmentInfoTable.put(classId, (info==null?sNULL:info));
@@ -160,7 +153,7 @@ public class CachedClassAssignmentProxy implements ClassAssignmentProxy {
 	}
 
 	@Override
-	public Set<Assignment> getConflicts(Long classId) {
+	public Set<AssignmentInfo> getConflicts(Long classId) {
 		return iProxy.getConflicts(classId);
 	}
 	

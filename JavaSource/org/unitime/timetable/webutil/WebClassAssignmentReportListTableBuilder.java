@@ -31,7 +31,6 @@ import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -47,6 +46,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 
@@ -71,7 +71,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 	
 	@Override
 	protected TableCell buildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Assignment a = null;
+		AssignmentInfo a = null;
     	AssignmentPreferenceInfo p = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {

@@ -47,7 +47,6 @@ import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.InstructionalOfferingListFormInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassDurationType;
 import org.unitime.timetable.model.Class_;
@@ -88,6 +87,7 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
@@ -726,7 +726,7 @@ public class WebInstructionalOfferingTableBuilder {
     }
     
     protected TableCell buildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-    	Assignment a = null;
+    	AssignmentInfo a = null;
     	AssignmentPreferenceInfo p = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
@@ -770,7 +770,7 @@ public class WebInstructionalOfferingTableBuilder {
     }
     
     private TableCell buildTimePrefCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
-		Assignment a = null;
+    	AssignmentInfo a = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
 				a = classAssignment.getAssignment((Class_)prefGroup);
@@ -913,7 +913,7 @@ public class WebInstructionalOfferingTableBuilder {
 	    	boolean unlimited = aClass.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue();
 	    	if (!unlimited) {
 	    		String limitString = null;
-                Assignment a = null;
+	    		AssignmentInfo a = null;
                 try {
                     if (classAssignment!=null) a = classAssignment.getAssignment(aClass);
                 } catch (Exception e) {}
@@ -1318,7 +1318,7 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = null;
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
-    		Assignment a = null;
+    		AssignmentInfo a = null;
     		AssignmentPreferenceInfo info = null;
     		try {
     			a = classAssignment.getAssignment(aClass);
@@ -1358,7 +1358,7 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = null;
     	if (classAssignment!=null && prefGroup instanceof Class_){
     		Class_ aClass = (Class_) prefGroup;
-    		Assignment a = null;
+    		AssignmentInfo a = null;
     		AssignmentPreferenceInfo info = null;
     		try {
     			a= classAssignment.getAssignment(aClass);
@@ -1396,7 +1396,7 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = null;
     	if (classAssignment!=null && prefGroup instanceof Class_){
     		Class_ aClass = (Class_) prefGroup;
-    		Assignment a = null;
+    		AssignmentInfo a = null;
    			try {
    				a = classAssignment.getAssignment(aClass);
    			} catch (Exception e) {
@@ -1616,13 +1616,13 @@ public class WebInstructionalOfferingTableBuilder {
         }
         String icon = null;
         if (getDisplayConflicts() && classAssignment != null) {
-        	Set<Assignment> conflicts = null;
+        	Set<AssignmentInfo> conflicts = null;
         	try { conflicts = classAssignment.getConflicts(aClass.getUniqueId()); } catch (Exception e) {}
         	if (conflicts != null && !conflicts.isEmpty()) {
         		row.setBgColor("#fff0f0");
         		row.setOnMouseOut("this.style.backgroundColor='#fff0f0';");
     			String s = "";
-    			for (Assignment c: conflicts) {
+    			for (AssignmentInfo c: conflicts) {
     				if (!s.isEmpty()) s += ", ";
     				s += (c.getClassName() + " " + c.getPlacement().getName(CONSTANTS.useAmPm())).trim();
     			}
@@ -1652,7 +1652,7 @@ public class WebInstructionalOfferingTableBuilder {
         }
 
         if (getDisplayDatePatternDifferentWarning() && classAssignment != null) {
-        		Assignment a = null;
+        	AssignmentInfo a = null;
         		boolean changedSinceCommit = false;
         		DatePattern newDp = null;
 			try {
