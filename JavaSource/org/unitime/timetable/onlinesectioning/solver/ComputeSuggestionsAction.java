@@ -199,10 +199,10 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			if (getAssignment() != null) getRequest().moveActiveSubstitutionsUp();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
+				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences());
+				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -221,7 +221,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 								if (ci != null) {
 									XOffering x = server.getOffering(ci.getOfferingId());
 									if (x != null) {
-										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter));
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, helper));
 										distributions.addAll(x.getDistributions());
 									}
 								}

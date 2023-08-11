@@ -300,7 +300,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 					}
 					if (r.isWaitList() && ((XCourseRequest)cd).getEnrollment() == null) {
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, (XCourseRequest)cd, server, request.getWaitListMode());
+						org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, (XCourseRequest)cd, server, request.getWaitListMode(), helper);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						rc: for (RequestedCourse rc: r.getRequestedCourse()) {
 							if (rc.getCourseId() == null) continue;

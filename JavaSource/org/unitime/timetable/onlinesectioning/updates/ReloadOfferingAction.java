@@ -498,7 +498,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				if (r.isRescheduling())
 					r.getAction().addOptionBuilder().setKey("Issue").setValue(r.getReschedulingReason().name());
 				XEnrollment dropEnrollment = r.getDropEnrollment();
-				XEnrollment e = r.resection(server, w, sq);
+				XEnrollment e = r.resection(server, w, sq, helper);
 				
 				if (dropEnrollment != null) {
 					XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
@@ -717,8 +717,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				helper.getHibSession().save(student);
 			
 				EnrollStudent.updateSpace(server,
-						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, newOffering, r.getRequest().getEnrollment(), wlMode),
-						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getOldRequest(), server, oldOffering, r.getLastEnrollment(), wlMode),
+						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, newOffering, r.getRequest().getEnrollment(), wlMode, helper),
+						r.getLastEnrollment() == null ? null : SectioningRequest.convert(r.getOldStudent(), r.getOldRequest(), server, oldOffering, r.getLastEnrollment(), wlMode, helper),
 						newOffering, oldOffering);
 				server.persistExpectedSpaces(offeringId);
 

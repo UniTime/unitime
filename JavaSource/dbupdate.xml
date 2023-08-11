@@ -14801,4 +14801,75 @@
 		<mysql>alter table %SCHEMA%.distribution_type add survey int(1)</mysql>
 		<pgsql>alter table %SCHEMA%.distribution_type add survey boolean</pgsql>
 	</update>
+	<update version="260" date="10-Aug-2023" comment="Student Scheduling Rules">
+		<mysql>
+			create table %SCHEMA%.std_sched_rules (
+				uniqueid decimal(20,0) primary key not null,
+				ord decimal(10,0) not null,
+				name varchar(255) not null,
+				student_filter varchar(2048),
+				initiative varchar(1024),
+				term varchar(1024),
+				first_year decimal(10,0),
+				last_year decimal(10,0),
+				instr_method varchar(2048),
+				course_name varchar(2048),
+				apply_filter int(1) not null,
+				apply_online int(1) not null,
+				apply_batch int(1) not null,
+				admin_override int(1) not null,
+				advisor_override int(1) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.std_sched_rules (
+				uniqueid number(20,0) constraint nn_sched_rules_uniqueid not null,
+				ord number(10,0) constraint nn_sched_rules_ord not null,
+				name varchar2(255 char) constraint nn_sched_rules_name not null,
+				student_filter varchar2(2048 char),
+				initiative varchar2(1024 char),
+				term varchar2(1024 char),
+				first_year number(10,0),
+				last_year number(10,0),
+				instr_method varchar2(2048 char),
+				course_name varchar2(2048 char),
+				apply_filter number(1) constraint nn_sched_rules_filter not null,
+				apply_online number(1) constraint nn_sched_rules_online not null,
+				apply_batch number(1) constraint nn_sched_rules_batch not null,
+				admin_override number(1) constraint nn_sched_rules_admin not null,
+				advisor_override number(1) constraint nn_sched_rules_advisor not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.std_sched_rules add constraint pk_std_sched_rules primary key (uniqueid)</plsql>
+		<pgsql>
+			create table %SCHEMA%.std_sched_rules (
+				uniqueid bigint not null,
+				ord integer not null,
+				name varchar(255) not null,
+				student_filter varchar(2048),
+				initiative varchar(1024),
+				term varchar(1024),
+				first_year integer,
+				last_year integer,
+				instr_method varchar(2048),
+				course_name varchar(2048),
+				apply_filter boolean not null,
+				apply_online boolean not null,
+				apply_batch boolean not null,
+				admin_override boolean not null,
+				advisor_override boolean not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.std_sched_rules add constraint pk_std_sched_rules primary key (uniqueid)</pgsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingRules'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingStatusTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentSchedulingRuleEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingStatusTypeEdit'
+		</sql>
+	</update>
 </dbupdate>

@@ -429,7 +429,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						
 						// get possible enrollments into the course
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse, rc), dropCourse, server, WaitListMode.WaitList);
+						CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(original, xcourse, rc), dropCourse, server, WaitListMode.WaitList, helper);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						
 						// get a test enrollment (preferably a non-conflicting one)
@@ -1524,7 +1524,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					
 					// get possible enrollments into the course
 					Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(cr, helper, null), dropCourse, server, WaitListMode.WaitList);
+					CourseRequest courseRequest = SectioningRequest.convert(assignment, new XCourseRequest(cr, helper, null), dropCourse, server, WaitListMode.WaitList, helper);
 					Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 					
 					// get a test enrollment (preferably a non-conflicting one)

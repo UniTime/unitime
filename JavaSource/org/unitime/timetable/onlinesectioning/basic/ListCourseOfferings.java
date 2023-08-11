@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface.Filter;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.model.dao.OverrideTypeDAO;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -77,6 +78,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	protected Long iStudentId;
 	protected String iFilterIM = null;
 	private transient XStudent iStudent = null;
+	private transient StudentSchedulingRule iRule = null;
 	protected Filter iFilter;
 	
 	public ListCourseOfferings forQuery(String query) {
@@ -113,20 +115,23 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		try {
 			iStudent = (getStudentId() == null ? null : server.getStudent(getStudentId()));
 			if (iStudent != null) {
-				String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
-				if (filter != null && !filter.isEmpty()) {
-					if (new Query(filter).match(new StudentMatcher(iStudent, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-						iFilterIM = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
-					} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
-						iFilterIM = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+				iRule = StudentSchedulingRule.getRuleFilter(iStudent, server, helper);
+				if (iRule == null) {
+					String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
+					if (filter != null && !filter.isEmpty()) {
+						if (new Query(filter).match(new StudentMatcher(iStudent, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+							iFilterIM = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
+						} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
+							iFilterIM = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+						}
+					}
+					if (iFilterIM != null) {
+						if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdminOverride", false))
+							iFilterIM = null;
+						else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
+							iFilterIM = null;
 					}
 				}
-			}
-			if (iFilterIM != null) {
-				if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdminOverride", false))
-					iFilterIM = null;
-				else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
-					iFilterIM = null;
 			}
 			List<CourseAssignment> courses = null;
 			if (iRequest != null) {
@@ -234,14 +239,16 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		course.setSnapShotLimit(c.getSnapshotLimit());
 		XOffering offering = server.getOffering(c.getOfferingId());
 		XEnrollment enrollment = null;
-		if (iFilterIM != null && iStudent != null) {
+		if ((iRule != null || iFilterIM != null) && iStudent != null) {
 			XCourseRequest r = iStudent.getRequestForCourse(c.getCourseId());
 			enrollment = (r == null ? null : r.getEnrollment());
 		}
 		if (offering != null) {
 			course.setAvailability(offering.getCourseAvailability(server.getRequests(c.getOfferingId()), c));
 			for (XConfig config: offering.getConfigs()) {
-				if (iFilterIM != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+				if (iRule != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+					if (!iRule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
+				} else if (iFilterIM != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
 					String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
         			if (iFilterIM.isEmpty()) {
         				if (imRef != null && !imRef.isEmpty())

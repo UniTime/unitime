@@ -74,6 +74,7 @@ import org.unitime.timetable.model.LearningCommunityReservation;
 import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -656,58 +657,76 @@ public class XOffering implements Serializable, Externalizable {
 		}
 	}
 	
-	public Course toCourse(Long courseId, XStudent student, OnlineSectioningServer server) {
+	public Course toCourse(Long courseId, XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Course course = toCourse(courseId, student, server.getExpectations(getOfferingId()), getDistributions(), server.getEnrollments(getOfferingId()), server.getAcademicSession().getDayOfWeekOffset());
 		if (!(server instanceof StudentSolver) && student != null) {
-			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
-			if (filter != null && !filter.isEmpty()) {
-				if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
-					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
-					if (cn != null && !cn.isEmpty() && !course.getName().matches(cn)) {
-						new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
-					} else if (im != null) {
-						List<Config> matchingConfigs = new ArrayList<Config>();
-		        		for (Config config: course.getOffering().getConfigs()) {
-		        			if (im.isEmpty()) {
-		        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
-		        					matchingConfigs.add(config);	
-		        			} else {
-		        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
-		        					matchingConfigs.add(config);
-		        				}
-		        			}
-		        		}
-		        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
-		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
-		        			for (Config c: matchingConfigs)
-		        				clonnedRestriction.addConfig(c);
-		        		}
-					}
-				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
-					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
-					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
-					if (cn != null && !cn.isEmpty() && course.getName().matches(cn)) {
-						new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
-					} else if (im != null) {
-						List<Config> matchingConfigs = new ArrayList<Config>();
-		        		for (Config config: course.getOffering().getConfigs()) {
-		        			if (im.isEmpty()) {
-		        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
-		        					matchingConfigs.add(config);	
-		        			} else {
-		        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
-		        					matchingConfigs.add(config);
-		        				}
-		        			}
-		        		}
-		        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
-		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
-		        			for (Config c: matchingConfigs)
-		        				clonnedRestriction.addConfig(c);
-		        		}
-					}
+			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(student, server, helper.getHibSession());
+			if (rule != null) {
+				if (!rule.matchesCourseName(course.getName())) {
+					new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+				} else if (rule.getInstructonalMethod() != null) {
+					List<Config> matchingConfigs = new ArrayList<Config>();
+	        		for (Config config: course.getOffering().getConfigs()) {
+	        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+	        				matchingConfigs.add(config);	
+	        		}
+	        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+	        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+	        			for (Config c: matchingConfigs)
+	        				clonnedRestriction.addConfig(c);
+	        		}
 				}
+			} else {
+				String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
+				if (filter != null && !filter.isEmpty()) {
+					if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+						String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+						String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
+						if (cn != null && !cn.isEmpty() && !course.getName().matches(cn)) {
+							new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+						} else if (im != null) {
+							List<Config> matchingConfigs = new ArrayList<Config>();
+			        		for (Config config: course.getOffering().getConfigs()) {
+			        			if (im.isEmpty()) {
+			        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+			        					matchingConfigs.add(config);	
+			        			} else {
+			        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
+			        					matchingConfigs.add(config);
+			        				}
+			        			}
+			        		}
+			        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+			        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+			        			for (Config c: matchingConfigs)
+			        				clonnedRestriction.addConfig(c);
+			        		}
+						}
+					} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
+						String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+						String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
+						if (cn != null && !cn.isEmpty() && course.getName().matches(cn)) {
+							new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+						} else if (im != null) {
+							List<Config> matchingConfigs = new ArrayList<Config>();
+			        		for (Config config: course.getOffering().getConfigs()) {
+			        			if (im.isEmpty()) {
+			        				if (config.getInstructionalMethodReference() == null || config.getInstructionalMethodReference().isEmpty())
+			        					matchingConfigs.add(config);	
+			        			} else {
+			        				if (config.getInstructionalMethodReference() != null && config.getInstructionalMethodReference().matches(im)) {
+			        					matchingConfigs.add(config);
+			        				}
+			        			}
+			        		}
+			        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+			        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+			        			for (Config c: matchingConfigs)
+			        				clonnedRestriction.addConfig(c);
+			        		}
+						}
+					}
+				}				
 			}
 		}
 		return course;

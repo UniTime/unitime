@@ -91,6 +91,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.CourseDemand.Critical;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
@@ -398,10 +399,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
@@ -514,29 +515,54 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		boolean questionRestrictionsNotMet = false;
 		boolean onlineOnly = false;
-		String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
-		if (filter != null && !filter.isEmpty()) {
-			if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
-				onlineOnly = true;
-		}
-		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
-			Request r = (Request)e.next();
-			if (r instanceof CourseRequest) {
-				CourseRequest cr = (CourseRequest)r;
-				for (Course course: cr.getCourses()) {
-					if (course.getOffering().hasRestrictions()) {
-						for (Restriction res: course.getOffering().getRestrictions()) {
-							if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
-								boolean confirm = (original.getRequestForCourse(course.getId()) == null);
-								if (onlineOnly)
-									response.addMessage(course.getId(), course.getName(), "NOT-ONLINE",
-										ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getName()),
-										confirm ? CONF_UNITIME : CONF_NONE);
-								else
-									response.addMessage(course.getId(), course.getName(), "NOT-RESIDENTIAL",
-											ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getName()),
+		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		if (rule != null) {
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						if (course.getOffering().hasRestrictions()) {
+							for (Restriction res: course.getOffering().getRestrictions()) {
+								if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
+									boolean confirm = (original.getRequestForCourse(course.getId()) == null);
+									response.addMessage(course.getId(), course.getName(), "NOT-RULE",
+											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
+											.replace("{rule}", rule.getRuleName())
+											.replace("{course}", course.getName()),
 											confirm ? CONF_UNITIME : CONF_NONE);
-								if (confirm) questionRestrictionsNotMet = true;
+									if (confirm) questionRestrictionsNotMet = true;
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
+			if (filter != null && !filter.isEmpty()) {
+				if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
+					onlineOnly = true;
+			}
+			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
+				Request r = (Request)e.next();
+				if (r instanceof CourseRequest) {
+					CourseRequest cr = (CourseRequest)r;
+					for (Course course: cr.getCourses()) {
+						if (course.getOffering().hasRestrictions()) {
+							for (Restriction res: course.getOffering().getRestrictions()) {
+								if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
+									boolean confirm = (original.getRequestForCourse(course.getId()) == null);
+									if (onlineOnly)
+										response.addMessage(course.getId(), course.getName(), "NOT-ONLINE",
+											ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getName()),
+											confirm ? CONF_UNITIME : CONF_NONE);
+									else
+										response.addMessage(course.getId(), course.getName(), "NOT-RESIDENTIAL",
+												ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getName()),
+												confirm ? CONF_UNITIME : CONF_NONE);
+									if (confirm) questionRestrictionsNotMet = true;
+								}
 							}
 						}
 					}
@@ -1139,7 +1165,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						"One or more courses that are marked as critical in your degree plan and that have been listed by your advisor have not been requested. This may prohibit progress towards degree. Please see you advisor course requests and/or consult with your academic advisor."),
 						CONF_UNITIME, line ++);
 		if (questionRestrictionsNotMet) {
-			if (onlineOnly)
+			if (rule != null)
+				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.ruleNotMet", (line > 2 ? "\n" : "") +
+						"One or more of the newly requested courses have no {rule} option at the moment. You may not be able to get a full schedule because becasue you are not allowed to take these courses."
+						.replace("{rule}", rule.getRuleName())),
+						CONF_UNITIME, line ++);
+			else if (onlineOnly)
 				response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.onlineOnlyNotMet", (line > 2 ? "\n" : "") +
 					"One or more of the newly requested courses have no online-only option at the moment. You may not be able to get a full schedule because becasue you are not allowed to take these courses."),
 					CONF_UNITIME, line ++);
@@ -1319,6 +1350,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if ("STUD_PREF".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
+							if ("NOT-RULE".equals(m.getCode())) continue;
 							if ("REQUEST_NOTE".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
@@ -1361,6 +1393,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							if ("STUD_PREF".equals(m.getCode())) continue;
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
+							if ("NOT-RULE".equals(m.getCode())) continue;
 							if ("REQUEST_NOTE".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
@@ -1811,93 +1844,132 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 			}
-			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
-			if (filter != null && !filter.isEmpty()) {
-				if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-					// online only
-					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
-					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
-					for (XRequest r: original.getRequests()) {
-						if (r instanceof XCourseRequest) {
-							XCourseRequest cr = (XCourseRequest)r;
-							for (XCourseId course: cr.getCourseIds()) {
-								if (cn != null && !cn.isEmpty() && !course.getCourseName().matches(cn)) {
-									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
-											ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
+			
+			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+			if (rule != null) {
+				for (XRequest r: original.getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						for (XCourseId course: cr.getCourseIds()) {
+							if (!rule.matchesCourseName(course.getCourseName())) {
+								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
+										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
+										.replace("{rule}", rule.getRuleName())
+										.replace("{course}", course.getCourseName()),
+										ORD_UNITIME);
+								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+								if (rp != null)
+									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+							} else if (rule.getInstructonalMethod() != null) {
+								boolean hasMatchingConfig = false;
+								InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
+								if (offering != null)
+									for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+										if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) hasMatchingConfig = true;	
+									}
+								if (!hasMatchingConfig) {
+									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
+											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
+											.replace("{rule}", rule.getRuleName())
+											.replace("{course}", course.getCourseName()),
 											ORD_UNITIME);
 									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 									if (rp != null)
 										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-								} else if (im != null) {
-									boolean hasMatchingConfig = false;
-									InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
-									if (offering != null)
-										for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
-											InstructionalMethod configIm = config.getEffectiveInstructionalMethod();
-											if (im.isEmpty()) {
-						        				if (configIm == null || configIm.getReference() == null || configIm.getReference().isEmpty())
-						        					hasMatchingConfig = true;	
-						        			} else {
-						        				if (configIm != null && configIm.getReference() != null && configIm.getReference().matches(im)) {
-						        					hasMatchingConfig = true;
-						        				}
-						        			}
-										}
-									if (!hasMatchingConfig) {
+								}
+							}
+						}
+					}
+				}
+			} else {
+				String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
+				if (filter != null && !filter.isEmpty()) {
+					if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+						// online only
+						String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+						String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
+						for (XRequest r: original.getRequests()) {
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
+								for (XCourseId course: cr.getCourseIds()) {
+									if (cn != null && !cn.isEmpty() && !course.getCourseName().matches(cn)) {
 										request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
 												ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
 												ORD_UNITIME);
 										RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 										if (rp != null)
 											rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+									} else if (im != null) {
+										boolean hasMatchingConfig = false;
+										InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
+										if (offering != null)
+											for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+												InstructionalMethod configIm = config.getEffectiveInstructionalMethod();
+												if (im.isEmpty()) {
+							        				if (configIm == null || configIm.getReference() == null || configIm.getReference().isEmpty())
+							        					hasMatchingConfig = true;	
+							        			} else {
+							        				if (configIm != null && configIm.getReference() != null && configIm.getReference().matches(im)) {
+							        					hasMatchingConfig = true;
+							        				}
+							        			}
+											}
+										if (!hasMatchingConfig) {
+											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
+													ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
+													ORD_UNITIME);
+											RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+											if (rp != null)
+												rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+										}
 									}
 								}
 							}
 						}
-					}
-				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
-					// exclusive
-					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
-					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
-					for (XRequest r: original.getRequests()) {
-						if (r instanceof XCourseRequest) {
-							XCourseRequest cr = (XCourseRequest)r;
-							for (XCourseId course: cr.getCourseIds()) {
-								if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
-									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
-											ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
-											ORD_UNITIME);
-									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
-									if (rp != null)
-										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-								} else if (im != null) {
-									boolean hasMatchingConfig = false;
-									InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
-									if (offering != null)
-										for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
-											InstructionalMethod configIm = config.getEffectiveInstructionalMethod();
-											if (im.isEmpty()) {
-						        				if (configIm == null || configIm.getReference() == null || configIm.getReference().isEmpty())
-						        					hasMatchingConfig = true;	
-						        			} else {
-						        				if (configIm != null && configIm.getReference() != null && configIm.getReference().matches(im)) {
-						        					hasMatchingConfig = true;
-						        				}
-						        			}
-										}
-									if (!hasMatchingConfig) {
+					} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
+						// exclusive
+						String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+						String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
+						for (XRequest r: original.getRequests()) {
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
+								for (XCourseId course: cr.getCourseIds()) {
+									if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
 										request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
 												ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
 												ORD_UNITIME);
 										RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 										if (rp != null)
 											rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+									} else if (im != null) {
+										boolean hasMatchingConfig = false;
+										InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
+										if (offering != null)
+											for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+												InstructionalMethod configIm = config.getEffectiveInstructionalMethod();
+												if (im.isEmpty()) {
+							        				if (configIm == null || configIm.getReference() == null || configIm.getReference().isEmpty())
+							        					hasMatchingConfig = true;	
+							        			} else {
+							        				if (configIm != null && configIm.getReference() != null && configIm.getReference().matches(im)) {
+							        					hasMatchingConfig = true;
+							        				}
+							        			}
+											}
+										if (!hasMatchingConfig) {
+											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
+													ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
+													ORD_UNITIME);
+											RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+											if (rp != null)
+												rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+										}
 									}
 								}
 							}
 						}
 					}
-				}
+				}				
 			}
 		} else {
 			Map<XSection, XCourseId> singleSections = new HashMap<XSection, XCourseId>();
@@ -1934,85 +2006,123 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 				}
 			}
-			String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
-			if (filter != null && !filter.isEmpty()) {
-				if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-					// online only
-					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
-					String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
-					for (XRequest r: original.getRequests()) {
-						if (r instanceof XCourseRequest) {
-							XCourseRequest cr = (XCourseRequest)r;
-							for (XCourseId course: cr.getCourseIds()) {
-								if (cn != null && !cn.isEmpty() && !course.getCourseName().matches(cn)) {
-									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
-											ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
+			
+			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+			if (rule != null) {
+				for (XRequest r: original.getRequests()) {
+					if (r instanceof XCourseRequest) {
+						XCourseRequest cr = (XCourseRequest)r;
+						for (XCourseId course: cr.getCourseIds()) {
+							if (!rule.matchesCourseName(course.getCourseName())) {
+								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
+										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
+										.replace("{rule}", rule.getRuleName())
+										.replace("{course}", course.getCourseName()),
+										ORD_UNITIME);
+								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+								if (rp != null)
+									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+							} else if (rule.getInstructonalMethod() != null) {
+								boolean hasMatchingConfig = false;
+								InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
+								if (offering != null)
+									for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+										if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) hasMatchingConfig = true;	
+								if (!hasMatchingConfig) {
+									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
+											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
+											.replace("{rule}", rule.getRuleName())
+											.replace("{course}", course.getCourseName()),
 											ORD_UNITIME);
 									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 									if (rp != null)
 										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-								} else if (im != null) {
-									boolean hasMatchingConfig = false;
-									XOffering offering = server.getOffering(course.getOfferingId());
-									if (offering != null)
-										for (XConfig config: offering.getConfigs()) {
-											if (im.isEmpty()) {
-						        				if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
-						        					hasMatchingConfig = true;	
-						        			} else {
-						        				if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(im)) {
-						        					hasMatchingConfig = true;
-						        				}
-						        			}
-										}
-									if (!hasMatchingConfig) {
+								}
+							}
+						}
+					}
+				}
+			} else {
+				String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
+				if (filter != null && !filter.isEmpty()) {
+					if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+						// online only
+						String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+						String im = server.getConfig().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
+						for (XRequest r: original.getRequests()) {
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
+								for (XCourseId course: cr.getCourseIds()) {
+									if (cn != null && !cn.isEmpty() && !course.getCourseName().matches(cn)) {
 										request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
 												ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
 												ORD_UNITIME);
 										RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 										if (rp != null)
 											rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+									} else if (im != null) {
+										boolean hasMatchingConfig = false;
+										XOffering offering = server.getOffering(course.getOfferingId());
+										if (offering != null)
+											for (XConfig config: offering.getConfigs()) {
+												if (im.isEmpty()) {
+							        				if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
+							        					hasMatchingConfig = true;	
+							        			} else {
+							        				if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(im)) {
+							        					hasMatchingConfig = true;
+							        				}
+							        			}
+											}
+										if (!hasMatchingConfig) {
+											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-ONLINE",
+													ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getCourseName()),
+													ORD_UNITIME);
+											RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+											if (rp != null)
+												rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+										}
 									}
 								}
 							}
 						}
-					}
-				} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
-					// exclusive
-					String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
-					String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
-					for (XRequest r: original.getRequests()) {
-						if (r instanceof XCourseRequest) {
-							XCourseRequest cr = (XCourseRequest)r;
-							for (XCourseId course: cr.getCourseIds()) {
-								if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
-									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
-											ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
-											ORD_UNITIME);
-									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
-									if (rp != null)
-										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-								} else if (im != null) {
-									boolean hasMatchingConfig = false;
-									XOffering offering = server.getOffering(course.getOfferingId());
-									if (offering != null)
-										for (XConfig config: offering.getConfigs()) {
-											if (im.isEmpty()) {
-						        				if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
-						        					hasMatchingConfig = true;	
-						        			} else {
-						        				if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(im)) {
-						        					hasMatchingConfig = true;
-						        				}
-						        			}
-										}
-									if (!hasMatchingConfig) {
+					} else if (server.getConfig().getPropertyBoolean("Load.OnlineOnlyExclusiveCourses", false)) {
+						// exclusive
+						String cn = server.getConfig().getProperty("Load.OnlineOnlyCourseNameRegExp");
+						String im = server.getConfig().getProperty("Load.ResidentialInstructionalModeRegExp");
+						for (XRequest r: original.getRequests()) {
+							if (r instanceof XCourseRequest) {
+								XCourseRequest cr = (XCourseRequest)r;
+								for (XCourseId course: cr.getCourseIds()) {
+									if (cn != null && !cn.isEmpty() && course.getCourseName().matches(cn)) {
 										request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
 												ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
 												ORD_UNITIME);
 										RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 										if (rp != null)
 											rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+									} else if (im != null) {
+										boolean hasMatchingConfig = false;
+										XOffering offering = server.getOffering(course.getOfferingId());
+										if (offering != null)
+											for (XConfig config: offering.getConfigs()) {
+												if (im.isEmpty()) {
+							        				if (config.getInstructionalMethod() == null || config.getInstructionalMethod().getReference() == null || config.getInstructionalMethod().getReference().isEmpty())
+							        					hasMatchingConfig = true;	
+							        			} else {
+							        				if (config.getInstructionalMethod() != null && config.getInstructionalMethod().getReference() != null && config.getInstructionalMethod().getReference().matches(im)) {
+							        					hasMatchingConfig = true;
+							        				}
+							        			}
+											}
+										if (!hasMatchingConfig) {
+											request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RESIDENTIAL",
+													ApplicationProperties.getProperty("purdue.specreg.messages.residentialStudentReqOnlineCourse", "No residential option.").replace("{course}", course.getCourseName()),
+													ORD_UNITIME);
+											RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
+											if (rp != null)
+												rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
+										}
 									}
 								}
 							}
@@ -2398,7 +2508,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				for (XCourseId c: cr.getCourseIds()) {
 					XOffering offering = server.getOffering(c.getOfferingId());
 					if (offering == null) continue;
-					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server);
+					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server, helper);
 					courses.add(clonnedCourse);
 					model.addOffering(clonnedCourse.getOffering());
 					distributions.addAll(offering.getDistributions());
@@ -3192,10 +3302,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
@@ -3305,12 +3415,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		boolean questionRestrictionsNotMet = false;
+		
 		boolean onlineOnly = false;
 		String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
 		if (filter != null && !filter.isEmpty()) {
 			if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
 				onlineOnly = true;
 		}
+		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		
 		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 			Request r = (Request)e.next();
 			if (r instanceof CourseRequest) {
@@ -3319,7 +3432,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (course.getOffering().hasRestrictions()) {
 						for (Restriction res: course.getOffering().getRestrictions()) {
 							if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
-								if (onlineOnly)
+								if (rule != null)
+									response.addMessage(course.getId(), course.getName(), "NOT-RULE",
+											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
+											.replace("{rule}", rule.getRuleName())
+											.replace("{course}", course.getName()),
+											CONF_UNITIME);
+								else if (onlineOnly)
 									response.addMessage(course.getId(), course.getName(), "NOT-ONLINE",
 										ApplicationProperties.getProperty("purdue.specreg.messages.onlineStudentReqResidentialCourse", "No online-only option.").replace("{course}", course.getName()),
 										CONF_UNITIME);

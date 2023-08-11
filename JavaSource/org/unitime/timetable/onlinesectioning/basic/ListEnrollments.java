@@ -275,7 +275,7 @@ public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<Class
 						}
 						if (request.isWaitlist(wl) && offering.isWaitList()) {
 							Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-							org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, request, server,  wl);
+							org.cpsolver.studentsct.model.CourseRequest courseRequest = SectioningRequest.convert(assignment, request, server,  wl, helper);
 							Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 							TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 								@Override

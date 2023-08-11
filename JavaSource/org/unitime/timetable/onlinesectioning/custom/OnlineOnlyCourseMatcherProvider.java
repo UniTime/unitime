@@ -25,11 +25,12 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
-import org.unitime.timetable.onlinesectioning.match.SkipDisabledCourseMatcher;
+import org.unitime.timetable.onlinesectioning.match.RuleCheckingCourseMatcherProvider;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -43,10 +44,14 @@ import org.unitime.timetable.security.rights.Right;
 /**
  * @author Tomas Muller
  */
-public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
+public class OnlineOnlyCourseMatcherProvider extends RuleCheckingCourseMatcherProvider {
 
 	@Override
 	public CourseMatcher getCourseMatcher(OnlineSectioningServer server, SessionContext context, Long studentId) {
+		StudentSchedulingRule rule = StudentSchedulingRule.getRuleFilter(studentId, server, context);
+		if (rule != null)
+			return new SchedulingRuleCourseMatcher(rule);
+
 		String filter = ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyStudentFilter", null);
 		if (filter == null || filter.isEmpty()) return new FallbackCourseMatcher();
 		if (server != null && !(server instanceof DatabaseServer)) {
@@ -87,27 +92,6 @@ public class OnlineOnlyCourseMatcherProvider implements CourseMatcherProvider {
 						ApplicationProperty.OnlineSchedulingParameter.value("Filter.ResidentialInstructionalModeRegExp"),
 						ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyCourseNameRegExp"));
 			return new FallbackCourseMatcher();
-		}
-	}
-	
-	public static class FallbackCourseMatcher extends SkipDisabledCourseMatcher {
-		private static final long serialVersionUID = 1L;
-		protected boolean iShowDisabled;
-		
-		public FallbackCourseMatcher() {
-			iShowDisabled = "true".equalsIgnoreCase(ApplicationProperty.OnlineSchedulingParameter.value("Filter.ShowDisabled", "true"));
-		}
-		
-		@Override
-		protected boolean isEnabledForStudentScheduling(InstrOfferingConfig config) {
-			if (iShowDisabledWhenNotLoaded) return true;
-			return super.isEnabledForStudentScheduling(config);
-		}
-		
-		@Override
-		public boolean match(XCourseId course) {
-			return (iShowDisabled || isEnabledForStudentScheduling(course));
-
 		}
 	}
 

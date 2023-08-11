@@ -139,6 +139,7 @@ import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentGroupType.AllowDisabledSection;
 import org.unitime.timetable.model.StudentInstrMthPref;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
@@ -2627,6 +2628,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         
         Map<String, Student> ext2student = new HashMap<String, Student>();
         Set<Student> onlineOnlyStudents = new HashSet<Student>();
+        List<StudentSchedulingRule> rules = new ArrayList<StudentSchedulingRule>();
+        for (StudentSchedulingRule rule: hibSession.createQuery("from StudentSchedulingRule order by ord", StudentSchedulingRule.class).list()) {
+        	// ignore rules that do not apply to batch
+			if (!rule.isAppliesToBatch()) continue;
+			// check academic session
+			if (!rule.matchSession(iTerm, iYear, iInitiative)) continue;
+			rules.add(rule);
+        }
+        Map<StudentSchedulingRule, Set<Student>> rule2students = new HashMap<StudentSchedulingRule, Set<Student>>();
+        Map<Student, StudentSchedulingRule> student2rule = new HashMap<Student, StudentSchedulingRule>();
         if (iIncludeCourseDemands || iProjections) {
             List students = hibSession.createQuery(
                     "select distinct s from Student s " +
@@ -2657,7 +2668,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	loadAdvisorWaitLists(student, s);
                 else if (iUseAdvisorNoSubs)
                 	loadAdvisorNoSubs(student, s);
-                if (iOnlineOnlyStudentQuery != null && iOnlineOnlyStudentQuery.match(new DbStudentMatcher(s)))
+                boolean hasRule = false;
+                for (StudentSchedulingRule rule: rules) {
+                	if (rule.getStudentFilter() != null && !rule.getStudentFilter().isEmpty() && !new Query(rule.getStudentFilter()).match(new DbStudentMatcher(s))) continue;
+                	Set<Student> ruleStudents = rule2students.get(rule);
+                	if (ruleStudents == null) {
+                		ruleStudents = new HashSet<Student>();
+                		rule2students.put(rule, ruleStudents);
+                	}
+                	ruleStudents.add(student);
+            		student2rule.put(student, rule);
+            		hasRule = true;
+                	break;
+                }
+                if (!hasRule && iOnlineOnlyStudentQuery != null && iOnlineOnlyStudentQuery.match(new DbStudentMatcher(s)))
                 	onlineOnlyStudents.add(student);
                 updateCurriculumCounts(student);
                 if (iProjections) {
@@ -2738,6 +2762,45 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	}
         }
         
+        if (!rule2students.isEmpty()) {
+        	for (Map.Entry<StudentSchedulingRule, Set<Student>> entry: rule2students.entrySet()) {
+        		StudentSchedulingRule rule = entry.getKey();
+        		Map<Course, Set<Long>> course2students = new HashMap<Course, Set<Long>>();
+        		for (Student s: entry.getValue()) {
+        			for (Request r: s.getRequests())
+        				if (r instanceof CourseRequest)
+        					for (Course c: ((CourseRequest)r).getCourses()) {
+        						Set<Long> set = course2students.get(c);
+        						if (set == null) {
+        							set = new HashSet<Long>();
+        							course2students.put(c, set);
+        						}
+        						set.add(s.getId());
+        					}
+        		}
+        		setPhase("Creating " + rule.getRuleName() + " restrictions...", course2students.size());
+            	for (Map.Entry<Course, Set<Long>> e: course2students.entrySet()) {
+             		incProgress();
+             		Course course = e.getKey();
+             		if (!rule.matchesCourseName(course.getName())) {
+             			new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue()); 
+             		} else if (rule.getInstructonalMethod() != null) {
+                		Offering offering = course.getOffering();
+                		List<Config> configs = new ArrayList<Config>();
+                		for (Config config: offering.getConfigs())
+                			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+                				configs.add(config);	
+                		if (configs.size() == offering.getConfigs().size()) {
+                			// student can take any configuration -> no need for an override
+                			continue;
+                		}
+                		Restriction r = new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue());
+                		for (Config config: configs)
+                			r.addConfig(config);
+             		}
+            	}
+        	}
+        }
         if (!onlineOnlyStudents.isEmpty()) {
         	Map<Course, Set<Long>> course2students = new HashMap<Course, Set<Long>>();
     		for (Student s: onlineOnlyStudents) {
@@ -2789,7 +2852,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			if (course.getName().matches(iOnlineOnlyCourseNameRegExp)) {
             			Set<Long> studentIds = new HashSet<Long>();
             			for (CourseRequest cr: course.getRequests()) {
-            				if (!onlineOnlyStudents.contains(cr.getStudent()))
+            				if (!onlineOnlyStudents.contains(cr.getStudent()) && !student2rule.containsKey(cr.getStudent()))
             					studentIds.add(cr.getStudent().getId());
             			}
             			if (!studentIds.isEmpty()) {
@@ -2821,7 +2884,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		Set<Long> studentIds = new HashSet<Long>();
         		for (Course course: offering.getCourses()) {
         			for (CourseRequest cr: course.getRequests()) {
-        				if (!onlineOnlyStudents.contains(cr.getStudent()))
+        				if (!onlineOnlyStudents.contains(cr.getStudent()) && !student2rule.containsKey(cr.getStudent()))
         					studentIds.add(cr.getStudent().getId());
         			}
         		}

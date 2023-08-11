@@ -241,5 +241,6 @@
 	<mapping resource="MapTileCache.hbm.xml"/>
 	<mapping resource="AdvisorCourseRequest.hbm.xml"/>
 	<mapping resource="InstructorSurvey.hbm.xml"/>
+	<mapping resource="StudentSchedulingRules.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

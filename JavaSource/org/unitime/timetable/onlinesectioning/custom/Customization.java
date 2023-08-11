@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
+import org.unitime.timetable.onlinesectioning.match.RuleCheckingCourseMatcherProvider;
 import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 
 /**
@@ -34,7 +35,7 @@ public enum Customization {
 	DegreePlansProvider(DegreePlansProvider.class, ApplicationProperty.CustomizationDegreePlans),
 	SpecialRegistrationProvider(SpecialRegistrationProvider.class, ApplicationProperty.CustomizationSpecialRegistration),
 	StudentEnrollmentProvider(StudentEnrollmentProvider.class, ApplicationProperty.CustomizationStudentEnrollments),
-	CourseMatcherProvider(CourseMatcherProvider.class, ApplicationProperty.CustomizationCourseMatcher),
+	CourseMatcherProvider(CourseMatcherProvider.class, ApplicationProperty.CustomizationCourseMatcher, RuleCheckingCourseMatcherProvider.class),
 	CourseDetailsProvider(CourseDetailsProvider.class, ApplicationProperty.CustomizationCourseDetails, DefaultCourseDetailsProvider.class),
 	ExternalTermProvider(ExternalTermProvider.class, ApplicationProperty.CustomizationExternalTerm),
 	StudentEmailProvider(StudentEmailProvider.class, ApplicationProperty.CustomizationStudentEmail),

@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -145,20 +146,24 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			XStudent student = (getStudentId() == null ? null : server.getStudent(getStudentId()));
 			
 			String imFilter = null;
+			StudentSchedulingRule rule = null;
 			if (student != null) {
-				String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
-				if (filter != null && !filter.isEmpty()) {
-					if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-						imFilter = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
-					} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
-						imFilter = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+				rule = StudentSchedulingRule.getRuleFilter(student, server, helper);
+				if (rule == null) {
+					String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
+					if (filter != null && !filter.isEmpty()) {
+						if (new Query(filter).match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+							imFilter = server.getConfig().getProperty("Filter.OnlineOnlyInstructionalModeRegExp");
+						} else if (server.getConfig().getPropertyBoolean("Filter.OnlineOnlyExclusiveCourses", false)) {
+							imFilter = server.getConfig().getProperty("Filter.ResidentialInstructionalModeRegExp");
+						}
 					}
-				}
-				if (imFilter != null) {
-					if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdminOverride", false))
-						imFilter = null;
-					else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
-						imFilter = null;
+					if (imFilter != null) {
+						if (helper.hasAdminPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdminOverride", false))
+							imFilter = null;
+						else if (helper.hasAvisorPermission() && server.getConfig().getPropertyBoolean("Filter.OnlineOnlyAdvisorOverride", false))
+							imFilter = null;
+					}
 				}
 			}
 			XEnrollment enrollment = null;
@@ -169,7 +174,12 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 
 			for (XConfig config: offering.getConfigs()) {
 				boolean imAvailable = true;
-				if (imFilter != null) {
+				if (rule != null) {
+					if (!rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+						if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) continue;
+						imAvailable = false;
+					}
+				} else if (imFilter != null) {
 					String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
         			if (imFilter.isEmpty()) {
         				if (imRef != null && !imRef.isEmpty()) {
