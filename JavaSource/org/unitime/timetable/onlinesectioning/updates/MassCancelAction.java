@@ -148,7 +148,7 @@ public class MassCancelAction implements OnlineSectioningAction<Boolean>{
 								XOffering offering = server.getOffering(oldEnrollment.getOfferingId());
 								EnrollStudent.updateSpace(server,
 										null,
-										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode),
+										oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode, helper),
 										offering);
 							}
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();

@@ -603,6 +603,9 @@ public enum Right {
 	
 	InstructorSurveyNoteTypes,
 	InstructorSurveyNoteTypeEdit,
+	
+	StudentSchedulingRules,
+	StudentSchedulingRuleEdit,
 
 	EventServiceProviders,
 	EventServiceProviderEditGlobal,

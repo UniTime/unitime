@@ -1023,6 +1023,12 @@
 					<hasPermission name="StudentGroupTypes"/>
 				</condition>
 			</item>
+			<item name="Student Scheduling Rules" page="admin" type="gwt">
+				<parameter name="type">studentSchedulingRules</parameter>
+				<condition>
+					<hasPermission name="StudentSchedulingRules"/>
+				</condition>
+			</item>
 			<item name="Examination Types" page="admin" type="gwt">
 				<parameter name="type">examType</parameter>
 				<condition>

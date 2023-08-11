@@ -7801,4 +7801,52 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Instructor Survey for {0} ({1})")
 	String instructorSurveyEmailSubject(String instructorName, String academicSession);
+	
+	@DefaultMessage("Student Scheduling Rule")
+	@DoNotTranslate
+	String pageStudentSchedulingRule();
+	
+	@DefaultMessage("Student Scheduling Rules")
+	@DoNotTranslate
+	String pageStudentSchedulingRules();
+	
+	@DefaultMessage("Rule")
+	String fieldRuleName();
+	
+	@DefaultMessage("Student Filter")
+	String fieldStudentFilter();
+	
+	@DefaultMessage("Initiative")
+	String fieldInitiative();
+	
+	@DefaultMessage("Term")
+	String fieldTerm();
+	
+	@DefaultMessage("First Year")
+	String fieldFirstYear();
+	
+	@DefaultMessage("Last Year")
+	String fieldLastYear();
+	
+	@DefaultMessage("Instr. Methods")
+	String fieldInstructionalMethodRegExp();
+	
+	@DefaultMessage("Course Names")
+	String fieldCourseNameRegExp();
+	
+	@DefaultMessage("Filter")
+	String fieldAppliesToFilter();
+	
+	@DefaultMessage("Online")
+	String fieldAppliesToOnline();
+
+	@DefaultMessage("Batch")
+	String fieldAppliesToBatch();
+	
+	@DefaultMessage("Advisor Overrie")
+	String fieldAdvisorOverride();
+	
+	@DefaultMessage("Admin Override")
+	String fieldAdminOverride();
+
 }

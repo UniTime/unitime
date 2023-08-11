@@ -2410,6 +2410,7 @@ public enum ApplicationProperty {
 	@Type(Class.class)
 	@Implements(CourseMatcherProvider.class)
 	@Description("Customization: course matcher provider (interface CourseMatcherProvider)")
+	@DefaultValue("org.unitime.timetable.onlinesectioning.match.RuleCheckingCourseMatcherProvider")
 	CustomizationCourseMatcher("unitime.custom.CourseMatcherProvider"),	
 	
 	@Type(Boolean.class)

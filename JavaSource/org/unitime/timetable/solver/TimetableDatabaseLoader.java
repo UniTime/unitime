@@ -117,6 +117,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -180,6 +181,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	private Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig, Set<SchedulingSubpart>>> iOfferings = new Hashtable<InstructionalOffering, Hashtable<InstrOfferingConfig,Set<SchedulingSubpart>>>();
     private Hashtable<CourseOffering, Set<Student>> iCourse2students = new Hashtable<CourseOffering, Set<Student>>();
     private Set<Student> iOnlineOnlyStudents = new HashSet<Student>();
+    private Map<Student, StudentSchedulingRule> iStudentRules = new HashMap<Student, StudentSchedulingRule>();
 
     private boolean iDeptBalancing = true;
     private boolean iSubjectBalancing = false;
@@ -2502,7 +2504,23 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			student.addCanNotEnroll(offering.getUniqueId(), prohibited);
     		}
     		
-    		if (iOnlineOnlyInstructionalModeRegExp != null) {
+    		StudentSchedulingRule rule = iStudentRules.get(student);
+			if (rule != null) { 
+				if (rule.getInstructonalMethod() != null) {
+					for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+						InstructionalMethod im = config.getEffectiveInstructionalMethod();
+						if (!rule.matchesInstructionalMethod(im)) {
+        					iProgress.debug(course.getCourseName() + ": " + rule.getRuleName() + " student " + student.getId() + " cannot attend config " + config.getName() + (im == null ? "" : " (" + im.getReference() + ")"));
+        					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+        						for (Class_ clazz: subpart.getClasses()) {
+        							Lecture lecture = iLectures.get(clazz.getUniqueId());
+                        			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+                        				student.addCanNotEnroll(lecture);
+        						}
+            				}
+					}
+				}
+			} else if (iOnlineOnlyInstructionalModeRegExp != null) {
 				if (iOnlineOnlyStudents.contains(student)) {
 					if (iOnlineOnlyInstructionalModeRegExp != null) {
 						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
@@ -3187,6 +3205,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			}
         		}
 
+        		List<StudentSchedulingRule> rules = new ArrayList<StudentSchedulingRule>();
+                for (StudentSchedulingRule rule: hibSession.createQuery("from StudentSchedulingRule order by ord", StudentSchedulingRule.class).list()) {
+                	// ignore rules that do not apply to batch
+        			if (!rule.isAppliesToBatch()) continue;
+        			// check academic session
+        			if (!rule.matchSession(iSession)) continue;
+        			rules.add(rule);
+                }
     			for (WeightedStudentId studentId: studentIds) {
         			Student student = iStudents.get(studentId.getStudentId());
         			if (student==null) {
@@ -3208,6 +3234,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         					}
         					group.addStudent(student);
         					student.addGroup(group);
+        				}
+        				for (StudentSchedulingRule rule: rules) {
+        					if ((studentId.getStudent() != null && rule.getStudentQuery().match(new DbStudentMatcher(studentId.getStudent()))) ||
+        						(studentId.getStudent() == null && rule.getStudentQuery().match(new ProjectedStudentMatcher(studentId)))) {
+        						iStudentRules.put(student, rule);
+        						break; 
+        					}
         				}
         				if (iOnlineOnlyStudentQuery != null && (
         					(studentId.getStudent() != null && iOnlineOnlyStudentQuery.match(new DbStudentMatcher(studentId.getStudent()))) ||
@@ -3310,7 +3343,24 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         				student.addCanNotEnroll(offering.getUniqueId(), prohibited);
         			}
         			
-        			if (iOnlineOnlyInstructionalModeRegExp != null) {
+        			StudentSchedulingRule rule = iStudentRules.get(student);
+        			if (rule != null) { 
+        				if (rule.getInstructonalMethod() != null) {
+        					for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+    							InstructionalMethod im = config.getEffectiveInstructionalMethod();
+    							if (!rule.matchesInstructionalMethod(im)) {
+	            					iProgress.debug(course.getCourseName() + ": " + rule.getRuleName() + " student " + student.getId() + " cannot attend config " + config.getName() + (im == null ? "" : " (" + im.getReference() + ")"));
+	            					for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+	            						for (Class_ clazz: subpart.getClasses()) {
+	            							Lecture lecture = iLectures.get(clazz.getUniqueId());
+	                            			if (lecture != null && (iLoadCommittedReservations || !lecture.isCommitted()))
+	                            				student.addCanNotEnroll(lecture);
+	            						}
+
+    							}
+        					}
+        				}
+        			} else if (iOnlineOnlyInstructionalModeRegExp != null) {
         				if (iOnlineOnlyStudents.contains(student)) {
         					if (iOnlineOnlyInstructionalModeRegExp != null) {
         						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {

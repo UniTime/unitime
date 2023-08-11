@@ -844,8 +844,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						server.execute(server.createAction(CheckOfferingAction.class).forOfferings(oldEnrollment.getOfferingId()).skipStudents(getStudentId()), helper.getUser(), offeringChecked);
 					
 					updateSpace(server,
-							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment, wlMode),
-							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode),
+							newEnrollment == null ? null : SectioningRequest.convert(newStudent, newRequest, server, offering, newEnrollment, wlMode, helper),
+							oldEnrollment == null ? null : SectioningRequest.convert(oldStudent, (XCourseRequest)oldRequest, server, offering, oldEnrollment, wlMode, helper),
 							offering);
 					server.persistExpectedSpaces(oldEnrollment.getOfferingId());
 				}
@@ -870,7 +870,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 					XOffering offering = server.getOffering(newEnrollment.getOfferingId());
 					updateSpace(server,
-							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment, wlMode),
+							SectioningRequest.convert(newStudent, (XCourseRequest)newRequest, server, offering, newEnrollment, wlMode, helper),
 							null, offering);
 					server.persistExpectedSpaces(newEnrollment.getOfferingId());
 				}

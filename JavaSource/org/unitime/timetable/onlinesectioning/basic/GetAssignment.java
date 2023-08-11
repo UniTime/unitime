@@ -389,7 +389,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 				if (enrollment == null) {
 					if (r.isWaitlist() && offering.isWaitList()) {
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						CourseRequest courseRequest = SectioningRequest.convert(assignment, r, server, wlMode);
+						CourseRequest courseRequest = SectioningRequest.convert(assignment, r, server, wlMode, helper);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
 						for (Course c: courseRequest.getCourses()) {
 							XOffering off = (c.getId() == courseId.getCourseId() ? offering : server.getOffering(c.getOffering().getId()));
@@ -497,7 +497,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						});
 						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
-						CourseRequest crq = SectioningRequest.convert(assignment, r, server, wlMode);
+						CourseRequest crq = SectioningRequest.convert(assignment, r, server, wlMode, helper);
 						Collection<Enrollment> avEnrls = crq.getAvaiableEnrollmentsSkipSameTime(assignment);
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
