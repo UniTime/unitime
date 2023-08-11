@@ -485,8 +485,9 @@ public class HibernateUtil {
     	
     	@Override
     	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    		// ?1 + (?2) * interval '1 day'
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
-    		sqlAppender.appendSql(" as int) & cast(");
+    		sqlAppender.appendSql(" + (");
     		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
     		sqlAppender.appendSql(") * interval '1 day'");
     	}
