@@ -61,7 +61,6 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.TextBox;
 
 public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -74,7 +73,7 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 	private SingleDateSelector iDateFrom, iDateTo;
 	private NumberBox iCreditFrom, iCreditTo;
 	private StudentSectioningContext iContext;
-	private TextBox iInstructor;
+	private AriaTextBox iInstructor;
 	private Timer iChangeTimer;
 	private FilterButton iFilterButton;
 	private P iFilterLabel;
@@ -115,8 +114,10 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 		iCredits.setStyleName("credit");
 		P from = new P("from"); from.setText(MESSAGES.propCourseFinderFilterCreditFrom()); iCredits.add(from);
 		iCreditFrom = new NumberBox(); iCredits.add(iCreditFrom);
+		iCreditFrom.setAriaLabel(ARIA.inpurtCourseFinderFilterMinCredit());
 		P to = new P("to"); to.setText(MESSAGES.propCourseFinderFilterCreditTo()); iCredits.add(to);
 		iCreditTo = new NumberBox(); iCredits.add(iCreditTo);
+		iCreditTo.setAriaLabel(ARIA.inpurtCourseFinderFilterMaxCredit());
 		addRow(filter, iCredits);
 
 		addStyleName("filter");
@@ -124,15 +125,18 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 		iDates.setStyleName("dates");
 		from = new P("from"); from.setText(MESSAGES.propSchedulingPrefDatesFrom()); iDates.add(from);
 		iDateFrom = new SingleDateSelector(null);
+		iDateFrom.setAriaLabel(ARIA.inpurtCourseFinderFilterClassStartDate());
 		iDates.add(iDateFrom);
 		to = new P("to"); to.setText(MESSAGES.propSchedulingPrefDatesTo()); iDates.add(to);
 		iDateTo = new SingleDateSelector(null);
+		iDateFrom.setAriaLabel(ARIA.inpurtCourseFinderFilterClassEndDate());
 		iDates.add(iDateTo);
 		addRow(MESSAGES.propSchedulingPrefDates(), iDates);
 		
 		iInstructor = new AriaTextBox();
 		iInstructor.setStyleName("gwt-SuggestBox");
 		iInstructor.addStyleName("instructor");
+		iInstructor.setAriaLabel(ARIA.inpurtCourseFinderFilterInstructor());
 		addRow(MESSAGES.propCourseFinderFilterInstructor(), iInstructor);
 		
 		iFilterButton.setValue(false, true);
@@ -217,6 +221,8 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 		if (iContext.hasSessionDates()) {
 			iDateFrom.init(iContext);
 			iDateTo.init(iContext);
+			iDateFrom.setAriaLabel(ARIA.inpurtCourseFinderFilterClassStartDate());
+			iDateTo.setAriaLabel(ARIA.inpurtCourseFinderFilterClassEndDate());
 		} else if (iContext.getAcademicSessionId() != null) {
 			final Long sessionId = iContext.getAcademicSessionId();
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
@@ -231,6 +237,8 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 						iContext.setSessionDates(result);
 					iDateFrom.init(result);
 					iDateTo.init(result);
+					iDateFrom.setAriaLabel(ARIA.inpurtCourseFinderFilterClassStartDate());
+					iDateTo.setAriaLabel(ARIA.inpurtCourseFinderFilterClassEndDate());
 				}
 			});
 		}

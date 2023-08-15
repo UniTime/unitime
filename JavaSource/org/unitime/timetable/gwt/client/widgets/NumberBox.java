@@ -19,16 +19,17 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+
 import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * @author Tomas Muller
  */
-public class NumberBox extends TextBox {
+public class NumberBox extends AriaTextBox {
 	private boolean iDecimal = false, iNegative = false;
 
 	public NumberBox() {

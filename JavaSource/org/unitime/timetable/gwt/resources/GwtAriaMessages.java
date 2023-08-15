@@ -519,4 +519,32 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Request note for {0}")
 	String requestNoteFor(String course);
+	
+	@DefaultMessage("Class start date filter")
+	String inpurtCourseFinderFilterClassStartDate();
+	
+	@DefaultMessage("Class end date filter")
+	String inpurtCourseFinderFilterClassEndDate();
+	
+	@DefaultMessage("Minimum credit filter")
+	String inpurtCourseFinderFilterMinCredit();
+	
+	@DefaultMessage("Maximum credit filter")
+	String inpurtCourseFinderFilterMaxCredit();
+	
+	@DefaultMessage("Instructor name filter")
+	String inpurtCourseFinderFilterInstructor();
+	
+	@DefaultMessage("Class modality preference")
+	String studentPrefClassModality();
+	
+	@DefaultMessage("Schedule gaps preference")
+	String studentPrefScheduleGaps();
+	
+	@DefaultMessage("Class start date")
+	String studentPrefClassStartDate();
+	
+	@DefaultMessage("Class end date")
+	String studentPrefClassEndDate();
+
 }

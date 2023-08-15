@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import org.unitime.timetable.gwt.client.aria.AriaListBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -31,15 +32,17 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.StudentSchedulingPreferencesInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.ListBox;
 
 /**
  * @author Tomas Muller
@@ -53,7 +56,7 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 	private UniTimeHeaderPanel iFooter;
 	private SingleDateSelector iDateFrom, iDateTo;
 	private int iDatesLine;
-	private ListBox iModality, iBackToBack;
+	private AriaListBox iModality, iBackToBack;
 	private P iModalityDesc, iBackToBackDesc;
 	private StudentSchedulingPreferencesInterface iPreferences;
 	private HTML iCustomNote;
@@ -65,16 +68,19 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		setHTML("<img src='" + RESOURCES.preferences().getSafeUri().asString() + "' class='gwt-Image'></img><span class='gwt-Label' style='padding-left: 5px; vertical-align: top;'>" + MESSAGES.dialogStudentSchedulingPreferences() + "</span>");
 		iForm = new SimpleForm();
 		
-		iModality = new ListBox();
+		iModality = new AriaListBox();
 		iModality.addItem(MESSAGES.itemSchedulingModalityNoPreference(), "NoPreference");
 		iModality.addItem(MESSAGES.itemSchedulingModalityPreferFaceToFace(), "DiscouragedOnline");
 		iModality.addItem(MESSAGES.itemSchedulingModalityPreferOnline(), "PreferredOnline");
 		iModality.addItem(MESSAGES.itemSchedulingModalityRequireOnline(), "RequiredOnline");
 		iModality.addStyleName("selection");
+		iModality.setAriaLabel(ARIA.studentPrefClassModality());
 		AbsolutePanel p = new AbsolutePanel(); p.setStyleName("modality");
 		p.add(iModality);
 		iModalityDesc = new P("description");
 		iModalityDesc.setText(MESSAGES.descSchedulingModalityPreferFaceToFace());
+		iModalityDesc.getElement().setId(DOM.createUniqueId());
+		Roles.getTextboxRole().setAriaDescribedbyProperty(iModality.getElement(), Id.of(iModalityDesc.getElement()));
 		p.add(iModalityDesc);
 		iModality.addChangeHandler(new ChangeHandler() {
 			@Override
@@ -84,11 +90,12 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		});
 		iForm.addRow(MESSAGES.propSchedulingPrefModality(), p);
 		
-		iBackToBack = new ListBox();
+		iBackToBack = new AriaListBox();
 		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackNoPreference(), "NoPreference");
 		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackPrefer(), "PreferBackToBack");
 		iBackToBack.addItem(MESSAGES.itemSchedulingBackToBackDiscourage(), "DiscourageBackToBack");
 		iBackToBack.addStyleName("selection");
+		iBackToBack.setAriaLabel(ARIA.studentPrefScheduleGaps());
 		AbsolutePanel q = new AbsolutePanel(); q.setStyleName("back-to-back");
 		q.add(iBackToBack);
 		iBackToBackDesc = new P("description");
@@ -100,18 +107,43 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 				backToBackChanged();
 			}
 		});
+		iBackToBackDesc.getElement().setId(DOM.createUniqueId());
+		Roles.getTextboxRole().setAriaDescribedbyProperty(iBackToBack.getElement(), Id.of(iBackToBackDesc.getElement()));
 		iForm.addRow(MESSAGES.propSchedulingPrefBackToBack(), q);
 		
 		AbsolutePanel m = new AbsolutePanel();
 		m.setStyleName("dates");
 		P from = new P("from"); from.setText(MESSAGES.propSchedulingPrefDatesFrom()); m.add(from);
-		iDateFrom = new SingleDateSelector(sessionProvider);
+		iDateFrom = new SingleDateSelector(sessionProvider) {
+			@Override
+			public void setAriaLabel(String text) {
+				if (getFormat().equalsIgnoreCase(text)) text = null;
+				if (text == null || text.isEmpty())
+					super.setAriaLabel(ARIA.studentPrefClassStartDate());
+				else
+					super.setAriaLabel(ARIA.studentPrefClassStartDate() + " " + text);
+			}
+		};
+		iDateFrom.setAriaLabel("");
 		m.add(iDateFrom);
 		P to = new P("to"); to.setText(MESSAGES.propSchedulingPrefDatesTo()); m.add(to);
-		iDateTo = new SingleDateSelector(sessionProvider);
+		iDateTo = new SingleDateSelector(sessionProvider) {
+			@Override
+			public void setAriaLabel(String text) {
+				if (getFormat().equalsIgnoreCase(text)) text = null;
+				if (text == null || text.isEmpty())
+					super.setAriaLabel(ARIA.studentPrefClassEndDate());
+				else
+					super.setAriaLabel(ARIA.studentPrefClassEndDate() + " " + text);
+			}
+		};
+		iDateTo.setAriaLabel("");
 		m.add(iDateTo);
 		P desc = new P("description"); desc.setText(MESSAGES.propSchedulingPrefDatesDescription()); m.add(desc);
 		iDatesLine = iForm.addRow(MESSAGES.propSchedulingPrefDates(), m);
+		desc.getElement().setId(DOM.createUniqueId());
+		Roles.getTextboxRole().setAriaDescribedbyProperty(iDateFrom.getElement(), Id.of(desc.getElement()));
+		Roles.getTextboxRole().setAriaDescribedbyProperty(iDateTo.getElement(), Id.of(desc.getElement()));
 		
 		iCustomNote = new HTML(); iCustomNote.addStyleName("custom-note"); iCustomNote.setText(""); iCustomNote.setVisible(false);
 		iForm.addRow(iCustomNote);
@@ -145,6 +177,8 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 			iModalityDesc.setText(MESSAGES.descSchedulingModalityRequireOnline());
 		} else if ("NoPreference".equals(iModality.getSelectedValue())) {
 			iModalityDesc.setText(MESSAGES.descSchedulingModalityNoPreference());
+		} else {
+			iModalityDesc.setText("");
 		}
 	}
 	
@@ -155,6 +189,8 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 			iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackDiscourage());
 		} else if ("NoPreference".equals(iBackToBack.getSelectedValue())) {
 			iBackToBackDesc.setText(MESSAGES.descSchedulingBackToBackNoPreference());
+		} else {
+			iBackToBackDesc.setText("");
 		}
 	}
 	
