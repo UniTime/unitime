@@ -104,9 +104,9 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 			String credInd = (String)line[3];
 			Number credLo = (Number)line[4];
 			Number credHi = (Number)line[5];
-			String gmCode = (String)line[6];
+			String gmCode = (line[6] == null ? null : line[6].toString());;
 			String gmDesc = (String)line[7];
-			String gmInd = (String)line[8];
+			String gmInd = (line[8] == null ? null : line[8].toString());
 			VariableTitleCourseInfo info = courses.get(subject + " " + courseNbr);
 			if (info == null) {
 				if (limit > 0 && courses.size() >= limit) break;
@@ -163,9 +163,9 @@ public class PurdueVariableTitleCourseProvider implements VariableTitleCoursePro
 			String credInd = (String)line[3];
 			Number credLo = (Number)line[4];
 			Number credHi = (Number)line[5];
-			String gmCode = (String)line[6];
+			String gmCode = (line[6] == null ? null : line[6].toString());
 			String gmDesc = (String)line[7];
-			String gmInd = (String)line[8];
+			String gmInd = (line[8] == null ? null : line[8].toString());
 			if (info == null) {
 				info = new VariableTitleCourseInfo();
 				info.setSubject(subject);
