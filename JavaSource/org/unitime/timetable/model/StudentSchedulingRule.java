@@ -24,12 +24,16 @@ import java.util.List;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.model.base.BaseStudentSchedulingRule;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.StudentSchedulingRuleDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
+import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XInstructionalMethod;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -74,17 +78,18 @@ public class StudentSchedulingRule extends BaseStudentSchedulingRule {
 		return matchSession(session.getAcademicTerm(), session.getAcademicYear(), session.getAcademicInitiative());
 	}
 	
+	public boolean hasInstructionalMethod() {
+		return getInstructonalMethod() != null && !getInstructonalMethod().isEmpty();
+	}
 	
 	public boolean matchesInstructionalMethod(String im) {
 		// not set > always matches
-		if (getInstructonalMethod() == null || getInstructonalMethod().isEmpty()) return true;
-		if (getInstructonalMethod().equals("-")) {
-			return im == null || im.isEmpty();
-		}
+		if (!hasInstructionalMethod()) return true;
 		if (getInstructonalMethod().startsWith("!")) {
 			return im != null && !im.matches(getInstructonalMethod().substring(1));
+		} else {
+			return im != null && im.matches(getInstructonalMethod());
 		}
-		return im != null && im.matches(getInstructonalMethod());
 	}
 	
 	public boolean matchesInstructionalMethod(InstructionalMethod im) {
@@ -95,13 +100,124 @@ public class StudentSchedulingRule extends BaseStudentSchedulingRule {
 		return matchesInstructionalMethod(im == null ? null : im.getReference());
 	}
 	
+	public boolean hasCourseName() {
+		return getCourseName() != null && !getCourseName().isEmpty();
+	}
+	
 	public boolean matchesCourseName(String cn) {
 		// not set > always matches
-		if (getCourseName() == null || getCourseName().isEmpty()) return true;
+		if (!hasCourseName()) return true;
 		if (getCourseName().startsWith("!")) {
 			return cn != null && !cn.matches(getCourseName().substring(1));
 		}
 		return cn != null && cn.matches(getCourseName());
+	}
+	
+	public boolean hasCourseType() {
+		return getCourseType() != null && !getCourseType().isEmpty();
+	}
+	
+	public boolean matchesCourseType(String ct) {
+		// not set > always matches
+		if (!hasCourseType()) return true;
+		if (getCourseType().startsWith("!")) {
+			return ct != null && !ct.matches(getCourseType().substring(1));
+		} else {
+			return ct != null && ct.matches(getCourseType());
+		}
+	}
+	
+	public boolean matchesCourseType(CourseType ct) {
+		return matchesCourseType(ct == null ? null : ct.getReference());
+	}
+	
+	public boolean matchesCourse(XCourseId course, org.hibernate.Session hibSession) {
+		if (isDisjunctive()) {
+			if (hasCourseName() && matchesCourseName(course.getCourseName())) return true;
+			if (hasCourseType() && matchesCourseType(course.getType())) return true;
+			if (hasInstructionalMethod()) {
+				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), hibSession);
+				if (offering != null)
+					for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+						if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) return true;	
+					}
+			}
+			return false;
+		} else {
+			if (hasCourseName() && !matchesCourseName(course.getCourseName())) return false;
+			if (hasCourseType() && !matchesCourseType(course.getType())) return false;
+			if (hasInstructionalMethod()) {
+				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), hibSession);
+				boolean hasMatchingConfig = false;
+				if (offering != null)
+					for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+						if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) {
+							hasMatchingConfig = true;	
+							break;
+						}
+					}
+				if (!hasMatchingConfig) return false;
+			}
+			return true;
+		}
+	}
+	
+	public boolean matchesCourse(XCourseId course, OnlineSectioningServer server) {
+		if (isDisjunctive()) {
+			if (hasCourseName() && matchesCourseName(course.getCourseName())) return true;
+			if (hasCourseType() && matchesCourseType(course.getType())) return true;
+			if (hasInstructionalMethod()) {
+				XOffering offering = server.getOffering(course.getOfferingId());
+				if (offering != null)
+					for (XConfig config: offering.getConfigs()) {
+						if (matchesInstructionalMethod(config.getInstructionalMethod())) return true;	
+					}
+			}
+			return false;
+		} else {
+			if (hasCourseName() && !matchesCourseName(course.getCourseName())) return false;
+			if (hasCourseType() && !matchesCourseType(course.getType())) return false;
+			if (hasInstructionalMethod()) {
+				XOffering offering = server.getOffering(course.getOfferingId());
+				boolean hasMatchingConfig = false;
+				if (offering != null)
+					for (XConfig config: offering.getConfigs()) {
+						if (matchesInstructionalMethod(config.getInstructionalMethod())) {
+							hasMatchingConfig = true;	
+							break;
+						}
+					}
+				if (!hasMatchingConfig) return false;
+			}
+			return true;
+		}
+	}
+	
+	public boolean matchesCourse(CourseOffering course) {
+		if (isDisjunctive()) {
+			if (hasCourseName() && matchesCourseName(course.getCourseName())) return true;
+			if (hasCourseType() && matchesCourseType(course.getCourseType())) return true;
+			if (hasInstructionalMethod()) {
+				for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+					if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) return true;	
+				}
+			}
+			return false;
+		} else {
+			if (hasCourseName() && !matchesCourseName(course.getCourseName())) return false;
+			if (hasCourseType() && !matchesCourseType(course.getCourseType())) return false;
+			if (hasInstructionalMethod()) {
+				boolean hasMatchingConfig = false;
+				for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+					if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) {
+							hasMatchingConfig = true;	
+							break;
+						}
+					}
+				if (!hasMatchingConfig) return false;
+			}
+			return true;
+		}
 	}
 
 	public static StudentSchedulingRule getRule(TermMatcher studentMatcher, AcademicSessionInfo info, boolean isAdvisor, boolean isAdmin, Mode mode, org.hibernate.Session hibSession) {

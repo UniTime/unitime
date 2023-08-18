@@ -40,6 +40,8 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 	private Integer iLastYear;
 	private String iInstructonalMethod;
 	private String iCourseName;
+	private String iCourseType;
+	private Boolean iDisjunctive;
 	private Boolean iAppliesToFilter;
 	private Boolean iAppliesToOnline;
 	private Boolean iAppliesToBatch;
@@ -57,6 +59,8 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 	public static String PROP_LAST_YEAR = "lastYear";
 	public static String PROP_INSTR_METHOD = "instructonalMethod";
 	public static String PROP_COURSE_NAME = "courseName";
+	public static String PROP_COURSE_TYPE = "courseType";
+	public static String PROP_DISJUNCTIVE = "disjunctive";
 	public static String PROP_APPLY_FILTER = "appliesToFilter";
 	public static String PROP_APPLY_ONLINE = "appliesToOnline";
 	public static String PROP_APPLY_BATCH = "appliesToBatch";
@@ -104,6 +108,13 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 	public String getCourseName() { return iCourseName; }
 	public void setCourseName(String courseName) { iCourseName = courseName; }
 
+	public String getCourseType() { return iCourseType; }
+	public void setCourseType(String courseType) { iCourseType = courseType; }
+
+	public Boolean isDisjunctive() { return iDisjunctive; }
+	public Boolean getDisjunctive() { return iDisjunctive; }
+	public void setDisjunctive(Boolean disjunctive) { iDisjunctive = disjunctive; }
+
 	public Boolean isAppliesToFilter() { return iAppliesToFilter; }
 	public Boolean getAppliesToFilter() { return iAppliesToFilter; }
 	public void setAppliesToFilter(Boolean appliesToFilter) { iAppliesToFilter = appliesToFilter; }
@@ -147,6 +158,8 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 			"\n	AppliesToFilter: " + getAppliesToFilter() +
 			"\n	AppliesToOnline: " + getAppliesToOnline() +
 			"\n	CourseName: " + getCourseName() +
+			"\n	CourseType: " + getCourseType() +
+			"\n	Disjunctive: " + getDisjunctive() +
 			"\n	FilterInitiative: " + getFilterInitiative() +
 			"\n	FilterTerm: " + getFilterTerm() +
 			"\n	FirstYear: " + getFirstYear() +

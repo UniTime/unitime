@@ -1851,7 +1851,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
 						for (XCourseId course: cr.getCourseIds()) {
-							if (!rule.matchesCourseName(course.getCourseName())) {
+							if (!rule.matchesCourse(course, helper.getHibSession())) {
 								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
 										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
 										.replace("{rule}", rule.getRuleName())
@@ -1860,23 +1860,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 								if (rp != null)
 									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-							} else if (rule.getInstructonalMethod() != null) {
-								boolean hasMatchingConfig = false;
-								InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
-								if (offering != null)
-									for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
-										if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) hasMatchingConfig = true;	
-									}
-								if (!hasMatchingConfig) {
-									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
-											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
-											.replace("{rule}", rule.getRuleName())
-											.replace("{course}", course.getCourseName()),
-											ORD_UNITIME);
-									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
-									if (rp != null)
-										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-								}
 							}
 						}
 					}
@@ -2013,7 +1996,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
 						for (XCourseId course: cr.getCourseIds()) {
-							if (!rule.matchesCourseName(course.getCourseName())) {
+							if (!rule.matchesCourse(course, server)) {
 								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
 										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
 										.replace("{rule}", rule.getRuleName())
@@ -2022,22 +2005,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 								if (rp != null)
 									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-							} else if (rule.getInstructonalMethod() != null) {
-								boolean hasMatchingConfig = false;
-								InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
-								if (offering != null)
-									for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
-										if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) hasMatchingConfig = true;	
-								if (!hasMatchingConfig) {
-									request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
-											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
-											.replace("{rule}", rule.getRuleName())
-											.replace("{course}", course.getCourseName()),
-											ORD_UNITIME);
-									RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
-									if (rp != null)
-										rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-								}
 							}
 						}
 					}

@@ -7834,6 +7834,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Names")
 	String fieldCourseNameRegExp();
 	
+	@DefaultMessage("Course Types")
+	String fieldCourseTypeRegExp();
+	
+	@DefaultMessage("Mode")
+	String fieldRuleMode();
+	
 	@DefaultMessage("Filter")
 	String fieldAppliesToFilter();
 	
@@ -7848,5 +7854,11 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Admin Override")
 	String fieldAdminOverride();
+	
+	@DefaultMessage("AND")
+	String ruleConjunctive();
+	
+	@DefaultMessage("OR")
+	String ruleDisjunctive();
 
 }

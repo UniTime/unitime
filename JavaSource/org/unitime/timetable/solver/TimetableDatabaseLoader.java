@@ -3207,7 +3207,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		}
 
         		List<StudentSchedulingRule> rules = new ArrayList<StudentSchedulingRule>();
-                for (StudentSchedulingRule rule: hibSession.createQuery("from StudentSchedulingRule order by ord", StudentSchedulingRule.class).list()) {
+                for (StudentSchedulingRule rule: (List<StudentSchedulingRule>)hibSession.createQuery("from StudentSchedulingRule order by ord").list()) {
                 	// ignore rules that do not apply to batch
         			if (!rule.isAppliesToBatch()) continue;
         			// check academic session

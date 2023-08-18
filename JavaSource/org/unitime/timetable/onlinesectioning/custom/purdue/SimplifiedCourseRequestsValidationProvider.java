@@ -652,7 +652,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (r instanceof XCourseRequest) {
 					XCourseRequest cr = (XCourseRequest)r;
 					for (XCourseId course: cr.getCourseIds()) {
-						if (!rule.matchesCourseName(course.getCourseName())) {
+						if (!rule.matchesCourse(course, helper.getHibSession())) {
 							request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
 									ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
 									.replace("{rule}", rule.getRuleName())
@@ -661,24 +661,6 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 							RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
 							if (rp != null)
 								rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-						} else if (rule.getInstructonalMethod() != null) {
-							boolean hasMatchingConfig = false;
-							InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId(), helper.getHibSession());
-							if (offering != null)
-								for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
-									if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod()))
-										hasMatchingConfig = true;	
-								}
-							if (!hasMatchingConfig) {
-								request.addConfirmationMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
-										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
-										.replace("{rule}", rule.getRuleName())
-										.replace("{course}", course.getCourseName()),
-										ORD_UNITIME);
-								RequestPriority rp = request.getRequestPriority(new RequestedCourse(course.getCourseId(), course.getCourseName()));
-								if (rp != null)
-									rp.getRequest().getRequestedCourse(rp.getChoice()).setInactive(true);
-							}
 						}
 					}
 				}
@@ -1062,7 +1044,8 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (r.hasRequestedCourse())
 					for (RequestedCourse course: r.getRequestedCourse()) {
 						if (course.getCourseId() == null) continue;
-						if (!rule.matchesCourseName(course.getCourseName())) {
+						CourseOffering co = CourseOfferingDAO.getInstance().get(course.getCourseId(), helper.getHibSession());
+						if (co != null && !rule.matchesCourse(co)) {
 							boolean confirm = (original.getRequestForCourse(course.getCourseId()) == null);
 							response.addMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
 									ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
@@ -1070,22 +1053,6 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 									.replace("{course}", course.getCourseName()),
 									confirm ? CONF_UNITIME : CONF_NONE);
 							if (confirm) questionRestrictionsNotMet = true;
-						} else if (rule.getInstructonalMethod() != null) {
-							boolean hasMatchingConfig = false;
-							CourseOffering co = CourseOfferingDAO.getInstance().get(course.getCourseId(), helper.getHibSession());
-							if (co != null)
-								for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs())
-									if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod()))
-										hasMatchingConfig = true;	
-							if (!hasMatchingConfig) {
-								boolean confirm = (original.getRequestForCourse(course.getCourseId()) == null);
-								response.addMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
-										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
-										.replace("{rule}", rule.getRuleName())
-										.replace("{course}", course.getCourseName()),
-										confirm ? CONF_UNITIME : CONF_NONE);
-								if (confirm) questionRestrictionsNotMet = true;
-							}
 						}
 					}
 			}
@@ -1761,29 +1728,14 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (r.hasRequestedCourse())
 					for (RequestedCourse course: r.getRequestedCourse()) {
 						if (course.getCourseId() == null) continue;
-						if (!rule.matchesCourseName(course.getCourseName())) {
+						CourseOffering co = CourseOfferingDAO.getInstance().get(course.getCourseId(), helper.getHibSession());
+						if (co != null && !rule.matchesCourse(co)) {
 							response.addMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
 									ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
 									.replace("{rule}", rule.getRuleName())
 									.replace("{course}", course.getCourseName()),
 									CONF_UNITIME);
 							questionRestrictionsNotMet = true;
-						} else if (rule.getInstructonalMethod() != null) {
-							boolean hasMatchingConfig = false;
-							CourseOffering co = CourseOfferingDAO.getInstance().get(course.getCourseId(), helper.getHibSession());
-							if (co != null)
-								for (InstrOfferingConfig config: co.getInstructionalOffering().getInstrOfferingConfigs()) {
-									if (rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod()))
-										hasMatchingConfig = true;	
-								}
-							if (!hasMatchingConfig) {
-								response.addMessage(course.getCourseId(), course.getCourseName(), "NOT-RULE",
-										ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
-										.replace("{rule}", rule.getRuleName())
-										.replace("{course}", course.getCourseName()),
-										CONF_UNITIME);
-								questionRestrictionsNotMet = true;
-							}
 						}
 					}
 			}

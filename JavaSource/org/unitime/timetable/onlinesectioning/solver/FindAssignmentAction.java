@@ -622,6 +622,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		}
 		Course clonedCourse = new Course(courseId, course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
 		clonedCourse.setNote(course.getNote());
+		clonedCourse.setType(course.getType());
+		clonedCourse.setTitle(course.getTitle());
 		clonedCourse.setCreditValue(course.getMinCredit());
 		CourseDeadlines deadline = null;
 		if (checkDeadlines)
@@ -759,18 +761,39 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		if (!(server instanceof StudentSolver) && originalStudent != null) {
 			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(originalStudent, server, helper);
 			if (rule != null) {
-				if (!rule.matchesCourseName(course.getCourseName())) {
-					new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
-				} else if (rule.getInstructonalMethod() != null) {
-					List<Config> matchingConfigs = new ArrayList<Config>();
-	        		for (Config config: clonedOffering.getConfigs())
-	        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
-	        				matchingConfigs.add(config);	
-	        		if (matchingConfigs.size() != clonedOffering.getConfigs().size()) {
-	        			Restriction clonnedRestriction = new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
-	        			for (Config c: matchingConfigs)
-	        				clonnedRestriction.addConfig(c);
-	        		}
+				if (rule.isDisjunctive()) {
+					if (rule.hasCourseName() && rule.matchesCourseName(course.getCourseName())) {
+						// no restriction needed
+					} else if (rule.hasCourseType() && rule.matchesCourseType(course.getType())) {
+						// no restriction needed
+					} else if (rule.hasInstructionalMethod()) {
+						List<Config> matchingConfigs = new ArrayList<Config>();
+		        		for (Config config: clonedOffering.getConfigs())
+		        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+		        				matchingConfigs.add(config);	
+		        		if (matchingConfigs.size() != clonedOffering.getConfigs().size()) {
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
+		        		}
+					} else {
+						// no match -> cannot take the course
+						new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+					}
+				} else {
+					if (!rule.matchesCourseName(course.getCourseName()) || !rule.matchesCourseType(course.getType())) {
+						new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+					} else if (rule.hasInstructionalMethod()) {
+						List<Config> matchingConfigs = new ArrayList<Config>();
+		        		for (Config config: clonedOffering.getConfigs())
+		        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+		        				matchingConfigs.add(config);	
+		        		if (matchingConfigs.size() != clonedOffering.getConfigs().size()) {
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, clonedOffering, originalStudent.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
+		        		}
+					}
 				}
 			} else if (onlineOnlyFilter) {
 				String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);

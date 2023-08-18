@@ -93,6 +93,19 @@
             type="java.lang.String"
             not-null="false"
             length="2048"/>
+            
+		<property
+            name="courseType"
+            column="course_type"
+            type="java.lang.String"
+            not-null="false"
+            length="2048"/>
+
+        <property
+            name="disjunctive"
+            column="disjunctive"
+            type="java.lang.Boolean"
+            not-null="true"/>
 
         <property
             name="appliesToFilter"

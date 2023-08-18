@@ -833,6 +833,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, getCourseLimit(co), projected);
             if (co.getCredit() != null)
             	course.setCredit(co.getCredit().creditAbbv() + "|" + co.getCredit().creditText());
+            course.setTitle(co.getTitle());
+            course.setType(co.getCourseType() == null ? null : co.getCourseType().getReference());
+            course.setNote(co.getScheduleBookNote());
             courseTable.put(co.getUniqueId(), course);
         }
         Hashtable<Long,Section> class2section = new Hashtable<Long,Section>();
@@ -2629,7 +2632,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         Map<String, Student> ext2student = new HashMap<String, Student>();
         Set<Student> onlineOnlyStudents = new HashSet<Student>();
         List<StudentSchedulingRule> rules = new ArrayList<StudentSchedulingRule>();
-        for (StudentSchedulingRule rule: hibSession.createQuery("from StudentSchedulingRule order by ord", StudentSchedulingRule.class).list()) {
+        for (StudentSchedulingRule rule: (List<StudentSchedulingRule>)hibSession.createQuery("from StudentSchedulingRule order by ord").list()) {
         	// ignore rules that do not apply to batch
 			if (!rule.isAppliesToBatch()) continue;
 			// check academic session
@@ -2782,21 +2785,45 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	for (Map.Entry<Course, Set<Long>> e: course2students.entrySet()) {
              		incProgress();
              		Course course = e.getKey();
-             		if (!rule.matchesCourseName(course.getName())) {
-             			new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue()); 
-             		} else if (rule.getInstructonalMethod() != null) {
-                		Offering offering = course.getOffering();
-                		List<Config> configs = new ArrayList<Config>();
-                		for (Config config: offering.getConfigs())
-                			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
-                				configs.add(config);	
-                		if (configs.size() == offering.getConfigs().size()) {
-                			// student can take any configuration -> no need for an override
-                			continue;
-                		}
-                		Restriction r = new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue());
-                		for (Config config: configs)
-                			r.addConfig(config);
+             		if (rule.isDisjunctive()) {
+             			if (rule.hasCourseName() && rule.matchesCourseName(course.getName())) {
+    						// no restriction needed
+    					} else if (rule.hasCourseType() && rule.matchesCourseType(course.getType())) {
+    						// no restriction needed
+    					} else if (rule.hasInstructionalMethod()) {
+    						Offering offering = course.getOffering();
+                    		List<Config> configs = new ArrayList<Config>();
+                    		for (Config config: offering.getConfigs())
+                    			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+                    				configs.add(config);	
+                    		if (configs.size() == offering.getConfigs().size()) {
+                    			// student can take any configuration -> no need for an override
+                    			continue;
+                    		}
+                    		Restriction r = new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue());
+                    		for (Config config: configs)
+                    			r.addConfig(config);
+    					} else {
+    						// no match >> cannot take the course
+    						new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue());
+    					}
+             		} else {
+             			if (!rule.matchesCourseName(course.getName()) || !rule.matchesCourseType(course.getType())) {
+                 			new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue()); 
+                 		} else if (rule.hasInstructionalMethod()) {
+                    		Offering offering = course.getOffering();
+                    		List<Config> configs = new ArrayList<Config>();
+                    		for (Config config: offering.getConfigs())
+                    			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+                    				configs.add(config);	
+                    		if (configs.size() == offering.getConfigs().size()) {
+                    			// student can take any configuration -> no need for an override
+                    			continue;
+                    		}
+                    		Restriction r = new IndividualRestriction(--iMakeupReservationId, course.getOffering(), e.getValue());
+                    		for (Config config: configs)
+                    			r.addConfig(config);
+                 		}	
              		}
             	}
         	}

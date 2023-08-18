@@ -246,17 +246,26 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		if (offering != null) {
 			course.setAvailability(offering.getCourseAvailability(server.getRequests(c.getOfferingId()), c));
 			for (XConfig config: offering.getConfigs()) {
-				if (iRule != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
-					if (!iRule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-				} else if (iFilterIM != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
-					String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
-        			if (iFilterIM.isEmpty()) {
-        				if (imRef != null && !imRef.isEmpty())
-        					continue;
-        			} else {
-        				if (imRef == null || !imRef.matches(iFilterIM))
-        					continue;
-        			}
+				if (iRule != null && iRule.isDisjunctive()) {
+					if (iRule.hasCourseName() && iRule.matchesCourseName(c.getCourseName())) {
+					} else if (iRule.hasCourseType() && iRule.matchesCourseType(c.getType())) {
+					} else if (iRule.hasInstructionalMethod() && iRule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+					} else if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) {
+						continue;
+					}
+				} else {
+					if (iRule != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+						if (!iRule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
+					} else if (iFilterIM != null && (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId()))) {
+						String imRef = (config.getInstructionalMethod() == null ? null : config.getInstructionalMethod().getReference());
+	        			if (iFilterIM.isEmpty()) {
+	        				if (imRef != null && !imRef.isEmpty())
+	        					continue;
+	        			} else {
+	        				if (imRef == null || !imRef.matches(iFilterIM))
+	        					continue;
+	        			}
+					}
 				}
 				if (config.getInstructionalMethod() != null)
 					course.addInstructionalMethod(config.getInstructionalMethod().getUniqueId(), config.getInstructionalMethod().getLabel());

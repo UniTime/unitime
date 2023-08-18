@@ -90,9 +90,13 @@
 		<item>
 			<name>Student Scheduling Rules</name>
 			<description>
-				<line>Added student scheduling rules that can be used to define which courses a particular group of students can request/enroll in.These rules can be defined on Administration > Other > Student Scheduling Rules page.A group of students can be a student filter (same format as on the dashboards, e.g., group:SpecialStudents or primary-major:%-OL).</line>
-				<line>Each group of students can be restricted to particular courses (provided using a regular expression, e.g, .*[0-9]OL for all courses with OL suffix) or instructional methods (provided using a regular expression, e.g., PO|PH for course configurations with PO or PH instructional methods).
+				<line>Added student scheduling rules that can be used to define which courses a particular group of students can request/enroll in.These rules can be defined on Administration > Other > Student Scheduling Rules page.</line>
+				<line>A group of students can be a student filter (same format as on the dashboards, e.g., group:SpecialStudents or primary-major:%-OL).</line>
+				<line>Each group of students can be restricted to particular course types (provided using a regular expression, e.g., !No Pre-Reg),
+					course names (provided using a regular expression, e.g, .*[0-9]OL for all courses with OL suffix),
+					or instructional methods (provided using a regular expression, e.g., PO|PH for course configurations with PO or PH instructional methods).
 					<line>A course name or instructional method regular expression can be negated by using an exclamation mark as a prefix (e.g., !.*[0-9]OL for all courses without an OL suffix).</line>
+					<line>If multiple expressions are provided (e.g., both course and instructional method), depending on the mode of the rule, all of the expressions must match or just one.</line>
 				</line>
 				<line>Each rule can be restricted by a regular expression matching academic initiative, a regular expression matching term, start and end year.</line>
 				<line>The rules are processed in the given order.</line>
