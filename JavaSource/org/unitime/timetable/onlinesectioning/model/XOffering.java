@@ -659,19 +659,40 @@ public class XOffering implements Serializable, Externalizable {
 		if (!(server instanceof StudentSolver) && student != null) {
 			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(student, server, helper.getHibSession());
 			if (rule != null) {
-				if (!rule.matchesCourseName(course.getName())) {
-					new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
-				} else if (rule.getInstructonalMethod() != null) {
-					List<Config> matchingConfigs = new ArrayList<Config>();
-	        		for (Config config: course.getOffering().getConfigs()) {
-	        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
-	        				matchingConfigs.add(config);	
-	        		}
-	        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
-	        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
-	        			for (Config c: matchingConfigs)
-	        				clonnedRestriction.addConfig(c);
-	        		}
+				if (rule.isDisjunctive()) {
+					if (rule.hasCourseName() && rule.matchesCourseName(course.getName())) {
+						// no restriction needed
+					} else if (rule.hasCourseType() && rule.matchesCourseType(course.getType())) {
+						// no restriction needed
+					} else if (rule.hasInstructionalMethod()) {
+						List<Config> matchingConfigs = new ArrayList<Config>();
+		        		for (Config config: course.getOffering().getConfigs()) {
+		        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+		        				matchingConfigs.add(config);	
+		        		}
+		        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
+		        		}
+					} else {
+						new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+					}
+				} else {
+					if (!rule.matchesCourseName(course.getName()) || !rule.matchesCourseType(course.getType())) {
+						new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+					} else if (rule.getInstructonalMethod() != null) {
+						List<Config> matchingConfigs = new ArrayList<Config>();
+		        		for (Config config: course.getOffering().getConfigs()) {
+		        			if (rule.matchesInstructionalMethod(config.getInstructionalMethodReference()))
+		        				matchingConfigs.add(config);	
+		        		}
+		        		if (matchingConfigs.size() != course.getOffering().getConfigs().size()) {
+		        			Restriction clonnedRestriction = new IndividualRestriction(-1l, course.getOffering(), student.getStudentId());
+		        			for (Config c: matchingConfigs)
+		        				clonnedRestriction.addConfig(c);
+		        		}
+					}
 				}
 			} else {
 				String filter = server.getConfig().getProperty("Load.OnlineOnlyStudentFilter", null);
@@ -742,6 +763,8 @@ public class XOffering implements Serializable, Externalizable {
 		}
 		Course clonedCourse = new Course(course.getCourseId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
 		clonedCourse.setNote(course.getNote());
+		clonedCourse.setType(course.getType());
+		clonedCourse.setTitle(course.getTitle());
 		Hashtable<Long, Config> configs = new Hashtable<Long, Config>();
 		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
 		Hashtable<Long, Section> sections = new Hashtable<Long, Section>();

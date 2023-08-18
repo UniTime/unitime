@@ -159,6 +159,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	        		for (XCourse course: offering.getCourses()) {
 	        			Course clonedCourse = new Course(course.getCourseId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, course.getLimit(), course.getProjected());
 		        		clonedCourse.setNote(course.getNote());
+		        		clonedCourse.setType(course.getType());
+		        		clonedCourse.setTitle(course.getTitle());
 		        		clonedCourse.setCredit(course.getCredit());
 		        		courses.put(course.getCourseId(), clonedCourse);
 	        		}

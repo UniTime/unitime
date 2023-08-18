@@ -20,6 +20,7 @@
 package org.unitime.timetable.onlinesectioning.match;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -70,25 +71,36 @@ public class RuleCheckingCourseMatcherProvider implements CourseMatcherProvider 
 	
 	public static class SchedulingRuleCourseMatcher extends FallbackCourseMatcher {
 		private static final long serialVersionUID = 1L;
-		private String iInstructionalMode;
-		private String iCourseRegExp;
+		private String iCourseName;
+		private String iCourseType;
+		private String iInstructonalMethod;
+		private Boolean iDisjunctive;
 		
 		public SchedulingRuleCourseMatcher(StudentSchedulingRule rule) {
 			super();
-			iInstructionalMode = rule.getInstructonalMethod();
-			iCourseRegExp = rule.getCourseName();
+			iCourseName = rule.getCourseName();
+			iCourseType = rule.getCourseType();
+			iInstructonalMethod = rule.getInstructonalMethod();
+			iDisjunctive = rule.isDisjunctive();
+		}
+		
+		public String getCourseName() { return iCourseName; }
+		public String getCourseType() { return iCourseType; }
+		public String getInstructonalMethod() { return iInstructonalMethod; }
+		public Boolean isDisjunctive() { return iDisjunctive; }
+		
+		public boolean hasInstructionalMethod() {
+			return getInstructonalMethod() != null && !getInstructonalMethod().isEmpty();
 		}
 		
 		public boolean matchesInstructionalMethod(String im) {
 			// not set > always matches
-			if (iInstructionalMode == null || iInstructionalMode.isEmpty()) return true;
-			if (iInstructionalMode.equals("-")) {
-				return im == null || im.isEmpty();
+			if (!hasInstructionalMethod()) return true;
+			if (getInstructonalMethod().startsWith("!")) {
+				return im != null && !im.matches(getInstructonalMethod().substring(1));
+			} else {
+				return im != null && im.matches(getInstructonalMethod());
 			}
-			if (iInstructionalMode.startsWith("!")) {
-				return im != null && !im.matches(iInstructionalMode.substring(1));
-			}
-			return im != null && im.matches(iInstructionalMode);
 		}
 		
 		public boolean matchesInstructionalMethod(InstructionalMethod im) {
@@ -99,42 +111,103 @@ public class RuleCheckingCourseMatcherProvider implements CourseMatcherProvider 
 			return matchesInstructionalMethod(im == null ? null : im.getReference());
 		}
 		
+		public boolean hasCourseName() {
+			return getCourseName() != null && !getCourseName().isEmpty();
+		}
+		
 		public boolean matchesCourseName(String cn) {
 			// not set > always matches
-			if (iCourseRegExp == null || iCourseRegExp.isEmpty()) return true;
-			if (iCourseRegExp.startsWith("!")) {
-				return cn != null && !cn.matches(iCourseRegExp.substring(1));
+			if (!hasCourseName()) return true;
+			if (getCourseName().startsWith("!")) {
+				return cn != null && !cn.matches(getCourseName().substring(1));
 			}
-			return cn != null && cn.matches(iCourseRegExp);
+			return cn != null && cn.matches(getCourseName());
+		}
+		
+		public boolean hasCourseType() {
+			return getCourseType() != null && !getCourseType().isEmpty();
+		}
+		
+		public boolean matchesCourseType(String ct) {
+			// not set > always matches
+			if (!hasCourseType()) return true;
+			if (getCourseType().startsWith("!")) {
+				return ct != null && !ct.matches(getCourseType().substring(1));
+			} else {
+				return ct != null && ct.matches(getCourseType());
+			}
+		}
+		
+		public boolean matchesCourseType(CourseType ct) {
+			return matchesCourseType(ct == null ? null : ct.getReference());
+		}
+		
+		public boolean matchesCourse(XCourseId course) {
+			if (getServer() != null && !(getServer() instanceof DatabaseServer)) {
+				if (isDisjunctive()) {
+					if (hasCourseName() && matchesCourseName(course.getCourseName())) return true;
+					if (hasCourseType() && matchesCourseType(course.getType())) return true;
+					if (hasInstructionalMethod()) {
+						XOffering offering = getServer().getOffering(course.getOfferingId());
+						if (offering != null)
+							for (XConfig config: offering.getConfigs()) {
+								if (matchesInstructionalMethod(config.getInstructionalMethod())) return true;	
+							}
+					}
+					return false;
+				} else {
+					if (hasCourseName() && !matchesCourseName(course.getCourseName())) return false;
+					if (hasCourseType() && !matchesCourseType(course.getType())) return false;
+					if (hasInstructionalMethod()) {
+						XOffering offering = getServer().getOffering(course.getOfferingId());
+						boolean hasMatchingConfig = false;
+						if (offering != null)
+							for (XConfig config: offering.getConfigs()) {
+								if (matchesInstructionalMethod(config.getInstructionalMethod())) {
+									hasMatchingConfig = true;	
+									break;
+								}
+							}
+						if (!hasMatchingConfig) return false;
+					}
+					return true;
+				}
+			} else {
+				if (isDisjunctive()) {
+					if (hasCourseName() && matchesCourseName(course.getCourseName())) return true;
+					if (hasCourseType() && matchesCourseType(course.getType())) return true;
+					if (hasInstructionalMethod()) {
+						InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
+						if (offering != null)
+							for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+								if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) return true;	
+							}
+					}
+					return false;
+				} else {
+					if (hasCourseName() && !matchesCourseName(course.getCourseName())) return false;
+					if (hasCourseType() && !matchesCourseType(course.getType())) return false;
+					if (hasInstructionalMethod()) {
+						InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
+						boolean hasMatchingConfig = false;
+						if (offering != null)
+							for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
+								if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) {
+									hasMatchingConfig = true;	
+									break;
+								}
+							}
+						if (!hasMatchingConfig) return false;
+					}
+					return true;
+				}
+			}
 		}
 
 		@Override
 		public boolean match(XCourseId course) {
-			if (!matchesCourseName(course.getCourseName())) {
-				return false;
-			} else if (iInstructionalMode != null) {
-				if (getServer() != null && !(getServer() instanceof DatabaseServer)) {
-					XOffering offering = getServer().getOffering(course.getOfferingId());
-					if (offering != null) {
-						for (XConfig config: offering.getConfigs())
-							if (matchesInstructionalMethod(config.getInstructionalMethod())) {
-								if (iShowDisabled || isEnabledForStudentScheduling(config)) return true;
-							}
-					}
-				} else {
-					InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(course.getOfferingId());
-					if (offering != null) {
-						for (InstrOfferingConfig config: offering.getInstrOfferingConfigs()) {
-							if (matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) {
-								if (iShowDisabled || isEnabledForStudentScheduling(config)) return true;
-							}
-						}
-					}
-				}
-				return false;
-			} else {
-				return (iShowDisabled || isEnabledForStudentScheduling(course));
-			}
+			if (!matchesCourse(course)) return false;
+			return (iShowDisabled || isEnabledForStudentScheduling(course));
 		}
 	}
 }

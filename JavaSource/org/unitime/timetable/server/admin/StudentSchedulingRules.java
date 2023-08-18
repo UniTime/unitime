@@ -20,6 +20,7 @@
 package org.unitime.timetable.server.admin;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +35,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Flag;
+import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
@@ -59,11 +61,16 @@ public class StudentSchedulingRules implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingRules')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
+		List<ListItem> modes = new ArrayList<ListItem>();
+		modes.add(new ListItem("false", MESSAGES.ruleConjunctive()));
+		modes.add(new ListItem("true", MESSAGES.ruleDisjunctive()));
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldRuleName(), FieldType.text, 200, 255, Flag.UNIQUE, Flag.NOT_EMPTY),
 				new Field(MESSAGES.fieldStudentFilter(), FieldType.text, 500, 2048),
+				new Field(MESSAGES.fieldCourseTypeRegExp(), FieldType.text, 300, 2048),
 				new Field(MESSAGES.fieldCourseNameRegExp(), FieldType.text, 300, 2048),
 				new Field(MESSAGES.fieldInstructionalMethodRegExp(), FieldType.text, 300, 2048),
+				new Field(MESSAGES.fieldRuleMode(), FieldType.list, 40, modes, Flag.NOT_EMPTY),
 				new Field(MESSAGES.fieldInitiative(), FieldType.text, 100, 1024),
 				new Field(MESSAGES.fieldTerm(), FieldType.text, 100, 1024),
 				new Field(MESSAGES.fieldFirstYear(), FieldType.number, 50, 4),
@@ -84,17 +91,19 @@ public class StudentSchedulingRules implements AdminTable {
 			Record r = data.addRecord(rule.getUniqueId());
 			r.setField( 0, rule.getRuleName());
 			r.setField( 1, rule.getStudentFilter());
-			r.setField( 2, rule.getCourseName());
-			r.setField( 3, rule.getInstructonalMethod());
-			r.setField( 4, rule.getFilterInitiative());
-			r.setField( 5, rule.getFilterTerm());
-			r.setField( 6, rule.getFirstYear() == null ? "" : df.format(rule.getFirstYear()));
-			r.setField( 7, rule.getLastYear() == null ? "" : df.format(rule.getLastYear()));
-			r.setField( 8, rule.isAppliesToFilter() ? "true" : "false");
-			r.setField( 9, rule.isAppliesToOnline() ? "true" : "false");
-			r.setField(10, rule.isAppliesToBatch() ? "true" : "false");
-			r.setField(11, rule.isAdvisorOverride() ? "true" : "false");
-			r.setField(12, rule.isAdminOverride() ? "true" : "false");
+			r.setField( 2, rule.getCourseType());
+			r.setField( 3, rule.getCourseName());
+			r.setField( 4, rule.getInstructonalMethod());
+			r.setField( 5, rule.isDisjunctive() ? "true" : "false");
+			r.setField( 6, rule.getFilterInitiative());
+			r.setField( 7, rule.getFilterTerm());
+			r.setField( 8, rule.getFirstYear() == null ? "" : df.format(rule.getFirstYear()));
+			r.setField( 9, rule.getLastYear() == null ? "" : df.format(rule.getLastYear()));
+			r.setField(10, rule.isAppliesToFilter() ? "true" : "false");
+			r.setField(11, rule.isAppliesToOnline() ? "true" : "false");
+			r.setField(12, rule.isAppliesToBatch() ? "true" : "false");
+			r.setField(13, rule.isAdvisorOverride() ? "true" : "false");
+			r.setField(14, rule.isAdminOverride() ? "true" : "false");
 		}
 		data.setEditable(context.hasPermission(Right.StudentSchedulingRuleEdit));
 		return data;
@@ -147,17 +156,19 @@ public class StudentSchedulingRules implements AdminTable {
 		if (record.getOrder() == null) record.setOrder(nextOrd());
 		rule.setRuleName(record.getField(0));
 		rule.setStudentFilter(record.getField(1));
-		rule.setCourseName(record.getField(2));
-		rule.setInstructonalMethod(record.getField(3));
-		rule.setFilterInitiative(record.getField(4));
-		rule.setFilterTerm(record.getField(5));
-		rule.setFirstYear(record.getField(6) == null || record.getField(6).isEmpty() ? null : Integer.valueOf(record.getField(6)));
-		rule.setLastYear(record.getField(7) == null || record.getField(7).isEmpty() ? null : Integer.valueOf(record.getField(7)));
-		rule.setAppliesToFilter(record.getField(8) == null || "true".equalsIgnoreCase(record.getField(8)));
-		rule.setAppliesToOnline(record.getField(9) == null || "true".equalsIgnoreCase(record.getField(9)));
-		rule.setAppliesToBatch(record.getField(10) == null || "true".equalsIgnoreCase(record.getField(10)));
-		rule.setAdvisorOverride("true".equalsIgnoreCase(record.getField(11)));
-		rule.setAdminOverride("true".equalsIgnoreCase(record.getField(12)));
+		rule.setCourseType(record.getField(2));
+		rule.setCourseName(record.getField(3));
+		rule.setInstructonalMethod(record.getField(4));
+		rule.setDisjunctive("true".equalsIgnoreCase(record.getField(5)));
+		rule.setFilterInitiative(record.getField(6));
+		rule.setFilterTerm(record.getField(7));
+		rule.setFirstYear(record.getField(8) == null || record.getField(8).isEmpty() ? null : Integer.valueOf(record.getField(8)));
+		rule.setLastYear(record.getField(9) == null || record.getField(9).isEmpty() ? null : Integer.valueOf(record.getField(9)));
+		rule.setAppliesToFilter(record.getField(10) == null || "true".equalsIgnoreCase(record.getField(10)));
+		rule.setAppliesToOnline(record.getField(11) == null || "true".equalsIgnoreCase(record.getField(11)));
+		rule.setAppliesToBatch(record.getField(12) == null || "true".equalsIgnoreCase(record.getField(12)));
+		rule.setAdvisorOverride("true".equalsIgnoreCase(record.getField(13)));
+		rule.setAdminOverride("true".equalsIgnoreCase(record.getField(14)));
 		rule.setOrd(record.getOrder());
 		hibSession.persist(rule);
 		record.setUniqueId(rule.getUniqueId());
@@ -175,32 +186,36 @@ public class StudentSchedulingRules implements AdminTable {
 		if (rule == null) return;
 		if (ToolBox.equals(rule.getRuleName(), record.getField(0)) &&
 				ToolBox.equals(rule.getStudentFilter(), record.getField(1)) &&
-				ToolBox.equals(rule.getCourseName(), record.getField(2)) &&
-				ToolBox.equals(rule.getInstructonalMethod(), record.getField(3)) &&
-				ToolBox.equals(rule.getFilterInitiative(), record.getField(4)) &&
-				ToolBox.equals(rule.getFilterTerm(), record.getField(5)) &&
-				ToolBox.equals(rule.getFirstYear(), record.getField(6) == null || record.getField(6).isEmpty() ? null : Integer.valueOf(record.getField(6))) &&
-				ToolBox.equals(rule.getLastYear(), record.getField(7) == null || record.getField(7).isEmpty() ? null : Integer.valueOf(record.getField(7))) &&
-				ToolBox.equals(rule.isAppliesToFilter(), "true".equalsIgnoreCase(record.getField(8))) &&
-				ToolBox.equals(rule.isAppliesToOnline(), "true".equalsIgnoreCase(record.getField(9))) &&
-				ToolBox.equals(rule.isAppliesToBatch(), "true".equalsIgnoreCase(record.getField(10))) &&
-				ToolBox.equals(rule.isAdvisorOverride(), "true".equalsIgnoreCase(record.getField(11))) &&
-				ToolBox.equals(rule.isAdminOverride(), "true".equalsIgnoreCase(record.getField(12))) &&
+				ToolBox.equals(rule.getCourseType(), record.getField(2)) &&
+				ToolBox.equals(rule.getCourseName(), record.getField(3)) &&
+				ToolBox.equals(rule.getInstructonalMethod(), record.getField(4)) &&
+				ToolBox.equals(rule.isDisjunctive(), "true".equalsIgnoreCase(record.getField(5))) &&
+				ToolBox.equals(rule.getFilterInitiative(), record.getField(6)) &&
+				ToolBox.equals(rule.getFilterTerm(), record.getField(7)) &&
+				ToolBox.equals(rule.getFirstYear(), record.getField(8) == null || record.getField(8).isEmpty() ? null : Integer.valueOf(record.getField(8))) &&
+				ToolBox.equals(rule.getLastYear(), record.getField(9) == null || record.getField(9).isEmpty() ? null : Integer.valueOf(record.getField(9))) &&
+				ToolBox.equals(rule.isAppliesToFilter(), record.getField(10) == null || "true".equalsIgnoreCase(record.getField(10))) &&
+				ToolBox.equals(rule.isAppliesToOnline(), record.getField(11) == null || "true".equalsIgnoreCase(record.getField(11))) &&
+				ToolBox.equals(rule.isAppliesToBatch(), record.getField(12) == null || "true".equalsIgnoreCase(record.getField(12))) &&
+				ToolBox.equals(rule.isAdvisorOverride(), "true".equalsIgnoreCase(record.getField(13))) &&
+				ToolBox.equals(rule.isAdminOverride(), "true".equalsIgnoreCase(record.getField(14))) &&
 				(record.getOrder() == null || ToolBox.equals(rule.getOrd(), record.getOrder()))
 				) return;
 		rule.setRuleName(record.getField(0));
 		rule.setStudentFilter(record.getField(1));
-		rule.setCourseName(record.getField(2));
-		rule.setInstructonalMethod(record.getField(3));
-		rule.setFilterInitiative(record.getField(4));
-		rule.setFilterTerm(record.getField(5));
-		rule.setFirstYear(record.getField(6) == null || record.getField(6).isEmpty() ? null : Integer.valueOf(record.getField(6)));
-		rule.setLastYear(record.getField(7) == null || record.getField(7).isEmpty() ? null : Integer.valueOf(record.getField(7)));
-		rule.setAppliesToFilter(record.getField(8) == null || "true".equalsIgnoreCase(record.getField(8)));
-		rule.setAppliesToOnline(record.getField(9) == null || "true".equalsIgnoreCase(record.getField(9)));
-		rule.setAppliesToBatch(record.getField(10) == null || "true".equalsIgnoreCase(record.getField(10)));
-		rule.setAdvisorOverride("true".equalsIgnoreCase(record.getField(11)));
-		rule.setAdminOverride("true".equalsIgnoreCase(record.getField(12)));
+		rule.setCourseType(record.getField(2));
+		rule.setCourseName(record.getField(3));
+		rule.setInstructonalMethod(record.getField(4));
+		rule.setDisjunctive("true".equalsIgnoreCase(record.getField(5)));
+		rule.setFilterInitiative(record.getField(6));
+		rule.setFilterTerm(record.getField(7));
+		rule.setFirstYear(record.getField(8) == null || record.getField(8).isEmpty() ? null : Integer.valueOf(record.getField(8)));
+		rule.setLastYear(record.getField(9) == null || record.getField(9).isEmpty() ? null : Integer.valueOf(record.getField(9)));
+		rule.setAppliesToFilter(record.getField(10) == null || "true".equalsIgnoreCase(record.getField(10)));
+		rule.setAppliesToOnline(record.getField(11) == null || "true".equalsIgnoreCase(record.getField(11)));
+		rule.setAppliesToBatch(record.getField(12) == null || "true".equalsIgnoreCase(record.getField(12)));
+		rule.setAdvisorOverride("true".equalsIgnoreCase(record.getField(13)));
+		rule.setAdminOverride("true".equalsIgnoreCase(record.getField(14)));
 		if (record.getOrder() != null)
 			rule.setOrd(record.getOrder());
 		hibSession.merge(rule);
@@ -237,14 +252,5 @@ public class StudentSchedulingRules implements AdminTable {
 	@PreAuthorize("checkPermission('StudentSchedulingRuleEdit')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		delete(StudentSchedulingRuleDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
-	}
-
-	public static void main(String[] args) {
-		String regexp = ".*(?!OL$)";
-		System.out.println("COM 10500".matches(regexp));
-		System.out.println("COM 10500OL".matches(regexp));
-		System.out.println("COM 10500X".matches(regexp));
-		System.out.println("COM 10500OL-X".matches(regexp));
-		
 	}
 }

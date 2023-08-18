@@ -80,6 +80,8 @@ public class XCourseId implements Serializable, Comparable<XCourseId>, Externali
 		iCourseId = course.getId();
 		iSubjectArea = course.getSubjectArea();
 		iCourseNumber = course.getCourseNumber();
+		iTitle = course.getTitle();
+		iType = course.getType();
 	}
 
 	/** Instructional offering unique id */

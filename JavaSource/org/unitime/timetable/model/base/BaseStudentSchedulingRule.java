@@ -50,6 +50,8 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 	private Integer iLastYear;
 	private String iInstructonalMethod;
 	private String iCourseName;
+	private String iCourseType;
+	private Boolean iDisjunctive;
 	private Boolean iAppliesToFilter;
 	private Boolean iAppliesToOnline;
 	private Boolean iAppliesToBatch;
@@ -110,6 +112,16 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 	public String getCourseName() { return iCourseName; }
 	public void setCourseName(String courseName) { iCourseName = courseName; }
 
+	@Column(name = "course_type", nullable = true, length = 2048)
+	public String getCourseType() { return iCourseType; }
+	public void setCourseType(String courseType) { iCourseType = courseType; }
+
+	@Column(name = "disjunctive", nullable = false)
+	public Boolean isDisjunctive() { return iDisjunctive; }
+	@Transient
+	public Boolean getDisjunctive() { return iDisjunctive; }
+	public void setDisjunctive(Boolean disjunctive) { iDisjunctive = disjunctive; }
+
 	@Column(name = "apply_filter", nullable = false)
 	public Boolean isAppliesToFilter() { return iAppliesToFilter; }
 	@Transient
@@ -166,6 +178,8 @@ public abstract class BaseStudentSchedulingRule implements Serializable {
 			"\n	AppliesToFilter: " + getAppliesToFilter() +
 			"\n	AppliesToOnline: " + getAppliesToOnline() +
 			"\n	CourseName: " + getCourseName() +
+			"\n	CourseType: " + getCourseType() +
+			"\n	Disjunctive: " + getDisjunctive() +
 			"\n	FilterInitiative: " + getFilterInitiative() +
 			"\n	FilterTerm: " + getFilterTerm() +
 			"\n	FirstYear: " + getFirstYear() +

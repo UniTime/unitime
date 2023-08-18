@@ -14867,4 +14867,12 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StudentSchedulingStatusTypeEdit'
 		</sql>
 	</update>
+	<update version="261" date="17-Aug-2023" comment="Student Scheduling Rules Adjustments">
+		<plsql>alter table %SCHEMA%.std_sched_rules add course_type varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.std_sched_rules add course_type varchar(2048)</mysql>
+		<pgsql>alter table %SCHEMA%.std_sched_rules add course_type varchar(2048)</pgsql>
+		<plsql>alter table %SCHEMA%.std_sched_rules add disjunctive number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.std_sched_rules add disjunctive int(1) default 0</mysql>
+		<pgsql>alter table %SCHEMA%.std_sched_rules add disjunctive boolean default false</pgsql>
+	</update>
 </dbupdate>
