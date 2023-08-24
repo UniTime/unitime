@@ -876,6 +876,14 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	}
 	
 	private void populate(List<EventInterface> result, Integer sortBy) {
+		int nrMeetings = 0;
+		for (EventInterface event: result)
+			nrMeetings += event.getMeetings().size();
+		if (nrMeetings > CONSTANTS.maxMeetings())
+			iHeader.setErrorMessage(MESSAGES.warnTooManyMeetings(CONSTANTS.maxMeetings()));
+		else
+			iHeader.clearMessage();
+		
 		for (int i = 0; i < iTables.getWidgetCount(); i++) {
 			Widget w = iTables.getWidget(i);
 			if (w instanceof TimeGrid)
