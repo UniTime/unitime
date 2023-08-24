@@ -219,7 +219,7 @@ public interface GwtConstants extends Constants {
 		"Override: Can Assign Over Limit",
 		"Override: Time Conflict & Over Limit",
 		"Override: Classification",
-		"Override: Co-requisite",
+		"Override: Allow Link Conflict (Co-requisite)",
 		"Override: Cohort",
 		"Override: College Restriction",
 		"Override: Degree",
@@ -231,6 +231,9 @@ public interface GwtConstants extends Constants {
 		"Override: Pre-requisite",
 		"Override: Program",
 		"Override: Other",
+		"Override: Over Limit & Link Conflict",
+		"Override: Time & Link Conflict",
+		"Override: Over Limit, Time & Link Conflict",
 	})
 	String[] reservationOverrideTypeName();
 	
@@ -241,6 +244,7 @@ public interface GwtConstants extends Constants {
 		"Honors Permission", "Instructor Permission", "Level",
 		"Major", "Pre-requisite", "Program",
 		"Other",
+		"Limit & Link", "Time & Link", "Time, Limit & Link",
 	})
 	String[] reservationOverrideTypeAbbv();
 

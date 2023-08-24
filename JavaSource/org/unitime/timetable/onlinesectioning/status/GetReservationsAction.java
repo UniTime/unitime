@@ -390,9 +390,13 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 			r = new ReservationInterface.IndividualReservation();
 			if (reservation.getType() == XReservationType.IndividualOverride) {
 				r = new ReservationInterface.OverrideReservation(
+						reservation.canAssignOverLimit() && reservation.isAllowOverlap() && reservation.canBreakLinkedSections() ? OverrideType.AllowOverLimitTimeConflictLink :
+						reservation.canAssignOverLimit() && reservation.canBreakLinkedSections() ? OverrideType.AllowOverLimitLink :
+						reservation.isAllowOverlap() && reservation.canBreakLinkedSections() ? OverrideType.AllowTimeConflictLink :
 						reservation.isAllowOverlap() && reservation.canAssignOverLimit() ? OverrideType.AllowOverLimitTimeConflict :
 						reservation.isAllowOverlap() ? OverrideType.AllowTimeConflict :
-						reservation.canAssignOverLimit() ? OverrideType.AllowOverLimit : OverrideType.Other);
+						reservation.canAssignOverLimit() ? OverrideType.AllowOverLimit :
+						reservation.canBreakLinkedSections() ? OverrideType.CoReqOverride : OverrideType.Other);
 			}
 			for (Long studentId: ((XIndividualReservation) reservation).getStudentIds()) {
 				XStudent student = server.getStudent(studentId);

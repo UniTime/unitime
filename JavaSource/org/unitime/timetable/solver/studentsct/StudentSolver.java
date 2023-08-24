@@ -1399,9 +1399,13 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			r.setOverride(reservation instanceof ReservationOverride || !reservation.mustBeUsed());
 			if (reservation instanceof ReservationOverride) {
 				r = new ReservationInterface.OverrideReservation(
+						reservation.canAssignOverLimit() && reservation.isAllowOverlap() && reservation.canBreakLinkedSections() ? OverrideType.AllowOverLimitTimeConflictLink :
+						reservation.canAssignOverLimit() && reservation.canBreakLinkedSections() ? OverrideType.AllowOverLimitLink :
+						reservation.isAllowOverlap() && reservation.canBreakLinkedSections() ? OverrideType.AllowTimeConflictLink :
 						reservation.canAssignOverLimit() && reservation.isAllowOverlap() ? OverrideType.AllowOverLimitTimeConflict :
 						reservation.canAssignOverLimit() ? OverrideType.AllowOverLimit :
-							reservation.isAllowOverlap() ? OverrideType.AllowTimeConflict : OverrideType.Other);
+						reservation.isAllowOverlap() ? OverrideType.AllowTimeConflict :
+						reservation.canBreakLinkedSections() ? OverrideType.CoReqOverride : OverrideType.Other);
 			} else {
 				r.setOverride(reservation.mustBeUsed() != IndividualReservation.DEFAULT_MUST_BE_USED ||
 						reservation.canAssignOverLimit() != IndividualReservation.DEFAULT_CAN_ASSIGN_OVER_LIMIT ||
