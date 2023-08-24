@@ -717,7 +717,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				for (XEnrollment enrollment: enrollments.getEnrollmentsForReservation(reservation.getReservationId())) {
 					if (enrollment.getStudentId().equals(studentId)) { reservationLimit++; break; }
 				}
-				if (reservationLimit <= 0 && !(reservation.mustBeUsed() & !reservation.isExpired())) continue;
+				if (reservationLimit <= 0 && !(reservation.mustBeUsed() && !reservation.isExpired())) continue;
 			}
 			boolean applicable = originalStudent != null && reservation.isApplicable(originalStudent, course);
 			if (reservation instanceof XCourseReservation)
@@ -849,14 +849,25 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				}
 			}
 		}
+		boolean needLinkOverride = false;
+		if (offering.hasLinkedSections() && hasAssignment) {
+			for (XDistribution link: offering.getDistributions()) {
+				if (link.getDistributionType() != XDistributionType.LinkedSections) continue;
+				if (link.isViolated(originalStudent, server)) {
+					needLinkOverride = true;
+					break;
+				}
+			}
+		}
 		// There are reservations >> allow user to keep the current enrollment by providing a dummy reservation for it
-		if (clonedOffering.hasReservations() && hasAssignment)
+		if ((clonedOffering.hasReservations() || needLinkOverride) && hasAssignment)
 			for (XEnrollment enrollment: enrollments.getEnrollmentsForCourse(courseId))
 				if (enrollment.getStudentId().equals(studentId)) {
 					Reservation clonedReservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -2l, clonedOffering, 1000, false, 1, true, hasMustUse, false, true, true);
 					clonedReservation.addConfig(configs.get(enrollment.getConfigId()));
 					for (Long sectionId: enrollment.getSectionIds())
 						clonedReservation.addSection(sections.get(sectionId));
+					clonedReservation.setBreakLinkedSections(needLinkOverride);
 					break;
 				}
 		if (clonedOffering.hasRestrictions() && hasAssignment) {

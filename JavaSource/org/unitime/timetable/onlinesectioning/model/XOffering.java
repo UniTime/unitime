@@ -895,6 +895,15 @@ public class XOffering implements Serializable, Externalizable {
     	return iDistrubutions;
     }
     
+    public boolean hasLinkedSections() {
+    	if (iDistrubutions != null) {
+    		for (XDistribution link: iDistrubutions)
+    			if (link.getDistributionType() == XDistributionType.LinkedSections)
+    				return true;
+    	}
+    	return false;
+    }
+    
     public boolean isAllowOverlap(XEnrollment enrollment) {
     	if (enrollment.getReservation() == null) return false;
     	for (XReservation reservation: getReservations()) {

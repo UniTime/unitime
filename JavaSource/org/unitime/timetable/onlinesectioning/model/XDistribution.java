@@ -36,6 +36,7 @@ import org.cpsolver.studentsct.model.Subpart;
 import org.infinispan.commons.marshall.Externalizer;
 import org.infinispan.commons.marshall.SerializeWith;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 
 /**
  * @author Tomas Muller
@@ -97,6 +98,42 @@ public class XDistribution implements Serializable, Externalizable {
     
     public boolean hasSection(Long sectionId) {
     	return iSectionIds.contains(sectionId);
+    }
+    
+    public boolean isViolated(XStudent student, OnlineSectioningServer server) {
+    	int nrMatch = 0, nrMismatch = 0;
+    	for (Long offeringId: getOfferingIds()) {
+    		XOffering offering = server.getOffering(offeringId);
+    		for (XRequest req: student.getRequests()) {
+    			if (req instanceof XCourseRequest) {
+    				XCourseRequest cr = (XCourseRequest)req;
+    				XEnrollment enrl = cr.getEnrollment();
+    				if (enrl != null && enrl.getOfferingId().equals(offeringId)) {
+    					boolean match = true;
+    					Set<Long> matchingSubparts = new HashSet<Long>();
+    					for (Long sectionId: getSectionIds()) {
+    						XSection section = offering.getSection(sectionId);
+    						if (section != null && enrl.getSectionIds().contains(sectionId)) {
+    							matchingSubparts.add(section.getSubpartId());
+    						}
+    					}
+    					for (Long sectionId: getSectionIds()) {
+    						XSection section = offering.getSection(sectionId);
+    						if (section != null && !enrl.getSectionIds().contains(sectionId) && !matchingSubparts.contains(section.getSubpartId())) {
+    							match = false;
+    							break;
+    						}
+    					}
+    					if (match) {
+    						nrMatch ++;
+    					} else {
+    						nrMismatch ++;
+    					}
+    				}
+    			}
+    		}
+    	}
+    	return nrMatch > 0 && nrMismatch > 0;
     }
     
     @Override
