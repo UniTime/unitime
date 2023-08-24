@@ -539,7 +539,7 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		AllowOverLimit("closed", false, false, true, true, true),
 		AllowOverLimitTimeConflict("time-limit-cnflt", false, true, true, true, true),
 		ClassificationOverride("class", false, false, false, true, false),
-		CoReqOverride("co-req", false, false, false, true, false, true),
+		CoReqOverride("co-req", false, false, false, true, true, true),
 		CohortOverride("cohort", false, false, false, true, false),
 		CollegeRestrictionOverride("college", false, false, false, true, false),
 		DegreeOverride("degree", false, false, false, true, false),
@@ -551,6 +551,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		PreReqOverride("pre-req", false, false, false, true, false),
 		Program("program", false, false, false, true, false),
 		Other("other", false, false, false, true, true),
+		AllowOverLimitLink("limit-link", false, false, true, true, true, true),
+		AllowTimeConflictLink("time-link", false, true, false, true, true, true),
+		AllowOverLimitTimeConflictLink("time-limit-link", false, true, true, true, true, true),
 		;
 		
 		String iReference;
