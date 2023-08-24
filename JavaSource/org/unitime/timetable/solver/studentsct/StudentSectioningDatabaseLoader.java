@@ -1397,6 +1397,27 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		}
     }
     
+    protected boolean isNoSub(CourseDemand cd) {
+    	if (iUseAdvisorWaitLists) {
+    		for (AdvisorCourseRequest acr: cd.getStudent().getAdvisorCourseRequests()) {
+        		if (acr.getWaitlist() != null && acr.getWaitlist().booleanValue() && acr.getCourseOffering() != null) {
+        			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests())
+        				if (acr.getCourseOffering().equals(cr.getCourseOffering())) return true;
+        		}
+        	}
+    	} else if (iUseAdvisorNoSubs) {
+    		for (AdvisorCourseRequest acr: cd.getStudent().getAdvisorCourseRequests()) {
+        		if (acr.getNoSub() != null && acr.getNoSub().booleanValue() && acr.getCourseOffering() != null) {
+        			for (org.unitime.timetable.model.CourseRequest cr: cd.getCourseRequests())
+        				if (acr.getCourseOffering().equals(cr.getCourseOffering())) {
+        					return true;
+        				}
+        		}
+    		}
+    	}
+    	return cd.effectiveWaitList() || cd.effectiveNoSub();
+    }
+    
     public Student loadStudent(org.hibernate.Session hibSession, org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
     	// Check for nobatch sectioning status
         if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) {
@@ -1663,7 +1684,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	}
                 }
                 if (courses.isEmpty()) {
-                	if (skippedCourseRequests > 0 && !cd.isAlternative())
+                	if (skippedCourseRequests > 0 && !cd.isAlternative() && !isNoSub(cd))
                 		skippedNoAltCourseDemands ++;
                 	continue;
                 }

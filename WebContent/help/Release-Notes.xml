@@ -121,6 +121,7 @@
 					<line>Take the top most substitute course demand and treat it as primary.</line>
 					<line>The position of the substitute course is kept (it shows at the bottom of the primary requests instead of at the top of the substitutes).</line>
 				</line>
+				<line>Course demands that do not allow for substitutes (Wait-List or No-Sub toggle is checked) are not replaced with a substitute.</line>
 			</description>
 		</item>
 		<item>
