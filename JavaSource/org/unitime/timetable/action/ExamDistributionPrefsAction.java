@@ -406,7 +406,7 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
     				PreferenceGroup pg = dObj.getPrefGroup();
                     relatedExams.add(pg);
     				pg.getDistributionObjects().remove(dObj);
-    				hibSession.merge(pg);
+    				hibSession.remove(dObj);
     			}
     			s.clear();
     			dp.setDistributionObjects(s);
@@ -436,6 +436,8 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
                 dObj.setSequenceNumber(Integer.valueOf(++idx));
                 exam.getDistributionObjects().add(dObj);
                 dp.addToDistributionObjects(dObj);
+                if (dp.getUniqueId() != null)
+                	hibSession.persist(dObj);
         	}
         
      	     // Save

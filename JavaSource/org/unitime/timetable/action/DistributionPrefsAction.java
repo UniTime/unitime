@@ -641,7 +641,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         				PreferenceGroup pg = dObj.getPrefGroup();
                         relatedInstructionalOfferings.add((pg instanceof Class_ ?((Class_)pg).getSchedulingSubpart():(SchedulingSubpart)pg).getInstrOfferingConfig().getInstructionalOffering());
         				pg.getDistributionObjects().remove(dObj);
-        				hibSession.merge(pg);
+        				hibSession.remove(dObj);
         			}
         			s.clear();
         			dp.setDistributionObjects(s);
@@ -701,6 +701,8 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
             	dObj.getPrefGroup().getDistributionObjects().add(dObj);
             	
             	dp.addToDistributionObjects(dObj);
+            	if (dp.getUniqueId() != null)
+            		hibSession.persist(dObj);
         	}
         
      	    dp.setOwner(owningDept);
