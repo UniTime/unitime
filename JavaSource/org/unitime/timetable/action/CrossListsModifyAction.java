@@ -49,15 +49,18 @@ import org.unitime.timetable.model.AdvisorClassPref;
 import org.unitime.timetable.model.AdvisorCourseRequest;
 import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingCoordinator;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
@@ -537,7 +540,43 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 				        	cls.setManagingDept(dept, sessionContext.getUser(), hibSession);
 				        	hibSession.merge(cls);
 			        	}
+			        	// Fix class instructors
+			        	for (Iterator<ClassInstructor> i = cls.getClassInstructors().iterator(); i.hasNext();) {
+			        		ClassInstructor ci = i.next();
+			        		if (!ci.getInstructor().getDepartment().equals(dept)) {
+			        			ci.getInstructor().getClasses().remove(ci);
+			        			DepartmentalInstructor di = (ci.getInstructor().getExternalUniqueId() == null ? null : 
+			        					DepartmentalInstructor.findByPuidDepartmentId(ci.getInstructor().getExternalUniqueId(), dept.getUniqueId(), hibSession));
+			        			if (di == null) {
+			        				hibSession.remove(ci);
+			        				i.remove();
+			        			} else {
+			        				ci.setInstructor(di);
+			        				di.getClasses().add(ci);
+			        				hibSession.merge(ci);
+			        			}
+			        		}
+			        	}
 			        }
+		        }
+	        }
+	        if (io.getOfferingCoordinators() != null) {
+	        	// Fix offering coordinators
+	        	for (Iterator<OfferingCoordinator> i = io.getOfferingCoordinators().iterator(); i.hasNext(); ) {
+	        		OfferingCoordinator oc = i.next();
+	        		if (!oc.getInstructor().getDepartment().equals(dept)) {
+	        			oc.getInstructor().getOfferingCoordinators().remove(oc);
+	        			DepartmentalInstructor di = (oc.getInstructor().getExternalUniqueId() == null ? null : 
+	        					DepartmentalInstructor.findByPuidDepartmentId(oc.getInstructor().getExternalUniqueId(), dept.getUniqueId(), hibSession));
+	        			if (di == null) {
+	        				hibSession.remove(oc);
+	        				i.remove();
+	        			} else {
+	        				oc.setInstructor(di);
+	        				di.getOfferingCoordinators().add(oc);
+	        				hibSession.merge(oc);
+	        			}
+	        		}
 		        }
 	        }
 	        

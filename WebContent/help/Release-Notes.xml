@@ -37,6 +37,15 @@
 				<line>See https://help48.unitime.org/instructor-survey for more details.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fix the instructors and offering coordinators when the controlling department is changed.
+					<line>This means that each instructor/coordinator gets replaced with an instructor/coordinator from the controlling department with the matching external id.</line>
+					<line>An instructor/coordinator assignment gets deleted otherwise (the instructor has no external id or no matching instructor in the new controlling department).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
