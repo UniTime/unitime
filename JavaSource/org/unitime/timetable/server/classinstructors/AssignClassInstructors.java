@@ -85,18 +85,13 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
-	private String defaultTeachingResponsibilityId;
-	public String getDefaultTeachingResponsibilityId() {
-		if (defaultTeachingResponsibilityId == null) {
-			return("");
-		}
-		return defaultTeachingResponsibilityId;
+	private String getDefaultTeachingResponsibilityId() {
+		for (TeachingResponsibility tr : TeachingResponsibility.getInstructorTeachingResponsibilities())
+			if (tr.hasOption(Option.isdefault))
+				return tr.getUniqueId().toString();
+		return "";
 	}
 
-	public void setDefaultTeachingResponsibilityId(String defaultTeachingResponsibilityId) {
-		this.defaultTeachingResponsibilityId = defaultTeachingResponsibilityId;
-	}
-	
 	@Override
 	public PageName name() {
 		return new PageName(MESSAGES.pageAssignInstructors(), MESSAGES.pageAssignInstructors());
@@ -133,15 +128,12 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 					List<ListItem> responsibilities = new ArrayList<ListItem>();
 					for (TeachingResponsibility tr : TeachingResponsibility.getInstructorTeachingResponsibilities()) {
 						responsibilities.add(new ListItem(tr.getUniqueId().toString(), tr.getLabel()));
-						if (tr.hasOption(Option.isdefault)) {
-							setDefaultTeachingResponsibilityId(tr.getUniqueId().toString());
-						}
 					}
 					Flag respFlag = null;
 					if (responsibilities.isEmpty()) {
 						respFlag = Flag.HIDDEN;
 					} else {
-						if (getDefaultTeachingResponsibilityId().equals("")){
+						if (getDefaultTeachingResponsibilityId().isEmpty()){
 							responsibilities.add(0, new ListItem("", ""));
 						}
 					}
@@ -255,15 +247,16 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
         		Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
         	}
 
+    		String defaultTeachingResponsibilityId = getDefaultTeachingResponsibilityId();
 	    	for(Class_ cls : classesList){
-	    		addClassRecords(data, cls, !context.hasPermission(cls, Right.AssignInstructorsClass), indent, context);
+	    		addClassRecords(data, cls, !context.hasPermission(cls, Right.AssignInstructorsClass), indent, context, defaultTeachingResponsibilityId);
 	    		loadClasses(data, cls.getChildClasses(), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", context);
 	    	}
     	}
     }
 	
 	@SuppressWarnings("unchecked")
-	public void addClassRecords(AssignClassInstructorsInterface data, Class_ cls, Boolean isReadOnly, String indent, SessionContext cx){
+	public void addClassRecords(AssignClassInstructorsInterface data, Class_ cls, Boolean isReadOnly, String indent, SessionContext cx, String defaultTeachingResponsibilityId){
 		ArrayList<ClassInstructor> instructors = new ArrayList<ClassInstructor>(cls.getClassInstructors());
 		Collections.sort(instructors, new InstructorComparator(cx));
 		ClassInstructor instructor = null;
@@ -315,13 +308,13 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 				rec.setField(DataColumn.INSTR_NAME.ordinal(), instructor.getInstructor().getUniqueId().toString(), isEditable, true);
 				rec.setField(DataColumn.PCT_SHARE.ordinal(), instructor.getPercentShare().toString(), isEditable, true);
 				rec.setField(DataColumn.CHECK_CONFICTS.ordinal(), instructor.isLead().toString(), isEditable, true);
-				rec.setField(DataColumn.RESPONSIBILITY.ordinal(), instructor.getResponsibility() == null ? getDefaultTeachingResponsibilityId() : instructor.getResponsibility().getUniqueId().toString(), isEditable, true);
+				rec.setField(DataColumn.RESPONSIBILITY.ordinal(), instructor.getResponsibility() == null ? defaultTeachingResponsibilityId : instructor.getResponsibility().getUniqueId().toString(), isEditable, true);
 			}
 			else {
 				rec.setField(DataColumn.INSTR_NAME.ordinal(), "", isEditable, true);
 				rec.setField(DataColumn.PCT_SHARE.ordinal(), "100", isEditable);
 				rec.setField(DataColumn.CHECK_CONFICTS.ordinal(), Boolean.TRUE.toString(), isEditable, true);
-				rec.setField(DataColumn.RESPONSIBILITY.ordinal(), getDefaultTeachingResponsibilityId(), isEditable, true);
+				rec.setField(DataColumn.RESPONSIBILITY.ordinal(), defaultTeachingResponsibilityId, isEditable, true);
 			}
 			
 		} while (++i < instructors.size());
@@ -405,6 +398,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 		}
 		StringBuffer sbErrorsFound = new StringBuffer();
 		boolean errorsFound = false;
+		String defaultTeachingResponsibilityId = getDefaultTeachingResponsibilityId();
 		for (SchedulingSubpart ss : ioc.getSchedulingSubparts()) {
 			for (Class_ c : ss.getClasses()) {
 				ArrayList<Record> records = classIdRecordMap.get(c.getUniqueId().toString());
@@ -501,7 +495,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 									data.getRecords().remove(r);							
 								} else {
 									r.setField(DataColumn.INSTR_NAME.ordinal(), "", r.isEditable(DataColumn.INSTR_NAME.ordinal()), r.isVisible(DataColumn.INSTR_NAME.ordinal()));
-									r.setField(DataColumn.RESPONSIBILITY.ordinal(), getDefaultTeachingResponsibilityId(), r.isEditable(DataColumn.RESPONSIBILITY.ordinal()), r.isVisible(DataColumn.RESPONSIBILITY.ordinal()));
+									r.setField(DataColumn.RESPONSIBILITY.ordinal(), defaultTeachingResponsibilityId, r.isEditable(DataColumn.RESPONSIBILITY.ordinal()), r.isVisible(DataColumn.RESPONSIBILITY.ordinal()));
 									r.setField(DataColumn.PCT_SHARE.ordinal(), "100", r.isEditable(DataColumn.PCT_SHARE.ordinal()), r.isVisible(DataColumn.PCT_SHARE.ordinal()));
 									r.setField(DataColumn.CHECK_CONFICTS.ordinal(), Boolean.TRUE.toString(), r.isEditable(DataColumn.CHECK_CONFICTS.ordinal()), r.isVisible(DataColumn.CHECK_CONFICTS.ordinal()));
 								}
@@ -634,11 +628,12 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 		}
 		ArrayList<Record> records = new ArrayList<Record>();
 		records.addAll(data.getRecords());
+		String defaultTeachingResponsibilityId = getDefaultTeachingResponsibilityId();
 		for (Record r : records) {
 			if (r.getField(DataColumn.IS_FIRST_RECORD_FOR_CLASS.ordinal()).equals(Boolean.TRUE.toString())) {
 				r.setField(DataColumn.DELETE.ordinal(), Boolean.FALSE.toString(), false, false);
 				r.setField(DataColumn.INSTR_NAME.ordinal(), "", r.isEditable(DataColumn.INSTR_NAME.ordinal()), r.isVisible(DataColumn.INSTR_NAME.ordinal()));
-				r.setField(DataColumn.RESPONSIBILITY.ordinal(), getDefaultTeachingResponsibilityId(), r.isEditable(DataColumn.RESPONSIBILITY.ordinal()), r.isVisible(DataColumn.RESPONSIBILITY.ordinal()));
+				r.setField(DataColumn.RESPONSIBILITY.ordinal(), defaultTeachingResponsibilityId, r.isEditable(DataColumn.RESPONSIBILITY.ordinal()), r.isVisible(DataColumn.RESPONSIBILITY.ordinal()));
 				r.setField(DataColumn.PCT_SHARE.ordinal(), "100", r.isEditable(DataColumn.PCT_SHARE.ordinal()), r.isVisible(DataColumn.PCT_SHARE.ordinal()));
 				r.setField(DataColumn.CHECK_CONFICTS.ordinal(), Boolean.TRUE.toString(), r.isEditable(DataColumn.CHECK_CONFICTS.ordinal()), r.isVisible(DataColumn.CHECK_CONFICTS.ordinal()));
 			} else {
