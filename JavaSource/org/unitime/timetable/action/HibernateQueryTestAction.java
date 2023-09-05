@@ -224,7 +224,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			LoadQueryInfluencers.NONE,
+			        			new LoadQueryInfluencers(),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory(),
 			        			false).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
@@ -237,7 +237,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			LoadQueryInfluencers.NONE,
+			        			new LoadQueryInfluencers(),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
 			        			.buildDeleteTranslator(sfi, (DeleteStatement)tr.getSqlAst())
@@ -249,7 +249,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			LoadQueryInfluencers.NONE,
+			        			new LoadQueryInfluencers(),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
 			        			.buildInsertTranslator(sfi, (InsertStatement)tr.getSqlAst())
@@ -261,7 +261,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			LoadQueryInfluencers.NONE,
+			        			new LoadQueryInfluencers(),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
 			        			.buildUpdateTranslator(sfi, (UpdateStatement)tr.getSqlAst())
