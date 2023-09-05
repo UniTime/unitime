@@ -531,7 +531,8 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
             } catch (NumberFormatException e) {
             	classInstr.setResponsibility(null);
             }
-            hibSession.merge(deptInstr);
+            // Avoid inserting the record two times (due to the Hibernate issue HHH-16627)
+            // hibSession.merge(deptInstr);
         }
 
         for (Iterator<ClassInstructor> iter = classInstrs.iterator(); iter.hasNext() ;) {
