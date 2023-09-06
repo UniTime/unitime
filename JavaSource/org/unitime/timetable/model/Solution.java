@@ -902,12 +902,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		hibSession.flush(); 
 
 		hibSession.createMutationQuery(
-				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
+				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		hibSession.createMutationQuery(
-				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ) ")
+				"delete JointEnrollment x where x.solution.uniqueId=:solutionId")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 
@@ -930,7 +930,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				);
 		
 		hibSession.createMutationQuery(
-				"delete Assignment x where x.solution.uniqueId=:solutionId ) ")
+				"delete Assignment x where x.solution.uniqueId=:solutionId")
 				.setParameter("solutionId", getUniqueId())
 				.executeUpdate();
 		
