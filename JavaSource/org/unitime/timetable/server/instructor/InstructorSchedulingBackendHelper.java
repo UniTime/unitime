@@ -652,7 +652,7 @@ public class InstructorSchedulingBackendHelper {
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
 		Collections.sort(current);
-		DepartmentalInstructor oldInstructor = (index < current.size() ? current.get(index) : null);
+		DepartmentalInstructor oldInstructor = (index >= 0 && index < current.size() ? current.get(index) : null);
 		List<DepartmentalInstructor> list = hibSession.createQuery(
     			"select distinct i from DepartmentalInstructor i where " +
     			"i.department.uniqueId = :deptId and i.teachingPreference.prefProlog != :prohibited and i.maxLoad > 0.0", DepartmentalInstructor.class
@@ -732,7 +732,7 @@ public class InstructorSchedulingBackendHelper {
 			iRequest = tr; iIndex = index; iInstructor = instructor;
 			List<DepartmentalInstructor> current = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
 			Collections.sort(current);
-			iOldInstructor = (index < current.size() ? current.get(index) : null);
+			iOldInstructor = (index >= 0 && index < current.size() ? current.get(index) : null);
 		}
 		
 		InstructorAssignment(TeachingRequest tr, int index, DepartmentalInstructor instructor, DepartmentalInstructor oldInstructor) {
@@ -879,7 +879,7 @@ public class InstructorSchedulingBackendHelper {
 				if (a.getTeachingRequest().equals(tr) && a.getIndex() == index) return a.getAssigment();
 			List<DepartmentalInstructor> instructors = new ArrayList<DepartmentalInstructor>(tr.getAssignedInstructors());
 			Collections.sort(instructors);
-			if (index < instructors.size()) return instructors.get(index);
+			if (index >= 0 && index < instructors.size()) return instructors.get(index);
 			return null;
 		}
 		
