@@ -2291,10 +2291,9 @@ public class SessionRollForward {
 									toClassInstr.setUniqueId(null);
 									toClass.addToClassInstructors(toClassInstr);
 									toDeptInstr.addToClasses(toClassInstr);
-									// getHibSession().evict(fromClassInstr);
+									getHibSession().persist(toClassInstr);
 								}
 							}
-							getHibSession().merge(toClass);
 						}
 					}
 				}
