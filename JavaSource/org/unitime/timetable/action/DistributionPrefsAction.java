@@ -504,7 +504,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
 		        		    }
 		        		    
 		        		    // Only one record - select it to save time and one more click
-		        		    if(result.size()==1) {
+		        		    if(subparts.size()==1) {
 		        		        ComboBoxLookup cbl = (ComboBoxLookup) subpartList.elementAt(0);
 		        		        form.setItype(index, cbl.getValue());
 		        		        subpart = form.getItype(index);
