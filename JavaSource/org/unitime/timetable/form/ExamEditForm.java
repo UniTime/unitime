@@ -262,7 +262,7 @@ public class ExamEditForm extends PreferencesForm {
                 String name = s.getItype().getAbbv();
                 String sufix = s.getSchedulingSubpartSuffix();
                 while (s.getParentSubpart()!=null) {
-                    name = "&nbsp;&nbsp;&nbsp;&nbsp;"+name;
+                    name = "\u00a0\u00a0\u00a0\u00a0"+name;
                     s = s.getParentSubpart();
                 }
                 if (s.getInstrOfferingConfig().getInstructionalOffering().getInstrOfferingConfigs().size()>1)
