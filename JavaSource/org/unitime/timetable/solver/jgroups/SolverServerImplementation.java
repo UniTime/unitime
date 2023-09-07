@@ -115,6 +115,7 @@ public class SolverServerImplementation extends AbstractSolverServer {
 				case Event.VIEW_CHANGE:
 					View view=evt.getArg();
 					sLog.info("viewAccepted(" + view + ")");
+					if (iUpdater != null) iUpdater.viewChanged();
 					if (view instanceof MergeView) {
 						Thread t = new Thread() {
 							public void run() {

@@ -51,6 +51,7 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 	
 	private RpcDispatcher iDispatcher;
 	private OnlineStudentSchedulingContainerRemote iContainer;
+	private Long iLastViewChange = null;
 
 	public OnlineStudentSchedulingGenericUpdater(RpcDispatcher dispatcher, OnlineStudentSchedulingContainerRemote container) {
 		super();
@@ -99,12 +100,17 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 		} catch (InterruptedException e) {}
 	}
 	
+	public void viewChanged() {
+		iLastViewChange = System.currentTimeMillis();
+	}
+	
 	public synchronized void checkForNewServers(boolean reload) {
 		if (!isCoordinator()) return;
 		if (!HibernateUtil.isConfigured()) {
 			iLog.info("Hibernate is not configured yet, will check for new servers later...");
 			return;
 		}
+		boolean create = (iLastViewChange == null || (System.currentTimeMillis() - iLastViewChange) >= (iSleepTimeInSeconds * 500));
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		try {
 			Map<String, Set<Address>> solvers = new HashMap<String, Set<Address>>();
@@ -173,6 +179,11 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 				if (session.getStatusType().isTestSession()) continue;
 				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
 				
+				if (!create) {
+					iLog.info("Waiting with " + session.getLabel() + " -- too soon after a vew change, will load later.");
+					continue;
+				}
+				
 				int nrSolutions = (hibSession.createQuery(
 						"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId", Number.class)
 						.setParameter("sessionId", session.getUniqueId()).uniqueResult()).intValue();
@@ -217,12 +228,14 @@ public class OnlineStudentSchedulingGenericUpdater extends Thread {
 						}
 						usages.remove(bestAddress);
 						
+						iLog.info("Loading " + bestAddress + " for " + session.getLabel() + ".");
 						Boolean created = iContainer.getDispatcher().callRemoteMethod(
 								bestAddress,
 								"createRemoteSolver", new Object[] { session.getUniqueId().toString(), null, iDispatcher.getChannel().getAddress() },
 								new Class[] { String.class, DataProperties.class, Address.class },
 								SolverServerImplementation.sFirstResponse);
 						if (created) break;
+						else iLog.info("Unable to load " + bestAddress + " for " + session.getLabel() + ".");
 					}
 				} catch (Exception e) {
 					iLog.fatal("Unable to update session " + session.getAcademicTerm() + " " + session.getAcademicYear() + " (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
