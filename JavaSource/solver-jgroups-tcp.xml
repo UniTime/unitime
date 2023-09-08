@@ -46,11 +46,11 @@
     	client_bind_port="${jgroups.fd_sock.client_bind_port:0}"
     	/>
     <FD_ALL
-    	timeout="${jgroups.fd.timeout:30000}"
+    	timeout="${jgroups.fd.timeout:60000}"
     	interval="${jgroups.fd.interval:10000}"
     	timeout_check_interval="${jgroups.fd.timeout_check_interval:5000}"
     	/>
-    <VERIFY_SUSPECT timeout="${jgroups.verify_suspect.timeout:2500}" bind_addr="${jgroups.tcp.address:SITE_LOCAL}" />
+    <VERIFY_SUSPECT timeout="${jgroups.verify_suspect.timeout:10000}" bind_addr="${jgroups.tcp.address:SITE_LOCAL}" />
     <pbcast.NAKACK2/>
     <UNICAST3/>
     <pbcast.STABLE/>
