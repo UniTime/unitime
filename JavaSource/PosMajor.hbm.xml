@@ -77,8 +77,7 @@
         
         <set
             name="concentrations"
-            inverse="true"
-            cascade="all-delete-orphan">
+            inverse="true">
             <cache include="non-lazy" usage="transactional"/>
             <key column="major_id"/>
             <one-to-many class="PosMajorConcentration"/>

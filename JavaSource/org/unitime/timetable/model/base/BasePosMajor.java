@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model.base;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -112,7 +111,7 @@ public abstract class BasePosMajor implements Serializable {
 		addToAcademicAreas(academicArea);
 	}
 
-	@OneToMany(mappedBy = "major", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@OneToMany(mappedBy = "major")
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<PosMajorConcentration> getConcentrations() { return iConcentrations; }
 	public void setConcentrations(Set<PosMajorConcentration> concentrations) { iConcentrations = concentrations; }
