@@ -460,8 +460,8 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 					else
 						si.addPair(key, propInfo.getProperty(key));
 				}
-				response.addSelectedSolution(si);
 			}
+			response.addSelectedSolution(si);
 		}
 	}
 	
