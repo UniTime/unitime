@@ -175,16 +175,17 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			for (XConfig config: offering.getConfigs()) {
 				boolean imAvailable = true;
 				if (rule != null) {
-					if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) continue;
 					if (rule.isDisjunctive()) {
 						if (rule.hasCourseName() && rule.matchesCourseName(id.getCourseName())) {
 						} else if (rule.hasCourseType() && rule.matchesCourseType(id.getType())) {
 						} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
 						} else {
+							if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) continue;
 							imAvailable = false;
 						}
 					} else {
 						if (!rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+							if (enrollment == null || !config.getConfigId().equals(enrollment.getConfigId())) continue;
 							imAvailable = false;
 						}
 					}
