@@ -87,6 +87,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Event Room Availability: Too Many Meetings Warning</name>
+			<description>
+				<line>When the search results in more than 10000 meetings a warning is shown (as the query is limited to 10001 records).</line>
+				<line>This is the same warning as on the Events page.</line>
+			</description>
+		</item>
+	</category>	
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Scripts, Reports</name>
