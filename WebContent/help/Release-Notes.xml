@@ -64,6 +64,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail: Make NOT Offered</name>
+			<description>
+				<line>Departmental schedule mangers cannot make a course not offered when it has a class they cannot edit (e.g., there is an externally managed class that is being timetabled).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

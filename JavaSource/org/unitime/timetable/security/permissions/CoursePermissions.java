@@ -565,6 +565,21 @@ public class CoursePermissions {
 			
 			if (source.isNotOffered()) return false;
 			
+			// Manager can edit external department
+			Set<Department> externals = new HashSet<Department>();
+			for (InstrOfferingConfig config: source.getInstrOfferingConfigs()) {
+				for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+					for (Class_ clazz: subpart.getClasses()) {
+						if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
+							if (externals.add(clazz.getManagingDept()) &&
+									!permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit) &&
+									!clazz.getManagingDept().effectiveStatusType(clazz.getControllingDept()).can(DepartmentStatusType.Status.OwnerEdit))
+								return false;
+						}
+					}
+				}
+			}
+			
 			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
 			
 			return false;
