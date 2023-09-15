@@ -141,6 +141,12 @@
 				<line>Fixed a permission evaluation issue when editing requested enrollments for multiple curricula.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Distribution Preference</name>
+			<description>
+				<line>Fixed the instructional type auto selection when there is only one course in the selected subject area.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
