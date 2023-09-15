@@ -135,6 +135,12 @@
 				<line>Fixed an issue with combining multiple instructor time preferences on a class.</line>
 			</description>
 		</item>
+		<item>
+			<name>Curricula: Curriculum Requested Enrollments</name>
+			<description>
+				<line>Fixed a permission evaluation issue when editing requested enrollments for multiple curricula.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

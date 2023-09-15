@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,7 +35,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class CurriculumInterface implements IsSerializable, Comparable<CurriculumInterface> {
+public class CurriculumInterface implements IsSerializable, Comparable<CurriculumInterface>, Serializable {
+	private static final long serialVersionUID = -7778597635593318762L;
 	private Long iId;
 	private String iAbbv, iName;
 	private boolean iEditable = false;
@@ -272,7 +274,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		return (getId() == null ? Long.valueOf(-1) : getId()).compareTo(curriculum.getId() == null ? -1 : curriculum.getId());
 	}
 
-	public static class AcademicAreaInterface implements IsSerializable, Comparable<AcademicAreaInterface> {
+	public static class AcademicAreaInterface implements IsSerializable, Comparable<AcademicAreaInterface>, Serializable {
+		private static final long serialVersionUID = 6293058295434940938L;
 		private Long iAreaId;
 		private String iAreaAbbv, iAreaName;
 
@@ -303,7 +306,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class MajorInterface implements IsSerializable, Comparable<MajorInterface> {
+	public static class MajorInterface implements IsSerializable, Comparable<MajorInterface>, Serializable {
+		private static final long serialVersionUID = -7971546071734945667L;
 		private Long iMajorId;
 		private String iMajorCode, iMajorName;
 
@@ -336,7 +340,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class DepartmentInterface implements IsSerializable, Comparable<DepartmentInterface> {
+	public static class DepartmentInterface implements IsSerializable, Comparable<DepartmentInterface>, Serializable {
+		private static final long serialVersionUID = -6699851066950644850L;
 		private Long iDeptId;
 		private String iDeptCode, iDeptAbbv, iDeptName;
 
@@ -372,7 +377,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class AcademicClassificationInterface implements IsSerializable, Comparable<AcademicClassificationInterface> {
+	public static class AcademicClassificationInterface implements IsSerializable, Comparable<AcademicClassificationInterface>, Serializable {
+		private static final long serialVersionUID = 7862712863727551194L;
 		private Long iClasfId;
 		private String iClasfCode, iClasfName;
 		
@@ -405,7 +411,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class CurriculumClassificationInterface implements IsSerializable, Comparable<CurriculumClassificationInterface> {
+	public static class CurriculumClassificationInterface implements IsSerializable, Comparable<CurriculumClassificationInterface>, Serializable {
+		private static final long serialVersionUID = -1102123315199715576L;
 		private Long iCurriculumId, iClasfId;
 		private String iName;
 		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null, iProjection = null, iRequested = null, iSnapshotProjection = null, iSnapshotNrStudents = null;
@@ -472,7 +479,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class CourseInterface implements IsSerializable, Comparable<CourseInterface> {
+	public static class CourseInterface implements IsSerializable, Comparable<CourseInterface>, Serializable {
+		private static final long serialVersionUID = -6178340017813768582L;
 		private Long iCourseId;
 		private String iCourseName;
 		private List<CurriculumCourseInterface> iCurriculumCourses;
@@ -632,7 +640,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 	}
 	
-	public static class CurriculumCourseInterface implements IsSerializable, Comparable<CurriculumCourseInterface> {
+	public static class CurriculumCourseInterface implements IsSerializable, Comparable<CurriculumCourseInterface>, Serializable {
+		private static final long serialVersionUID = 6406423279718484339L;
 		private Long iId, iCourseId, iClasfId;
 		private String iCourseName;
 		private Float iShare = null, iDefaultShare = null;
@@ -712,7 +721,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class CurriculumCourseGroupInterface implements IsSerializable, Comparable<CurriculumCourseGroupInterface> {
+	public static class CurriculumCourseGroupInterface implements IsSerializable, Comparable<CurriculumCourseGroupInterface>, Serializable {
+		private static final long serialVersionUID = 5795862880607152603L;
 		private Long iId;
 		private String iName, iColor;
 		private int iType;
@@ -745,7 +755,8 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 	}
 	
-	public static class CurriculumStudentsInterface implements IsSerializable {
+	public static class CurriculumStudentsInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1987135351832935825L;
 		private Map<Long, Double> iEnrollment = null;
 		private Map<Long, Double> iRequested = null;
 		private HashMap<Long, Map<String, Double>> iLastLike = null;
