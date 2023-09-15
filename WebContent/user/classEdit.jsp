@@ -313,7 +313,7 @@
 							</TD>
 							<s:if test="#request.responsibilities != null && !#request.responsibilities.isEmpty()">
 								<TD>
-									<s:if test="form.defaultTeachingResponsibilityId == null || form.instrResponsibility[#stat.index] == ''">
+									<s:if test="form.defaultTeachingResponsibilityId == '' || form.instrResponsibility[#stat.index] == ''">
 										<s:select name="form.instrResponsibility[%{#stat.index}]"
 											list="#request.responsibilities" listKey="uniqueId" listValue="label"
 											headerKey="-" headerValue="-"/>
