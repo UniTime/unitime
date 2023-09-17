@@ -145,10 +145,18 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 
 	@Override
 	protected Document createCurrentSolutionBackup(boolean anonymize, boolean idconv) {
-		
         if (anonymize) {
             getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
             getProperties().setProperty("Xml.ShowNames", "false");
+            getProperties().setProperty("Xml.SaveInitial", "false");
+            getProperties().setProperty("Xml.SaveBest", "false");
+            getProperties().setProperty("Xml.SaveSolution", "true");
+        } else {
+            getProperties().setProperty("Xml.ShowNames", "true");
+            getProperties().setProperty("Xml.ConvertIds", "false");
+            getProperties().setProperty("Xml.SaveInitial", "true");
+            getProperties().setProperty("Xml.SaveBest", "true");
+            getProperties().setProperty("Xml.SaveSolution", "true");
         }
 
         TimetableXMLSaver saver = new TimetableXMLSaver(this);
@@ -172,11 +180,6 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 			ConflictStatisticsInfo cbsInfo = getCbsInfo();
 			if (cbsInfo!=null)
 				cbsInfo.save(document.getRootElement().addElement("cbsInfo"));
-		}
-
-		if (anonymize) {
-			getProperties().setProperty("Xml.ConvertIds", "false");
-			getProperties().setProperty("Xml.ShowNames", "true");
 		}
 
 		return document;
