@@ -45,7 +45,6 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
@@ -201,7 +200,7 @@ public class WebClassListTableBuilder extends
     public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, SessionContext context, Writer outputStream){
     	ArrayList<String> columnList = new ArrayList<String>();
     	columnList.add(LABEL);
-    	if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+    	if (sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
     		columnList.add(MSG.columnDemand());
     	}
     	columnList.add(MSG.columnLimit());

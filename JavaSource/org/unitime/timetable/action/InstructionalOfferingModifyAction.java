@@ -250,6 +250,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
         Collections.sort(subpartList, new SchedulingSubpartComparator());
         ClassAssignmentProxy proxy = getClassAssignmentService().getAssignment();
         form.setInstrOffrConfigUnlimitedReadOnly(false);
+        form.setDisplayEnrollment(StudentClassEnrollment.sessionHasEnrollments(io.getSessionId()));
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
@@ -278,7 +279,6 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
 	    		if (first){
-	    			form.setDisplayEnrollment(Boolean.valueOf(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
 	    			form.setDisplaySnapshotLimit(Boolean.valueOf(cls.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSnapshotLimitDate() != null));
 	    			first = false;
 	    		}

@@ -189,6 +189,13 @@ public class WebInstructionalOfferingTableBuilder {
     // Set whether edit/modify config buttons are displayed
     private boolean displayConfigOpButtons = false;
     
+    private Boolean iSessionHasEnrollments = null;
+    protected boolean sessionHasEnrollments(Long sessionId) {
+    	if (iSessionHasEnrollments == null)
+    		iSessionHasEnrollments = StudentClassEnrollment.sessionHasEnrollments(sessionId);
+    	return iSessionHasEnrollments;
+    }
+    
     public void setDisplayConfigOpButtons(boolean displayConfigOpButtons) {
         this.displayConfigOpButtons = displayConfigOpButtons;
     }
@@ -462,7 +469,7 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(cell);
     	}   	
     	if (isShowDemand()){
-    		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
+    		if (sessionHasEnrollments(sessionId)){
         		cell = this.headerCell(MSG.columnDemand(), 2, 1);
     		} else {
         		cell = this.headerCell((MSG.columnLastDemand()), 2, 1);    			
@@ -845,7 +852,7 @@ public class WebInstructionalOfferingTableBuilder {
     private TableCell buildPrefGroupDemand(PreferenceGroup prefGroup, boolean isEditable){
     	if (prefGroup instanceof Class_) {
 			Class_ c = (Class_) prefGroup;
-			if (StudentClassEnrollment.sessionHasEnrollments(c.getSessionId())){
+			if (sessionHasEnrollments(c.getSessionId())){
 				TableCell tc = null;
 				if (c.getEnrollment() != null){
 					tc = this.initNormalCell(c.getEnrollment().toString(), isEditable);
@@ -1898,7 +1905,7 @@ public class WebInstructionalOfferingTableBuilder {
 		}
     	if (isShowDemand()){
     		String demand = "0";
-    		if (StudentClassEnrollment.sessionHasEnrollments(io.getSessionId())){
+    		if (sessionHasEnrollments(io.getSessionId())){
     			demand = (io.getEnrollment() != null?io.getEnrollment().toString(): "0");		
     		} else {
 	    		demand = (io.getDemand() != null?io.getDemand().toString(): "0");

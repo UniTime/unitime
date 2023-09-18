@@ -40,7 +40,6 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.security.SessionContext;
@@ -128,7 +127,7 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
             setShowExamName(false);
         }
         setShowInstructor(true);
-        if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+        if (sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
         	setShowDemand(true);
         }
         if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(context.getUser().getCurrentAcademicSessionId())) {
