@@ -33,7 +33,6 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.util.IdValue;
@@ -952,7 +951,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		this.readOnlyClasses.add(isReadOnly.toString());
 		this.readOnlyDatePatterns.add(isReadOnlyDatePattern.toString());
 		this.classHasErrors.add(Boolean.valueOf(false));	
-		this.enrollments.add(StudentClassEnrollment.sessionHasEnrollments(cls.getSessionId())?(cls.getEnrollment()==null?"0":cls.getEnrollment().toString()):"");
+		this.enrollments.add(Boolean.TRUE.equals(displayEnrollment)?(cls.getEnrollment()==null?"0":cls.getEnrollment().toString()):"");
 		if(getInstrOffrConfigUnlimited()) {
 			this.snapshotLimits.add("0");
 		} else {

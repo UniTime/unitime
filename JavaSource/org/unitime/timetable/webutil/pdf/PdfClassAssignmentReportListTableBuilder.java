@@ -34,7 +34,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceGroup;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.security.SessionContext;
@@ -116,7 +115,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
             setShowExamName(false);
         }
         setShowInstructor(true);
-        if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+        if (sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
         	setShowDemand(true);
         }
         

@@ -60,7 +60,6 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -267,7 +266,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}   	
     	if (isShowDemand()){
     		PdfPCell c = createCell();
-    		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)){
+    		if (sessionHasEnrollments(sessionId)){
     			addText(c, MSG.columnDemand(), true, Element.ALIGN_RIGHT);
     		} else {
         		addText(c, MSG.columnLastDemand(), true, Element.ALIGN_RIGHT);    			
@@ -754,7 +753,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     private PdfPCell pdfBuildPrefGroupDemand(PreferenceGroup prefGroup, boolean isEditable){
     	if (prefGroup instanceof Class_) {
 			Class_ c = (Class_) prefGroup;
-			if (StudentClassEnrollment.sessionHasEnrollments(c.getSessionId())){
+			if (sessionHasEnrollments(c.getSessionId())){
 				PdfPCell tc = createCell();
 				if (c.getEnrollment() != null){
 					addText(tc, c.getEnrollment().toString());
@@ -1589,7 +1588,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		}
     	if (isShowDemand()){
     	    PdfPCell cell = createCell();
-    	    if (StudentClassEnrollment.sessionHasEnrollments(io.getSessionId())){
+    	    if (sessionHasEnrollments(io.getSessionId())){
         	    addText(cell, (io.getEnrollment() != null?io.getEnrollment().toString(): "0"), false, false, Element.ALIGN_RIGHT, (co.isIsControl()?color:sDisableColor), true);
     	    } else {
         	    addText(cell, (io.getDemand() != null?io.getDemand().toString(): "0"), false, false, Element.ALIGN_RIGHT, (co.isIsControl()?color:sDisableColor), true);    	    	

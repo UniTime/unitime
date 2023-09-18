@@ -63,7 +63,6 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -170,7 +169,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		line.add(createCell(MSG.columnExternalId()));
     	}   	
     	if (isShowDemand()) {
-    		if (StudentClassEnrollment.sessionHasEnrollments(sessionId)) {
+    		if (sessionHasEnrollments(sessionId)) {
     			line.add(createCell(MSG.columnDemand()));
     		} else {
     			line.add(createCell(MSG.columnLastDemand()));
@@ -438,7 +437,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     private CSVField csvBuildPrefGroupDemand(PreferenceGroup prefGroup, boolean isEditable){
     	if (prefGroup instanceof Class_) {
 			Class_ c = (Class_) prefGroup;
-			if (StudentClassEnrollment.sessionHasEnrollments(c.getSessionId())){
+			if (sessionHasEnrollments(c.getSessionId())){
 				CSVField tc = createCell();
 				if (c.getEnrollment() != null){
 					addText(tc, c.getEnrollment().toString());
@@ -1233,7 +1232,7 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		}
     	if (isShowDemand()){
     	    CSVField cell = createCell();
-    	    if (StudentClassEnrollment.sessionHasEnrollments(io.getSessionId())){
+    	    if (sessionHasEnrollments(io.getSessionId())){
         	    addText(cell, (io.getEnrollment() != null?io.getEnrollment().toString(): "0"), true);
     	    } else {
         	    addText(cell, (io.getDemand() != null?io.getDemand().toString(): "0"), true);    	    	

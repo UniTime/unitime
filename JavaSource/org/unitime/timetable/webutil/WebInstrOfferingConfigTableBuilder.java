@@ -42,7 +42,6 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
@@ -204,7 +203,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	    	columnList.add(LABEL);
 	    	columnList.add(MSG.columnExternalId());
 	    	columnList.add(MSG.columnMinPerWk());
-	    	if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+	    	if (sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
 	    		columnList.add(MSG.columnDemand());
 	    	}
 	    	columnList.add(MSG.columnLimit());
