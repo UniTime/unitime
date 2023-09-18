@@ -273,6 +273,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		        }
 		        
 		        if (q != null) {
+		        	q.setCacheable(true);
 			        q.setFirstResult(form.getStart());
 			        if (limit > 0) q.setMaxResults(limit + 1);
 			        String idAlias = null;
