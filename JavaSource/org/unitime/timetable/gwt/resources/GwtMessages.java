@@ -7849,7 +7849,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Batch")
 	String fieldAppliesToBatch();
 	
-	@DefaultMessage("Advisor Overrie")
+	@DefaultMessage("Advisor Override")
 	String fieldAdvisorOverride();
 	
 	@DefaultMessage("Admin Override")
