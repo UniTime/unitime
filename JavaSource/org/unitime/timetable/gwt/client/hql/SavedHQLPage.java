@@ -1248,10 +1248,12 @@ public class SavedHQLPage extends Composite {
 						});
 						line.add(h);
 					}
-				} else {
+				} else if (i <= 100) {
 					for (String x: row) {
 						line.add(new HTML(x == null ? "" : x.replace("\\n", "<br>")));
 					}
+				} else {
+					break;
 				}
 				if (iSectioningProperties != null && "__Student".equals(iFirstField) && iSectioningProperties.isCanSelectStudent()) {
 					if (i == 0) {
