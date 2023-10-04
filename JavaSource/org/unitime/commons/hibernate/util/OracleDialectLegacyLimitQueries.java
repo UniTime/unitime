@@ -33,6 +33,7 @@ import org.hibernate.sql.ast.tree.Statement;
 import org.hibernate.sql.ast.tree.expression.Expression;
 import org.hibernate.sql.ast.tree.select.QueryPart;
 import org.hibernate.sql.ast.tree.select.QuerySpec;
+import org.hibernate.sql.ast.tree.select.SelectClause;
 import org.hibernate.sql.exec.spi.JdbcOperation;
 import org.hibernate.sql.model.MutationOperation;
 import org.hibernate.sql.model.internal.OptionalTableUpdate;
@@ -81,6 +82,13 @@ public class OracleDialectLegacyLimitQueries extends OracleDialect {
 		public OracleSqlAstTranslatorLegacyLimitQueries(SessionFactoryImplementor sessionFactory, Statement statement) {
 			super(sessionFactory, statement);
 		}
+		
+		@Override
+		protected void renderRowNumberingSelectItems(SelectClause selectClause, QueryPart queryPart) {
+			final FetchClauseType fetchClauseType = getFetchClauseTypeForRowNumbering( queryPart );
+			if ( fetchClauseType != FetchClauseType.ROWS_ONLY)
+				super.renderRowNumberingSelectItems(selectClause, queryPart);
+		}
 
 		/**
 		 * When fetch clause type is ROWS_ONLY, generate the query just like the {@link LegacyOracleLimitHandler} would
@@ -96,14 +104,26 @@ public class OracleDialectLegacyLimitQueries extends OracleDialect {
 				// use the rownum just like in the LegacyOracleLimitHandler
 				if ( offsetExpression != null ) {
 					appendSql( "select * from (select row_.*,rownum rownum_ from (" );
-					emulateFetchOffsetWithWindowFunctionsVisitQueryPart(((QuerySpec)queryPart).asSubQuery());
+					withRowNumbering(queryPart, true, new Runnable() {
+						@Override
+						public void run() {
+							queryPart.accept(OracleSqlAstTranslatorLegacyLimitQueries.this);
+						}
+					});
+					visitOrderBy(queryPart.getSortSpecifications());
 					appendSql( ") row_ where rownum<=");
 					offsetExpression.accept( this ); appendSql( '+' ); fetchExpression.accept( this );
 					appendSql(") where rownum_>");
 					offsetExpression.accept( this ); 
 				} else {
 					appendSql( "select * from (" );
-					emulateFetchOffsetWithWindowFunctionsVisitQueryPart(((QuerySpec)queryPart).asSubQuery());
+					withRowNumbering(queryPart, true, new Runnable() {
+						@Override
+						public void run() {
+							queryPart.accept(OracleSqlAstTranslatorLegacyLimitQueries.this);
+						}
+					});
+					visitOrderBy(queryPart.getSortSpecifications());
 					appendSql( ") where rownum<=" );
 					fetchExpression.accept( this );
 				}
