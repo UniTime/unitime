@@ -19,16 +19,16 @@
       <local-cache-configuration name="entity" simple-cache="true" statistics="false" statistics-available="false">
          <encoding media-type="application/x-java-object"/>
          <transaction mode="NONE" />
-         <expiration max-idle="100000" interval="5000"/>
-         <memory max-count="10000"/>
+         <expiration max-idle="600000" interval="5000"/>
+         <memory max-count="100000"/>
       </local-cache-configuration>
 
       <!-- A config appropriate for query caching. Does not replicate queries. -->
       <local-cache-configuration name="local-query" simple-cache="true" statistics="false" statistics-available="false">
          <encoding media-type="application/x-java-object"/>
          <transaction mode="NONE"/>
-         <expiration max-idle="100000" interval="5000"/>
-         <memory max-count="10000"/>
+         <expiration max-idle="600000" interval="5000"/>
+         <memory max-count="100000"/>
       </local-cache-configuration>
 
       <local-cache-configuration name="timestamps" simple-cache="true" statistics="false" statistics-available="false">

@@ -22,16 +22,16 @@
          <encoding media-type="application/x-java-object"/>
          <locking concurrency-level="1000" acquire-timeout="15000"/>
          <transaction mode="NONE" />
-         <expiration max-idle="100000" interval="5000"/>
-         <memory max-count="10000"/>
+         <expiration max-idle="600000" interval="5000"/>
+         <memory max-count="100000"/>
       </invalidation-cache-configuration>
 
       <replicated-cache-configuration name="replicated-entity" remote-timeout="20000" statistics="false" statistics-available="false">
          <encoding media-type="application/x-java-object"/>
          <locking concurrency-level="1000" acquire-timeout="15000"/>
          <transaction mode="NONE" />
-         <expiration max-idle="100000" interval="5000"/>
-         <memory max-count="10000"/>
+         <expiration max-idle="600000" interval="5000"/>
+         <memory max-count="100000"/>
       </replicated-cache-configuration>
 
       <!-- A config appropriate for query caching. Does not replicate queries. -->
@@ -39,8 +39,8 @@
          <encoding media-type="application/x-java-object"/>
          <locking concurrency-level="1000" acquire-timeout="15000"/>
          <transaction mode="NONE" />
-         <expiration max-idle="100000" interval="5000"/>
-         <memory max-count="10000"/>
+         <expiration max-idle="600000" interval="5000"/>
+         <memory max-count="100000"/>
       </local-cache-configuration>
 
       <!-- A query cache that replicates queries. Replication is asynchronous. -->
@@ -48,8 +48,8 @@
          <encoding media-type="application/x-java-object"/>
          <locking concurrency-level="1000" acquire-timeout="15000" isolation="READ_COMMITTED"/>
          <transaction mode="NONE" />
-         <expiration max-idle="100000" interval="5000"/>
-         <memory max-count="10000"/>
+         <expiration max-idle="600000" interval="5000"/>
+         <memory max-count="100000"/>
       </replicated-cache-configuration>
 
       <!-- Optimized for timestamp caching. A clustered timestamp cache
