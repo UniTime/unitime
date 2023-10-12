@@ -21,6 +21,7 @@ package org.unitime.timetable.server.sectioning;
 
 import java.util.Collection;
 
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.report.AccommodationConflictsTable;
 import org.cpsolver.studentsct.report.DistanceConflictTable;
 import org.cpsolver.studentsct.report.RequestGroupTable;
@@ -71,6 +72,9 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		TEACHING_CONFLICTS("Teaching Conflicts", StudentAvailabilityConflicts.class.getName()),
 		TEACHING_CONFLICTS_NA("Teaching Conflicts (Exclude Allowed)", StudentAvailabilityConflicts.class.getName(), "includeAllowedOverlaps", "false"),
 		NOT_ASSIGNED_COURSE_REQUESTS(SCT_MSG.reportUnassignedCourseRequests(), UnasignedCourseRequests.class.getName()),
+		NOT_ASSIGNED_COURSE_REQUESTS_LC(SCT_MSG.reportUnassignedLCCourseRequests(), UnasignedCourseRequests.class.getName(), "type", RequestPriority.LC.name()),
+		NOT_ASSIGNED_COURSE_REQUESTS_CRITICAL(SCT_MSG.reportUnassignedCriticalCourseRequests(), UnasignedCourseRequests.class.getName(), "type",
+				RequestPriority.Critical.name() + "," + RequestPriority.Vital.name() + "," + RequestPriority.Important.name()),
 		UNUSED_GROUP_RES(SCT_MSG.reportUnusedGroupReservations(), UnusedReservations.class.getName(), "type", "group"),
 		UNUSED_INDIVIDUAL_RES(SCT_MSG.reportUnusedIndividualReservations(), UnusedReservations.class.getName(), "type", "individual"),
 		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), UnusedReservations.class.getName(), "type", "override"),
