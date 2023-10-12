@@ -138,6 +138,7 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
                     new CSVFile.CSVField(MSG.reportStudentId()),
             		new CSVFile.CSVField(MSG.reportStudentName()),
             		new CSVFile.CSVField(MSG.reportStudentEmail()),
+            		new CSVFile.CSVField(MSG.reportStudentPriority()),
             		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
             		new CSVFile.CSVField(MSG.reportStudentGroup()),
             		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
@@ -152,6 +153,7 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
                     new CSVFile.CSVField(MSG.reportStudentId()),
             		new CSVFile.CSVField(MSG.reportStudentName()),
             		new CSVFile.CSVField(MSG.reportStudentEmail()),
+            		new CSVFile.CSVField(MSG.reportStudentPriority()),
             		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
             		new CSVFile.CSVField(MSG.reportStudentGroup()),
             		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
@@ -186,6 +188,9 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
             	            org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(student.getId());
             	            if (dbStudent != null)
             	            	line.add(new CSVFile.CSVField(dbStudent.getEmail()));
+            	            else
+            	            	line.add(new CSVFile.CSVField(""));
+            	            line.add(new CSVFile.CSVField(student.getPriority() == null ? "" : student.getPriority().name()));
             	            line.add(new CSVFile.CSVField(curriculum(student)));
             	            line.add(new CSVFile.CSVField(group(student)));
             	            line.add(new CSVFile.CSVField(advisor(student)));

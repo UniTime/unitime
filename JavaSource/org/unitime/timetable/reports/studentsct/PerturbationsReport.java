@@ -123,6 +123,7 @@ public class PerturbationsReport implements StudentSectioningReport {
                 new CSVFile.CSVField(MSG.reportStudentId()),
         		new CSVFile.CSVField(MSG.reportStudentName()),
         		new CSVFile.CSVField(MSG.reportStudentEmail()),
+        		new CSVFile.CSVField(MSG.reportStudentPriority()),
         		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
         		new CSVFile.CSVField(MSG.reportStudentGroup()),
         		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
@@ -165,6 +166,7 @@ public class PerturbationsReport implements StudentSectioningReport {
             			line.add(new CSVFile.CSVField(student.getExternalId()));
         	            line.add(new CSVFile.CSVField(student.getName()));
         	            line.add(new CSVFile.CSVField(s == null ? null : s.getEmail()));
+        	            line.add(new CSVFile.CSVField(student.getPriority() == null ? "" : student.getPriority().name()));
         	            line.add(new CSVFile.CSVField(curriculum(student)));
         	            line.add(new CSVFile.CSVField(group(student)));
         	            line.add(new CSVFile.CSVField(advisor(student)));

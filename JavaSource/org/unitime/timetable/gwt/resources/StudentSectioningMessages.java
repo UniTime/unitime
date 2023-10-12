@@ -2051,6 +2051,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Student\nEmail")
 	String reportStudentEmail();
 	
+	@DefaultMessage("Student\nPriority")
+	String reportStudentPriority();
+	
 	@DefaultMessage("Curriculum")
 	String reportStudentCurriculum();
 	
@@ -2071,6 +2074,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not-Assigned Course Requests")
 	String reportUnassignedCourseRequests();
+	
+	@DefaultMessage("Not-Assigned Critical Course Requests")
+	String reportUnassignedCriticalCourseRequests();
+	
+	@DefaultMessage("Not-Assigned LC Course Requests")
+	String reportUnassignedLCCourseRequests();
 	
 	@DefaultMessage("Not-Used Group Reservations")
 	String reportUnusedGroupReservations();
@@ -2095,6 +2104,12 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Requested")
 	String reportRequestedPriority();
+	
+	@DefaultMessage("Request\nPriority")
+	String reportCourseRequestPriority();
+	
+	@DefaultMessage("Conflict\nPriority")
+	String reportConflictingCourseRequestPriority();
 	
 	@DefaultMessage("Critical Courses")
 	String reportCriticalCoursesReport();

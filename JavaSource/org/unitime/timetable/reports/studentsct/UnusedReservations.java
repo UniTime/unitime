@@ -183,10 +183,12 @@ public class UnusedReservations implements StudentSectioningReport {
         		new CSVFile.CSVField(MSG.reportStudentId()),
         		new CSVFile.CSVField(MSG.reportStudentName()),
         		new CSVFile.CSVField(MSG.reportStudentEmail()),
+        		new CSVFile.CSVField(MSG.reportStudentPriority()),
         		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
         		new CSVFile.CSVField(MSG.reportStudentGroup()),
         		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
         		new CSVFile.CSVField(MSG.reportRequestedCourse()),
+        		new CSVFile.CSVField(MSG.reportCourseRequestPriority()),
         		new CSVFile.CSVField(MSG.reportAssignmentConflict())
                 });
 		if (unused.isEmpty()) return csv;
@@ -205,6 +207,7 @@ public class UnusedReservations implements StudentSectioningReport {
 	            	line.add(new CSVFile.CSVField(dbStudent.getEmail()));
 	            else
 	            	line.add(new CSVFile.CSVField(""));
+	            line.add(new CSVFile.CSVField(student.getPriority() == null ? "" : student.getPriority().name()));
 	            line.add(new CSVFile.CSVField(curriculum(student)));
 	            line.add(new CSVFile.CSVField(group(student)));
 	            line.add(new CSVFile.CSVField(advisor(student)));
@@ -222,9 +225,11 @@ public class UnusedReservations implements StudentSectioningReport {
 	            }
 	            if (course == null) {
 	            	line.add(new CSVFile.CSVField(reservation instanceof CourseReservation ? ((CourseReservation)reservation).getCourse().getName() : reservation.getOffering().getName()));
+	            	line.add(new CSVFile.CSVField(""));
 	            	line.add(new CSVFile.CSVField(MSG.courseNotRequested()));
 	            } else {
 	            	line.add(new CSVFile.CSVField(course.getName()));
+	            	line.add(new CSVFile.CSVField(courseRequest.getRequestPriority() == null ? "" : courseRequest.getRequestPriority().name()));
 		        	Enrollment enrollment = courseRequest.getAssignment(assignment);
 		        	if (enrollment != null && reservation.isIncluded(enrollment)) continue;
 		            TreeSet<Enrollment> overlaps = new TreeSet<Enrollment>(new Comparator<Enrollment>() {

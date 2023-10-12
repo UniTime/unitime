@@ -28,6 +28,44 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Solver Reports</name>
+			<description>
+				<line>Added Student Priority and Request Priority column on various reports.</line>
+				<line>Added Not-Assigned LC Course Requests and Not-Assigned Critical Coruse Requests reports.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.67</version>
+	<release-date>Fri, 6 Oct 2023</release-date>
+	<category>
+		<title>Technology Upgrade</title>
+		<item>
+			<name>Hibernate 6.2 / JGroups 5.2</name>
+			<description>
+				<line>UniTime updated to use the latest versions of Hibernate 6.2 and JGroups 5.2.</line>
+				<line>Infinispan 14 is now used for second level cache and cache replication/invalidation when there are multiple web servers.</line>
+				<line>This, however, requires UniTime to use Java 11 or later (Java 8 is no longer supported).</line>
+				<line>Some HQL reports may need to be updated due to the Hibernate upgrade, e.g.,
+					<line>table = id no longer works (e.g., Session = %SESSION% must be changed to Session.uniqueId = %SESSION%)</line>
+					<line>x is true needs to be changed to x = true</line>
+					<line>function BIT_AND needs to be changed to BITAND</line>
+					<line>InstructionalOffering.coordinators needs to be changed to InstructionalOffering.offeringCoordinators</line>
+					<line>Assignment.classId needs to be changed to Assignment.clazz.uniqueId</line>
+					<line>CourseOffering.isControl = 1 needs to be changed to CourseOffering.isControl = true</line>
+					<line>mod(x, n) may need to be changed to mod(cast(x as int), n)</line>
+					<line>sysdate - :days (where :days is an integer) may need to be changed to sysdate - numtodsinterval(:days, 'day')</line>
+				</line>
+				<line>Some Scripts may need to be updated due to the Hibernate upgrade, e.g,
+					<line>Query.setLong, setString, setDate, etc., needs to be changed to setParameter</line>
+					<line>QueueIn/QueueOut.setXml/getXML now takes a string (use setDocument/getDocument for XML access)</line>
+				</line>
+			</description>
+		</item>
+	</category>	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructor Survey</name>
