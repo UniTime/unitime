@@ -2317,6 +2317,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean isLast();
 		public boolean isFirst();
 		public boolean isWaitList();
+		public boolean isCancelled();
 	}
 	
 	public static class TableCourseLine implements TableLine {
@@ -2453,6 +2454,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 		@Override
 		public String getUrl() { return iUrl; }
+		
+		@Override
+		public boolean isCancelled() { return false; }
 	}
 	
 	public static class TableSectionLine extends TableCourseLine {
@@ -2483,6 +2487,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 
 		@Override
 		public String getNote() {
+			if (iSection.isCancelled()) return MSG.classCancelled(getName());
 			return iSection.getNote();
 		}
 		
@@ -2545,6 +2550,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public boolean isWaitList() { return false; }
+		
+		@Override
+		public boolean isCancelled() { return iSection.isCancelled(); }
 	}
 	
 	public static class TableLineFreeTime implements TableLine {
@@ -2627,6 +2635,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public boolean isWaitList() { return false; }
+		
+		@Override
+		public boolean isCancelled() { return false; }
 	}
 	
 	public static class TableSectionDeletedLine extends TableSectionLine {
@@ -2724,6 +2735,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		@Override
 		public String getNote() {
+			if (iSection.isCancelled()) return MSG.classCancelled(getName());
 			return diff(iOldSection.getNote(), iSection.getNote());
 		}
 		

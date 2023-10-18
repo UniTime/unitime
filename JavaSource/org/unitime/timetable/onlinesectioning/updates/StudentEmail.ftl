@@ -167,6 +167,10 @@
 		<#assign style="white-space: nowrap; border-top: 1px dashed #9CB0CE;">
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
 	</#if>
+	<#if line.cancelled>
+		<#assign style="font-style: italic; color: gray;">
+		<#assign stylebr = stylebr + " font-style: italic; color: gray;">
+	</#if>
 	<#if line.class.simpleName == "TableSectionDeletedLine">
 		<#assign style = style + " text-decoration: line-through; font-style: italic; color: gray;">
 		<#assign stylebr = stylebr + " text-decoration: line-through; font-style: italic; color: gray;">
@@ -212,7 +216,7 @@
 	 		<td style="${style}">${line.rooms}</td>
 	 		<td style="${stylebr}">${line.instructors}</td>
 	 		<#if line.requires??><td style="${stylebr}">${line.requires}</td><#else><td style="${style}"></td></#if>
-	 		<#if line.note??><td style="${stylebr}">${line.note?replace("\n", "<br>")}</td><#else><td style="${style}"></td></#if>
+	 		<#if line.note??><td style="${stylebr} white-space: pre-wrap;">${line.note}</td><#else><td style="${style}"></td></#if>
 	 		<#if line.credit??><td style="${style}">${line.credit}</td><#else><td style="${style}"></td></#if>
 		</tr>
 		<#if line.last && line.courseNote??>
