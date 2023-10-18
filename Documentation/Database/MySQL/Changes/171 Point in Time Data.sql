@@ -262,8 +262,8 @@ alter table pit_dept_instructor add constraint fk_pit_di_to_di foreign key (dept
 alter table pit_dept_instructor add constraint fk_pit_di_to_d foreign key (department_id)
 	references department (uniqueid) on delete cascade;
 
-alter table %SCHEMA%.pit_dept_instructor add constraint fk_pit_di_to_pt foreign key (pos_code_type)
-	references %SCHEMA%.position_type (uniqueid) on delete set null;
+alter table pit_dept_instructor add constraint fk_pit_di_to_pt foreign key (pos_code_type)
+	references position_type (uniqueid) on delete set null;
 	
 create table pit_class_instructor (
 	uniqueid decimal(20,0) primary key not null,
