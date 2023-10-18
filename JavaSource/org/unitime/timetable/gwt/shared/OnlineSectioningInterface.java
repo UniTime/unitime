@@ -319,6 +319,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iMessage;
 		private String iFallback;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
+		private String iNotifications;
 		
 		public StudentStatusInfo() {}
 		
@@ -400,6 +401,10 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public void setCanRegister(boolean canRegister) { iCanRegister = canRegister; }
 		public boolean isCanRegister() { return iCanRegister; }
+		
+		public boolean hasNotifications() { return iNotifications != null && !iNotifications.isEmpty(); }
+		public String getNotifications() { return iNotifications; }
+		public void setNotifications(String notifications) { iNotifications = notifications; }
 		
 		@Override
 		public String toString() { return getReference(); }

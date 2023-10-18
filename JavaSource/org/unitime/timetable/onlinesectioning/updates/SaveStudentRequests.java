@@ -46,6 +46,7 @@ import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideStatus;
@@ -149,7 +150,11 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 						throw (RuntimeException)e;
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).fromAction(name()).oldStudent(oldStudent), helper.getUser());
+				server.execute(server.createAction(NotifyStudentAction.class)
+						.forStudent(getStudentId())
+						.fromAction(name())
+						.withType(helper.isAdmin() ? NotificationType.AdminChangeRequest : NotificationType.StudentChangeRequest)
+						.oldStudent(oldStudent), helper.getUser());
 				
 				helper.commitTransaction();
 				

@@ -26,6 +26,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -126,7 +127,11 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 									helper.getHibSession().merge(e);
 								}
 								
-								server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).fromAction(name()).oldEnrollment(offering, offering.getCourse(oldEnrollment.getCourseId()), oldEnrollment), helper.getUser());
+								server.execute(server.createAction(NotifyStudentAction.class)
+										.forStudent(enrollment.getStudentId())
+										.fromAction(name())
+										.withType(NotificationType.AdminChangeApproval)
+										.oldEnrollment(offering, offering.getCourse(oldEnrollment.getCourseId()), oldEnrollment), helper.getUser());
 							}
 						}
 					}

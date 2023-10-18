@@ -81,6 +81,32 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		public int toggle() { return 1 << ordinal(); }
 	}
 	
+	public static enum NotificationType {
+		StudentChangeRequest(MSG.notifStudentChangeRequest()),
+		StudentChangeEnrollment(MSG.notifStudentChangeEnrollment()),
+		
+		AdminChangeRequest(MSG.notifAdminChangeRequest()),
+		AdminChangeEnrollment(MSG.notifAdminChangeEnrollment()),
+		AdminChangeApproval(MSG.notifAdminEnrollmentApproval()),
+		
+		CourseChangeSchedule(MSG.notifCourseChangeSchedule()),
+		CourseChangeEnrollment(MSG.notifCourseChangeEnrollment()),
+		CourseChangeEnrollmentFailed(MSG.notifCourseChangeEnrollmentFailed()),
+		
+		ExternalChangeEnrollment(MSG.notifExternalChangeEnrollment()),
+		;
+		
+		private String iName;
+		
+		NotificationType(String name) {
+			iName = name;
+		}
+		
+		public String label() { return iName; }
+		
+		public int toggle() { return 1 << ordinal(); }
+	}
+	
 	public boolean hasOption(Option... options) {
 		if (getStatus() == null) return false;
 		for (Option option: options) {
@@ -259,5 +285,21 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	
 	public static StudentSectioningStatus getPresentStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
 		return getPresentStatus(getStatus(reference, sessionId, hibSession));
+	}
+	
+	public boolean hasNotification(NotificationType... notifications) {
+		if (getNotifications() == null) return false;
+		for (NotificationType notication: notifications) {
+			if ((getNotifications() & notication.toggle()) == 0) return false;
+		}
+		return true;
+	}
+	
+	public void addNotification(NotificationType notification) {
+		if (!hasNotification(notification)) setNotifications((getNotifications() == null ? 0 : getNotifications()) + notification.toggle());
+	}
+
+	public void removeNotification(NotificationType notification) {
+		if (hasNotification(notification)) setNotifications(getNotifications() - notification.toggle());
 	}
 }

@@ -90,6 +90,9 @@ public class StudentSchedulingStatusExport extends BaseExport {
 	        		statusElement.addElement("course").addAttribute("type", type.getReference());
 	        	if (status.getFallBackStatus() != null)
 	        		statusElement.addElement("fallback").addAttribute("reference", status.getFallBackStatus().getReference());
+	        	for (StudentSectioningStatus.NotificationType type: StudentSectioningStatus.NotificationType.values())
+	        		if (status.hasNotification(type))
+	        			statusElement.addElement("notification").setText(type.name());
 	        }
 
             commitTransaction();

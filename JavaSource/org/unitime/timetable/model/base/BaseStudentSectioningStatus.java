@@ -53,6 +53,7 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	private Date iEffectiveStopDate;
 	private Integer iEffectiveStartPeriod;
 	private Integer iEffectiveStopPeriod;
+	private Integer iNotifications;
 
 	private StudentSectioningStatus iFallBackStatus;
 	private Session iSession;
@@ -89,6 +90,10 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	@Column(name = "stop_slot", nullable = true)
 	public Integer getEffectiveStopPeriod() { return iEffectiveStopPeriod; }
 	public void setEffectiveStopPeriod(Integer effectiveStopPeriod) { iEffectiveStopPeriod = effectiveStopPeriod; }
+
+	@Column(name = "notifications", nullable = true)
+	public Integer getNotifications() { return iNotifications; }
+	public void setNotifications(Integer notifications) { iNotifications = notifications; }
 
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "fallback_id", nullable = true)
@@ -144,6 +149,7 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 			"\n	FallBackStatus: " + getFallBackStatus() +
 			"\n	Label: " + getLabel() +
 			"\n	Message: " + getMessage() +
+			"\n	Notifications: " + getNotifications() +
 			"\n	Reference: " + getReference() +
 			"\n	Session: " + getSession() +
 			"\n	Status: " + getStatus() +

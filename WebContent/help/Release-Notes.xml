@@ -121,6 +121,26 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Email Notification Types</name>
+			<description>
+				<line>Added an ability to define which email notifications will be set based on the student status.</line>
+				<line>The following options are available:
+					<line>Student Request Change (student made a change using the Student Course Requests page)</line>
+					<line>Student Enrollment Change (student made an enrollment change using the Student Scheduling Assistant page)</line>
+					<line>Admin Request Change (administrator or advisor made a change using the Student Course Requests page)</line>
+					<line>Admin Enrollment Change (administrator or advisor made an enrollment change using the Student Scheduling Assistant page)</line>
+					<line>Enrollment Approval (enrollment requiring a consent has been approved)</line>
+					<line>Course Schedule Change (time or room of one of the classes has changed due to re-scheduling)</line>
+					<line>Course Enrollment Change (an enrollment change was done by wait-listing or re-scheduling)</line>
+					<line>Course Failed Enrollment Change (UniTime failed to make an enrollment change during wait-listing or re-scheduling)</line>
+					<line>External Enrollment Change (there has been an enrollment changed done externally, outside of UniTime)</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.67</version>

@@ -26,6 +26,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -121,7 +122,11 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						student.getRequests().remove(request);
 						server.update(student, true);
 						
-						server.execute(server.createAction(NotifyStudentAction.class).forStudent(enrollment.getStudentId()).fromAction(name()).oldEnrollment(offering, offering.getCourse(enrollment.getCourseId()), enrollment), helper.getUser());
+						server.execute(server.createAction(NotifyStudentAction.class)
+								.forStudent(enrollment.getStudentId())
+								.fromAction(name())
+								.withType(NotificationType.AdminChangeEnrollment)
+								.oldEnrollment(offering, offering.getCourse(enrollment.getCourseId()), enrollment), helper.getUser());
 					}
 					
 				}

@@ -14877,4 +14877,10 @@
 		<mysql>alter table %SCHEMA%.std_sched_rules add disjunctive int(1) default 0</mysql>
 		<pgsql>alter table %SCHEMA%.std_sched_rules add disjunctive boolean default false</pgsql>
 	</update>
+	<update version="262" date="18-Oct-2023" comment="Student Notification Types">
+		<plsql>alter table %SCHEMA%.sectioning_status add notifications number(10,0)</plsql>
+		<mysql>alter table %SCHEMA%.sectioning_status add notifications bigint(10)</mysql>
+		<pgsql>alter table %SCHEMA%.sectioning_status add notifications bigint</pgsql>
+		<sql>update %SCHEMA%.sectioning_status set notifications = 511</sql>
+	</update>
 </dbupdate>

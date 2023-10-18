@@ -80,6 +80,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -158,6 +159,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private Boolean iOptional = null;
 	private String iSourceAction = "not-set";
 	private ReschedulingReason iReason = null;
+	private NotificationType iNotificationType;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -166,6 +168,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public StudentEmail fromAction(String actionName) {
 		iSourceAction = actionName;
+		return this;
+	}
+	
+	public StudentEmail withType(NotificationType notificationType) {
+		iNotificationType = notificationType;
 		return this;
 	}
 	
@@ -325,6 +332,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (status != null && !status.hasOption(StudentSectioningStatus.Option.email)) {
 						emailEnabled = false;
 					}
+					if (status != null && iNotificationType != null && !status.hasNotification(iNotificationType)) {
+						emailEnabled = false;	
+					}
 					if (iIncludeClassSchedule && status != null && !status.hasOption(StudentSectioningStatus.Option.enabled))
 						iIncludeClassSchedule = false;
 					if (iIncludeCourseRequests && status != null && !status.hasOption(StudentSectioningStatus.Option.registration))
@@ -372,6 +382,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				
 				if (iSourceAction != null)
 					helper.logOption("source-action", iSourceAction);
+				if (iNotificationType != null)
+					helper.logOption("type", iNotificationType.name());
 				
 				if (emailEnabled) {
 					final String html = generateMessage(dbStudent, server, helper);

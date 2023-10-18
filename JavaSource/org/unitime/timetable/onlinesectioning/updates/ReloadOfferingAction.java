@@ -53,6 +53,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -383,6 +384,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						NotifyStudentAction notifyAction = server.createAction(NotifyStudentAction.class)
 								.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
 								.fromAction(name())
+								.withType(NotificationType.CourseChangeEnrollment)
 								.oldEnrollment(oldOffering, course, oldEnrollment)
 								.rescheduling(ReschedulingReason.NO_REQUEST);
 						if (exception != null)
@@ -428,7 +430,9 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							if (!isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
 								server.execute(server.createAction(NotifyStudentAction.class)
 										.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
-										.fromAction(name()).oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
+										.fromAction(name())
+										.withType(NotificationType.CourseChangeSchedule)
+										.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
 							
 							if (newOffering != null && newEnrollment.equals(newRequest.getWaitListSwapWithCourseOffering()) && isWaitListed(newStudent, newRequest, newOffering, server, helper)) {
 								queue.add(new SectioningRequest(newOffering, newRequest, course, newStudent, null, getStudentPriority(newStudent, server, helper), action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent).setLastEnrollment(oldEnrollment).setNewEnrollment(newEnrollment));
@@ -540,6 +544,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
 							server.execute(server.createAction(NotifyStudentAction.class)
 									.forStudent(r.getRequest().getStudentId()).fromAction(name())
+									.withType(NotificationType.CourseChangeEnrollmentFailed)
 									.failedEnrollment(newOffering, r.getCourseId(), e, ex)
 									.dropEnrollment(dropEnrollment)
 									.oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment())
@@ -744,6 +749,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				server.execute(server.createAction(NotifyStudentAction.class)
 						.forStudent(r.getRequest().getStudentId())
 						.fromAction(name())
+						.withType(NotificationType.CourseChangeEnrollment)
 						.oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment())
 						.dropEnrollment(dropEnrollment)
 						.rescheduling(r.getReschedulingReason()),
