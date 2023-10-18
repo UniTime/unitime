@@ -314,8 +314,35 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		if (newOffering == null && oldOffering == null)
 			return;
 		
-		if (newOffering != null && !newOffering.isReSchedule())
+		if (newOffering != null && !newOffering.isReSchedule()) {
+			if (server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false) || server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingOnUnlock", false)) {
+				Set<XCourseId> courseIds = new HashSet<XCourseId>();
+				if (newOffering != null)
+					courseIds.addAll(newOffering.getCourses());
+				if (oldOffering != null)
+					courseIds.addAll(oldOffering.getCourses());
+				for (XCourseId course: courseIds) {
+					for (XStudent[] student: students) {
+						XStudent oldStudent = student[0];
+						XCourseRequest oldRequest = getRequest(oldStudent, course);
+						XEnrollment oldEnrollment = getEnrollment(oldRequest, offeringId);
+						XStudent newStudent = student[1];
+						XCourseRequest newRequest = getRequest(newStudent, course); 
+						XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
+						if (oldRequest == null && newRequest == null) continue;
+						if (!hasReSchedulingStatus(newStudent == null ? oldStudent : newStudent, server)) continue; // no notifications for students that cannot be re-scheduled
+
+						if (newEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
+							server.execute(server.createAction(NotifyStudentAction.class)
+									.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+									.fromAction(name())
+									.withType(NotificationType.CourseChangeSchedule)
+									.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
+					}
+				}
+			}
 			return;
+		}
 		
 		WaitListComparatorProvider cmp = Customization.WaitListComparatorProvider.getProvider();
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>(cmp == null ? new SectioningRequestComparator() : cmp.getComparator(server, helper));
@@ -859,7 +886,10 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
             if (e1.size() != e2.size()) return false;
             s1: for (XSection s1: e1) {
                     for (XSection s2: e2)
-                            if (sameName(courseId, s1, s2) && sameTime(s1, s2.getTime()) && sameRooms(s1, s2.getRooms())) continue s1;
+                            if (sameName(courseId, s1, s2) && sameTime(s1, s2.getTime()) && sameRooms(s1, s2.getRooms())) {
+                            	if (s1.isCancelled() && !s2.isCancelled()) break;
+                            	continue s1;
+                            }
                     return false;
             }
             return true;
