@@ -150,6 +150,7 @@ import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AdvisorCourseRequestDAO;
@@ -2748,6 +2749,12 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			else
 				info.setEffectiveStop(Formats.getDateFormat(Formats.Pattern.DATE_EVENT).format(status.getEffectiveStopDate()) + " " + Constants.slot2str(status.getEffectiveStopPeriod()));
 		}
+		String notifications = "";
+		for (NotificationType notification: NotificationType.values()) {
+			if (status.hasNotification(notification))
+				notifications += (notifications.isEmpty() ? "" : ", ") + notification.label();
+		}
+		info.setNotifications(notifications);
 		if (getSessionContext().hasPermission(Right.SchedulingAssistant)) {
 			info.setCanUseAssistant(
 					StudentSectioningStatus.hasEffectiveOption(status, null, StudentSectioningStatus.Option.enabled)

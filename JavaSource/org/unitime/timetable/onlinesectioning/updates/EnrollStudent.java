@@ -64,6 +64,7 @@ import org.unitime.timetable.model.FreeTime;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentEnrollmentMessage;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.HasCacheMode;
@@ -188,6 +189,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 		}
 		WaitListMode wlMode = WaitListMode.None;
 		boolean hasWaitList = false;
+		boolean enrollmentChanged = false;
 		
 		Set<ErrorMessage> checkErrors = (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() ? new TreeSet<ErrorMessage>() : null);
 		Lock lock = server.lockStudent(getStudentId(), offeringIds, name());
@@ -757,6 +759,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 					enrl.setCourseRequest(cr);
 					helper.getHibSession().persist(enrl);
+					enrollmentChanged = true;
 				}
 				
 				for (CourseDemand cd: remaining) {
@@ -773,6 +776,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					enrl.getClazz().getStudentEnrollments().remove(enrl);
 					student.getClassEnrollments().remove(enrl);
 					helper.getHibSession().remove(enrl);
+					enrollmentChanged = true;
 				}
 				
 				helper.getHibSession().merge(student);
@@ -884,7 +888,12 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				}
 				action.addEnrollment(stored);
 				
-				server.execute(server.createAction(NotifyStudentAction.class).forStudent(getStudentId()).fromAction(name()).oldStudent(oldStudent), helper.getUser());
+				if (enrollmentChanged)
+						server.execute(server.createAction(NotifyStudentAction.class)
+								.forStudent(getStudentId())
+								.fromAction(name())
+								.withType(helper.isAdmin() ? NotificationType.AdminChangeEnrollment : NotificationType.StudentChangeEnrollment)
+								.oldStudent(oldStudent), helper.getUser());
 				helper.commitTransaction();
 			} catch (Exception e) {
 				helper.rollbackTransaction();

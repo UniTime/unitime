@@ -5041,9 +5041,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No Batch")
 	String toggleNoBatch();
 	
-	@DefaultMessage("Other")
-	String toggleNoCourseType();
-	
 	@DefaultMessage("Registration")
 	String toggleRegAccess();
 	
@@ -7860,5 +7857,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("OR")
 	String ruleDisjunctive();
-
+	
+	@DefaultMessage("Notifications")
+	String fieldNotifications();
+	
+	@DefaultMessage("Course Types")
+	String fieldCourseTypes();
+	
+	@DefaultMessage("Other (No Type)")
+	String toggleNoCourseType();
 }

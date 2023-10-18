@@ -292,6 +292,12 @@
             	column="stop_slot"
             	type="java.lang.Integer"
             	not-null="false"/>
+            	
+			<property
+                name="notifications"
+                column="notifications"
+                type="java.lang.Integer"
+                not-null="false"/>
             
             <many-to-one
                 name="session"

@@ -44,6 +44,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -339,6 +340,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
 							server.execute(server.createAction(NotifyStudentAction.class)
 									.forStudent(r.getRequest().getStudentId()).fromAction(name())
+									.withType(NotificationType.CourseChangeEnrollmentFailed)
 									.oldEnrollment(offering, r.getCourseId(), r.getLastEnrollment())
 									.failedEnrollment(offering, r.getCourseId(), enrollment, e)
 									.dropEnrollment(dropEnrollment)
@@ -534,6 +536,7 @@ public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolea
 
 					server.execute(server.createAction(NotifyStudentAction.class)
 							.forStudent(r.getRequest().getStudentId())
+							.withType(NotificationType.CourseChangeEnrollment)
 							.fromAction(name())
 							.oldEnrollment(offering, r.getCourseId(), r.getLastEnrollment())
 							.dropEnrollment(dropEnrollment)

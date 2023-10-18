@@ -30,6 +30,7 @@ import org.dom4j.Element;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.util.Formats;
 
@@ -150,6 +151,20 @@ public class StudentSchedulingStatusImport extends BaseImport {
                 		warn("Unknown course type " + courseEl.attributeValue("type") + " (status " + ref + ")");
                 	} else {
                 		status.getTypes().add(type);
+                	}
+                }
+
+                status.setNotifications(0);
+                for (Iterator j = statusEl.elementIterator("notification"); j.hasNext();) {
+                	Element notificationEl = (Element)j.next();
+                	NotificationType type = null; 
+                	try {
+                		type = NotificationType.valueOf(notificationEl.getTextTrim());
+                	} catch (Exception e) {}
+                	if (type == null) {
+                		warn("Unknown notification type " + notificationEl.getTextTrim() + " (status " + ref + ")");
+                	} else {
+                		status.addNotification(type);	
                 	}
                 }
                 

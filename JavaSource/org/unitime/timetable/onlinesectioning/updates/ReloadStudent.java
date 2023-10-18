@@ -122,8 +122,14 @@ public class ReloadStudent extends ReloadAllData {
 						}
 						action.getStudentBuilder().setUniqueId(newStudent.getStudentId()).setExternalId(newStudent.getExternalId()).setName(newStudent.getName());
 					}
-					
-					server.execute(server.createAction(NotifyStudentAction.class).forStudent(studentId).fromAction(name()).oldStudent(oldStudent), helper.getUser());
+
+					// reload does not make a change >> notification is not needed
+					/*
+					server.execute(server.createAction(NotifyStudentAction.class)
+							.forStudent(studentId)
+							.fromAction(name())
+							.oldStudent(oldStudent), helper.getUser());
+					*/
 					helper.commitTransaction();
 				} catch (Exception e) {
 					helper.rollbackTransaction();

@@ -45,6 +45,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
@@ -97,30 +98,38 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		public String getLabel() { return iLabel; }
 		public StudentSectioningStatus.Option getOption() { return iOption; }		
 	}
-
+	
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingStatusTypes')")
 	public SimpleEditInterface load(SessionContext context, org.hibernate.Session hibSession) {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
-		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 9 + StatusOption.values().length : 10 + StatusOption.values().length + courseTypes.size()];
+		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 10 + StatusOption.values().length : 11 + StatusOption.values().length];
 		int idx = 0;
 		fields[idx++] = new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE);
 		fields[idx++] = new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE);
 		for (StatusOption t: StatusOption.values())
 			fields[idx++] = new Field(t.getLabel(), FieldType.toggle, 40);
 		fields[idx++] = new Field(MESSAGES.fieldMessage(), FieldType.textarea, 40, 500);
+		
+		List<ListItem> notifications = new ArrayList<ListItem>();
+		for (NotificationType t: NotificationType.values())
+			notifications.add(new ListItem(t.name(), t.label()));
+		fields[idx++] = new Field(MESSAGES.fieldNotifications(), FieldType.multi, 100, notifications); 
+
 		if (!courseTypes.isEmpty()) {
-			for (int i = 0; i < courseTypes.size(); i++)
-				fields[idx++] = new Field(courseTypes.get(i).getReference(), FieldType.toggle, 40);
-			fields[idx++] = new Field(MESSAGES.toggleNoCourseType(), FieldType.toggle, 40);
+			List<ListItem> courseTypeItems = new ArrayList<ListItem>();
+			courseTypeItems.add(new ListItem("-", MESSAGES.toggleNoCourseType()));
+			for (CourseType type: courseTypes)
+				courseTypeItems.add(new ListItem(type.getUniqueId().toString(), type.getReference()));
+			fields[idx++] = new Field(MESSAGES.fieldCourseTypes(), FieldType.multi, 100, courseTypeItems); 
 		}
+
 		List<ListItem> fallbacks = new ArrayList<ListItem>();
 		List<StudentSectioningStatus> statuses = StudentSectioningStatus.findAll(context.getUser().getCurrentAcademicSessionId());
 		fallbacks.add(new ListItem("", ""));
-		for (StudentSectioningStatus status: statuses) {
+		for (StudentSectioningStatus status: statuses)
 			fallbacks.add(new ListItem(status.getUniqueId().toString(), status.getLabel()));
-		}
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveStartDate(), FieldType.date, 80);
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveStartTime(), FieldType.time, 50);
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndDate(), FieldType.date, 80);
@@ -139,11 +148,21 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			for (StatusOption t: StatusOption.values())
 				r.setField(idx++, status.hasOption(t.getOption()) ? "true" : "false");
 			r.setField(idx++, status.getMessage());
+			
+			for (NotificationType t: NotificationType.values())
+				if (status.hasNotification(t))
+					r.addToField(idx, t.name());
+			idx++;
+
 			if (!courseTypes.isEmpty()) {
-				for (int i = 0; i < courseTypes.size(); i++)
-					r.setField(idx++, status.getTypes().contains(courseTypes.get(i)) ? "true" : "false");
-				r.setField(idx++, status.hasOption(StudentSectioningStatus.Option.notype) ? "false" : "true");
+				for (CourseType type: courseTypes)
+					if (status.getTypes().contains(type))
+						r.addToField(idx, type.getUniqueId().toString());
+				if (status.hasOption(StudentSectioningStatus.Option.notype))
+					r.addToField(idx, "-");
+				idx++;
 			}
+
 			r.setField(idx++, status.getEffectiveStartDate() == null ? "" : dateFormat.format(status.getEffectiveStartDate()));
 			r.setField(idx++, status.getEffectiveStartPeriod() == null ? "" : status.getEffectiveStartPeriod().toString());
 			r.setField(idx++, status.getEffectiveStopDate() == null ? "" : dateFormat.format(status.getEffectiveStopDate()));
@@ -179,17 +198,29 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		status.setTypes(new HashSet<CourseType>());
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
-		if (!courseTypes.isEmpty()) {
-			for (int i = 0; i < courseTypes.size(); i++)
-				if ("true".equals(record.getField(3 + StatusOption.values().length + i))) status.getTypes().add(courseTypes.get(i));
-			if (!"true".equals(record.getField(3 + StatusOption.values().length + courseTypes.size()))) value += StudentSectioningStatus.Option.notype.toggle();
-		}
 		status.setReference(record.getField(0));
 		status.setLabel(record.getField(1));
 		status.setStatus(value);
 		status.setMessage(record.getField(2 + StatusOption.values().length));
 		
-		int idx = (courseTypes.isEmpty() ? 3 + StatusOption.values().length : 4 + StatusOption.values().length + courseTypes.size());
+		int notification = 0;
+		for (String option: record.getValues(3 + StatusOption.values().length)) {
+			notification += NotificationType.valueOf(option).toggle();
+		}
+		status.setNotifications(notification);
+		
+		int idx = 4 + StatusOption.values().length;
+		status.setTypes(new HashSet<CourseType>());
+		if (!courseTypes.isEmpty()) {
+			for (String option: record.getValues(idx)) {
+				if ("-".equals(option))
+					value += StudentSectioningStatus.Option.notype.toggle();
+				else
+					status.getTypes().add(CourseTypeDAO.getInstance().get(Long.valueOf(option)));
+			}
+			idx ++;
+		}
+		
 		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		Date startDate = null;
 		try {
@@ -230,13 +261,21 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		Set<CourseType> types = new HashSet<CourseType>();
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
+		int notification = 0;
+		for (String option: record.getValues(3 + StatusOption.values().length)) {
+			notification += NotificationType.valueOf(option).toggle();
+		}
+		int idx = 4 + StatusOption.values().length;
 		if (!courseTypes.isEmpty()) {
-			for (int i = 0; i < courseTypes.size(); i++)
-				if ("true".equals(record.getField(3 + StatusOption.values().length + i))) types.add(courseTypes.get(i));
-			if (!"true".equals(record.getField(3 + StatusOption.values().length + courseTypes.size()))) value += StudentSectioningStatus.Option.notype.toggle();
+			for (String option: record.getValues(idx)) {
+				if ("-".equals(option))
+					value += StudentSectioningStatus.Option.notype.toggle();
+				else
+					types.add(CourseTypeDAO.getInstance().get(Long.valueOf(option)));
+			}
+			idx ++;
 		}
 		
-		int idx = (courseTypes.isEmpty() ? 3 + StatusOption.values().length : 4 + StatusOption.values().length + courseTypes.size());
 		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		Date startDate = null;
 		try {
@@ -260,6 +299,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			!ToolBox.equals(status.getEffectiveStartDate(), startDate) || !ToolBox.equals(status.getEffectiveStartPeriod(), startTime) ||
 			!ToolBox.equals(status.getEffectiveStopDate(), endDate) || !ToolBox.equals(status.getEffectiveStopPeriod(), endTime) ||
 			!ToolBox.equals(status.getFallBackStatus() == null ? null : status.getFallBackStatus().getUniqueId(), fallBackId) ||
+			!ToolBox.equals(status.getNotifications(), notification) ||
 			(session && status.getSession() == null) || (!session && status.getSession() != null)
 			;
 		status.setReference(record.getField(0));
@@ -273,6 +313,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		status.setEffectiveStopPeriod(endTime);
 		status.setFallBackStatus(fallBackId == null ? null : StudentSectioningStatusDAO.getInstance().get(fallBackId, hibSession));
 		status.setSession(session ? SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()) : null);
+		status.setNotifications(notification);
 		hibSession.merge(status);
 		if (changed)
 			ChangeLog.addChange(hibSession,
@@ -305,6 +346,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 					other.setEffectiveStopPeriod(status.getEffectiveStopPeriod());
 					other.setFallBackStatus(status.getFallBackStatus() == null ? null : StudentSectioningStatus.getStatus(status.getFallBackStatus().getReference(), s.getUniqueId(), hibSession));
 					other.setTypes(new HashSet<CourseType>(status.getTypes()));
+					other.setNotifications(status.getNotifications());
 					hibSession.persist(other);
 					others.put(s.getUniqueId(), other);
 					hibSession.flush();
@@ -332,6 +374,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 					other.setEffectiveStopPeriod(status.getEffectiveStopPeriod());
 					other.setFallBackStatus(status.getFallBackStatus() == null ? null : StudentSectioningStatus.getStatus(status.getFallBackStatus().getReference(), s.getUniqueId(), hibSession));
 					other.setTypes(new HashSet<CourseType>(status.getTypes()));
+					other.setNotifications(status.getNotifications());
 					hibSession.persist(other);
 				}
 				s.setDefaultSectioningStatus(other);

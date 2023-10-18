@@ -207,6 +207,8 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 					status.isNoSubs() ? MESSAGES.messageStatusCanNoSubs() : MESSAGES.messageStatusCanNotNoSubs(), null).getWidget());
 			iForm.addRow(MESSAGES.propEmailNotification(), new WebTable.IconCell(status.isEmail() ? RESOURCES.on() : RESOURCES.off(),
 					status.isEmail() ? MESSAGES.messageStatusCanEmail() : MESSAGES.messageStatusCanNotEmail(), null).getWidget());
+			if (status.isEmail() && status.hasNotifications())
+				iForm.addRow(MESSAGES.propEnabledStudentNotifications(), new Label(status.getNotifications()));
 			iForm.addRow(MESSAGES.propCourseRequestValidation(), new WebTable.IconCell(status.isRequestValiadtion() ? RESOURCES.on() : RESOURCES.off(),
 					status.isRequestValiadtion() ? MESSAGES.messageStatusCanRequestValidation() : MESSAGES.messageStatusCanNotRequestValidation(), null).getWidget());
 			iForm.addRow(MESSAGES.propSpecialRegistration(), new WebTable.IconCell(status.isSpecialRegistration() ? RESOURCES.on() : RESOURCES.off(),

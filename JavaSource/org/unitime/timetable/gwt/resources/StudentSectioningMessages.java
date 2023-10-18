@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -3578,4 +3580,34 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Show All Columns")
 	String opShowAllColumns();
+	
+	@DefaultMessage("Enabled Notifications:")
+	String propEnabledStudentNotifications();
+	
+	@DefaultMessage("Student Request Change")
+	String notifStudentChangeRequest();
+	
+	@DefaultMessage("Student Enrollment Change")
+	String notifStudentChangeEnrollment();
+	
+	@DefaultMessage("Admin Request Change")
+	String notifAdminChangeRequest();
+	
+	@DefaultMessage("Admin Enrollment Change")
+	String notifAdminChangeEnrollment();
+	
+	@DefaultMessage("Enrollment Approval")
+	String notifAdminEnrollmentApproval();
+	
+	@DefaultMessage("Course Enrollment Change")
+	String notifCourseChangeEnrollment();
+	
+	@DefaultMessage("Course Failed Enrollment Change")
+	String notifCourseChangeEnrollmentFailed();
+	
+	@DefaultMessage("Course Schedule Change")
+	String notifCourseChangeSchedule();
+	
+	@DefaultMessage("External Enrollment Change")
+	String notifExternalChangeEnrollment();
 }
