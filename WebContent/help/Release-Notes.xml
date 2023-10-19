@@ -31,6 +31,21 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Multiple Class Setup: Cancelled Classes</name>
+			<description>
+				<line>Corrected the limits computation when there are cancelled classes. This fixes an issue introduced with Struts2 upgrade.</line>
+				<line>If a cancelled class (that has a parent class) is opened, do not open other classes of the same parent.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.7.101</version>
+	<release-date>Mon, 9 Oct 2023</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Timetable Grid: Hide Auxiliary Instructors</name>
 			<description>
 				<line>Added an ability to hide instructors with auxiliary responsibilities.

@@ -632,7 +632,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
     		try {
     			snapshotLimit = (snapLimitIt == null ? null : Integer.valueOf((String)snapLimitIt.next()));
     		} catch (NumberFormatException e) {}
-    		boolean cancelled = "true".equals(cancelIt.next());
+    		boolean cancelled = Boolean.TRUE.equals(cancelIt.next());
      		enableForScheduling = Boolean.valueOf(determineBooleanValueAtIndex(this.getEnabledForStudentScheduling(), cnt));    	   	
      		displayInstructor = Boolean.valueOf(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
        	   	readOnlySubpart = Boolean.valueOf(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
@@ -1641,15 +1641,16 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 			removeFromClasses(classId);
 			return;
 		}
+		boolean wasCancelled = false;
 		for (int i = 0; i < classIds.size(); i++) {
     		if (classId.equals(classIds.get(i))) {
-    			boolean wasCancelled = isCancelled.get(i);
+    			wasCancelled = isCancelled.get(i);
     			isCancelled.set(i, cancelled);
     			if (wasCancelled && !cancelled) setCancelled((String)parentClassIds.get(i), false);
     			if (!wasCancelled && cancelled) {
     				boolean allCancelled = true;
     				for (int j = 0; j < subpartIds.size(); j++) {
-    					if (i != j && subpartIds.get(i).equals(subpartIds.get(j)) && parentClassIds.get(i).equals(parentClassIds.get(j)) && !"true".equals(isCancelled.get(j))) {
+    					if (i != j && subpartIds.get(i).equals(subpartIds.get(j)) && parentClassIds.get(i).equals(parentClassIds.get(j)) && !Boolean.TRUE.equals(isCancelled.get(j))) {
     						allCancelled = false; break;
     					}
     				}
@@ -1658,11 +1659,12 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
     			}
     		}
     	}
-		for (int i = 0; i < parentClassIds.size(); i++) {
-    		if (classId.equals(parentClassIds.get(i))) {
-    			setCancelled((String)classIds.get(i), cancelled);
-    		}
-    	}
+		if (wasCancelled != cancelled)
+			for (int i = 0; i < parentClassIds.size(); i++) {
+				if (classId.equals(parentClassIds.get(i))) {
+					setCancelled((String)classIds.get(i), cancelled);
+				}
+			}
 	}
 	
     public Long getInstructionalMethod() { return instructionalMethod; }
