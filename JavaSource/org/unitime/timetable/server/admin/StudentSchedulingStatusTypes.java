@@ -115,7 +115,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		List<ListItem> notifications = new ArrayList<ListItem>();
 		for (NotificationType t: NotificationType.values())
 			notifications.add(new ListItem(t.name(), t.label()));
-		fields[idx++] = new Field(MESSAGES.fieldNotifications(), FieldType.multi, 100, notifications); 
+		fields[idx++] = new Field(MESSAGES.fieldNotifications(), FieldType.multi, 200, notifications); 
 
 		if (!courseTypes.isEmpty()) {
 			List<ListItem> courseTypeItems = new ArrayList<ListItem>();
