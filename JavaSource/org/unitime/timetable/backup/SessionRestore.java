@@ -110,7 +110,6 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAreaClassificationMajor;
 import org.unitime.timetable.model.StudentAreaClassificationMinor;
-import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -156,7 +155,7 @@ public class SessionRestore implements SessionRestoreInterface {
 			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
 			CriteriaQuery cr = cb.createQuery(entity.getMeta().getJavaType());
 			Root root = cr.from(entity.getMeta().getJavaType());
-			cr.select(root).where(cb.and(cb.isNotNull(root.get(session)), cb.equal(root.get(property), value)));
+			cr.select(root).where(cb.and(cb.isNull(root.get(session)), cb.equal(root.get(property), value)));
 			Object object = iHibSession.createQuery(cr).uniqueResult();
 			if (object != null)
 				entity.setObject(object);
@@ -168,7 +167,7 @@ public class SessionRestore implements SessionRestoreInterface {
 			CriteriaBuilder cb = iHibSession.getCriteriaBuilder();
 			CriteriaQuery cr = cb.createQuery(entity.getMeta().getJavaType());
 			Root root = cr.from(entity.getMeta().getJavaType());
-			cr.select(root).where(cb.and(cb.isNotNull(root.get(session)), cb.equal(root.get(property), value)));
+			cr.select(root).where(cb.and(cb.isNull(root.get(session)), cb.equal(root.get(property), value)));
 			List<Object> list = iHibSession.createQuery(cr).list();
 			if (!list.isEmpty()) {
 				Object object = list.get(0);
@@ -225,8 +224,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				session.setAcademicInitiative(session.getAcademicInitiative() + " [" + attempt + "]");
 		}
 		if (entity.getObject() instanceof PreferenceLevel && lookup(entity, "prefProlog", ((PreferenceLevel)entity.getObject()).getPrefProlog())) save = false;
-		if (entity.getObject() instanceof StudentSectioningStatus && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference())) save = false;
-		else if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference(), "session")) save = false;
+		if (entity.getObject() instanceof RefTableEntry && lookup(entity, "reference", ((RefTableEntry)entity.getObject()).getReference(), "session")) save = false;
 		if (entity.getObject() instanceof TimetableManager && lookup(entity, "externalUniqueId", ((TimetableManager)entity.getObject()).getExternalUniqueId())) save = false;
 		if (entity.getObject() instanceof ItypeDesc && lookup(entity, "itype", Integer.valueOf(entity.getId()))) save = false;
 		if (entity.getObject() instanceof SolverInfoDef && lookup(entity, "name", ((SolverInfoDef)entity.getObject()).getName())) save = false;
