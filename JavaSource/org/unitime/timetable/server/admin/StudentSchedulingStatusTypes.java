@@ -158,7 +158,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 				for (CourseType type: courseTypes)
 					if (status.getTypes().contains(type))
 						r.addToField(idx, type.getUniqueId().toString());
-				if (status.hasOption(StudentSectioningStatus.Option.notype))
+				if (!status.hasOption(StudentSectioningStatus.Option.notype))
 					r.addToField(idx, "-");
 				idx++;
 			}
@@ -212,12 +212,15 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		int idx = 4 + StatusOption.values().length;
 		status.setTypes(new HashSet<CourseType>());
 		if (!courseTypes.isEmpty()) {
+			boolean other = false;
 			for (String option: record.getValues(idx)) {
 				if ("-".equals(option))
-					value += StudentSectioningStatus.Option.notype.toggle();
+					other = true;
 				else
 					status.getTypes().add(CourseTypeDAO.getInstance().get(Long.valueOf(option)));
 			}
+			if (!other)
+				value += StudentSectioningStatus.Option.notype.toggle();
 			idx ++;
 		}
 		
@@ -267,12 +270,15 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		}
 		int idx = 4 + StatusOption.values().length;
 		if (!courseTypes.isEmpty()) {
+			boolean other = false;
 			for (String option: record.getValues(idx)) {
 				if ("-".equals(option))
-					value += StudentSectioningStatus.Option.notype.toggle();
+					other = true;
 				else
 					types.add(CourseTypeDAO.getInstance().get(Long.valueOf(option)));
 			}
+			if (!other)
+				value += StudentSectioningStatus.Option.notype.toggle();
 			idx ++;
 		}
 		
