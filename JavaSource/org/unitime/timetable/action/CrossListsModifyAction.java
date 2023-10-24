@@ -548,12 +548,12 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 			        			DepartmentalInstructor di = (ci.getInstructor().getExternalUniqueId() == null ? null : 
 			        					DepartmentalInstructor.findByPuidDepartmentId(ci.getInstructor().getExternalUniqueId(), dept.getUniqueId(), hibSession));
 			        			if (di == null) {
-			        				hibSession.remove(ci);
+			        				hibSession.delete(ci);
 			        				i.remove();
 			        			} else {
 			        				ci.setInstructor(di);
 			        				di.getClasses().add(ci);
-			        				hibSession.merge(ci);
+			        				hibSession.update(ci);
 			        			}
 			        		}
 			        	}
@@ -569,12 +569,12 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	        			DepartmentalInstructor di = (oc.getInstructor().getExternalUniqueId() == null ? null : 
 	        					DepartmentalInstructor.findByPuidDepartmentId(oc.getInstructor().getExternalUniqueId(), dept.getUniqueId(), hibSession));
 	        			if (di == null) {
-	        				hibSession.remove(oc);
+	        				hibSession.delete(oc);
 	        				i.remove();
 	        			} else {
 	        				oc.setInstructor(di);
 	        				di.getOfferingCoordinators().add(oc);
-	        				hibSession.merge(oc);
+	        				hibSession.update(oc);
 	        			}
 	        		}
 		        }
