@@ -317,6 +317,50 @@ public class InstructorSurveyPage extends Composite {
 				});
 			}
 		});
+		iHeader.addButton("unsubmit", MESSAGES.buttonUnsubmitInstructorSurvey(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent e) {
+				iHeader.clearMessage();
+				UniTimeConfirmationDialog.confirm(MESSAGES.questionUnsubmitInstructorSurvey(), new Command() {
+					@Override
+					public void execute() {
+						LoadingWidget.showLoading(MESSAGES.waitUpdatingInstructorSurvey());
+						InstructorSurveySaveRequest req = new InstructorSurveySaveRequest(getValue(), false);
+						req.setUnsubmit(true);
+						RPC.execute(req, new AsyncCallback<InstructorSurveyData>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.hideLoading();
+								UniTimeNotifications.error(caught.getMessage());
+								iHeader.setErrorMessage(caught.getMessage());
+							}
+
+							@Override
+							public void onSuccess(InstructorSurveyData result) {
+								LoadingWidget.hideLoading();
+								UniTimeNotifications.info(MESSAGES.infoInstructorSurveyUpdated());
+								setValue(result);
+								if (ToolBox.hasParent())
+									ToolBox.closeWindow();
+								if (result.hasPopupMessage()) {
+									if (result.isPopupWarning())
+										UniTimeNotifications.warn(result.getPopupMessage());
+									else
+										UniTimeNotifications.info(result.getPopupMessage());
+								}
+								if (result.hasPopupMessage()) {
+									if (result.isPopupWarning())
+										UniTimeNotifications.warn(result.getPopupMessage());
+									else
+										UniTimeNotifications.info(result.getPopupMessage());
+								}
+							}
+						});
+					}
+				});
+			}
+		});
+		iHeader.setEnabled("unsubmit", false);
 		if (ToolBox.hasParent() || "hide".equals(Window.Location.getParameter("menu"))) {
 			iHeader.addButton("close", MESSAGES.buttonCloseInstructorSurvey(), new ClickHandler() {
 				@Override
@@ -339,6 +383,7 @@ public class InstructorSurveyPage extends Composite {
 
 		iHeader.setEnabled("save", iSurvey.isEditable());
 		iHeader.setEnabled("submit", iSurvey.isEditable());
+		iHeader.setEnabled("unsubmit", survey.isEditable() && survey.isAdmin() && survey.getSubmitted() != null);
 		iHeader.setEnabled("copy", iSurvey.isEditable() && (iSurvey.hasSessionsWithPreferences() || iSurvey.hasSessionsWithCourses()));
 		iPanel.addHeaderRow(iHeader);
 		
