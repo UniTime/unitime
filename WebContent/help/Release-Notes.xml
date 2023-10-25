@@ -28,6 +28,15 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructor Survey</name>
+			<description>
+				<line>Added an ability for departmental schedule managers to unsubmit the survey directly from the Instructor Survey page/dialog (meaning save and unsubmit).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Batch Student Scheduling</title>
 		<item>
 			<name>Solver Reports</name>

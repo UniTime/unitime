@@ -7754,6 +7754,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("You are about to submit the instructor survey. Once submitted you will not be able to make changes. Are you ready to do that?")
 	String questionSubmitInstructorSurvey();
 	
+	@DefaultMessage("You are about to unsubmit the instructor survey. This will allow the instructor to make changes again. Do you really want to unsubmit the survey?")
+	String questionUnsubmitInstructorSurvey();
+	
 	@DefaultMessage("Preferences Copied:")
 	String propLastApplied();
 	

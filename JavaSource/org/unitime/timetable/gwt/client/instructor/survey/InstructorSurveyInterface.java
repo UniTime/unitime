@@ -652,6 +652,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 	}
 	
 	public static class CourseRequirement extends Course implements IsSerializable {
+		private static final long serialVersionUID = -5015960311677295275L;
 		private String iExternalId;
 		private Long iInstructorId;
 		private String iInstructorName;
@@ -913,6 +914,7 @@ public class InstructorSurveyInterface implements IsSerializable {
 	}
 	
 	public static class Course extends CourseInterface {
+		private static final long serialVersionUID = -6299843281001361412L;
 		private Long iId;
 		private String iCourseTitle;
 		private Map<Long, String> iCustoms;
