@@ -35,6 +35,12 @@
 				<line>Added an ability for departmental schedule managers to unsubmit the survey directly from the Instructor Survey page/dialog (meaning save and unsubmit).</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Instructor</name>
+			<description>
+				<line>It is now possible to reset the instructor's position.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
