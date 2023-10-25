@@ -197,6 +197,100 @@ public enum NameFormat {
 					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().substring(0, 1).toUpperCase() : "");
 		}
 	}),
+	LAST_EXTERNAL_FIRST_MIDDLE("last-ext-first-middle", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (Constants.toInitialCase((name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "")).trim() +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " " + name.getExternalUniqueId() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					Constants.toInitialCase(
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					)).trim();
+		}
+	}),
+	LAST_EXTERNAL_FIRST_MIDDLE_TITLE("last-ext-first-middle-title", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (Constants.toInitialCase((name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "")).trim() +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " " + name.getExternalUniqueId() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					Constants.toInitialCase(					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					)).trim() + 
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? " " + name.getAcademicTitle(): "");
+		}
+	}),
+	LAST_FIRST_MIDDLE_EXTERNAL("last-first-middle-ext", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return  Constants.toInitialCase(
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					).trim() +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " - " + name.getExternalUniqueId() : "");
+		}
+	}),
+	FIRST_MIDDLE_LAST_EXTERNAL("first-middle-last-ext", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return  Constants.toInitialCase(
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + name.getLastName() : "")
+					).trim() +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " - " + name.getExternalUniqueId() : "");
+		}
+	}),
+	LAST_FIRST_MIDDLE_TITLE_EXTERNAL("last-first-middle-title-ext", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return Constants.toInitialCase(
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? name.getLastName() : "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "")
+					).trim() + 
+					(name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? " " + name.getAcademicTitle(): "") + 
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " - " + name.getExternalUniqueId() : "");
+		}
+	}),
+	TITLE_FIRST_MIDDLE_LAST_EXTERNAL("title-first-middle-last-ext", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return (name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					Constants.toInitialCase(
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + name.getLastName() : "")
+					).trim() +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " - " + name.getExternalUniqueId() : "");
+		}
+	}),
+	TITLE_INITIAL_LAST_EXTERNAL("title-initial-last-ext", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return  (name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty() ? name.getFirstName().trim().substring(0, 1).toUpperCase() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().trim().substring(0, 1).toUpperCase() : "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? " " + Constants.toInitialCase(name.getLastName()) : "")).trim() +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " - " + name.getExternalUniqueId() : "");
+		}
+	}),
+	TITLE_LAST_INITIAL_EXTERNAL("title-last-initial-ext", new Formatter() {
+		@Override
+		public String format(NameInterface name) {
+			return  (name.getAcademicTitle() != null && !name.getAcademicTitle().isEmpty() ? name.getAcademicTitle() + " ": "") +
+					(name.getLastName() != null && !name.getLastName().isEmpty() ? Constants.toInitialCase(name.getLastName()) : "").trim() +
+					((name.getFirstName() != null && !name.getFirstName().isEmpty()) || (name.getMiddleName() != null && !name.getMiddleName().isEmpty()) ? "," : "") +
+					(name.getFirstName() != null && !name.getFirstName().isEmpty() ? " " + name.getFirstName().substring(0, 1).toUpperCase() : "") +
+					(name.getMiddleName() != null && !name.getMiddleName().isEmpty() ? " " + name.getMiddleName().substring(0, 1).toUpperCase() : "") +
+					(name.getExternalUniqueId() != null && !name.getExternalUniqueId().isEmpty() ? " - " + name.getExternalUniqueId() : "");
+		}
+	}),
+	
 	
 	;
 		
