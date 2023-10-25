@@ -37,6 +37,25 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>Name Formats</name>
+			<description>
+				<line>Added the following name formats, adding external id after the last name or at the end of the name:
+					<line>last-ext-first-middle</line>
+					<line>last-ext-first-middle-title</line>
+					<line>last-first-middle-ext</line>
+					<line>first-middle-last-ext</line>
+					<line>last-first-middle-title-ext</line>
+					<line>title-first-middle-last-ext</line>
+					<line>title-initial-last-ext</line>
+					<line>title-last-initial-ext</line>
+				</line>
+				<line>These can be added on the Administration &gt; Defaults &gt; User Settings, name property (and then selected on Preferences &gt; Settings).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.67</version>
