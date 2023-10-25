@@ -108,7 +108,7 @@
 			<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.sectCoursePreferences()}</td></tr>
 			<tr><td><table width="100%">
 				<tr>
-					<#assign style="white-space: nowrap; font-weight: bold; padding-top: 5px; border-bottom: 1px dashed #9CB0CE;">
+					<#assign style="white-space: pre; font-weight: bold; padding-top: 5px; border-bottom: 1px dashed #9CB0CE;">
 					<td style="${style}">${msg.colCourse()}</td>
 					<#list survey.getCustomFields() as cf>
 						<#assign max = (677 * cf.getLength() / 100)>
