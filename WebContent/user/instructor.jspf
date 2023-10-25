@@ -132,7 +132,7 @@
 		<TR>
 			<TD><loc:message name="propertyInstructorPosition"/></TD>
 			<TD>
-				<s:select name="form.posType" list="#request.posTypeList" listKey="uniqueId" listValue="label" headerKey="" headerValue="%{#const.select()}"></s:select>
+				<s:select name="form.posType" list="#request.posTypeList" listKey="uniqueId" listValue="label" headerKey="" headerValue="%{#msg.valueNotSet()}"></s:select>
 			</TD>
 		</TR>
 	</s:if>

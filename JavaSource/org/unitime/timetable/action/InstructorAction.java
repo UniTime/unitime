@@ -209,6 +209,8 @@ public class InstructorAction extends UniTimeAction<InstructorEditForm> {
 				if (pt != null) {
 					inst.setPositionType(pt);
 				}
+			} else {
+				inst.setPositionType(null);
 			}
 			
 			if (form.getNote() != null && !form.getNote().isEmpty()) {
