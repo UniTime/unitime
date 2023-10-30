@@ -381,7 +381,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			}
 			
 			if (canEdit && context.hasPermission(location, Right.RoomEditChangeExternalId) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
-				location.setExternalUniqueId(room.getExternalId());
+				location.setExternalUniqueId(room.hasExternalId() ? room.getExternalId() : null);
 			}
 			
 			if (canEdit && context.hasPermission(location, Right.RoomEditChangeType) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
@@ -958,7 +958,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
 			hibSession.persist(location);
 			
 			if (context.hasPermission(location, Right.RoomEditChangeExternalId) && FutureOperation.ROOM_PROPERTIES.in(flags)) {
-				location.setExternalUniqueId(room.getExternalId());
+				location.setExternalUniqueId(room.hasExternalId() ? room.getExternalId() : null);
 			}
 			
             if (context.hasPermission(location, Right.RoomEditChangeEventProperties) && FutureOperation.EVENT_PROPERTIES.in(flags)) {
