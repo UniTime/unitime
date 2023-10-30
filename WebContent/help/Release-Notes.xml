@@ -38,6 +38,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Roll Forward Session: Room Patitions</name>
+			<description>
+				<line>Roll forward room partitions (Room.parentRoom property).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

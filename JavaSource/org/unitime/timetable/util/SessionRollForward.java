@@ -301,6 +301,7 @@ public class SessionRollForward {
 		rollBuildingsForward(errors, fromSession, toSession);
 		rollLocationsForward(errors, fromSession, toSession);
 		rollTravelTimesForward(errors, fromSession, toSession);
+		rollRoomPartitionsForward(errors, fromSession, toSession);
 		(new SessionDAO()).getSession().clear();
 	}
 
@@ -745,13 +746,27 @@ public class SessionRollForward {
 		}
 	}
 
+	private void rollRoomPartitionsForward(RollForwardErrors errors, Session fromSession, Session toSession) {
+		RoomDAO dao = new RoomDAO();
+		for (Room original: (List<Room>)dao.getSession().createQuery(
+    			"from Room where session.uniqueId = :sessionId and parentRoom is not null")
+    			.setLong("sessionId", fromSession.getUniqueId()).list()) {
+			Room room = findRoom(original.getUniqueId(), toSession.getUniqueId());
+			if (room == null) continue;
+			Room parent = findRoom(original.getParentRoom().getUniqueId(), toSession.getUniqueId());
+			if (parent == null) continue;
+			room.setParentRoom(parent);
+			dao.update(room);
+		}
+	}
+
 	private Location findLocation(Long locationId, Long sessionId) {
 		TravelTimeDAO dao = new TravelTimeDAO();
 		
 		Room room = (Room)dao.getSession().createQuery(
 				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
-				"((r1.externalUniqueId is not null and r1.externalUniqueId = r2.externalUniqueId) or " +
-				"(r1.externalUniqueId is null and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))")
+				"((r1.externalUniqueId is not null and r1.externalUniqueId <> '' and r1.externalUniqueId = r2.externalUniqueId) or " +
+				"((r1.externalUniqueId is null or r1.externalUniqueId = '') and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))")
 				.setLong("sessionId", sessionId)
 				.setLong("locationId", locationId)
 				.setCacheable(true)
@@ -763,6 +778,18 @@ public class SessionRollForward {
 		return (NonUniversityLocation)dao.getSession().createQuery(
 				"select r2 from NonUniversityLocation r1, NonUniversityLocation r2 where r1.uniqueId = :locationId and r2.session.uniqueId=:sessionId "
 				+"and r1.name = r2.name")
+				.setLong("sessionId", sessionId)
+				.setLong("locationId", locationId)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
+	}
+	
+	private Room findRoom(Long locationId, Long sessionId) {
+		return (Room)RoomDAO.getInstance().getSession().createQuery(
+				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
+				"((r1.externalUniqueId is not null and r1.externalUniqueId <> '' and r1.externalUniqueId = r2.externalUniqueId) or " +
+				"((r1.externalUniqueId is null or r1.externalUniqueId = '') and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))")
 				.setLong("sessionId", sessionId)
 				.setLong("locationId", locationId)
 				.setCacheable(true)
