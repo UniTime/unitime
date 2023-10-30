@@ -79,8 +79,8 @@
 	-->
 	<property name="hibernate.use_sql_comments">true</property>
 
-	<!-- See https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/resource/jdbc/spi/PhysicalConnectionHandlingMode.html -->
-	<property name="hibernate.connection.handling_mode">IMMEDIATE_ACQUISITION_AND_HOLD</property>
+	<!-- See https://docs.jboss.org/hibernate/orm/6.2/javadocs/org/hibernate/resource/jdbc/spi/PhysicalConnectionHandlingMode.html -->
+	<property name="hibernate.connection.handling_mode">DELAYED_ACQUISITION_AND_HOLD</property>
 
 	<property name="hibernate.max_fetch_depth">2</property>
 	<property name="hibernate.jdbc.fetch_size">1000</property>
