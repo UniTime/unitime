@@ -168,7 +168,7 @@
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
 	</#if>
 	<#if line.cancelled>
-		<#assign style="font-style: italic; color: gray;">
+		<#assign style = style + "font-style: italic; color: gray;">
 		<#assign stylebr = stylebr + " font-style: italic; color: gray;">
 	</#if>
 	<#if line.class.simpleName == "TableSectionDeletedLine">
