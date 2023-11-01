@@ -45,6 +45,8 @@ public class XInstructor implements Serializable, Externalizable, NameInterface 
 	private boolean iDisplay = true;
 	private boolean iInstructing = false;
 	private String iFName, iMName, iLName, iTitle;
+	private Integer iPercentShare = null;
+	private String iResponsibility = null;
 	
 	public XInstructor() {}
 	
@@ -70,6 +72,8 @@ public class XInstructor implements Serializable, Externalizable, NameInterface 
 		iMName = instructor.getInstructor().getMiddleName();
 		iLName = instructor.getInstructor().getLastName();
 		iTitle = instructor.getInstructor().getAcademicTitle();
+		iPercentShare = instructor.getPercentShare();
+		iResponsibility = (instructor.getResponsibility() == null ? null : instructor.getResponsibility().getLabel());
 	}
 	
 	public XInstructor(DepartmentalInstructor instructor, TeachingClassRequest tcr, OnlineSectioningHelper helper) {
@@ -151,6 +155,11 @@ public class XInstructor implements Serializable, Externalizable, NameInterface 
 		iMName = (String)in.readObject();
 		iLName = (String)in.readObject();
 		iTitle = (String)in.readObject();
+		if (in.readBoolean())
+			iPercentShare = in.readInt();
+		else
+			iPercentShare = null;
+		iResponsibility = (String)in.readObject();
 	}
 
 	@Override
@@ -166,6 +175,13 @@ public class XInstructor implements Serializable, Externalizable, NameInterface 
 		out.writeObject(iMName);
 		out.writeObject(iLName);
 		out.writeObject(iTitle);
+		if (iPercentShare == null) {
+			out.writeBoolean(false);
+		} else {
+			out.writeBoolean(true);
+			out.writeInt(iPercentShare);
+		}
+		out.writeObject(iResponsibility);
 	}
 
 	@Override
@@ -192,4 +208,7 @@ public class XInstructor implements Serializable, Externalizable, NameInterface 
 	public String getExternalUniqueId() {
 		return iExternalId;
 	}
+	
+	public Integer getPercentShare() { return iPercentShare; }
+	public String getResponsibility() { return iResponsibility; }
 }

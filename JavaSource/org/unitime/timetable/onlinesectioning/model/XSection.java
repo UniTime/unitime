@@ -335,6 +335,13 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return instructors;
     }
     
+    public XInstructor getInstructor(String externalId) {
+    	if (externalId == null) return null;
+    	for (XInstructor instructor: iInstructors)
+    		if (externalId.equals(instructor.getExternalId())) return instructor;
+    	return null;
+    }
+    
     @Deprecated
     public String getInstructorIds() {
     	if (iInstructors == null || iInstructors.isEmpty()) return null;

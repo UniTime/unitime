@@ -73,15 +73,18 @@ import org.unitime.timetable.onlinesectioning.model.XDistributionType;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
+import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest.ReschedulingReason;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequestComparator;
+import org.unitime.timetable.onlinesectioning.updates.InstructorEmail.InstructorChange;
 
 /**
  * @author Tomas Muller
@@ -282,6 +285,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		} else if (oldOffering != null) {
 			server.remove(oldOffering);
 		}
+		
+		checkForInstructorChanges(oldOffering, newOffering, server, helper);
 		
 		List<XStudent[]> students = new ArrayList<XStudent[]>();
 		
@@ -900,4 +905,59 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 		public boolean hasOldStudent() { return iOldStudent != null; }
 	}
 	
+	protected void checkForInstructorChanges(XOffering oldOffering, XOffering newOffering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		if (!ApplicationProperty.NotificationsInstructorChanges.isTrue()) return;
+		Map<String, InstructorChange> instructors = new HashMap<String, InstructorChange>();
+		if (oldOffering != null) {
+			for (XConfig config: oldOffering.getConfigs()) {
+				for (XSubpart subpart: config.getSubparts()) {
+					for (XSection section: subpart.getSections()) {
+						for (XInstructor instructor: section.getAllInstructors()) {
+							if (instructor.getExternalId() == null || instructor.getExternalId().isEmpty()) continue;
+							InstructorChange ip = instructors.get(instructor.getExternalId());
+							if (ip == null) {
+								ip = new InstructorChange();
+								instructors.put(instructor.getExternalId(), ip);
+							}
+							ip.setOldOffering(oldOffering);
+							ip.setOldInstructor(instructor);
+							ip.addOldSection(section);
+						}
+					}
+				}
+			}
+		}
+		if (newOffering != null) {
+			for (XConfig config: newOffering.getConfigs()) {
+				for (XSubpart subpart: config.getSubparts()) {
+					for (XSection section: subpart.getSections()) {
+						for (XInstructor instructor: section.getAllInstructors()) {
+							if (instructor.getExternalId() == null || instructor.getExternalId().isEmpty()) continue;
+							InstructorChange ip = instructors.get(instructor.getExternalId());
+							if (ip == null) {
+								ip = new InstructorChange();
+								instructors.put(instructor.getExternalId(), ip);
+							}
+							ip.setNewOffering(newOffering);
+							ip.setNewInstructor(instructor);
+							ip.addNewSection(section);
+						}
+					}
+				}
+			}
+		}
+		for (InstructorChange ic: instructors.values()) {
+			if (ic.hasEmail() && ic.hasChange()) {
+				server.execute(server.createAction(InstructorEmail.class).forChange(ic), helper.getUser(), new OnlineSectioningServer.ServerCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable exception) {
+						helper.error("Instructor email failed: " + exception.getMessage(), exception);
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+					}
+				});
+			}
+		}
+	}
 }
