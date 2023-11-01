@@ -3332,6 +3332,18 @@ public enum ApplicationProperty {
 	@Since(4.8)
 	SolverConfigDefaultInstrSchd("unitime.solverConfig.defaultInstrSchd"),
 
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Email Notifications: automatically email instructors about their schedule changes")
+	@Since(4.8)
+	NotificationsInstructorChanges("unitime.notifications.instructorChanges"),
+	
+	@Type(String.class)
+	@DefaultValue("org/unitime/timetable/onlinesectioning/updates/InstructorEmail.ftl")
+	@Description("Email Notifications: instructor change email template")
+	@Since(4.8)
+	NotificationsInstructorChangeEmailTemplate("unitime.notifications.instructorEmail.template"),
+
 	;
 
 	String iKey;

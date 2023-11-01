@@ -2795,7 +2795,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 	}
 	
-	public class Table extends ArrayList<TableLine> {
+	public static class Table extends ArrayList<TableLine> {
 		private static final long serialVersionUID = 1L;
 		
 		public boolean sameCourse(TableLine a, TableLine b) {
