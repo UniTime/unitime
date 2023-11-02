@@ -78,7 +78,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     	for (Object[] line: StudentAccomodationDAO.getInstance().getSession().createQuery(
     			"select a, count(distinct e.student) from StudentClassEnrollment e inner join e.student.accomodations a " +
     			"where e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
-    			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
+    			"group by a " +
     			"order by count(a) desc, a.name", Object[].class)
     			.setParameter("offeringId", offering.getUniqueId())
     			.setCacheable(true).list()) {
@@ -92,7 +92,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
     	for (Object[] line: StudentAccomodationDAO.getInstance().getSession().createQuery(
     			"select a, count(distinct e.student) from StudentClassEnrollment e inner join e.student.accomodations a " +
     			"where e.clazz.uniqueId = :classId " +
-    			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
+    			"group by a " +
     			"order by count(a) desc, a.name", Object[].class)
     			.setParameter("classId", clazz.getUniqueId())
     			.setCacheable(true).list()) {
@@ -123,7 +123,7 @@ public class StudentAccomodation extends BaseStudentAccomodation {
             for (Object[] line: StudentAccomodationDAO.getInstance().getSession().createQuery(
         			"select a, count(distinct e.student) from StudentClassEnrollment e inner join e.student.accomodations a " +
         			"where " + query + " " +
-        			"group by a.uniqueId, a.session.uniqueId, a.abbreviation, a.name, a.externalUniqueId " +
+        			"group by a " +
         			"order by count(a) desc, a.name", Object[].class)
         			.setParameter("examOwnerId", owner.getOwnerId())
         			.setCacheable(true).list()) {
