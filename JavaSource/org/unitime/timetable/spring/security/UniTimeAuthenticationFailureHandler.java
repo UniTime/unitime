@@ -20,6 +20,7 @@
 package org.unitime.timetable.spring.security;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 
 import javax.servlet.ServletException;
@@ -30,6 +31,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.User;
 import org.unitime.timetable.util.LoginManager;
@@ -60,7 +62,13 @@ public class UniTimeAuthenticationFailureHandler extends SimpleUrlAuthentication
 		if (ApplicationProperty.PasswordReset.isTrue() && User.findByUserName(request.getParameter("username")) != null)
 			request.getSession().setAttribute("SUGGEST_PASSWORD_RESET", true);
 		
-		super.onAuthenticationFailure(request, response, exception);
+		saveException(request, exception);
+
+		String targetUrl = request.getParameter("target");
+		if (StringUtils.hasText(targetUrl))
+			getRedirectStrategy().sendRedirect(request, response, "/login.action" + "?target=" + URLEncoder.encode(targetUrl, "UTF-8"));
+		else
+			getRedirectStrategy().sendRedirect(request, response, "/login.action");
 	}
 
 }
