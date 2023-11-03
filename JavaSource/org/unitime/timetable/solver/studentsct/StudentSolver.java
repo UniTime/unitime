@@ -107,14 +107,17 @@ import org.unitime.timetable.model.GroupOverrideReservation;
 import org.unitime.timetable.model.SectioningSolutionLog;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.model.StudentSchedulingRule.Mode;
 import org.unitime.timetable.model.dao.LearningCommunityReservationDAO;
 import org.unitime.timetable.model.dao.SectioningSolutionLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.model.dao.StudentGroupReservationDAO;
+import org.unitime.timetable.model.dao.StudentSchedulingRuleDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -130,6 +133,8 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRules;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
@@ -462,6 +467,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				try {
 					iSession = new AcademicSessionInfo(SessionDAO.getInstance().get(getSessionId(), hibSession));
 					iSession.setSectioningEnabled(false);
+					iRules = new XSchedulingRules(iSession, hibSession);
 				} finally {
 					hibSession.close();
 				}
@@ -1512,5 +1518,26 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				return ret;
 			}
 		return null;
+	}
+
+	
+	private XSchedulingRules iRules = null;
+	@Override
+	public void setSchedulingRules(XSchedulingRules rules) {
+		iRules = rules;
+	}
+
+	@Override
+	public XSchedulingRule getSchedulingRule(XStudent student, Mode mode, boolean isAdvisor, boolean isAdmin) {
+		if (iRules != null)
+			return iRules.getRule(student, mode, this, isAdvisor, isAdmin);
+		StudentSchedulingRule rule = StudentSchedulingRule.getRule(
+				new org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher(student, getAcademicSession().getDefaultSectioningStatus(), this, false),
+				getAcademicSession(),
+				isAdvisor,
+				isAdmin,
+				mode,
+				StudentSchedulingRuleDAO.getInstance().getSession());
+		return (rule == null ? null : new XSchedulingRule(rule));
 	}
 }

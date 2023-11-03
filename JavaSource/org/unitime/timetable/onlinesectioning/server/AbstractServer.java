@@ -61,8 +61,11 @@ import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.TravelTime;
+import org.unitime.timetable.model.StudentSchedulingRule.Mode;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentSchedulingRuleDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CacheElement;
@@ -78,6 +81,9 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRules;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
@@ -95,6 +101,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	protected Log iLog = LogFactory.getLog(AbstractServer.class);
 	private DistanceMetric iDistanceMetric = null;
 	private DataProperties iConfig = null;
+	protected XSchedulingRules iRules = null;
 	private OnlineSectioningActionFactory iActionFactory = null;
 	
 	protected List<AsyncExecutor> iExecutors = new ArrayList<AsyncExecutor>();
@@ -891,5 +898,25 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 			
 			return iWeek <= deadline + offset;
 		}
+	}
+	
+	@Override
+	public void setSchedulingRules(XSchedulingRules rules) {
+		iRules = rules;	
+	}
+
+	
+	@Override
+	public XSchedulingRule getSchedulingRule(XStudent student, Mode mode, boolean isAdvisor, boolean isAdmin) {
+		if (iRules != null)
+			return iRules.getRule(student, mode, this, isAdvisor, isAdmin);
+		StudentSchedulingRule rule = StudentSchedulingRule.getRule(
+				new org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher(student, getAcademicSession().getDefaultSectioningStatus(), this, false),
+				getAcademicSession(),
+				isAdvisor,
+				isAdmin,
+				mode,
+				StudentSchedulingRuleDAO.getInstance().getSession());
+		return (rule == null ? null : new XSchedulingRule(rule));
 	}
 }

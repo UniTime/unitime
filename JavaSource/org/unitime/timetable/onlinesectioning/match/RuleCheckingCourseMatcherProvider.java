@@ -32,8 +32,11 @@ import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XInstructionalMethod;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
+import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -42,9 +45,19 @@ public class RuleCheckingCourseMatcherProvider implements CourseMatcherProvider 
 
 	@Override
 	public CourseMatcher getCourseMatcher(OnlineSectioningServer server, SessionContext context, Long studentId) {
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleFilter(studentId, server, context);
-		if (rule != null)
-			return new SchedulingRuleCourseMatcher(rule);
+		if (server != null && !(server instanceof DatabaseServer)) {
+			XStudent student = server.getStudent(studentId);
+			XSchedulingRule rule = (student == null ? null : server.getSchedulingRule(student,
+					StudentSchedulingRule.Mode.Filter,
+					context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdvisor),
+					context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdmin)));
+			if (rule != null)
+				return new SchedulingRuleCourseMatcher(rule);
+		} else {
+			StudentSchedulingRule rule = StudentSchedulingRule.getRuleFilter(studentId, server, context);
+			if (rule != null)
+				return new SchedulingRuleCourseMatcher(rule);
+		}
 		return new FallbackCourseMatcher();
 	}
 	
@@ -77,6 +90,14 @@ public class RuleCheckingCourseMatcherProvider implements CourseMatcherProvider 
 		private Boolean iDisjunctive;
 		
 		public SchedulingRuleCourseMatcher(StudentSchedulingRule rule) {
+			super();
+			iCourseName = rule.getCourseName();
+			iCourseType = rule.getCourseType();
+			iInstructonalMethod = rule.getInstructonalMethod();
+			iDisjunctive = rule.isDisjunctive();
+		}
+		
+		public SchedulingRuleCourseMatcher(XSchedulingRule rule) {
 			super();
 			iCourseName = rule.getCourseName();
 			iCourseType = rule.getCourseType();

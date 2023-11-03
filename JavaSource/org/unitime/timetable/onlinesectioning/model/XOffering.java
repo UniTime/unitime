@@ -660,7 +660,10 @@ public class XOffering implements Serializable, Externalizable {
 	public Course toCourse(Long courseId, XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Course course = toCourse(courseId, student, server.getExpectations(getOfferingId()), getDistributions(), server.getEnrollments(getOfferingId()), server.getAcademicSession().getDayOfWeekOffset());
 		if (!(server instanceof StudentSolver) && student != null) {
-			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(student, server, helper.getHibSession());
+			XSchedulingRule rule = server.getSchedulingRule(student,
+					StudentSchedulingRule.Mode.Online,
+					helper.hasAvisorPermission(),
+					helper.hasAdminPermission());
 			if (rule != null) {
 				if (rule.isDisjunctive()) {
 					if (rule.hasCourseName() && rule.matchesCourseName(course.getName())) {

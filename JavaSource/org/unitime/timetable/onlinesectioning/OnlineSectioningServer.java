@@ -30,6 +30,7 @@ import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
@@ -40,6 +41,8 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRules;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
@@ -164,6 +167,9 @@ public interface OnlineSectioningServer {
 	
 	public <E> E getProperty(String name, E defaultValue);
 	public <E> void setProperty(String name, E value);
+	
+	public void setSchedulingRules(XSchedulingRules rules);
+	public XSchedulingRule getSchedulingRule(XStudent student, StudentSchedulingRule.Mode mode, boolean isAdvisor, boolean isAdmin);
 	
 	public static interface Lock {
 		void release();

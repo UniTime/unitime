@@ -45,6 +45,7 @@ import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesActio
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllStudents;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
+import org.unitime.timetable.onlinesectioning.updates.ReloadSchedulingRules;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 
 /**
@@ -226,6 +227,9 @@ public class OnlineStudentSchedulingUpdater extends Thread {
 			break;
 		case OFFERING_CHANGE:
 			server.execute(server.createAction(ReloadOfferingAction.class).forOfferings(q.getIds()), q.getUser());
+			break;
+		case SCHEDULING_RULES_CHANGED:
+			server.execute(server.createAction(ReloadSchedulingRules.class), q.getUser());
 			break;
 		default:
 			iLog.error("Student sectioning queue type " + StudentSectioningQueue.Type.values()[q.getType()] + " not known.");
