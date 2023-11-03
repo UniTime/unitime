@@ -56,6 +56,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
@@ -75,7 +76,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 	protected Long iStudentId;
 	protected String iFilterIM = null;
 	private transient XStudent iStudent = null;
-	private transient StudentSchedulingRule iRule = null;
+	private transient XSchedulingRule iRule = null;
 	protected Filter iFilter;
 	
 	public ListCourseOfferings forQuery(String query) {
@@ -112,7 +113,10 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		try {
 			iStudent = (getStudentId() == null ? null : server.getStudent(getStudentId()));
 			if (iStudent != null) {
-				iRule = StudentSchedulingRule.getRuleFilter(iStudent, server, helper);
+				iRule = server.getSchedulingRule(iStudent,
+						StudentSchedulingRule.Mode.Filter,
+						helper.hasAvisorPermission(),
+						helper.hasAdminPermission());
 				if (iRule == null) {
 					String filter = server.getConfig().getProperty("Filter.OnlineOnlyStudentFilter", null);
 					if (filter != null && !filter.isEmpty()) {

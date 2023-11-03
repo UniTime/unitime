@@ -113,6 +113,7 @@ import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XRestriction;
 import org.unitime.timetable.onlinesectioning.model.XRoom;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
@@ -759,7 +760,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 		}
 		if (!(server instanceof StudentSolver) && originalStudent != null) {
-			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(originalStudent, server, helper);
+			XSchedulingRule rule = server.getSchedulingRule(originalStudent,
+					StudentSchedulingRule.Mode.Online,
+					helper.hasAvisorPermission(),
+					helper.hasAdminPermission());
 			if (rule != null) {
 				if (rule.isDisjunctive()) {
 					if (rule.hasCourseName() && rule.matchesCourseName(course.getCourseName())) {

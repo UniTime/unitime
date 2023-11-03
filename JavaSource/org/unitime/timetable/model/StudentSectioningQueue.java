@@ -68,7 +68,8 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		CLASS_ASSIGNMENT_CHANGE,
 		SESSION_STATUS_CHANGE,
 		SESSION_RELOAD,
-		OFFERING_CHANGE
+		OFFERING_CHANGE,
+		SCHEDULING_RULES_CHANGED,
 	}
 	
 	public static TreeSet<StudentSectioningQueue> getItems(org.hibernate.Session hibSession, Long sessionId, Date lastTimeStamp) {
@@ -206,6 +207,10 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 	
 	public static void sessionStatusChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, boolean reload) {
 		addItem(hibSession, user, sessionId, (reload ? Type.SESSION_RELOAD : Type.SESSION_STATUS_CHANGE));
+	}
+	
+	public static void sessionSchedulingRulesChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId) {
+		addItem(hibSession, user, sessionId, Type.SCHEDULING_RULES_CHANGED);
 	}
 	
 	public static void allStudentsChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId) {
