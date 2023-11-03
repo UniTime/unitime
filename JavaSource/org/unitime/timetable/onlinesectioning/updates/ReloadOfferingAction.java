@@ -946,8 +946,9 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				}
 			}
 		}
+		boolean checkAssignment = ApplicationProperty.NotificationsInstructorChangesCheckShare.isTrue();
 		for (InstructorChange ic: instructors.values()) {
-			if (ic.hasEmail() && ic.hasChange()) {
+			if (ic.hasEmail() && ic.hasChange(checkAssignment)) {
 				server.execute(server.createAction(InstructorEmail.class).forChange(ic), helper.getUser(), new OnlineSectioningServer.ServerCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {

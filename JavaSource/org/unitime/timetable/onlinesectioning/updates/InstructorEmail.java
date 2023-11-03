@@ -140,9 +140,12 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 		input.put("name", helper.getInstructorNameFormat().format(getInstructorChange().getInstructor()));
 		input.put("server", server);
 		input.put("helper", helper);
+		boolean checkAssignment = ApplicationProperty.NotificationsInstructorChangesCheckShare.isTrue();
+		input.put("showAssignmentColumn", checkAssignment);
 		
 		Table listOfChanges = new Table();
 		List<XSection> remaining = new ArrayList<XSection>(getInstructorChange().getNewSections());
+		String instructorId = getInstructorChange().getInstructor().getExternalId();
 		old: for (XSection oldSection: getInstructorChange().getOldSections()) {
 			for (Iterator<XSection> i = remaining.iterator(); i.hasNext(); ) {
 				XSection newSection = i.next();
@@ -155,10 +158,11 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 					XSection parent = (newSection.getParentId() == null ? null : getInstructorChange().getNewOffering().getSection(newSection.getParentId()));
 					if (parent != null)
 						requires = parent.getName(getInstructorChange().getNewOffering().getControllingCourse().getCourseId());
+					i.remove();
+					if (oldSection.isCancelled() && newSection.isCancelled()) continue old;
 					listOfChanges.add(new InstructorTableSectionModifiedLine(
 							getInstructorChange().getCourse(),
-							oldSection.getInstructor(getInstructorChange().getInstructor().getExternalId()),
-							newSection.getInstructor(getInstructorChange().getInstructor().getExternalId()),
+							instructorId,
 							getInstructorChange().getOldOffering().getSubpart(oldSection.getSubpartId()),
 							getInstructorChange().getNewOffering().getSubpart(newSection.getSubpartId()),
 							oldSection,
@@ -166,7 +170,6 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 							requiresOld, requires, 
 							getCourseUrl(server.getAcademicSession(), getInstructorChange().getCourse())
 							));
-					i.remove();
 					continue old;
 				}
 			}
@@ -175,7 +178,7 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 			if (parent != null)
 				requires = parent.getName(getInstructorChange().getOldOffering().getControllingCourse().getCourseId());
 			listOfChanges.add(new InstructorTableSectionDeletedLine(
-					oldSection.getInstructor(getInstructorChange().getInstructor().getExternalId()),
+					instructorId,
 					getInstructorChange().getCourse(),
 					getInstructorChange().getOldOffering().getSubpart(oldSection.getSubpartId()),
 					oldSection,
@@ -188,8 +191,8 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 			XSection parent = (newSection.getParentId() == null ? null : getInstructorChange().getNewOffering().getSection(newSection.getParentId()));
 			if (parent != null)
 				requires = parent.getName(getInstructorChange().getNewOffering().getControllingCourse().getCourseId());
-			listOfChanges.add(new InstructorTableSectionLine(
-					newSection.getInstructor(getInstructorChange().getInstructor().getExternalId()),
+			listOfChanges.add(new InstructorTableSectionAddedLine(
+					instructorId,
 					getInstructorChange().getCourse(),
 					getInstructorChange().getNewOffering().getSubpart(newSection.getSubpartId()),
 					newSection,
@@ -201,32 +204,36 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 		
 		input.put("subject", MSG.emailInstructorChangeSubject().replace("%session%", server.getAcademicSession().toString()));
 		
-		Table classes = new Table();
-		Collection<Long> offerings = server.getInstructedOfferings(getInstructorChange().getInstructor().getExternalId());
-		if (offerings != null)
-			for (Long offeringId: offerings) {
-				XOffering offering = server.getOffering(offeringId);
-				if (offering != null)
-					for (XConfig config: offering.getConfigs())
-						for (XSubpart subpart: config.getSubparts())
-							for (XSection section: subpart.getSections())
-								for (XInstructor instructor: section.getAllInstructors())
-									if (getInstructorChange().getInstructor().getExternalId().equals(instructor.getExternalId())) {
-										String requires = null;
-										XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
-										if (parent != null)
-											requires = parent.getName(offering.getControllingCourse().getCourseId());
-										classes.add(new InstructorTableSectionLine(
-												instructor,
-												offering.getControllingCourse(),
-												subpart,
-												section,
-												requires,
-												getCourseUrl(server.getAcademicSession(), getInstructorChange().getCourse())
-												));
-									}
-			}
-		input.put("classes", classes);
+		if (ApplicationProperty.NotificationsInstructorChangesIncludeSchedule.isTrue()) {
+			Table classes = new Table();
+			Collection<Long> offerings = server.getInstructedOfferings(instructorId);
+			if (offerings != null)
+				for (Long offeringId: offerings) {
+					XOffering offering = server.getOffering(offeringId);
+					if (offering != null)
+						for (XConfig config: offering.getConfigs())
+							for (XSubpart subpart: config.getSubparts())
+								for (XSection section: subpart.getSections()) {
+									if (section.isCancelled()) continue;
+									for (XInstructor instructor: section.getAllInstructors())
+										if (instructorId.equals(instructor.getExternalId())) {
+											String requires = null;
+											XSection parent = (section.getParentId() == null ? null : offering.getSection(section.getParentId()));
+											if (parent != null)
+												requires = parent.getName(offering.getControllingCourse().getCourseId());
+											classes.add(new InstructorTableSectionLine(
+													instructorId,
+													offering.getControllingCourse(),
+													subpart,
+													section,
+													requires,
+													getCourseUrl(server.getAcademicSession(), getInstructorChange().getCourse())
+													));
+										}
+								}
+				}
+			input.put("classes", classes);
+		}
 		
 		input.put("version", GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
 		input.put("copyright", GWT.pageCopyright());
@@ -241,63 +248,91 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 	}
 	
 	public static class InstructorTableSectionLine extends TableSectionLine {
-		private XInstructor iInstructor;
+		protected String iInstructorId;
 		
-		public InstructorTableSectionLine(XInstructor instructor, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
+		public InstructorTableSectionLine(String externalId, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
 			super(null, course, subpart, section, requires, url);
-			iInstructor = instructor;
+			iInstructorId = externalId;
 		}
 		
 		@Override
 		public String getInstructors() {
-			if (iInstructor == null) return "";
-			if (iInstructor.isAllowOverlap()) {
-				return "<i>" + (iInstructor.getResponsibility() == null ? "" : iInstructor.getResponsibility() + " ") + iInstructor.getPercentShare() + "%</i>";
+			XInstructor instructor = (iInstructorId == null ? null : iSection.getInstructor(iInstructorId));
+			if (instructor == null) return "";
+			if (instructor.isAllowOverlap()) {
+				return "<i>" + (instructor.getResponsibility() == null ? "" : instructor.getResponsibility() + " ") + instructor.getPercentShare() + "%</i>";
 			} else {
-				return (iInstructor.getResponsibility() == null ? "" : iInstructor.getResponsibility() + " ") + iInstructor.getPercentShare() + "%";
+				return (instructor.getResponsibility() == null ? "" : instructor.getResponsibility() + " ") + instructor.getPercentShare() + "%";
 			}
+		}
+	}
+	
+	public static class InstructorTableSectionAddedLine extends InstructorTableSectionLine {
+		public InstructorTableSectionAddedLine(String externalId, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
+			super(externalId, course, subpart, section, requires, url);
+		}
+		
+		@Override
+		public String getNote() {
+			if (super.getNote() == null || super.getNote().isEmpty())
+				return MSG.emailClassAssigned();
+			else
+				return MSG.emailClassAssigned() + " " + super.getNote();
 		}
 	}
 	
 	public static class InstructorTableSectionDeletedLine extends InstructorTableSectionLine {
 		
-		public InstructorTableSectionDeletedLine(XInstructor instructor, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
-			super(instructor, course, subpart, section, requires, url);
+		public InstructorTableSectionDeletedLine(String externalId, XCourse course, XSubpart subpart, XSection section, String requires, URL url) {
+			super(externalId, course, subpart, section, requires, url);
 		}
 		
 		@Override
 		public String getCourseNote() { return null; }
+		
+		@Override
+		public String getNote() {
+			return MSG.emailClassUnassigned();
+		}
 	}
 	
 	public static class InstructorTableSectionModifiedLine extends TableSectionModifiedLine {
-		private XInstructor iOldInstructor;
-		private XInstructor iInstructor;
+		protected String iInstructorId;
 		
-		public InstructorTableSectionModifiedLine(XCourse course, XInstructor oldInstructor, XInstructor instructor, XSubpart oldSubpart, XSubpart subpart, XSection oldSection, XSection section, String oldRequires, String requires, URL url) {
+		public InstructorTableSectionModifiedLine(XCourse course, String instructorId, XSubpart oldSubpart, XSubpart subpart, XSection oldSection, XSection section, String oldRequires, String requires, URL url) {
 			super(null, course, oldSubpart, subpart, oldSection, section, oldRequires, requires, url);
-			iOldInstructor = oldInstructor;
-			iInstructor = instructor;
+			iInstructorId = instructorId;
 		}
 		
 		@Override
 		public String getInstructors() {
+			XInstructor instructor = (iInstructorId == null ? null : iSection.getInstructor(iInstructorId));
+			XInstructor oldInstructor = (iInstructorId == null ? null : iOldSection.getInstructor(iInstructorId));
 			String oldass = "";
-			if (iOldInstructor != null) {
-				if (iOldInstructor.isAllowOverlap()) {
-					oldass = "<i>" + (iOldInstructor.getResponsibility() == null ? "" : iOldInstructor.getResponsibility() + " ") + iOldInstructor.getPercentShare() + "%</i>";
+			
+			if (oldInstructor != null) {
+				if (oldInstructor.isAllowOverlap()) {
+					oldass = "<i>" + (oldInstructor.getResponsibility() == null ? "" : oldInstructor.getResponsibility() + " ") + oldInstructor.getPercentShare() + "%</i>";
 				} else {
-					oldass = (iOldInstructor.getResponsibility() == null ? "" : iOldInstructor.getResponsibility() + " ") + iOldInstructor.getPercentShare() + "%";
+					oldass = (oldInstructor.getResponsibility() == null ? "" : oldInstructor.getResponsibility() + " ") + oldInstructor.getPercentShare() + "%";
 				}
 			}
 			String newass = "";
-			if (iInstructor != null) {
-				if (iInstructor.isAllowOverlap()) {
-					newass = "<i>" + (iInstructor.getResponsibility() == null ? "" : iInstructor.getResponsibility() + " ") + iInstructor.getPercentShare() + "%</i>";
+			if (instructor != null) {
+				if (instructor.isAllowOverlap()) {
+					newass = "<i>" + (instructor.getResponsibility() == null ? "" : instructor.getResponsibility() + " ") + instructor.getPercentShare() + "%</i>";
 				} else {
-					newass = (iInstructor.getResponsibility() == null ? "" : iInstructor.getResponsibility() + " ") + iInstructor.getPercentShare() + "%";
+					newass = (instructor.getResponsibility() == null ? "" : instructor.getResponsibility() + " ") + instructor.getPercentShare() + "%";
 				}
 			}
 			return diff(oldass, newass);
+		}
+		
+		@Override
+		public String getNote() {
+			if (iSection.isCancelled()) return MSG.emailClassCancelled();
+			if (!iSection.isCancelled() && iOldSection.isCancelled()) return MSG.emailClassReopened();
+			return diff(iOldSection.getNote(), iSection.getNote());
 		}
 		
 	}
@@ -313,10 +348,11 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 	}
 	
     
-    public static boolean sameAssignment(XInstructor i1, XInstructor i2) {
+    public static boolean sameAssignment(boolean checkAssignment, XInstructor i1, XInstructor i2) {
+    	if (!checkAssignment) return true;
     	return ToolBox.equals(i1.getPercentShare(), i2.getPercentShare()) && ToolBox.equals(i1.getResponsibility(), i2.getResponsibility()) && i1.isAllowOverlap() == i2.isAllowOverlap();
     }
-
+    
 	public static class InstructorChange implements Serializable {
 		private static final long serialVersionUID = -4307771609804985028L;
 		XInstructor iOldInstructor, iNewInstructor;
@@ -350,7 +386,7 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 			return instructor.getEmail() != null && !instructor.getEmail().isEmpty();
 		}
 		
-		public boolean hasChange() {
+		public boolean hasChange(boolean checkAssignment) {
 			if (iOldSections.size() != iNewSections.size()) return true;
 			XCourseId course = getCourse();
 			old: for (XSection oldSection: iOldSections) {
@@ -358,7 +394,7 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 					if (ReloadOfferingAction.sameName(course.getCourseId(), newSection, oldSection) &&
 							ReloadOfferingAction.sameTime(newSection, oldSection.getTime()) &&
 							ReloadOfferingAction.sameRooms(newSection, oldSection.getRooms()) &&
-							sameAssignment(oldSection.getInstructor(iOldInstructor.getExternalId()), newSection.getInstructor(iNewInstructor.getExternalId())) &&
+							sameAssignment(checkAssignment, oldSection.getInstructor(iOldInstructor.getExternalId()), newSection.getInstructor(iNewInstructor.getExternalId())) &&
 							newSection.isCancelled() == oldSection.isCancelled())
 						continue old;
 				}

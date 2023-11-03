@@ -3627,6 +3627,18 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/selectPrimaryRole.action?target=gwt.jsp%3Fpage%3Dpersonal' style='color: inherit; background-color : transparent;'>{0}</a>.")
 	String emailLinkToPersonalSchedule(String baseUrl);
 	
+	@DefaultMessage("Class cancelled.")
+	String emailClassCancelled();
+	
+	@DefaultMessage("Class reopened.")
+	String emailClassReopened();
+	
+	@DefaultMessage("Class assigned.")
+	String emailClassAssigned();
+	
+	@DefaultMessage("Class removed.")
+	String emailClassUnassigned();
+	
 	@DefaultMessage("Share")
 	String colPercentShare();
 }
