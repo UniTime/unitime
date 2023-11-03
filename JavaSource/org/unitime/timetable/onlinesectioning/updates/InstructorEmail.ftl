@@ -106,10 +106,10 @@
  		<td style="${style}">${msg.colEnd()}</td>
  		<td style="${style}">${msg.colDate()}</td>
  		<td style="${style}">${msg.colRoom()}</td>
- 		<td style="${style}">${msg.colPercentShare()}</td>
- 		<td style="${style}">${msg.colParent()}</td>
+ 		<#if showAssignmentColumn>
+ 			<td style="${style}">${msg.colPercentShare()}</td>
+ 		</#if>
  		<td style="${style}">${msg.colNote()}</td>
- 		<td style="${style}">${msg.colCredit()}</td>
  	</tr>
 </#macro>
 
@@ -138,7 +138,11 @@
 	 		<td style="${style}">${line.days}</td>
 			<td style="${style}">${line.start}</td>
 			<td style="${style}">${line.end}</td>
-			<td style="${stylebr}" colspan="6"></td>
+			<#if showAssignmentColumn>
+				<td style="${stylebr}" colspan="5"></td>
+			<#else>
+				<td style="${stylebr}" colspan="4"></td>
+			</#if>
 		</tr>
 	<#elseif line.assigned>
 		<tr style='vertical-align: top'>
@@ -168,15 +172,19 @@
 		 		<td style="${style}" colspan="4">${line.arrangeHours}</td>
 	 		</#if>
 	 		<td style="${style}">${line.rooms}</td>
-	 		<td style="${stylebr}">${line.instructors}</td>
-	 		<#if line.requires??><td style="${stylebr}">${line.requires}</td><#else><td style="${style}"></td></#if>
+	 		<#if showAssignmentColumn>
+	 			<td style="${stylebr}">${line.instructors}</td>
+	 		</#if>
 	 		<#if line.note??><td style="${stylebr} white-space: pre-wrap;">${line.note}</td><#else><td style="${style}"></td></#if>
-	 		<#if line.credit??><td style="${style}">${line.credit}</td><#else><td style="${style}"></td></#if>
 		</tr>
 		<#if line.last && line.courseNote??>
 			<tr style='vertical-align: top'>
 				<td colspan='2'></td>
-				<td colspan='11'>${line.courseNote}</td>
+				<#if showAssignmentColumn>
+					<td colspan='9'>${line.courseNote}</td>
+				<#else>
+					<td colspan='8'>${line.courseNote}</td>
+				</#if>
 			</tr>
 		</#if>
 	<#else>
@@ -192,7 +200,11 @@
 			</#if>
 	 		<td style="${style}"></td>
 	 		<td style="${style}"></td>
-	 		<td style="${stylebr}" colspan="9" align="center">${line.note}</td>
+	 		<#if showAssignmentColumn>
+	 			<td style="${stylebr}" colspan="7" align="center">${line.note}</td>
+	 		<#else>
+	 			<td style="${stylebr}" colspan="6" align="center">${line.note}</td>
+	 		</#if>
 	 	</tr>	
 	</#if>
 </#macro>

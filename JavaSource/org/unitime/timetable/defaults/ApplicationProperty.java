@@ -3336,7 +3336,19 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Email Notifications: automatically email instructors about their schedule changes")
 	@Since(4.8)
-	NotificationsInstructorChanges("unitime.notifications.instructorChanges"),
+	NotificationsInstructorChanges("unitime.notifications.instructorChanges.enabled"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Email Notifications: check/display instructor's percent share, responsibility, and check for conflict changes")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckShare("unitime.notifications.instructorChanges.checkShare"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: include the list of all currently assigned classes that the instructor has in the email notification")
+	@Since(4.8)
+	NotificationsInstructorChangesIncludeSchedule("unitime.notifications.instructorChanges.includeSchedule"),
 	
 	@Type(String.class)
 	@DefaultValue("org/unitime/timetable/onlinesectioning/updates/InstructorEmail.ftl")

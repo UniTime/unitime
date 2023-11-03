@@ -2676,9 +2676,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	}
 	
 	public static class TableSectionModifiedLine extends TableSectionLine {
-		private XSubpart iOldSubpart;
-		private XSection iOldSection;
-		private String iOldRequires;
+		protected XSubpart iOldSubpart;
+		protected XSection iOldSection;
+		protected String iOldRequires;
 		
 		public TableSectionModifiedLine(XCourseRequest request, XCourse course, XSubpart oldSubpart, XSubpart subpart, XSection oldSection, XSection section, String oldRequires, String requires, URL url) {
 			super(request, course, subpart, section, requires, url);
