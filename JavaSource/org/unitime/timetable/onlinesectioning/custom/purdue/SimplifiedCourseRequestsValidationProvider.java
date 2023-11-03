@@ -102,6 +102,7 @@ import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
@@ -646,7 +647,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_HIGH);
 		}
 		
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		XSchedulingRule rule = server.getSchedulingRule(original,
+				StudentSchedulingRule.Mode.Online,
+				helper.hasAvisorPermission(),
+				helper.hasAdminPermission());
 		if (rule != null) {
 			for (XRequest r: original.getRequests()) {
 				if (r instanceof XCourseRequest) {
@@ -1037,7 +1041,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		}
 		
 		boolean questionRestrictionsNotMet = false;
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		XSchedulingRule rule = server.getSchedulingRule(original,
+				StudentSchedulingRule.Mode.Online,
+				helper.hasAvisorPermission(),
+				helper.hasAdminPermission());
 		boolean onlineOnly = false;
 		if (rule != null) {
 			for (CourseRequestInterface.Request r: request.getCourses()) {
@@ -1721,7 +1728,10 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		}
 		
 		boolean questionRestrictionsNotMet = false;
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		XSchedulingRule rule = server.getSchedulingRule(original,
+				StudentSchedulingRule.Mode.Online,
+				helper.hasAvisorPermission(),
+				helper.hasAdminPermission());
 		boolean onlineOnly = false;
 		if (rule != null) {
 			for (CourseRequestInterface.Request r: request.getCourses()) {

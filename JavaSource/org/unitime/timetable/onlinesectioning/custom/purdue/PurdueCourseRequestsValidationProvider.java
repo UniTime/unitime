@@ -144,6 +144,7 @@ import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
@@ -515,7 +516,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		
 		boolean questionRestrictionsNotMet = false;
 		boolean onlineOnly = false;
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		XSchedulingRule rule = server.getSchedulingRule(original,
+				StudentSchedulingRule.Mode.Online,
+				helper.hasAvisorPermission(),
+				helper.hasAdminPermission());
 		if (rule != null) {
 			for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 				Request r = (Request)e.next();
@@ -1845,7 +1849,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
-			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+			XSchedulingRule rule = server.getSchedulingRule(original,
+					StudentSchedulingRule.Mode.Online,
+					helper.hasAvisorPermission(),
+					helper.hasAdminPermission());
 			if (rule != null) {
 				for (XRequest r: original.getRequests()) {
 					if (r instanceof XCourseRequest) {
@@ -1990,7 +1997,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			
-			StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+			XSchedulingRule rule = server.getSchedulingRule(original,
+					StudentSchedulingRule.Mode.Online,
+					helper.hasAvisorPermission(),
+					helper.hasAdminPermission());
 			if (rule != null) {
 				for (XRequest r: original.getRequests()) {
 					if (r instanceof XCourseRequest) {
@@ -3389,7 +3399,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			if (new Query(filter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false)))
 				onlineOnly = true;
 		}
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleOnline(original, server, helper);
+		XSchedulingRule rule = server.getSchedulingRule(original,
+				StudentSchedulingRule.Mode.Online,
+				helper.hasAvisorPermission(),
+				helper.hasAdminPermission());
 		
 		for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {
 			Request r = (Request)e.next();

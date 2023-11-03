@@ -63,6 +63,7 @@ import org.unitime.timetable.onlinesectioning.model.XDistribution;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRules;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
@@ -98,6 +99,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 				helper.info("Updating course infos and the student sectining model for session " + server.getAcademicSession());
 				long t0 = System.currentTimeMillis();
 				server.clearAll();
+				server.setSchedulingRules(new XSchedulingRules(server.getAcademicSession(), helper.getHibSession()));
 
 				Map<Long, List<XDistribution>> distributions = new Hashtable<Long, List<XDistribution>>();
 		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(

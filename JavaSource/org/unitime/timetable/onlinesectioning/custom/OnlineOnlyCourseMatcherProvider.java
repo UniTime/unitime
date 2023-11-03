@@ -34,6 +34,7 @@ import org.unitime.timetable.onlinesectioning.match.RuleCheckingCourseMatcherPro
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
@@ -48,9 +49,19 @@ public class OnlineOnlyCourseMatcherProvider extends RuleCheckingCourseMatcherPr
 
 	@Override
 	public CourseMatcher getCourseMatcher(OnlineSectioningServer server, SessionContext context, Long studentId) {
-		StudentSchedulingRule rule = StudentSchedulingRule.getRuleFilter(studentId, server, context);
-		if (rule != null)
-			return new SchedulingRuleCourseMatcher(rule);
+		if (server != null && !(server instanceof DatabaseServer)) {
+			XStudent student = server.getStudent(studentId);
+			XSchedulingRule rule = (student == null ? null : server.getSchedulingRule(student,
+					StudentSchedulingRule.Mode.Filter,
+					context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdvisor),
+					context.hasPermissionAnySession(server.getAcademicSession(), Right.StudentSchedulingAdmin)));
+			if (rule != null)
+				return new SchedulingRuleCourseMatcher(rule);
+		} else {
+			StudentSchedulingRule rule = StudentSchedulingRule.getRuleFilter(studentId, server, context);
+			if (rule != null)
+				return new SchedulingRuleCourseMatcher(rule);
+		}
 
 		String filter = ApplicationProperty.OnlineSchedulingParameter.value("Filter.OnlineOnlyStudentFilter", null);
 		if (filter == null || filter.isEmpty()) return new FallbackCourseMatcher();

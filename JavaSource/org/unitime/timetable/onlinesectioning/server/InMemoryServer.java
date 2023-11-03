@@ -466,5 +466,4 @@ public class InMemoryServer extends AbstractLockingServer {
 			lock.release();
 		}
 	}
-
 }

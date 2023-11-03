@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
@@ -40,11 +39,14 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.StudentSchedulingRule;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.dao.StudentSchedulingRuleDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 /**
  * @author Tomas Muller
@@ -60,7 +62,7 @@ public class StudentSchedulingRules implements AdminTable {
 
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingRules')")
-	public SimpleEditInterface load(SessionContext context, Session hibSession) {
+	public SimpleEditInterface load(SessionContext context, org.hibernate.Session hibSession) {
 		List<ListItem> modes = new ArrayList<ListItem>();
 		modes.add(new ListItem("false", MESSAGES.ruleConjunctive()));
 		modes.add(new ListItem("true", MESSAGES.ruleDisjunctive()));
@@ -132,7 +134,7 @@ public class StudentSchedulingRules implements AdminTable {
 
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingRuleEdit')")
-	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
+	public void save(SimpleEditInterface data, SessionContext context, org.hibernate.Session hibSession) {
 		Set<Integer> ords = new HashSet<Integer>();
 		for (Record r: data.getRecords()) {
 			if (r.isEmpty(data)) continue;
@@ -146,12 +148,22 @@ public class StudentSchedulingRules implements AdminTable {
 				update(rule, r, context, hibSession);
 		}
 		for (Record r: data.getNewRecords())
-			save(r, context, hibSession);
+			save(r, context, hibSession, false);
+		notifyOnlineServers(context, hibSession);
+	}
+	
+	protected void notifyOnlineServers(SessionContext context, org.hibernate.Session hibSession) {
+		for (String sessionId: ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getOnlineStudentSchedulingContainer().getSolvers())
+			StudentSectioningQueue.sessionSchedulingRulesChanged(hibSession, context.getUser(), Long.valueOf(sessionId));
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingRuleEdit')")
-	public void save(Record record, SessionContext context, Session hibSession) {
+	public void save(Record record, SessionContext context, org.hibernate.Session hibSession) {
+		save(record, context, hibSession, true);
+	}
+	
+	protected void save(Record record, SessionContext context, org.hibernate.Session hibSession, boolean notify) {
 		StudentSchedulingRule rule = new StudentSchedulingRule();
 		if (record.getOrder() == null) record.setOrder(nextOrd());
 		rule.setRuleName(record.getField(0));
@@ -180,9 +192,10 @@ public class StudentSchedulingRules implements AdminTable {
 				Operation.CREATE,
 				null,
 				null);
+		if (notify) notifyOnlineServers(context, hibSession);
 	}
 	
-	protected void update(StudentSchedulingRule rule, Record record, SessionContext context, Session hibSession) {
+	protected void update(StudentSchedulingRule rule, Record record, SessionContext context, org.hibernate.Session hibSession) {
 		if (rule == null) return;
 		if (ToolBox.equals(rule.getRuleName(), record.getField(0)) &&
 				ToolBox.equals(rule.getStudentFilter(), record.getField(1)) &&
@@ -231,11 +244,12 @@ public class StudentSchedulingRules implements AdminTable {
 
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingRuleEdit')")
-	public void update(Record record, SessionContext context, Session hibSession) {
+	public void update(Record record, SessionContext context, org.hibernate.Session hibSession) {
 		update(StudentSchedulingRuleDAO.getInstance().get(record.getUniqueId(), hibSession), record, context, hibSession);
+		notifyOnlineServers(context, hibSession);
 	}
 	
-	protected void delete(StudentSchedulingRule rule, SessionContext context, Session hibSession) {
+	protected void delete(StudentSchedulingRule rule, SessionContext context, org.hibernate.Session hibSession) {
 		if (rule == null) return;
 		ChangeLog.addChange(hibSession,
 				context,
@@ -250,7 +264,8 @@ public class StudentSchedulingRules implements AdminTable {
 
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingRuleEdit')")
-	public void delete(Record record, SessionContext context, Session hibSession) {
+	public void delete(Record record, SessionContext context, org.hibernate.Session hibSession) {
 		delete(StudentSchedulingRuleDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
+		notifyOnlineServers(context, hibSession);
 	}
 }
