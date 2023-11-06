@@ -30,7 +30,11 @@ public class DateUtils {
     public static int getWeek(Date date) {
     	Calendar c = Calendar.getInstance(Locale.US);
     	c.setTime(date);
-    	return c.get(Calendar.WEEK_OF_YEAR);
+    	int week = c.get(Calendar.WEEK_OF_YEAR);
+    	// Make sure the week is relative to the current year
+    	if (week == 1 && c.get(Calendar.MONTH) == 11) week += c.getWeeksInWeekYear();
+    	if (week > 50 && c.get(Calendar.MONTH) == 0) week = 0;
+    	return week;
     }
     public static int getDayOfYear(Date date) {
     	Calendar c = Calendar.getInstance(Locale.US);
