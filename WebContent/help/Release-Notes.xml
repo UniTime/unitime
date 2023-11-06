@@ -37,6 +37,18 @@
 				<line>If a cancelled class (that has a parent class) is opened, do not open other classes of the same parent.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: String index out of range fix</name>
+			<description>
+				<line>Make sure that DateUtil.getWeek(Date) returns a week that is relative to the current year.
+					<line>So for instance, for 12/31/2023, week 53 is returned instead of 1.</line>
+				</line>
+				<line>This fixes the following error when display mode Per Date is used.
+					<line>Failed to load timetables: String index out of range: -241</line>
+				</line>
+				<line>This also corrects the list of available weeks in the Week drop-down.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
