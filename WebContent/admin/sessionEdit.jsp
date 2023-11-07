@@ -233,6 +233,18 @@
 					headerKey="-1" headerValue="%{#msg.itemDefaultStudentStatus()}"/>
 			</TD>
 		</TR>
+		<TR>
+			<TD><loc:message name="columnNotificationsBeginDate"/>:</TD>
+			<TD colspan='2'>
+				<tt:calendar name="form.notificationsBegin"/>
+			</TD>
+		</TR>
+		<TR>
+			<TD><loc:message name="columnNotificationsEndDate"/>:</TD>
+			<TD colspan='2'>
+				<tt:calendar name="form.notificationsEnd"/>
+			</TD>
+		</TR>
 		
 		<TR>
 			<TD colspan="3">

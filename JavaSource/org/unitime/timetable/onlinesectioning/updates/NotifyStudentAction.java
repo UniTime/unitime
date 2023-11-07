@@ -19,10 +19,15 @@
 */
 package org.unitime.timetable.onlinesectioning.updates;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.StudentSectioningStatus.NotificationType;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -278,7 +283,25 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 		return false;
 	}
 	
+	public static boolean checkNotificationDates(AcademicSessionInfo session) {
+		if (session.getNotificationsBeginDate() != null || session.getNotificationsEndDate() != null) {
+			Date now = new Date();
+			if (session.getNotificationsBeginDate() != null && now.before(session.getNotificationsBeginDate())) return false;
+			if (session.getNotificationsEndDate() != null) {
+				// for the end date, we need to add one day (it is ok to send the notification all day on the end date)
+				Calendar c = Calendar.getInstance(Locale.US);
+				c.setTime(session.getNotificationsEndDate());
+				c.add(Calendar.DAY_OF_YEAR, 1);
+				if (!now.before(c.getTime())) return false;
+			}
+		}
+		return true;
+	}
+	
 	protected boolean isEmailEnabled(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
+		String checkDates = ApplicationProperty.OnlineSchedulingEmailCheckDatesOverride.value(iSourceAction);
+		if (checkDates == null) checkDates = ApplicationProperty.OnlineSchedulingEmailCheckDates.value();
+		if ("true".equalsIgnoreCase(checkDates) && !checkNotificationDates(server.getAcademicSession())) return false;
 		String override = ApplicationProperty.OnlineSchedulingEmailConfirmationOverride.value(iSourceAction);
 		if (override != null) return "true".equalsIgnoreCase(override);
 		return server.getAcademicSession().isSectioningEnabled() && ApplicationProperty.OnlineSchedulingEmailConfirmation.isTrue();

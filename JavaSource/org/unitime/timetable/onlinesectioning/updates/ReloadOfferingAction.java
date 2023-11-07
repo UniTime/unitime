@@ -920,6 +920,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 	
 	protected void checkForInstructorChanges(XOffering oldOffering, XOffering newOffering, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (!ApplicationProperty.NotificationsInstructorChanges.isTrue()) return;
+		if (ApplicationProperty.NotificationsInstructorChangesCheckDates.isTrue() && !NotifyStudentAction.checkNotificationDates(server.getAcademicSession())) return;
 		Map<String, InstructorChange> instructors = new HashMap<String, InstructorChange>();
 		if (oldOffering != null) {
 			for (XConfig config: oldOffering.getConfigs()) {

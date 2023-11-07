@@ -104,6 +104,11 @@ public class AcademicSessionSetupExport extends BaseExport {
 		sessionEl.addAttribute("eventStartDate", sDateFormat.format(session.getEventBeginDate()));
 		sessionEl.addAttribute("eventEndDate", sDateFormat.format(session.getEventEndDate()));
 		
+		if (session.getNotificationsBeginDate() != null)
+			sessionEl.addAttribute("notificationsBeginDate", sDateFormat.format(session.getNotificationsBeginDate()));
+		if (session.getNotificationsEndDate() != null)
+			sessionEl.addAttribute("notificationsEndDate", sDateFormat.format(session.getNotificationsEndDate()));
+		
 		Element holidaysEl = sessionEl.addElement("holidays");
 		int acadYear = session.getSessionStartYear(); 
         int startMonth = DateUtils.getStartMonth(session.getEventBeginDate() != null && session.getEventBeginDate().before(session.getSessionBeginDateTime()) ? session.getEventBeginDate() : session.getSessionBeginDateTime(), acadYear, ApplicationProperty.SessionNrExcessDays.intValue());

@@ -738,6 +738,18 @@
                 type="java.lang.String"
                 length="366"
                 not-null="false"/>
+                
+			<property
+				name="notificationsBeginDate"
+				type="java.sql.Date"
+				column="notifications_begin"
+				not-null="false"/>
+                
+			<property
+				name="notificationsEndDate"
+				type="java.sql.Date"
+				column="notifications_end"
+				not-null="false"/>
 
             <many-to-one
                 name="defaultDatePattern"

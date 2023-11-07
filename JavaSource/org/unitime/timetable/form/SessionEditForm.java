@@ -66,6 +66,7 @@ public class SessionEditForm implements UniTimeForm {
 	boolean includeTestSession;
 	Long durationType;
 	Long instructionalMethod;
+	String notificationsBegin, notificationsEnd;
 	
 	public SessionEditForm() {
 		reset();
@@ -89,6 +90,8 @@ public class SessionEditForm implements UniTimeForm {
 		includeTestSession = false;
 		durationType = null;
 		instructionalMethod = null;
+		notificationsBegin = null;
+		notificationsEnd = null;
 	}
 	
 	@Override
@@ -219,6 +222,28 @@ public class SessionEditForm implements UniTimeForm {
         		action.addFieldError("form.sessionDays", MSG.errorSessionDatesOverAYear());
         		return false; 
         	}
+        }
+        Date dNotificationsBegin = null;
+        Date dNotificationsEnd = null;
+        if (notificationsBegin != null && !notificationsBegin.isEmpty()) {
+        	try {
+        		dNotificationsBegin = df.parse(notificationsBegin);
+        	} catch (Exception e) {
+        		action.addFieldError("form.notificationsBegin", MSG.errorNotValidDate(MSG.columnNotificationsBeginDate()));
+        		return false;
+        	}
+        }
+        if (notificationsEnd != null && !notificationsEnd.isEmpty()) {
+        	try {
+        		dNotificationsEnd = df.parse(notificationsEnd);
+        	} catch (Exception e) {
+        		action.addFieldError("form.notificationsEnd", MSG.errorNotValidDate(MSG.columnNotificationsEndDate()));
+        		return false;
+        	}
+        }
+        if (dNotificationsBegin != null && dNotificationsEnd != null && !dNotificationsBegin.before(dNotificationsEnd)) {
+        	action.addFieldError("form.notificationsEnd", MSG.errorNotificationsEndDateNotAfterNotificationsStartDate());
+        	return false;
         }
         return true;
 	}
@@ -380,6 +405,19 @@ public class SessionEditForm implements UniTimeForm {
     }
     public void setEventEnd(String eventEnd) {
         this.eventEnd = eventEnd;
+    }
+    
+    public void setNotificationsBegin(String nofificationsBegin) {
+    	this.notificationsBegin = nofificationsBegin;
+    }
+    public String getNotificationsBegin() {
+    	return notificationsBegin;
+    }
+    public void setNotificationsEnd(String nofificationsEnd) {
+    	this.notificationsEnd = nofificationsEnd;
+    }
+    public String getNotificationsEnd() {
+    	return notificationsEnd;
     }
     
     public Set<RoomType> getRoomTypes() {

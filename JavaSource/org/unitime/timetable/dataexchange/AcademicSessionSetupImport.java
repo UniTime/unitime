@@ -194,6 +194,11 @@ public class AcademicSessionSetupImport extends BaseImport {
     	session.setEventBeginDate(dateFormat.parse(sessionEl.attributeValue("eventStartDate", sessionEl.attributeValue("startDate"))));
     	session.setEventEndDate(dateFormat.parse(sessionEl.attributeValue("eventEndDate", sessionEl.attributeValue("endDate"))));
     	
+    	String notificationsBeginDate = sessionEl.attributeValue("notificationsBeginDate");
+    	session.setNotificationsBeginDate(notificationsBeginDate == null || notificationsBeginDate.isEmpty() ? null : dateFormat.parse(notificationsBeginDate));
+    	String notificationsEndDate = sessionEl.attributeValue("notificationsEndDate");
+    	session.setNotificationsEndDate(notificationsEndDate == null || notificationsEndDate.isEmpty() ? null : dateFormat.parse(notificationsEndDate));
+    	
     	Element deadlinesEl = sessionEl.element("deadlines");
     	if (deadlinesEl != null) {
     		session.setLastWeekToEnroll(Integer.valueOf(deadlinesEl.attributeValue("lastWeekToEnroll", "1")));

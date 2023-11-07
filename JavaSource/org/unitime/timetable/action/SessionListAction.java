@@ -33,6 +33,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.BlankForm;
+import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.context.UniTimeUserContext;
@@ -53,6 +54,7 @@ import org.unitime.timetable.util.Formats;
 public class SessionListAction extends UniTimeAction<BlankForm> {
 	private static final long serialVersionUID = -6663444732727632201L;
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected final static StudentSectioningMessages SCT_MSG = Localization.create(StudentSectioningMessages.class);
 
 	public String execute() throws Exception {
         // Check access
@@ -77,12 +79,15 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 					MSG.columnAcademicSessionEnrollmentChangeDeadline().replace("\n", "<br>"),
 					MSG.columnAcademicSessionEnrollmentDropDeadline().replace("\n", "<br>"),
 					MSG.columnAcademicSessionSectioningStatus().replace("\n", "<br>"),
-					MSG.columnAcademicSessionDefaultInstructionalMethod().replace("\n", "<br>") },
+					MSG.columnAcademicSessionDefaultInstructionalMethod().replace("\n", "<br>"),
+					MSG.columnAcademicSessionNotificationsDates().replace("\n", "<br>"),
+					},
 				new String[] { "center", "left", "left", "left", "left",
-					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left" }, 
-				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true });
+					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left", "left" }, 
+				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true, true });
 		
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.SESSION_DATE);
+		Formats.Format<Date> dsf = Formats.getDateFormat(Formats.Pattern.DATE_SHORT);
 		
 		TreeSet<Session> sessions = new TreeSet<Session>(SessionDAO.getInstance().findAll());
 		Session defaultSession = UniTimeUserContext.defaultSession(sessions, sessionContext.getUser().getCurrentAuthority(), UserProperty.PrimaryCampus.get(sessionContext.getUser()));
@@ -96,6 +101,17 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 
 			Calendar cd = Calendar.getInstance(Locale.US); cd.setTime(s.getSessionBeginDateTime());
 			cd.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToDrop()); cd.add(Calendar.DAY_OF_YEAR, -1);
+			
+			String notifications = "";
+			if (s.getNotificationsBeginDate() != null) {
+				if (s.getNotificationsEndDate() != null) {
+					notifications = SCT_MSG.messageEffectivePeriodBetween(dsf.format(s.getNotificationsBeginDate()), dsf.format(s.getNotificationsEndDate()));
+				} else {
+					notifications = SCT_MSG.messageEffectivePeriodAfter(dsf.format(s.getNotificationsBeginDate()));
+				}
+			} else if (s.getNotificationsEndDate() != null) {
+				notifications = SCT_MSG.messageEffectivePeriodBefore(dsf.format(s.getNotificationsEndDate()));
+			}
 			
 			webTable.addLine(
 					sessionContext.hasPermission(s, Right.AcademicSessionEdit) ?  "onClick=\"document.location='sessionEdit.action?op=editSession&sessionId=" + s.getSessionId() + "';\"" : null,
@@ -117,7 +133,8 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 						df.format(cd.getTime()).replace(" ", "&nbsp;"),
 						(s.getDefaultSectioningStatus() == null ? "&nbsp;" : s.getDefaultSectioningStatus().getReference()),
 						(s.getDefaultInstructionalMethod() ==  null ? "&nbsp;" : s.getDefaultInstructionalMethod().getReference()),
-						 },
+						notifications,
+						},
 					new Comparable[] {
 						s.equals(defaultSession) ? "<img src='images/accept.png'>" : "",
 						s.getLabel(),
@@ -133,7 +150,9 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 						s.getEventEndDate(),
 						ce.getTime(), cc.getTime(), cd.getTime(),
 						(s.getDefaultSectioningStatus() == null ? " " : s.getDefaultSectioningStatus().getReference()),
-						(s.getDefaultInstructionalMethod() ==  null ? "" : s.getDefaultInstructionalMethod().getReference())} );
+						(s.getDefaultInstructionalMethod() ==  null ? "" : s.getDefaultInstructionalMethod().getReference()),
+						(s.getNotificationsBeginDate() != null ? s.getNotificationsBeginDate() : s.getNotificationsEndDate()),
+						});
 		}
 				
 		webTable.enableHR("#9CB0CE");

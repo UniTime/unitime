@@ -65,6 +65,8 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	private Date iEventBeginDate;
 	private Date iEventEndDate;
 	private String iHolidays;
+	private Date iNotificationsBeginDate;
+	private Date iNotificationsEndDate;
 	private Integer iLastWeekToEnroll;
 	private Integer iLastWeekToChange;
 	private Integer iLastWeekToDrop;
@@ -127,6 +129,14 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	@Column(name = "holidays", nullable = true, length = 366)
 	public String getHolidays() { return iHolidays; }
 	public void setHolidays(String holidays) { iHolidays = holidays; }
+
+	@Column(name = "notifications_begin", nullable = true)
+	public Date getNotificationsBeginDate() { return iNotificationsBeginDate; }
+	public void setNotificationsBeginDate(Date notificationsBeginDate) { iNotificationsBeginDate = notificationsBeginDate; }
+
+	@Column(name = "notifications_end", nullable = true)
+	public Date getNotificationsEndDate() { return iNotificationsEndDate; }
+	public void setNotificationsEndDate(Date notificationsEndDate) { iNotificationsEndDate = notificationsEndDate; }
 
 	@Column(name = "wk_enroll", nullable = false)
 	public Integer getLastWeekToEnroll() { return iLastWeekToEnroll; }
@@ -265,6 +275,8 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 			"\n	LastWeekToChange: " + getLastWeekToChange() +
 			"\n	LastWeekToDrop: " + getLastWeekToDrop() +
 			"\n	LastWeekToEnroll: " + getLastWeekToEnroll() +
+			"\n	NotificationsBeginDate: " + getNotificationsBeginDate() +
+			"\n	NotificationsEndDate: " + getNotificationsEndDate() +
 			"\n	SessionBeginDateTime: " + getSessionBeginDateTime() +
 			"\n	SessionEndDateTime: " + getSessionEndDateTime() +
 			"\n	StatusType: " + getStatusType() +
