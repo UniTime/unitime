@@ -5799,4 +5799,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("~~ No Requirements ~~")
 	String courseOtherInstructorClasses();
+	
+	@DefaultMessage("Notifications Begin Date")
+	String columnNotificationsBeginDate();
+	
+	@DefaultMessage("Notifications End Date")
+	String columnNotificationsEndDate();
+	
+	@DefaultMessage("Notifications End Date must occur AFTER Notifications Start Date.")
+	String errorNotificationsEndDateNotAfterNotificationsStartDate();
+	
+	@DefaultMessage("Email\nNotifications")
+	String columnAcademicSessionNotificationsDates();
 }

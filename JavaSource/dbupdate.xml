@@ -14883,4 +14883,12 @@
 		<pgsql>alter table %SCHEMA%.sectioning_status add notifications bigint</pgsql>
 		<sql>update %SCHEMA%.sectioning_status set notifications = 511</sql>
 	</update>
+	<update version="263" date="7-Nov-2023" comment="Session Notification Dates">
+		<mysql>alter table %SCHEMA%.sessions add notifications_begin date</mysql>
+		<mysql>alter table %SCHEMA%.sessions add notifications_end date</mysql>
+		<plsql>alter table %SCHEMA%.sessions add notifications_begin date</plsql>
+		<plsql>alter table %SCHEMA%.sessions add notifications_end date</plsql>
+		<pgsql>alter table %SCHEMA%.sessions add notifications_begin date</pgsql>
+		<pgsql>alter table %SCHEMA%.sessions add notifications_end date</pgsql>
+	</update>
 </dbupdate>

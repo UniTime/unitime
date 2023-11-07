@@ -46,6 +46,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	private String iDefaultInstructionalMethod = null;
 	private int iDayOfWeekOffset;
 	private Date iDefaultStartDate = null, iDefaultEndDate = null;
+	private Date iNotificationsBeginDate = null, iNotificationsEndDate = null;
 	
 	public AcademicSessionInfo(Session session) {
 		update(session);
@@ -75,6 +76,8 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		iWkDrop = session.getLastWeekToDrop();
 		iDefaultStatus = session.getDefaultSectioningStatus() == null ? null : session.getDefaultSectioningStatus().getReference();
 		iDefaultInstructionalMethod = session.getDefaultInstructionalMethod() == null ? null : session.getDefaultInstructionalMethod().getReference();
+		iNotificationsBeginDate = session.getNotificationsBeginDate();
+		iNotificationsEndDate = session.getNotificationsEndDate();
 	}
 	
 	public AcademicSessionInfo(Long uniqueId, String year, String term, String campus) {
@@ -110,6 +113,8 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	public Date getDatePatternFirstDate() { return iDatePatternFirstDate; }
 	public Date getSessionBeginDate() { return iSessionBegin; }
 	public int getDayOfWeekOffset() { return iDayOfWeekOffset; }
+	public Date getNotificationsBeginDate() { return iNotificationsBeginDate; }
+	public Date getNotificationsEndDate() { return iNotificationsEndDate; }
 	
 	public int compareTo(AcademicSessionInfo a) {
 		int cmp = iSessionBegin.compareTo(a.iSessionBegin);

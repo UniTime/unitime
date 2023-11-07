@@ -3317,6 +3317,26 @@ public enum ApplicationProperty {
 	@Description("Email Notifications: instructor change email template")
 	@Since(4.8)
 	NotificationsInstructorChangeEmailTemplate("unitime.notifications.instructorEmail.template"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: automatically email instructors about their schedule changes only during the notification dates set on the academic session. " +
+			"This setting is only used when instructor notifications are enabled by the unitime.notifications.instructorChanges.enabled property.")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckDates("unitime.notifications.instructorChanges.checkNotificationDates"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: enable student email confirmations only during the notification dates set on the academic session. "+
+			"This setting is only used when student email notifications are enabled by the unitime.enrollment.email property, and student status allow for email notifications.")
+	@Since(4.8)
+	OnlineSchedulingEmailCheckDates("unitime.enrollment.email.checkNotificationDates"),
+	
+	@Type(Boolean.class)
+	@Parameter("operation")
+	@Description("Online Student Scheduling: enable student email confirmations from a particular operation % only during the notification dates set on the academic session")
+	@Since(4.8)
+	OnlineSchedulingEmailCheckDatesOverride("unitime.enrollment.email.%.checkNotificationDates"),
 
 	;
 

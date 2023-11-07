@@ -132,6 +132,9 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
 		form.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
 		form.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
 		
+		form.setNotificationsBegin(acadSession.getNotificationsBeginDate()==null?"":sdf.format(acadSession.getNotificationsBeginDate()));
+		form.setNotificationsEnd(acadSession.getNotificationsEndDate()==null?"":sdf.format(acadSession.getNotificationsEndDate()));
+		
 		LookupTables.setupDatePatterns(request, sessionId, false, Constants.BLANK_OPTION_LABEL, null, null, null);
 		request.setAttribute("holidays", form.getSession().getHolidaysHtml());
 		
@@ -349,7 +352,15 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
 		sessn.setLastWeekToDrop(form.getWkDrop());
 		sessn.setDefaultSectioningStatus(form.getSectStatus() == null || form.getSectStatus() < 0 ? null : StudentSectioningStatusDAO.getInstance().get(form.getSectStatus()));
 		sessn.setDefaultClassDurationType(form.getDurationType() == null || form.getDurationType() < 0 ? null : ClassDurationTypeDAO.getInstance().get(form.getDurationType()));
-		sessn.setDefaultInstructionalMethod(form.getInstructionalMethod() == null || form.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethod())); 
+		sessn.setDefaultInstructionalMethod(form.getInstructionalMethod() == null || form.getInstructionalMethod() < 0 ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethod()));
+		if (form.getNotificationsBegin() != null && !form.getNotificationsBegin().isEmpty())
+			sessn.setNotificationsBeginDate(sdf.parse(form.getNotificationsBegin()));
+		else
+			sessn.setNotificationsBeginDate(null);
+		if (form.getNotificationsEnd() != null && !form.getNotificationsEnd().isEmpty())
+			sessn.setNotificationsEndDate(sdf.parse(form.getNotificationsEnd()));
+		else
+			sessn.setNotificationsEndDate(null);
 	}
 
 
