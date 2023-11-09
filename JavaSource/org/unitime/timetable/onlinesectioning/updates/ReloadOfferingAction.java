@@ -327,30 +327,25 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			return;
 		
 		if (newOffering != null && !newOffering.isReSchedule()) {
-			if (server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingEnabled", false) || server.getConfig().getPropertyBoolean("Enrollment.ReSchedulingOnUnlock", false)) {
-				Set<XCourseId> courseIds = new HashSet<XCourseId>();
-				if (newOffering != null)
-					courseIds.addAll(newOffering.getCourses());
-				if (oldOffering != null)
-					courseIds.addAll(oldOffering.getCourses());
-				for (XCourseId course: courseIds) {
-					for (XStudent[] student: students) {
-						XStudent oldStudent = student[0];
-						XCourseRequest oldRequest = getRequest(oldStudent, course);
-						XEnrollment oldEnrollment = getEnrollment(oldRequest, offeringId);
-						XStudent newStudent = student[1];
-						XCourseRequest newRequest = getRequest(newStudent, course); 
-						XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
-						if (oldRequest == null && newRequest == null) continue;
-						if (!hasReSchedulingStatus(newStudent == null ? oldStudent : newStudent, server)) continue; // no notifications for students that cannot be re-scheduled
-
-						if (newEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
-							server.execute(server.createAction(NotifyStudentAction.class)
-									.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
-									.fromAction(name())
-									.withType(NotificationType.CourseChangeSchedule)
-									.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
-					}
+			Set<XCourseId> courseIds = new HashSet<XCourseId>();
+			if (newOffering != null)
+				courseIds.addAll(newOffering.getCourses());
+			if (oldOffering != null)
+				courseIds.addAll(oldOffering.getCourses());
+			for (XCourseId course: courseIds) {
+				for (XStudent[] student: students) {
+					XStudent oldStudent = student[0];
+					XCourseRequest oldRequest = getRequest(oldStudent, course);
+					XEnrollment oldEnrollment = getEnrollment(oldRequest, offeringId);
+					XStudent newStudent = student[1];
+					XCourseRequest newRequest = getRequest(newStudent, course); 
+					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
+					if (newEnrollment != null && oldEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
+						server.execute(server.createAction(NotifyStudentAction.class)
+								.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+								.fromAction(name())
+								.withType(NotificationType.CourseChangeSchedule)
+								.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
 				}
 			}
 			return;
@@ -442,7 +437,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					}
 
 					ReschedulingReason check = null;
-					if (newEnrollment != null) {
+					if (newEnrollment != null && oldEnrollment != null) {
 						// new enrollment is valid and / or has all the same times
 						check = check(newOffering, course, distributions, newStudent, newEnrollment, server); 
 						if (check == null) {// || isSame(oldEnrollment, newEnrollment)) {
@@ -488,6 +483,8 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			for (XCourseId course: courseIds) {
 				for (XStudent[] student: students) {
 					XStudent oldStudent = student[0];
+					XCourseRequest oldRequest = getRequest(oldStudent, course);
+					XEnrollment oldEnrollment = getEnrollment(oldRequest, offeringId);
 					XStudent newStudent = student[1];
 					XCourseRequest newRequest = getRequest(newStudent, course);
 					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
@@ -507,8 +504,6 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 								.setName(course.getCourseName())
 								.setType(OnlineSectioningLog.Entity.EntityType.COURSE));
 						
-						XCourseRequest oldRequest = getRequest(oldStudent, course);
-						XEnrollment oldEnrollment = getEnrollment(oldRequest, offeringId);
 						if (oldEnrollment != null) {
 							OnlineSectioningLog.Enrollment.Builder enrollment = OnlineSectioningLog.Enrollment.newBuilder();
 							enrollment.setType(OnlineSectioningLog.Enrollment.EnrollmentType.PREVIOUS);
@@ -520,6 +515,13 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 						
 						queue.add(new SectioningRequest(newOffering, newRequest, course, newStudent, null, getStudentPriority(newStudent, server, helper), action).setOldOffering(oldOffering).setOldRequest(oldRequest).setOldStudent(oldStudent).setLastEnrollment(oldEnrollment).setNewEnrollment(newEnrollment));
+					} else if (newEnrollment != null && oldEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment))) {
+						
+						server.execute(server.createAction(NotifyStudentAction.class)
+								.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+								.fromAction(name())
+								.withType(NotificationType.CourseChangeSchedule)
+								.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
 					}
 				}
 			}
