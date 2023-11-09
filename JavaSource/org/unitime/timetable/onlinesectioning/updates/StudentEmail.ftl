@@ -110,9 +110,6 @@
 		 				<#if credit??>
  							<tr><td colspan="13" style="text-align: center;">${msg.totalCredit(credit)}</td></tr>
  						</#if>
- 						<#if link??>
- 							<tr><td colspan="13" style="font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;">${msg.emailLinkToUniTime(link)}</td></tr>
- 						</#if>
  					</table></td></tr>
  				</#if>
  			</#if>
@@ -128,6 +125,10 @@
  				<#else>
  					<tr><td>${msg.emailSentBy(helper.user.name)}</td></tr>
  				</#if>
+ 			</#if>
+ 			
+			<#if link??>
+				<tr><td style="font-style: italic; color: #9CB0CE; text-align: right; padding-top: 5px;">${msg.emailLinkToUniTime(link)}</td></tr>
  			</#if>
 		</table>
 		<table style="width: 800px; margin-top: -3px;" align="center">

@@ -3615,14 +3615,17 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Instructor schedule change for %session%")
 	String emailInstructorChangeSubject();
 	
-	@DefaultMessage("{0} {1} Schedule Changes")
+	@DefaultMessage("{0} {1} Assignment / Schedule Changes")
 	String emailCourseAssignment(String subject, String courseNbr);
 	
-	@DefaultMessage("Schedule Changes")
+	@DefaultMessage("Assignment / Schedule Changes")
 	String emailAssignmentChanges();
 	
 	@DefaultMessage("No schedule change detected.")
 	String emailNoScheduleChange();
+	
+	@DefaultMessage("Current Instructor Assignments")
+	String emailInstructorClassList();
 	
 	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/selectPrimaryRole.action?target=gwt.jsp%3Fpage%3Dpersonal' style='color: inherit; background-color : transparent;'>{0}</a>.")
 	String emailLinkToPersonalSchedule(String baseUrl);

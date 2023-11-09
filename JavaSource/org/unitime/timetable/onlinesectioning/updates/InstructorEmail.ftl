@@ -68,7 +68,7 @@
  			</#if>
  			
  			<#if classes??>
- 				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailClassList()}</td></tr>
+ 				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailInstructorClassList()}</td></tr>
  				<#if classes?size == 0>
  					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal;">${msg.emailNoSchedule()}</td></tr>
  				<#else>
@@ -77,11 +77,11 @@
  						<#list classes as line>
  							<@classTableLine line/>
  						</#list>
- 						<#if link??>
- 							<tr><td colspan="13" style="font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;">${msg.emailLinkToPersonalSchedule(link)}</td></tr>
- 						</#if>
  					</table></td></tr>
  				</#if>
+ 			</#if>
+			<#if link??>
+				<tr><td style="font-style: italic; color: #9CB0CE; text-align: right; padding-top: 5px;">${msg.emailLinkToPersonalSchedule(link)}</td></tr>
  			</#if>
 		</table>
 		<table style="width: 800px; margin-top: -3px;" align="center">

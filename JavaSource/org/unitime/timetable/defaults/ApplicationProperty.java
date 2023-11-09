@@ -3337,6 +3337,18 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: enable student email confirmations from a particular operation % only during the notification dates set on the academic session")
 	@Since(4.8)
 	OnlineSchedulingEmailCheckDatesOverride("unitime.enrollment.email.%.checkNotificationDates"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: confirmation email includes link to UniTime (Student Scheduling Assistant; UniTime URL needs to be configured using unitime.url)")
+	@Since(4.8)
+	OnlineSchedulingEmailIncludeLink("unitime.enrollment.email.link"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: include the link to UniTime in the instructor email notification (Personal Schedule; UniTime URL needs to be configured using unitime.url)")
+	@Since(4.8)
+	NotificationsInstructorChangesIncludeLink("unitime.notifications.instructorChanges.includeLink"),
 
 	;
 
