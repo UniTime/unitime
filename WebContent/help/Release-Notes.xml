@@ -47,8 +47,8 @@
 		<item>
 			<name>Solver Reports</name>
 			<description>
-				<line>Added Student Priority and Request Priority column on various reports.</line>
-				<line>Added Not-Assigned LC Course Requests and Not-Assigned Critical Coruse Requests reports.</line>
+				<line>Added Student Priority and Request Priority columns on various reports.</line>
+				<line>Added Not-Assigned LC Course Requests and Not-Assigned Critical Course Requests reports.</line>
 				<line>Added Critical Time Conflicts, Critical Availability Conflicts, and Critical Time &amp; Availability Conflicts reports.
 					<line>Only listing course requests that have Important, Vital, Critical, or LC priority.</line>
 					<line>For time conflicts, only courses with the same or higher priority are considered.</line>
@@ -71,7 +71,38 @@
 					<line>Course Schedule Change (time or room of one of the classes has changed due to re-scheduling)</line>
 					<line>Course Enrollment Change (an enrollment change was done by wait-listing or re-scheduling)</line>
 					<line>Course Failed Enrollment Change (UniTime failed to make an enrollment change during wait-listing or re-scheduling)</line>
-					<line>External Enrollment Change (there has been an enrollment changed done externally, outside of UniTime)</line>
+					<line>External Enrollment Change (there has been an enrollment change done externally, outside of UniTime)</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor Schedule Changes</name>
+			<description>
+				<line>An email notification can be automatically sent to the instructor when
+					<line>the instructor assignment is changed (instructor is added to/removed from a class),</line>
+					<line>the class that the instructor has is moved in time and/or room, or</line>
+					<line>the class that the instructor has assigned is canceled or reopened.</line>
+					<line>Optionally, an email can be sent when the percent share, check conflicts, or responsibility is changed.</line>
+				</line>
+				<line>Configuration:
+					<line>Enable instructor notifications be setting unitime.notifications.instructorChanges.enabled=true (defaults to false).</line>
+					<line>Include the list of all currently assigned classes that the instructor has in the email notification by setting unitime.notifications.instructorChanges.includeSchedule (defaults to true).</line>
+					<line>Check/display the instructor's percent share, responsibility, and check for conflict changes by setting unitime.notifications.instructorChanges.checkShare (defaults to false).</line>
+				</line>
+				<line>Note: Instructor schedule changes are only available when the online student scheduling server is running, as the offering-reload action (Unlock button) triggers and tracks the changes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Email Notifications Begin/End Dates</name>
+			<description>
+				<line>Added Notification Begin/End Date on the academic session.</line>
+				<line>One or both dates can be null (not set), in which case there is no begin and/or end date defined.</line>
+				<line>Other settings still apply, i.e., email notifications must be enabled for students and/or instructors, and student status must allow for the notifications.</line>
+				<line>It is possible to enable/disable notifications date checking for students and/or instructors.
+					<line>For instructors, by setting unitime.notifications.instructorChanges.checkNotificationDates (defaults to true).</line>
+					<line>For students, by setting unitime.enrollment.email.checkNotificationDates (defaults to true).
+						<line>Or only particular actions can check for dates by setting unitime.enrollment.email.&lt;operation&gt;.checkNotificationDates parameter (not set by default).</line>
+					</line>
 				</line>
 			</description>
 		</item>
@@ -81,7 +112,7 @@
 		<item>
 			<name>Name Formats</name>
 			<description>
-				<line>Added the following name formats, adding external id after the last name or at the end of the name:
+				<line>Added the following name formats, adding an external id after the last name or at the end of the name:
 					<line>last-ext-first-middle</line>
 					<line>last-ext-first-middle-title</line>
 					<line>last-first-middle-ext</line>
