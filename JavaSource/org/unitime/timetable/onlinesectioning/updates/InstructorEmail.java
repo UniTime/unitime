@@ -238,7 +238,8 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 		input.put("version", GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
 		input.put("copyright", GWT.pageCopyright());
 		input.put("ts", sTimeStampFormat.format(getTimeStamp()));
-		input.put("link", ApplicationProperty.UniTimeUrl.value());
+		if (ApplicationProperty.NotificationsInstructorChangesIncludeLink.isTrue())
+			input.put("link", ApplicationProperty.UniTimeUrl.value());
 		
 		StringWriter s = new StringWriter();
 		template.process(input, new PrintWriter(s));
