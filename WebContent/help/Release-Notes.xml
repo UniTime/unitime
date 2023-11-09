@@ -49,6 +49,10 @@
 			<description>
 				<line>Added Student Priority and Request Priority column on various reports.</line>
 				<line>Added Not-Assigned LC Course Requests and Not-Assigned Critical Coruse Requests reports.</line>
+				<line>Added Critical Time Conflicts, Critical Availability Conflicts, and Critical Time &amp; Availability Conflicts reports.
+					<line>Only listing course requests that have Important, Vital, Critical, or LC priority.</line>
+					<line>For time conflicts, only courses with the same or higher priority are considered.</line>
+				</line>
 			</description>
 		</item>
 	</category>
