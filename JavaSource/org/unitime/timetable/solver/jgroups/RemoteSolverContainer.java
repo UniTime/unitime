@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 
 import org.cpsolver.ifs.util.DataProperties;
 import org.jgroups.Address;
+import org.jgroups.JChannel;
 import org.jgroups.blocks.RpcDispatcher;
 
 /**
@@ -39,4 +40,6 @@ public interface RemoteSolverContainer<T> extends SolverContainer<T> {
 	public Object invoke(String method, String user, Class[] types, Object[] args) throws Exception;
 	
 	public T createProxy(Address address, String user);
+	
+	public void setChannel(JChannel channel, short scope) throws Exception;
 }

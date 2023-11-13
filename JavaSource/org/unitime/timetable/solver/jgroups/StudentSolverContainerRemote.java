@@ -51,6 +51,19 @@ public class StudentSolverContainerRemote extends StudentSolverContainer impleme
 	}
 	
 	@Override
+	public void setChannel(JChannel channel, short scope) throws Exception {
+		ForkChannel oldChannel = iChannel; 
+		if (channel != null) {
+			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+			iChannel.connect("UniTime:RPC:Students");
+			iDispatcher = new RpcDispatcher(iChannel, this);
+		}
+		if (oldChannel != null && oldChannel.isConnected()) {
+			oldChannel.disconnect();
+		}
+	}
+	
+	@Override
 	public void start() throws Exception {
 		iChannel.connect("UniTime:RPC:Students");
 		super.start();

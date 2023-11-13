@@ -56,7 +56,6 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 @DependsOn({"startupService"})
 public class SolverServerService implements InitializingBean, DisposableBean {
 	private static Log sLog = LogFactory.getLog(SolverServerService.class);
-	private JChannel iChannel = null;
 	private SolverServer iServer = null;
 	
 	private SolverContainer<SolverProxy> iCourseSolverContainer;
@@ -79,11 +78,11 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 				iInstructorSchedulingContainer = iServer.getInstructorSchedulingContainer();
 				iOnlineStudentSchedulingContainer = iServer.getOnlineStudentSchedulingContainer();
 			} else {
-				iChannel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
+				JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
 				
-				iServer = new SolverServerImplementation(true, iChannel);
+				iServer = new SolverServerImplementation(true, channel);
 				
-				iChannel.connect("UniTime:rpc");
+				channel.connect("UniTime:rpc");
 				
 				iServer.start();
 				
@@ -113,6 +112,13 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			return ((SolverServerImplementation)iServer).getDispatcher();
 		return null;
 	}
+	
+	protected JChannel getChannel() {
+		if (iServer instanceof SolverServerImplementation) {
+			return ((SolverServerImplementation)iServer).getChannel();
+		}
+		return null;
+	}
 
 	@Override
 	public void destroy() throws Exception {
@@ -120,12 +126,13 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			sLog.info("Server is going down...");
 			iServer.stop();
 			
-			if (iChannel != null) {
+			JChannel channel = getChannel();
+			if (channel != null) {
 				sLog.info("Disconnecting from the channel...");
-				iChannel.disconnect();
+				channel.disconnect();
 			
 				sLog.info("Closing the channel...");
-				iChannel.close();
+				channel.close();
 			}
 			
 			iServer = null; 
@@ -233,8 +240,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	public SolverServer getServer(String host) {
 		if ("local".equals(host) || host == null)
 			return iServer;
-		if (iChannel != null)
-			for (Address address: iChannel.getView().getMembers()) {
+		JChannel channel = getChannel();
+		if (channel != null && channel.getView() != null)
+			for (Address address: channel.getView().getMembers()) {
 				if (host.equals(address.toString()))
 					return iServer.crateServerProxy(address);
 			}

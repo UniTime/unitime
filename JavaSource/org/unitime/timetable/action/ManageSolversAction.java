@@ -36,6 +36,7 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.DataProperties;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -207,7 +208,22 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
         	if (server != null)
         		server.reset(false);
         }
-
+        
+        if ("Reconnect".equals(op)) {
+        	SolverServer server = getSolverServerService().getServer(solver);
+        	if (server != null)
+        		server.reconnect();
+        }
+        
+        if ("Hibernate".equals(op)) {
+        	SolverServer server = getSolverServerService().getServer(solver);
+        	if (server != null)
+        		server.reconnectHibernate();
+        	else
+        		HibernateUtil.reconnect(null);
+        }
+        
+        
         if ("Enable".equals(op)) {
         	SolverServer server = getSolverServerService().getServer(solver);
         	if (server != null)
@@ -708,6 +724,12 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
                         	op+="<input type=\"button\" value=\"" + MESSAGES.actionServerReset() + "\" onClick=\"if (confirm('" +
                         			MESSAGES.confirmServerReset(server.getHost()) + "')) document.location='manageSolvers.action?op=Reset&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
                         }
+                        if (ApplicationProperty.SolverClusterEnabled.isTrue()) {
+                        	op+="<input type=\"button\" value=\"" + MESSAGES.actionServerReconnect() + "\" onClick=\"if (confirm('" +
+                        			MESSAGES.confirmServerReconnect(server.getHost()) + "')) document.location='manageSolvers.action?op=Reconnect&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
+                        }
+                        op+="<input type=\"button\" value=\"" + MESSAGES.actionServerReconnectHibernate() + "\" onClick=\"if (confirm('" +
+                        		MESSAGES.confirmServerReconnectHibernate() + "')) document.location='manageSolvers.action?op=Hibernate&solver="+server.getHost()+"';\">&nbsp;&nbsp;";                        	
                         if (!local) {
                         	op+="<input type=\"button\" value=\"" + MESSAGES.actionServerShutdown() + "\" onClick=\"if (confirm('" +
                         			MESSAGES.confirmServerShutdown(server.getHost()) + "')) document.location='manageSolvers.action?op=Shutdown&solver="+server.getHost()+"';\">&nbsp;&nbsp;";
@@ -919,6 +941,7 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
 		HttpSession session = request.getSession();
 		return (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null || session.getAttribute("ManageSolver.sectionPuid")!=null || session.getAttribute("ManageSolver.instrPuid") != null);
 	}
+
 	
 	public String getDeselect() {
 		return MESSAGES.actionSolverDeselect();

@@ -7322,6 +7322,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Un-Master")
 	String actionOnlineSolverUnmaster();
 	
+	@DefaultMessage("Reconnect")
+	String actionServerReconnect();
+	
+	@DefaultMessage("Reconnect Dabase")
+	String actionServerReconnectHibernate();
+	
 	@DefaultMessage("Shutdown")
 	String actionServerShutdown();
 	
@@ -7561,6 +7567,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you really want to shutdown server {0}?")
 	String confirmServerShutdown(String host);
+	
+	@DefaultMessage("Do you really want to reconnect server {0}?")
+	String confirmServerReconnect(String host);
+	
+	@DefaultMessage("Do you really want to reconnect the database? This will forcibly close all existing connections.")
+	String confirmServerReconnectHibernate();
 	
 	@DefaultMessage("tomcat")
 	String serverFlagTomcat();

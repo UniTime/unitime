@@ -258,4 +258,15 @@ public abstract class AbstractSolverServer implements SolverServer {
 	public QueueProcessor getQueueProcessor() {
 		return LocalQueueProcessor.getInstance();
 	}
+	
+	@Override
+	public void reconnectHibernate() {
+		iActive = false;
+		try {
+			HibernateUtil.reconnect(!isLocal() ? ApplicationProperties.getProperties() : null);
+			iActive = true;
+		} catch (Exception e) {
+			sLog.error("Failed to reconnect Hibenate: " + e.getMessage(), e);
+		}
+	}
 }
