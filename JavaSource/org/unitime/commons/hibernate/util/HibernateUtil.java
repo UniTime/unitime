@@ -134,15 +134,8 @@ public class HibernateUtil {
             }
         }
     }
-	public static void configureHibernate(Properties properties) throws NamingException, ClassNotFoundException {
-		if (sContext != null) {
-			sContext.close();
-			sContext = null;
-		}
-		
-		if (!NamingManager.hasInitialContextFactoryBuilder())
-			NamingManager.setInitialContextFactoryBuilder(new LocalContext(null));
-		
+    
+    public static HibernateContext configureHibernateFromProperties(Properties properties) throws ClassNotFoundException {
 		if (properties == null)
 			properties = ApplicationProperties.getProperties();
 		
@@ -245,7 +238,19 @@ public class HibernateUtil {
         
         fixSchemaInFormulas(meta, default_schema, d);
         
-    	sContext = new HibernateContext(config, registry, meta, meta.buildSessionFactory());
+    	return new HibernateContext(config, registry, meta, meta.buildSessionFactory());
+    }
+    
+	public static void configureHibernate(Properties properties) throws NamingException, ClassNotFoundException {
+		if (sContext != null) {
+			sContext.close();
+			sContext = null;
+		}
+		
+		if (!NamingManager.hasInitialContextFactoryBuilder())
+			NamingManager.setInitialContextFactoryBuilder(new LocalContext(null));
+
+		sContext = configureHibernateFromProperties(properties);
         
         DatabaseUpdate.update();
     }
@@ -609,6 +614,16 @@ public class HibernateUtil {
 		if (sContext != null) return;
 		sContext = configureHibernateFromRootDAO();
 		DatabaseUpdate.update();
+	}
+	
+	public static void reconnect(Properties properties) throws ClassNotFoundException {
+		sLog.info("Reconnecting database ...");
+		HibernateContext oldContect = sContext;
+		sLog.info("Configuring new Hibernate context ...");
+		HibernateContext newContext = (properties != null ? configureHibernateFromProperties(properties) : configureHibernateFromRootDAO());
+		sContext = newContext;
+		sLog.info("Closing old Hibernate context ...");
+		oldContect.close();
 	}
 	
 	/**

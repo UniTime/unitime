@@ -535,6 +535,12 @@ public class SolverServerImplementation extends AbstractSolverServer {
 		new ShutdownThread().start();
 	}
 	
+	@Override
+	public void reconnect() {
+		iActive = false;
+		new ReconnectThread().start();
+	}
+	
 	public static SolverServer getInstance() {
 		if (sInstance == null && SpringApplicationContextHolder.isInitialized()) {
 			return ((SolverServerService)SpringApplicationContextHolder.getBean("solverServerService")).getLocalServer();
@@ -566,6 +572,58 @@ public class SolverServerImplementation extends AbstractSolverServer {
 				System.exit(0);
 			} catch (Exception e) {
 				sLog.error("Failed to stop the server: " + e.getMessage(), e);
+			}
+		}
+	}
+	
+	private class ReconnectThread extends Thread {
+		ReconnectThread() {
+			setName("SolverServer:Reconnect");
+		}
+		
+		@Override
+		public void run() {
+			try {
+				try {
+					sleep(500);
+				} catch (InterruptedException e) {}
+				
+				sLog.info("Reconnecting the server...");
+				iActive = false;
+				iUpdater.pauseUpading();
+				JChannel oldChannel = iChannel;
+				ForkChannel oldServerChannel = iServerChannel;
+				
+				sLog.info("Creating new channel...");
+				JChannel channel = new JChannel(JGroupsUtils.getConfigurator(ApplicationProperty.SolverClusterConfiguration.value()));
+				
+				sLog.info("Connecting the new channel...");
+				channel.connect("UniTime:rpc");
+				ForkChannel serverChannel = new ForkChannel(channel, String.valueOf(SCOPE_SERVER), "fork-" + SCOPE_SERVER);
+				serverChannel.connect("UniTime:RPC:Server");
+				
+				sLog.info("Updating channel infromation...");
+				iChannel = channel;
+				iServerChannel = serverChannel;
+				iDispatcher.setChannel(channel);
+				iCourseSolverContainer.setChannel(channel, SCOPE_COURSE);
+				iExamSolverContainer.setChannel(channel, SCOPE_EXAM);
+				iStudentSolverContainer.setChannel(channel, SCOPE_STUDENT);
+				iInstructorSchedulingContainer.setChannel(channel, SCOPE_INSTRUCTOR);
+				iOnlineStudentSchedulingContainer.setChannel(channel, SCOPE_ONLINE);
+				iRemoteRoomAvailability.setChannel(channel, SCOPE_AVAILABILITY);
+				iRemoteQueueProcessor.setChannel(channel, SCOPE_QUEUE_PROCESSOR);
+				
+				iUpdater.resumeUpading();
+				
+				sLog.info("Disconnecting old channel...");
+				oldServerChannel.disconnect();
+				oldChannel.disconnect();
+				
+				iActive = true;
+				sLog.info("Server reconnected.");
+			} catch (Exception e) {
+				sLog.error("Failed to reconnect the server: " + e.getMessage(), e);
 			}
 		}
 	}

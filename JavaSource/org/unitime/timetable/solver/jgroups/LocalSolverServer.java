@@ -93,6 +93,11 @@ public class LocalSolverServer extends AbstractSolverServer {
 	public void shutdown() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public void reconnect() {
+		throw new UnsupportedOperationException();
+	}
 
 	@Override
 	public int getUsage() {

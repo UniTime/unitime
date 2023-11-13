@@ -75,6 +75,10 @@ public interface SolverServer {
 	
 	public void shutdown();
 	
+	public void reconnect();
+	
+	public void reconnectHibernate();
+	
 	public SolverContainer<SolverProxy> getCourseSolverContainer();
 	
 	public SolverContainer<ExamSolverProxy> getExamSolverContainer();

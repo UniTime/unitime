@@ -45,6 +45,18 @@ public class RemoteRoomAvailability {
 		iDispatcher = new RpcDispatcher(iChannel, this);
 	}
 	
+	public void setChannel(JChannel channel, short scope) throws Exception {
+		ForkChannel oldChannel = iChannel; 
+		if (channel != null) {
+			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
+			iChannel.connect("UniTime:RPC:Remote");
+			iDispatcher = new RpcDispatcher(iChannel, this);
+		}
+		if (oldChannel != null && oldChannel.isConnected()) {
+			oldChannel.disconnect();
+		}
+	}
+	
 	public void start() throws Exception {
 		iChannel.connect("UniTime:RPC:Availability");
 	}
