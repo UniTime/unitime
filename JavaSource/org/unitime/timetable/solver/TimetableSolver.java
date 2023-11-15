@@ -1195,6 +1195,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 					new CSVField("ITYPE"),
 					new CSVField("SECTION"),
 					new CSVField("SUFFIX"),
+					new CSVField("EXT_ID"),
 					new CSVField("DATE_PATTERN"),
 					new CSVField("DAY"),
 					new CSVField("START_TIME"),
@@ -1210,14 +1211,21 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 				Placement placement = currentSolution().getAssignment().getValue(lecture);
 				String name = lecture.getName();
 				String itype = ""; String section = "";
+				String ext = "";
+				if (name.indexOf(" - ")>0) {
+					ext = name.substring(name.lastIndexOf(" - ")+3);
+					name = name.substring(0, name.lastIndexOf(" - ")).trim();
+				}
 				if (name.indexOf(' ')>=0) {
 					section = name.substring(name.lastIndexOf(' ')+1);
 					name = name.substring(0, name.lastIndexOf(' ')).trim();
 				}
 				String suffix="";
-				while (section.charAt(section.length()-1)>='a' && section.charAt(section.length()-1)<='z') {
-					suffix = section.charAt(section.length()-1)+suffix;
-					section = section.substring(0,section.length()-1);
+				if (suffix.matches("[0-9]+[a-z]+")) {
+					while (section.charAt(section.length()-1)>='a' && section.charAt(section.length()-1)<='z') {
+						suffix = section.charAt(section.length()-1)+suffix;
+						section = section.substring(0,section.length()-1);
+					}
 				}
 				if (name.indexOf(' ')>=0) {
 					itype = name.substring(name.lastIndexOf(' ')+1);
@@ -1233,6 +1241,7 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 						new CSVField(itype),
 						new CSVField(section),
 						new CSVField(suffix),
+						new CSVField(ext),
 						new CSVField(placement==null?"":placement.getTimeLocation().getDatePatternName()),
 						new CSVField(placement==null?"":placement.getTimeLocation().getDayHeader()),
 						new CSVField(placement==null?"":placement.getTimeLocation().getStartTimeHeader(useAmPm)),
