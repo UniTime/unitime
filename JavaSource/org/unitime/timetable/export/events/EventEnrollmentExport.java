@@ -189,7 +189,7 @@ public class EventEnrollmentExport implements Exporter {
 			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
 			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
 			if (e.hasWaitListedReplacement()) hasWaitListReplacement = true;
-			if (e.isCritical() || e.isImportant()) hasCritical = true;
+			if (e.getCritical() != null && e.getCritical() > 0) hasCritical = true;
 		}
 		
 		if (hasPriority)
@@ -324,7 +324,11 @@ public class EventEnrollmentExport implements Exporter {
 				}
 			}
 			if (hasCritical)
-				line.add(enrollment.isCritical() ? MESSAGES.opSetCritical() : enrollment.isImportant() ? MESSAGES.opSetImportant() : enrollment.isVital() ? MESSAGES.opSetVital() : MESSAGES.opSetNotCritical());
+				line.add(enrollment.isCritical() ? MESSAGES.opSetCritical() :
+					enrollment.isImportant() ? MESSAGES.opSetImportant() :
+					enrollment.isVital() ? MESSAGES.opSetVital() :
+					enrollment.isLC() ? MESSAGES.opSetLC() :
+					MESSAGES.opSetNotCritical());
 			if (hasRequestedDate)
 				line.add(enrollment.getRequestedDate() == null ? "" : sDF.format(enrollment.getRequestedDate()));
 			if (hasEnrolledDate)

@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasVerticalCellAlignment;
@@ -97,7 +98,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -955,7 +955,7 @@ public class EnrollmentTable extends Composite {
 			if (e.hasWaitListedDate()) hasWaitlistedDate = true;
 			if (e.hasWaitListedPosition()) hasWaitListedPosition = true;
 			if (e.hasWaitListedReplacement()) hasWaitListReplacement = true;
-			if (e.isCritical() || e.isImportant()) hasCritical = true;
+			if (e.getCritical() != null && e.getCritical() > 0) hasCritical = true;
 		}
 
 		UniTimeTableHeader hPriority = null;
@@ -1447,17 +1447,19 @@ public class EnrollmentTable extends Composite {
 				}
 			}
 			if (hasCritical) {
-				Image i;
+				WebTable.IconCell i;
 				if (enrollment.isCritical()) {
-					i = new Image(RESOURCES.requestsCritical()); i.setTitle(MESSAGES.descriptionRequestCritical()); i.setAltText(MESSAGES.descriptionRequestCritical());
+					i = new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical());
 				} else if (enrollment.isImportant()) {
-					i = new Image(RESOURCES.requestsImportant()); i.setTitle(MESSAGES.descriptionRequestImportant()); i.setAltText(MESSAGES.descriptionRequestImportant());
+					i = new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), MESSAGES.opSetImportant());
 				} else if (enrollment.isVital()) {
-					i = new Image(RESOURCES.requestsVital()); i.setTitle(MESSAGES.descriptionRequestVital()); i.setAltText(MESSAGES.descriptionRequestVital());
+					i = new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), MESSAGES.opSetVital());
+				} else if (enrollment.isLC()) {
+					i = new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC());
 				} else {
-					i = new Image(RESOURCES.requestsNotCritical()); i.setTitle(MESSAGES.descriptionRequestNotCritical()); i.setAltText(MESSAGES.descriptionRequestNotCritical());
+					i = new WebTable.IconCell(RESOURCES.requestsNotCritical(), MESSAGES.descriptionRequestNotCritical(), MESSAGES.opSetNotCritical());
 				}
-				line.add(i);
+				line.add(i.getWidget());
 			}
 			if (hasRequestedDate)
 				line.add(new HTML(enrollment.getRequestedDate() == null ? "&nbsp;" : sDF.format(enrollment.getRequestedDate()), false));
@@ -2010,11 +2012,21 @@ public class EnrollmentTable extends Composite {
 				case PRIORITY:
 					cmp = Integer.valueOf(e1.getPriority()).compareTo(e2.getPriority());
 					if (cmp != 0) return cmp;
-					return e1.getAlternative().compareTo(e2.getAlternative());
+					cmp = e1.getAlternative().compareTo(e2.getAlternative());
+					if (cmp != 0) return cmp;
+					cmp = -Integer.compare(e1.getCritical() == null ? 0 : e1.getCritical().intValue(), e2.getCritical() == null ? 0 : e2.getCritical().intValue());
+					if (cmp != 0) return cmp;
+					if (e1.hasClasses() != e2.hasClasses()) return e1.hasClasses() ? -1 : 1;
+					return e1.getStudent().getName().compareTo(e2.getStudent().getName());
 				case ALTERNATIVE:
 					cmp = e1.getAlternative().compareTo(e2.getAlternative());
 					if (cmp != 0) return cmp;
-					return Integer.valueOf(e1.getPriority()).compareTo(e2.getPriority());
+					cmp = Integer.valueOf(e1.getPriority()).compareTo(e2.getPriority());
+					if (cmp != 0) return cmp;
+					cmp = -Integer.compare(e1.getCritical() == null ? 0 : e1.getCritical().intValue(), e2.getCritical() == null ? 0 : e2.getCritical().intValue());
+					if (cmp != 0) return cmp;
+					if (e1.hasClasses() != e2.hasClasses()) return e1.hasClasses() ? -1 : 1;
+					return e1.getStudent().getName().compareTo(e2.getStudent().getName());
 				case AREA:
 					cmp = e1.getStudent().getAreaClasf("|").compareTo(e2.getStudent().getAreaClasf("|"));
 					if (cmp != 0) return cmp;
@@ -2116,9 +2128,14 @@ public class EnrollmentTable extends Composite {
 						return (e1.hasWaitListedReplacement() ? -1 : e2.hasWaitListedReplacement() ? 1 : 0);
 					return e1.getWaitListReplacement().compareTo(e2.getWaitListReplacement());
 				case CRITICAL:
-					if (e1.isCritical()) return (e2.isCritical() ? 0 : -1);
-					if (e1.isImportant()) return (e2.isCritical() ? 1 : e2.isImportant() ? 0 : -1);
-					return (e2.isImportant() || e2.isCritical() ? 1 : 0);
+					cmp = -Integer.compare(e1.getCritical() == null ? 0 : e1.getCritical().intValue(), e2.getCritical() == null ? 0 : e2.getCritical().intValue());
+					if (cmp != 0) return cmp;
+					cmp = Integer.valueOf(e1.getPriority()).compareTo(e2.getPriority());
+					if (cmp != 0) return cmp;
+					cmp = e1.getAlternative().compareTo(e2.getAlternative());
+					if (cmp != 0) return cmp;
+					if (e1.hasClasses() != e2.hasClasses()) return e1.hasClasses() ? -1 : 1;
+					return e1.getStudent().getName().compareTo(e2.getStudent().getName());
 				}
 			}
 			return 0;
