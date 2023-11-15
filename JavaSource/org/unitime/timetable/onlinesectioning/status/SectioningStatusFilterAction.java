@@ -1222,10 +1222,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 			if (hasDefault) {
 				query.addWhere("im", "im is null or im.reference in (" + ims + ")");
-				query.addFrom("im", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg left outer join cfg.instructionalMethod im");
+				query.addFrom("im", "inner join s.courseDemands imCd inner join imCd.courseRequests imCr inner join imCr.courseOffering imCo inner join imCo.instructionalOffering.instrOfferingConfigs imCfg left outer join imCfg.instructionalMethod im");
 			} else {
-				query.addWhere("im", "cfg.instructionalMethod.reference in (" + ims + ")");
-				query.addFrom("im", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co inner join co.instructionalOffering.instrOfferingConfigs cfg");
+				query.addWhere("im", "imCfg.instructionalMethod.reference in (" + ims + ")");
+				query.addFrom("im", "inner join s.courseDemands imCd inner join imCd.courseRequests imCr inner join imCr.courseOffering imCo inner join imCo.instructionalOffering.instrOfferingConfigs imCfg");
 			}
 		}
 		
