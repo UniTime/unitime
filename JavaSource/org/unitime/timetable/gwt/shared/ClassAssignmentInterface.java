@@ -1322,6 +1322,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean isCritical() { return iCritical != null && iCritical.intValue() == 1; }
 		public boolean isImportant() { return iCritical != null && iCritical.intValue() == 2; }
 		public boolean isVital() { return iCritical != null && iCritical.intValue() == 3; }
+		public boolean isLC() { return iCritical != null && iCritical.intValue() == 4; }
 		public Integer getCritical() { return iCritical; }
 		public void setCritical(Integer critical) { iCritical = critical; }
 	}
