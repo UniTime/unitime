@@ -59,6 +59,32 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Online Scheduling Dashboards: Filter</name>
+			<description>
+				<line>Fixed the query when filtering by course and instructional method at the same time.</line>
+				<line>Corrected the ability to use not assignment:XX in the filter on the Enrollments tab, e.g.: not assignment:Vital</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboards: Enrollments</name>
+			<description>
+				<line>When listing individual enrollments on the Courses tab:
+					<line>Request priority column did not show for Vital and LC courses.</line>
+					<line>Adjusted display of request Priority column (include text, not just an icon).</line>
+					<line>Improved sorting by Priority, Alternative, and (request) Priority.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling Solver: Export CSV</name>
+			<description>
+				<line>Corrected Export Solution when the class names include external ids/class suffixes (i.e., unitime.solver.showClassSuffixes is true).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
