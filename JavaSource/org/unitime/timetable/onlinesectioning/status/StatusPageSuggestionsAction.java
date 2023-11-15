@@ -651,7 +651,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					XOffering offering = server().getOffering(info().getOfferingId());
 					return offering != null && offering.isWaitList();
 				} else {
-					return true;
+					return null;
 				}
 			}
 			if ("im".equals(attr)) {
