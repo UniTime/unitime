@@ -454,7 +454,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			response.addParameter(p);
 		}
 		List<SolverPredefinedSetting> configs = (List<SolverPredefinedSetting>)SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverPredefinedSetting s where s.appearance = :appearance"
+				"from SolverPredefinedSetting s where s.appearance = :appearance order by s.description"
 				).setInteger("appearance", appearance.ordinal()).setCacheable(true).list();
 		
 		response.setConfigurationId(request.getConfigurationId());
