@@ -1291,10 +1291,20 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				
 				input.put("changes", listOfChanges);				
 			} else {
-				setSubject(MSG.emailSubjectNotification());
+				if (iIncludeClassSchedule)
+					setSubject(MSG.emailSubjectNotificationClassSchedule());
+				else if (iIncludeCourseRequests)
+					setSubject(MSG.emailSubjectNotificationCourseRequests());
+				else
+					setSubject(MSG.emailSubjectNotification());
 			}
 		} else {
-			setSubject(MSG.emailSubjectNotification());
+			if (iIncludeClassSchedule)
+				setSubject(MSG.emailSubjectNotificationClassSchedule());
+			else if (iIncludeCourseRequests)
+				setSubject(MSG.emailSubjectNotificationCourseRequests());
+			else
+				setSubject(MSG.emailSubjectNotification());
 		}
 		
 		if (getEmailSubject() != null && !getEmailSubject().isEmpty())
