@@ -1512,6 +1512,12 @@ public interface StudentSectioningMessages extends Messages {
 	String emailLinkToUniTime(String baseUrl);
 
 	@DefaultMessage("Class schedule notification for %session%")
+	String emailSubjectNotificationClassSchedule();
+	
+	@DefaultMessage("Course requests notification for %session%")
+	String emailSubjectNotificationCourseRequests();
+	
+	@DefaultMessage("Student scheduling notification for %session%")
 	String emailSubjectNotification();
 	
 	@DefaultMessage("No enrollment change detected.")
