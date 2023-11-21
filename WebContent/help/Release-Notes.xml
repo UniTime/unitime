@@ -74,6 +74,12 @@
 				<line>These can be added on the Administration &gt; Defaults &gt; User Settings, name property (and then selected on Preferences &gt; Settings).</line>
 			</description>
 		</item>
+		<item>
+			<name>Default Solver Configuration</name>
+			<description>
+				<line>Added ability to change the default solver configuration by changing the unitime.solverConfig.defaultXxx application property.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>

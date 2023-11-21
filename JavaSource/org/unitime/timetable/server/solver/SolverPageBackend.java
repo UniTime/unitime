@@ -416,25 +416,25 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 			type = SolverParameterGroup.SolverType.COURSE;
 			group = "Basic";
 			appearance = SolverPredefinedSetting.Appearance.SOLVER;
-			defaultConfig = "Default.Solver";
+			defaultConfig = ApplicationProperty.SolverConfigDefaultCourse.value();
 			break;
 		case EXAM:
 			type = SolverParameterGroup.SolverType.EXAM;
 			group = "ExamBasic";
 			appearance = SolverPredefinedSetting.Appearance.EXAM_SOLVER;
-			defaultConfig = "Exam.Default";
+			defaultConfig = ApplicationProperty.SolverConfigDefaultExam.value();
 			break;
 		case STUDENT:
 			type = SolverParameterGroup.SolverType.STUDENT;
 			group = "StudentSctBasic";
 			appearance = SolverPredefinedSetting.Appearance.STUDENT_SOLVER;
-			defaultConfig = "StudentSct.Default";
+			defaultConfig = ApplicationProperty.SolverConfigDefaultStudentSct.value();
 			break;
 		case INSTRUCTOR:
 			type = SolverParameterGroup.SolverType.INSTRUCTOR;
 			group = "InstrSchd.Basic";
 			appearance = SolverPredefinedSetting.Appearance.INSTRUCTOR_SOLVER;
-			defaultConfig = "InstrSchd.Default";
+			defaultConfig = ApplicationProperty.SolverConfigDefaultInstrSchd.value();
 			break;
 		default:
 			 throw new IllegalArgumentException(MESSAGES.errorSolverInvalidType(request.getType().name()));
