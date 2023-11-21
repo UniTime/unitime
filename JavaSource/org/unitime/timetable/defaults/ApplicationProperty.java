@@ -3350,6 +3350,36 @@ public enum ApplicationProperty {
 	@Since(4.8)
 	NotificationsInstructorChangesIncludeLink("unitime.notifications.instructorChanges.includeLink"),
 
+	@Type(String.class)
+	@DefaultValue("Default.Interactive")
+	@Description("Solver Configuration: Reference of the default interactive configuration (Saved Timetables page)")
+	@Since(4.8)
+	SolverConfigDefaultInteractive("unitime.solverConfig.defaultInteractive"),
+	
+	@Type(String.class)
+	@DefaultValue("Default.Solver")
+	@Description("Solver Configuration: Reference of the default course timetabling configuration (Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultCourse("unitime.solverConfig.defaultCourse"),
+	
+	@Type(String.class)
+	@DefaultValue("Exam.Default")
+	@Description("Solver Configuration: Reference of the default examination timetabling configuration (Examination Timetabling Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultExam("unitime.solverConfig.defaultExam"),
+	
+	@Type(String.class)
+	@DefaultValue("StudentSct.Default")
+	@Description("Solver Configuration: Reference of the default student scheduling configuration (Student Scheduling Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultStudentSct("unitime.solverConfig.defaultStudentSct"),
+	
+	@Type(String.class)
+	@DefaultValue("InstrSchd.Default")
+	@Description("Solver Configuration: Reference of the default instructor scheduling configuration (Instructor Scheduling Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultInstrSchd("unitime.solverConfig.defaultInstrSchd"),
+
 	;
 
 	String iKey;
