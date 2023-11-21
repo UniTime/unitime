@@ -317,10 +317,10 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 	
 	protected void fillConfigurations(ListSolutionsResponse response, SessionContext context) {
 		int appearance = SolverPredefinedSetting.Appearance.TIMETABLES.ordinal();
-		String defaultConfig = "Interactive";
+		String defaultConfig = ApplicationProperty.SolverConfigDefaultInteractive.value();
 
 		List<SolverPredefinedSetting> configs = SolverPredefinedSettingDAO.getInstance().getSession().createQuery(
-				"from SolverPredefinedSetting s where s.appearance = :appearance", SolverPredefinedSetting.class
+				"from SolverPredefinedSetting s where s.appearance = :appearance order by s.description", SolverPredefinedSetting.class
 				).setParameter("appearance", appearance).setCacheable(true).list();
 		
 		for (SolverPredefinedSetting config: configs) {
