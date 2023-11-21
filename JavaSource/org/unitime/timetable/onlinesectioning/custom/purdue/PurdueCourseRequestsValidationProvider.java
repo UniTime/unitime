@@ -947,13 +947,17 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
-				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
-				response.setCreditWarning(
-						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
-						);
-				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+				String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
+				if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
+						new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+					creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+							"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
+					response.setCreditWarning(
+							ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+							"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+							);
+					response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+				}
 			}
 		}
 		
@@ -1235,11 +1239,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		if (minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
-			request.setCreditWarning(
-					ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
-					);
-			request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
+			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
+					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+				request.setCreditWarning(
+						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						);
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			}
 		}
 
 		ClientResource resource = null;
@@ -2124,11 +2132,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 		if (minCreditLimit != null && minCredit > 0 && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
-			request.setCreditWarning(
-					ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-					"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
-					);
-			request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
+			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
+					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+				request.setCreditWarning(
+						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						);
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			}
 		}
 		if (minCredit > 0 && request.getMaxCreditOverrideStatus() == null) {
 			request.setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
@@ -3737,13 +3749,17 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 			if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
-				creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
-				response.setCreditWarning(
-						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
-						);
-				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+				String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
+				if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
+						new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+					creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+							"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
+					response.setCreditWarning(
+							ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+							"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+							);
+					response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+				}
 			}
 		}
 		
