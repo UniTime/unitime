@@ -3302,36 +3302,6 @@ public enum ApplicationProperty {
 	@Since(4.7)
 	InstructorsCopyToSubSubparts("unitime.instructors.copyToSubSubparts"),
 	
-	@Type(String.class)
-	@DefaultValue("Default.Interactive")
-	@Description("Solver Configuration: Reference of the default interactive configuration (Saved Timetables page)")
-	@Since(4.8)
-	SolverConfigDefaultInteractive("unitime.solverConfig.defaultInteractive"),
-	
-	@Type(String.class)
-	@DefaultValue("Default.Solver")
-	@Description("Solver Configuration: Reference of the default course timetabling configuration (Solver page)")
-	@Since(4.8)
-	SolverConfigDefaultCourse("unitime.solverConfig.defaultCourse"),
-	
-	@Type(String.class)
-	@DefaultValue("Exam.Default")
-	@Description("Solver Configuration: Reference of the default examination timetabling configuration (Examination Timetabling Solver page)")
-	@Since(4.8)
-	SolverConfigDefaultExam("unitime.solverConfig.defaultExam"),
-	
-	@Type(String.class)
-	@DefaultValue("StudentSct.Default")
-	@Description("Solver Configuration: Reference of the default student scheduling configuration (Student Scheduling Solver page)")
-	@Since(4.8)
-	SolverConfigDefaultStudentSct("unitime.solverConfig.defaultStudentSct"),
-	
-	@Type(String.class)
-	@DefaultValue("InstrSchd.Default")
-	@Description("Solver Configuration: Reference of the default instructor scheduling configuration (Instructor Scheduling Solver page)")
-	@Since(4.8)
-	SolverConfigDefaultInstrSchd("unitime.solverConfig.defaultInstrSchd"),
-
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Email Notifications: automatically email instructors about their schedule changes")
@@ -3343,6 +3313,30 @@ public enum ApplicationProperty {
 	@Description("Email Notifications: check/display instructor's percent share, responsibility, and check for conflict changes")
 	@Since(4.8)
 	NotificationsInstructorChangesCheckShare("unitime.notifications.instructorChanges.checkShare"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class assignment changes (class assigned/removed to/from an instructor)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckAssignment("unitime.notifications.instructorChanges.checkAssignment"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class cancellation changes (assigned class cancelled or reopened)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckCancellations("unitime.notifications.instructorChanges.checkCancellations"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class time changes (class assigned to an instructor has a different time)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckTime("unitime.notifications.instructorChanges.checkTime"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class room changes (class assigned to an instructor has a different room)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckRoom("unitime.notifications.instructorChanges.checkRoom"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
@@ -3387,6 +3381,36 @@ public enum ApplicationProperty {
 	@Description("Email Notifications: include the link to UniTime in the instructor email notification (Personal Schedule; UniTime URL needs to be configured using unitime.url)")
 	@Since(4.8)
 	NotificationsInstructorChangesIncludeLink("unitime.notifications.instructorChanges.includeLink"),
+
+	@Type(String.class)
+	@DefaultValue("Default.Interactive")
+	@Description("Solver Configuration: Reference of the default interactive configuration (Saved Timetables page)")
+	@Since(4.8)
+	SolverConfigDefaultInteractive("unitime.solverConfig.defaultInteractive"),
+	
+	@Type(String.class)
+	@DefaultValue("Default.Solver")
+	@Description("Solver Configuration: Reference of the default course timetabling configuration (Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultCourse("unitime.solverConfig.defaultCourse"),
+	
+	@Type(String.class)
+	@DefaultValue("Exam.Default")
+	@Description("Solver Configuration: Reference of the default examination timetabling configuration (Examination Timetabling Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultExam("unitime.solverConfig.defaultExam"),
+	
+	@Type(String.class)
+	@DefaultValue("StudentSct.Default")
+	@Description("Solver Configuration: Reference of the default student scheduling configuration (Student Scheduling Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultStudentSct("unitime.solverConfig.defaultStudentSct"),
+	
+	@Type(String.class)
+	@DefaultValue("InstrSchd.Default")
+	@Description("Solver Configuration: Reference of the default instructor scheduling configuration (Instructor Scheduling Solver page)")
+	@Since(4.8)
+	SolverConfigDefaultInstrSchd("unitime.solverConfig.defaultInstrSchd"),
 
 	;
 
