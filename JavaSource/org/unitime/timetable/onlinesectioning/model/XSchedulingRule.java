@@ -54,6 +54,8 @@ public class XSchedulingRule implements Serializable, Externalizable {
 	private Boolean iAppliesToBatch;
 	private Boolean iAdminOverride;
 	private Boolean iAdvisorOverride;
+	
+	public XSchedulingRule() {}
 
 	public XSchedulingRule(StudentSchedulingRule rule) {
 		iUniqueId = rule.getUniqueId();
