@@ -348,10 +348,24 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 		return "instructor-email";
 	}
 	
+	public static boolean sameTime(boolean checkTime, XSection oldSection, XSection newSection) {
+    	if (!checkTime) return true;
+    	return ReloadOfferingAction.sameTime(newSection, oldSection.getTime());
+    }
+	
+	public static boolean sameRoom(boolean checkRoom, XSection oldSection, XSection newSection) {
+    	if (!checkRoom) return true;
+    	return ReloadOfferingAction.sameRooms(newSection, oldSection.getRooms());
+    }
     
-    public static boolean sameAssignment(boolean checkAssignment, XInstructor i1, XInstructor i2) {
-    	if (!checkAssignment) return true;
+    public static boolean sameShare(boolean checkShare, XInstructor i1, XInstructor i2) {
+    	if (!checkShare) return true;
     	return ToolBox.equals(i1.getPercentShare(), i2.getPercentShare()) && ToolBox.equals(i1.getResponsibility(), i2.getResponsibility()) && i1.isAllowOverlap() == i2.isAllowOverlap();
+    }
+    
+    public static boolean sameCancellation(boolean checkCancellations, XSection oldSection, XSection newSection) {
+    	if (!checkCancellations) return true;
+    	return newSection.isCancelled() == oldSection.isCancelled();
     }
     
 	public static class InstructorChange implements Serializable {
@@ -387,21 +401,37 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 			return instructor.getEmail() != null && !instructor.getEmail().isEmpty();
 		}
 		
-		public boolean hasChange(boolean checkAssignment) {
-			if (iOldSections.size() != iNewSections.size()) return true;
-			XCourseId course = getCourse();
-			old: for (XSection oldSection: iOldSections) {
-				for (XSection newSection: iNewSections) {
-					if (ReloadOfferingAction.sameName(course.getCourseId(), newSection, oldSection) &&
-							ReloadOfferingAction.sameTime(newSection, oldSection.getTime()) &&
-							ReloadOfferingAction.sameRooms(newSection, oldSection.getRooms()) &&
-							sameAssignment(checkAssignment, oldSection.getInstructor(iOldInstructor.getExternalId()), newSection.getInstructor(iNewInstructor.getExternalId())) &&
-							newSection.isCancelled() == oldSection.isCancelled())
-						continue old;
+		public boolean hasChange(boolean checkTime, boolean checkRoom, boolean checkAssignment, boolean checkCancellations, boolean checkShare) {
+			if (checkAssignment) {
+				if (iOldSections.size() != iNewSections.size()) return true;
+				XCourseId course = getCourse();
+				old: for (XSection oldSection: iOldSections) {
+					for (XSection newSection: iNewSections) {
+						if (ReloadOfferingAction.sameName(course.getCourseId(), newSection, oldSection) &&
+								sameTime(checkTime, newSection, oldSection) &&
+								sameRoom(checkRoom, newSection, oldSection) &&
+								sameShare(checkShare, oldSection.getInstructor(iOldInstructor.getExternalId()), newSection.getInstructor(iNewInstructor.getExternalId())) &&
+								sameCancellation(checkCancellations, oldSection, newSection))
+							continue old;
+					}
+					return true;
 				}
-				return true;
+				return false;
+			} else { // do not check for assignment changes
+				XCourseId course = getCourse();
+				for (XSection oldSection: iOldSections) {
+					for (XSection newSection: iNewSections) {
+						if (ReloadOfferingAction.sameName(course.getCourseId(), newSection, oldSection) && (
+								!sameTime(checkTime, newSection, oldSection) ||
+								!sameRoom(checkRoom, newSection, oldSection) ||
+								!sameShare(checkShare, oldSection.getInstructor(iOldInstructor.getExternalId()), newSection.getInstructor(iNewInstructor.getExternalId())) ||
+								!sameCancellation(checkCancellations, oldSection, newSection)
+								))
+							return true;
+					}
+				}
+				return false;
 			}
-			return false;
 		}
 	}
 }

@@ -949,9 +949,13 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				}
 			}
 		}
-		boolean checkAssignment = ApplicationProperty.NotificationsInstructorChangesCheckShare.isTrue();
+		boolean checkTime = ApplicationProperty.NotificationsInstructorChangesCheckTime.isTrue();
+		boolean checkRoom = ApplicationProperty.NotificationsInstructorChangesCheckRoom.isTrue();
+		boolean checkAssignment = ApplicationProperty.NotificationsInstructorChangesCheckAssignment.isTrue();
+		boolean checkCancellations = ApplicationProperty.NotificationsInstructorChangesCheckCancellations.isTrue();
+		boolean checkShare = ApplicationProperty.NotificationsInstructorChangesCheckShare.isTrue();
 		for (InstructorChange ic: instructors.values()) {
-			if (ic.hasEmail() && ic.hasChange(checkAssignment)) {
+			if (ic.hasEmail() && ic.hasChange(checkTime, checkRoom, checkAssignment, checkCancellations, checkShare)) {
 				server.execute(server.createAction(InstructorEmail.class).forChange(ic), helper.getUser(), new OnlineSectioningServer.ServerCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable exception) {

@@ -3308,6 +3308,30 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class assignment changes (class assigned/removed to/from an instructor)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckAssignment("unitime.notifications.instructorChanges.checkAssignment"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class cancellation changes (assigned class cancelled or reopened)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckCancellations("unitime.notifications.instructorChanges.checkCancellations"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class time changes (class assigned to an instructor has a different time)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckTime("unitime.notifications.instructorChanges.checkTime"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Email Notifications: notify instructors about class room changes (class assigned to an instructor has a different room)")
+	@Since(4.8)
+	NotificationsInstructorChangesCheckRoom("unitime.notifications.instructorChanges.checkRoom"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
 	@Description("Email Notifications: include the list of all currently assigned classes that the instructor has in the email notification")
 	@Since(4.8)
 	NotificationsInstructorChangesIncludeSchedule("unitime.notifications.instructorChanges.includeSchedule"),
