@@ -160,6 +160,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private String iSourceAction = "not-set";
 	private ReschedulingReason iReason = null;
 	private NotificationType iNotificationType;
+	private boolean iSkipWhenNoChange = false;
 	
 	public StudentEmail forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -222,6 +223,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	
 	public StudentEmail rescheduling(ReschedulingReason reason) {
 		iReason = reason;
+		return this;
+	}
+	
+	public StudentEmail skipWhenNoChange(boolean skipWhenNoChange) {
+		iSkipWhenNoChange = skipWhenNoChange;
 		return this;
 	}
 	
@@ -1160,14 +1166,20 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					input.put("changes", listOfChanges);
 				}
 			}
-		} else if (getOldStudent() != null && !getOldStudent().getRequests().isEmpty()) {
-			boolean somethingWasAssigned = false;
+		} else if (getOldStudent() != null) {
+			boolean somethingWasOrIsAssigned = false;
 			for (XRequest or: getOldStudent().getRequests()) {
 				if (or instanceof XCourseRequest && ((XCourseRequest)or).getEnrollment() != null) {
-					somethingWasAssigned = true; break;
+					somethingWasOrIsAssigned = true; break;
 				}
 			}
-			if (somethingWasAssigned) {
+			if (!iIncludeClassSchedule)
+				for (XRequest nr: getStudent().getRequests()) {
+					if (nr instanceof XCourseRequest && ((XCourseRequest)nr).getEnrollment() != null) {
+						somethingWasOrIsAssigned = true; break;
+					}
+				}
+			if (somethingWasOrIsAssigned) {
 				Table listOfChanges = new Table();
 				requests: for (XRequest nr: getStudent().getRequests()) {
 					if (nr instanceof XFreeTimeRequest) continue;
@@ -1304,9 +1316,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						listOfChanges.add(new TableSectionDeletedLine(ocr, course, subpart, section, requires, getCourseUrl(session, course)));
 					}
 				}
-				
+				if (iSkipWhenNoChange && listOfChanges.isEmpty()) return null;
 				input.put("changes", listOfChanges);				
 			} else {
+				if (iSkipWhenNoChange) return null;
 				if (iIncludeClassSchedule)
 					setSubject(MSG.emailSubjectNotificationClassSchedule());
 				else if (iIncludeCourseRequests)
