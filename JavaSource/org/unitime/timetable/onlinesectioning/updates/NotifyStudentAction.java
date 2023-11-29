@@ -60,6 +60,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private SectioningException iFailure;
 	private ReschedulingReason iReason;
 	private NotificationType iNotificationType;
+	private boolean iSkipWhenNoChange = false;
 	
 	public NotifyStudentAction forStudent(Long studentId) {
 		iStudentId = studentId;
@@ -103,6 +104,11 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	
 	public NotifyStudentAction rescheduling(ReschedulingReason reason) {
 		iReason = reason;
+		return this;
+	}
+	
+	public NotifyStudentAction skipWhenNoChange(boolean skipWhenNoChange) {
+		iSkipWhenNoChange = skipWhenNoChange;
 		return this;
 	}
 	
@@ -150,7 +156,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 							.dropEnrollment(iDropEnrollment)
 							.oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment)
 							.rescheduling(iReason)
-							.withType(iNotificationType),
+							.withType(iNotificationType)
+							.skipWhenNoChange(iSkipWhenNoChange),
 							helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
@@ -207,7 +214,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 							.oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment)
 							.dropEnrollment(iDropEnrollment)
 							.rescheduling(iReason)
-							.withType(iNotificationType), helper.getUser(), new ServerCallback<Boolean>() {
+							.withType(iNotificationType)
+							.skipWhenNoChange(iSkipWhenNoChange), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
@@ -267,7 +275,8 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 							.fromAction(iSourceAction)
 							.oldStudent(iOldStudent)
 							.rescheduling(iReason)
-							.withType(iNotificationType), helper.getUser(), new ServerCallback<Boolean>() {
+							.withType(iNotificationType)
+							.skipWhenNoChange(iSkipWhenNoChange), helper.getUser(), new ServerCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable exception) {
 							helper.error("Failed to notify student: " + exception.getMessage(), exception);
