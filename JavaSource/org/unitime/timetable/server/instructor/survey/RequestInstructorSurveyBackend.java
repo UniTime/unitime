@@ -183,7 +183,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		survey.setAdmin(admin);
 		survey.setSessionId(sessionId);
 		survey.setCanDelete(editable && admin && ApplicationProperty.InstructorSurveyManagersCanDelete.isTrue());
-		survey.setCanApply(is != null && is.getSubmitted() != null && instructor != null && context.hasPermission(instructor, Right.InstructorPreferences) && !is.getPreferences().isEmpty());
+		survey.setCanApply(is != null && is.getSubmitted() != null && instructor != null && context.hasPermission(instructor, Right.InstructorPreferences) &&
+				(!is.getPreferences().isEmpty() || !instructor.getPreferences().isEmpty()));
 		String nameFormat = UserProperty.NameFormat.get(context.getUser());
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			if (pref.getPrefProlog().equals(PreferenceLevel.sNeutral)) continue;
