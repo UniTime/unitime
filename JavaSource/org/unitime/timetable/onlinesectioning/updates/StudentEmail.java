@@ -167,6 +167,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
+	public StudentEmail forStudent(XStudent student) {
+		iStudent = student;
+		iStudentId = student.getStudentId();
+		return this;
+	}
+	
 	public StudentEmail fromAction(String actionName) {
 		iSourceAction = actionName;
 		return this;
@@ -311,7 +317,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				action.addEnrollment(enrollment);
 			}
 						
-			final XStudent student = server.getStudent(getStudentId());
+			final XStudent student = (getStudent() != null ? getStudent() : server.getStudent(getStudentId()));
 			if (student == null) return false;
 			setStudent(student);
 			action.getStudentBuilder().setUniqueId(student.getStudentId()).setExternalId(student.getExternalId()).setName(student.getName());
@@ -390,6 +396,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					helper.logOption("source-action", iSourceAction);
 				if (iNotificationType != null)
 					helper.logOption("type", iNotificationType.name());
+				if (iSkipWhenNoChange)
+					helper.logOption("skipWhenNoChange", "true");
 				
 				if (emailEnabled) {
 					final String html = generateMessage(dbStudent, server, helper);
@@ -636,7 +644,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						
 						ret = true;
 					} else {
-						helper.debug("Email notification failed to generate for student " + student.getName() + ".");
+						if (iSkipWhenNoChange)
+							helper.debug(MSG.emailNoChange());
+						else
+							helper.debug("Email notification failed to generate for student " + student.getName() + ".");
 					}
 				} else {
 					helper.debug("Email notification is disabled for student " + student.getName() + ".");

@@ -128,7 +128,7 @@ public class ApproveEnrollmentsAction implements OnlineSectioningAction<Boolean>
 								}
 								
 								server.execute(server.createAction(NotifyStudentAction.class)
-										.forStudent(enrollment.getStudentId())
+										.forStudent(server.getStudent(enrollment.getStudentId()))
 										.fromAction(name())
 										.withType(NotificationType.AdminChangeApproval)
 										.oldEnrollment(offering, offering.getCourse(oldEnrollment.getCourseId()), oldEnrollment), helper.getUser());

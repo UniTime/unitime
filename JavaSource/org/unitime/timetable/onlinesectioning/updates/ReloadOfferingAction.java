@@ -335,7 +335,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
 					if (newEnrollment != null && oldEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
 						server.execute(server.createAction(NotifyStudentAction.class)
-								.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+								.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
 								.fromAction(name())
 								.withType(NotificationType.CourseChangeSchedule)
 								.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
@@ -409,7 +409,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						}
 						action.setEndTime(System.currentTimeMillis());
 						NotifyStudentAction notifyAction = server.createAction(NotifyStudentAction.class)
-								.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+								.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
 								.fromAction(name())
 								.withType(NotificationType.CourseChangeEnrollment)
 								.oldEnrollment(oldOffering, course, oldEnrollment)
@@ -456,7 +456,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							
 							if (!isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
 								server.execute(server.createAction(NotifyStudentAction.class)
-										.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+										.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
 										.fromAction(name())
 										.withType(NotificationType.CourseChangeSchedule)
 										.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
@@ -511,7 +511,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					} else if (newEnrollment != null && oldEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment))) {
 						
 						server.execute(server.createAction(NotifyStudentAction.class)
-								.forStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId())
+								.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
 								.fromAction(name())
 								.withType(NotificationType.CourseChangeSchedule)
 								.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
@@ -577,7 +577,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						r.getAction().setEndTime(System.currentTimeMillis());
 						if (ApplicationProperty.OnlineSchedulingEmailConfirmationWhenFailed.isTrue())
 							server.execute(server.createAction(NotifyStudentAction.class)
-									.forStudent(r.getRequest().getStudentId()).fromAction(name())
+									.forStudent(server.getStudent(r.getRequest().getStudentId())).fromAction(name())
 									.withType(NotificationType.CourseChangeEnrollmentFailed)
 									.failedEnrollment(newOffering, r.getCourseId(), e, ex)
 									.dropEnrollment(dropEnrollment)
@@ -781,7 +781,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				server.persistExpectedSpaces(offeringId);
 
 				server.execute(server.createAction(NotifyStudentAction.class)
-						.forStudent(r.getRequest().getStudentId())
+						.forStudent(server.getStudent(r.getRequest().getStudentId()))
 						.fromAction(name())
 						.withType(NotificationType.CourseChangeEnrollment)
 						.oldEnrollment(oldOffering, r.getCourseId(), r.getLastEnrollment())
