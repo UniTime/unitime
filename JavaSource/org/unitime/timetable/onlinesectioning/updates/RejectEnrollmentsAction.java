@@ -123,7 +123,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 						server.update(student, true);
 						
 						server.execute(server.createAction(NotifyStudentAction.class)
-								.forStudent(enrollment.getStudentId())
+								.forStudent(student)
 								.fromAction(name())
 								.withType(NotificationType.AdminChangeEnrollment)
 								.oldEnrollment(offering, offering.getCourse(enrollment.getCourseId()), enrollment), helper.getUser());

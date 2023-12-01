@@ -48,6 +48,7 @@ import org.unitime.timetable.onlinesectioning.solver.SectioningRequest.Reschedul
 public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private Long iStudentId;
+	private XStudent iStudent;
 	private XOffering iOldOffering;
 	private XCourseId iOldCourseId;
 	private XEnrollment iOldEnrollment;
@@ -64,6 +65,12 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 	
 	public NotifyStudentAction forStudent(Long studentId) {
 		iStudentId = studentId;
+		return this;
+	}
+	
+	public NotifyStudentAction forStudent(XStudent student) {
+		iStudent = student;
+		iStudentId = (student == null ? null : student.getStudentId());
 		return this;
 	}
 	
@@ -112,11 +119,11 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 		return this;
 	}
 	
-	public Long getStudentId() { return iStudentId; }
+	public Long getStudentId() { return iStudent.getStudentId(); }
 
 	@Override
 	public Boolean execute(OnlineSectioningServer server, final OnlineSectioningHelper helper) {
-		XStudent student = server.getStudent(getStudentId());
+		XStudent student = (iStudent != null ? iStudent : iStudentId != null ? server.getStudent(iStudentId) : null);
 		if (student != null) {
 			if (iFailedOffering != null) {
 				String message = "Student " + student.getName() + " (" + student.getStudentId() + ") not changed.";
@@ -151,7 +158,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				}
 				helper.debug(message);
 				if (isEmailEnabled(server, helper)) {
-					server.execute(server.createAction(StudentEmail.class).forStudent(getStudentId()).fromAction(iSourceAction)
+					server.execute(server.createAction(StudentEmail.class).forStudent(student).fromAction(iSourceAction)
 							.failedEnrollment(iFailedOffering, iFailedCourseId, iFailedEnrollment, iFailure)
 							.dropEnrollment(iDropEnrollment)
 							.oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment)
@@ -209,7 +216,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				helper.debug(message);
 				if (isEmailEnabled(server, helper)) {
 					server.execute(server.createAction(StudentEmail.class)
-							.forStudent(getStudentId())
+							.forStudent(student)
 							.fromAction(iSourceAction)
 							.oldEnrollment(iOldOffering, iOldCourseId, iOldEnrollment)
 							.dropEnrollment(iDropEnrollment)
@@ -271,7 +278,7 @@ public class NotifyStudentAction implements OnlineSectioningAction<Boolean> {
 				helper.debug(message);
 				if (isEmailEnabled(server, helper)) {
 					server.execute(server.createAction(StudentEmail.class)
-							.forStudent(getStudentId())
+							.forStudent(student)
 							.fromAction(iSourceAction)
 							.oldStudent(iOldStudent)
 							.rescheduling(iReason)

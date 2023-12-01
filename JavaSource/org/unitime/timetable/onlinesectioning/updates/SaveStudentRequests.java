@@ -151,7 +151,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<CourseRequest
 					throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 				}
 				server.execute(server.createAction(NotifyStudentAction.class)
-						.forStudent(getStudentId())
+						.forStudent(newStudent)
 						.fromAction(name())
 						.withType(helper.isAdmin() ? NotificationType.AdminChangeRequest : NotificationType.StudentChangeRequest)
 						.oldStudent(oldStudent), helper.getUser());

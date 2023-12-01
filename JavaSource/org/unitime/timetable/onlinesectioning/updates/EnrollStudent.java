@@ -890,9 +890,10 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				
 				if (enrollmentChanged)
 						server.execute(server.createAction(NotifyStudentAction.class)
-								.forStudent(getStudentId())
+								.forStudent(newStudent)
 								.fromAction(name())
 								.withType(helper.isAdmin() ? NotificationType.AdminChangeEnrollment : NotificationType.StudentChangeEnrollment)
+								.skipWhenNoChange(true)
 								.oldStudent(oldStudent), helper.getUser());
 				helper.commitTransaction();
 			} catch (Exception e) {
