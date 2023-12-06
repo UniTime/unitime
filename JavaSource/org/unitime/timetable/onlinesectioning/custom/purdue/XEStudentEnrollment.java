@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.GradeModes;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck.EligibilityFlag;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage.UniTimeCode;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -1167,8 +1168,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			Set<String> idsToAdd = new TreeSet<String>(), idsToDrop = new TreeSet<String>();
 			if (sectioningRequest.getLastEnrollment() != null)
-				for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment()))
+				for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment())) {
+					if (!section.isEnabledForScheduling()) {
+						SectioningException e = new SectioningException("Section " + section.getExternalId(course.getCourseId()) + " is not available for student scheduling.");
+						e.addError(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
+						throw e;
+					}
 					idsToDrop.add(section.getExternalId(course.getCourseId()));
+				}
 			if (enrollment != null) {
 				for (XSection section: sectioningRequest.getOffering().getSections(enrollment))
 					idsToAdd.add(section.getExternalId(course.getCourseId()));
@@ -1178,8 +1185,14 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (dropEnrollment != null) {
 				XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
 				if (dropOffering != null)
-					for (XSection section: dropOffering.getSections(dropEnrollment))
-						idsToDrop.add(section.getExternalId(dropEnrollment.getCourseId()));		
+					for (XSection section: dropOffering.getSections(dropEnrollment)) {
+						if (!section.isEnabledForScheduling()) {
+							SectioningException e = new SectioningException("Section " + section.getExternalId(course.getCourseId()) + " is not available for student scheduling.");
+							e.addError(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
+							throw e;
+						}
+						idsToDrop.add(section.getExternalId(dropEnrollment.getCourseId()));
+					}
 			}
 
 			// Remove sections that are to be kept (they are included in both enrollments)
@@ -1260,16 +1273,22 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				for (XEInterface.Registration reg: original.registrations) {
 					if (reg.isRegistered()) {
 						if (idsToDrop.contains(reg.courseReferenceNumber)) {
-							if (!reg.canDrop(true, actions))
-								throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
+							if (!reg.canDrop(true, actions)) {
+								SectioningException e = new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
+								e.addError(new ErrorMessage(reg.subject + " " + reg.courseNumber, reg.courseReferenceNumber, ErrorMessage.UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
+								throw e;
+							}
 							req.drop(reg.courseReferenceNumber, actions);
 							changed = true;
 						} else {
 							req.keep(reg.courseReferenceNumber);
 						}
 					} else if (idsToAdd.remove(reg.courseReferenceNumber)) {
-						if (!reg.canAdd(true))
-							throw new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
+						if (!reg.canAdd(true)) {
+							SectioningException e = new SectioningException("Section " + reg.courseReferenceNumber + " is not available for student scheduling.");
+							e.addError(new ErrorMessage(reg.subject + " " + reg.courseNumber, reg.courseReferenceNumber, ErrorMessage.UniTimeCode.UT_DISABLED, "Section cannot be added."));
+							throw e;
+						}
 						req.add(reg.courseReferenceNumber, true);
 						changed = true;
 					}
@@ -1375,7 +1394,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 					if (exception == null && ret.getSectionIds().isEmpty())
 						exception = new SectioningException(reg.failure);
 					if (exception != null)
-						exception.addError(new ErrorMessage(course.getCourseName(), reg.failedCRN, "", reg.failure));
+						exception.addError(new ErrorMessage(course.getCourseName(), reg.failedCRN, "UNKNOWN", reg.failure));
 				}
 			}
 			if (exception != null) throw exception;		
