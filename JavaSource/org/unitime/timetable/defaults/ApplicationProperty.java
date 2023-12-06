@@ -648,6 +648,14 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: CC advisors in the student email confirmation from a particular operation %")
 	OnlineSchedulingEmailCCAdvisors("unitime.enrollment.email.%.ccAdvisors"),
 	
+	@Type(String.class)
+	@Description("Online Student Scheduling: do not send student email notification if failed error code matches this parameter")
+	OnlineSchedulingEmailSkipOnErrorCodes("unitime.enrollment.email.skipOnErrorCodes"),
+	
+	@Type(String.class)
+	@Description("Online Student Scheduling: do not send student email notification if failed error message matches this parameter")
+	OnlineSchedulingEmailSkipOnErrorMessage("unitime.enrollment.email.skipOnErrorMessage"),
+	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Online Student Scheduling: check for gradable itypes when checking on which subpart course credit information should be shown")
