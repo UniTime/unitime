@@ -36,6 +36,7 @@ import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
+import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -57,6 +58,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -480,6 +482,7 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			}
 		}
 		
+		boolean lockStudents = server.getConfig().getPropertyBoolean(name() + ".LockStudents", true);
 		if (!queue.isEmpty()) {
 			DataProperties properties = server.getConfig();
 			ResectioningWeights w = new ResectioningWeights(properties);
@@ -562,156 +565,175 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 				helper.debug("New: " + (e == null ? "not assigned" : e.getSectionIds()), r.getAction());
 				
 				Date dropTS = null;
-				org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), helper.getHibSession());
-				WaitListMode wlMode = student.getWaitListMode();
-				Map<Long, StudentClassEnrollment> enrollmentMap = new HashMap<Long, StudentClassEnrollment>();
-				String approvedBy = null; Date approvedDate = null;
-				for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
-					StudentClassEnrollment enrl = i.next();
-					if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getRequestId())) ||
-						(enrl.getCourseOffering() != null && enrl.getCourseOffering().getUniqueId().equals(r.getCourseId().getCourseId()))) {
-						helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
-						if (dropTS == null || (enrl.getTimestamp() != null && enrl.getTimestamp().before(dropTS)))
-							dropTS = enrl.getTimestamp();
-						enrollmentMap.put(enrl.getClazz().getUniqueId(), enrl);
-						if (approvedBy == null && enrl.getApprovedBy() != null) {
-							approvedBy = enrl.getApprovedBy();
-							approvedDate = enrl.getApprovedDate();
-						}
-						enrl.getClazz().getStudentEnrollments().remove(enrl);
-						helper.getHibSession().remove(enrl);
-						i.remove();
-					} else if (dropEnrollment != null && dropEnrollment.getCourseId().equals(enrl.getCourseOffering().getUniqueId())) {
-						helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
-						enrl.getClazz().getStudentEnrollments().remove(enrl);
-						helper.getHibSession().remove(enrl);
-						i.remove();
-					}
+				org.hibernate.Session hibSession = helper.getHibSession();
+				Transaction tx = null;
+				if (!lockStudents) {
+					hibSession = new _RootDAO().createNewSession();
+					tx = hibSession.beginTransaction();
 				}
-				CourseDemand cd = null;
-				demands: for (CourseDemand x: student.getCourseDemands())
-					for (org.unitime.timetable.model.CourseRequest q: x.getCourseRequests())
-						if (q.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
-							cd = x;
-							break demands;
+				WaitListMode wlMode = WaitListMode.None;
+				try {
+					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(r.getRequest().getStudentId(), hibSession);
+					wlMode = student.getWaitListMode();
+					Map<Long, StudentClassEnrollment> enrollmentMap = new HashMap<Long, StudentClassEnrollment>();
+					String approvedBy = null; Date approvedDate = null;
+					for (Iterator<StudentClassEnrollment> i = student.getClassEnrollments().iterator(); i.hasNext();) {
+						StudentClassEnrollment enrl = i.next();
+						if ((enrl.getCourseRequest() != null && enrl.getCourseRequest().getCourseDemand().getUniqueId().equals(r.getRequest().getRequestId())) ||
+							(enrl.getCourseOffering() != null && enrl.getCourseOffering().getUniqueId().equals(r.getCourseId().getCourseId()))) {
+							helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
+							if (dropTS == null || (enrl.getTimestamp() != null && enrl.getTimestamp().before(dropTS)))
+								dropTS = enrl.getTimestamp();
+							enrollmentMap.put(enrl.getClazz().getUniqueId(), enrl);
+							if (approvedBy == null && enrl.getApprovedBy() != null) {
+								approvedBy = enrl.getApprovedBy();
+								approvedDate = enrl.getApprovedDate();
+							}
+							enrl.getClazz().getStudentEnrollments().remove(enrl);
+							hibSession.remove(enrl);
+							i.remove();
+						} else if (dropEnrollment != null && dropEnrollment.getCourseId().equals(enrl.getCourseOffering().getUniqueId())) {
+							helper.debug("Deleting " + enrl.getClazz().getClassLabel(), r.getAction());
+							enrl.getClazz().getStudentEnrollments().remove(enrl);
+							hibSession.remove(enrl);
+							i.remove();
 						}
-				
-				if (r.getRequest().getEnrollment() != null) { // save enrollment
-					org.unitime.timetable.model.CourseRequest cr = null;
-					CourseOffering co = null;
-					if (co == null) 
-						for (CourseOffering x: io.getCourseOfferings())
-							if (x.getUniqueId().equals(r.getRequest().getEnrollment().getCourseId()))
-								co = x;
-					for (Long sectionId: r.getRequest().getEnrollment().getSectionIds()) {
-						Class_ clazz = Class_DAO.getInstance().get(sectionId, helper.getHibSession());
-						if (cd != null && cr == null) {
-							for (org.unitime.timetable.model.CourseRequest x: cd.getCourseRequests())
-								if (x.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
-									cr = x; break;
+					}
+					CourseDemand cd = null;
+					demands: for (CourseDemand x: student.getCourseDemands())
+						for (org.unitime.timetable.model.CourseRequest q: x.getCourseRequests())
+							if (q.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
+								cd = x;
+								break demands;
+							}
+					
+					if (r.getRequest().getEnrollment() != null) { // save enrollment
+						org.unitime.timetable.model.CourseRequest cr = null;
+						CourseOffering co = null;
+						if (co == null) 
+							for (CourseOffering x: io.getCourseOfferings())
+								if (x.getUniqueId().equals(r.getRequest().getEnrollment().getCourseId()))
+									co = x;
+						for (Long sectionId: r.getRequest().getEnrollment().getSectionIds()) {
+							Class_ clazz = Class_DAO.getInstance().get(sectionId, hibSession);
+							if (cd != null && cr == null) {
+								for (org.unitime.timetable.model.CourseRequest x: cd.getCourseRequests())
+									if (x.getCourseOffering().getInstructionalOffering().getUniqueId().equals(offeringId)) {
+										cr = x; break;
+									}
+							}
+							if (co == null)
+								co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+							StudentClassEnrollment enrl = new StudentClassEnrollment();
+							enrl.setClazz(clazz);
+							clazz.getStudentEnrollments().add(enrl);
+							enrl.setCourseOffering(co);
+							enrl.setCourseRequest(cr);
+							StudentClassEnrollment old = enrollmentMap.get(sectionId);
+							enrl.setTimestamp(old != null ? old.getTimestamp() : ts);
+							enrl.setChangedBy(old != null ? old.getChangedBy() : helper.getUser() == null ? StudentClassEnrollment.SystemChange.SYSTEM.toString() : helper.getUser().getExternalId());
+							enrl.setStudent(student);
+							enrl.setApprovedBy(approvedBy);
+							enrl.setApprovedDate(approvedDate);
+							student.getClassEnrollments().add(enrl);
+							hibSession.persist(enrl);
+							helper.debug("Adding " + enrl.getClazz().getClassLabel(), r.getAction());
+						}
+						
+						if (cd != null && cd.isWaitlist()) {
+							cd.setWaitlist(false);
+							hibSession.merge(cd);
+							student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, hibSession);
+						} else if (cd != null) {
+							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, hibSession);
+						}
+						if (r.getRequest().isWaitlist())
+							r.setRequest(server.waitlist(r.getRequest(), false));
+					} else if (r.getOffering().isWaitList() && hasWaitListingStatus(r.getStudent(), server)) { // wait-list
+						if (cd != null && !cd.isWaitlist()) {
+							// ensure that the dropped course is the first choice 
+							CourseRequest cr = (r.getCourseId() == null ? null : cd.getCourseRequest(r.getCourseId().getCourseId()));
+							if (cr != null && cr.getOrder() > 0) {
+								for (CourseRequest x: cd.getCourseRequests()) {
+									if (x.getOrder() < cr.getOrder()) {
+										x.setOrder(x.getOrder() + 1);
+										hibSession.merge(x);
+									}
 								}
+								cr.setOrder(0);
+								hibSession.merge(cr);
+							}
+							// ensure that the course request is not a substitute 
+							if (cd.isAlternative()) {
+								int priority = cd.getPriority();
+								for (CourseDemand x: cd.getStudent().getCourseDemands()) {
+									if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
+										if (priority > x.getPriority()) priority = x.getPriority();
+										x.setPriority(1 + x.getPriority());
+										hibSession.merge(x);
+									}
+								}
+								cd.setPriority(priority);
+								cd.setAlternative(false);
+							}
+							cd.setWaitlistedTimeStamp(dropTS == null ? ts : dropTS);
+							cd.setWaitlist(true);
+							cd.setWaitListSwapWithCourseOffering(null);
+							hibSession.merge(cd);
+							student.addWaitList(
+									CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), hibSession),
+									WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, hibSession);
 						}
-						if (co == null)
-							co = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
-						StudentClassEnrollment enrl = new StudentClassEnrollment();
-						enrl.setClazz(clazz);
-						clazz.getStudentEnrollments().add(enrl);
-						enrl.setCourseOffering(co);
-						enrl.setCourseRequest(cr);
-						StudentClassEnrollment old = enrollmentMap.get(sectionId);
-						enrl.setTimestamp(old != null ? old.getTimestamp() : ts);
-						enrl.setChangedBy(old != null ? old.getChangedBy() : helper.getUser() == null ? StudentClassEnrollment.SystemChange.SYSTEM.toString() : helper.getUser().getExternalId());
-						enrl.setStudent(student);
-						enrl.setApprovedBy(approvedBy);
-						enrl.setApprovedDate(approvedDate);
-						student.getClassEnrollments().add(enrl);
-						helper.getHibSession().persist(enrl);
-						helper.debug("Adding " + enrl.getClazz().getClassLabel(), r.getAction());
+						if (!r.getRequest().isWaitlist()) {
+							r.getRequest().setWaitListedTimeStamp(dropTS == null ? ts : dropTS);
+							r.getRequest().setWaitListSwapWithCourseOffering(null);
+							boolean otherRequestsChanged = false;
+							XStudent xs = r.getStudent();
+							// ensure that the dropped course is the first choice
+							XCourseId course = r.getCourseId();
+							int idx = (course == null ? -1 : r.getRequest().getCourseIds().indexOf(course));
+							if (idx > 0) {
+								r.getRequest().getCourseIds().remove(idx);
+								r.getRequest().getCourseIds().add(0, course);
+								otherRequestsChanged = true;
+							}
+							// ensure that the course request is not a substitute
+							if (r.getRequest().isAlternative()) {
+								int priority = r.getRequest().getPriority();
+								for (XRequest x: xs.getRequests()) {
+									if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
+										if (priority > x.getPriority()) priority = x.getPriority();
+										x.setPriority(1 + x.getPriority());
+									}
+								}
+								r.getRequest().setPriority(priority);
+								r.getRequest().setAlternative(false);
+								otherRequestsChanged = true;
+							}
+							if (otherRequestsChanged) {
+								r.getRequest().setWaitlist(true);
+								server.update(xs, true);
+							} else
+								r.setRequest(server.waitlist(r.getRequest(), true));
+						}
+					} else if (r.getLastEnrollment() != null) {
+						CourseOffering co = CourseOfferingDAO.getInstance().get(r.getLastEnrollment().getCourseId(), hibSession);
+						if (co != null)
+							student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, hibSession);
 					}
 					
-					if (cd != null && cd.isWaitlist()) {
-						cd.setWaitlist(false);
-						helper.getHibSession().merge(cd);
-						student.addWaitList(co, WaitList.WaitListType.WAIT_LIST_PORCESSING, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
-					} else if (cd != null) {
-						student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
-					}
-					if (r.getRequest().isWaitlist())
-						r.setRequest(server.waitlist(r.getRequest(), false));
-				} else if (r.getOffering().isWaitList() && hasWaitListingStatus(r.getStudent(), server)) { // wait-list
-					if (cd != null && !cd.isWaitlist()) {
-						// ensure that the dropped course is the first choice 
-						CourseRequest cr = (r.getCourseId() == null ? null : cd.getCourseRequest(r.getCourseId().getCourseId()));
-						if (cr != null && cr.getOrder() > 0) {
-							for (CourseRequest x: cd.getCourseRequests()) {
-								if (x.getOrder() < cr.getOrder()) {
-									x.setOrder(x.getOrder() + 1);
-									helper.getHibSession().merge(x);
-								}
-							}
-							cr.setOrder(0);
-							helper.getHibSession().merge(cr);
-						}
-						// ensure that the course request is not a substitute 
-						if (cd.isAlternative()) {
-							int priority = cd.getPriority();
-							for (CourseDemand x: cd.getStudent().getCourseDemands()) {
-								if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
-									if (priority > x.getPriority()) priority = x.getPriority();
-									x.setPriority(1 + x.getPriority());
-									helper.getHibSession().merge(x);
-								}
-							}
-							cd.setPriority(priority);
-							cd.setAlternative(false);
-						}
-						cd.setWaitlistedTimeStamp(dropTS == null ? ts : dropTS);
-						cd.setWaitlist(true);
-						cd.setWaitListSwapWithCourseOffering(null);
-						helper.getHibSession().merge(cd);
-						student.addWaitList(
-								CourseOfferingDAO.getInstance().get(r.getCourseId().getCourseId(), helper.getHibSession()),
-								WaitList.WaitListType.WAIT_LIST_PORCESSING, true, helper.getUser().getExternalId(), ts, helper.getHibSession());
-					}
-					if (!r.getRequest().isWaitlist()) {
-						r.getRequest().setWaitListedTimeStamp(dropTS == null ? ts : dropTS);
-						r.getRequest().setWaitListSwapWithCourseOffering(null);
-						boolean otherRequestsChanged = false;
-						XStudent xs = r.getStudent();
-						// ensure that the dropped course is the first choice
-						XCourseId course = r.getCourseId();
-						int idx = (course == null ? -1 : r.getRequest().getCourseIds().indexOf(course));
-						if (idx > 0) {
-							r.getRequest().getCourseIds().remove(idx);
-							r.getRequest().getCourseIds().add(0, course);
-							otherRequestsChanged = true;
-						}
-						// ensure that the course request is not a substitute
-						if (r.getRequest().isAlternative()) {
-							int priority = r.getRequest().getPriority();
-							for (XRequest x: xs.getRequests()) {
-								if (x.isAlternative() && x.getPriority() < cd.getPriority()) {
-									if (priority > x.getPriority()) priority = x.getPriority();
-									x.setPriority(1 + x.getPriority());
-								}
-							}
-							r.getRequest().setPriority(priority);
-							r.getRequest().setAlternative(false);
-							otherRequestsChanged = true;
-						}
-						if (otherRequestsChanged) {
-							r.getRequest().setWaitlist(true);
-							server.update(xs, true);
-						} else
-							r.setRequest(server.waitlist(r.getRequest(), true));
-					}
-				} else if (r.getLastEnrollment() != null) {
-					CourseOffering co = CourseOfferingDAO.getInstance().get(r.getLastEnrollment().getCourseId(), helper.getHibSession());
-					if (co != null)
-						student.addWaitList(co, WaitList.WaitListType.RE_BATCH_ON_RELOAD, false, helper.getUser().getExternalId(), ts, helper.getHibSession());
+					hibSession.merge(student);
+					if (tx != null) tx.commit();
+				} catch (Exception ex) {
+					if (dropEnrollment != null)
+						server.assign(r.getDropRequest(), dropEnrollment);
+					server.assign(r.getRequest(), r.getLastEnrollment());
+					r.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
+					helper.error((r.getCourseId() == null ? newOffering.getName() : r.getCourseId().getCourseName()) + ": " + (ex.getMessage() == null ? "Unable to resection student." : ex.getMessage()), ex, r.getAction());
+					if (tx != null) tx.rollback();
+				} finally {
+					if (!lockStudents) hibSession.close();
 				}
-				
-				helper.getHibSession().merge(student);
 			
 				EnrollStudent.updateSpace(server,
 						r.getRequest().getEnrollment() == null ? null : SectioningRequest.convert(r.getStudent(), r.getRequest(), server, newOffering, r.getRequest().getEnrollment(), wlMode, helper),
