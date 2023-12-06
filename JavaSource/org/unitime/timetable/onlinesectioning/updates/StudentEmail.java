@@ -344,6 +344,22 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					helper.logOption("failed-course", iFailedCourseId.getCourseName());
 					helper.logOption("failed-error", failureMessage);
 				}
+
+				if (emailEnabled && iFailure != null) {
+					String skipOnErrorCodes = ApplicationProperty.OnlineSchedulingEmailSkipOnErrorCodes.value();
+					if (skipOnErrorCodes != null && !skipOnErrorCodes.isEmpty() && iFailure.hasErrors()) {
+						for (ErrorMessage em: iFailure.getErrors())
+							if (em.getCode() != null && em.getCode().matches(skipOnErrorCodes)) {
+								helper.logOption("skip-on-error", em.toString());
+								emailEnabled = false;
+							}
+					}
+					String skipOnErrorMessage = ApplicationProperty.OnlineSchedulingEmailSkipOnErrorMessage.value();
+					if (skipOnErrorMessage != null && !skipOnErrorMessage.isEmpty() && iFailure.getMessage() != null && iFailure.getMessage().matches(skipOnErrorMessage)) {
+						helper.logOption("skip-on-error", iFailure.getMessage());
+						emailEnabled = false;
+					}
+				}
 				
 				if (emailEnabled && failureMessage != null) {
 					XCourseRequest cr = student.getRequestForCourse(iFailedCourseId.getCourseId());
