@@ -133,22 +133,13 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			List<Long> studentIds =
 					helper.getHibSession().createQuery(
 							"select distinct cr.courseDemand.student.uniqueId from CourseRequest cr " +
-							"where cr.courseOffering.instructionalOffering.uniqueId = :offeringId", Long.class)
+							"where cr.courseOffering.instructionalOffering.uniqueId = :offeringId and cr.courseDemand.waitlist = true", Long.class)
 							.setParameter("offeringId", offeringId).list();
 			studentIds.addAll(
 					helper.getHibSession().createQuery(
 							"select distinct e.student.uniqueId from StudentClassEnrollment e " +
-							"where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null", Long.class)
+							"where e.courseOffering.instructionalOffering.uniqueId = :offeringId", Long.class)
 							.setParameter("offeringId", offeringId).list());
-			
-			/*
-			List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
-					"select distinct s.uniqueId from Student s " +
-					"left outer join s.classEnrollments e " +
-					"left outer join s.courseDemands d left outer join d.courseRequests r left outer join r.courseOffering co " +
-					"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
-					"co.instructionalOffering.uniqueId = :offeringId").setParameter("offeringId", offeringId).list();
-			*/
 			
 			Lock lock = server.lockOffering(offeringId, studentIds, name());
 			try {
