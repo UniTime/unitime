@@ -1168,14 +1168,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			
 			Set<String> idsToAdd = new TreeSet<String>(), idsToDrop = new TreeSet<String>();
 			if (sectioningRequest.getLastEnrollment() != null)
-				for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment())) {
-					if (!section.isEnabledForScheduling()) {
-						SectioningException e = new SectioningException("Section " + section.getExternalId(course.getCourseId()) + " is not available for student scheduling.");
-						e.addError(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
-						throw e;
-					}
+				for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment()))
 					idsToDrop.add(section.getExternalId(course.getCourseId()));
-				}
 			if (enrollment != null) {
 				for (XSection section: sectioningRequest.getOffering().getSections(enrollment))
 					idsToAdd.add(section.getExternalId(course.getCourseId()));
@@ -1185,14 +1179,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			if (dropEnrollment != null) {
 				XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
 				if (dropOffering != null)
-					for (XSection section: dropOffering.getSections(dropEnrollment)) {
-						if (!section.isEnabledForScheduling()) {
-							SectioningException e = new SectioningException("Section " + section.getExternalId(course.getCourseId()) + " is not available for student scheduling.");
-							e.addError(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
-							throw e;
-						}
+					for (XSection section: dropOffering.getSections(dropEnrollment))
 						idsToDrop.add(section.getExternalId(dropEnrollment.getCourseId()));
-					}
 			}
 
 			// Remove sections that are to be kept (they are included in both enrollments)
@@ -1202,6 +1190,30 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// Return the new enrollment when there is no change detected
 			if (idsToAdd.isEmpty() && idsToDrop.isEmpty())
 				return enrollment;
+			
+			// Check whether remaining drops are all enabled for student scheduling
+			if (!idsToDrop.isEmpty()) {
+				if (sectioningRequest.getLastEnrollment() != null)
+					for (XSection section: sectioningRequest.getOldOffering().getSections(sectioningRequest.getLastEnrollment())) {
+						if (!section.isEnabledForScheduling() && idsToDrop.contains(section.getExternalId(course.getCourseId()))) {
+							SectioningException e = new SectioningException("Section " + section.getExternalId(course.getCourseId()) + " is not available for student scheduling.");
+							e.addError(new ErrorMessage(course.getCourseName(), section.getExternalId(course.getCourseId()), UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
+							throw e;
+						}
+					}
+				if (dropEnrollment != null) {
+					XOffering dropOffering = server.getOffering(dropEnrollment.getOfferingId());
+					if (dropOffering != null)
+						for (XSection section: dropOffering.getSections(dropEnrollment)) {
+							if (!section.isEnabledForScheduling() && idsToDrop.contains(section.getExternalId(dropEnrollment.getCourseId()))) {
+								SectioningException e = new SectioningException("Section " + section.getExternalId(dropEnrollment.getCourseId()) + " is not available for student scheduling.");
+								e.addError(new ErrorMessage(dropEnrollment.getCourseName(), section.getExternalId(dropEnrollment.getCourseId()), UniTimeCode.UT_DISABLED, "Section cannot be dropped."));
+								throw e;
+							}
+						}
+				}
+			}
+
 			
 			// Retrieve academic session, banner term etc.
 			AcademicSessionInfo session = server.getAcademicSession();
