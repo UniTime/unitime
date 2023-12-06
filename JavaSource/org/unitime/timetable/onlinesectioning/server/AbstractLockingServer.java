@@ -163,11 +163,12 @@ public abstract class AbstractLockingServer extends AbstractServer {
 				if (studentIds != null)
 					for (Long studentId: studentIds)
 					ids.add(-studentId);
-				
-				Collection<XCourseRequest> requests = getRequests(offeringId);
-				if (requests != null) {
-					for (XCourseRequest request: requests)
-						ids.add(-request.getStudentId());
+				else {
+					Collection<XCourseRequest> requests = getRequests(offeringId);
+					if (requests != null) {
+						for (XCourseRequest request: requests)
+							ids.add(-request.getStudentId());
+					}
 				}
 			}
 		} finally {
