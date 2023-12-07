@@ -164,6 +164,10 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 					sLog.warn("Seen server exception: " + t.getMessage(), t);
 				throw new GwtRpcException(t.getMessage(), t);
 			}
+			if (t instanceof AccessDeniedException) {
+				sLog.warn(t.getMessage());
+				throw new GwtRpcException(t.getMessage());
+			}
 			sLog.error("Seen exception: " + t.getMessage(), t);
 			throw new GwtRpcException(t.getMessage());
 		}
@@ -211,6 +215,10 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				else
 					sLog.warn("Seen server exception: " + t.getMessage(), t);
 				throw new GwtRpcException(t.getMessage(), t);
+			}
+			if (t instanceof AccessDeniedException) {
+				sLog.warn(t.getMessage());
+				throw new GwtRpcException(t.getMessage());
 			}
 			sLog.error("Seen exception: " + t.getMessage(), t);
 			throw new GwtRpcException(t.getMessage());
@@ -383,6 +391,9 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 					else
 						sLog.warn("Seen server exception: " + t.getMessage(), t);
 					iException = new GwtRpcException(t.getMessage(), t);
+				} else if (t instanceof AccessDeniedException) {
+					sLog.warn(t.getMessage());
+					iException = new GwtRpcException(t.getMessage());
 				} else {
 					sLog.error("Seen exception: " + t.getMessage(), t);
 					iException = new GwtRpcException(t.getMessage());
