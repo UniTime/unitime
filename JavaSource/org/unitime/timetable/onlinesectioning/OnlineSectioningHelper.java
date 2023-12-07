@@ -638,7 +638,7 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
 					.setUniqueId(c.getId())
 					.setName(c.getName()));
 		}
-		if (a.getTime() != null) {
+		if (a != null && a.getTime() != null) {
 			OnlineSectioningLog.Time.Builder time = OnlineSectioningLog.Time.newBuilder();
 			time.setDays(a.getTime().getDayCode());
 			time.setStart(a.getTime().getStartSlot());
@@ -649,7 +649,7 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
 				time.setPattern("Free Time");
 			section.setTime(time);
 		}
-		if (a.getRooms() != null) {
+		if (a != null && a.getRooms() != null) {
 			for (RoomLocation room: a.getRooms()) {
 				section.addLocation(OnlineSectioningLog.Entity.newBuilder()
 						.setUniqueId(room.getId())
