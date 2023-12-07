@@ -3099,7 +3099,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (check)
 				sLog.debug("ContextCheck: different student id, permission check: " + check);
 			else
-				sLog.warn("ContextCheck: different student id, permission check: " + check);
+				sLog.info("ContextCheck: different student id, permission check: " + check);
 		}
 	}
 	
