@@ -43,6 +43,8 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 
 	@Override
 	public GwtRpcResponseList<QueueItemInterface> execute(GetQueueTableRpcRequest request, SessionContext context) {
+		context.checkPermission(Right.Scripts);
+
 		if (request.getDeleteId() != null)
 			solverServerService.getQueueProcessor().remove(request.getDeleteId());
 		
