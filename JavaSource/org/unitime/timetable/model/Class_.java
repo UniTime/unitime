@@ -1180,7 +1180,19 @@ public class Class_ extends BaseClass_ {
 	 * @param hibSession
 	 */
 	public void deleteAssignments(org.hibernate.Session hibSession) {
-		Set s = getAssignments();
+		Set<Assignment> s = getAssignments();
+        // Remove all related constraint infos to avoid hibernate cache issues 
+        // when an orphaned constraint info is automatically deleted
+		for (Assignment ass: s) {
+            for (ConstraintInfo ci: ass.getConstraintInfo()) {
+            	for (Assignment a: ci.getAssignments()) {
+            		if (!a.equals(ass)) {
+            			a.getConstraintInfo().remove(ci);
+            		}
+            	}
+            	hibSession.remove(ci);
+            }
+		}
 		deleteObjectsFromCollection(hibSession, s);
 	}
 
