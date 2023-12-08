@@ -80,6 +80,13 @@
 				<line>Added ability to change the default solver configuration by changing the unitime.solverConfig.defaultXxx application property.</line>
 			</description>
 		</item>
+		<item>
+			<name>Authentication: Active Directory</name>
+			<description>
+				<line>Added a Spring Security configuration compatible with Active Directory (unitime.spring.context.security=securityContextLDAP-AD.xml).</line>
+				<line>Using LDAP server authentication, user search instead of user DN matching, and using user name as the user's external id.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>
@@ -104,6 +111,13 @@
 			<name>Course Timetabling Solver: Export CSV</name>
 			<description>
 				<line>Corrected Export Solution when the class names include external ids/class suffixes (i.e., unitime.solver.showClassSuffixes is true).</line>
+			</description>
+		</item>
+		<item>
+			<name>Multiple Class Setup: Delete Classes</name>
+			<description>
+				<line>When deleting an assignment, remove all related constraint infos to avoid Hibernate cache issues when an orphaned constraint info is automatically deleted.</line>
+				<line>This fixes a No row with the given identifier exists: ConstraintInfo issues.</line>
 			</description>
 		</item>
 	</category>
