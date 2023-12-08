@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<beans:beans
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-5.8.xsd">
+	
+	<http use-expressions="true">
+		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
+		<intercept-url pattern="/classes.action" access="permitAll" />
+		<intercept-url pattern="/exams.action" access="permitAll" />
+		<intercept-url pattern="/login.action" access="permitAll" />
+		<intercept-url pattern="/main.action" access="permitAll" />
+		<intercept-url pattern="/gwt.action" access="permitAll" />
+		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
+		<intercept-url pattern="/*.action" access="isAuthenticated()"/>
+		<intercept-url pattern="/**" access="permitAll" />
+		<form-login login-page="/login.action"
+			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
+			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
+		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="/login.action"/>
+		<expression-handler ref="webExpressionHandler"/>
+		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
+		<anonymous enabled="false"/>
+		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
+		<http-basic/>
+		<csrf disabled="true"/>
+		<headers>
+		    <frame-options policy="SAMEORIGIN"/>
+		</headers>
+	</http>
+	
+	<global-method-security pre-post-annotations="enabled">
+		<expression-handler ref="expressionHandler"/>
+	</global-method-security>
+	
+	<beans:bean id="expressionHandler" class="org.unitime.timetable.spring.security.UniTimeSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluator"/>
+	</beans:bean>
+	
+	<beans:bean id="webExpressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluatorNoException"/>
+	</beans:bean>
+	
+    <!-- LDAP Authentication -->
+    <ldap-server url="${unitime.authentication.ldap.url}" id="unitimeLdapContextSource"
+    	manager-dn="${unitime.authentication.ldap.manager-dn}"
+		manager-password="${unitime.authentication.ldap.manager-password}"
+	/>
+	
+	<!-- Database Authentication -->
+	<beans:bean id="databaseAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<beans:property name="userDetailsService" ref="unitimeUserDetailsService"/>
+	</beans:bean>
+
+	<!-- JAAS (Legacy) Authentication -->
+	<beans:bean id="jaasAuthProvider" class="org.unitime.timetable.authenticate.jaas.JaasAuthenticationProvider">
+		<beans:property name="configuration">
+			<beans:bean class="org.unitime.timetable.authenticate.jaas.LoginConfiguration"/>
+		</beans:property>
+	</beans:bean>
+		
+	<beans:bean id="ldapAuthProvider" class="org.unitime.timetable.spring.ldap.SpringLdapAuthenticationProvider">
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.security.ldap.authentication.BindAuthenticator">
+				<beans:constructor-arg ref="unitimeLdapContextSource"/>
+				<beans:property name="userSearch">
+					<beans:bean class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">
+						<beans:constructor-arg value="${unitime.authentication.ldap.search-base}"/>
+						<beans:constructor-arg value="${unitime.authentication.ldap.search-filter:(sAMAccountName={0})}"/>
+						<beans:constructor-arg ref="unitimeLdapContextSource"/>
+						<beans:property name="searchSubtree" value="${unitime.authentication.ldap.search-subtree:true}"/>
+                	</beans:bean>
+            	</beans:property>
+			</beans:bean>
+		</beans:constructor-arg>
+		<beans:property name="userDetailsContextMapper" ref="unitimeUserContextMapper"/>
+	</beans:bean>
+
+	<authentication-manager alias="authenticationManager">
+		<!-- Database Authentication --> 
+		<authentication-provider user-service-ref="unitimeUserDetailsService">
+			<password-encoder ref="unitimePasswordEncoder"/>
+		</authentication-provider>
+		<!-- LDAP Authentication -->
+		<authentication-provider ref="ldapAuthProvider"/>
+		<!-- JAAS (Legacy) Authentication --> 
+		<authentication-provider ref="jaasAuthProvider"/>
+	</authentication-manager>
+	
+	<!-- LDAP People Lookup
+	<beans:bean id="ldapPeopleLookupSource" class="org.springframework.ldap.core.support.LdapContextSource">
+		<beans:property name="url" value="${tmtbl.lookup.ldap}" />
+      	<beans:property name="base" value="${tmtbl.lookup.ldap.name}" />
+	</beans:bean>
+	
+	<beans:bean id="ldapPeopleLookupTemplate" class="org.springframework.ldap.core.LdapTemplate">
+		<beans:constructor-arg ref="ldapPeopleLookupSource"/>
+	</beans:bean>
+	 -->
+</beans:beans>
