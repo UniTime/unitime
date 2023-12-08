@@ -52,6 +52,11 @@ public class CourseCatalogImport extends BaseImport {
             if(session == null) {
                 throw new Exception("No session found for the given campus, year, and term.");
             }
+            
+            getHibSession()
+            	.createQuery("delete from CourseCatalog where session.uniqueId = :sessionId")
+            	.setLong("sessionId", session.getUniqueId())
+            	.executeUpdate();
 
             for ( Iterator it = root.elementIterator(); it.hasNext(); ) {
                 Element element = (Element) it.next();
