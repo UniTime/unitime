@@ -14515,7 +14515,7 @@
 		<plsql onFail="next">create index %SCHEMA%.idx_room_session on %SCHEMA%.room(session_id)</plsql>
 		<plsql onFail="next">create index %SCHEMA%.idx_manager_ext on %SCHEMA%.timetable_manager(external_uid, uniqueid)</plsql>
 		<plsql onFail="next">create index %SCHEMA%.idx_meeting_date_room_apr on %SCHEMA%.meeting(meeting_date, location_perm_id, event_id, approval_status)</plsql>
-		<plsql onFail="next">create index %SCHEMA%.idx_course_offering_rolled_from on %SCHEMA%.course_offering(uid_rolled_fwd_from)</plsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_course_offr_rolled_from on %SCHEMA%.course_offering(uid_rolled_fwd_from)</plsql>
 		<plsql onFail="next">create index %SCHEMA%.idx_event_contact_extid on %SCHEMA%.event_contact(external_id)</plsql>
 		<plsql onFail="next">create index %SCHEMA%.idx_meeting_all on %SCHEMA%.meeting(event_id, uniqueid, meeting_date, start_period, start_offset, stop_period, stop_offset, location_perm_id, class_can_override, approval_status, approval_date)</plsql>
 		<plsql onFail="next">create index %SCHEMA%.idx_session_initiative on %SCHEMA%.sessions(academic_initiative)</plsql>
