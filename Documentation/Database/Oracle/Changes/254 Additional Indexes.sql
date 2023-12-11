@@ -29,7 +29,7 @@ create index idx_course_offering_ctrlcourse on course_offering(is_control, instr
 create index idx_room_session on room(session_id);
 create index idx_manager_ext on timetable_manager(external_uid, uniqueid);
 create index idx_meeting_date_room_apr on meeting(meeting_date, location_perm_id, event_id, approval_status);
-create index idx_course_offering_rolled_from on course_offering(uid_rolled_fwd_from);
+create index idx_course_offr_rolled_from on course_offering(uid_rolled_fwd_from);
 create index idx_event_contact_extid on event_contact(external_id);
 create index idx_meeting_all on meeting(event_id, uniqueid, meeting_date, start_period, start_offset, stop_period, stop_offset, location_perm_id, class_can_override, approval_status, approval_date);
 create index idx_session_initiative on sessions(academic_initiative);
