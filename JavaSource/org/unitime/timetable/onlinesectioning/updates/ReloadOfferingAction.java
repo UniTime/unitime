@@ -365,7 +365,15 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 					XCourseRequest newRequest = getRequest(newStudent, course); 
 					XEnrollment newEnrollment = getEnrollment(newRequest, offeringId);
 					if (oldRequest == null && newRequest == null) continue;
-					if (!hasReSchedulingStatus(newStudent == null ? oldStudent : newStudent, server)) continue; // no changes for students that cannot be re-scheduled
+					if (!hasReSchedulingStatus(newStudent == null ? oldStudent : newStudent, server)) {
+						if (newEnrollment != null && oldEnrollment != null && !isVerySame(newEnrollment.getCourseId(), newOffering.getSections(newEnrollment), oldOffering.getSections(oldEnrollment)))
+							server.execute(server.createAction(NotifyStudentAction.class)
+									.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
+									.fromAction(name())
+									.withType(NotificationType.CourseChangeSchedule)
+									.oldEnrollment(oldOffering, course, oldEnrollment), helper.getUser());
+						continue; // no changes for students that cannot be re-scheduled
+					}
 					
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(
