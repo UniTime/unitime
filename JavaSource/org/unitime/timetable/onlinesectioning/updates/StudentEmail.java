@@ -444,7 +444,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (getMessage() != null && !getMessage().isEmpty())
 							helper.logOption("message", getMessage());
 						
-						if (helper.getUser() != null && getOldEnrollment() == null && getOldStudent() == null) {
+						if (helper.getUser() != null && getOldOffering() == null && getOldStudent() == null) {
 							TimetableManager manager = helper.getHibSession().createQuery("from TimetableManager where externalUniqueId = :id", TimetableManager.class).setParameter("id", helper.getUser().getExternalId()).uniqueResult();
 							Advisor advisor = null;
 							if (manager == null || manager.getEmailAddress() == null)
