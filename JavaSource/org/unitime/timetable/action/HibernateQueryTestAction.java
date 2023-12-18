@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -55,13 +56,14 @@ import org.hibernate.sql.ast.tree.insert.InsertStatement;
 import org.hibernate.sql.ast.tree.select.SelectStatement;
 import org.hibernate.sql.ast.tree.update.UpdateStatement;
 import org.hibernate.sql.exec.spi.JdbcParameterBindings;
+import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.exception.SQLGrammarException;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -342,13 +344,27 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 		            hibSession.flush();
 		            HibernateUtil.clearCache();
 		        }
-            } catch (SQLGrammarException e) {
-            	if (e.getSQLException() != null)
-            		addFieldError("form.query", e.getSQLException().getMessage());
+            } catch (Exception e) {
+            	String message = null;
+            	Throwable f = e;
+            	while (f != null) {
+            		if (f instanceof JDBCException) {
+            			SQLException s = ((JDBCException)f).getSQLException();
+            			if (s != null && s.getMessage() != null && !s.getMessage().isEmpty()) {
+            				message = s.getMessage();
+                			break;
+            			}
+            		}
+            		if (f instanceof HibernateException)
+            			message = f.getMessage();
+            		if (f instanceof IllegalArgumentException)
+            			message = f.getMessage();
+            		f = f.getCause();
+            	}
+            	if (message != null && !message.isEmpty())
+            		addFieldError("form.query", message);
             	else
             		addFieldError("form.query", e.getMessage());
-            } catch (Exception e) {
-            	addFieldError("form.query", e.getMessage());
                 Debug.error(e);
             }
         }

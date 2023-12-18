@@ -38,6 +38,12 @@
 				<line>For existing managers, the academic sessions with the same departments and solver groups are selected by default.</line>
 			</description>
 		</item>
+		<item>
+			<name>Test HQL, Reports: Improved Error Handling</name>
+			<description>
+				<line>When the provided HQL is incorrect, display a more meaningful error message.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
