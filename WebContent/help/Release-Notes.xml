@@ -93,6 +93,15 @@
 				<line>Using LDAP server authentication, user search instead of user DN matching, and using user name as the user's external id.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetabling Managers: Update Other Academic Sessions</name>
+			<description>
+				<line>Added an ability to update departments and solver groups in the academic sessions with the same academic initiative.</line>
+				<line>Academic sessions in the finished status are not included.</line>
+				<line>By default, the current and all future sessions (with the same initiative) are selected when a new manager is being added.</line>
+				<line>For existing managers, the academic sessions with the same departments and solver groups are selected by default.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>

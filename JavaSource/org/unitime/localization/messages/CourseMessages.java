@@ -5799,4 +5799,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("~~ No Requirements ~~")
 	String courseOtherInstructorClasses();
+	
+	@DefaultMessage("Update Academic Sessions")
+	String columnAcademicSessionsToUpdate();
+	
+	@DefaultMessage("From {0}")
+	String notificationDatesFrom(String date);
+	
+	@DefaultMessage("To {0}")
+	String notificationDatesTo(String date);
+	
+	@DefaultMessage("Between {0} and {1}")
+	String notificationDatesBetween(String fromDate, String toDate);
 }

@@ -204,7 +204,7 @@
 				<s:submit name="op" value="%{#msg.actionAddRole()}"/>
 			</TD>
 		</TR>
-
+		
 		<TR>
 			<TD>&nbsp;</TD>
 			<TD>
@@ -245,6 +245,26 @@
 				</table>
 			</TD>
 		</TR>
+		
+		<s:if test="form.otherSessions != null && form.otherSessions.size() > 1">
+			<TR>
+				<TD colspan="2">
+					<tt:section-title>&nbsp;<br><loc:message name="columnAcademicSessionsToUpdate"/></tt:section-title>
+				</TD>
+			</TR>
+			<TR>
+				<TD>&nbsp;</TD>
+				<TD>
+					<s:iterator value="form.otherSessions" var="s">
+						<span style="width:25%; display:inline-block;">
+							<s:checkboxlist name="form.updateSessions" list="#{#s.id:''}" disabled="#s.disabled"/>
+							<s:if test="#s.disabled"><s:hidden name="form.updateSessions" value="%{#s.id}"/></s:if>
+							<s:property value="#s.value"/>
+						</span>
+					</s:iterator>
+				</TD>
+			</TR>
+		</s:if>		
 
 		<TR>
 			<TD colspan="2">

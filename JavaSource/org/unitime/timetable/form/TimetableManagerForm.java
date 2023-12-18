@@ -29,6 +29,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.util.IdValue;
 
 
 /**
@@ -61,6 +62,8 @@ public class TimetableManagerForm implements UniTimeForm {
     private List<Long> solverGrs;
     private List<String> solverGrLabels;
     private Boolean lookupEnabled;
+    private List<IdValue> otherSessions;
+    private List<Long> updateSessions;
     
     public TimetableManagerForm() {
     	reset();
@@ -87,6 +90,7 @@ public class TimetableManagerForm implements UniTimeForm {
         roleReceiveEmailFlags = new ArrayList<Boolean>();
         solverGrs = new ArrayList<Long>();
         solverGrLabels = new ArrayList<String>();
+        updateSessions = new ArrayList<Long>();
     }
 
     public void validate(UniTimeAction action) {
@@ -351,5 +355,18 @@ public class TimetableManagerForm implements UniTimeForm {
 	public void setRoleReceiveEmailFlags(List<Boolean> roleReceiveEmailFlags) {
 		this.roleReceiveEmailFlags = roleReceiveEmailFlags;
 	}
-    
+	
+	public List<IdValue> getOtherSessions() {
+		return otherSessions;
+	}
+	public void setOtherSessions(List<IdValue> otherSessions) {
+		this.otherSessions = otherSessions;
+	}
+	
+	public List<Long> getUpdateSessions() {
+		return updateSessions;
+	}
+	public void setUpdateSessions(List<Long> updateSessions) {
+		this.updateSessions = updateSessions;
+	}
 }

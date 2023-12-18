@@ -25,13 +25,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesDefinitions;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -44,14 +44,17 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.RolesComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RolesDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.util.LookupTables;
 
 /**
@@ -114,12 +117,14 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         // Redirect from Manager List - Edit Manager
         if ("Edit".equals(op)) {
         	loadForm();
+        	setupOtherSessions(true);
         }
         
         // Redirect from Manager List - Add Manager
         if (MSG.actionAddTimetableManager().equals(op)) {
         	sessionContext.checkPermission(Right.TimetableManagerAdd);
             form.setLookupEnabled(ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null);
+            setupOtherSessions(true);
         }
         
         // Lookup puid / career account
@@ -201,6 +206,8 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         lookupManager();
         // Get roles not already assigned
         setupRoles();
+        if (form.getOtherSessions() == null)
+        	setupOtherSessions(false);
         
         return (form.getUniqueId() == null || form.getUniqueId() < 0 ? "addManagerInfo" : "editManagerInfo");
     }
@@ -257,6 +264,54 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         
         request.setAttribute(Roles.ROLES_ATTR_NAME, roles);
     }
+    
+    private void setupOtherSessions(boolean defaultSelection) {
+    	Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+        List<IdValue> sessions = new ArrayList<IdValue>();
+        TimetableManager mgr = (form.getUniqueId() == null ? null : TimetableManagerDAO.getInstance().get(form.getUniqueId()));
+        List<Long> defaultSelectedSessionIds = new ArrayList<Long>();
+        boolean past = true;
+        for (Session session: (List<Session>)SessionDAO.getInstance().getSession().createQuery(
+        		"select s from Session s, Session z " +
+        		"where z.uniqueId = :sessionId and s.academicInitiative = z.academicInitiative and (s.uniqueId = :sessionId or bit_and(s.statusType.status, 7572918) > 0) " +
+        		"order by s.sessionBeginDateTime").setLong("sessionId", currentSessionId).setCacheable(true).list()) {
+        	IdValue s = new IdValue(session.getUniqueId(), session.getLabel(), null, !session.getUniqueId().equals(currentSessionId));
+        	sessions.add(s);
+        	if (session.getUniqueId().equals(currentSessionId)) {
+        		defaultSelectedSessionIds.add(session.getUniqueId());
+        		past = false;
+        	} else if (defaultSelection) {
+        		if (mgr == null && !past) {
+        			defaultSelectedSessionIds.add(session.getUniqueId());
+        		} else if (mgr != null && sameDepartments(mgr, currentSessionId, session.getUniqueId()) && sameSolverGroups(mgr, currentSessionId, session.getUniqueId())) {
+        			defaultSelectedSessionIds.add(session.getUniqueId());
+        		}
+        	}
+        }
+        form.setOtherSessions(sessions);
+        if (defaultSelection)
+        	form.setUpdateSessions(defaultSelectedSessionIds);
+    }
+    
+    private boolean sameDepartments(TimetableManager mgr, Long s1, Long s2) {
+    	TreeSet<String> d1 = new TreeSet<String>();
+    	TreeSet<String> d2 = new TreeSet<String>();
+    	for (Department d: mgr.getDepartments()) {
+    		if (s1.equals(d.getSessionId())) d1.add(d.getDeptCode());
+    		if (s2.equals(d.getSessionId())) d2.add(d.getDeptCode());
+    	}
+    	return d1.equals(d2);
+    }
+    
+    private boolean sameSolverGroups(TimetableManager mgr, Long s1, Long s2) {
+    	TreeSet<String> d1 = new TreeSet<String>();
+    	TreeSet<String> d2 = new TreeSet<String>();
+    	for (SolverGroup d: mgr.getSolverGroups()) {
+    		if (s1.equals(d.getSession().getUniqueId())) d1.add(d.getAbbv());
+    		if (s2.equals(d.getSession().getUniqueId())) d2.add(d.getAbbv());
+    	}
+    	return d1.equals(d2);
+    }
 
     /**
      * Load the form
@@ -284,17 +339,16 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         }
 
         Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
-        Set depts = mgr.getDepartments();
-        for (Iterator i=depts.iterator(); i.hasNext(); ) {
-            Department dept = (Department) i.next();
+        Set<Department> depts = new TreeSet<Department>(mgr.getDepartments());
+        for (Department dept: depts) {
             if(dept.getSessionId().equals(sessionId))
                 form.addToDepts(dept);
         }        
-        for (Iterator i=mgr.getSolverGroups().iterator(); i.hasNext(); ) {
-        	SolverGroup sg = (SolverGroup) i.next();
+        Set<SolverGroup> sgs = new TreeSet<SolverGroup>(mgr.getSolverGroups());
+        for (SolverGroup sg: sgs) {
             if(sg.getSession().getUniqueId().equals(sessionId))
                 form.addToSolverGrs(sg);
-        }        
+        }
         
         if (ApplicationProperty.ManagerExternalIdLookup.isTrue() && ApplicationProperty.ManagerExternalIdLookupClass.value() != null) {
         	form.setLookupEnabled(Boolean.TRUE);
@@ -324,7 +378,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         DepartmentDAO dDao = new DepartmentDAO();
         SolverGroupDAO sgDao = new SolverGroupDAO();
         
-        Session hibSession = mgrDao.getSession();
+        org.hibernate.Session hibSession = mgrDao.getSession();
         
         Transaction tx = hibSession.beginTransaction();
 
@@ -357,19 +411,46 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
 
        	// Add departments
 		mgr.setDepartments(new HashSet<Department>());
+		List<Department> departments = new ArrayList<Department>();
        	for (Iterator<Long> i=form.getDepts().iterator(); i.hasNext(); ) {
        	    Department dept = dDao.get(i.next());
        	    mgr.getDepartments().add(dept);
        	    dept.getTimetableManagers().add(mgr);
     		hibSession.saveOrUpdate(dept);
+    		departments.add(dept);
        	}
        	
        	mgr.setSolverGroups(new HashSet<SolverGroup>());
+       	List<SolverGroup> solverGroups = new ArrayList<SolverGroup>();
        	for (Iterator<Long> i=form.getSolverGrs().iterator(); i.hasNext(); ) {
        	    SolverGroup sg = sgDao.get(i.next());
        	    mgr.getSolverGroups().add(sg);
        	    sg.getTimetableManagers().add(mgr);
     		hibSession.saveOrUpdate(sg);
+    		solverGroups.add(sg);
+       	}
+       	
+       	if (form.getUpdateSessions() != null) {
+       		Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+       		for (Long sessionId: form.getUpdateSessions()) {
+       			if (sessionId.equals(currentSessionId)) continue;
+       			for (Department dept: departments) {
+       	       	    Department other = dept.findSameDepartmentInSession(sessionId);
+       	       	    if (other != null) {
+       	       	    	mgr.getDepartments().add(other);
+       	       	    	other.getTimetableManagers().add(mgr);
+       	       	    	hibSession.saveOrUpdate(other);
+       	       	    }
+       			}
+       			for (SolverGroup sg: solverGroups) {
+       				SolverGroup other = SolverGroup.findBySessionIdAbbv(sessionId, sg.getAbbv());
+       				if (other != null) {
+       					mgr.getSolverGroups().add(other);
+       					other.getTimetableManagers().add(mgr);
+       		    		hibSession.saveOrUpdate(sg);
+       				}
+       	       	}
+       		}
        	}
 
         ChangeLog.addChange(
@@ -401,7 +482,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         
         Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
         
-        Session hibSession = mgrDao.getSession();
+        org.hibernate.Session hibSession = mgrDao.getSession();
         
         Transaction tx = hibSession.beginTransaction();
 
@@ -478,6 +559,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	
        	// Update departments
        	List<Long> depts = form.getDepts();
+       	List<Department> departments = new ArrayList<Department>();
        	Set<Department> mgrDepts = mgr.getDepartments();
        	if (mgrDepts==null) {
        	    mgrDepts = new HashSet<Department>();
@@ -487,6 +569,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         // Check if depts added or updated
        	for (Iterator<Long> i=depts.iterator(); i.hasNext(); ) {
        	    Department dept = dDao.get(i.next());
+       	    departments.add(dept);
        	    boolean found = false;
            	for (Iterator<Department> j=mgrDepts.iterator(); j.hasNext(); ) {
            	    Department eDept = j.next();
@@ -525,6 +608,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
        	
        	// Update solver groups
        	List<Long> solverGrs = form.getSolverGrs();
+       	List<SolverGroup> solverGroups = new ArrayList<SolverGroup>();
        	Set<SolverGroup> mgrSolverGrs = mgr.getSolverGroups();
        	if (mgrSolverGrs==null) {
        		mgrSolverGrs = new HashSet<SolverGroup>();
@@ -534,6 +618,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
         // Check if solver group added or updated
        	for (Iterator<Long> i=solverGrs.iterator(); i.hasNext(); ) {
        	    SolverGroup sg = sgDao.get(i.next());
+       	    solverGroups.add(sg);
        	    boolean found = false;
            	for (Iterator<SolverGroup> j=mgrSolverGrs.iterator(); j.hasNext(); ) {
            		SolverGroup eSg = j.next();
@@ -569,6 +654,42 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
            	    hibSession.saveOrUpdate(eSg);
            	}
        	}
+       	
+       	if (form.getUpdateSessions() != null) {
+       		for (Long otherSessionId: form.getUpdateSessions()) {
+       			if (otherSessionId.equals(sessionId)) continue;
+       			mgrDepts = new HashSet<Department>(mgr.getDepartments());
+       			for (Department dept: departments) {
+       	       	    Department other = dept.findSameDepartmentInSession(otherSessionId);
+       	       	    if (other != null && !mgrDepts.remove(other)) {
+       	       	    	mgr.getDepartments().add(other);
+       	       	    	other.getTimetableManagers().add(mgr);
+       	       	    	hibSession.saveOrUpdate(other);
+       	       	    }
+       			}
+       			for (Department other: mgrDepts) {
+       				if (!other.getSessionId().equals(otherSessionId)) continue;
+       				mgr.getDepartments().remove(other);
+   	       	    	other.getTimetableManagers().remove(mgr);
+   	       	    	hibSession.saveOrUpdate(other);
+       			}
+       			mgrSolverGrs = new HashSet<SolverGroup>(mgr.getSolverGroups());
+       			for (SolverGroup sg: solverGroups) {
+       				SolverGroup other = SolverGroup.findBySessionIdAbbv(otherSessionId, sg.getAbbv());
+       				if (other != null && !mgrSolverGrs.remove(other)) {
+       					mgr.getSolverGroups().add(other);
+       					other.getTimetableManagers().add(mgr);
+       		    		hibSession.saveOrUpdate(other);
+       				}
+       	       	}
+       			for (SolverGroup other: mgrSolverGrs) {
+       				if (!other.getSession().getUniqueId().equals(otherSessionId)) continue;
+       				mgr.getSolverGroups().remove(other);
+   	       	    	other.getTimetableManagers().remove(mgr);
+   	       	    	hibSession.saveOrUpdate(other);
+       			}
+       		}
+       	}
 
        	hibSession.saveOrUpdate(mgr);       	
 
@@ -593,7 +714,7 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
     	sessionContext.checkPermission(form.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-        Session hibSession = mgrDao.getSession();
+		org.hibernate.Session hibSession = mgrDao.getSession();
         TimetableManager mgr = mgrDao.get(form.getUniqueId());
 
         Transaction tx = hibSession.beginTransaction();
