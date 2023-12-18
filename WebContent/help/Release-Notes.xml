@@ -28,6 +28,22 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Timetabling Managers: Update Other Academic Sessions</name>
+			<description>
+				<line>Added an ability to update departments and solver groups in the academic sessions with the same academic initiative.</line>
+				<line>Academic sessions in the finished status are not included.</line>
+				<line>By default, the current and all future sessions (with the same initiative) are selected when a new manager is being added.</line>
+				<line>For existing managers, the academic sessions with the same departments and solver groups are selected by default.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.92</version>
+	<release-date>Thu, 14 Dec 2023</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructor Survey</name>

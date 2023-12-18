@@ -105,12 +105,12 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 			String notifications = "";
 			if (s.getNotificationsBeginDate() != null) {
 				if (s.getNotificationsEndDate() != null) {
-					notifications = SCT_MSG.messageEffectivePeriodBetween(dsf.format(s.getNotificationsBeginDate()), dsf.format(s.getNotificationsEndDate()));
+					notifications = MSG.notificationDatesBetween(dsf.format(s.getNotificationsBeginDate()), dsf.format(s.getNotificationsEndDate()));
 				} else {
-					notifications = SCT_MSG.messageEffectivePeriodAfter(dsf.format(s.getNotificationsBeginDate()));
+					notifications = MSG.notificationDatesFrom(dsf.format(s.getNotificationsBeginDate()));
 				}
 			} else if (s.getNotificationsEndDate() != null) {
-				notifications = SCT_MSG.messageEffectivePeriodBefore(dsf.format(s.getNotificationsEndDate()));
+				notifications = MSG.notificationDatesTo(dsf.format(s.getNotificationsEndDate()));
 			}
 			
 			webTable.addLine(
