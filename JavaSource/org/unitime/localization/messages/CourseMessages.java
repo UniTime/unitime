@@ -5811,4 +5811,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Email\nNotifications")
 	String columnAcademicSessionNotificationsDates();
+	
+	@DefaultMessage("Update Academic Sessions")
+	String columnAcademicSessionsToUpdate();
+	
+	@DefaultMessage("From {0}")
+	String notificationDatesFrom(String date);
+	
+	@DefaultMessage("To {0}")
+	String notificationDatesTo(String date);
+	
+	@DefaultMessage("Between {0} and {1}")
+	String notificationDatesBetween(String fromDate, String toDate);
 }
