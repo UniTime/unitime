@@ -21,6 +21,7 @@ package org.unitime.timetable.export.hql;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +41,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.dom4j.Document;
+import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
@@ -316,8 +319,24 @@ public class SavedHqlExportToCSV implements Exporter {
 		} catch (SavedHQLException e) {
 			throw e;
 		} catch (Exception e) {
+			String message = e.getMessage();
+        	Throwable f = e;
+        	while (f != null) {
+        		if (f instanceof JDBCException) {
+        			SQLException s = ((JDBCException)f).getSQLException();
+        			if (s != null && s.getMessage() != null && !s.getMessage().isEmpty()) {
+        				message = s.getMessage();
+            			break;
+        			}
+        		}
+        		if (f instanceof HibernateException)
+        			message = f.getMessage();
+        		if (f instanceof IllegalArgumentException)
+        			message = f.getMessage();
+        		f = f.getCause();
+        	}
 			sLog.error(e.getMessage(), e);
-			throw new SavedHQLException(MESSAGES.failedExecution(e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")")));
+			throw new SavedHQLException(message);
 		}
 	}
 	
