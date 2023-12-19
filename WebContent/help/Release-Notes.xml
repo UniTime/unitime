@@ -42,9 +42,15 @@
 			</description>
 		</item>
 		<item>
-			<name>Timetabling Managers: Instructor Requirements</name>
+			<name>Instructional Offering Detail: Instructor Requirements</name>
 			<description>
 				<line>Ensure that only requirements (instructor surveys) from the correct academic session are listed.</line>
+			</description>
+		</item>
+		<item>
+			<name>Classes, Class Assignments: Manager Filter</name>
+			<description>
+				<line>Added an ability to select multiple managers.</line>
 			</description>
 		</item>
 	</category>

@@ -179,6 +179,14 @@ public class ClassAssignmentsReportForm implements UniTimeForm, ClassListFormInt
 	public String[] getSortByOptions() { return ClassCourseComparator.getNames(); }
 	public String getFilterManager() { return filterManager; }
 	public void setFilterManager(String filterManager) { this.filterManager = filterManager; }
+	public String[] getFilterManagers() { return (filterManager == null ? new String[0] : filterManager.split(",")); }
+	public void setFilterManagers(String[] filterManagers) {
+		this.filterManager = "";
+		if (filterManagers != null)
+			for (String filterManager: filterManagers) {
+				this.filterManager += (this.filterManager.isEmpty() ? "" : ",") + filterManager;
+			}
+	}
 	public String getFilterAssignedRoom() { return filterAssignedRoom; }
 	public void setFilterAssignedRoom(String filterAssignedRoom) { this.filterAssignedRoom = filterAssignedRoom; }
 	public String getFilterInstructor() { return ""; }
