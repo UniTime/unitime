@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -397,8 +398,15 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 		org.hibernate.Session hibSession = (InstructionalOfferingDAO.getInstance()).getSession();
 
 		
-		boolean doFilterManager = form.getFilterManager()!=null && form.getFilterManager().length()>0;
-		Long filterManager = (doFilterManager?Long.valueOf(form.getFilterManager()):null);
+		Set<Long> filterManagers = new HashSet<Long>();
+		if (form.getFilterManager() != null)
+			for (String filterManager: form.getFilterManagers()) {
+				if (filterManager.isEmpty() || "-1".equals(filterManager)) {
+					filterManagers.clear(); break;
+				} else {
+					filterManagers.add(Long.valueOf(filterManager));
+				}
+			}
 
         boolean fetchStructure = true;
         boolean fetchCredits = false;//form.getCredit().booleanValue();
@@ -466,11 +474,16 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 				}
 	        }
 
-	        if (doFilterManager) {
-	        	if (filterManager.longValue()<0) { //all departmental
+			boolean hasDeptIds = false;
+	        if (!filterManagers.isEmpty()) {
+	        	if (filterManagers.contains(-2l) && filterManagers.size() == 1) {
 	        		query.append(" and c.managingDept = co.subjectArea.department");
+	        	} else if (filterManagers.contains(-2l)) {
+	        		query.append(" and (c.managingDept = co.subjectArea.department or c.managingDept.uniqueId in :deptIds)");
+	        		hasDeptIds = true;
 	        	} else {
-	        		query.append(" and c.managingDept.uniqueId = "+filterManager);
+	        		query.append(" and c.managingDept.uniqueId in :deptIds");
+	        		hasDeptIds = true;
 	        	}
 	        }
 			
@@ -490,6 +503,8 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 	            	courseNbr = courseNbr.toUpperCase();
 				q.setParameter("courseNbr", courseNbr.replace('*', '%'));
 			}
+			if (hasDeptIds)
+				q.setParameterList("deptIds", filterManagers);
 			q.setCacheable(true);
 	        TreeSet ts = new TreeSet(new ClassCourseComparator(form.getSortBy(), classAssignmentProxy, form.getSortByKeepSubparts()));
 			long sTime = new java.util.Date().getTime();
@@ -632,11 +647,16 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 	
 	public List<IdValue> getManagers() {
 		List<IdValue> ret = new ArrayList<IdValue>();
-		ret.add(new IdValue(null, MSG.dropManagerAll()));
+		// ret.add(new IdValue(null, MSG.dropManagerAll()));
 		ret.add(new IdValue(-2l, MSG.dropDeptDepartment()));
 		for (Department d: (TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME))
 			ret.add(new IdValue(d.getUniqueId(), d.getManagingDeptLabel()));
 		return ret;
+	}
+	
+	public int getFilterManagerSize() {
+		int size = 1 + ((TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).size();
+		return Math.min(size, 3);
 	}
 	
 	public String printTable() throws Exception {

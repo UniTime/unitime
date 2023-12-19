@@ -294,11 +294,16 @@ public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssig
 	
 	public List<IdValue> getManagers() {
 		List<IdValue> ret = new ArrayList<IdValue>();
-		ret.add(new IdValue(null, MSG.dropManagerAll()));
+		// ret.add(new IdValue(null, MSG.dropManagerAll()));
 		ret.add(new IdValue(-2l, MSG.dropDeptDepartment()));
 		for (Department d: (TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME))
 			ret.add(new IdValue(d.getUniqueId(), d.getManagingDeptLabel()));
 		return ret;
+	}
+	
+	public int getFilterManagerSize() {
+		int size = 1 + ((TreeSet<Department>)request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).size();
+		return Math.min(size, 3);
 	}
 	
 	public String printTable() throws Exception {

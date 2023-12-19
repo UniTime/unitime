@@ -28,6 +28,7 @@ public interface ClassListFormInterface extends InstructionalOfferingListFormInt
 	
 	public String getSortBy();
 	public String getFilterManager();
+	public String[] getFilterManagers();
 	public String getFilterAssignedRoom();
 	public String getFilterInstructor();
 	public String getFilterIType();
@@ -41,6 +42,7 @@ public interface ClassListFormInterface extends InstructionalOfferingListFormInt
 	public void setSortBy(String sortBy);
 	public void setFilterAssignedRoom(String filterAssignedRoom);
 	public void setFilterManager(String filterManager);
+	public void setFilterManagers(String[] filterManager);
 	public void setFilterIType(String filterIType);
 	public void setFilterDayCode(int filterDayCode);
 	public void setFilterStartSlot(int filterStartSlot);
