@@ -54,6 +54,7 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.model.Constraint;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.events.RoomFilterBackend.LocationMatcher;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
@@ -66,6 +67,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -450,7 +452,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 	protected static List<TimetableGridCell> createCells(TimetableGridModel model, TimetableSolver solver, Placement placement, TimetableGridContext context, boolean notAvailable) {
 		List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
 		
-		if (!match(context.getClassFilter(), placement, model)) return cells;
+		if (!match(context, placement, model)) return cells;
 		
 		TimetableGridCell cell = null;
 		
@@ -986,7 +988,30 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		eq, lt, gt, le, ge
 	};
 	
-	private static boolean match(Query q, final Placement p, final TimetableGridModel m) {
+	private static boolean match(TimetableGridContext context, Placement p, TimetableGridModel m) {
+		if (m.getResourceType() != ResourceType.ROOM.ordinal() && !matchRooms(context, p, m)) return false;
+		return matchClasses(context.getClassFilter(), p, m);
+	}
+	
+	private static boolean matchRoom(TimetableGridContext cx, RoomLocation r, TimetableGridModel m) {
+		if (r == null) return false;
+		Location loc = cx.getLocation(r.getId());
+		if (loc == null) return false;
+		return cx.getRoomFilter().match(new LocationMatcher(loc, cx.getRoomFeatureTypes()));
+	}
+	
+	private static boolean matchRooms(TimetableGridContext cx, Placement p, TimetableGridModel m) {
+		if (cx.getRoomFilter() == null) return true;
+		if (p.isMultiRoom()) {
+			for (RoomLocation r: p.getRoomLocations())
+				if (matchRoom(cx, r, m)) return true;
+			return false;
+		} else {
+			return matchRoom(cx, p.getRoomLocation(), m);
+		}
+	}
+	
+	private static boolean matchClasses(Query q, final Placement p, final TimetableGridModel m) {
     	return q == null || q.match(new TermMatcher() {
 			@Override
 			public boolean match(String attr, String term) {
