@@ -34,7 +34,7 @@
 							<B><loc:message name="filterManager"/></B>
 						</TD>
 						<TD>
-							<s:select name="form.filterManager" list="managers" listKey="id" listValue="value"/>
+							<s:select name="form.filterManagers" list="managers" listKey="id" listValue="value" multiple="true" size="%{filterManagerSize}"/>
 						</TD>
 					</TR>
 					<TR>
