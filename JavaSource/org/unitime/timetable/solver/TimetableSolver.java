@@ -72,16 +72,19 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.unitime.timetable.events.RoomFilterBackend.LocationMatcher;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ComputeConflictTableRequest;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ComputeSuggestionsRequest;
+import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
@@ -1276,13 +1279,21 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     		case ROOM:
     			for (RoomConstraint rc: model.getRoomConstraints()) {
     				if (!match(q, rc)) continue;
-    				models.add(TimetableGridSolverHelper.createModel(this, rc, context));
+    				if (context.getRoomFilter() != null) {
+    					Location loc = context.getLocation(rc.getResourceId());
+    					if (loc == null || !context.getRoomFilter().match(new LocationMatcher(loc, context.getRoomFeatureTypes()))) continue;
+    				}
+    				TimetableGridModel m = TimetableGridSolverHelper.createModel(this, rc, context);
+    				if (context.getClassFilter() != null && m.getCells().isEmpty()) continue;
+    				models.add(m);
     			}
     			break;
     		case INSTRUCTOR:
     			for (InstructorConstraint ic: model.getInstructorConstraints()) {
     				if (!match(q, ic.getName())) continue;
-    				models.add(TimetableGridSolverHelper.createModel(this, ic, context));
+    				TimetableGridModel m = TimetableGridSolverHelper.createModel(this, ic, context);
+    				if ((context.getRoomFilter() != null || context.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+    				models.add(m);
     			}
     			break;
     		case DEPARTMENT:
@@ -1314,9 +1325,11 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 								if (placement != null) placements.add(placement);
     						}
     					}
-    					if (size > 0)
-    						models.add(TimetableGridSolverHelper.createModel(this, ResourceType.DEPARTMENT.ordinal(),
-    								d.getUniqueId(), d.getShortLabel(), size, placements, context));
+    					if (size > 0) {
+    						TimetableGridModel m = TimetableGridSolverHelper.createModel(this, ResourceType.DEPARTMENT.ordinal(), d.getUniqueId(), d.getShortLabel(), size, placements, context);
+    						if ((context.getRoomFilter() != null || context.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+    						models.add(m);
+    					}
     				}
     			}
     			break;
@@ -1352,7 +1365,9 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
     				}
     			}
 				for (Map.Entry<String, List<Student>> curriculum: curricula.entrySet()) {
-					models.add(TimetableGridSolverHelper.createModel(this, curriculum.getKey(), curriculum.getValue(), context));
+					TimetableGridModel m = TimetableGridSolverHelper.createModel(this, curriculum.getKey(), curriculum.getValue(), context);
+					if ((context.getRoomFilter() != null || context.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+					models.add(m);
 				}
     			break;
     		case SUBJECT_AREA:
@@ -1379,15 +1394,20 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 							if (placement != null) placements.add(placement);
 						}
 					}
-					if (size > 0)
-						models.add(TimetableGridSolverHelper.createModel(this, ResourceType.SUBJECT_AREA.ordinal(),
-								sa.getUniqueId(), sa.getSubjectAreaAbbreviation(), size, placements, context));
+					if (size > 0) {
+						TimetableGridModel m = TimetableGridSolverHelper.createModel(this, ResourceType.SUBJECT_AREA.ordinal(), sa.getUniqueId(), sa.getSubjectAreaAbbreviation(), size, placements, context);
+						if ((context.getRoomFilter() != null || context.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+						models.add(m);
+					}
 				}
 				break;
     		case STUDENT_GROUP:
     			for (StudentGroup group: model.getStudentGroups()) {
-					if (match(q, group.getName())) 
-						models.add(TimetableGridSolverHelper.createModel(this, group, context));
+					if (match(q, group.getName())) {
+						TimetableGridModel m = TimetableGridSolverHelper.createModel(this, group, context);
+						if ((context.getRoomFilter() != null || context.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+						models.add(m);
+					}
     			}
     			break;
     		}

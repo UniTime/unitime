@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
+import org.unitime.timetable.gwt.client.rooms.RoomFilterBox;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -33,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.gwt.shared.FilterInterface.ListItem;
@@ -46,6 +48,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window.Location;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
@@ -118,6 +121,39 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				}
 			});
 			return list;
+		}
+		if ("roomFilter".equals(param.getName())) {
+			AcademicSessionProvider session = new AcademicSessionProvider() {
+				@Override
+				public Long getAcademicSessionId() {
+					return param.getSessionId();
+				}
+				@Override
+				public String getAcademicSessionName() {
+					return "Current Session";
+				}
+				@Override
+				public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {
+				}
+				@Override
+				public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+				}
+				@Override
+				public AcademicSessionInfo getAcademicSessionInfo() {
+					return null;
+				}
+			};
+			RoomFilterBox rf = new RoomFilterBox(session);
+			if (param.hasDefaultValue())
+				rf.setValue(param.getDefaultValue());
+			rf.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					param.setValue(event.getValue());
+					ValueChangeEvent.fire(PageFilter.this, iFilter);
+				}
+			});
+			return rf;
 		}
 		if ("boolean".equalsIgnoreCase(param.getType())) {
 			CheckBox ch = new CheckBox();

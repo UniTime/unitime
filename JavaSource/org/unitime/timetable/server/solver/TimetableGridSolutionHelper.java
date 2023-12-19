@@ -43,6 +43,7 @@ import org.hibernate.query.Query;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.EventLookupBackend;
+import org.unitime.timetable.events.RoomFilterBackend.LocationMatcher;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridBackground;
@@ -945,6 +946,11 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 	};
 	
 	private static boolean match(final TimetableGridContext context, final Assignment a, final TimetableGridModel m) {
+		if (m.getResourceType() != ResourceType.ROOM.ordinal() && context.getRoomFilter() != null) {
+			for (Location loc: a.getRooms())
+				if (context.getRoomFilter().match(new LocationMatcher(loc, context.getRoomFeatureTypes()))) return true;
+			return false;
+		}
     	return context.getClassFilter() == null || context.getClassFilter().match(new TermMatcher() {
 			@Override
 			public boolean match(String attr, String term) {

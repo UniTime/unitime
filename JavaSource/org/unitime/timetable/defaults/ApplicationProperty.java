@@ -2722,6 +2722,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Time Grid: display room filter")
+	@Since(4.8)
+	TimeGridRoomFilter("unitime.timeGrid.roomFilter"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Events: show academic sessions in the reverse order (latest first)")
 	ListSessionsReverse("unitime.events.listSessionsLatestFirst"),
 	
