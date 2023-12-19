@@ -35,6 +35,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.events.RoomFilterBackend.LocationMatcher;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -93,6 +94,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
 		context.getUser().setProperty("TimetableGridTable.resourceType", request.getFilter().getParameterValue("resource"));
 		context.getUser().setProperty("TimetableGridTable.findString", request.getFilter().getParameterValue("filter"));
 		context.getUser().setProperty("TimetableGridTable.classFilter", request.getFilter().getParameterValue("classFilter"));
+		context.getUser().setProperty("TimetableGridTable.roomFilter", request.getFilter().getParameterValue("roomFilter"));
 		context.getUser().setProperty("TimetableGridTable.day", request.getFilter().getParameterValue("days"));
 		context.getUser().setProperty("TimetableGridTable.times", request.getFilter().getParameterValue("times"));
 		context.getUser().setProperty("TimetableGridTable.dispMode", request.getFilter().getParameterValue("dispMode"));
@@ -201,7 +203,10 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     				for (Iterator i=q.list().iterator();i.hasNext();) {
     					Location room = (Location)i.next();
     					if (!match(filter, room)) continue;
-    					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, room, hibSession, cx));
+    					if (cx.getRoomFilter() != null && !cx.getRoomFilter().match(new LocationMatcher(room, cx.getRoomFeatureTypes()))) continue;
+    					TimetableGridModel m = TimetableGridSolutionHelper.createModel(solutionIdsStr, room, hibSession, cx);
+    					if (cx.getClassFilter() != null && m.getCells().isEmpty()) continue;
+    					response.addModel(m);
     				}
     			} else if (cx.getResourceType() == ResourceType.INSTRUCTOR.ordinal()) {
     				if (RoomAvailability.getInstance() != null && cx.isShowEvents()) {
@@ -233,6 +238,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					if (!match(filter, name)) continue;
     					if (instructor.getExternalUniqueId() == null || instructor.getExternalUniqueId().isEmpty() || puids.add(instructor.getExternalUniqueId())) {
     						TimetableGridModel m = TimetableGridSolutionHelper.createModel(solutionIdsStr, instructor, hibSession, cx);
+    						if ((cx.getRoomFilter() != null || cx.getClassFilter() != null) && m.getCells().isEmpty()) continue;
                             m.setName(instructor.getName(instructorNameFormat));
     						response.addModel(m);
                         }
@@ -247,7 +253,9 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					Department dept = (Department)i.next();
     					String name = dept.getAbbreviation();
     					if (!match(filter, name)) continue;
-    					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, dept, hibSession, cx));
+    					TimetableGridModel m = TimetableGridSolutionHelper.createModel(solutionIdsStr, dept, hibSession, cx);
+    					if ((cx.getRoomFilter() != null || cx.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+    					response.addModel(m);
     				}
     			} else if (cx.getResourceType() == ResourceType.SUBJECT_AREA.ordinal()) {
     				Query q = hibSession.createQuery(
@@ -259,7 +267,9 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					SubjectArea sa = (SubjectArea)i.next();
     					String name = sa.getSubjectAreaAbbreviation();
     					if (!match(filter, name)) continue;
-    					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, sa, hibSession, cx));
+    					TimetableGridModel m = TimetableGridSolutionHelper.createModel(solutionIdsStr, sa, hibSession, cx);
+    					if ((cx.getRoomFilter() != null || cx.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+    					response.addModel(m);
     				}
     			} else if (cx.getResourceType() == ResourceType.CURRICULUM.ordinal()) {
     				Query q = hibSession.createQuery(
@@ -273,7 +283,9 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					if (!infos.add(cc.getUniqueId())) continue;
     					String name = cc.getCurriculum().getAbbv() + " " + cc.getName();
     					if (!match(filter, name)) continue;
-    					response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, cc, hibSession, cx));
+    					TimetableGridModel m = TimetableGridSolutionHelper.createModel(solutionIdsStr, cc, hibSession, cx);
+    					if ((cx.getRoomFilter() != null || cx.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+    					response.addModel(m);
     				}
     			} else if (cx.getResourceType() == ResourceType.STUDENT_GROUP.ordinal()) {
     				Query q = hibSession.createQuery(
@@ -295,8 +307,11 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					q.setCacheable(true);
     					for (Iterator i=q.list().iterator();i.hasNext();) {
     						StudentGroup g = (StudentGroup)i.next();
-    						if (match(filter, g.getGroupName()) || match(filter, g.getGroupAbbreviation()))
-    							response.addModel(TimetableGridSolutionHelper.createModel(solutionIdsStr, g, hibSession, cx));
+    						if (match(filter, g.getGroupName()) || match(filter, g.getGroupAbbreviation())) {
+    							TimetableGridModel m = TimetableGridSolutionHelper.createModel(solutionIdsStr, g, hibSession, cx);
+    							if ((cx.getRoomFilter() != null || cx.getClassFilter() != null) && m.getCells().isEmpty()) continue;
+    							response.addModel(m);
+    						}
     					}					
     				}
     			}

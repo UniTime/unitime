@@ -420,11 +420,11 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		}
 	}
 	
-	public class LocationMatcher implements TermMatcher {
+	public static class LocationMatcher implements TermMatcher {
 		private Location iLocation;
 		private Set<String> iFeatureTypes = null;
 		
-		LocationMatcher(Location location, Set<String> featureTypes) {
+		public LocationMatcher(Location location, Set<String> featureTypes) {
 			iLocation = location;
 			iFeatureTypes = featureTypes;
 		}

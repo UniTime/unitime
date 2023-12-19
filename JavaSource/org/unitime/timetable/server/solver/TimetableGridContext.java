@@ -24,8 +24,11 @@ import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -33,8 +36,12 @@ import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.server.solver.TimetableGridHelper.DisplayMode;
 import org.unitime.timetable.server.solver.TimetableGridHelper.ResourceType;
 import org.unitime.timetable.util.Constants;
@@ -65,6 +72,7 @@ public class TimetableGridContext implements Serializable {
 	private int iWeekOffset = 0;
 	private Long iSessionId = null;
 	private Query iClassFilter = null;
+	private Query iRoomFilter = null;
 	
 	public TimetableGridContext() {}
 	
@@ -78,6 +86,9 @@ public class TimetableGridContext implements Serializable {
 		String cf = filter.getParameterValue("classFilter", "");
 		if (cf != null && !cf.isEmpty())
 			iClassFilter = new Query(cf);
+		String rf = filter.getParameterValue("roomFilter", "");
+		if (rf != null && !rf.isEmpty())
+			iRoomFilter = new Query(rf);
 		iStartDayDayOfWeek = Constants.getDayOfWeek(DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear()));
 		int week = Integer.parseInt(filter.getParameterValue("weeks", "-100"));
 		iFirstDay = (week == -100 ? -1 : DateUtils.getFirstDayOfWeek(session.getSessionStartYear(), week) - session.getDayOfYear(1, session.getPatternStartMonth()) - 1 + iWeekOffset);
@@ -155,6 +166,8 @@ public class TimetableGridContext implements Serializable {
 	public String getFilter() { return iFilter; }
 	
 	public Query getClassFilter() { return iClassFilter; }
+	
+	public Query getRoomFilter() { return iRoomFilter; }
 	
 	public int getResourceType() { return iResourceType; }
 	
@@ -258,5 +271,25 @@ public class TimetableGridContext implements Serializable {
 		}
 		return color;
 	}
-
+    
+    private transient Map<Long, Location> iRoomCache = null;
+    public Location getLocation(Long id) {
+    	if (iRoomCache == null) iRoomCache = new HashMap<Long, Location>();
+    	Location loc = iRoomCache.get(id);
+    	if (loc == null) {
+    		loc = LocationDAO.getInstance().get(id);
+    		if (loc != null) iRoomCache.put(id, loc);
+    	}
+    	return loc;
+    }
+    
+    private Set<String> iFeatureTypes = null;
+    public Set<String> getRoomFeatureTypes() {
+    	if (iFeatureTypes == null) {
+    		iFeatureTypes = new HashSet<String>();
+    		for (RoomFeatureType ft: RoomFeatureTypeDAO.getInstance().findAll())
+    			iFeatureTypes.add(ft.getReference().toLowerCase().replace(' ', '_'));
+    	}
+    	return iFeatureTypes;
+    }
 }

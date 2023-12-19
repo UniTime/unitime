@@ -53,6 +53,14 @@
 				<line>Added an ability to select multiple managers.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable: Room Filter</name>
+			<description>
+				<line>Added an option to include the Room Filter (from the Rooms page) in the Filter section.</line>
+				<line>To be enabled by setting unitime.timeGrid.roomFilter to true (defaults to false).</line>
+				<line>When room or class filters are used, do not show instructors, curricula, etc. that have no matching classes.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>

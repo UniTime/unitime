@@ -57,12 +57,13 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		String value = getParameterValue(name);
 		return value == null ? defaultValue : value;
 	}
-
+	
 	public static class FilterParameterInterface implements IsSerializable, Comparable<FilterParameterInterface> {
 		private String iName, iLabel, iType, iValue, iDefault, iSuffix;
 		private List<ListItem> iOptions = null;
 		private boolean iMultiSelect = false;
 		private boolean iCollapsible = true;
+		private Long iSessionId;
 		
 		public FilterParameterInterface() {}
 		
@@ -145,6 +146,9 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 			if (cmp != 0) return cmp;
 			return getName().compareTo(o.getName());
 		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 	}
 	
 	public static class ListItem implements IsSerializable, Comparable<ListItem> {

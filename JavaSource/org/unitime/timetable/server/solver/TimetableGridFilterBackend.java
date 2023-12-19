@@ -96,7 +96,18 @@ public class TimetableGridFilterBackend implements GwtRpcImplementation<Timetabl
 		filter.setDefaultValue(context.getUser().getProperty("TimetableGridTable.findString", ""));
 		response.addParameter(filter);
 		
-		// Filter
+		// Room Filter
+		if (ApplicationProperty.TimeGridRoomFilter.isTrue()) {
+			FilterParameterInterface roomFilter = new FilterParameterInterface();
+			roomFilter.setName("roomFilter");
+			roomFilter.setLabel(MESSAGES.propRoomFilter());
+			roomFilter.setType("text");
+			roomFilter.setDefaultValue(context.getUser().getProperty("TimetableGridTable.roomFilter", ""));
+			roomFilter.setSessionId(session.getUniqueId());
+			response.addParameter(roomFilter);
+		}
+		
+		// Class Filter
 		if (ApplicationProperty.TimeGridClassFilter.isTrue()) {
 			FilterParameterInterface classFilter = new FilterParameterInterface();
 			classFilter.setName("classFilter");
