@@ -1190,7 +1190,7 @@ public class Class_ extends BaseClass_ {
             			a.getConstraintInfo().remove(ci);
             		}
             	}
-            	hibSession.remove(ci);
+            	hibSession.delete(ci);
             }
 		}
 		deleteObjectsFromCollection(hibSession, s);
