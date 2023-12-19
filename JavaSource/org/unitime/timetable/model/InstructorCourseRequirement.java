@@ -88,6 +88,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 		return InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
 				"select r from InstructorCourseRequirement r, CourseOffering co " +
 				"where co.instructionalOffering.uniqueId = :offeringId and " +
+				"r.instructorSurvey.session = co.instructionalOffering.session and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null", InstructorCourseRequirement.class
 				).setParameter("offeringId", io.getUniqueId())
@@ -98,6 +99,7 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 		return InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
 				"select count(r) from InstructorCourseRequirement r, CourseOffering co " +
 				"where co.instructionalOffering.uniqueId = :offeringId and " +
+				"r.instructorSurvey.session = co.instructionalOffering.session and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null", Number.class
 				).setParameter("offeringId", io.getUniqueId())
