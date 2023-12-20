@@ -911,6 +911,7 @@ public class SavedHQLPage extends Composite {
 			iDialogHeader.addButton("delete", MESSAGES.opQueryDelete(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
+					if (!Window.confirm(MESSAGES.confirmDeleteReport())) return;
 					RPC.execute(new HQLDeleteRpcRequest(iDialogQuery.getId()), new AsyncCallback<GwtRpcResponseBoolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
