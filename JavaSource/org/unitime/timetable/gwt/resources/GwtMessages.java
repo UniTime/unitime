@@ -7869,4 +7869,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you realy want to delete this {0}?")
 	String confirmDeleteItem(String item);
+	
+	@DefaultMessage("Do you realy want to delete this report?")
+	String confirmDeleteReport();
+	
+	@DefaultMessage("Do you realy want to delete this script?")
+	String confirmDeleteScript();
 }
