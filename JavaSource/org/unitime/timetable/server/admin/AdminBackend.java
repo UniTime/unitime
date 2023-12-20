@@ -28,9 +28,13 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.AccessDeniedException;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
@@ -44,6 +48,7 @@ import org.unitime.timetable.server.admin.AdminTable.HasLazyFields;
  * @author Tomas Muller
  */
 public class AdminBackend {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Log sLog = LogFactory.getLog(AdminBackend.class);
 
 	@GwtRpcImplements(SimpleEditInterface.GetPageNameRpcRequest.class)
@@ -74,6 +79,9 @@ public class AdminBackend {
 				} else {
 					data = at.load(context, hibSession);
 				}
+				
+				if (!data.hasConfirmDelete() && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)))
+					data.setConfirmDelete(MESSAGES.confirmDeleteItem(at.name().singular().toLowerCase()));
 				
 				hibSession.flush();
 				tx.commit(); tx = null;
