@@ -157,6 +157,8 @@ public class SubjectAreas implements AdminTable {
 		}
 		data.setAddable(context.hasPermission(Right.SubjectAreaAdd));
 		data.setEditable(context.hasPermission(Right.SubjectAreaEdit) || context.hasPermission(Right.SubjectAreaAdd));
+		if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)))
+			data.setConfirmDelete(MESSAGES.confirmDeleteSubjectArea());
 		return data;
 	}
 	

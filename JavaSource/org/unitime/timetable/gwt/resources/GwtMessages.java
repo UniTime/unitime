@@ -7884,4 +7884,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you realy want to delete this instructor attibute?")
 	String confirmDeleteInstructorAttribute();
+	
+	@DefaultMessage("Do you realy want to delete this {0}?")
+	String confirmDeleteItem(String item);
 }
