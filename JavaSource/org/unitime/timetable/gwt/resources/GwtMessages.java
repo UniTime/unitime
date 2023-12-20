@@ -7863,5 +7863,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("OR")
 	String ruleDisjunctive();
-
+	
+	@DefaultMessage("Do you realy want to delete this instructor attibute?")
+	String confirmDeleteInstructorAttribute();
 }
