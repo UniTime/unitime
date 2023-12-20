@@ -67,6 +67,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	private Long iSessionId = null;
 	private String iSessionName = null;
 	private PageName iPageName = null;
+	private String iConfirmDelete = null;
 	
 	public SimpleEditInterface() {
 	}
@@ -608,4 +609,8 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			return request;
 		}
 	}
+	
+	public void setConfirmDelete(String confirmation) { iConfirmDelete = confirmation; }
+	public boolean hasConfirmDelete() { return iConfirmDelete != null && !iConfirmDelete.isEmpty(); }
+	public String getConfirmDelete() { return iConfirmDelete; }
 }

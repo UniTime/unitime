@@ -456,6 +456,7 @@ public class SimpleEditPage extends Composite {
 			header.addButton("delete", MESSAGES.buttonDelete(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
+					if (iData.hasConfirmDelete() && !Window.confirm(iData.getConfirmDelete())) return;
 					header.setMessage(MESSAGES.waitDeletingRecord());
 					LoadingWidget.showLoading(MESSAGES.waitDeletingRecord());
 					RPC.execute(SimpleEditInterface.DeleteRecordRpcRequest.deleteRecord(iType, record), new AsyncCallback<Record>() {
@@ -1171,6 +1172,8 @@ public class SimpleEditPage extends Composite {
 				@Override
 				public void onClick(ClickEvent event) {
 					int row = iTable.getCellForEvent(event).getRowIndex();
+					if (iData.hasConfirmDelete() && iTable.getData(row).getUniqueId() != null && !Window.confirm(iData.getConfirmDelete()))
+						return;	
 					iData.getRecords().remove(iTable.getData(row));
 					iTable.removeRow(row);
 					fixOrderArrows(row);
