@@ -738,6 +738,7 @@ public class ScriptPage extends Composite {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (iScriptId != null) {
+						if (!Window.confirm(MESSAGES.confirmDeleteScript())) return;
 						hide();
 						LoadingWidget.getInstance().show(MESSAGES.waitDelete(iName.getText()));
 						RPC.execute(new DeleteScriptRpcRequest(iScriptId, iName.getText()), new AsyncCallback<ScriptInterface>() {
