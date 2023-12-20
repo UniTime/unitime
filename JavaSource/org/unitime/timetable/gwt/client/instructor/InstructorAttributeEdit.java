@@ -129,6 +129,7 @@ public class InstructorAttributeEdit extends Composite {
 		iHeader.addButton("delete", MESSAGES.buttonDeleteInstructorAttribute(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				if (!Window.confirm(MESSAGES.confirmDeleteInstructorAttribute())) return;
 				UpdateInstructorAttributeRequest request = new UpdateInstructorAttributeRequest();
 				request.setDeleteAttributeId(iAttribute.getId());
 				LoadingWidget.getInstance().show(MESSAGES.waitDeletingInstructorAttribute());

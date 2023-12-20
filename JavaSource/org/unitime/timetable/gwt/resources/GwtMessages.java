@@ -5313,7 +5313,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you realy want to delete this room?")
 	String confirmDeleteRoom();
-	
+		
 	@DefaultMessage("Do you really want to create the room in {0} as well?")
 	String confirmCreateRoomInFutureSessions(String futureSessions);
 	
@@ -7881,4 +7881,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Other (No Type)")
 	String toggleNoCourseType();
+	
+	@DefaultMessage("Do you realy want to delete this instructor attibute?")
+	String confirmDeleteInstructorAttribute();
 }
