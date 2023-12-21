@@ -50,6 +50,12 @@
 				<line>When room or class filters are used, do not show instructors, curricula, etc. that have no matching classes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructor Survey: Copy Course Requirements</name>
+			<description>
+				<line>Corrected copy of courses from a different academic session (the query filling in the remaining courses that the instructor has currently assigned was wrong).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

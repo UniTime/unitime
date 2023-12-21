@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.Course;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.CustomField;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyInterface.InstructorSurveyCopyRequest;
@@ -43,6 +44,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -153,16 +155,23 @@ public class CopyInstructorSurveyBackend implements GwtRpcImplementation<Instruc
 					}
 				}
 				
+				boolean excludeAuxiliary = ApplicationProperty.InstructorSurveyExcludeAuxiliaryAssignments.isTrue();
+				String excludeCourseType = ApplicationProperty.InstructorSurveyExcludeCourseTypes.value();
 				for (CourseOffering co: CourseOfferingDAO.getInstance().getSession().createQuery(
-						"select distinct co from CourseOffering co, " +
+						"select distinct co from " +
 						"DepartmentalInstructor i inner join i.classes ci inner join ci.classInstructing c " +
 						"inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io inner join io.courseOfferings co " +
+						(excludeAuxiliary ? "left outer join ci.responsibility r " : "") +
 						"where co.isControl = true and io.notOffered = false and io.session.uniqueId = :sessionId and i.externalUniqueId=:id " +
-						"and ci.lead = true and c.schedulingSubpart.itype.organized = true", CourseOffering.class
+						"and ci.lead = true and c.schedulingSubpart.itype.organized = true" +
+						(excludeAuxiliary ? " and (r is null or bitand(r.options, " + TeachingResponsibility.Option.auxiliary.toggle() + ") = 0)" : ""),
+						CourseOffering.class
 						)
 						.setParameter("id", survey.getExternalId())
 						.setParameter("sessionId", sessionId)
 						.setCacheable(true).list()) {
+					if (excludeCourseType != null && !excludeCourseType.isEmpty() && co.getCourseType() != null && 
+							co.getCourseType().getReference().matches(excludeCourseType)) continue;
 					if (courseIds.add(co.getUniqueId())) {
 						Course ci = new Course();
 						ci.setId(co.getUniqueId());
