@@ -39,11 +39,13 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorCourseRequirement;
 import org.unitime.timetable.model.InstructorCourseRequirementNote;
 import org.unitime.timetable.model.InstructorCourseRequirementType;
+import org.unitime.timetable.model.InstructorSurvey;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.InstructorCourseRequirementTypeDAO;
+import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -73,11 +75,11 @@ public class InstructorRequirementsBackend implements GwtRpcImplementation<Instr
 		}
 		
 		
+		String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
+		boolean timeVertical = false;//RequiredTimeTable.getTimeGridVertical(context.getUser());
+		boolean gridAsText = false;//RequiredTimeTable.getTimeGridAsText(context.getUser());
 		List<InstructorCourseRequirement> requirements = InstructorCourseRequirement.getRequirementsForOffering(io);
 		if (!requirements.isEmpty()) {
-			String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
-			boolean timeVertical = false;//RequiredTimeTable.getTimeGridVertical(context.getUser());
-			boolean gridAsText = false;//RequiredTimeTable.getTimeGridAsText(context.getUser());
 			for (InstructorCourseRequirement req: new TreeSet<InstructorCourseRequirement>(requirements)) {
         		DepartmentalInstructor di = req.getInstructorSurvey().getInstructor(io);
         		CourseRequirement line  = new CourseRequirement();
@@ -124,6 +126,60 @@ public class InstructorRequirementsBackend implements GwtRpcImplementation<Instr
         		response.addInstructorRequirement(line);
 			}
 		}
+		
+		List<InstructorSurvey> surveys = InstructorSurveyDAO.getInstance().getSession().createQuery(
+				"select s from InstructorSurvey s where s.submitted is not null and s.externalUniqueId in " +
+				"(select ci.instructor.externalUniqueId from ClassInstructor ci where ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId and ci.instructor.externalUniqueId is not null)" +
+				" and s.session.uniqueId = :sessionId and (s.preferences is not empty or length(s.note) > 0)", InstructorSurvey.class)
+				.setParameter("sessionId", io.getSessionId()).setParameter("offeringId", io.getUniqueId()).setCacheable(true).list();
+		survey: for (InstructorSurvey survey: surveys) {
+			if (response.hasInstructorRequirements())
+				for (CourseRequirement line: response.getInstructorRequirements()) {
+					if (survey.getExternalUniqueId().equals(line.getExternalId())) continue survey;
+				}
+			DepartmentalInstructor di = survey.getInstructor(io);
+    		CourseRequirement line  = new CourseRequirement();
+    		line.setExternalId(survey.getExternalUniqueId());
+    		if (di != null)
+    			line.setInstructorId(di.getUniqueId());
+    		line.setInstructorName(survey.getExternalUniqueId());
+    		if (di != null)
+    			line.setInstructorName(di.getName(instructorNameFormat));
+    		
+    		line.setCourseName(io.getControllingCourseOffering().getCourseName());
+    		line.setId(io.getControllingCourseOffering().getUniqueId());
+    		line.setCourseTitle(io.getControllingCourseOffering().getTitle());
+    		
+    		line.setNote(survey.getNote());
+
+    		for (Preference p: survey.getPreferences()) {
+    			if (p instanceof TimePref) {
+    				TimePref tp = (TimePref)p;
+					RequiredTimeTable rtt = tp.getRequiredTimeTable();
+					if (gridAsText) {
+						line.setTimeHtml(rtt.getModel().toString().replaceAll(", ","\n"));
+					} else {
+						((TimePatternModel)rtt.getModel()).setMode("|" + propertyValue(io.getDepartment(), ApplicationProperty.InstructorSurveyTimePreferencesDept, ApplicationProperty.InstructorSurveyTimePreferences));
+						line.setTimeHtml("<img border='0' " +
+								"onmouseover=\"showGwtInstructorAvailabilityHint(this, 'IS#" + survey.getUniqueId() +
+								"#" + io.getDepartment().getDeptCode() + "');\" onmouseout=\"hideGwtInstructorAvailabilityHint();\" " +
+								"src='pattern?v=" + (timeVertical ? 1 : 0) + "&d=" + io.getDepartment().getUniqueId() + "&p=" + rtt.getModel().getPreferences() + "' title='"+rtt.getModel().toString()+"' >&nbsp;"
+								);
+					}
+					//line.setTime(rtt.getModel().toString());
+    			} else if (p instanceof DistributionPref) {
+    				if (((DistributionPref)p).getDistributionType().effectiveSurvey()) {
+    					line.addDist(p.preferenceText(instructorNameFormat));
+    					line.addDistHtml(p.preferenceHtml(instructorNameFormat));
+    				}
+    			} else {
+    				line.addRoom(p.preferenceText(instructorNameFormat));
+    				line.addRoomHtml(p.preferenceHtml(instructorNameFormat));
+    			}
+    		}
+    		response.addInstructorRequirement(line);
+		}
+		
 		return response;
 	}
 	

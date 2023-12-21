@@ -33,6 +33,7 @@
 			<name>Instructional Offering Detail: Instructor Requirements</name>
 			<description>
 				<line>Ensure that only requirements (instructor surveys) from the correct academic session are listed.</line>
+				<line>Include instructor surveys for assigned instructors that did not fill in course requirements for the course.</line>
 			</description>
 		</item>
 		<item>
