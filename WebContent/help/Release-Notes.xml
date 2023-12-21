@@ -33,6 +33,7 @@
 			<name>Instructor Survey</name>
 			<description>
 				<line>Added an ability for departmental schedule managers to unsubmit the survey directly from the Instructor Survey page/dialog (meaning save and unsubmit).</line>
+				<line>Corrected copy of courses from a different academic session (the query filling in the remaining courses that the instructor has currently assigned was wrong).</line>
 			</description>
 		</item>
 		<item>
