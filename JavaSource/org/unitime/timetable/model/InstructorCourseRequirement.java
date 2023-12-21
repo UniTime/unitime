@@ -83,13 +83,22 @@ public class InstructorCourseRequirement extends BaseInstructorCourseRequirement
 	}
 	
 	public static boolean hasRequirementsForOffering(InstructionalOffering io) {
-		return ((Number)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
+		int reqs = ((Number)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
 				"select count(r) from InstructorCourseRequirement r, CourseOffering co " +
 				"where co.instructionalOffering = :offeringId and " +
 				"r.instructorSurvey.session = co.instructionalOffering.session and " +
 				"(r.courseOffering = co or r.course = (co.subjectAreaAbbv || ' ' || co.courseNbr)) and " +
 				"r.instructorSurvey.submitted is not null"
 				).setLong("offeringId", io.getUniqueId())
-				.setCacheable(true).uniqueResult()).intValue() > 0;
+				.setCacheable(true).uniqueResult()).intValue();
+		if (reqs > 0) return true;
+		int survs = ((Number)InstructorCourseRequirementDAO.getInstance().getSession().createQuery(
+				"select count(s) from InstructorSurvey s where s.submitted is not null and s.externalUniqueId in " +
+				"(select ci.instructor.externalUniqueId from ClassInstructor ci where ci.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId and ci.instructor.externalUniqueId is not null)" +
+				" and s.session.uniqueId = :sessionId and (s.preferences is not empty or length(s.note) > 0)"
+				).setLong("sessionId", io.getSessionId()).setLong("offeringId", io.getUniqueId())
+				.setCacheable(true).uniqueResult()).intValue();
+		if (survs > 0) return true;
+		return false;
 	}
 }
