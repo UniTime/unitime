@@ -56,6 +56,12 @@
 				<line>Corrected copy of courses from a different academic session (the query filling in the remaining courses that the instructor has currently assigned was wrong).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Curriculum</name>
+			<description>
+				<line>When showing a saved/committed solution, corrected matching of a curriculum reservation when the displayed curriculum has no major.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
