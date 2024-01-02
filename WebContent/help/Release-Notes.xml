@@ -57,6 +57,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Events Timetable: Curriculum</name>
+			<description>
+				<line>Corrected matching of a curriculum reservation when the displayed curriculum has no major.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Roll Forward Session: Room Patitions</name>
