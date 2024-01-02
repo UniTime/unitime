@@ -362,7 +362,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								"select distinct cc.course.instructionalOffering.uniqueId, (case when g.uniqueId is null then x.uniqueId else g.uniqueId end), z.uniqueId " +
 								"from CurriculumReservation r inner join r.areas ra left outer join r.configurations g left outer join r.classes z left outer join z.schedulingSubpart.instrOfferingConfig x " +
 								"left outer join r.majors rm left outer join r.classifications rc, " +
-								"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
+								"CurriculumCourse cc left outer join cc.classification.curriculum.majors cm " +
 								"where (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) " +
 								"and cc.course.instructionalOffering = r.instructionalOffering and ra = cc.classification.curriculum.academicArea "+
 								"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)",
