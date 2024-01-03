@@ -1208,7 +1208,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		iProgress.message(msglevel("noPlacement", Progress.MSGLEVEL_WARN), MSG.warnNoPlacementInteractive(getClassLabel(lecture)));
         }
         if (iClassWeightProvider != null)
-        	lecture.setWeight(iClassWeightProvider.getWeight(lecture));
+        	lecture.setWeight(iClassWeightProvider.getWeight(lecture, clazz));
     	iLectures.put(clazz.getUniqueId(),lecture);
         getModel().addVariable(lecture);
 

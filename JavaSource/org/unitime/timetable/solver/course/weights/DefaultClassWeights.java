@@ -21,6 +21,7 @@ package org.unitime.timetable.solver.course.weights;
 
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.ifs.util.DataProperties;
+import org.unitime.timetable.model.Class_;
 
 
 public class DefaultClassWeights implements ClassWeightProvider {
@@ -28,7 +29,7 @@ public class DefaultClassWeights implements ClassWeightProvider {
 	public DefaultClassWeights(DataProperties config) {}
 
 	@Override
-	public double getWeight(Lecture lecture) {
+	public double getWeight(Lecture lecture, Class_ clazz) {
 		return 1.0;
 	}
 

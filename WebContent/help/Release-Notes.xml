@@ -62,6 +62,14 @@
 				<line>When showing a saved/committed solution, corrected matching of a curriculum reservation when the displayed curriculum has no major.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Weights: Number of Weeks Class Weights</name>
+			<description>
+				<line>Added &quot;Nbr Weeks Class Weights&quot; option for the Class Weights solver parameter, weighting classes by the number of weeks they are using.
+					<line>Classes using the default date pattern have a weight of 1.0, a class meeting only every other week would be weighted 0.5.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
