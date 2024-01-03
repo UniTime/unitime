@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.hibernate.Transaction;
-import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -79,8 +78,8 @@ public class EventExpirationService extends Thread {
 				Date now = new Date();
 				for (Event event: hibSession.createQuery(
 						"select distinct e from Event e inner join e.meetings m " +
-						"where e.expirationDate is not null and m.approvalStatus = 0 and e.expirationDate < " + HibernateUtil.date(new Date()),
-						Event.class).list()) {
+						"where e.expirationDate is not null and m.approvalStatus = 0 and e.expirationDate < :date",
+						Event.class).setParameter("date", new Date()).list()) {
 					
 					Set<Meeting> affectedMeetings = new HashSet<Meeting>();
 					String affectedMeetingStr = "";

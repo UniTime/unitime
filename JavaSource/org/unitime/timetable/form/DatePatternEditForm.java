@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -154,7 +155,7 @@ public class DatePatternEditForm implements UniTimeForm {
 				iDepartmentIds.add(d.getUniqueId());
 			}
 			iChildrenIds.clear();
-			for (DatePattern ch: dp.findChildren()) {
+			for (DatePattern ch: dp.getChildren()) {
 				iChildrenIds.add(ch.getUniqueId());
 			}
 			iOp = MSG.actionUpdateDatePattern();
@@ -177,20 +178,22 @@ public class DatePatternEditForm implements UniTimeForm {
 			dp.setNumberOfWeeks(null);
 		}
 		
-		HashSet oldParents = new HashSet(dp.getParents());
+		HashSet<DatePattern> oldParents = new HashSet<DatePattern>(dp.getParents());
 		for (Long parentId: iParentIds) {
 			DatePattern d = (DatePatternDAO.getInstance()).get(parentId,hibSession);
 			if (d==null) continue;
 			if (oldParents.remove(d)) {
 				//not changed -> do nothing
 			} else {
-				dp.getParents().add(d);				
+				dp.getParents().add(d);		
+				d.getChildren().add(dp);
 				hibSession.merge(dp);				
 			}
 		}
 		for (Iterator i=oldParents.iterator();i.hasNext();) {
 			DatePattern d = (DatePattern)i.next();
 			dp.getParents().remove(d);			
+			d.getChildren().remove(dp);
 			hibSession.merge(d);
 		}
 		
@@ -215,7 +218,7 @@ public class DatePatternEditForm implements UniTimeForm {
 		hibSession.merge(dp);
 		
 		if (dp.isPatternSet()) {
-			List<DatePattern> oldChildren = dp.findChildren(hibSession);
+			HashSet<DatePattern> oldChildren = new HashSet<DatePattern>(dp.getChildren());
 			for (Long childId: iChildrenIds) {
 				DatePattern d = (DatePatternDAO.getInstance()).get(childId,hibSession);
 				if (d==null) continue;
@@ -223,17 +226,20 @@ public class DatePatternEditForm implements UniTimeForm {
 					//not changed -> do nothing
 				} else {
 					d.getParents().add(dp);
+					dp.getChildren().add(d);
 					hibSession.merge(d);
 				}
 			}
 			for (DatePattern d: oldChildren) {
 				d.getParents().remove(dp);
+				dp.getChildren().remove(d);
 				hibSession.merge(d);
 			}
 		} else {
-			List<DatePattern> oldChildren = dp.findChildren(hibSession);
+			HashSet<DatePattern> oldChildren = new HashSet<DatePattern>(dp.getChildren());
 			for (DatePattern d: oldChildren) {
 				d.getParents().remove(dp);
+				dp.getChildren().remove(d);
 				hibSession.merge(d);
 			}
 		}
@@ -257,11 +263,12 @@ public class DatePatternEditForm implements UniTimeForm {
 			dp.setNumberOfWeeks(null);
 		}
 		
-		HashSet newParents = new HashSet();
+		Set<DatePattern> newParents = new HashSet<DatePattern>();
 		for (Long parentId: iParentIds) {
 			DatePattern d = (DatePatternDAO.getInstance()).get(parentId,hibSession);
 			if (d==null) continue;
 			newParents.add(d);
+			d.getChildren().add(dp);
 		}
 		dp.setParents(newParents);
 		HashSet newDepts = new HashSet();
@@ -279,12 +286,15 @@ public class DatePatternEditForm implements UniTimeForm {
 		}
 		setUniqueId(dp.getUniqueId());
 		if (dp.isPatternSet()) {
+			Set<DatePattern> newChildren = new HashSet<DatePattern>();
 			for (Long childId: iChildrenIds) {
 				DatePattern d = (DatePatternDAO.getInstance()).get(childId,hibSession);
 				if (d==null) continue;
 				d.getParents().add(dp);
+				newChildren.add(d);
 				hibSession.merge(d);
 			}
+			dp.setChildren(newChildren);
 		}
 		return dp;
 	}
@@ -309,9 +319,13 @@ public class DatePatternEditForm implements UniTimeForm {
 			d.getDatePatterns().remove(dp);
 			hibSession.merge(d);
 		}
-		for (Iterator i=dp.findChildren().iterator();i.hasNext();) {
-			DatePattern d = (DatePattern)i.next();
+		for (DatePattern d: dp.getChildren()) {
 			d.getParents().remove(dp);
+			hibSession.merge(d);
+		}
+		dp.getChildren().clear();
+		for (DatePattern d: dp.getParents()) {
+			d.getChildren().remove(dp);
 			hibSession.merge(d);
 		}
 		dp.getParents().clear();

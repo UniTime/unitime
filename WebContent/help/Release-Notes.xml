@@ -97,6 +97,14 @@
 				<line>When the provided HQL is incorrect, display a more meaningful error message.</line>
 			</description>
 		</item>
+		<item>
+			<name>Technology Upgrade</name>
+			<description>
+				<line>Hibernate upgraded to version 6.4.1 (from 6.2.14).
+					<line>Please note that in HQL, = null or != null no longer works (use is null or is not null instead).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

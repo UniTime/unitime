@@ -667,7 +667,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 		if (selectedSessionId != null){
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("from PointInTimeData pitd where pitd.session.uniqueId in (select distinct rfio.session ")
+			sb.append("from PointInTimeData pitd where pitd.session.uniqueId in (select distinct rfio.session.uniqueId ")
 			  .append(" from InstructionalOffering rfio, Session s inner join s.instructionalOfferings as io ")
 			  .append(" where s.uniqueId = :sessId ")
               .append(" and rfio.uniqueId = io.uniqueIdRolledForwardFrom )")
@@ -675,7 +675,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 			pointInTimeDataSnapshots.addAll((List<PointInTimeData>)PointInTimeDataDAO.getInstance()
 					.getSession()
 					.createQuery(sb.toString(), PointInTimeData.class)
-					.setParameter("sessId", selectedSessionId.longValue())
+					.setParameter("sessId", selectedSessionId)
 					.list());
 		}
 		

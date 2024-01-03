@@ -1220,6 +1220,7 @@ public class AcademicSessionSetupImport extends BaseImport {
             	pattern = new DatePattern();
             	pattern.setDepartments(new HashSet<Department>());
             	pattern.setParents(new HashSet<DatePattern>());
+            	pattern.setChildren(new HashSet<DatePattern>());
             	pattern.setSession(session);
             	pattern.setType(0);
             	pattern.setOffset(0);
@@ -1300,8 +1301,11 @@ public class AcademicSessionSetupImport extends BaseImport {
         			DatePattern dp = updatedPatterns.get(name);
         			if (dp == null || patterns.remove(dp)) continue;
         			pattern.getParents().add(dp);
+        			dp.getChildren().add(pattern);
         		}
         	pattern.getParents().removeAll(patterns);
+        	for (DatePattern dp: patterns)
+        		dp.getChildren().remove(pattern);
         }
         
         for (DatePattern pattern: updatedPatterns.values())

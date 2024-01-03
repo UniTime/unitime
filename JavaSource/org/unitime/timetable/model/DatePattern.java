@@ -573,9 +573,9 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     @SuppressWarnings("unchecked")
 	public List<DatePattern> findChildren(org.hibernate.Session hibSession) {
     	if (getType() != null && getType() != DatePatternType.PatternSet.ordinal()) return new ArrayList<DatePattern>();
-    	return (hibSession != null ? hibSession : DatePatternDAO.getInstance().getSession()).
-        		createQuery("select dp from DatePattern dp, IN (dp.parents) parent where parent.uniqueId = :parentId", DatePattern.class).
-        		setParameter("parentId", getUniqueId()).setCacheable(true).list();
+    	List<DatePattern> ret = new ArrayList<DatePattern>(getChildren());
+    	Collections.sort(ret);
+    	return ret;
     }
     
     @SuppressWarnings("unchecked")

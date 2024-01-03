@@ -1276,8 +1276,12 @@ public class AcademicSessionMerge {
 			for (DatePattern fromDp: fromToDatePatternMap.keySet()){
 				DatePattern toDp = fromToDatePatternMap.get(fromDp);
 				if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
-					for (DatePattern fromParent: fromDp.getParents()){
-						toDp.addToParents(fromToDatePatternMap.get(fromParent));
+					for (DatePattern fromParent: fromDp.getParents()) {
+						DatePattern toParent = fromToDatePatternMap.get(fromParent);
+						if (toParent != null) {
+							toDp.addToParents(toParent);
+							toParent.addToChildren(toDp);
+						}
 					}
 					dpDao.getSession().merge(toDp);
 				}
@@ -1424,7 +1428,7 @@ public class AcademicSessionMerge {
 				SubjectArea fromSubjectArea = null;
 				CourseCatalogDAO ccDao = CourseCatalogDAO.getInstance();
 				List<Object[]> subjects = ccDao.getSession().createQuery(
-						"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null",
+						"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is not null",
 						Object[].class)
 					.setParameter("sessionId", iMergedSession.getUniqueId())
 					.list();
@@ -1474,7 +1478,7 @@ public class AcademicSessionMerge {
 					}
 				}
 
-				List<String> newSubjects = ccDao.getSession().createQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)", String.class)
+				List<String> newSubjects = ccDao.getSession().createQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)", String.class)
 					.setParameter("sessionId", iMergedSession.getUniqueId())
 					.list();
 				toDepartment = Department.findByDeptCode("TEMP", iMergedSession.getUniqueId());

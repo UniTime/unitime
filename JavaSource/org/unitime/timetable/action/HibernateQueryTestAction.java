@@ -226,7 +226,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			new LoadQueryInfluencers(),
+			        			new LoadQueryInfluencers(sfi),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory(),
 			        			false).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
@@ -239,10 +239,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			new LoadQueryInfluencers(),
+			        			new LoadQueryInfluencers(sfi),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
-			        			.buildDeleteTranslator(sfi, (DeleteStatement)tr.getSqlAst())
+			        			.buildMutationTranslator(sfi, (DeleteStatement)tr.getSqlAst())
 			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
 			        	request.setAttribute("sql", sql);
 		        	} else if (sqm instanceof SqmInsertStatement) {
@@ -251,10 +251,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			new LoadQueryInfluencers(),
+			        			new LoadQueryInfluencers(sfi),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
-			        			.buildInsertTranslator(sfi, (InsertStatement)tr.getSqlAst())
+			        			.buildMutationTranslator(sfi, (InsertStatement)tr.getSqlAst())
 			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
 			        	request.setAttribute("sql", sql);
 		        	} else if (sqm instanceof SqmUpdateStatement) {
@@ -263,10 +263,10 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 			        			QueryOptions.NONE,
 			        			DomainParameterXref.from(sqm),
 			        			QueryParameterBindingsImpl.from(ParameterMetadataImpl.EMPTY, sfi),
-			        			new LoadQueryInfluencers(),
+			        			new LoadQueryInfluencers(sfi),
 			        			(SqlAstCreationContext)hibSession.getSessionFactory()).translate();
 			        	String sql = dialect.getSqlAstTranslatorFactory()
-			        			.buildUpdateTranslator(sfi, (UpdateStatement)tr.getSqlAst())
+			        			.buildMutationTranslator(sfi, (UpdateStatement)tr.getSqlAst())
 			        			.translate(JdbcParameterBindings.NO_BINDINGS, QueryOptions.NONE).getSqlString();
 			        	request.setAttribute("sql", sql);
 		        	}

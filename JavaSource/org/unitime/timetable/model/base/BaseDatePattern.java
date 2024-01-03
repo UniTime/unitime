@@ -61,6 +61,7 @@ public abstract class BaseDatePattern implements Serializable {
 
 	private Session iSession;
 	private Set<DatePattern> iParents;
+	private Set<DatePattern> iChildren;
 	private Set<Department> iDepartments;
 
 	public BaseDatePattern() {
@@ -126,6 +127,19 @@ public abstract class BaseDatePattern implements Serializable {
 	@Deprecated
 	public void addToparents(DatePattern datePattern) {
 		addToParents(datePattern);
+	}
+
+	@ManyToMany(mappedBy = "parents")
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	public Set<DatePattern> getChildren() { return iChildren; }
+	public void setChildren(Set<DatePattern> children) { iChildren = children; }
+	public void addToChildren(DatePattern datePattern) {
+		if (iChildren == null) iChildren = new HashSet<DatePattern>();
+		iChildren.add(datePattern);
+	}
+	@Deprecated
+	public void addTochildren(DatePattern datePattern) {
+		addToChildren(datePattern);
 	}
 
 	@ManyToMany(mappedBy = "datePatterns")

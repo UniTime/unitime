@@ -133,9 +133,9 @@
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
-				<attribute name="Class-Path" value="angus-activation-2.0.1.jar antlr4-runtime-4.10.1.jar biweekly-0.6.7.jar byte-buddy-1.14.7.jar c3p0-0.9.5.5.jar classmate-1.5.1.jar
+				<attribute name="Class-Path" value="angus-activation-2.0.1.jar antlr4-runtime-4.13.0.jar biweekly-0.6.7.jar byte-buddy-1.14.7.jar c3p0-0.9.5.5.jar classmate-1.5.1.jar
 					commons-lang3-3.8.1.jar commons-logging-1.2.jar commons-text-1.10.0.jar cpsolver-1.4-SNAPSHOT.jar dom4j-2.1.4.jar freemarker-2.3.32.jar gson-2.10.1.jar
-					gwt-servlet-2.10.0.jar hibernate-c3p0-6.2.14.Final.jar hibernate-commons-annotations-6.0.6.Final.jar hibernate-core-6.2.14.Final.jar istack-commons-runtime-4.1.1.jar
+					gwt-servlet-2.10.0.jar hibernate-c3p0-6.4.1.Final.jar hibernate-commons-annotations-6.0.6.Final.jar hibernate-core-6.4.1.Final.jar istack-commons-runtime-4.1.1.jar
 					itext-2.1.7.jar jackson-core-2.15.2.jar jakarta.activation-api-2.1.1.jar jakarta.mail-2.0.2.jar jakarta.mail-api-2.1.1.jar jakarta.persistence-api-3.1.0.jar
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.29.2-GA.jar javax.servlet-api-3.1.0.jar javax.servlet.jsp-api-2.3.3.jar
 					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.2.18.Final.jar joda-time-2.12.5.jar log4j-api-2.20.0.jar
@@ -328,9 +328,9 @@
 				<include name="byte-buddy-1.14.7.jar"/>
 				<include name="c3p0-0.9.5.5.jar"/>
 				<include name="classmate-1.5.1.jar"/>
-				<include name="hibernate-c3p0-6.2.14.Final.jar"/>
+				<include name="hibernate-c3p0-6.4.1.Final.jar"/>
 				<include name="hibernate-commons-annotations-6.0.6.Final.jar"/>
-				<include name="hibernate-core-6.2.14.Final.jar"/>
+				<include name="hibernate-core-6.4.1.Final.jar"/>
 				<include name="istack-commons-runtime-4.1.1.jar"/>
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
@@ -341,7 +341,7 @@
 				<include name="jakarta.persistence-api-3.1.0.jar"/>
 				<include name="jakarta.transaction-api-2.0.1.jar"/>
 				<include name="jakarta.xml.bind-api-4.0.0.jar"/>
-				<include name="antlr4-runtime-4.10.1.jar"/>
+				<include name="antlr4-runtime-4.13.0.jar"/>
 			</tarfileset>
 			<tarfileset dir="${3rd_party.dir}" prefix="solver">
 				<include name="javax.servlet.jsp-api-2.3.3.jar"/>
@@ -395,9 +395,9 @@
 				<include name="byte-buddy-1.14.7.jar"/>
 				<include name="c3p0-0.9.5.5.jar"/>
 				<include name="classmate-1.5.1.jar"/>
-				<include name="hibernate-c3p0-6.2.14.Final.jar"/>
+				<include name="hibernate-c3p0-6.4.1.Final.jar"/>
 				<include name="hibernate-commons-annotations-6.0.6.Final.jar"/>
-				<include name="hibernate-core-6.2.14.Final.jar"/>
+				<include name="hibernate-core-6.4.1.Final.jar"/>
 				<include name="istack-commons-runtime-4.1.1.jar"/>
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
@@ -408,7 +408,7 @@
 				<include name="jakarta.persistence-api-3.1.0.jar"/>
 				<include name="jakarta.transaction-api-2.0.1.jar"/>
 				<include name="jakarta.xml.bind-api-4.0.0.jar"/>
-				<include name="antlr4-runtime-4.10.1.jar"/>
+				<include name="antlr4-runtime-4.13.0.jar"/>
 			</zipfileset>
 			<zipfileset dir="${3rd_party.dir}" prefix="solver">
 				<include name="javax.servlet.jsp-api-2.3.3.jar"/>

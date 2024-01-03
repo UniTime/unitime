@@ -56,6 +56,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metamodel.mapping.BasicValuedMapping;
+import org.hibernate.metamodel.mapping.MappingModelExpressible;
 import org.hibernate.query.ReturnableType;
 import org.hibernate.query.sqm.function.NamedSqmFunctionDescriptor;
 import org.hibernate.query.sqm.produce.function.FunctionReturnTypeResolver;
@@ -489,7 +490,7 @@ public class HibernateUtil {
     	}
     	
     	@Override
-    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
     		// ?1 + (?2) * interval '1 day'
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
     		sqlAppender.appendSql(" + (");
@@ -503,7 +504,7 @@ public class HibernateUtil {
     	public OracleWeekdayFunction() {
     		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -514,7 +515,7 @@ public class HibernateUtil {
     	}
     	
     	@Override
-    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
     		// (trunc(?) - trunc(?, 'IW'));
     		sqlAppender.appendSql("(trunc(");
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
@@ -529,7 +530,7 @@ public class HibernateUtil {
     	public OracleDaysFunction() {
     		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -540,7 +541,7 @@ public class HibernateUtil {
     	}
     	
     	@Override
-    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
     		// (trunc(?) - trunc(?))
     		sqlAppender.appendSql("(trunc(");
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
@@ -555,7 +556,7 @@ public class HibernateUtil {
     	public MySQLDaysFunction() {
     		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+    			public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -566,7 +567,7 @@ public class HibernateUtil {
     	}
     	
     	@Override
-    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
     		// datediff(?, ?)
     		sqlAppender.appendSql("datediff(");
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
@@ -581,7 +582,7 @@ public class HibernateUtil {
     	public PostgreSQLDaysFunction() {
     		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+    			public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -592,7 +593,7 @@ public class HibernateUtil {
     	}
     	
     	@Override
-    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, SqlAstTranslator<?> translator) {
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
     		// (date(?) - date(?))
     		sqlAppender.appendSql("(date(");
     		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);

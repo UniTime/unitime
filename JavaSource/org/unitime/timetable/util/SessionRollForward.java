@@ -887,7 +887,11 @@ public class SessionRollForward {
 			DatePattern toDp = fromToDatePatternMap.get(fromDp);
 			if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
 				for (DatePattern fromParent: fromDp.getParents()){
-					toDp.addToParents(fromToDatePatternMap.get(fromParent));
+					DatePattern toParent = fromToDatePatternMap.get(fromParent);
+					if (toParent != null) {
+						toDp.addToParents(toParent);
+						toParent.addToChildren(toDp);
+					}
 				}
 				getHibSession().merge(toDp);
 			}
@@ -911,7 +915,7 @@ public class SessionRollForward {
 		Department toDepartment = null;
 		if (sessionHasCourseCatalog(toSession)) {
 			List<Object[]> subjects = getHibSession().createQuery(
-					"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject != null",
+					"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is not null",
 					Object[].class).setParameter("sessionId", toSession.getUniqueId()).list();
 			if (subjects != null){
 				String toSubject = null;
@@ -950,7 +954,7 @@ public class SessionRollForward {
 				}
 			}
 			List<String> newSubjects = getHibSession().createQuery(
-					"select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)",
+					"select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)",
 					String.class).setParameter("sessionId", toSession.getUniqueId()).list();
 			toDepartment = Department.findByDeptCode("TEMP", toSession.getUniqueId());
 			if (toDepartment == null){

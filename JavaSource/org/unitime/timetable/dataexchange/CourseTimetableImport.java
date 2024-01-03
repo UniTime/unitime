@@ -365,6 +365,7 @@ public class CourseTimetableImport extends BaseImport {
 					datePattern.setType(Integer.valueOf(3));
 					datePattern.setVisible(false);
 					datePattern.setParents(new HashSet<DatePattern>());
+					datePattern.setChildren(new HashSet<DatePattern>());
 					getHibSession().persist(datePattern);
 					iName2dp.put(datePattern.getName(), datePattern);
 				}

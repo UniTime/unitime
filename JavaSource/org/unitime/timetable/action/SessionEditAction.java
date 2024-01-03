@@ -301,7 +301,7 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
         		    	hibSession.remove(event);
             	}
             	for (Exam exam: hibSession.createQuery(
-            			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null " +
+            			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod is not null " +
             			"and x.uniqueId not in (select e.exam.uniqueId from ExamEvent e where e.exam.session.uniqueId = :sessionId)",
             			Exam.class)
             			.setParameter("sessionId", sessn.getUniqueId()).list()) {
