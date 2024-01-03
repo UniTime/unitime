@@ -27,6 +27,7 @@ import java.util.Locale;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.util.DataProperties;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.Constants;
@@ -97,7 +98,7 @@ public class AverageHoursAWeekClassWeights implements ClassWeightProvider {
 	}
 
 	@Override
-	public double getWeight(Lecture lecture) {
+	public double getWeight(Lecture lecture, Class_ clazz) {
 		double nrMeetingSlots = 0;
 		int nrTimes = 0;
 		for (TimeLocation time : lecture.timeLocations()) {
