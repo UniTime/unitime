@@ -586,7 +586,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
-                		"x.assignedPeriod!=null and x.examType.type=:examType", Number.class).
+                		"x.assignedPeriod is not null and x.examType.type=:examType", Number.class).
                 setParameter("sessionId", sessionId).setParameter("examType", examType).setCacheable(true).uniqueResult().longValue()>0;
     }
     
@@ -595,7 +595,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return ExamDAO.getInstance().getSession().
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
-                		"x.assignedPeriod!=null", Number.class).
+                		"x.assignedPeriod is not null", Number.class).
                 setParameter("sessionId", sessionId).setCacheable(true).uniqueResult().longValue()>0;
     }
 
@@ -630,7 +630,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod!=null and x.examType.uniqueId=:examTypeId", Exam.class).
+                "x.session.uniqueId=:sessionId and x.assignedPeriod is not null and x.examType.uniqueId=:examTypeId", Exam.class).
                 setParameter("sessionId", sessionId).
                 setParameter("examTypeId", examTypeId).
                 setCacheable(true).list();
@@ -644,7 +644,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Vector<ExamInfo> ret = new Vector<ExamInfo>();
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select x from Exam x where "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod=null and x.examType.uniqueId=:examTypeId", Exam.class).
+                "x.session.uniqueId=:sessionId and x.assignedPeriod is null and x.examType.uniqueId=:examTypeId", Exam.class).
                 setParameter("sessionId", sessionId).
                 setParameter("examTypeId", examTypeId).
                 setCacheable(true).list();
@@ -661,7 +661,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                 "x.examType.uniqueId=:examTypeId and "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod!=null", Exam.class).
+                "x.session.uniqueId=:sessionId and x.assignedPeriod is not null", Exam.class).
                 setParameter("sessionId", sessionId).
                 setParameter("examTypeId", examTypeId).
                 setParameter("subjectAreaId", subjectAreaId).
@@ -679,7 +679,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 "select distinct x from Exam x inner join x.owners o where " +
                 "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                 "x.examType.uniqueId=:examTypeId and "+
-                "x.session.uniqueId=:sessionId and x.assignedPeriod=null", Exam.class).
+                "x.session.uniqueId=:sessionId and x.assignedPeriod is null", Exam.class).
                 setParameter("sessionId", sessionId).
                 setParameter("examTypeId", examTypeId).
                 setParameter("subjectAreaId", subjectAreaId).
@@ -694,7 +694,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.assignedRooms r where " +
-                "r.uniqueId=:locationId and x.assignedPeriod!=null and "+
+                "r.uniqueId=:locationId and x.assignedPeriod is not null and "+
                 "x.examType.uniqueId=:examTypeId", Exam.class).
                 setParameter("locationId", locationId).
                 setParameter("examTypeId", examTypeId).
@@ -710,7 +710,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
         List<Exam> exams = ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.instructors i where " +
-                "i.uniqueId=:instructorId and x.assignedPeriod!=null and "+
+                "i.uniqueId=:instructorId and x.assignedPeriod is not null and "+
                 "x.examType.uniqueId=:examTypeId", Exam.class).
                 setParameter("instructorId", instructorId).
                 setParameter("examTypeId", examTypeId).

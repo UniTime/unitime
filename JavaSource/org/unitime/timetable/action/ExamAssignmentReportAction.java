@@ -423,7 +423,7 @@ public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentRepo
             for (Exam exam: ExamDAO.getInstance().getSession().createQuery(
                     "select x from Exam x where " +
                     "x.examType.uniqueId=:examTypeId and "+
-                    "x.session.uniqueId=:sessionId and x.assignedPeriod!=null", Exam.class).
+                    "x.session.uniqueId=:sessionId and x.assignedPeriod is not null", Exam.class).
                     setParameter("sessionId", sessionId).
                     setParameter("examTypeId", examTypeId).
                     setCacheable(true).list()) {
@@ -439,7 +439,7 @@ public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentRepo
                     "select distinct x from Exam x inner join x.owners o where " +
                     "o.course.subjectArea.uniqueId=:subjectAreaId and "+
                     "x.examType.uniqueId=:examTypeId and "+
-                    "x.session.uniqueId=:sessionId and x.assignedPeriod!=null", Exam.class).
+                    "x.session.uniqueId=:sessionId and x.assignedPeriod is not null", Exam.class).
                     setParameter("sessionId", sessionId).
                     setParameter("examTypeId", examTypeId).
                     setParameter("subjectAreaId", subjectAreaId).

@@ -130,9 +130,9 @@ RxJava (rxjava-3.1.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/ReactiveX/RxJava
 
-Jandex: Core (jandex-3.0.5.jar)
+Jandex: Core (jandex-3.1.2.jar)
 	under Apache Software License (ASL), Version 2.0
-	https://smallrye.io/jandex-parent/jandex
+	https://smallrye.io
 
 Jakarta Activation API (jakarta.activation-api-2.1.1.jar)
 	under EDL 1.0
@@ -185,9 +185,9 @@ OGNL - Object Graph Navigation Library (ognl-3.1.29.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://ognl.org
 
-ANTLR 4 Runtime (antlr4-runtime-4.10.1.jar)
-	under The BSD License
-	http://www.antlr.org/antlr4-runtime
+ANTLR 4 Runtime (antlr4-runtime-4.13.0.jar)
+	under BSD-3-Clause
+	https://www.antlr.org/antlr4-runtime/
 
 Apache Commons Collections (commons-collections4-4.4.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -345,11 +345,11 @@ Hibernate Commons Annotations (hibernate-commons-annotations-6.0.6.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.2.22.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.4.1.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.2.22.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.4.1.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
@@ -534,6 +534,10 @@ spring-security-oauth2-client (spring-security-oauth2-client-5.8.10.jar)
 	https://spring.io/projects/spring-security
 
 spring-security-oauth2-core (spring-security-oauth2-core-5.8.10.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://spring.io/projects/spring-security
+
+spring-security-oauth2-jose (spring-security-oauth2-jose-5.8.10.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 

@@ -83,8 +83,8 @@ public class MakeCurriculaFromLastlikeDemands {
                 "f2.session.uniqueId=:sessionId and f2.code=acm.academicClassification.code and " +
                 "m2.session.uniqueId=:sessionId and m2.code=acm.major.code and " +
                 "d.subjectArea.session.uniqueId=:sessionId and c.subjectArea=d.subjectArea and "+
-                "((d.coursePermId=null and c.courseNbr=d.courseNbr) or "+
-                " (d.coursePermId!=null and d.coursePermId=c.permId))", Object[].class)
+                "((d.coursePermId is null and c.courseNbr=d.courseNbr) or "+
+                " (d.coursePermId is not null and d.coursePermId=c.permId))", Object[].class)
                 .setParameter("sessionId", iSessionId)
                 .setFetchSize(1000)
                 .list();

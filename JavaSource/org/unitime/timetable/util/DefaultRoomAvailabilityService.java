@@ -230,7 +230,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                 }
             }
             addAll(LocationDAO.getInstance().getSession().createQuery(
-                    "select m from Meeting m inner join m.event e where m.locationPermanentId!=null and "+
+                    "select m from Meeting m inner join m.event e where m.locationPermanentId is not null and "+
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" +

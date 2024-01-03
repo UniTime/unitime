@@ -117,12 +117,12 @@ public class InstructorExamReport extends PdfLegacyExamReport {
             sLog.info(MSG.statusLoadingLocations());
             iLocations = new Hashtable();
             for (Location location: SessionDAO.getInstance().getSession().createQuery(
-                    "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId!=null", Location.class).
+                    "select r from Room r where r.session.uniqueId=:sessionId and r.permanentId is not null", Location.class).
                     setParameter("sessionId", getSession().getUniqueId()).setCacheable(true).list()) {
                 iLocations.put(location.getPermanentId(), location);
             }
             for (Location location: SessionDAO.getInstance().getSession().createQuery(
-                    "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId!=null", Location.class).
+                    "select r from NonUniversityLocation r where r.session.uniqueId=:sessionId and r.permanentId is not null", Location.class).
                     setParameter("sessionId", getSession().getUniqueId()).setCacheable(true).list()) {
                 iLocations.put(location.getPermanentId(), location);
             }

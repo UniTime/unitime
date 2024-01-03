@@ -83,6 +83,17 @@
                 class="DatePattern"
                 column="parent_id"
                 foreign-key="fk_date_patt_parent_parent"/>
+        </set>
+        
+        <set
+            name="children"
+            table="date_pattern_parent" inverse="true">
+            <cache include="non-lazy" usage="transactional"/>
+            <key column="parent_id"/>
+            <many-to-many
+                class="DatePattern"
+                column="date_pattern_id"
+                foreign-key="fk_date_patt_parent_date_patt"/>
         </set> 
               
         <set

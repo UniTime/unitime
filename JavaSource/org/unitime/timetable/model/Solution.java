@@ -1480,8 +1480,8 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         hibSessionFactory.getCache().evictCollectionData(Solution.class.getName()+".parameters", solutionId);
         hibSessionFactory.getCache().evictCollectionData(Solution.class.getName()+".assignments", solutionId);
         for (Long classId: hibSession.createQuery("select c.uniqueId from "+
-                    "Class_ c, Solution s where s.uniqueId=:solutionId and "+
-                    "c.managingDept.uniqueId in elements (s.owner.departments)", Long.class).
+                    "Class_ c, Solution s inner join s.owner.departments d where s.uniqueId=:solutionId and "+
+                    "c.managingDept = d", Long.class).
                     setParameter("solutionId", solutionId.longValue()).list()) {
             hibSessionFactory.getCache().evictEntityData(Class_.class, classId);
             hibSessionFactory.getCache().evictCollectionData(Class_.class.getName()+".assignments", classId);
