@@ -136,11 +136,11 @@
 				<attribute name="Class-Path" value="angus-activation-2.0.1.jar antlr4-runtime-4.13.0.jar biweekly-0.6.7.jar byte-buddy-1.14.7.jar c3p0-0.9.5.5.jar classmate-1.5.1.jar
 					commons-lang3-3.8.1.jar commons-logging-1.2.jar commons-text-1.10.0.jar cpsolver-1.4-SNAPSHOT.jar dom4j-2.1.4.jar freemarker-2.3.32.jar gson-2.10.1.jar
 					gwt-servlet-2.10.0.jar hibernate-c3p0-6.4.1.Final.jar hibernate-commons-annotations-6.0.6.Final.jar hibernate-core-6.4.1.Final.jar istack-commons-runtime-4.1.1.jar
-					itext-2.1.7.jar jackson-core-2.15.2.jar jakarta.activation-api-2.1.1.jar jakarta.mail-2.0.2.jar jakarta.mail-api-2.1.1.jar jakarta.persistence-api-3.1.0.jar
+					itext-2.1.7.jar jackson-core-2.16.0.jar jakarta.activation-api-2.1.1.jar jakarta.mail-2.0.2.jar jakarta.mail-api-2.1.1.jar jakarta.persistence-api-3.1.0.jar
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.29.2-GA.jar javax.servlet-api-3.1.0.jar javax.servlet.jsp-api-2.3.3.jar
-					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.2.18.Final.jar joda-time-2.12.5.jar log4j-api-2.20.0.jar
-					log4j-core-2.20.0.jar log4j-jcl-2.20.0.jar log4j-slf4j-impl-2.20.0.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.3.jar protobuf-java-3.23.3.jar
-					slf4j-api-1.7.25.jar spring-beans-5.3.29.jar spring-context-5.3.29.jar spring-core-5.3.29.jar spring-security-core-5.8.5.jar spring-web-5.3.29.jar
+					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.3.0.Final.jar joda-time-2.12.5.jar log4j-api-2.22.0.jar
+					log4j-core-2.22.0.jar log4j-jcl-2.22.0.jar log4j-slf4j-impl-2.22.0.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.3.jar protobuf-java-3.25.1.jar
+					slf4j-api-1.7.25.jar spring-beans-5.3.31.jar spring-context-5.3.31.jar spring-core-5.3.31.jar spring-security-core-5.8.8.jar spring-web-5.3.31.jar
 					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar"/>
 				<attribute name="Timetabling-Version" value="4.8_bld${build.number}"/>
 			</manifest>
@@ -301,26 +301,26 @@
 				<include name="gwt-servlet-2.10.0.jar"/>
 				<include name="javassist-3.29.2-GA.jar"/>
 				<include name="jboss-logging-3.5.0.Final.jar"/>
-				<include name="jgroups-5.2.18.Final.jar"/>
-				<include name="log4j-api-2.20.0.jar"/>
-				<include name="log4j-core-2.20.0.jar"/>
-				<include name="log4j-jcl-2.20.0.jar"/>
+				<include name="jgroups-5.3.0.Final.jar"/>
+				<include name="log4j-api-2.22.0.jar"/>
+				<include name="log4j-core-2.22.0.jar"/>
+				<include name="log4j-jcl-2.22.0.jar"/>
 				<include name="jakarta.mail-api-2.1.1.jar"/>
 				<include name="jakarta.mail-2.0.2.jar"/>
-				<include name="protobuf-java-3.23.3.jar"/>
+				<include name="protobuf-java-3.25.1.jar"/>
 				<include name="slf4j-api-1.7.25.jar"/>
-				<include name="log4j-slf4j-impl-2.20.0.jar"/>
-				<include name="spring-security-core-5.8.5.jar"/>
+				<include name="log4j-slf4j-impl-2.22.0.jar"/>
+				<include name="spring-security-core-5.8.8.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.3.jar"/>
 				<include name="gson-2.10.1.jar"/>
 				<include name="joda-time-2.12.5.jar"/>
-				<include name="spring-core-5.3.29.jar"/>
-				<include name="spring-web-5.3.29.jar"/>
+				<include name="spring-core-5.3.31.jar"/>
+				<include name="spring-web-5.3.31.jar"/>
 				<include name="freemarker-2.3.32.jar"/>
 				<include name="biweekly-0.6.7.jar"/>
 				<include name="vinnie-2.0.2.jar"/>
-				<include name="jackson-core-2.15.2.jar"/>
+				<include name="jackson-core-2.16.0.jar"/>
 				<include name="commons-lang3-3.8.1.jar"/>
 				<include name="commons-text-1.10.0.jar"/>
 				<include name="itext-2.1.7.jar"/>
@@ -335,8 +335,8 @@
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
 				<include name="mchange-commons-java-0.2.19.jar"/>
-				<include name="spring-context-5.3.29.jar"/>
-				<include name="spring-beans-5.3.29.jar"/>
+				<include name="spring-context-5.3.31.jar"/>
+				<include name="spring-beans-5.3.31.jar"/>
 				<include name="jakarta.activation-api-2.1.1.jar"/>
 				<include name="jakarta.persistence-api-3.1.0.jar"/>
 				<include name="jakarta.transaction-api-2.0.1.jar"/>
@@ -368,26 +368,26 @@
 				<include name="gwt-servlet-2.10.0.jar"/>
 				<include name="javassist-3.29.2-GA.jar"/>
 				<include name="jboss-logging-3.5.0.Final.jar"/>
-				<include name="jgroups-5.2.18.Final.jar"/>
-				<include name="log4j-api-2.20.0.jar"/>
-				<include name="log4j-core-2.20.0.jar"/>
-				<include name="log4j-jcl-2.20.0.jar"/>
+				<include name="jgroups-5.3.0.Final.jar"/>
+				<include name="log4j-api-2.22.0.jar"/>
+				<include name="log4j-core-2.22.0.jar"/>
+				<include name="log4j-jcl-2.22.0.jar"/>
 				<include name="jakarta.mail-api-2.1.1.jar"/>
 				<include name="jakarta.mail-2.0.2.jar"/>
-				<include name="protobuf-java-3.23.3.jar"/>
+				<include name="protobuf-java-3.25.1.jar"/>
 				<include name="slf4j-api-1.7.25.jar"/>
-				<include name="log4j-slf4j-impl-2.20.0.jar"/>
-				<include name="spring-security-core-5.8.5.jar"/>
+				<include name="log4j-slf4j-impl-2.22.0.jar"/>
+				<include name="spring-security-core-5.8.8.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.3.jar"/>
 				<include name="gson-2.10.1.jar"/>
 				<include name="joda-time-2.12.5.jar"/>
-				<include name="spring-core-5.3.29.jar"/>
-				<include name="spring-web-5.3.29.jar"/>
+				<include name="spring-core-5.3.31.jar"/>
+				<include name="spring-web-5.3.31.jar"/>
 				<include name="freemarker-2.3.32.jar"/>
 				<include name="biweekly-0.6.7.jar"/>
 				<include name="vinnie-2.0.2.jar"/>
-				<include name="jackson-core-2.15.2.jar"/>
+				<include name="jackson-core-2.16.0.jar"/>
 				<include name="commons-lang3-3.8.1.jar"/>
 				<include name="commons-text-1.10.0.jar"/>
 				<include name="itext-2.1.7.jar"/>
@@ -402,8 +402,8 @@
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
 				<include name="mchange-commons-java-0.2.19.jar"/>
-				<include name="spring-context-5.3.29.jar"/>
-				<include name="spring-beans-5.3.29.jar"/>
+				<include name="spring-context-5.3.31.jar"/>
+				<include name="spring-beans-5.3.31.jar"/>
 				<include name="jakarta.activation-api-2.1.1.jar"/>
 				<include name="jakarta.persistence-api-3.1.0.jar"/>
 				<include name="jakarta.transaction-api-2.0.1.jar"/>
