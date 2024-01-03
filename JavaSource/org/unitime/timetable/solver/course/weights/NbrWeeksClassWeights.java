@@ -20,10 +20,31 @@
 package org.unitime.timetable.solver.course.weights;
 
 import org.cpsolver.coursett.model.Lecture;
+import org.cpsolver.ifs.util.DataProperties;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 
-public interface ClassWeightProvider {
+public class NbrWeeksClassWeights implements ClassWeightProvider {
+	private double iDefaultNumberOfWeeks = 1.0;
 	
-	public double getWeight(Lecture lecture, Class_ clazz);
+	public NbrWeeksClassWeights(DataProperties config) {
+		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+		try {
+			Session session = SessionDAO.getInstance().get(config.getPropertyLong("General.SessionId", -1l));
+			DatePattern dp = session.getDefaultDatePattern();
+			if (dp != null)
+				iDefaultNumberOfWeeks = dp.getEffectiveNumberOfWeeks();
+		} finally {
+			hibSession.close();
+		}
+	}
+
+	@Override
+	public double getWeight(Lecture lecture, Class_ clazz) {
+		DatePattern dp = clazz.effectiveDatePattern();
+		return (dp == null ? 1.0 : dp.getEffectiveNumberOfWeeks() / iDefaultNumberOfWeeks);
+	}
 
 }
