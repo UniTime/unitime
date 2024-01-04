@@ -448,11 +448,7 @@ public class HibernateUtil {
     }
     
     public static String addDate(String dateSQL, String incrementSQL) {
-        if (isMySQL() || isPostgress())
-            return "adddate("+dateSQL+","+incrementSQL+")";
-        else
-        	return dateSQL + " + numtodsinterval(" + incrementSQL + ", 'day')";
-//            return "(" + dateSQL+(incrementSQL.startsWith("+")||incrementSQL.startsWith("-")?"":"+")+incrementSQL + ")";
+        return "adddate("+dateSQL+","+incrementSQL+")";
     }
     
     public static String dayOfWeek(String field) {
@@ -478,6 +474,7 @@ public class HibernateUtil {
         } else if (OracleDialect.class.isAssignableFrom(dialect)) {
         	builder.applySqlFunction("weekday", OracleWeekdayFunction.INSTANCE);
         	builder.applySqlFunction("days", OracleDaysFunction.INSTANCE);
+        	builder.applySqlFunction("adddate", OracleAddDateFunction.INSTANCE);
         } else if (MySQLDialect.class.isAssignableFrom(dialect)) {
         	builder.applySqlFunction("days", MySQLDaysFunction.INSTANCE);
         }
@@ -548,6 +545,22 @@ public class HibernateUtil {
     		sqlAppender.appendSql(") - trunc(");
     		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
     		sqlAppender.appendSql("))");
+    	}
+    }
+    
+    public static class OracleAddDateFunction extends NamedSqmFunctionDescriptor {
+    	public static final OracleAddDateFunction INSTANCE = new OracleAddDateFunction();
+    	public OracleAddDateFunction() {
+    		super("adddate", false, StandardArgumentsValidators.exactly(2), null);
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
+    		// ?1 + (?2)
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(" + (");
+    		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(")");
     	}
     }
     
