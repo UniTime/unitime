@@ -81,6 +81,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Instructor Schedule Changes</name>
+			<description>
+				<line>Corrected change detection when assignment changes are disabled (and there is a Lec-Lec combination with the same external id).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Timetabling Managers: Update Other Academic Sessions</name>
