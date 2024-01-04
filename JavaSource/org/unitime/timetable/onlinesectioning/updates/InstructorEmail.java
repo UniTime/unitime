@@ -418,10 +418,9 @@ public class InstructorEmail implements OnlineSectioningAction<Boolean> {
 				}
 				return false;
 			} else { // do not check for assignment changes
-				XCourseId course = getCourse();
 				for (XSection oldSection: iOldSections) {
 					for (XSection newSection: iNewSections) {
-						if (ReloadOfferingAction.sameName(course.getCourseId(), newSection, oldSection) && (
+						if (newSection.equals(oldSection) && (
 								!sameTime(checkTime, newSection, oldSection) ||
 								!sameRoom(checkRoom, newSection, oldSection) ||
 								!sameShare(checkShare, oldSection.getInstructor(iOldInstructor.getExternalId()), newSection.getInstructor(iNewInstructor.getExternalId())) ||
