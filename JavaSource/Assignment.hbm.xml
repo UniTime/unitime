@@ -100,7 +100,7 @@
             name="clazz"
             class="Class_"
             column="class_id"
-            lazy="proxy"
+            lazy="false"
             not-null="true"
             foreign-key="fk_assignment_class"/>
 

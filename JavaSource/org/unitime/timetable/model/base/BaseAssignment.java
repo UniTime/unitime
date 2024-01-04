@@ -117,7 +117,7 @@ public abstract class BaseAssignment implements Serializable {
 	public Solution getSolution() { return iSolution; }
 	public void setSolution(Solution solution) { iSolution = solution; }
 
-	@ManyToOne(optional = false, fetch = FetchType.LAZY)
+	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "class_id", nullable = false)
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Class_ getClazz() { return iClazz; }
