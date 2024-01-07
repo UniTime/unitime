@@ -156,6 +156,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
             int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
             c.setTime(time.getEndTime());
             int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+            if (endSlot == 0 && c.get(Calendar.DAY_OF_MONTH) != d) endSlot = 288; // next day midnight
             int length = endSlot - startSlot;
             if (length<=0) continue;
             TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
@@ -170,7 +171,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
     				cell.setId(time.getEventId());
     				cell.setDay(slot / Constants.SLOTS_PER_DAY);
     				cell.setSlot(slot % Constants.SLOTS_PER_DAY);
-    				cell.addRoom(room);
+    				cell.addRoom(room == null ? "" : room);
     				cell.addName(time.getEventName());
     				cell.setProperty(Property.EventType, time.getEventType());
     				cell.setBackground(sBgColorNotAvailable);
@@ -692,7 +693,8 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 				q.setLong("instructorId", instructor.getUniqueId());
 				q.setCacheable(true);
 				assignments = q.list();
-				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a "+
+				q = hibSession.createQuery("select distinct a from ClassInstructor i inner join i.classInstructing.assignments as a " + 
+						(ApplicationProperty.TimetableGridUseClassInstructorsHideAuxiliary.isTrue() ? "left outer join i.responsibility r " : "") +
 						"where i.instructor.uniqueId = :instructorId and a.solution.commited = true and a.solution.owner.session.uniqueId = :sessionId and a.solution.owner.uniqueId not in (" + ownerIds + ")" + check);
 				q.setLong("instructorId",instructor.getUniqueId());
 	            q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
