@@ -587,7 +587,10 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		while ((i = getUnavailableDays().indexOf('1', i + 1)) >= 0) {
 			cal.setTime(start);
 			cal.add(Calendar.DAY_OF_YEAR, i);
-			ret.add(new UnavailableDay(cal.getTime()));
+			Date startTime = cal.getTime();
+			cal.add(Calendar.DAY_OF_YEAR, 1);
+			Date endTime = cal.getTime();
+			ret.add(new UnavailableDay(startTime, endTime));
 		}
 		return ret;
 	}
@@ -863,8 +866,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	
 	class UnavailableDay implements TimeBlock, Comparable<TimeBlock> {
 		private static final long serialVersionUID = 1L;
-		private Date iDate;
-		private UnavailableDay(Date date) { iDate = date; }
+		private Date iStartTime, iEndTime;
+		private UnavailableDay(Date startTime, Date endTime) { iStartTime = startTime; iEndTime = endTime; }
 		@Override
 		public Long getEventId() { return - getUniqueId(); }
 		@Override
@@ -872,9 +875,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		@Override
 		public String getEventType() { return MSG.instructorNotAvailableType(); }
 		@Override
-		public Date getStartTime() { return iDate; }
+		public Date getStartTime() { return iStartTime; }
 		@Override
-		public Date getEndTime() { return new Date(iDate.getTime() + 86400000l); }
+		public Date getEndTime() { return iEndTime; }
 		@Override
 		public int compareTo(TimeBlock block) {
             int cmp = getStartTime().compareTo(block.getStartTime());
