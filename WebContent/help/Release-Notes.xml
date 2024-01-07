@@ -24,9 +24,23 @@
 <release-history>
 
 <doc-title>UniTime 4.8 Release Notes</doc-title>
+
 <release>
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructor Unavailability: Daylight Saving Dates</name>
+			<description>
+				<line>Corrected instructor unavailability on daylight saving days (i.e., days with 23 or 25 hours).</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.98</version>
+	<release-date>Fri, 5 Jan 2024</release-date>
 	<category>
 		<title>Course Timetabling</title>
 		<item>
