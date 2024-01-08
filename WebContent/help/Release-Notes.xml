@@ -41,6 +41,11 @@
 			<description>
 				<line>It is now possible to reset the instructor's position.</line>
 			</description>
+		</item><item>
+			<name>Travel Time: Default/Computed Distances</name>
+			<description>
+				<line>Show default/computed distances in blue.</line>
+			</description>
 		</item>
 		<item>
 			<name>Instructional Offering Detail: Instructor Requirements</name>
