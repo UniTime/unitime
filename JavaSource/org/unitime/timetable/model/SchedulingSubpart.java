@@ -300,6 +300,14 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         return numRooms;
         
     }
+	
+	@Transient
+    public boolean isRoomSplitAttendance() {
+        if (getClasses() == null || getClasses().isEmpty()) return false;
+	    for (Class_ c: getClasses())
+	    	if (c.getNbrRooms() > 1 && Boolean.TRUE.equals(c.isRoomsSplitAttendance())) return true;
+	    return false;
+    }
     
 	@Transient
     public Set getDistributionPreferences() {

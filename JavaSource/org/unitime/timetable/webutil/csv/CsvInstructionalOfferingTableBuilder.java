@@ -730,14 +730,12 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		Class_ aClass = (Class_) prefGroup;
     		if (aClass.getNbrRooms()!=null && aClass.getNbrRooms().intValue()!=1) {
     			if (aClass.getNbrRooms().intValue()==0)
-    				addText(cell, "N/A", true);
-    			else {
-    				String text = aClass.getNbrRooms().toString();
-    				text += " at ";
-    				if (aClass.getRoomRatio() != null)
-    					text += sRoomRatioFormat.format(aClass.getRoomRatio().floatValue());
-    				else
-    					text += "0";
+    				addText(cell, MSG.notApplicable(), true);
+    			else if (Boolean.TRUE.equals(aClass.isRoomsSplitAttendance())) {
+    				String text = MSG.cellNbrRoomsAndRoomRatioSlitAttendance(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio()));
+    				addText(cell, text, true);
+    			} else {
+    				String text = MSG.cellNbrRoomsAndRoomRatio(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio()));
     				addText(cell, text, true);
     			}
     		} else {

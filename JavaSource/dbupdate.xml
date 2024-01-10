@@ -14891,4 +14891,9 @@
 		<pgsql>alter table %SCHEMA%.sessions add notifications_begin date</pgsql>
 		<pgsql>alter table %SCHEMA%.sessions add notifications_end date</pgsql>
 	</update>
+	<update version="264" date="8-Jan-2024" comment="Class Room Split Attendance">
+		<mysql>alter table %SCHEMA%.class_ add rooms_split_att int(1) default 0</mysql>
+		<plsql>alter table %SCHEMA%.class_ add rooms_split_att number(1) default 0</plsql>
+		<pgsql>alter table %SCHEMA%.class_ add rooms_split_att boolean default false</pgsql>
+	</update>
 </dbupdate>

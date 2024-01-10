@@ -59,6 +59,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private Integer iExpectedCapacity;
 	private String iNotes;
 	private Integer iNbrRooms;
+	private Boolean iRoomsSplitAttendance;
 	private Integer iSectionNumberCache;
 	private Boolean iDisplayInstructor;
 	private String iSchedulePrintNote;
@@ -106,6 +107,12 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	@Column(name = "nbr_rooms", nullable = true, length = 4)
 	public Integer getNbrRooms() { return iNbrRooms; }
 	public void setNbrRooms(Integer nbrRooms) { iNbrRooms = nbrRooms; }
+
+	@Column(name = "rooms_split_att", nullable = true)
+	public Boolean isRoomsSplitAttendance() { return iRoomsSplitAttendance; }
+	@Transient
+	public Boolean getRoomsSplitAttendance() { return iRoomsSplitAttendance; }
+	public void setRoomsSplitAttendance(Boolean roomsSplitAttendance) { iRoomsSplitAttendance = roomsSplitAttendance; }
 
 	@Column(name = "section_number", nullable = true, length = 5)
 	public Integer getSectionNumberCache() { return iSectionNumberCache; }
@@ -309,6 +316,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 			"\n	Notes: " + getNotes() +
 			"\n	ParentClass: " + getParentClass() +
 			"\n	RoomRatio: " + getRoomRatio() +
+			"\n	RoomsSplitAttendance: " + getRoomsSplitAttendance() +
 			"\n	SchedulePrintNote: " + getSchedulePrintNote() +
 			"\n	SchedulingSubpart: " + getSchedulingSubpart() +
 			"\n	SectionNumberCache: " + getSectionNumberCache() +

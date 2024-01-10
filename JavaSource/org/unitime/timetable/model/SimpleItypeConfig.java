@@ -51,6 +51,7 @@ public class SimpleItypeConfig implements Serializable, Comparable<SimpleItypeCo
     private boolean notOwned;
     private boolean hasError;
     private long managingDeptId;
+    private boolean splitAttendance;
     
     /** Request attribute name for user defined config **/
     public static String CONFIGS_ATTR_NAME = SessionAttribute.InstructionalOfferingConfigList.key();
@@ -77,6 +78,7 @@ public class SimpleItypeConfig implements Serializable, Comparable<SimpleItypeCo
         disabled = false;
         notOwned = false;
         hasError = false;
+        splitAttendance = false;
     }
     
     /**
@@ -249,4 +251,7 @@ public class SimpleItypeConfig implements Serializable, Comparable<SimpleItypeCo
 	public int compareTo(SimpleItypeConfig sic) {
 		return getItype().getItype().compareTo(sic.getItype().getItype());
 	}
+	
+	public boolean isSplitAttendance() { return splitAttendance; }
+	public void setSplitAttendance(boolean splitAttendance) { this.splitAttendance = splitAttendance; }
 }

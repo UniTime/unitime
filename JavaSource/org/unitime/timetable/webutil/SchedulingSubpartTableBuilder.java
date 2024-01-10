@@ -95,7 +95,7 @@ public class SchedulingSubpartTableBuilder {
             }
             
             // Create a table
-            WebTable tbl = new WebTable(9, 
+            WebTable tbl = new WebTable(10, 
         			"",  
         			new String[] {	unlimitedEnroll 
                     					? ""
@@ -106,9 +106,10 @@ public class SchedulingSubpartTableBuilder {
                     										MSG.columnSubpartNumberOfClasses(),
                     										"<span id='durationColumn' style='max-width:65px; display: inherit;'>" + durationColumnName + "</span>", 
                     										MSG.columnSubpartNumberOfRooms(),
+                    										MSG.columnRoomSplitAttendance(),
                     										MSG.columnSubpartRoomRatio(), 
                     										MSG.columnSubpartManagingDepartment()},
-        			new String[] { "left", "left", "center", "center", "center", "center", "center", "center", "center"},
+        			new String[] { "left", "left", "center", "center", "center", "center", "center", "center", "center", "center"},
         			null);
             tbl.setSuppressRowHighlight(true);
             
@@ -221,6 +222,10 @@ public class SchedulingSubpartTableBuilder {
             sic.setManagingDeptId(Long.parseLong(request.getParameter("md" + sic.getId())));
         if(request.getParameter("disabled" + sic.getId())!=null)
             sic.setDisabled(Boolean.valueOf(request.getParameter("disabled" + sic.getId())).booleanValue());
+        if(request.getParameter("sa" + sic.getId())!=null)
+            sic.setSplitAttendance("on".equalsIgnoreCase(request.getParameter("sa" + sic.getId())) || "true".equalsIgnoreCase(request.getParameter("sa" + sic.getId())));
+        else if (request.getParameter("nr" + sic.getId())!=null)
+        	sic.setSplitAttendance(false);
 
 		// Read attributes
 		int mnlpc = sic.getMinLimitPerClass();
@@ -228,6 +233,7 @@ public class SchedulingSubpartTableBuilder {
         int mpw = sic.getMinPerWeek();
         int nc = sic.getNumClasses();
         int nr = sic.getNumRooms();
+        boolean sa = sic.isSplitAttendance();
         float rr = sic.getRoomRatio();
         long md = sic.getManagingDeptId();
         long subpartId = -1L;
@@ -255,6 +261,7 @@ public class SchedulingSubpartTableBuilder {
             nr = -1;
             rr = -1;
         }
+        if (nr <= 1) sa = false;
         
         Debug.debug("setting up subpart: " + itype.getAbbv() + ", Level: " + level);
 
@@ -378,8 +385,19 @@ public class SchedulingSubpartTableBuilder {
     	                    	+ (nr>=0?""+nr:"") + "\">" + (nr>=0?""+nr:"") )
 	                        : ( "\n\t<INPUT " 
     	                    	+ " name=\"nr" + sicId 
-    	                    	+ "\" type=\"text\" size=\"4\" maxlength=\"2\" value=\"" 
-    	                    	+ (nr>=0?""+nr:"") + "\">" ) ),                        	
+    	                    	+ "\" type=\"text\" size=\"4\" maxlength=\"2\" "
+    	                    	+ "onchange=\"checkNumberOfRooms(this.value,'" + sicId + "');\" "
+    	                    	+ "value=\"" + (nr>=0?""+nr:"") + "\">" ) ), 
+                    	
+                    	((disabled || uDisabled) 
+    	                        ? ( "\n\t<INPUT " 
+        	                    	+ " name=\"sa" + sicId 
+        	                    	+ "\" type=\"hidden\" value=\"" 
+        	                    	+ (sa?"true":"false") + "\"/>" + (sa?"<img src=\"images/accept.png\">":nr>1?"<img src=\"images/cross.png\">":"") )
+    	                        : ( "\n\t<INPUT " 
+        	                    	+ " name=\"sa" + sicId 
+        	                    	+ "\" id=\"sa" + sicId + "\" type=\"checkbox\""
+        	                    	+ (sa?" checked":"") + (nr <= 1 ? " disabled":"") + "/>" ) ), 
 
                     	((disabled || uDisabled) 
 	                        ? ( "\n\t<INPUT " 
@@ -390,7 +408,7 @@ public class SchedulingSubpartTableBuilder {
                             	+ " name=\"rr" + sicId 
                             	+ "\" type=\"text\" size=\"4\" maxlength=\"4\" value=\"" 
                             	+ (rr>=0?""+rr:"") + "\">" ) ),
-                        	
+
                     	((disabled || mgrDisabled) 
 	                        ? ( "\n\t<INPUT " 
                             	+ " name=\"md" + sicId 

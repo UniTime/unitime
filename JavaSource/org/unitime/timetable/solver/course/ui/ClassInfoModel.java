@@ -406,6 +406,10 @@ public class ClassInfoModel implements Serializable {
             iForm.setMinRoomSize(String.valueOf(clazz.getMinRoomLimit()));
             iForm.setMaxRoomSize(null);
         }
+        if (clazz.getNbrRooms()>1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance())) {
+            iForm.setMinRoomSize(String.valueOf(clazz.getMinRoomLimit() / clazz.getNbrRooms()));
+            iForm.setMaxRoomSize(null);
+        }
         iForm.setRoomFilter(null);
     }
     
@@ -1224,15 +1228,19 @@ public class ClassInfoModel implements Serializable {
                   	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
                 
                 
-        		// --- room size ----------------- 
-                if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
-              		pref.addPreferenceInt(1000);
-                }
-                else if (room.getCapacity().intValue()<discouragedCapacity) {
-                    pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
-                }
-                else if (room.getCapacity().intValue()<roomCapacity) {
-                	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+        		// --- room size -----------------
+                if (clazz.getNbrRooms()>1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance())) {
+                	// split attendance -> skip room check
+                } else {
+                    if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
+                  		pref.addPreferenceInt(1000);
+                    }
+                    else if (room.getCapacity().intValue()<discouragedCapacity) {
+                        pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
+                    }
+                    else if (room.getCapacity().intValue()<roomCapacity) {
+                    	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+                    }
                 }
                 
                 int prefInt = pref.getPreferenceInt();

@@ -458,6 +458,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
         	form.setFundingDept("");
         }
 	    form.setNbrRooms(c.getNbrRooms());
+	    form.setSplitAttendance(c.isRoomsSplitAttendance());
 	    if (c.getNotes()==null)
 	    	form.setNotes("");
 	    else

@@ -41,6 +41,15 @@
 				<line>Show default/computed distances in blue.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Multiple Rooms Split Attendance</name>
+			<description>
+				<line>When a class needs two or more rooms, added an ability to set the class as requiring split attendance.</line>
+				<line>When split attendance is set for the class, the class is expected to be split among the assigned rooms (the total room capacity must meet the class limit times room ratio).</line>
+				<line>When split attendance is not set for the class (which is the default), each room must be big enough to fit the class.</line>
+				<line>Split Attendance can be set on the Instructional Offering Configuration page (all classes of a subpart) or the Multiple Class Setup page (individual classes).</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
