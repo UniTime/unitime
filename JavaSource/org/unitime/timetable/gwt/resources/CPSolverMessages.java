@@ -203,6 +203,9 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("Unable to assign class {0} &larr; {1}: {2}")
 	String warnCannotAssignClassWithReason(String className, String placement, String reason);
 	
+	@DefaultMessage("<br>&nbsp;&nbsp;&nbsp;&nbsp;selected rooms are too small ({0} < {1})")
+	String warnReasonSelectedRoomsTooSmall(int roomCapacity, int classLimit);
+	
 	@DefaultMessage("Constraint {0} was not loaded. Inconsistent values.")
 	String warnFlexibleConstraintNotLoaded(String reference);
 	
@@ -634,6 +637,9 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("room {0} not available at {1}")
 	String reasonRoomNotAvailable(String instructor, String time);
 	
+	@DefaultMessage("selected rooms are too small ({0} < {1})")
+	String reasonSelectedRoomsTooSmall(int roomCapacity, int classLimit);
+		
 	@DefaultMessage("room or instructor not available")
 	String reasonNotKnown();
 }

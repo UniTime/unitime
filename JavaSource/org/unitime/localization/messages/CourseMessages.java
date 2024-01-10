@@ -651,6 +651,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Room<br>Ratio")
 	String columnSubpartRoomRatio();
 	
+	@DefaultMessage("Split<br>Attendance")
+	String columnRoomSplitAttendance();
+	
 	@DefaultMessage("Managing<br>Department")
 	String columnSubpartManagingDepartment();
 	
@@ -689,6 +692,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Nbr<br>Rms")
 	String columnNbrRms();
+	
+	@DefaultMessage("Splt<br>Attd")
+	String columnSplitAttnd();
 	
 	@DefaultMessage("Managing Department")
 	String columnManagingDepartment();
@@ -5823,4 +5829,31 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Between {0} and {1}")
 	String notificationDatesBetween(String fromDate, String toDate);
+	
+	@DefaultMessage("{0} \u00d7 {1}")
+	String cellNbrRoomsAndRoomRatio(int nbrRooms, String roomRatio);
+	
+	@DefaultMessage("{0} @ {1}")
+	String cellNbrRoomsAndRoomRatioSlitAttendance(int nbrRooms, String roomRatio);
+	
+	@DefaultMessage("{0} at {1} each room")
+	String titleNbrRoomsAndRoomRatio(int nbrRooms, String roomRatio);
+	
+	@DefaultMessage("{0} at {1} total capacity")
+	String titleNbrRoomsAndRoomRatioSlitAttendance(int nbrRooms, String roomRatio);
+	
+	@DefaultMessage("Total")
+	String descClassMultipleRoomsSplitAttendance();
+	
+	@DefaultMessage("Each Room")
+	String descClassMultipleRoomsAlternativeAttendance();
+	
+	@DefaultMessage("Attendance:")
+	String propertyRoomSplitAttendance();
+	
+	@DefaultMessage("<b>Split</b> -- Class is split between multiple rooms.")
+	String descriptionClassMultipleRoomsSplitAttendance();
+	
+	@DefaultMessage("<b>Alternative</b> -- Class must fit each room.")
+	String descriptionClassMultipleRoomsAlternativeAttendance();
 }

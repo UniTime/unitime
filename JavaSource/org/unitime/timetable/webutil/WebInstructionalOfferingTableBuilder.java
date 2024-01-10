@@ -1288,15 +1288,14 @@ public class WebInstructionalOfferingTableBuilder {
     		Class_ aClass = (Class_) prefGroup;
     		if (aClass.getNbrRooms()!=null && aClass.getNbrRooms().intValue()!=1) {
     			if (aClass.getNbrRooms().intValue()==0)
-    				cell = initNormalCell("<i>N/A</i>", isEditable);
-    			else {
-    				String text = aClass.getNbrRooms().toString();
-    				text += " at ";
-    				if (aClass.getRoomRatio() != null)
-    					text += sRoomRatioFormat.format(aClass.getRoomRatio().floatValue());
-    				else
-    					text += "0";
-    				cell = initNormalCell(text, isEditable);
+    				cell = initNormalCell("<i>" + MSG.notApplicable() + "</i>", isEditable);
+    			else if (Boolean.TRUE.equals(aClass.isRoomsSplitAttendance())) {
+    				cell = initNormalCell(MSG.cellNbrRoomsAndRoomRatioSlitAttendance(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio())), isEditable);
+    				cell.setTitle(MSG.titleNbrRoomsAndRoomRatioSlitAttendance(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio()))); 
+    				cell.setNoWrap(true);
+    			} else {
+    				cell = initNormalCell(MSG.cellNbrRoomsAndRoomRatio(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio())), isEditable);
+    				cell.setTitle(MSG.titleNbrRoomsAndRoomRatio(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio())));
     				cell.setNoWrap(true);
     			}
     		} else {

@@ -423,6 +423,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
 	        form.setDatePattern(c.getDatePattern()==null?Long.valueOf(-1):c.getDatePattern().getUniqueId());
 	        form.setDatePatternEditable(ApplicationProperty.WaitListCanChangeDatePattern.isTrue() || c.getEnrollment() == 0 || !c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().effectiveReScheduleNow());
 	        form.setNbrRooms(c.getNbrRooms());
+	        form.setSplitAttendance(c.isRoomsSplitAttendance());
 	        form.setNotes(c.getNotes());
 	        form.setManagingDept(c.getManagingDept().getUniqueId());
 		    form.setSchedulePrintNote(c.getSchedulePrintNote());
@@ -462,6 +463,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
         else
         	c.setDatePattern(DatePatternDAO.getInstance().get(form.getDatePattern()));
         c.setNbrRooms(form.getNbrRooms());
+        c.setRoomsSplitAttendance(form.getNbrRooms() > 1 && form.isSplitAttendance());
         c.setNotes(form.getNotes());
 	    c.setSchedulePrintNote(form.getSchedulePrintNote());
 	    //c.setClassSuffix(form.getClassSuffix());

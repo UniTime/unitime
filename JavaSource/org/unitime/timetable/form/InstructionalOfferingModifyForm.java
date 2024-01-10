@@ -107,6 +107,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 	private List<Boolean> canCancel;
 	private List<Boolean> isCancelled;
 	private List<String> lms;
+	private List<Boolean> splitAttendance;
 	
 	private List<Boolean> classHasErrors;
 	
@@ -141,6 +142,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 	private static String IS_CANCELLED_TOKEN = "isCancelled";
 	private static String DISPLAY_LMS_TOKEN = "displayLms";
 	private static String LMS_TOKEN = "lms";
+	private static String SPLIT_ATTENDANCE = "splitAttendance";
 	
     public InstructionalOfferingModifyForm() {
     	reset();
@@ -472,6 +474,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
     	canCancel = new ArrayList<Boolean>();
     	isCancelled = new ArrayList<Boolean>();
     	lms = new ArrayList<String>();
+    	splitAttendance = new ArrayList<Boolean>();
 }
     
 //    private int numberOfClassesOfSubpartWithParentClassId(String parentClassId, String classSubpartId){
@@ -848,6 +851,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		Iterator it24 = this.isCancelled.listIterator();
 		Iterator it25 = this.snapshotLimits.listIterator();
 		Iterator it26 = this.readOnlyDatePatterns.listIterator();
+		Iterator it27 = this.splitAttendance.listIterator();
 		boolean canRemoveFromDisplayInstructors;
 		boolean canRemoveFromEnableForStudentScheduling;
 		boolean canRemoveFromEnrollment;
@@ -894,6 +898,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 			it24.next();
 			it25.next();
 			it26.next();
+			it27.next();
 			if (cls1.equals(classId)){				
 				it1.remove();
 				it2.remove();
@@ -925,6 +930,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 				it24.remove();
 				it25.remove();
 				it26.remove();
+				it27.remove();
 			} else if (pCls1.equals(classId)){
 				classesToDel.add(cls1);
 			}
@@ -1017,6 +1023,10 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		} else {
 			this.lms.add("");
 		}
+		if (getInstrOffrConfigUnlimited() || cls.getNbrRooms() <= 1)
+			this.splitAttendance.add(false);
+		else
+			this.splitAttendance.add(cls.isRoomsSplitAttendance());
 	}
 	
 	private int indexOfLastChildClass(String classId){
@@ -1072,6 +1082,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		hm.put(IS_CANCELLED_TOKEN, this.getIsCancelled());
 		hm.put(DISPLAY_LMS_TOKEN, this.getDisplayLms());
 		hm.put(LMS_TOKEN, this.getLms());
+		hm.put(SPLIT_ATTENDANCE, this.getSplitAttendance());
 		
 		return(hm);
 	}
@@ -1121,6 +1132,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		this.getCanCancel().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, CAN_CANCEL_TOKEN, classIndex));
 		this.getIsCancelled().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, IS_CANCELLED_TOKEN, classIndex));
 		this.getLms().add((String) getObjectFromListMapAtIndex(originalClassesMap, LMS_TOKEN, classIndex));
+		this.getSplitAttendance().add((Boolean) getObjectFromListMapAtIndex(originalClassesMap, SPLIT_ATTENDANCE, classIndex));
 	}
 	
 	public void addNewClassesBasedOnTemplate(String clsId){
@@ -1289,6 +1301,7 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 		this.canCancel.add(false);
 		this.isCancelled.add(false);
 		this.lms.add(this.getLms().get(index));
+		this.splitAttendance.add(this.getSplitAttendance().get(index));
 	}
 	
 	private Long nextTmpClassId(List<String> origClassIds){
@@ -1626,6 +1639,13 @@ public class InstructionalOfferingModifyForm implements UniTimeForm {
 
 	public void setLms(List<String> lms) {
 		this.lms = lms;
+	}
+	
+	public List<Boolean> getSplitAttendance() {
+		return splitAttendance;
+	}
+	public void setSplitAttendance(List<Boolean> splitAttendance) {
+		this.splitAttendance = splitAttendance;
 	}
 
 	public List<Boolean> getCanDelete() { return canDelete; }

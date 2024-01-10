@@ -51,6 +51,15 @@
 				return false;
 			}
 		}
+		
+		function checkNumberOfRooms(nbrRooms, id) {
+			if (nbrRooms && nbrRooms > 1) {
+				document.getElementById('sa'+id).disabled = false;
+			} else {
+				document.getElementById('sa'+id).disabled = true;
+				document.getElementById('sa'+id).checked = false;
+			}
+		}
 
 		function doClick(op, id) {
 			document.forms[0].elements["hdnOp"].value=op;

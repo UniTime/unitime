@@ -595,16 +595,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             
             
     		// --- room size ----------------- 
-            if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
-            	if (interactiveMode)
-            		pref.addPreferenceInt(1000);
-            	else add=false;
-            }
-            else if (room.getCapacity().intValue()<discouragedCapacity) {
-                pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
-            }
-            else if (room.getCapacity().intValue()<roomCapacity) {
-            	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+            if (clazz.getNbrRooms() > 1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance())) {
+            	// no room check for split attendance
+            } else {
+                if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
+                	if (interactiveMode)
+                		pref.addPreferenceInt(1000);
+                	else add=false;
+                }
+                else if (room.getCapacity().intValue()<discouragedCapacity) {
+                    pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
+                }
+                else if (room.getCapacity().intValue()<roomCapacity) {
+                	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+                }
             }
 
             int prefInt = pref.getPreferenceInt();
@@ -867,19 +871,23 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 
                 
         		// --- room size ----------------- 
-                if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
-                	iProgress.trace("too small :-(");
-                	if (iInteractiveMode)
-                		pref.addPreferenceInt(1000);
-                	else add=false;
-                }
-                else if (room.getCapacity().intValue()<discouragedCapacity) {
-                	iProgress.trace("room of strongly discouraged size");
-                    pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
-                }
-                else if (room.getCapacity().intValue()<roomCapacity) {
-                	iProgress.trace("room of discouraged size");
-                	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+                if (clazz.getNbrRooms() > 1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance())) {
+                	// no room check for split attendance
+                } else {
+                    if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
+                    	iProgress.trace("too small :-(");
+                    	if (iInteractiveMode)
+                    		pref.addPreferenceInt(1000);
+                    	else add=false;
+                    }
+                    else if (room.getCapacity().intValue()<discouragedCapacity) {
+                    	iProgress.trace("room of strongly discouraged size");
+                        pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
+                    }
+                    else if (room.getCapacity().intValue()<roomCapacity) {
+                    	iProgress.trace("room of discouraged size");
+                    	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+                    }
                 }
                 
                 int prefInt = pref.getPreferenceInt();
@@ -1185,6 +1193,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	if (nrRooms > 1)
     		lecture.setMaxRoomCombinations(iMaxRoomCombinations);
+    	lecture.setSplitAttendance(nrRooms > 1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance()));
 
     	long estNrValues = lecture.nrValues();
     	if (estNrValues>1000000) {
@@ -1353,6 +1362,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 						reason += MSG.warnReasonRoomNotAvailable(initialPlacement.getRoomLocation().getName());
 	    		}
 	    	}
+	    	if (lecture.getNrRooms() > 1 && lecture.isSplitAttendance() && initialPlacement.getRoomSize() < lecture.minRoomUse())
+	    		reason += MSG.warnReasonSelectedRoomsTooSmall(initialPlacement.getRoomSize(), lecture.minRoomUse());
 	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), initialPlacement);
             if (!conflictConstraints.isEmpty()) {
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {

@@ -219,6 +219,12 @@
                 length="4"/>
 
             <property
+                name="roomsSplitAttendance"
+                column="rooms_split_att"
+                type="java.lang.Boolean"
+                not-null="false"/>
+
+            <property
                 name="sectionNumberCache"
                 column="section_number"
                 type="java.lang.Integer"

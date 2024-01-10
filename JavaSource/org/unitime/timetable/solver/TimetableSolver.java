@@ -402,6 +402,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
                         }
                     }
                 }
+                if (placement.variable().getNrRooms() > 1 && placement.variable().isSplitAttendance() && placement.getRoomSize() < placement.variable().minRoomUse())
+                	reason += MSG.warnReasonSelectedRoomsTooSmall(placement.getRoomSize(), placement.variable().minRoomUse());
                 if (reason.isEmpty())
                 	iProgress.warn(MSG.warnCannotAssignClass(lecture.getName(), placement.getLongName(useAmPm())));
                 else
@@ -1634,6 +1636,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 				}
 			}
 		}
+		if (lecture.getNrRooms() > 1 && lecture.isSplitAttendance() && placement.getRoomSize() < lecture.minRoomUse())
+			return MSG.reasonSelectedRoomsTooSmall(placement.getRoomSize(), lecture.minRoomUse());
 		return (reason == null ? MSG.reasonNotKnown() : reason);
 	}
 }

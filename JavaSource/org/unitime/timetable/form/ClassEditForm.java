@@ -103,6 +103,7 @@ public class ClassEditForm extends PreferencesForm {
     private String lms;
     private String fundingDept;
     private Boolean datePatternEditable;
+    private Boolean splitAttendance;
     
     public ClassEditForm() {
     	super();
@@ -202,6 +203,7 @@ public class ClassEditForm extends PreferencesForm {
         lms = null;
         fundingDept = null;
         datePatternEditable = false;
+        splitAttendance = false;
 
         super.reset();
     }
@@ -692,4 +694,7 @@ public class ClassEditForm extends PreferencesForm {
 	public Boolean getDatePatternEditable() { return datePatternEditable; }
 	public Boolean isDatePatternEditable() { return datePatternEditable; }
     public void setDatePatternEditable(Boolean datePatternEditable) { this.datePatternEditable = datePatternEditable; }
+    public Boolean isSplitAttendance() { return splitAttendance; }
+    public Boolean getSplitAttendance() { return splitAttendance; }
+    public void setSplitAttendance(Boolean splitAttendance) { this.splitAttendance = splitAttendance; }
 }

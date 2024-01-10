@@ -629,6 +629,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 		Iterator it12 = (form.getEditExternalId() ? form.getExternalIds().listIterator() : null);
 		Iterator it13 = (form.getEditSnapshotLimits() ? form.getSnapshotLimits().listIterator() : null);
 		Iterator it14 = (form.getDisplayLms() ? form.getLms().listIterator() : null);
+		Iterator<Boolean> it15 = form.getSplitAttendance().listIterator();
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
@@ -684,6 +685,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 			Long lmsId = null;
 			if (lmsStrId != null && lmsStrId.length() != 0)
 				lmsId = Long.valueOf(lmsStrId);
+			Boolean splitAttendance = it15.next();
 
 			if (classId.longValue() < 0){
 				Class_ newClass = new Class_();
@@ -722,6 +724,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 					}
 				}
 				newClass.setLms(lms);
+				newClass.setRoomsSplitAttendance(splitAttendance);
 
 				hibSession.persist(newClass);
 				hibSession.persist(ss);
@@ -754,6 +757,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 		Iterator it12 = form.getIsCancelled().listIterator();
 		Iterator it13 = (form.getEditSnapshotLimits() ? form.getSnapshotLimits().listIterator() : null);
 		Iterator it14 = (form.getDisplayLms() ? form.getLms().listIterator() : null);
+		Iterator<Boolean> it15 = form.getSplitAttendance().listIterator();
 		Date timeStamp = new Date();
 
 		for(;it1.hasNext();){
@@ -803,6 +807,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 			Long lmsId = null;
 			if (lmsStrId != null && lmsStrId.length() != 0)
 				lmsId = Long.valueOf(lmsStrId);
+			Boolean splitAttendance = it15.next();
 
 			Long parentClassId = null;
 			String parentClassIdString = (String) it10.next();
@@ -916,6 +921,10 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 				if (!modifiedClass.isCancelled().equals(cancelled)) {
 					modifiedClass.setCancelled(cancelled);
 					modifiedClass.cancelEvent(sessionContext.getUser(), hibSession, cancelled);
+					changed = true;
+				}
+				if (modifiedClass.isRoomsSplitAttendance() == null || !modifiedClass.isRoomsSplitAttendance().equals(splitAttendance)) {
+					modifiedClass.setRoomsSplitAttendance(splitAttendance);
 					changed = true;
 				}
 				

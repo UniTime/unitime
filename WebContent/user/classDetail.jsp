@@ -172,7 +172,22 @@
 				<TD>
 					<s:property value="form.roomRatio"/>
 					&nbsp;&nbsp;&nbsp;&nbsp; ( <loc:message name="propertyMinimumRoomCapacity"/>
-					<s:property value="form.minRoomLimit"/> )
+					<s:property value="form.minRoomLimit"/>
+					<s:if test="form.nbrRooms > 1">
+						<s:if test="form.splitAttendance == true"><loc:message name="descClassMultipleRoomsSplitAttendance"/></s:if><s:else><loc:message name="descClassMultipleRoomsAlternativeAttendance"/></s:else>
+					</s:if>)
+				</TD>
+			</TR>
+		</s:if>
+		
+		<s:if test="form.nbrRooms > 1">
+			<TR>
+				<TD><loc:message name="propertyRoomSplitAttendance"/></TD>
+				<TD><s:if test="form.splitAttendance == true">
+						<loc:message name="descriptionClassMultipleRoomsSplitAttendance"/>
+					</s:if><s:else>
+						<loc:message name="descriptionClassMultipleRoomsAlternativeAttendance"/>
+					</s:else>
 				</TD>
 			</TR>
 		</s:if>

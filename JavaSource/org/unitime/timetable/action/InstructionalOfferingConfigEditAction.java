@@ -1132,6 +1132,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         String numRooms = request.getParameter("nr" + sic.getId());
         String roomRatio = request.getParameter("rr" + sic.getId());
         String managingDept = request.getParameter("md" + sic.getId());
+        String splitAttendance = request.getParameter("sa" + sic.getId());
         String disabled = request.getParameter("disabled" + sic.getId());
 
         if(subpartId!=null)
@@ -1146,6 +1147,10 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             sic.setNumClasses(Integer.parseInt(numClasses));
         if(numRooms!=null)
             sic.setNumRooms(Constants.getPositiveInteger(numRooms, 0));
+        if (splitAttendance!=null)
+        	sic.setSplitAttendance("true".equalsIgnoreCase(splitAttendance) || "on".equalsIgnoreCase(splitAttendance));
+        else
+        	sic.setSplitAttendance(false);
         if(roomRatio!=null)
             sic.setRoomRatio(Constants.getPositiveFloat(roomRatio, 0.0f));
         if(managingDept!=null)
@@ -1162,6 +1167,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         float rr = sic.getRoomRatio();
         long md = sic.getManagingDeptId();
         boolean db = sic.isDisabled();
+        boolean sa = sic.isSplitAttendance();
 
         if (ioc.isUnlimitedEnrollment().booleanValue()) {
     		mnlpc = 0;
@@ -1169,6 +1175,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             nr = 0;
             rr = 0;
         }
+        if (nr <= 1) sa = false;
 
         if (request.getParameter("varLimits")==null) {
             mnlpc = mxlpc;
@@ -1340,6 +1347,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	                c.setMaxExpectedCapacity(Integer.valueOf(mxlpc));
 	                c.setRoomRatio(Float.valueOf(rr));
 	                c.setNbrRooms(Integer.valueOf(nr));
+	                c.setRoomsSplitAttendance(sa);
 	                if (c.getDisplayInstructor() == null){
 	                	c.setDisplayInstructor(Boolean.valueOf(true));
 	                }
@@ -1515,6 +1523,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 		int mxlpc = sic.getMaxLimitPerClass();
         int nc = sic.getNumClasses();
         int nr = sic.getNumRooms();
+        boolean sa = sic.isSplitAttendance();
         float rr = sic.getRoomRatio();
         long md = sic.getManagingDeptId();
         boolean db = sic.isDisabled();
@@ -1524,7 +1533,9 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
     		mxlpc = 0;
             nr = 0;
             rr = 0;
+            sa = false;
         }
+        if (nr <= 1) sa = false;
 
         if (request.getParameter("varLimits")==null) {
             mnlpc = mxlpc;
@@ -1658,6 +1669,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                     c.setMaxExpectedCapacity(Integer.valueOf(mxlpc));
                     c.setRoomRatio(Float.valueOf(rr));
                     c.setNbrRooms(Integer.valueOf(nr));
+                    c.setRoomsSplitAttendance(sa);
                     c.setDisplayInstructor(Boolean.valueOf(true));
                     c.setEnabledForStudentScheduling(Boolean.valueOf(true));
         	        c.setPreferences(new HashSet());
@@ -1943,6 +1955,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
         sic.setRoomRatio(rc);
         sic.setSubpartId(subpart.getUniqueId().longValue());
         sic.setManagingDeptId(md);
+        sic.setSplitAttendance(subpart.isRoomSplitAttendance());
         
         // Check Permissions on subpart
         if (!sessionContext.hasPermission(subpart, Right.InstrOfferingConfigEditSubpart) || mixedManaged) {
