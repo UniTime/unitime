@@ -96,7 +96,14 @@
 					<s:if test="form.getRoomGroupLevels(#roomGroupStat.index) == #prLevel.uniqueId">
 						<s:iterator value="#request.roomGroupsList" var="rg">
 							<s:if test="#roomGroup == #rg.uniqueId">
-								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${rg.nameWithTitle}'><s:property value="#rg.nameWithTitle"/></div>
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${rg.nameWithTitle}'>
+									<s:property value="#rg.nameWithTitle"/>
+									<s:if test="#request.roomIndexes != null">
+										<s:iterator value="#request.roomIndexes" var="i">
+											<s:if test="form.getRoomGroupIndexes(#roomGroupStat.index) == #i.value">(<s:property value="#i.label"/>)</s:if>
+										</s:iterator>
+									</s:if>
+								</div>
 							</s:if>
 						</s:iterator>
 					</s:if>
@@ -116,7 +123,14 @@
 					<s:if test="form.getRoomPrefLevels(#roomPrefStat.index) == #prLevel.uniqueId">
 						<s:iterator value="#request.roomsList" var="r">
 							<s:if test="#roomPref == #r.uniqueId">
-								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' onmouseover="showGwtRoomHint(this, '${r.getUniqueId()}', '${prLevel.getPrefName()}');" onmouseout="hideGwtRoomHint();"><s:property value="#r.label"/></div>
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' onmouseover="showGwtRoomHint(this, '${r.getUniqueId()}', '${prLevel.getPrefName()}');" onmouseout="hideGwtRoomHint();">
+									<s:property value="#r.label"/>
+									<s:if test="#request.roomIndexes != null">
+										<s:iterator value="#request.roomIndexes" var="i">
+											<s:if test="form.getRoomPrefIndexes(#roomPrefStat.index) == #i.value">(<s:property value="#i.label"/>)</s:if>
+										</s:iterator>
+									</s:if>
+								</div>
 							</s:if>
 						</s:iterator>
 					</s:if>
@@ -136,7 +150,14 @@
 					<s:if test="form.getBldgPrefLevels(#bldgPrefStat.index) == #prLevel.uniqueId">
 						<s:iterator value="#request.bldgsList" var="b">
 							<s:if test="#bldgPref == #b.uniqueId">
-								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${b.abbrName}'><s:property value="#b.abbrName"/></div>
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${b.abbrName}'>
+									<s:property value="#b.abbrName"/>
+									<s:if test="#request.roomIndexes != null">
+										<s:iterator value="#request.roomIndexes" var="i">
+											<s:if test="form.getBldgPrefIndexes(#bldgPrefStat.index) == #i.value">(<s:property value="#i.label"/>)</s:if>
+										</s:iterator>
+									</s:if>
+								</div>
 							</s:if>
 						</s:iterator>
 					</s:if>
@@ -156,7 +177,14 @@
 					<s:if test="form.getRoomFeaturePrefLevels(#roomFeaturePrefStat.index) == #prLevel.uniqueId">
 						<s:iterator value="#request.roomFeaturesList" var="rf">
 							<s:if test="#roomFeaturePref == #rf.uniqueId">
-								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${rf.labelWithType}'><s:property value="#rf.labelWithType"/></div>
+								<div style='color:${prLevel.prefcolor()}; font-weight: bold;' title='${prLevel.getPrefName()}: ${rf.labelWithType}'>
+									<s:property value="#rf.labelWithType"/>
+									<s:if test="#request.roomIndexes != null">
+										<s:iterator value="#request.roomIndexes" var="i">
+											<s:if test="form.getRoomFeaturePrefIndexes(#roomFeaturePrefStat.index) == #i.value">(<s:property value="#i.label"/>)</s:if>
+										</s:iterator>
+									</s:if>
+								</div>
 							</s:if>
 						</s:iterator>
 					</s:if>

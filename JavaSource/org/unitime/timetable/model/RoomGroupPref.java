@@ -51,11 +51,17 @@ public class RoomGroupPref extends BaseRoomGroupPref {
 /*[CONSTRUCTOR MARKER END]*/
 	
 	public String preferenceText() { 
-		return (this.getRoomGroup().getName());
+		String ret = getRoomGroup().getName();
+    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
+    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+    	return ret;
     }
 
     public String preferenceAbbv() { 
-        return (this.getRoomGroup().getAbbv());
+        String ret = getRoomGroup().getAbbv();
+        if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
+    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+    	return ret;
     }
 
     public Object clone() {
@@ -66,7 +72,7 @@ public class RoomGroupPref extends BaseRoomGroupPref {
     }
     public boolean isSame(Preference other) {
     	if (other==null || !(other instanceof RoomGroupPref)) return false;
-    	return ToolBox.equals(getRoomGroup(),((RoomGroupPref)other).getRoomGroup());
+    	return ToolBox.equals(getRoomGroup(),((RoomGroupPref)other).getRoomGroup()) && ToolBox.equals(getRoomIndex(), ((RoomGroupPref)other).getRoomIndex());
     }
 
 	public String preferenceTitle() {

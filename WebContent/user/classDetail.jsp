@@ -368,7 +368,8 @@
 				</s:include>
 			</s:if>
 			<s:if test="form.unlimitedEnroll != true">
-				<s:include value="preferencesDetail2.jspf"/>
+				<s:include value="preferencesDetail2.jspf">
+				</s:include>
 			</s:if>
 		</s:if>
 		

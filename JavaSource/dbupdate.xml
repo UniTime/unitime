@@ -14896,4 +14896,18 @@
 		<plsql>alter table %SCHEMA%.class_ add rooms_split_att number(1) default 0</plsql>
 		<pgsql>alter table %SCHEMA%.class_ add rooms_split_att boolean default false</pgsql>
 	</update>
+	<update version="265" date="12-Jan-2024" comment="Room Preference Index">
+		<mysql>alter table %SCHEMA%.room_pref add room_idx bigint(10)</mysql>
+		<plsql>alter table %SCHEMA%.room_pref add room_idx number(10,0)</plsql>
+		<pgsql>alter table %SCHEMA%.room_pref add room_idx bigint</pgsql>
+		<mysql>alter table %SCHEMA%.room_feature_pref add room_idx bigint(10)</mysql>
+		<plsql>alter table %SCHEMA%.room_feature_pref add room_idx number(10,0)</plsql>
+		<pgsql>alter table %SCHEMA%.room_feature_pref add room_idx bigint</pgsql>
+		<mysql>alter table %SCHEMA%.building_pref add room_idx bigint(10)</mysql>
+		<plsql>alter table %SCHEMA%.building_pref add room_idx number(10,0)</plsql>
+		<pgsql>alter table %SCHEMA%.building_pref add room_idx bigint</pgsql>
+		<mysql>alter table %SCHEMA%.room_group_pref add room_idx bigint(10)</mysql>
+		<plsql>alter table %SCHEMA%.room_group_pref add room_idx number(10,0)</plsql>
+		<pgsql>alter table %SCHEMA%.room_group_pref add room_idx bigint</pgsql>
+	</update>
 </dbupdate>

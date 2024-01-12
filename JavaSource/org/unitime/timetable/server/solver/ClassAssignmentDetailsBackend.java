@@ -150,13 +150,15 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 				lecture.getNote()));
 		if (placement != null) {
 			if (placement.isMultiRoom()) {
+				int roomIndex = 0;
 				for (RoomLocation room: placement.getRoomLocations()) {
 					details.setRoom(new RoomInfo(
 							room.getName(),
 							room.getId(),
 							room.getRoomSize(),
-							(room.getPreference() == 0 && lecture.nrRoomLocations() == lecture.getNrRooms() ? PreferenceLevel.sIntLevelRequired : room.getPreference())
+							(room.getPreference(roomIndex) == 0 && lecture.nrRoomLocations() == lecture.getNrRooms() ? PreferenceLevel.sIntLevelRequired : room.getPreference(roomIndex))
 							));
+					roomIndex++;
 				}
 			} else {
 				RoomLocation room = placement.getRoomLocation();
@@ -199,13 +201,15 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		Placement initialPlacement = (Placement)lecture.getInitialAssignment();
 		if (initialPlacement != null) {
 			if (initialPlacement.isMultiRoom()) {
+				int roomIndex = 0;
 				for (RoomLocation room: initialPlacement.getRoomLocations()) {
 					details.setInitialRoom(new RoomInfo(
 							room.getName(),
 							room.getId(),
 							room.getRoomSize(),
-							(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())
+							(room.getPreference(roomIndex)==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference(roomIndex))
 							));
+					roomIndex++;
 				}
 			} else {
 				RoomLocation room = initialPlacement.getRoomLocation();
@@ -247,7 +251,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 						room.getName(),
 						room.getId(),
 						room.getRoomSize(),
-						(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())
+						(room.getMinPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getMinPreference())
 						));
 			}			
 		}

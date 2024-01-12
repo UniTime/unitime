@@ -206,6 +206,12 @@ public interface CPSolverMessages extends Messages, Constants {
 	@DefaultMessage("<br>&nbsp;&nbsp;&nbsp;&nbsp;selected rooms are too small ({0} < {1})")
 	String warnReasonSelectedRoomsTooSmall(int roomCapacity, int classLimit);
 	
+	@DefaultMessage("<br>&nbsp;&nbsp;&nbsp;&nbsp;invalid room combination ({0} is prohibited as {1}. room)")
+	String warnReasonInvalidRoomCombinationProhibitedRoom(String room, int index);
+	
+	@DefaultMessage("<br>&nbsp;&nbsp;&nbsp;&nbsp;invalid room combination ({0} is a partition of {1})")
+	String warnReasonInvalidRoomCombinationPartition(String child, String parent);
+	
 	@DefaultMessage("Constraint {0} was not loaded. Inconsistent values.")
 	String warnFlexibleConstraintNotLoaded(String reference);
 	
@@ -639,6 +645,12 @@ public interface CPSolverMessages extends Messages, Constants {
 	
 	@DefaultMessage("selected rooms are too small ({0} < {1})")
 	String reasonSelectedRoomsTooSmall(int roomCapacity, int classLimit);
+	
+	@DefaultMessage("invalid room combination ({0} is prohibited as {1}. room)")
+	String reasonInvalidRoomCombinationProhibitedRoom(String room, int index);
+	
+	@DefaultMessage("invalid room combination ({0} is a partition of {1})")
+	String reasonInvalidRoomCombinationPartition(String child, String parent);
 		
 	@DefaultMessage("room or instructor not available")
 	String reasonNotKnown();

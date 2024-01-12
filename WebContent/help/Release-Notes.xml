@@ -50,6 +50,14 @@
 				<line>Split Attendance can be set on the Instructional Offering Configuration page (all classes of a subpart) or the Multiple Class Setup page (individual classes).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Multiple Rooms With Different Preferences</name>
+			<description>
+				<line>The ability to provide different preferences for each room has been added for classes that need two or more rooms.</line>
+				<line>This includes cases when some rooms are prohibited in some positions, e.g., a class needs a classroom and some other room.</line>
+				<line>Room-related preferences can be only defined on the class level, for rooms, room groups, room features, and buildings.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

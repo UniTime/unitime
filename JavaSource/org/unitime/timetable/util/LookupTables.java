@@ -31,9 +31,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.query.Query;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitType;
@@ -76,6 +79,7 @@ import org.unitime.timetable.security.UserContext;
  * @author Heston Fernandes, Tomas Muller
  */
 public class LookupTables {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
     
     /**
      * Get Itypes and store it in request object
@@ -132,6 +136,17 @@ public class LookupTables {
 
     public static void setupRooms(HttpServletRequest request, PreferenceGroup pg) throws Exception {
     	request.setAttribute(Room.ROOM_LIST_ATTR_NAME, pg.getAvailableRooms());
+    	if (pg instanceof Class_) {
+    		Class_ clazz = (Class_)pg;
+    		if (clazz.getNbrRooms() > 1) {
+    			List<ComboBoxLookup> indexes = new ArrayList<ComboBoxLookup>();
+    			indexes.add(new ComboBoxLookup(MSG.itemAllRooms(), "-"));
+    			for (int i = 0; i < clazz.getNbrRooms(); i++) {
+    				indexes.add(new ComboBoxLookup(MSG.itemOnlyRoom(i + 1), String.valueOf(i)));
+    			}
+    			request.setAttribute("roomIndexes", indexes);
+    		}
+    	}
     }
     
     

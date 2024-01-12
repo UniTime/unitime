@@ -38,6 +38,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 
+import org.cpsolver.coursett.Constants;
 import org.cpsolver.coursett.TimetableXMLLoader;
 import org.cpsolver.coursett.TimetableXMLSaver;
 import org.cpsolver.coursett.constraint.ClassLimitConstraint;
@@ -404,6 +405,20 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
                 }
                 if (placement.variable().getNrRooms() > 1 && placement.variable().isSplitAttendance() && placement.getRoomSize() < placement.variable().minRoomUse())
                 	reason += MSG.warnReasonSelectedRoomsTooSmall(placement.getRoomSize(), placement.variable().minRoomUse());
+                if (placement.isMultiRoom() && placement.isRoomProhibited()) {
+    	            int roomIndex = 0;
+    	            for (RoomLocation r : placement.getRoomLocations()) {
+    	                if (Constants.sPreferenceProhibited.equals(Constants.preferenceLevel2preference(r.getPreference(roomIndex))))
+    	                	reason += MSG.warnReasonInvalidRoomCombinationProhibitedRoom(r.getName(), roomIndex + 1);
+    	                roomIndex++;
+    	            }
+    			}
+    	        if (placement.isMultiRoom()) {
+    	            for (RoomLocation r1: placement.getRoomLocations())
+    	                for (RoomLocation r2: placement.getRoomLocations())
+    	                    if (r2.getRoomConstraint() != null && r2.getRoomConstraint().getParentRoom() != null && r2.getRoomConstraint().getParentRoom().equals(r1.getRoomConstraint()))
+    	                    	reason += MSG.warnReasonInvalidRoomCombinationPartition(r2.getName(), r1.getName());   
+    	        }
                 if (reason.isEmpty())
                 	iProgress.warn(MSG.warnCannotAssignClass(lecture.getName(), placement.getLongName(useAmPm())));
                 else
@@ -1638,6 +1653,20 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 		}
 		if (lecture.getNrRooms() > 1 && lecture.isSplitAttendance() && placement.getRoomSize() < lecture.minRoomUse())
 			return MSG.reasonSelectedRoomsTooSmall(placement.getRoomSize(), lecture.minRoomUse());
+		if (placement.isMultiRoom() && placement.isRoomProhibited()) {
+            int roomIndex = 0;
+            for (RoomLocation r : placement.getRoomLocations()) {
+                if (Constants.sPreferenceProhibited.equals(Constants.preferenceLevel2preference(r.getPreference(roomIndex))))
+                	return MSG.reasonInvalidRoomCombinationProhibitedRoom(r.getName(), roomIndex + 1);
+                roomIndex++;
+            }
+		}
+        if (placement.isMultiRoom()) {
+            for (RoomLocation r1: placement.getRoomLocations())
+                for (RoomLocation r2: placement.getRoomLocations())
+                    if (r2.getRoomConstraint() != null && r2.getRoomConstraint().getParentRoom() != null && r2.getRoomConstraint().getParentRoom().equals(r1.getRoomConstraint()))
+                        return MSG.reasonInvalidRoomCombinationPartition(r2.getName(), r1.getName());   
+        }
 		return (reason == null ? MSG.reasonNotKnown() : reason);
 	}
 }

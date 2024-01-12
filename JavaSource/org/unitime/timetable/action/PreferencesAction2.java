@@ -198,7 +198,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
             	form.addToRoomGroups(
 	                    Preference.BLANK_PREF_VALUE, 
-	                    Preference.BLANK_PREF_VALUE );
+	                    Preference.BLANK_PREF_VALUE,
+	                    null);
             }
             request.setAttribute(HASH_ATTR, HASH_RM_GROUP);
         } else {
@@ -218,7 +219,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
             	form.addToBldgPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
-	                    Preference.BLANK_PREF_VALUE );
+	                    Preference.BLANK_PREF_VALUE,
+	                    null);
             }
             request.setAttribute(HASH_ATTR, HASH_BLDG_PREF);
         } else {
@@ -275,7 +277,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
             	form.addToAttributePrefs(
 	                    Preference.BLANK_PREF_VALUE, 
-	                    Preference.BLANK_PREF_VALUE );
+	                    Preference.BLANK_PREF_VALUE);
             }
             request.setAttribute(HASH_ATTR, HASH_ATTRIBUTE_PREF);
         } else {
@@ -295,7 +297,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
             	form.addToRoomFeatPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
-	                    Preference.BLANK_PREF_VALUE );
+	                    Preference.BLANK_PREF_VALUE,
+	                    null);
             }
             request.setAttribute(HASH_ATTR, HASH_RM_FEAT_PREF);
         } else {
@@ -340,7 +343,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
             	form.addToRoomPrefs(
 	                    Preference.BLANK_PREF_VALUE, 
-	                    Preference.BLANK_PREF_VALUE );
+	                    Preference.BLANK_PREF_VALUE,
+	                    null);
             }
             request.setAttribute(HASH_ATTR, HASH_RM_PREF);
         } else {
@@ -386,28 +390,37 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             if(deleteType.equals("roomPref")) {
                 List lst = form.getRoomPrefs();
                 List lstL = form.getRoomPrefLevels();
+                List lstI = form.getRoomPrefIndexes();
                 lst.remove(deleteId);
                 lstL.remove(deleteId);
+                lstI.remove(deleteId);
                 form.setRoomPrefs(lst);
                 form.setRoomPrefLevels(lstL);
+                form.setRoomPrefIndexes(lstI);
                 request.setAttribute(HASH_ATTR, HASH_RM_PREF);
             }
             if(deleteType.equals("rgPref")) {
                 List lst = form.getRoomGroups();
                 List lstL = form.getRoomGroupLevels();
+                List lstI = form.getRoomGroupIndexes();
                 lst.remove(deleteId);
                 lstL.remove(deleteId);
+                lstI.remove(deleteId);
                 form.setRoomGroups(lst);
                 form.setRoomGroupLevels(lstL);
+                form.setRoomGroupIndexes(lstI);
                 request.setAttribute(HASH_ATTR, HASH_RM_GROUP);
             }
             if(deleteType.equals("bldgPref")) {
                 List lst = form.getBldgPrefs();
                 List lstL = form.getBldgPrefLevels();
+                List lstI = form.getBldgPrefIndexes();
                 lst.remove(deleteId);
                 lstL.remove(deleteId);
+                lstI.remove(deleteId);
                 form.setBldgPrefs(lst);
                 form.setBldgPrefLevels(lstL);
+                form.setBldgPrefIndexes(lstI);
                 request.setAttribute(HASH_ATTR, HASH_BLDG_PREF);
             }
             if(deleteType.equals("distPref")) {
@@ -422,10 +435,13 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             if(deleteType.equals("roomFeaturePref")) {
                 List lst = form.getRoomFeaturePrefs();
                 List lstL = form.getRoomFeaturePrefLevels();
+                List lstI = form.getRoomFeaturePrefIndexes();
                 lst.remove(deleteId);
                 lstL.remove(deleteId);
+                lstI.remove(deleteId);
                 form.setRoomFeaturePrefs(lst);
                 form.setRoomFeaturePrefLevels(lstL);
+                form.setRoomFeaturePrefIndexes(lstI);
                 request.setAttribute(HASH_ATTR, HASH_RM_FEAT_PREF);
             }
             if(deleteType.equals("timePattern")) {
@@ -522,6 +538,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     	if (Preference.Type.ROOM.in(types)) {
             List lst = form.getRoomPrefs();
             List lstL = form.getRoomPrefLevels();
+            List lstI = form.getRoomPrefIndexes();
             Set parentRoomPrefs = pg.effectivePreferences(RoomPref.class);
             
             for(int i=0; i<lst.size(); i++) {
@@ -530,6 +547,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                     continue;
                 
                 String pref = (String) lstL.get(i);
+                String prefIdx = (String) lstI.get(i);
                 Debug.debug("Room: " + id + ": " + pref);
 
         		LocationDAO rdao = LocationDAO.getInstance();
@@ -539,6 +557,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 rp.setOwner(pg);
                 rp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
                 rp.setRoom(room);
+                rp.setRoomIndex(prefIdx == null || "-".equals(prefIdx) ? null : Integer.valueOf(prefIdx));
                 
                 RoomPref sameParentRp = null;
                 for (Iterator j=parentRoomPrefs.iterator();j.hasNext();) {
@@ -568,6 +587,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     	if (Preference.Type.BUILDING.in(types)) {
             List lst = form.getBldgPrefs();
             List lstL = form.getBldgPrefLevels();
+            List lstI = form.getBldgPrefIndexes();
             Set parentBuildingPrefs = pg.effectivePreferences(BuildingPref.class);
             
             for(int i=0; i<lst.size(); i++) {
@@ -576,6 +596,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                     continue;
                 
                 String pref = (String) lstL.get(i);
+                String prefIdx = (String) lstI.get(i);
                 Debug.debug("Bldg: " + id + ": " + pref);
 
                 BuildingDAO bdao = BuildingDAO.getInstance();
@@ -585,6 +606,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 bp.setOwner(pg);
                 bp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
                 bp.setBuilding(bldg);
+                bp.setRoomIndex(prefIdx == null || "-".equals(prefIdx) ? null : Integer.valueOf(prefIdx));
 
                 BuildingPref sameParentBp = null;
                 for (Iterator j=parentBuildingPrefs.iterator();j.hasNext();) {
@@ -688,6 +710,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     	if (Preference.Type.ROOM_FEATURE.in(types)) {
             List lst = form.getRoomFeaturePrefs();
             List lstL = form.getRoomFeaturePrefLevels();
+            List lstI = form.getRoomFeaturePrefIndexes();
             Set parentRoomFeaturePrefs = pg.effectivePreferences(RoomFeaturePref.class);
             
             for(int i=0; i<lst.size(); i++) {
@@ -696,6 +719,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                     continue;
                 
                 String pref = (String) lstL.get(i);
+                String prefIdx = (String) lstI.get(i);
                 Debug.debug("Room Feat: " + id + ": " + pref);
 
                 RoomFeatureDAO rfdao = RoomFeatureDAO.getInstance();
@@ -705,6 +729,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 rfp.setOwner(pg);
                 rfp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
                 rfp.setRoomFeature(rf);
+                rfp.setRoomIndex(prefIdx == null || "-".equals(prefIdx) ? null : Integer.valueOf(prefIdx));
 
                 RoomFeaturePref sameParentRfp = null;
                 for (Iterator j=parentRoomFeaturePrefs.iterator();j.hasNext();) {
@@ -734,6 +759,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     	if (Preference.Type.ROOM_GROUP.in(types)) {
     		List lst = form.getRoomGroups();
             List lstL = form.getRoomGroupLevels();
+            List lstI = form.getRoomGroupIndexes();
             Set parentRoomGroupPrefs = pg.effectivePreferences(RoomGroupPref.class);
             
             for(int i=0; i<lst.size(); i++) {
@@ -742,6 +768,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                     continue;
                 
                 String pref = (String) lstL.get(i);
+                String prefIdx = (String) lstI.get(i);
                 Debug.debug("Roomgr: " + id + ": " + pref);
 
                 RoomGroupDAO gdao = RoomGroupDAO.getInstance();
@@ -751,6 +778,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 gp.setOwner(pg);
                 gp.setPrefLevel(PreferenceLevel.getPreferenceLevel(Integer.parseInt(pref)));
                 gp.setRoomGroup(gr);
+                gp.setRoomIndex(prefIdx == null || "-".equals(prefIdx) ? null : Integer.valueOf(prefIdx));
 
                 RoomGroupPref sameParentGp = null;
                 for (Iterator j=parentRoomGroupPrefs.iterator();j.hasNext();) {
@@ -1218,6 +1246,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
     	// Room Prefs
     	form.getRoomPrefs().clear();
     	form.getRoomPrefLevels().clear();
+    	form.getRoomPrefIndexes().clear();
         Set roomPrefs = pg.effectivePreferences(RoomPref.class, leadInstructors);
         Iterator iter = roomPrefs.iterator();
         while (iter.hasNext()){
@@ -1225,12 +1254,14 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             Debug.debug("Adding room pref ... " + rp.getRoom().getUniqueId().toString());
             form.addToRoomPrefs(
                     rp.getRoom().getUniqueId().toString(), 
-                    rp.getPrefLevel().getUniqueId().toString() );
+                    rp.getPrefLevel().getUniqueId().toString(),
+                    rp.getRoomIndex());
         }
         
         // Room Feature Prefs
     	form.getRoomFeaturePrefs().clear();
     	form.getRoomFeaturePrefLevels().clear();
+    	form.getRoomFeaturePrefIndexes().clear();
         Set roomFeatPrefs = pg.effectivePreferences(RoomFeaturePref.class, leadInstructors);
         iter = roomFeatPrefs.iterator();
         while (iter.hasNext()){
@@ -1238,12 +1269,14 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             Debug.debug("Adding room feature pref ... " + rfp.getRoomFeature().getUniqueId().toString());
             form.addToRoomFeatPrefs(
                     rfp.getRoomFeature().getUniqueId().toString(), 
-                    rfp.getPrefLevel().getUniqueId().toString() );
+                    rfp.getPrefLevel().getUniqueId().toString(),
+                    rfp.getRoomIndex());
         }
 
         // Building Prefs
     	form.getBldgPrefs().clear();
     	form.getBldgPrefLevels().clear();
+    	form.getBldgPrefIndexes().clear();
         Set bldgPrefs = pg.effectivePreferences(BuildingPref.class, leadInstructors);
         iter = bldgPrefs.iterator();
         while (iter.hasNext()){
@@ -1251,7 +1284,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             Debug.debug("Adding building pref ... " + bp.getBuilding().getUniqueId().toString());
             form.addToBldgPrefs(
                     bp.getBuilding().getUniqueId().toString(), 
-                    bp.getPrefLevel().getUniqueId().toString() );
+                    bp.getPrefLevel().getUniqueId().toString(),
+                    bp.getRoomIndex());
         }
         
         // Distribution Prefs
@@ -1285,6 +1319,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
         // Room group Prefs
     	form.getRoomGroups().clear();
     	form.getRoomGroupLevels().clear();
+    	form.getRoomGroupIndexes().clear();
         Set rgPrefs = pg.effectivePreferences(RoomGroupPref.class, leadInstructors);
         iter = rgPrefs.iterator();
         while (iter.hasNext()){
@@ -1292,7 +1327,8 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
             Debug.debug("Adding room group pref ... " + bp.getRoomGroup().getUniqueId().toString());
             form.addToRoomGroups(
                     bp.getRoomGroup().getUniqueId().toString(), 
-                    bp.getPrefLevel().getUniqueId().toString() );
+                    bp.getPrefLevel().getUniqueId().toString(),
+                    bp.getRoomIndex());
         }
 
         // Date Pattern Prefs

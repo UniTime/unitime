@@ -51,7 +51,10 @@ public class BuildingPref extends BaseBuildingPref {
 /*[CONSTRUCTOR MARKER END]*/
 
     public String preferenceText() {
-    	return(this.getBuilding().getAbbreviation());
+    	String ret = getBuilding().getAbbreviation();
+    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
+    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+    	return ret;
     }
     
     public int compareTo(Object o) {
@@ -72,7 +75,7 @@ public class BuildingPref extends BaseBuildingPref {
     }
     public boolean isSame(Preference other) {
     	if (other==null || !(other instanceof BuildingPref)) return false;
-    	return ToolBox.equals(getBuilding(),((BuildingPref)other).getBuilding());
+    	return ToolBox.equals(getBuilding(),((BuildingPref)other).getBuilding()) && ToolBox.equals(getRoomIndex(), ((BuildingPref)other).getRoomIndex());
     }
     
     @Override

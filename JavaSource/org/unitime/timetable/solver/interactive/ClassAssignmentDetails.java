@@ -174,7 +174,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				int idx = 0;
 				for (Iterator<RoomLocation> e=placement.getRoomLocations().iterator();e.hasNext();idx++) {
 					RoomLocation room = e.next(); 
-					iRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference()));
+					iRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference(idx)==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference(idx)));
 				}
 			} else {
 				RoomLocation room = placement.getRoomLocation();
@@ -199,7 +199,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				int idx = 0;
 				for (Iterator<RoomLocation> e=initialPlacement.getRoomLocations().iterator();e.hasNext();idx++) {
 					RoomLocation room = e.next(); 
-					iInitialRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference()));
+					iInitialRoom[idx] = new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference(idx)==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference(idx)));
 				}
 			} else {
 				RoomLocation room = initialPlacement.getRoomLocation();
@@ -214,7 +214,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			iTimes.add(new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()),min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId(),time.getDatePatternPreference()));
 		}
 		for (RoomLocation room: lecture.roomLocations()) {
-			iRooms.add(new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())));
+			iRooms.add(new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getMinPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getMinPreference())));
 		}
 		if (includeConstraints) {
 			for (Iterator e=lecture.activeJenrls(assignment).iterator();e.hasNext();) {

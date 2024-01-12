@@ -42,6 +42,7 @@ public abstract class BaseBuildingPref extends Preference implements Serializabl
 	private static final long serialVersionUID = 1L;
 
 	private Integer iDistanceFrom;
+	private Integer iRoomIndex;
 
 	private Building iBuilding;
 
@@ -56,6 +57,10 @@ public abstract class BaseBuildingPref extends Preference implements Serializabl
 	@Column(name = "distance_from", nullable = true)
 	public Integer getDistanceFrom() { return iDistanceFrom; }
 	public void setDistanceFrom(Integer distanceFrom) { iDistanceFrom = distanceFrom; }
+
+	@Column(name = "room_idx", nullable = true)
+	public Integer getRoomIndex() { return iRoomIndex; }
+	public void setRoomIndex(Integer roomIndex) { iRoomIndex = roomIndex; }
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "bldg_id", nullable = false)
@@ -88,6 +93,7 @@ public abstract class BaseBuildingPref extends Preference implements Serializabl
 			"\n	Note: " + getNote() +
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
+			"\n	RoomIndex: " + getRoomIndex() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}
