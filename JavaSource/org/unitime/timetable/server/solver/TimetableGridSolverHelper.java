@@ -523,7 +523,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			int roomPref = placement.getRoomPreference();
 			try {
 				if (model.getResourceType() == ResourceType.ROOM.ordinal() && model.getResourceId() != null) {
-					roomPref = placement.getRoomLocation(model.getResourceId()).getPreference();
+					roomPref = placement.getRoomLocation(model.getResourceId()).getPreference(placement.getRoomLocationIndex(model.getResourceId()));
 				}
 			} catch (NullPointerException e) {}
 			if (PreferenceLevel.sNeutral.equals(PreferenceLevel.int2prolog(roomPref)) && lecture.nrRoomLocations() == lecture.getNrRooms()) roomPref = PreferenceLevel.sIntLevelRequired;
@@ -621,7 +621,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			int roomPref = placement.getRoomPreference();
 			try {
 				if (model.getResourceType() == ResourceType.ROOM.ordinal() && model.getResourceId() != null) {
-					roomPref = placement.getRoomLocation(model.getResourceId()).getPreference();
+					roomPref = placement.getRoomLocation(model.getResourceId()).getPreference(placement.getRoomLocationIndex(model.getResourceId()));
 				}
 			} catch (NullPointerException e) {}
 			if (!cell.hasPreference()) {

@@ -75,7 +75,7 @@ public class SuggestionsFilterBackend extends FilterBoxBackend<SuggestionsFilter
 		if (lecture.getNrRooms() > 0 && lecture.roomLocations() != null) {
 			List<Entity> rooms = new ArrayList<Entity>();
 			for (RoomLocation r: lecture.roomLocations()) {
-				if (r.getPreference() > 500) continue;
+				if (r.getMinPreference() > 500) continue;
 				Entity e = new Entity(r.getId(), r.getName(), r.getName());
 				e.setCount(r.getRoomSize());
 				rooms.add(e);

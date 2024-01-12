@@ -487,34 +487,60 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
 	        form.addToInstructors(classInstr);
 	    }
 
-        if (c.getNbrRooms().intValue()>0) {
-        	List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
-        	StringBuffer rooms = new StringBuffer();
-        	if (roomLocations.isEmpty()) {
-        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR,
-        				"<font color='red'><b>No rooms are available.</b></font>");
-        	} else {
-        		int idx = 0;
-        		for (RoomLocation rl: roomLocations) {
-        			if (idx>0) rooms.append(", ");
-    				if (idx==4)
-    					rooms.append("<span id='room_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots').style.display='none';document.getElementById('room_rest').style.display='inline';\">...</a></span><span id='room_rest' style='display:none'>");
-        			rooms.append(
-        					"<span style='color:"+PreferenceLevel.int2color(rl.getPreference())+";' " +
-        					"onmouseover=\"showGwtRoomHint(this, '" + rl.getId() + "', '" + PreferenceLevel.int2string(rl.getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">"+
-        					rl.getName()+
-        					"</span>");
-        			idx++;
-        		}
-        		if (idx>=4) rooms.append("</span>");
-	        	if (roomLocations.size()<c.getNbrRooms().intValue()) {
-	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR,
-	        				"<font color='red'><b>Not enough rooms are available:</b></font> "+rooms);
-	        	} else {
-	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR,
-	        				roomLocations.size()+" ("+rooms+")");
-	        	}
-        	}
+        if (c.getNbrRooms()>0) {
+    		if (c.hasRoomIndexedPrefs()) {
+				StringBuffer rooms = new StringBuffer();
+				rooms.append("<table width='100%'>");
+    			for (int roomIndex = 0; roomIndex < c.getNbrRooms(); roomIndex++) {
+    				rooms.append("<tr><td style='width:50px;' nowrap>" + MSG.itemOnlyRoom(1 + roomIndex) + ":</td><td>");
+    				List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c, roomIndex);
+            		if (roomLocations.isEmpty()) {
+            			rooms.append("<font color='red'><b>" + MSG.warnNoRoomsAreAvaliable() + "</b></font>");
+            		} else {
+        				int idx = 0;
+                		for (RoomLocation rl: roomLocations) {
+                			if (idx>0) rooms.append(", ");
+            				if (idx==6)
+            					rooms.append("<span id='room_dots_"+roomIndex+"' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots_"+roomIndex+"').style.display='none';document.getElementById('room_rest_"+roomIndex+"').style.display='inline';\">" + MSG.moreAvailableRooms(roomLocations.size() - 6) + "</a></span><span id='room_rest_"+roomIndex+"' style='display:none'>");
+                			rooms.append(
+                					"<span style='color:"+PreferenceLevel.int2color(rl.getPreference())+";' " +
+                					"onmouseover=\"showGwtRoomHint(this, '" + rl.getId() + "', '" + PreferenceLevel.int2string(rl.getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">"+
+                					rl.getName()+
+                					"</span>");
+                			idx++;
+                		}
+                		if (idx>=6) rooms.append("</span>");
+            		}
+            		rooms.append("</td></tr>");
+    			}
+    			rooms.append("</table>");
+    			request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, rooms.toString());
+    		} else {
+            	List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
+            	StringBuffer rooms = new StringBuffer();
+            	if (roomLocations.isEmpty()) {
+            		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, "<font color='red'><b>" + MSG.warnNoRoomsAreAvaliable() + "</b></font>");
+            	} else {
+            		int idx = 0;
+            		for (RoomLocation rl: roomLocations) {
+            			if (idx>0) rooms.append(", ");
+        				if (idx==6)
+        					rooms.append("<span id='room_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots').style.display='none';document.getElementById('room_rest').style.display='inline';\">" + MSG.moreAvailableRooms(roomLocations.size() - 6) + "</a></span><span id='room_rest' style='display:none'>");
+            			rooms.append(
+            					"<span style='color:"+PreferenceLevel.int2color(rl.getPreference())+";' " +
+            					"onmouseover=\"showGwtRoomHint(this, '" + rl.getId() + "', '" + PreferenceLevel.int2string(rl.getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">"+
+            					rl.getName()+
+            					"</span>");
+            			idx++;
+            		}
+            		if (idx>=6) rooms.append("</span>");
+    	        	if (roomLocations.size()<c.getNbrRooms().intValue()) {
+    	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, "<font color='red'><b>" + MSG.warnNotEnoughtRoomsAreAvaliable() + "</b></font> "+rooms);
+    	        	} else {
+    	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, rooms);
+    	        	}
+            	}
+    		}
         }
     }
 

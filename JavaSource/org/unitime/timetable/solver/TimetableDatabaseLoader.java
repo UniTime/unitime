@@ -411,10 +411,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     public static List<RoomLocation> computeRoomLocations(Class_ clazz) {
-    	return computeRoomLocations(clazz, false, 0.01, 0.02);
+    	return computeRoomLocations(clazz, false, 0.01, 0.02, 0);
     }
     
-    public static List<RoomLocation> computeRoomLocations(Class_ clazz, boolean interactiveMode, double fewerSeatsDisouraged, double fewerSeatsStronglyDisouraged) {
+    public static List<RoomLocation> computeRoomLocations(Class_ clazz, Integer roomIndex) {
+    	return computeRoomLocations(clazz, false, 0.01, 0.02, roomIndex);
+    }
+    
+    public static List<RoomLocation> computeRoomLocations(Class_ clazz, boolean interactiveMode, double fewerSeatsDisouraged, double fewerSeatsStronglyDisouraged, Integer roomIndex) {
     	int minClassLimit = clazz.getExpectedCapacity().intValue();
     	int maxClassLimit = clazz.getMaxExpectedCapacity().intValue();
     	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
@@ -433,6 +437,25 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		Set roomPrefs = clazz.effectivePreferences(RoomPref.class);
 		Set bldgPrefs = clazz.effectivePreferences(BuildingPref.class);
 		Set featurePrefs = clazz.effectivePreferences(RoomFeaturePref.class);
+		
+		if (clazz.getNbrRooms() > 1 && roomIndex != null) {
+			for (Iterator i=groupPrefs.iterator();i.hasNext();) {
+    			RoomGroupPref p = (RoomGroupPref)i.next();
+    			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+			}
+			for (Iterator i=roomPrefs.iterator();i.hasNext();) {
+    			RoomPref p = (RoomPref)i.next();
+    			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+			}
+			for (Iterator i=bldgPrefs.iterator();i.hasNext();) {
+    			BuildingPref p = (BuildingPref)i.next();
+    			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+			}
+			for (Iterator i=featurePrefs.iterator();i.hasNext();) {
+    			RoomFeaturePref p = (RoomFeaturePref)i.next();
+    			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+			}
+		}
 			
     	for (Iterator i1=allRooms.iterator();i1.hasNext();) {
     		Location room = (Location)i1.next();
@@ -481,7 +504,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		PreferenceLevel roomPreference = null;
     		for (Iterator k=clazz.getManagingDept().getPreferences(RoomPref.class).iterator();k.hasNext();) {
     			RoomPref x = (RoomPref)k.next();
-    			if (room.equals(x.getRoom())) roomPreference = x.getPrefLevel();
+    			if (room.equals(x.getRoom())) {
+    				roomPreference = x.getPrefLevel();
+    			}
     		}
     		
     		if (roomPreference!=null) {
@@ -637,7 +662,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     	
     	List<TimeLocation> timeLocations = new ArrayList<TimeLocation>();
-    	List<RoomLocation> roomLocations = new ArrayList<RoomLocation>();
+    	Map<Long, RoomLocation> roomLocations = new HashMap<Long, RoomLocation>();
     	
     	iProgress.message(msglevel("loadingClass", Progress.MSGLEVEL_DEBUG), MSG.debugLoadingClass(getClassLabel(clazz)));
     	
@@ -685,237 +710,287 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
         int nrRooms = (clazz.getNbrRooms()==null?1:clazz.getNbrRooms().intValue());
 
-        Set groupPrefs = clazz.effectivePreferences(RoomGroupPref.class);
-        Set roomPrefs = clazz.effectivePreferences(RoomPref.class);
-        Set bldgPrefs = clazz.effectivePreferences(BuildingPref.class);
-        Set featurePrefs = clazz.effectivePreferences(RoomFeaturePref.class);
-        
         if (nrRooms>0) {
-            boolean reqRoom = false;
-            boolean reqBldg = false;
-            boolean reqGroup = false;
-
- 			Set allRooms = clazz.getAvailableRooms();
- 			
-        	for (Iterator i1=allRooms.iterator();i1.hasNext();) {
-        		Location room = (Location)i1.next();
-        		iProgress.trace("checking room "+room.getLabel()+" ...");
-        		boolean add=true;
-
-        		PreferenceCombination pref = new SumPreferenceCombination();
-        		
-        		// --- group preference ----------
-        		PreferenceCombination groupPref = PreferenceCombination.getDefault();
-        		for (Iterator i2=groupPrefs.iterator();i2.hasNext();) {
-        			RoomGroupPref p = (RoomGroupPref)i2.next();
-        			if (p.getRoomGroup().getRooms().contains(room))
-        				groupPref.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
+        	int maxRoomIndex = (clazz.hasRoomIndexedPrefs() ? nrRooms - 1 : 0);
+        	for (int roomIndex = 0; roomIndex <= maxRoomIndex; roomIndex ++) {
+                Set groupPrefs = clazz.effectivePreferences(RoomGroupPref.class);
+                Set roomPrefs = clazz.effectivePreferences(RoomPref.class);
+                Set bldgPrefs = clazz.effectivePreferences(BuildingPref.class);
+                Set featurePrefs = clazz.effectivePreferences(RoomFeaturePref.class);
+                if (maxRoomIndex > 0) {
+        			for (Iterator i=groupPrefs.iterator();i.hasNext();) {
+            			RoomGroupPref p = (RoomGroupPref)i.next();
+            			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+        			}
+        			for (Iterator i=roomPrefs.iterator();i.hasNext();) {
+            			RoomPref p = (RoomPref)i.next();
+            			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+        			}
+        			for (Iterator i=bldgPrefs.iterator();i.hasNext();) {
+            			BuildingPref p = (BuildingPref)i.next();
+            			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+        			}
+        			for (Iterator i=featurePrefs.iterator();i.hasNext();) {
+            			RoomFeaturePref p = (RoomFeaturePref)i.next();
+            			if (p.getRoomIndex() != null && !p.getRoomIndex().equals(roomIndex)) i.remove();
+        			}
         		}
-        		
-        		if (groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited)) {
-                	iProgress.trace("group is prohibited :-(");
-                	if (iInteractiveMode || iAllowProhibitedRooms)
-                        pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-        		}
-        		
-                if (reqGroup && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired)) {
-                	iProgress.trace("group is not required :-(");
-                    if (iInteractiveMode || iAllowProhibitedRooms)
-                    	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-                }
-                
-                if (!reqGroup && (groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))) {
-                	iProgress.trace("group is required, removing all previous rooms (they are not required)");
-                	reqGroup=true; 
-                    if (iInteractiveMode || iAllowProhibitedRooms) {
-                        for (RoomLocation r: roomLocations) {
-                            r.setPreference(r.getPreference()+100);
-                        }
-                    } else roomLocations.clear();
-                }
+                boolean reqRoom = false;
+                boolean reqBldg = false;
+                boolean reqGroup = false;
 
-                if (!groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited) && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))
-                	pref.addPreferenceProlog(groupPref.getPreferenceProlog());
-        		
-                
-                // --- room preference ------------
-        		String roomPref = null;
-        		
-        		boolean strDiscRoom = false;
-        		PreferenceLevel roomPreference = getRoomPreference(clazz.getManagingDept().getUniqueId(),room.getUniqueId());
-        		if (roomPreference!=null) {
-        			roomPref = roomPreference.getPrefProlog();
+     			Set allRooms = clazz.getAvailableRooms();
+     			
+     			List<RoomLocation> roomLocationsThisIndex = new ArrayList<RoomLocation>();
+            	for (Iterator i1=allRooms.iterator();i1.hasNext();) {
+            		Location room = (Location)i1.next();
+            		iProgress.trace("checking room "+room.getLabel()+" ...");
+            		boolean add=true;
 
-        			if (!iInteractiveMode && PreferenceLevel.sProhibited.equals(roomPref)) {
-        				iProgress.trace("room is prohibited (on room level) :-(");
-        				add=false;
+            		PreferenceCombination pref = new SumPreferenceCombination();
+            		
+            		// --- group preference ----------
+            		PreferenceCombination groupPref = PreferenceCombination.getDefault();
+            		for (Iterator i2=groupPrefs.iterator();i2.hasNext();) {
+            			RoomGroupPref p = (RoomGroupPref)i2.next();
+            			if (p.getRoomGroup().getRooms().contains(room))
+            				groupPref.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
+            		}
+            		
+            		if (groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited)) {
+                    	iProgress.trace("group is prohibited :-(");
+                    	if (iInteractiveMode || iAllowProhibitedRooms)
+                            pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
+            		}
+            		
+                    if (reqGroup && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired)) {
+                    	iProgress.trace("group is not required :-(");
+                        if (iInteractiveMode || iAllowProhibitedRooms)
+                        	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
+                    }
+                    
+                    if (!reqGroup && (groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))) {
+                    	iProgress.trace("group is required, removing all previous rooms (they are not required)");
+                    	reqGroup=true; 
+                        if (iInteractiveMode || iAllowProhibitedRooms) {
+                            for (RoomLocation r: roomLocationsThisIndex) {
+                                r.setPreference(r.getPreference()+100);
+                            }
+                        } else roomLocationsThisIndex.clear();
+                    }
+
+                    if (!groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited) && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))
+                    	pref.addPreferenceProlog(groupPref.getPreferenceProlog());
+            		
+                    
+                    // --- room preference ------------
+            		String roomPref = null;
+            		
+            		boolean strDiscRoom = false;
+            		PreferenceLevel roomPreference = getRoomPreference(clazz.getManagingDept().getUniqueId(),room.getUniqueId());
+            		if (roomPreference!=null) {
+            			roomPref = roomPreference.getPrefProlog();
+
+            			if (!iInteractiveMode && PreferenceLevel.sProhibited.equals(roomPref)) {
+            				iProgress.trace("room is prohibited (on room level) :-(");
+            				add=false;
+            			}
+            			
+            			if (PreferenceLevel.sStronglyDiscouraged.equals(roomPref)) {
+            				roomPref = PreferenceLevel.sProhibited;
+            				strDiscRoom = true;
+            			}
         			}
         			
-        			if (PreferenceLevel.sStronglyDiscouraged.equals(roomPref)) {
-        				roomPref = PreferenceLevel.sProhibited;
-        				strDiscRoom = true;
-        			}
-    			}
-    			
-    			for (Iterator i2=roomPrefs.iterator();i2.hasNext();) {
-        			RoomPref p = (RoomPref)i2.next();
-        			if (room.equals(p.getRoom())) {
-        				strDiscRoom = false;
-        				roomPref = p.getPrefLevel().getPrefProlog();
-        				iProgress.trace("room preference is "+p.getPrefLevel().getPrefName());
-        				break;
-        			}
-        		}
-        		
-                if (roomPref!=null && roomPref.equals(PreferenceLevel.sProhibited)) {
-                	iProgress.trace("room is prohibited :-(");
-                	if (iInteractiveMode || (iAllowProhibitedRooms && !strDiscRoom))
-                        pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-                }
-                
-                if (reqRoom && (roomPref==null || !roomPref.equals(PreferenceLevel.sRequired))) {
-                	iProgress.trace("room is not required :-(");
-                    if (iInteractiveMode || iAllowProhibitedRooms)
-                    	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-                }
-                
-                if (!reqRoom && (roomPref!=null && roomPref.equals(PreferenceLevel.sRequired))) {
-                	iProgress.trace("room is required, removing all previous rooms (they are not required)");
-                    reqRoom=true; 
-                    if (iInteractiveMode || iAllowProhibitedRooms) {
-                        for (RoomLocation r: roomLocations) {
-                            r.setPreference(r.getPreference()+100);
-                        }
-                    } else roomLocations.clear();
-                }
-                
-                if (roomPref!=null && !roomPref.equals(PreferenceLevel.sProhibited) && !roomPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(roomPref);
-
-                // --- building preference ------------
-        		Building bldg = (room instanceof Room ? ((Room)room).getBuilding() : null);
-
-        		String bldgPref = null;
-        		for (Iterator i2=bldgPrefs.iterator();i2.hasNext();) {
-        			BuildingPref p = (BuildingPref)i2.next();
-        			if (bldg!=null && bldg.equals(p.getBuilding())) {
-        				bldgPref = p.getPrefLevel().getPrefProlog();
-        				iProgress.trace("building preference is "+p.getPrefLevel().getPrefName());
-        				break;
-        			}
-        		}
-        		
-                if (bldgPref!=null && bldgPref.equals(PreferenceLevel.sProhibited)) {
-                	iProgress.trace("building is prohibited :-(");
-                    if (iInteractiveMode || iAllowProhibitedRooms)
-                    	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-                }
-                
-                if (reqBldg && (bldgPref==null || !bldgPref.equals(PreferenceLevel.sRequired))) {
-                	iProgress.trace("building is not required :-(");
-                    if (iInteractiveMode || iAllowProhibitedRooms)
-                    	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-                }
-                
-                if (!reqBldg && (bldgPref!=null && bldgPref.equals(PreferenceLevel.sRequired))) {
-                	iProgress.trace("building is required, removing all previous rooms (they are not required)");
-                    reqBldg = true;
-                    if (iInteractiveMode || iAllowProhibitedRooms) {
-                        for (RoomLocation r: roomLocations) {
-                            r.setPreference(r.getPreference()+100);
-                        }
-                    } else roomLocations.clear();
-                }
-
-                if (bldgPref!=null && !bldgPref.equals(PreferenceLevel.sProhibited) && !bldgPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(bldgPref);
-                
-                // --- room features preference --------  
-                boolean acceptableFeatures = true;
-                PreferenceCombination featurePref = new MinMaxPreferenceCombination();
-                for (Iterator i2=featurePrefs.iterator();i2.hasNext();) {
-                	RoomFeaturePref roomFeaturePref = (RoomFeaturePref)i2.next();
-                	RoomFeature feature = roomFeaturePref.getRoomFeature();
-                	String p = roomFeaturePref.getPrefLevel().getPrefProlog();
-                	
-                	boolean hasFeature = feature.getRooms().contains(room);
-                    if (p.equals(PreferenceLevel.sProhibited) && hasFeature) {
-                    	iProgress.trace("present feature "+feature.getLabel()+" is prohibited :-(");
-                        acceptableFeatures=false;
+        			for (Iterator i2=roomPrefs.iterator();i2.hasNext();) {
+            			RoomPref p = (RoomPref)i2.next();
+            			if (room.equals(p.getRoom())) {
+            				strDiscRoom = false;
+            				roomPref = p.getPrefLevel().getPrefProlog();
+            				iProgress.trace("room preference is "+p.getPrefLevel().getPrefName());
+            				break;
+            			}
+            		}
+            		
+                    if (roomPref!=null && roomPref.equals(PreferenceLevel.sProhibited)) {
+                    	iProgress.trace("room is prohibited :-(");
+                    	if (iInteractiveMode || (iAllowProhibitedRooms && !strDiscRoom))
+                            pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
                     }
-                    if (p.equals(PreferenceLevel.sRequired) && !hasFeature) {
-                    	iProgress.trace("not present feature "+feature.getLabel()+" is required :-(");
-                        acceptableFeatures=false;
+                    
+                    if (reqRoom && (roomPref==null || !roomPref.equals(PreferenceLevel.sRequired))) {
+                    	iProgress.trace("room is not required :-(");
+                        if (iInteractiveMode || iAllowProhibitedRooms)
+                        	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
                     }
-                    if (p!=null && hasFeature && !p.equals(PreferenceLevel.sProhibited) && !p.equals(PreferenceLevel.sRequired)) 
-                    	featurePref.addPreferenceProlog(p);
+                    
+                    if (!reqRoom && (roomPref!=null && roomPref.equals(PreferenceLevel.sRequired))) {
+                    	iProgress.trace("room is required, removing all previous rooms (they are not required)");
+                        reqRoom=true; 
+                        if (iInteractiveMode || iAllowProhibitedRooms) {
+                            for (RoomLocation r: roomLocationsThisIndex) {
+                                r.setPreference(r.getPreference()+100);
+                            }
+                        } else roomLocationsThisIndex.clear();
+                    }
+                    
+                    if (roomPref!=null && !roomPref.equals(PreferenceLevel.sProhibited) && !roomPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(roomPref);
+
+                    // --- building preference ------------
+            		Building bldg = (room instanceof Room ? ((Room)room).getBuilding() : null);
+
+            		String bldgPref = null;
+            		for (Iterator i2=bldgPrefs.iterator();i2.hasNext();) {
+            			BuildingPref p = (BuildingPref)i2.next();
+            			if (bldg!=null && bldg.equals(p.getBuilding())) {
+            				bldgPref = p.getPrefLevel().getPrefProlog();
+            				iProgress.trace("building preference is "+p.getPrefLevel().getPrefName());
+            				break;
+            			}
+            		}
+            		
+                    if (bldgPref!=null && bldgPref.equals(PreferenceLevel.sProhibited)) {
+                    	iProgress.trace("building is prohibited :-(");
+                        if (iInteractiveMode || iAllowProhibitedRooms)
+                        	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
+                    }
+                    
+                    if (reqBldg && (bldgPref==null || !bldgPref.equals(PreferenceLevel.sRequired))) {
+                    	iProgress.trace("building is not required :-(");
+                        if (iInteractiveMode || iAllowProhibitedRooms)
+                        	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
+                    }
+                    
+                    if (!reqBldg && (bldgPref!=null && bldgPref.equals(PreferenceLevel.sRequired))) {
+                    	iProgress.trace("building is required, removing all previous rooms (they are not required)");
+                        reqBldg = true;
+                        if (iInteractiveMode || iAllowProhibitedRooms) {
+                            for (RoomLocation r: roomLocationsThisIndex) {
+                                r.setPreference(r.getPreference()+100);
+                            }
+                        } else roomLocationsThisIndex.clear();
+                    }
+
+                    if (bldgPref!=null && !bldgPref.equals(PreferenceLevel.sProhibited) && !bldgPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(bldgPref);
+                    
+                    // --- room features preference --------  
+                    boolean acceptableFeatures = true;
+                    PreferenceCombination featurePref = new MinMaxPreferenceCombination();
+                    for (Iterator i2=featurePrefs.iterator();i2.hasNext();) {
+                    	RoomFeaturePref roomFeaturePref = (RoomFeaturePref)i2.next();
+                    	RoomFeature feature = roomFeaturePref.getRoomFeature();
+                    	String p = roomFeaturePref.getPrefLevel().getPrefProlog();
+                    	
+                    	boolean hasFeature = feature.getRooms().contains(room);
+                        if (p.equals(PreferenceLevel.sProhibited) && hasFeature) {
+                        	iProgress.trace("present feature "+feature.getLabel()+" is prohibited :-(");
+                            acceptableFeatures=false;
+                        }
+                        if (p.equals(PreferenceLevel.sRequired) && !hasFeature) {
+                        	iProgress.trace("not present feature "+feature.getLabel()+" is required :-(");
+                            acceptableFeatures=false;
+                        }
+                        if (p!=null && hasFeature && !p.equals(PreferenceLevel.sProhibited) && !p.equals(PreferenceLevel.sRequired)) 
+                        	featurePref.addPreferenceProlog(p);
+                    }
+                    pref.addPreferenceInt(featurePref.getPreferenceInt());
+                    
+                    if (!acceptableFeatures) {
+                        if (iInteractiveMode || iAllowProhibitedRooms)
+                        	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+                        else
+                            add=false;
+                    }
+                    
+                    
+            		// --- room size ----------------- 
+                    if (clazz.getNbrRooms() > 1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance())) {
+                    	// no room check for split attendance
+                    } else {
+                        if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
+                        	iProgress.trace("too small :-(");
+                        	if (iInteractiveMode)
+                        		pref.addPreferenceInt(1000);
+                        	else add=false;
+                        }
+                        else if (room.getCapacity().intValue()<discouragedCapacity) {
+                        	iProgress.trace("room of strongly discouraged size");
+                            pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
+                        }
+                        else if (room.getCapacity().intValue()<roomCapacity) {
+                        	iProgress.trace("room of discouraged size");
+                        	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
+                        }
+                    }
+                    
+                    int prefInt = pref.getPreferenceInt();
+                    iProgress.trace("room preference is "+prefInt);
+                    
+                    if (!add) continue;
+                    
+                    roomLocationsThisIndex.add(
+                    		new RoomLocation(
+                    				room.getUniqueId(),
+                    				room.getLabel(),
+                    				(bldg==null?null:bldg.getUniqueId()),
+                    				prefInt,
+                    				room.getCapacity().intValue(),
+                    				room.getCoordinateX(),
+                    				room.getCoordinateY(),
+                    				(room.isIgnoreTooFar()==null?false:room.isIgnoreTooFar().booleanValue()),
+                    				getRoomConstraint(clazz.getManagingDept(),room,hibSession)));
                 }
-                pref.addPreferenceInt(featurePref.getPreferenceInt());
-                
-                if (!acceptableFeatures) {
-                    if (iInteractiveMode || iAllowProhibitedRooms)
-                    	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                    else
-                        add=false;
-                }
-                
-                
-        		// --- room size ----------------- 
-                if (clazz.getNbrRooms() > 1 && Boolean.TRUE.equals(clazz.isRoomsSplitAttendance())) {
-                	// no room check for split attendance
+            	
+                if (roomIndex == 0) {
+                	for (RoomLocation r: roomLocationsThisIndex)
+                		roomLocations.put(r.getId(), r);
                 } else {
-                    if (room.getCapacity().intValue()<stronglyDiscouragedCapacity) {
-                    	iProgress.trace("too small :-(");
-                    	if (iInteractiveMode)
-                    		pref.addPreferenceInt(1000);
-                    	else add=false;
-                    }
-                    else if (room.getCapacity().intValue()<discouragedCapacity) {
-                    	iProgress.trace("room of strongly discouraged size");
-                        pref.addPreferenceProlog(PreferenceLevel.sStronglyDiscouraged);
-                    }
-                    else if (room.getCapacity().intValue()<roomCapacity) {
-                    	iProgress.trace("room of discouraged size");
-                    	pref.addPreferenceProlog(PreferenceLevel.sDiscouraged);
-                    }
+                	Set<Long> untouched = new HashSet<Long>(roomLocations.keySet());
+                	for (RoomLocation r: roomLocationsThisIndex) {
+                		RoomLocation original = roomLocations.get(r.getId());
+                		if (original != null) {
+                			// it is there but may have a different preference
+                			if (r.getPreference() != original.getPreference())
+                				original.setPreference(roomIndex, r.getPreference());
+                			untouched.remove(r.getId());
+                		} else {
+                			// not there > prohibited for earlier indexes
+                			roomLocations.put(r.getId(), r);
+                			for (int idx = 0; idx < roomIndex; idx ++)
+                				r.setPreference(idx, Constants.sPreferenceLevelProhibited);
+                		}
+                	}
+                	// untouched >> prohibited for current index
+                	for (Long id: untouched)
+                		roomLocations.get(id).setPreference(roomIndex, Constants.sPreferenceLevelProhibited);
                 }
-                
-                int prefInt = pref.getPreferenceInt();
-                iProgress.trace("room preference is "+prefInt);
-                
-                if (!add) continue;
-                
-                roomLocations.add(
-                		new RoomLocation(
-                				room.getUniqueId(),
-                				room.getLabel(),
-                				(bldg==null?null:bldg.getUniqueId()),
-                				prefInt,
-                				room.getCapacity().intValue(),
-                				room.getCoordinateX(),
-                				room.getCoordinateY(),
-                				(room.isIgnoreTooFar()==null?false:room.isIgnoreTooFar().booleanValue()),
-                				getRoomConstraint(clazz.getManagingDept(),room,hibSession)));
-            }
+        	}
         	
-            if (roomLocations.isEmpty() || roomLocations.size()<(clazz.getNbrRooms()==null?1:clazz.getNbrRooms().intValue())) {
+            if (roomLocations.isEmpty() || roomLocations.size() < nrRooms) {
             	iProgress.message(msglevel("noRoom", Progress.MSGLEVEL_WARN), clazz.getNbrRooms().intValue() > 1 ? MSG.warnNoRooms(getClassLabel(clazz)) : MSG.warnNoRoom(getClassLabel(clazz)));
             	return null;
             }
         } else {
-            if (!groupPrefs.isEmpty() || !roomPrefs.isEmpty() || !bldgPrefs.isEmpty() || !featurePrefs.isEmpty()) 
+            Set groupPrefs = clazz.effectivePreferences(RoomGroupPref.class);
+            Set roomPrefs = clazz.effectivePreferences(RoomPref.class);
+            Set bldgPrefs = clazz.effectivePreferences(BuildingPref.class);
+            Set featurePrefs = clazz.effectivePreferences(RoomFeaturePref.class);
+        	if (!groupPrefs.isEmpty() || !roomPrefs.isEmpty() || !bldgPrefs.isEmpty() || !featurePrefs.isEmpty()) 
                 iProgress.message(msglevel("zeroRoomsButPref", Progress.MSGLEVEL_WARN), MSG.warnZeroRoomsButPref(getClassLabel(clazz)));
         }
+        	
         
         if (assignment != null && assignment.getTimeLocation() != null) {
     		timeLocations.clear();
@@ -1179,7 +1254,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			clazz.getSchedulingSubpart().getUniqueId(),
     			className,
     			timeLocations,
-    			roomLocations,
+    			roomLocations.values(),
     			nrRooms,
     			null,
     			minClassLimit, maxClassLimit,
@@ -1221,9 +1296,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iLectures.put(clazz.getUniqueId(),lecture);
         getModel().addVariable(lecture);
 
-        for (RoomLocation r: roomLocations) {
+        for (RoomLocation r: roomLocations.values())
             r.getRoomConstraint().addVariable(lecture);
-        }
         
         return lecture;
     }
@@ -1364,6 +1438,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    	}
 	    	if (lecture.getNrRooms() > 1 && lecture.isSplitAttendance() && initialPlacement.getRoomSize() < lecture.minRoomUse())
 	    		reason += MSG.warnReasonSelectedRoomsTooSmall(initialPlacement.getRoomSize(), lecture.minRoomUse());
+	    	if (initialPlacement.isMultiRoom() && initialPlacement.isRoomProhibited()) {
+	            int roomIndex = 0;
+	            for (RoomLocation r : initialPlacement.getRoomLocations()) {
+	                if (Constants.sPreferenceProhibited.equals(Constants.preferenceLevel2preference(r.getPreference(roomIndex))))
+	                	reason += MSG.warnReasonInvalidRoomCombinationProhibitedRoom(r.getName(), roomIndex + 1);
+	                roomIndex++;
+	            }
+			}
+	        if (initialPlacement.isMultiRoom()) {
+	            for (RoomLocation r1: initialPlacement.getRoomLocations())
+	                for (RoomLocation r2: initialPlacement.getRoomLocations())
+	                    if (r2.getRoomConstraint() != null && r2.getRoomConstraint().getParentRoom() != null && r2.getRoomConstraint().getParentRoom().equals(r1.getRoomConstraint()))
+	                    	reason += MSG.warnReasonInvalidRoomCombinationPartition(r2.getName(), r1.getName());   
+	        }
 	    	Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(getAssignment(), initialPlacement);
             if (!conflictConstraints.isEmpty()) {
                 for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {

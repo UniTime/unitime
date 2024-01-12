@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -40,6 +41,8 @@ import org.unitime.timetable.model.RoomPref;
 public abstract class BaseRoomPref extends Preference implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private Integer iRoomIndex;
+
 	private Location iRoom;
 
 	public BaseRoomPref() {
@@ -49,6 +52,10 @@ public abstract class BaseRoomPref extends Preference implements Serializable {
 		setUniqueId(uniqueId);
 	}
 
+
+	@Column(name = "room_idx", nullable = true)
+	public Integer getRoomIndex() { return iRoomIndex; }
+	public void setRoomIndex(Integer roomIndex) { iRoomIndex = roomIndex; }
 
 	@ManyToOne(optional = false, fetch = FetchType.EAGER)
 	@JoinColumn(name = "room_id", nullable = false)
@@ -80,6 +87,7 @@ public abstract class BaseRoomPref extends Preference implements Serializable {
 			"\n	Owner: " + getOwner() +
 			"\n	PrefLevel: " + getPrefLevel() +
 			"\n	Room: " + getRoom() +
+			"\n	RoomIndex: " + getRoomIndex() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

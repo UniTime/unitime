@@ -70,6 +70,11 @@
                 lazy="false"
                 fetch="join"/>
 
+            <property
+            	name="roomIndex"
+            	column="room_idx"
+            	type="java.lang.Integer"
+            	not-null="false"/>
         </union-subclass>
 
         <union-subclass
@@ -87,6 +92,11 @@
                 fetch="join"
                 foreign-key="fk_room_feat_pref_room_feat"/>
 
+            <property
+            	name="roomIndex"
+            	column="room_idx"
+            	type="java.lang.Integer"
+            	not-null="false"/>
         </union-subclass>
 
         <union-subclass
@@ -110,6 +120,11 @@
                 type="java.lang.Integer"
                 not-null="false"/>
 
+            <property
+            	name="roomIndex"
+            	column="room_idx"
+            	type="java.lang.Integer"
+            	not-null="false"/>
         </union-subclass>
 
         <union-subclass
@@ -209,6 +224,11 @@
                 lazy="false"
                 fetch="join"/>
 
+            <property
+            	name="roomIndex"
+            	column="room_idx"
+            	type="java.lang.Integer"
+            	not-null="false"/>
         </union-subclass>
 
         <union-subclass

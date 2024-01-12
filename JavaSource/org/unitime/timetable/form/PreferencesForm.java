@@ -82,6 +82,11 @@ public class PreferencesForm implements UniTimeForm {
     
     private boolean hasNotAvailable;
     
+    protected List<String> roomPrefIndexes;
+    protected List<String> roomGroupIndexes;
+    protected List<String> roomFeaturePrefIndexes;
+    protected List<String> bldgPrefIndexes;
+    
     /**
      * Checks that there are no duplicates and that all prior prefs have a value
      * @param lst List<String> of values
@@ -672,9 +677,10 @@ public class PreferencesForm implements UniTimeForm {
      * @param roomPref Room Id
      * @param level Preference Level
      */
-    public void addToRoomPrefs(String roomPref, String level) {
+    public void addToRoomPrefs(String roomPref, String level, Integer index) {
         this.roomPrefs.add(roomPref);
         this.roomPrefLevels.add(level);
+        this.roomPrefIndexes.add(index == null ? "-" : index.toString());
     }
 
     /**
@@ -682,9 +688,10 @@ public class PreferencesForm implements UniTimeForm {
      * @param roomFeatPref Room Feature Id
      * @param level Preference Level
      */
-    public void addToRoomFeatPrefs(String roomFeatPref, String level) {
+    public void addToRoomFeatPrefs(String roomFeatPref, String level, Integer index) {
         this.roomFeaturePrefs.add(roomFeatPref);
         this.roomFeaturePrefLevels.add(level);
+        this.roomFeaturePrefIndexes.add(index == null ? "-" : index.toString());
     }
     
     /**
@@ -692,9 +699,10 @@ public class PreferencesForm implements UniTimeForm {
      * @param roomGroup Room Feature Id
      * @param level Preference Level
      */
-    public void addToRoomGroups(String roomGroup, String level) {
+    public void addToRoomGroups(String roomGroup, String level, Integer index) {
     	this.roomGroups.add(roomGroup);
     	this.roomGroupLevels.add(level);
+    	this.roomGroupIndexes.add(index == null ? "-" : index.toString());
     }
 
     /**
@@ -702,9 +710,10 @@ public class PreferencesForm implements UniTimeForm {
      * @param bldgPref Building Id
      * @param level Preference Level
      */
-    public void addToBldgPrefs(String bldgPref, String level) {
+    public void addToBldgPrefs(String bldgPref, String level, Integer index) {
         this.bldgPrefs.add(bldgPref);
         this.bldgPrefLevels.add(level);
+        this.bldgPrefIndexes.add(index == null ? "-" : index.toString());
     }
     
     /**
@@ -781,10 +790,10 @@ public class PreferencesForm implements UniTimeForm {
 
     public void addBlankPrefRows() {
         for (int i=0; i<Constants.PREF_ROWS_ADDED; i++) {
-	        addToBldgPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
-	        addToRoomPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
-	        addToRoomFeatPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
-	        addToRoomGroups(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
+	        addToBldgPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE, null);
+	        addToRoomPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE, null);
+	        addToRoomFeatPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE, null);
+	        addToRoomGroups(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE, null);
 	        addToDistPrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToCoursePrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
 	        addToAttributePrefs(Preference.BLANK_PREF_VALUE, Preference.BLANK_PREF_VALUE);
@@ -814,6 +823,10 @@ public class PreferencesForm implements UniTimeForm {
         this.instructorPrefLevels.clear();
         this.attributePrefs.clear();
         this.attributePrefLevels.clear();
+        this.roomPrefIndexes.clear();
+        this.roomFeaturePrefIndexes.clear();
+        this.roomGroupIndexes.clear();
+        this.bldgPrefIndexes.clear();
     }
     
     public String getNextId() { return nextId; }
@@ -833,7 +846,7 @@ public class PreferencesForm implements UniTimeForm {
 	@Override
 	public void validate(UniTimeAction action) {
         List<String> lst = getRoomGroups();
-        if (!checkPrefs(lst)) {
+        if (!checkPrefs(lst, getRoomGroupIndexes())) {
         	action.addFieldError("roomGroups", MSG.errorInvalidRoomGroup());
         }
 
@@ -842,7 +855,7 @@ public class PreferencesForm implements UniTimeForm {
         }
         
         lst = getBldgPrefs();
-        if (!checkPrefs(lst)) {
+        if (!checkPrefs(lst, getBldgPrefLevels())) {
             action.addFieldError("bldgPrefs", MSG.errorInvalidBuildingPreference());
         }
 
@@ -851,7 +864,7 @@ public class PreferencesForm implements UniTimeForm {
         }
             
         lst = getRoomPrefs();
-        if(!checkPrefs(lst)) {
+        if(!checkPrefs(lst, getRoomPrefIndexes())) {
             action.addFieldError("roomPrefs", MSG.errorInvalidRoomPreference());
         }
 
@@ -860,7 +873,7 @@ public class PreferencesForm implements UniTimeForm {
         }
         
         lst = getRoomFeaturePrefs();
-        if (!checkPrefs(lst)) {
+        if (!checkPrefs(lst, getRoomFeaturePrefIndexes())) {
             action.addFieldError("roomFeaturePrefs", MSG.errorInvalidRoomFeaturePreference());
         }
 
@@ -955,6 +968,10 @@ public class PreferencesForm implements UniTimeForm {
         attributePrefLevels = new ArrayList<String>();
         instructorPrefs = new ArrayList<String>();
         instructorPrefLevels = new ArrayList<String>();
+        roomPrefIndexes = new ArrayList<String>();
+        roomFeaturePrefIndexes = new ArrayList<String>();
+        roomGroupIndexes = new ArrayList<String>();
+        bldgPrefIndexes = new ArrayList<String>();
         nextId = previousId = null;
         allowHardPrefs = true;
         hasNotAvailable = false;
@@ -969,4 +986,24 @@ public class PreferencesForm implements UniTimeForm {
 		}
 		return false;
 	}
+	
+    public List<String> getRoomPrefIndexes() { return roomPrefIndexes; }
+    public String getRoomPrefIndexes(int key) { return roomPrefIndexes.get(key).toString(); }
+    public void setRoomPrefIndexes(int key, String value) { this.roomPrefIndexes.set(key, value); }
+    public void setRoomPrefIndexes(List<String> roomPrefIndexes) { this.roomPrefIndexes = roomPrefIndexes; }
+    
+    public List<String> getRoomGroupIndexes() { return roomGroupIndexes; }
+    public String getRoomGroupIndexes(int key) { return roomGroupIndexes.get(key).toString(); }
+    public void setRoomGroupIndexes(int key, String value) { this.roomGroupIndexes.set(key, value); }
+    public void setRoomGroupIndexes(List<String> roomGroupIndexes) { this.roomGroupIndexes = roomGroupIndexes; }
+    
+    public List<String> getRoomFeaturePrefIndexes() { return roomFeaturePrefIndexes; }
+    public String getRoomFeaturePrefIndexes(int key) { return roomFeaturePrefIndexes.get(key).toString(); }
+    public void setRoomFeaturePrefIndexes(int key, String value) { this.roomFeaturePrefIndexes.set(key, value); }
+    public void setRoomFeaturePrefIndexes(List<String> roomFeaturePrefIndexes) { this.roomFeaturePrefIndexes = roomFeaturePrefIndexes; }
+    
+    public List<String> getBldgPrefIndexes() { return bldgPrefIndexes; }
+    public String getBldgPrefIndexes(int key) { return bldgPrefIndexes.get(key).toString(); }
+    public void setBldgPrefIndexes(int key, String value) { this.bldgPrefIndexes.set(key, value); }
+    public void setBldgPrefIndexes(List<String> bldgPrefIndexes) { this.bldgPrefIndexes = bldgPrefIndexes; }
 }

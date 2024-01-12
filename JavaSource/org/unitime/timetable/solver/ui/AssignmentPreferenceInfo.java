@@ -122,11 +122,13 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		else
 			setTimePreference(placement.getTimeLocation().getPreference());
 		if (placement.isMultiRoom()) {
+			int roomIndex = 0;
 			for (RoomLocation r: placement.getRoomLocations()) {
-				if (lecture.nrRoomLocations()==lecture.getNrRooms() && r.getPreference()==0)
+				if (lecture.nrRoomLocations()==lecture.getNrRooms() && r.getPreference(roomIndex)==0)
 					setRoomPreference(r.getId(),PreferenceLevel.sIntLevelRequired);
 				else
-					setRoomPreference(r.getId(),r.getPreference());
+					setRoomPreference(r.getId(),r.getPreference(roomIndex));
+				roomIndex++;
 			}
 		} else {
 			if (lecture.nrRoomLocations()==1 && placement.getRoomLocation().getPreference()==0)

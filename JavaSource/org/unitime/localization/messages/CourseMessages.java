@@ -5856,4 +5856,19 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("<b>Alternative</b> -- Class must fit each room.")
 	String descriptionClassMultipleRoomsAlternativeAttendance();
+	
+	@DefaultMessage("All Rooms")
+	String itemAllRooms();
+	
+	@DefaultMessage("{0}. Room")
+	String itemOnlyRoom(int roomNumber);
+	
+	@DefaultMessage("No rooms are available.")
+	String warnNoRoomsAreAvaliable();
+	
+	@DefaultMessage("Not enough rooms are available:")
+	String warnNotEnoughtRoomsAreAvaliable();
+	
+	@DefaultMessage("... {0} more")
+	String moreAvailableRooms(int more);
 }

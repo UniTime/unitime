@@ -1959,5 +1959,18 @@ public class Class_ extends BaseClass_ {
 			return getFundingDept();
 		}
 	}
+	
+	public boolean hasRoomIndexedPrefs() {
+		if (getNbrRooms() <= 1) return false;
+		for (RoomPref p: effectivePreferences(RoomPref.class))
+			if (p.getRoomIndex() != null && p.getRoomIndex() < getNbrRooms()) return true;
+		for (BuildingPref p: effectivePreferences(BuildingPref.class))
+			if (p.getRoomIndex() != null && p.getRoomIndex() < getNbrRooms()) return true;
+		for (RoomFeaturePref p: effectivePreferences(RoomFeaturePref.class))
+			if (p.getRoomIndex() != null && p.getRoomIndex() < getNbrRooms()) return true;
+		for (RoomGroupPref p: effectivePreferences(RoomGroupPref.class))
+			if (p.getRoomIndex() != null && p.getRoomIndex() < getNbrRooms()) return true;
+		return false;
+	}
 
 }

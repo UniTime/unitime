@@ -181,6 +181,17 @@
 						headerKey="-" headerValue="-"
 						/>
 				</s:else>
+				<s:if test="#request.roomIndexes != null">
+					&nbsp;&nbsp;
+					<s:if test="form.isRoomGroupDisabled(#stat.index)">
+						<s:hidden name="form.roomGroupIndexes[%{#stat.index}]"/>
+					</s:if>
+					<s:select
+						name="form.roomGroupIndexes[%{#stat.index}]"
+						list="#request.roomIndexes" listKey="value" listValue="label" listCssStyle="dropdownOptionStyle"
+						disabled="form.isRoomGroupDisabled(#stat.index)"/>
+				</s:if>
+				<s:else><s:hidden name="form.roomGroupIndexes[%{#stat.index}]"/></s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomGroupPreference()}'
 					title='%{#msg.titleRemoveRoomGroupPreference()}'
@@ -240,7 +251,18 @@
 						list="#request.prefLevelsSoftList" listKey="uniqueId" listValue="prefName" listCssStyle="dropdownOptionStyle"
 						headerKey="-" headerValue="-"
 						/>
-				</s:else>				
+				</s:else>
+				<s:if test="#request.roomIndexes != null">
+					&nbsp;&nbsp;
+					<s:if test="form.isRoomDisabled(#stat.index)">
+						<s:hidden name="form.roomPrefIndexes[%{#stat.index}]"/>
+					</s:if>
+					<s:select
+						name="form.roomPrefIndexes[%{#stat.index}]"
+						list="#request.roomIndexes" listKey="value" listValue="label" listCssStyle="dropdownOptionStyle"
+						disabled="form.isRoomDisabled(#stat.index)"/>
+				</s:if>
+				<s:else><s:hidden name="form.roomPrefIndexes[%{#stat.index}]"/></s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomPreference()}'
 					title='%{#msg.titleRemoveRoomPreference()}'
@@ -290,6 +312,17 @@
 						headerKey="-" headerValue="-"
 						/>
 				</s:else>
+				<s:if test="#request.roomIndexes != null">
+					&nbsp;&nbsp;
+					<s:if test="form.isBuildingDisabled(#stat.index)">
+						<s:hidden name="form.bldgPrefIndexes[%{#stat.index}]"/>
+					</s:if>
+					<s:select
+						name="form.bldgPrefIndexes[%{#stat.index}]"
+						list="#request.roomIndexes" listKey="value" listValue="label" listCssStyle="dropdownOptionStyle"
+						disabled="form.isBuildingDisabled(#stat.index)"/>
+				</s:if>
+				<s:else><s:hidden name="form.bldgPrefIndexes[%{#stat.index}]"/></s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveBuildingPreference()}'
 					title='%{#msg.titleRemoveBuildingPreference()}'
@@ -339,6 +372,17 @@
 						headerKey="-" headerValue="-"
 						/>
 				</s:else>				
+				<s:if test="#request.roomIndexes != null">
+					&nbsp;&nbsp;
+					<s:if test="form.isRoomFeatureDisabled(#stat.index)">
+						<s:hidden name="form.roomFeaturePrefIndexes[%{#stat.index}]"/>
+					</s:if>
+					<s:select
+						name="form.roomFeaturePrefIndexes[%{#stat.index}]"
+						list="#request.roomIndexes" listKey="value" listValue="label" listCssStyle="dropdownOptionStyle"
+						disabled="form.isRoomFeatureDisabled(#stat.index)"/>
+				</s:if>
+				<s:else><s:hidden name="form.bldgPrefIndexes[%{#stat.index}]"/></s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomFeaturePreference()}'
 					title='%{#msg.titleRemoveRoomFeaturePreference()}'

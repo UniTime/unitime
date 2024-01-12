@@ -167,13 +167,15 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 		ClassAssignmentDetails details = ClassAssignmentDetailsBackend.createClassAssignmentDetails(context, solver, lecture, oldPlacement, false, false);
 		if (newPlacement != null) {
 			if (newPlacement.isMultiRoom()) {
+				int roomIndex = 0;
 				for (RoomLocation room: newPlacement.getRoomLocations()) {
 					details.setAssignedRoom(new RoomInfo(
 							room.getName(),
 							room.getId(),
 							room.getRoomSize(),
-							(room.getPreference() == 0 && lecture.nrRoomLocations() == lecture.getNrRooms() ? PreferenceLevel.sIntLevelRequired : room.getPreference())
+							(room.getPreference(roomIndex) == 0 && lecture.nrRoomLocations() == lecture.getNrRooms() ? PreferenceLevel.sIntLevelRequired : room.getPreference(roomIndex))
 							));
+					roomIndex++;
 				}
 			} else {
 				RoomLocation room = newPlacement.getRoomLocation();
