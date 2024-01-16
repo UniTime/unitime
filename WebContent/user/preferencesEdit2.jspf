@@ -382,7 +382,7 @@
 						list="#request.roomIndexes" listKey="value" listValue="label" listCssStyle="dropdownOptionStyle"
 						disabled="form.isRoomFeatureDisabled(#stat.index)"/>
 				</s:if>
-				<s:else><s:hidden name="form.bldgPrefIndexes[%{#stat.index}]"/></s:else>
+				<s:else><s:hidden name="form.roomFeaturePrefIndexes[%{#stat.index}]"/></s:else>
 				&nbsp;
 				<s:submit name='op' value='%{#msg.actionRemoveRoomFeaturePreference()}'
 					title='%{#msg.titleRemoveRoomFeaturePreference()}'
