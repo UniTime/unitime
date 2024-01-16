@@ -111,6 +111,11 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
     public String execute() throws Exception {
     	if (form == null)
     		form = new InstructionalOfferingModifyForm();
+    	else {
+    		// ensure that all split attendance checks are present (disabled ones are null)
+    		while (form.getSplitAttendance().size() < form.getClassIds().size())
+    			form.getSplitAttendance().add(null);
+    	}
         
         // Get operation
     	if (op == null) op = form.getOp();
