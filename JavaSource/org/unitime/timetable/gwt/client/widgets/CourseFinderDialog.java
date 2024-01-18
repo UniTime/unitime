@@ -356,8 +356,9 @@ public class CourseFinderDialog extends UniTimeDialogBox implements CourseFinder
 				tab.onPreviewNativeEvent(event);
 		}
 		if (event.getTypeInt() == Event.ONKEYDOWN && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER && getSelectedTab() != null && getSelectedTab().isCanSubmit(event)) {
+			event.getNativeEvent().stopPropagation();
+			event.getNativeEvent().preventDefault();
 			iFilterSelect.click();
-			event.cancel();
 		}
     }
 
