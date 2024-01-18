@@ -197,6 +197,7 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	}
 	
 	protected void submit() {
+		if (!isShowing()) return;
 		if (iTextBox != null) {
 			if (iTextBox.getText().equalsIgnoreCase(iAnswer)) {
 				hide();
