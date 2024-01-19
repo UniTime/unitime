@@ -20,8 +20,8 @@
 package org.unitime.timetable.filter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -117,53 +117,36 @@ public class BusySessions {
 		}
 	}
 	
-	private static class Counter {
-		private int iValue;
-		public int get() { return iValue; }
-		public void increment() { iValue++; }
-		public void decrement() { iValue--; }
-		@Override
-		public String toString() { return String.valueOf(iValue); }
-	}
-	
 	@Service("unitimeBusySessions")
 	public static class Tracker {
-		private Map<String, Counter> iCounters = new HashMap<String, Counter>();
+		private ConcurrentMap<String, Integer> iCounters = new ConcurrentHashMap<String, Integer>();
 		
 		public void create(String id) {
+			iCounters.put(id, 0);
 		}
 		
 		public void destroy(String id) {
-			synchronized (iCounters) {
-				iCounters.remove(id);
-			}
+			iCounters.remove(id);
 		}
 		
 		public String increment(String id) {
-			synchronized (iCounters) {
-				Counter counter = iCounters.get(id);
-				if (counter == null) {
-					counter = new Counter();
-					iCounters.put(id, counter);
-				}
-				counter.increment();
-			}
+			iCounters.merge(id, 1, (t, u) -> t + u);
 			return id;
 		}
 		
 		public void decrement(String id) {
-			synchronized (iCounters) {
-				Counter counter = iCounters.get(id);
-				if (counter != null) counter.decrement();
-			}
+			iCounters.merge(id, -1, (t, u) -> Math.max(0, t + u));
 		}
 		
 		public boolean isWorking(String id) {
 			if (id == null) return false;
-			synchronized (iCounters) {
-				Counter counter = iCounters.get(id);
-				return counter != null && counter.get() > 1;
-			}
+			Integer counter = iCounters.get(id);
+			return counter != null && counter > 1;
+		}
+		
+		public boolean isActive(String id) {
+			if (id == null) return false;
+			return iCounters.containsKey(id);
 		}
 	}
 

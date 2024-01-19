@@ -72,6 +72,25 @@
 			</description>
 		</item>
 	</category>
+	<category>	
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Assistant / Course Requests: Access Control</name>
+			<description>
+				<line>Added an ability to limit how many users can use the page (Scheduling Assistant and/or Course Requests) at the same time.</line>
+				<line>Automatically leave the page after a given time of inactivity (showing a warning first).</line>
+				<line>Parameters for Scheduling Assistant:
+					<line>unitime.accessControl.sectioning.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
+					<line>unitime.accessControl.sectioning.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
+				</line>
+				<line>Parameters for Course Requests:
+					<line>unitime.accessControl.requests.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
+					<line>unitime.accessControl.requests.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
+				</line>
+				<line>When the Inactive Warning shows, the user has a minute to dismiss the warning before the page is exited automatically.</line>
+			</description>
+		</item>
+	</category>	
 	<category>
 		<title>Event Management</title>
 		<item>
@@ -83,7 +102,8 @@
 				<line>Event Statusess and Add/Edit Room pages can now edit event emails of an individual room.</line>
 			</description>
 		</item>
-	</category>	<category>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Academic Session Export</name>
@@ -91,7 +111,7 @@
 				<line>Fixed the occasional "Unable to export: No row with the given identifier exists" error on records that do exists.</line>
 			</description>
 		</item>
-	</category>	
+	</category>
 </release>
 <release>
 	<version>4.8.98</version>

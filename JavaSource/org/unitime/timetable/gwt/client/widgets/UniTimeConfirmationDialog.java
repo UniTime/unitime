@@ -178,6 +178,10 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		center(true);
 	}
 	
+	public AriaButton getYes() { return iYes; }
+	public AriaButton getNo() { return iNo; }
+	public void setNoCallback(Command no) { iNoCommand = no; }
+	
 	public void center(final boolean defaultIsYes) {
 		super.center();
 		iDefaultIsYes = defaultIsYes;
