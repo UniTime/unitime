@@ -95,6 +95,7 @@ public class LoadingWidget extends Composite {
 		iMessage = new HTML("", true);
 		iMessage.setStyleName("unitime-Notification");
 		iMessage.addStyleName("unitime-NotificationInfo");
+		iMessage.getElement().getStyle().clearWhiteSpace();
 		iWarningTimer = new Timer() {
 			@Override
 			public void run() {

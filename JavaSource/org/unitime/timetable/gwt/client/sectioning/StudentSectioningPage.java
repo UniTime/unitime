@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.access.AccessControlClient;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.UserAuthentication.UserAuthenticatedEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -37,6 +38,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProp
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
@@ -44,6 +46,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.SimplePanel;
 
 /**
  * @author Tomas Muller
@@ -62,7 +65,28 @@ public class StudentSectioningPage extends Composite {
 		public boolean isSectioning() { return iSectioning; }
 	};
 	
+	private SimplePanel iContainer = new SimplePanel();
+	private AccessControlClient iAccessControlClient = null;
+	private HandlerRegistration iWindowCloseHandler = null;
+	
 	public StudentSectioningPage(final Mode mode) {
+		initWidget(iContainer);
+		
+		iAccessControlClient = new AccessControlClient(){
+			@Override
+			protected void executeWhenAccessIsGranted() {
+				init(mode);
+			}
+			@Override
+			protected void openMainPage() {
+				if (iWindowCloseHandler != null) iWindowCloseHandler.removeHandler();
+				super.openMainPage();
+			}
+		};
+		iAccessControlClient.checkAccess();
+	}
+	
+	private void init(final Mode mode) {
 		final UserAuthentication userAuthentication = new UserAuthentication(UniTimePageHeader.getInstance().getMiddle(), mode.isSectioning() ? !CONSTANTS.isAuthenticationRequired() : false);
 		
 		if (Location.getParameter("student") == null)
@@ -149,7 +173,7 @@ public class StudentSectioningPage extends Composite {
 		
 		final StudentSectioningWidget widget = new StudentSectioningWidget(true, sessionSelector, userAuthentication, mode, true);
 		
-		initWidget(widget);
+		iContainer.setWidget(widget);
 		
 		UniTimePageHeader.getInstance().getRight().setClickHandler(new ClickHandler() {
 			@Override
@@ -238,7 +262,7 @@ public class StudentSectioningPage extends Composite {
 				}
 			});
 		
-		Window.addWindowClosingHandler(new Window.ClosingHandler() {
+		iWindowCloseHandler = Window.addWindowClosingHandler(new Window.ClosingHandler() {
 			@Override
 			public void onWindowClosing(ClosingEvent event) {
 				if (widget.isChanged()) {

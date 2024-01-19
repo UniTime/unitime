@@ -59,6 +59,25 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Student Scheduling Assistant / Course Requests: Access Control</name>
+			<description>
+				<line>Added an ability to limit how many users can use the page (Scheduling Assistant and/or Course Requests) at the same time.</line>
+				<line>Automatically leave the page after a given time of inactivity (showing a warning first).</line>
+				<line>Parameters for Scheduling Assistant:
+					<line>unitime.accessCotrol.sectioning.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
+					<line>unitime.accessCotrol.sectioning.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
+				</line>
+				<line>Parameters for Course Requests:
+					<line>unitime.accessCotrol.requests.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
+					<line>unitime.accessCotrol.requests.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
+				</line>
+				<line>When the Inactive Warning shows, the user has a minute to dismiss the warning before the page is exited automatically.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.98</version>

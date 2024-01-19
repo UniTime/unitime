@@ -7893,4 +7893,22 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Do you realy want to delete this script?")
 	String confirmDeleteScript();
+	
+	@DefaultMessage("Too many users are using the page, please wait ...\nYour current position in waiting queue: {0}")
+	String waitTooManyUsersWaitInQueue(int queue);
+	
+	@DefaultMessage("Inactive Warning")
+	String dialogWarningInactive();
+	
+	@DefaultMessage("You have been inactive for {0} minutes. Do you want to continue?\n\nPlease choose to stay or to leave the {1}.")
+	String warnInactive(int minutes, String pageName);
+	
+	@DefaultMessage("Stay ({0})")
+	String buttonWarningInactiveStay(int seconds);
+	
+	@DefaultMessage("Leave")
+	String buttonWarningInactiveLeave();
+	
+	@DefaultMessage("The {0} was closed due to inactivity.")
+	String closedDueToInactivity(String pageName);
 }
