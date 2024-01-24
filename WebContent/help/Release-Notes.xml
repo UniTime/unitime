@@ -59,6 +59,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Academic Session Export</name>
+			<description>
+				<line>Fixed the occasional "Unable to export: No row with the given identifier exists" error on records that do exists.</line>
+			</description>
+		</item>
+	</category>	
 </release>
 <release>
 	<version>4.8.98</version>

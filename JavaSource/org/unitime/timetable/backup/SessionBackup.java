@@ -439,7 +439,7 @@ public class SessionBackup implements SessionBackupInterface {
     							if (ids != null)
     								for (Object i: ids)
     									element.addValue(i.toString());
-    							iHibSession.evict(value);
+    							// iHibSession.evict(value);
             				} else if (attribute.isCollection()) {
     							List<Object> ids = current.relation(property, meta, id, false);
     							if (ids != null)
@@ -452,7 +452,7 @@ public class SessionBackup implements SessionBackupInterface {
             				record.addElement(element.build());
             			}
             			table.addRecord(record.build());
-            			iHibSession.evict(object);
+            			// iHibSession.evict(object);
             		}
             		current.clearCache();
             	}
