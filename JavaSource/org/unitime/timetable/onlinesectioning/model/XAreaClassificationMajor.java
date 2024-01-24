@@ -101,6 +101,8 @@ public class XAreaClassificationMajor implements Serializable, Externalizable, C
         iDegreeLabel = acm.getDegreeName();
         iProgramCode = acm.getProgram();
         iProgramLabel = acm.getProgramName();
+        iCampusCode = acm.getCampus();
+    	iCampusLabel = acm.getCampusName();
         iWeight = acm.getWeight();
     }
 

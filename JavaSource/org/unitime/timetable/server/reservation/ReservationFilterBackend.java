@@ -62,6 +62,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -142,7 +143,11 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		if (overrideCnt != null)
 			overrideType.setCount(overrideCnt);
 		response.add("type", overrideType);
-
+		Entity universalType = new Entity(Long.valueOf(0), "Universal", MESSAGES.reservationUniversalAbbv(), "translated-value", MESSAGES.reservationUniversalAbbv());
+		Integer univestalCnt = type2count.get(UniversalOverrideReservation.class.getSimpleName());
+		if (univestalCnt != null)
+			universalType.setCount(univestalCnt);
+		response.add("type", universalType);
 
 		Map<Long, Integer> dept2count = new HashMap<Long, Integer>();
 		for (Object[] o: (List<Object[]>)query.select("co.subjectArea.department.uniqueId, count(distinct r)").group("co.subjectArea.department.uniqueId").exclude("department").exclude("subject").query(hibSession).list()) {
@@ -338,6 +343,9 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					type += "OverrideReservation";
 				if ("lc".equalsIgnoreCase(t))
 					type += "LearningCommunityReservation";
+				if ("universal".equalsIgnoreCase(t))
+					type += "UniversalOverrideReservation";
+					
 			}
 			query.addWhere("type", "type(r) " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
 		}

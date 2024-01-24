@@ -251,5 +251,24 @@
     	        not-null="true"
 	            foreign-key="fk_reservation_course"/>
 		</subclass>        	
+
+        <subclass
+        	name="UniversalOverrideReservation"
+            abstract="false"
+            discriminator-value="9">
+
+        	<property
+        		name="filter"
+            	column="filter"
+            	type="java.lang.String"
+            	length="512"
+            	not-null="false"/>
+            	
+	        <property
+	        	name="flags"
+	        	column="override_type"
+	        	type="java.lang.Integer"
+	        	not-null="true"/>
+		</subclass>
     </class>
 </hibernate-mapping>

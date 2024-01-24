@@ -63,6 +63,7 @@ import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
@@ -101,6 +102,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 import org.unitime.timetable.server.sectioning.SectioningReportTypesBackend.ReportType;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.model.XUniversalReservation;
 
 /**
  * @author Tomas Muller
@@ -285,6 +287,13 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	        					if (concs != null)
 	        						for (String conc: concs) ((CurriculumReservation)clonedReservation).addConcentration(major, conc);
 	        				}
+	        				break;
+	        			case Universal:
+	        				XUniversalReservation uniR = (XUniversalReservation) reservation;
+	        				clonedReservation = new UniversalOverride(reservation.getReservationId(), reservation.isOverride(), reservation.getLimit(), clonedOffering, uniR.getFilter());
+	        				((UniversalOverride)clonedReservation).setMustBeUsed(uniR.mustBeUsed());
+	        				((UniversalOverride)clonedReservation).setAllowOverlap(uniR.isAllowOverlap());
+	        				((UniversalOverride)clonedReservation).setCanAssignOverLimit(uniR.canAssignOverLimit());
 	        				break;
 	        			default:
 	        				clonedReservation = new DummyReservation(clonedOffering);

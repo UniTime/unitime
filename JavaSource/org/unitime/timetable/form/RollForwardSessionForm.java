@@ -132,9 +132,11 @@ public class RollForwardSessionForm implements UniTimeForm {
 	private Boolean rollForwardCourseReservations;
 	private Boolean rollForwardCurriculumReservations;
 	private Boolean rollForwardGroupReservations;
+	private Boolean rollForwardUniversalReservations;
 	private String expirationCourseReservations;
 	private String expirationCurriculumReservations;
 	private String expirationGroupReservations;
+	private String expirationUniversalReservations;
 	private Boolean createStudentGroupsIfNeeded;
 	private Boolean rollForwardOfferingCoordinators;
 	private String[] rollForwardOfferingCoordinatorsSubjectIds;
@@ -145,6 +147,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 	private String startDateCourseReservations;
 	private String startDateCurriculumReservations;
 	private String startDateGroupReservations;
+	private String startDateUniversalReservations;
 	
 	public RollForwardSessionForm() {
 		reset();
@@ -515,9 +518,11 @@ public class RollForwardSessionForm implements UniTimeForm {
 		rollForwardCurriculumReservations = false;
 		rollForwardCourseReservations = false;
 		rollForwardGroupReservations = false;
+		rollForwardUniversalReservations = false;
 		expirationCourseReservations = null;
 		expirationCurriculumReservations = null;
 		expirationGroupReservations = null;
+		expirationUniversalReservations = null;
 		createStudentGroupsIfNeeded = false;
 		rollForwardTeachingRequests = false;
 		rollForwardTeachingRequestsSubjectIds = new String[0];
@@ -528,6 +533,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 		startDateCourseReservations = null;
 		startDateCurriculumReservations = null;
 		startDateGroupReservations = null;
+		startDateUniversalReservations = null;
 		rollForwardLearningManagementSystems = Boolean.valueOf(false);
 		sessionToRollLearningManagementSystemsForwardFrom = null;
 		rollForwardWaitListsProhibitedOverrides = false;
@@ -987,11 +993,14 @@ public class RollForwardSessionForm implements UniTimeForm {
 	public boolean getRollForwardCourseReservations() { return rollForwardCourseReservations; }
 	public void setRollForwardCourseReservations(boolean rollForwardCourseReservations) { this.rollForwardCourseReservations = rollForwardCourseReservations; }
 	
-	public boolean getRollForwardCurriculumReservations() { return rollForwardCurriculumReservations; }
-	public void setRollForwardCurriculumReservations(boolean rollForwardCurriculumReservations) { this.rollForwardCurriculumReservations = rollForwardCurriculumReservations; }
-	
 	public boolean getRollForwardGroupReservations() { return rollForwardGroupReservations; }
 	public void setRollForwardGroupReservations(boolean rollForwardGroupReservations) { this.rollForwardGroupReservations = rollForwardGroupReservations; }
+
+	public boolean getRollForwardUniversalReservations() { return rollForwardUniversalReservations; }
+	public void setRollForwardUniversalReservations(boolean rollForwardUniversalReservations) { this.rollForwardUniversalReservations = rollForwardUniversalReservations; }
+	
+	public boolean getRollForwardCurriculumReservations() { return rollForwardCurriculumReservations; }
+	public void setRollForwardCurriculumReservations(boolean rollForwardCurriculumReservations) { this.rollForwardCurriculumReservations = rollForwardCurriculumReservations; }
 	
 	public String getExpirationCourseReservations() { return expirationCourseReservations; }
 	public void setExpirationCourseReservations(String expirationCourseReservations) { this.expirationCourseReservations = expirationCourseReservations; }
@@ -1001,6 +1010,9 @@ public class RollForwardSessionForm implements UniTimeForm {
 	
 	public String getExpirationGroupReservations() { return expirationGroupReservations; }
 	public void setExpirationGroupReservations(String expirationGroupReservations) { this.expirationGroupReservations = expirationGroupReservations; }
+	
+	public String getExpirationUniversalReservations() { return expirationUniversalReservations; }
+	public void setExpirationUniversalReservations(String expirationUniversalReservations) { this.expirationUniversalReservations = expirationUniversalReservations; }
 	
 	public boolean getCreateStudentGroupsIfNeeded() { return createStudentGroupsIfNeeded; }
 	public void setCreateStudentGroupsIfNeeded(boolean createStudentGroupsIfNeeded) { this.createStudentGroupsIfNeeded = createStudentGroupsIfNeeded; }
@@ -1013,6 +1025,9 @@ public class RollForwardSessionForm implements UniTimeForm {
 	
 	public String getStartDateGroupReservations() { return startDateGroupReservations; }
 	public void setStartDateGroupReservations(String startDateGroupReservations) { this.startDateGroupReservations = startDateGroupReservations; }
+	
+	public String getStartDateUniversalReservations() { return startDateUniversalReservations; }
+	public void setStartDateUniversalReservations(String startDateUniversalReservations) { this.startDateUniversalReservations = startDateUniversalReservations; }
 
 
 	public void copyTo(RollForwardSessionForm form) {
@@ -1086,6 +1101,9 @@ public class RollForwardSessionForm implements UniTimeForm {
 		form.rollForwardLearningManagementSystems = rollForwardLearningManagementSystems;
 		form.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
 		form.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides;
+		form.rollForwardUniversalReservations = rollForwardUniversalReservations;
+		form.expirationUniversalReservations = expirationUniversalReservations;
+		form.startDateUniversalReservations = startDateUniversalReservations;
 	}
 	
 	public Boolean getRollForwardTeachingRequests() {

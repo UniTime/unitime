@@ -17,25 +17,13 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
 
-import java.io.Serializable;
+alter table reservation add filter varchar2(512 char);
 
-/**
- * @author Tomas Muller
+/*
+ * Update database version
  */
-public enum XReservationType implements Serializable {
-	Individual,
-	Group,
-	IndividualOverride,
-	GroupOverride,
-	Course,
-	Curriculum,
-	Dummy,
-	None,
-	LearningCommunity,
-	CurriculumOverride,
-	IndividualGroup,
-	Universal,
-	;
-}
+  
+update application_config set value='266' where name='tmtbl.db.version';
+
+commit;

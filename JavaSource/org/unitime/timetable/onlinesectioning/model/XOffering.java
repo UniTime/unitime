@@ -58,6 +58,7 @@ import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.cpsolver.studentsct.reservation.Restriction;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseReservation;
@@ -73,6 +74,7 @@ import org.unitime.timetable.model.OverrideReservation;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSchedulingRule;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -129,6 +131,8 @@ public class XOffering implements Serializable, Externalizable {
         		iReservations.add(new XCurriculumReservation(this, (CurriculumReservation)reservation));
         	} else if (reservation instanceof CourseReservation) {
         		iReservations.add(new XCourseReservation(this, (CourseReservation)reservation));
+        	} else if (reservation instanceof UniversalOverrideReservation) {
+        		iReservations.add(new XUniversalReservation(this, (UniversalOverrideReservation)reservation));
         	}
         }
         if (offering.isByReservationOnly())
@@ -161,6 +165,8 @@ public class XOffering implements Serializable, Externalizable {
         		iReservations.add(new XCurriculumReservation((org.cpsolver.studentsct.reservation.CurriculumReservation)reservation));
         	} else if (reservation instanceof org.cpsolver.studentsct.reservation.CourseReservation) {
         		iReservations.add(new XCourseReservation((org.cpsolver.studentsct.reservation.CourseReservation)reservation));
+        	} else if (reservation instanceof UniversalOverride) {
+        		iReservations.add(new XUniversalReservation((org.cpsolver.studentsct.reservation.UniversalOverride)reservation));
         	}  else if (reservation instanceof DummyReservation) {
         		iReservations.add(new XDummyReservation(this));
         	}
@@ -1029,6 +1035,9 @@ public class XOffering implements Serializable, Externalizable {
 				break;
 			case LearningCommunity:
 				iReservations.add(new XLearningCommunityReservation(in));
+				break;
+			case Universal:
+				iReservations.add(new XUniversalReservation(in));
 				break;
 			}
 		}

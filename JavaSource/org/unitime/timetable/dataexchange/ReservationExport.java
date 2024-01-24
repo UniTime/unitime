@@ -49,6 +49,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 
 /**
  * @author Tomas Muller
@@ -200,6 +201,14 @@ public class ReservationExport extends BaseExport {
 	        		for (Student student: ovRes.getStudents()) {
 	        			reservationEl.addElement("student").addAttribute("externalId", student.getExternalUniqueId());
 	        		}
+	        	} else if (reservation instanceof UniversalOverrideReservation) {
+	        		UniversalOverrideReservation override = (UniversalOverrideReservation)reservation;
+	        		reservationEl.addAttribute("type", "universal");
+	        		if (override.getFilter() != null) reservationEl.addAttribute("filter", override.getFilter()); 
+        			reservationEl.addAttribute("expired", override.isAlwaysExpired() ? "true" : "false");
+        			reservationEl.addAttribute("allowOverlap", override.isAllowOverlap() ? "true" : "false");
+        			reservationEl.addAttribute("overLimit", override.isCanAssignOverLimit() ? "true" : "false");
+        			reservationEl.addAttribute("mustBeUsed", override.isMustBeUsed() ? "true" : "false");
 	        	} else {
 	        		reservationEl.addAttribute("type", "unknown");
 	        	}

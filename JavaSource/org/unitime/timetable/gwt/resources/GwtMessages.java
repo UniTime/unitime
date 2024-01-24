@@ -5578,6 +5578,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Learning Community Reservation")
 	String reservationLearningCommunity();
 	
+	@DefaultMessage("Student Filter")
+	String reservationUniversalOverride();
+	
 	@DefaultMessage("Individual")
 	String reservationIndividualAbbv();
 	
@@ -5598,6 +5601,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Override")
 	String reservationOverrideAbbv();
+	
+	@DefaultMessage("Filter")
+	String reservationUniversalAbbv();
+	
+	@DefaultMessage("Student Filter Override")
+	String reservationUniversalOverrideAbbv();
 	
 	@DefaultMessage("Unknown")
 	String reservationUnknownAbbv();
@@ -7911,4 +7920,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("The {0} was closed due to inactivity.")
 	String closedDueToInactivity(String pageName);
+	
+	@DefaultMessage("Student Filter:")
+	String propStudentFilter();
+	
+	@DefaultMessage("Student filter cannot remain empty.")
+	String hintReservationNoFilter();
 }

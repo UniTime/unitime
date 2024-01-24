@@ -246,6 +246,23 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		@Override
 		public int getPriority() { return 500; }
 	}
+	
+	public static class UniversalReservation extends ReservationInterface {
+		private static final long serialVersionUID = 1L;
+		private String iFilter;
+		
+		public UniversalReservation() {
+			super();
+		}
+		
+		public String getFilter() { return iFilter; }
+		public void setFilter(String filter) { iFilter = filter; }
+		
+		public String toString() { return getFilter(); }
+		
+		@Override
+		public int getPriority() { return 350; }
+	}
 
 	public static class IdName implements IsSerializable, Comparable<IdName>, Serializable {
 		private static final long serialVersionUID = 1L;

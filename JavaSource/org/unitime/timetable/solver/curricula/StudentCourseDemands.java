@@ -98,16 +98,16 @@ public interface StudentCourseDemands {
 	public static class AreaClasfMajor implements Comparable<AreaClasfMajor> {
 		Double iWeight = 0.0;
 		String iArea, iClasf, iMajor, iConcentration;
-		String iDegree, iProgram;
+		String iDegree, iProgram, iCampus;
 		public AreaClasfMajor(String area, String clasf, String major) {
 			iArea = area; iClasf = clasf; iMajor = major;
 		}
 		public AreaClasfMajor(String area, String clasf, String major, String concentration) {
 			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
 		}
-		public AreaClasfMajor(String area, String clasf, String major, String concentration, String degree, String program, Double weight) {
+		public AreaClasfMajor(String area, String clasf, String major, String concentration, String degree, String program, String campus, Double weight) {
 			iArea = area; iClasf = clasf; iMajor = major; iConcentration = concentration;
-			iDegree = degree; iProgram = program; iWeight = weight;
+			iDegree = degree; iProgram = program; iCampus = campus; iWeight = weight;
 		}
 		
 		public String getArea() { return iArea; }
@@ -116,6 +116,7 @@ public interface StudentCourseDemands {
 		public String getConcentration() { return iConcentration; }
 		public String getDegree() { return iDegree; }
 		public String getProgram() { return iProgram; }
+		public String getCampus() { return iCampus; }
 		public double getWeight() { return iWeight == null ? 0.0 : iWeight.doubleValue(); }
 		
 		public String toString() {
@@ -218,6 +219,7 @@ public interface StudentCourseDemands {
 						acm.getConcentration() == null ? null : acm.getConcentration().getCode(),
 						acm.getDegree() == null ? null : acm.getDegree().getReference(),
 						acm.getProgram() == null ? null : acm.getProgram().getReference(),
+						acm.getCampus() == null ? null : acm.getCampus().getReference(),
 						acm.getWeight()));
 				if (projections != null) {
 					rule += (acm.getWeight() == null ? 1.0 : acm.getWeight()) * projections.getProjection(acm.getAcademicArea().getAcademicAreaAbbreviation(), acm.getAcademicClassification().getCode(), acm.getMajor().getCode());

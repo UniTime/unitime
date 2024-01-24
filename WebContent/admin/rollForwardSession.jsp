@@ -359,6 +359,25 @@
 				</div>
 				<s:checkbox name="form.createStudentGroupsIfNeeded"/> <loc:message name="optCreateStudentGroupsForReservations"/>
 			</td></tr>
+			<tr><td valign="top" colspan="2">
+				<s:checkbox name="form.rollForwardUniversalReservations" onclick="document.getElementById('universalReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> <loc:message name="optIncludeStudentUniversalReservations"/>
+			<tr style="display:none;" id="universalReservationDetail"><td style="padding-left: 50px;" colspan="2">
+				<div>
+					<span style="display: table;">
+						<span style="display: table-row;">
+							<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewStartDate"/> </span>
+							<tt:calendar name="form.startDateUniversalReservations" outerStyle="display: table-cell;"/>
+							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewStartDateUniversal"/></span>
+						</span>
+						<span style="display: table-row;">
+							<span style="display: table-cell; vertical-align: middle;"><loc:message name="propNewExpirationDate"/> </span>
+							<tt:calendar name="form.expirationUniversalReservations" outerStyle="display: table-cell;"/>
+							<span style="display: table-cell; font-style: italic; padding-left: 20px; vertical-align: middle;"><loc:message name="infoNewExpirationDateUniversal"/></span>
+						</span>
+					</span>
+				</div>
+			</td></tr>
+			
 			</table>
 			</td>
 		</tr>
@@ -373,6 +392,9 @@
 		</s:if>
 		<s:if test="form.rollForwardGroupReservations == true">
 			<script>document.getElementById('groupReservationDetail').style.display = 'table-row';</script>
+		</s:if>
+		<s:if test="form.rollForwardUniversalReservations == true">
+			<script>document.getElementById('universalReservationDetail').style.display = 'table-row';</script>
 		</s:if>
 		<tr>
 			<td valign="middle" nowrap ><s:checkbox name="form.rollForwardPeriodicTasks"/> <loc:message name="propRollScheduledTasksFromSession"/>

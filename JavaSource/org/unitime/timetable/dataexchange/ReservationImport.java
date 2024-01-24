@@ -49,6 +49,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 
 /**
  * @author Tomas Muller
@@ -187,6 +188,12 @@ public class ReservationImport  extends BaseImport {
                 	reservation = new CourseReservation();
                 } else if ("lc".equals(type)) {
                 	reservation = new LearningCommunityReservation();
+                } else if ("universal".equals(type)) {
+                	reservation = new UniversalOverrideReservation();
+            		((UniversalOverrideReservation)reservation).setAlwaysExpired("true".equalsIgnoreCase(reservationElement.attributeValue("expired")));
+            		((UniversalOverrideReservation)reservation).setAllowOverlap("true".equalsIgnoreCase(reservationElement.attributeValue("allowOverlap")));
+            		((UniversalOverrideReservation)reservation).setCanAssignOverLimit("true".equalsIgnoreCase(reservationElement.attributeValue("overLimit")));
+            		((UniversalOverrideReservation)reservation).setMustBeUsed("true".equalsIgnoreCase(reservationElement.attributeValue("mustBeUsed")));
                 } else {
                 	for (OverrideType t: OverrideType.values()) {
                 		if (t.getReference().equalsIgnoreCase(type)) {
@@ -397,6 +404,8 @@ public class ReservationImport  extends BaseImport {
                 	getHibSession().merge(course);
                 	if (reservation.getConfigurations().isEmpty() && reservation.getClasses().isEmpty()) continue;
                 	((CourseReservation)reservation).setCourse(course);
+                } else if ("universal".equals(type)) {
+                	((UniversalOverrideReservation)reservation).setFilter(reservationElement.attributeValue("filter"));
                 } else {
                 	OverrideReservation override = (OverrideReservation)reservation;
                 	override.setStudents(new HashSet<Student>());

@@ -14910,4 +14910,9 @@
 		<plsql>alter table %SCHEMA%.room_group_pref add room_idx number(10,0)</plsql>
 		<pgsql>alter table %SCHEMA%.room_group_pref add room_idx bigint</pgsql>
 	</update>
+	<update version="266" date="23-Jan-2024" comment="Universal Reservation Override">
+		<plsql>alter table %SCHEMA%.reservation add filter varchar2(512 char)</plsql>
+		<mysql>alter table %SCHEMA%.reservation add filter varchar(512)</mysql>
+		<pgsql>alter table %SCHEMA%.reservation add filter varchar(512)</pgsql>
+	</update>
 </dbupdate>

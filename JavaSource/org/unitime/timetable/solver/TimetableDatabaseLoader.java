@@ -122,6 +122,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.DistributionPref.Structure;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
@@ -2555,6 +2556,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     				boolean match = false;
     				for (org.unitime.timetable.model.Student s: ir.getStudents())
     					if (studentId.getStudentId() == s.getUniqueId()) match = true;
+    				if (!match) continue;
+    			} else if (reservation instanceof UniversalOverrideReservation) {
+    				UniversalOverrideReservation ur = (UniversalOverrideReservation)reservation;
+    				WeightedStudentId studentId = iWeightedStudents.get(student.getId());
+    				if (studentId == null || studentId.getStudent() == null) continue;
+    				boolean match = ur.getFilter() != null && !ur.getFilter().isEmpty() && new org.unitime.timetable.gwt.server.Query(ur.getFilter()).match(new DbStudentMatcher(studentId.getStudent()));
     				if (!match) continue;
     			} else continue;
     			for (Class_ clazz: reservation.getClasses()) {

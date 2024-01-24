@@ -54,6 +54,7 @@ import org.unitime.timetable.model.StudentEnrollmentMessage;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningStatus;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.CourseRequest.CourseRequestOverrideIntent;
 import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -262,6 +263,8 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 						e.setReservation(MSG.reservationCourse());
 					else if (crm.reservation() instanceof CurriculumReservation)
 						e.setReservation(MSG.reservationCurriculum());
+					else if (crm.reservation() instanceof UniversalOverrideReservation)
+						e.setReservation(MSG.reservationUniversal());
 				}
 				for (StudentClassEnrollment x: crm.enrollment()) {
 					if (x.getTimestamp() != null) {

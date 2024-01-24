@@ -74,6 +74,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -710,6 +711,29 @@ public class ReservationServlet implements ReservationService {
 					.setCacheable(true).uniqueResult();
 			if (lastLike.intValue() > 0)
 				r.setLastLike(lastLike.intValue());
+		} else if (reservation instanceof UniversalOverrideReservation) {
+			r = new ReservationInterface.UniversalReservation();
+			((ReservationInterface.UniversalReservation) r).setFilter(((UniversalOverrideReservation)reservation).getFilter());
+			int enrl = 0;
+			for (Student s: hibSession.createQuery(
+					"select distinct e.student from StudentClassEnrollment e where e.courseOffering.instructionalOffering.uniqueId = :offeringId",
+					Student.class).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId())
+					.setCacheable(true).list()) {
+				if (reservation.isApplicable(s, null)) enrl ++;
+			}
+			r.setEnrollment(enrl);
+			int last = 0;
+			for (Student s: hibSession.createQuery(
+					"select distinct x.student from LastLikeCourseDemand x, CourseOffering co left outer join co.demandOffering do where " +
+					"x.subjectArea.session.uniqueId = :sessionId and co.instructionalOffering.uniqueId = :offeringId and "+
+					"((co.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))) or "+
+					"(do is not null and do.subjectArea.uniqueId = x.subjectArea.uniqueId and ((x.coursePermId is not null and do.permId=x.coursePermId) or (x.coursePermId is null and do.courseNbr=x.courseNbr))))",
+					Student.class).setParameter("offeringId", reservation.getInstructionalOffering().getUniqueId())
+					.setParameter("sessionId", getAcademicSessionId())
+					.setCacheable(true).list()) {
+				if (reservation.isApplicable(s, null)) last ++;
+			}
+			r.setLastLike(last);
 		} else {
 			throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 		}
@@ -756,7 +780,7 @@ public class ReservationServlet implements ReservationService {
 		r.setLimit(reservation.getLimit());
 		r.setInclusive(reservation.getInclusive());
 		r.setId(reservation.getUniqueId());
-		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation || reservation instanceof CurriculumOverrideReservation);
+		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation || reservation instanceof CurriculumOverrideReservation || reservation instanceof UniversalOverrideReservation);
 		r.setAllowOverlaps(reservation.isAllowOverlap());
 		r.setMustBeUsed(reservation.isMustBeUsed());
 		r.setAlwaysExpired(reservation.isAlwaysExpired());
@@ -895,6 +919,8 @@ public class ReservationServlet implements ReservationService {
 						r = new CourseReservation();
 					else if (reservation instanceof ReservationInterface.LCReservation)
 						r = new LearningCommunityReservation();
+					else if (reservation instanceof ReservationInterface.UniversalReservation)
+						r = new UniversalOverrideReservation();
 					else
 						throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 				}
@@ -918,6 +944,11 @@ public class ReservationServlet implements ReservationService {
 					((CurriculumOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());
 					((CurriculumOverrideReservation)r).setCanAssignOverLimit(reservation.isOverLimit());
 					((CurriculumOverrideReservation)r).setMustBeUsed(reservation.isMustBeUsed());
+				} else if (r instanceof UniversalOverrideReservation) {
+					((UniversalOverrideReservation)r).setAllowOverlap(reservation.isAllowOverlaps());
+					((UniversalOverrideReservation)r).setAlwaysExpired(reservation.isAlwaysExpired());
+					((UniversalOverrideReservation)r).setCanAssignOverLimit(reservation.isOverLimit());
+					((UniversalOverrideReservation)r).setMustBeUsed(reservation.isMustBeUsed());
 				}
 				offering.getReservations().add(r);
 				if (r.getClasses() == null)
@@ -989,6 +1020,9 @@ public class ReservationServlet implements ReservationService {
 					for (ReservationInterface.IdName cc: curriculum.getConcentrations()) {
 						cr.getConcentrations().add(PosMajorConcentrationDAO.getInstance().get(cc.getId(), hibSession));
 					}
+				} else if (r instanceof UniversalOverrideReservation) {
+					UniversalOverrideReservation ur = (UniversalOverrideReservation)r;
+					ur.setFilter(((ReservationInterface.UniversalReservation)reservation).getFilter());
 				}
 				if (r.getUniqueId() == null)
 					hibSession.persist(r);

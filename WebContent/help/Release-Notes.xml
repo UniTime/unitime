@@ -77,6 +77,19 @@
 				<line>When the Inactive Warning shows, the user has a minute to dismiss the warning before the page is exited automatically.</line>
 			</description>
 		</item>
+		<item>
+			<name>Universal Reservation Override: Student Filter</name>
+			<description>
+				<line>Added a universal reservation override type that allows to reserve space for students using a student filter.</line>
+				<line>Student filter is a boolean expression that may contain the following attributes:
+					<line>area, classification, campus, major, minor, concentration, degree, program, group, accommodation, student, advisor, status</line>
+					<line>primary-area, primary-classification, primary-major, primary-concentration, primary-degree, primary-program, primary-campus</line>
+				</line>
+				<line>For example, the following filter will match all programs that ends with -OL or -HY:
+					<line>primary-program:%-OL or primary-program:%-HY</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

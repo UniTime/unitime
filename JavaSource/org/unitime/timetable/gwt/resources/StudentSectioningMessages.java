@@ -935,6 +935,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Dummy")
 	String reservationDummy();
+	
+	@DefaultMessage("Filter")
+	String reservationUniversal();
 
 	@DefaultMessage("Other")
 	String reservationOther();
