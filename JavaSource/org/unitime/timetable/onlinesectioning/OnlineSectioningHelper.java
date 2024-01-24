@@ -66,7 +66,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.model.XExactTimeConversion;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;

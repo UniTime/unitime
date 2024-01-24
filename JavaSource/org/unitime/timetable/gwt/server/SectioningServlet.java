@@ -146,6 +146,7 @@ import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentGroupType;
 import org.unitime.timetable.model.StudentInstrMthPref;
 import org.unitime.timetable.model.StudentNote;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
@@ -411,6 +412,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			if (!matcher.isAllCourseTypes() && !matcher.isNoCourseType() && types.isEmpty()) throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
 
 			List<OverrideType> overrides = hibSession.createQuery("from OverrideType order by label", OverrideType.class).setCacheable(true).list();
+			
+			StudentSchedulingRule rule = (cx.getStudentId() == null ? null : StudentSchedulingRule.getRuleFilter(cx.getStudentId(), server, sessionContext));
 
 			boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
@@ -468,10 +471,23 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setLastLike(c.getDemand());
 				results.add(course);
 				for (InstrOfferingConfig config: c.getInstructionalOffering().getInstrOfferingConfigs()) {
-					if (config.getEffectiveInstructionalMethod() != null)
-						course.addInstructionalMethod(config.getEffectiveInstructionalMethod().getUniqueId(), config.getEffectiveInstructionalMethod().getLabel());
-					else
-						course.setHasNoInstructionalMethod(true);
+					boolean imAvailable = true;
+					if (rule != null) {
+						if (rule.isDisjunctive()) {
+							if (rule.hasCourseName() && rule.matchesCourseName(c.getCourseName())) {
+							} else if (rule.hasCourseType() && rule.matchesCourseType(c.getCourseType())) {
+							} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+							} else { imAvailable = false; }
+						} else {
+							if (!rule.matchesInstructionalMethod(config.getInstructionalMethod())) { imAvailable = false; }
+						}
+					}
+					if (imAvailable) {
+						if (config.getEffectiveInstructionalMethod() != null)
+							course.addInstructionalMethod(config.getEffectiveInstructionalMethod().getUniqueId(), config.getEffectiveInstructionalMethod().getLabel());
+						else
+							course.setHasNoInstructionalMethod(true);
+					}
 				}
 				if (parent != null && limit != null && limit > 0 && results.size() >= limit) break;
 			}
@@ -629,14 +645,27 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					.setCacheable(true).setMaxResults(1).list()) {
 				courseOffering = c; break;
 			}
+			StudentSchedulingRule rule = (cx.getStudentId() == null ? null : StudentSchedulingRule.getRuleFilter(cx.getStudentId(), server, sessionContext));
 			if (courseOffering == null) throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
 			List<Class_> classes = new ArrayList<Class_>();
 			for (Iterator<InstrOfferingConfig> i = courseOffering.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
 				InstrOfferingConfig config = i.next();
-				for (Iterator<SchedulingSubpart> j = config.getSchedulingSubparts().iterator(); j.hasNext(); ) {
-					SchedulingSubpart subpart = j.next();
-					classes.addAll(subpart.getClasses());
+				boolean imAvailable = true;
+				if (rule != null) {
+					if (rule.isDisjunctive()) {
+						if (rule.hasCourseName() && rule.matchesCourseName(courseOffering.getCourseName())) {
+						} else if (rule.hasCourseType() && rule.matchesCourseType(courseOffering.getCourseType())) {
+						} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+						} else { imAvailable = false; }
+					} else {
+						if (!rule.matchesInstructionalMethod(config.getInstructionalMethod())) { imAvailable = false; }
+					}
 				}
+				if (imAvailable)
+					for (Iterator<SchedulingSubpart> j = config.getSchedulingSubparts().iterator(); j.hasNext(); ) {
+						SchedulingSubpart subpart = j.next();
+						classes.addAll(subpart.getClasses());
+					}
 			}
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 			NameFormat nameFormat = NameFormat.fromReference(ApplicationProperty.OnlineSchedulingInstructorNameFormat.value());
