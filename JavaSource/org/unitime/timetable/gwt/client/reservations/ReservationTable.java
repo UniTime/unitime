@@ -53,6 +53,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.IndividualReservati
 import org.unitime.timetable.gwt.shared.ReservationInterface.LCReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.ReservationInterface.UniversalReservation;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -374,6 +375,12 @@ public class ReservationTable extends Composite {
 					owner.add(l);
 				}
 				line.add(owner);
+			} else if (reservation instanceof UniversalReservation) {
+				Label label = new Label(MESSAGES.reservationUniversalOverrideAbbv() + flags);
+				label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+				line.add(label);
+				String filter = ((UniversalReservation) reservation).getFilter();
+				line.add(new Label(filter == null ? "" : filter, false));
 			} else {
 				line.add(new Label(MESSAGES.reservationUnknownAbbv()));
 				line.add(new Label());

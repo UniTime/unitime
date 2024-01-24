@@ -87,6 +87,7 @@ import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMCDATA;
@@ -1432,6 +1433,9 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 					return s1.getAbbv().compareTo(s2.getAbbv());
 				}
 			});
+		} else if (reservation instanceof UniversalOverride) {
+			r = new ReservationInterface.UniversalReservation();
+			((ReservationInterface.UniversalReservation)r).setFilter(((UniversalOverride)reservation).getFilter());
 		} else {
 			return null;
 		}

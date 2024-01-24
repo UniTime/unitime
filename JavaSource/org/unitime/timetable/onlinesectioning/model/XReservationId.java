@@ -33,6 +33,7 @@ import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 
 
 /**
@@ -78,6 +79,8 @@ public class XReservationId implements Serializable, Externalizable {
 			iType = XReservationType.Curriculum;
 		else if (reservation instanceof CourseReservation)
 			iType = XReservationType.Course;
+		else if (reservation instanceof UniversalOverride)
+			iType = XReservationType.Universal;
 		else
 			iType = XReservationType.Dummy;
 	}

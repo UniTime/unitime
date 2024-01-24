@@ -5707,6 +5707,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Include Student Group Reservations")
 	String optIncludeStudentGroupReservations();
 	
+	@DefaultMessage("Include Student Filter Reservations")
+	String optIncludeStudentUniversalReservations();
+	
 	@DefaultMessage("New Start Date:")
 	String propNewStartDate();
 	
@@ -5730,6 +5733,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Applies to student group reservations with an expiration date filled in.")
 	String infoNewExpirationDateGroup();
+	
+	@DefaultMessage("Applies to student filter reservations with a start date filled in.")
+	String infoNewStartDateUniversal();
+	
+	@DefaultMessage("Applies to student filter reservations with an expiration date filled in.")
+	String infoNewExpirationDateUniversal();
 	
 	@DefaultMessage("Create student groups that do not exist (with no students). Ignore group reservations that do not match otherwise.")
 	String optCreateStudentGroupsForReservations();

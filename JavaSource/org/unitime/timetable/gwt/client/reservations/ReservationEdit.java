@@ -81,6 +81,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -113,9 +114,10 @@ public class ReservationEdit extends Composite {
 	private ReservationCourseSelectionBox iCourseBox;
 	private Lookup iLookup;
 	private DefaultExpirationDates iExpirations = null;
+	private UniTimeWidget<TextBox> iStudentFilter;
 	
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
-	private int iStartDateLine, iExpirationLine, iReservedSpaceLine, iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine, iInclusionLine;
+	private int iStartDateLine, iExpirationLine, iReservedSpaceLine, iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine, iInclusionLine, iFilterLine;
 	
 	private CheckBox iCanOverlap, iMustBeUsed, iOverLimit, iAlwaysExpired;
 	private ListBox iInclusive;
@@ -354,6 +356,7 @@ public class ReservationEdit extends Composite {
 		iType.getWidget().addItem(MESSAGES.reservationIndividualOverride(), "individual-override");
 		iType.getWidget().addItem(MESSAGES.reservationStudentGroupOverride(), "group-override");
 		iType.getWidget().addItem(MESSAGES.reservationCurriculumOverride(), "curriculum-override");
+		iType.getWidget().addItem(MESSAGES.reservationUniversalOverride(), "universal");
 		iType.getWidget().setSelectedIndex(0);
 		iType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -535,6 +538,14 @@ public class ReservationEdit extends Composite {
 		iMinors.setVisibleItemCount(3);
 		iMinors.setHeight("100px");
 		iMinorRow = iPanel.addRow(MESSAGES.propMinors(), iMinors);
+		
+		iStudentFilter = new UniTimeWidget<TextBox>(new TextBox());
+		iStudentFilter.getWidget().setStyleName("unitime-TextBox");
+		iStudentFilter.getWidget().setMaxLength(521);
+		iStudentFilter.getWidget().setWidth("500px");
+		iPanel.addRow(MESSAGES.propStudentFilter(), iStudentFilter);
+		iFilterLine =  iPanel.getRowCount() - 1;
+
 		iCurriculum.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -590,6 +601,12 @@ public class ReservationEdit extends Composite {
 			@Override
 			public void onChange(ChangeEvent event) {
 				iCurriculum.getWidget().setSelectedIndex(0);
+			}
+		});
+		iStudentFilter.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iStudentFilter.clearHint();
 			}
 		});
 		
@@ -888,16 +905,17 @@ public class ReservationEdit extends Composite {
 		iPanel.getRowFormatter().setVisible(2 + iAreaLine, "curriculum".equals(val) || "curriculum-override".equals(val));
 		iPanel.getRowFormatter().setVisible(iConcentrationRow, ("curriculum".equals(val) || "curriculum-override".equals(val)) && iConcentrations.getItemCount() > 0);
 		iPanel.getRowFormatter().setVisible(iMinorRow, ("curriculum".equals(val) || "curriculum-override".equals(val)) && iMinors.getItemCount() > 0);
+		iPanel.getRowFormatter().setVisible(iFilterLine, "universal".equals(val));
 		iPanel.getRowFormatter().setVisible(iExpirationLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iStartDateLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
 		iPanel.getRowFormatter().setVisible(iInclusionLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate());
-		if (("individual-override".equals(val) || "group-override".equals(val) || "curriculum-override".equals(val)) && iAlwaysExpired.getValue()) {
+		if (("individual-override".equals(val) || "group-override".equals(val) || "curriculum-override".equals(val) || "universal".equals(val)) && iAlwaysExpired.getValue()) {
 			iPanel.getRowFormatter().setVisible(iExpirationLine, false);
 			iPanel.getRowFormatter().setVisible(iStartDateLine, false);
 			iPanel.getRowFormatter().setVisible(iInclusionLine, false);
 		}
 		iPanel.getRowFormatter().setVisible(iReservedSpaceLine, getOverrideType(val) == null || getOverrideType(val).isCanHaveExpirationDate() || !getOverrideType(val).isExpired());
-		iPanel.getRowFormatter().setVisible(iOverrideLine, "individual-override".equals(val) || "group-override".equals(val) || "curriculum-override".equals(val)); 
+		iPanel.getRowFormatter().setVisible(iOverrideLine, "individual-override".equals(val) || "group-override".equals(val) || "curriculum-override".equals(val) || "universal".equals(val)); 
 		if ("course".equals(val)) {
 			iLimit.getWidget().setReadOnly(true);
 			iLimit.getWidget().setValue("", true);
@@ -1170,6 +1188,9 @@ public class ReservationEdit extends Composite {
 					if (mj.getId().equals(id)) selected = true;
 				iConcentrations.setItemSelected(i, selected);
 			}
+		} else if (iReservation instanceof ReservationInterface.UniversalReservation) {
+			select(iType.getWidget(), "universal");
+			iStudentFilter.getWidget().setText(((ReservationInterface.UniversalReservation)iReservation).getFilter());
 		}
 		typeChanged(false);
 		iType.setReadOnly(true);
@@ -1326,6 +1347,14 @@ public class ReservationEdit extends Composite {
 					}
 				}
 				((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
+			}
+		} else if ("universal".equals(type)) {
+			r = new ReservationInterface.UniversalReservation();
+			r.setOverride(true);
+			((ReservationInterface.UniversalReservation) r).setFilter(iStudentFilter.getWidget().getText());
+			if (iStudentFilter.getWidget().getText().isEmpty()) {
+				iStudentFilter.setErrorHint(MESSAGES.hintReservationNoFilter());
+				ok = false;
 			}
 		} else if ("".equals(type)) {
 			iType.setErrorHint(MESSAGES.hintReservationTypeNotSelected());

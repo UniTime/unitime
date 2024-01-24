@@ -1169,6 +1169,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 			} else if ("clasf".equals(attr) || "classification".equals(attr)) {
 				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
 					if (eq(acm.getClassification(), term)) return true;
+			} else if ("campus".equals(attr)) {
+				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+					if (eq(acm.getCampus(), term)) return true;
 			} else if ("major".equals(attr)) {
 				for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
 					if (eq(acm.getMajor(), term)) return true;
@@ -1193,6 +1196,36 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				if ("default".equalsIgnoreCase(term) || "Not Set".equalsIgnoreCase(term))
 					return student().getStatus() == null;
 				return term.equalsIgnoreCase(status());
+            } else if ("concentration".equals(attr)) {
+                for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+                    if (eq(acm.getConcentration(), term)) return true;
+            } else if ("degree".equals(attr)) {
+                for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+                    if (eq(acm.getDegree(), term)) return true;
+            } else if ("program".equals(attr)) {
+                for (AreaClassificationMajor acm: student().getAreaClassificationMajors())
+                    if (eq(acm.getProgram(), term)) return true;
+            } else if ("primary-area".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && eq(acm.getArea(), term)) return true;
+            } else if ("primary-clasf".equals(attr) || "primary-classification".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && eq(acm.getClassification(), term)) return true;
+            } else if ("primary-major".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && eq(acm.getMajor(), term)) return true;
+            } else if ("primary-concentration".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && eq(acm.getConcentration(), term)) return true;
+            } else if ("primary-degree".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && eq(acm.getDegree(), term)) return true;
+            } else if ("primary-program".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && like(acm.getProgram(), term)) return true;
+            } else if ("primary-campus".equals(attr)) {
+                AreaClassificationMajor acm = student().getPrimaryMajor();
+                if (acm != null && like(acm.getCampus(), term)) return true;
 			} else if ("credit".equals(attr)) {
 				float min = 0, max = Float.MAX_VALUE;
 				Credit prefix = Credit.eq;
@@ -1305,6 +1338,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 					}
 				}
 				return min <= share && share <= max;
+            } else if ("group".equals(attr)) {
+                for (StudentGroup aac: student().getGroups())
+                    if (eq(aac.getReference(), term)) return true;
 			} else if (attr != null) {
 				for (StudentGroup aac: student().getGroups())
 					if (eq(aac.getType(), attr.replace('_', ' ')) && eq(aac.getReference(), term)) return true;
@@ -1324,5 +1360,14 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 				if (t.equalsIgnoreCase(term)) return true;
 			return false;
 		}
+		
+        private boolean like(String name, String term) {
+            if (name == null) return false;
+            if (term.indexOf('%') >= 0) {
+                return name.matches("(?i)" + term.replaceAll("%", ".*"));
+            } else {
+                return name.equalsIgnoreCase(term);
+            }
+        }
 	}
 }

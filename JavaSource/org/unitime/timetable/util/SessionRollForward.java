@@ -134,6 +134,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.CampusDAO;
@@ -3004,6 +3005,33 @@ public class SessionRollForward {
 			}
 		}
 		
+		if (rollForwardSessionForm.getRollForwardUniversalReservations()) {
+			Date expiration = null;
+			if (rollForwardSessionForm.getExpirationUniversalReservations() != null && !rollForwardSessionForm.getExpirationUniversalReservations().isEmpty()) {
+				try {
+					expiration = df.parse(rollForwardSessionForm.getExpirationUniversalReservations());
+				} catch (ParseException e) {}
+			}
+			Date startDate = null;
+			if (rollForwardSessionForm.getStartDateUniversalReservations() != null && !rollForwardSessionForm.getStartDateUniversalReservations().isEmpty()) {
+				try {
+					startDate = df.parse(rollForwardSessionForm.getStartDateUniversalReservations());
+				} catch (ParseException e) {}
+			}
+			getHibSession().createMutationQuery("delete UniversalOverrideReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId in :subjectIds and c.isControl = true)"
+					).setParameterList("subjectIds", subjectIds, Long.class).executeUpdate();
+			for (UniversalOverrideReservation reservation: getHibSession().createQuery(
+					"select distinct r from UniversalOverrideReservation r inner join r.instructionalOffering.courseOfferings c where " +
+					"c.isControl = true and c.subjectArea.subjectAreaAbbreviation in :subjectAbbvs and c.subjectArea.department.session.uniqueId = :sessionId", UniversalOverrideReservation.class)
+					.setParameterList("subjectAbbvs", subjectAbbvs, String.class)
+					.setParameter("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom())
+					.list()) {
+				UniversalOverrideReservation toReservation = rollUniversalReservationForward(reservation, toSession, startDate, expiration);
+				if (toReservation != null)
+					getHibSession().persist(toReservation);
+			}
+		}
+		
 		getHibSession().flush();
 	}
 	
@@ -3175,6 +3203,16 @@ public class SessionRollForward {
 					if (toMinor != null) toReservation.getMinors().add(toMinor);
 				}
 		}
+		
+		return toReservation;
+	}
+	
+	protected UniversalOverrideReservation rollUniversalReservationForward(UniversalOverrideReservation fromReservation, Session toSession, Date startDate, Date expiration) {
+		UniversalOverrideReservation toReservation = new UniversalOverrideReservation();
+		toReservation.setFlags(fromReservation.getFlags());
+		toReservation.setFilter(fromReservation.getFilter());
+
+		if (!rollReservationForward(fromReservation, toReservation, toSession, startDate, expiration)) return null;
 		
 		return toReservation;
 	}

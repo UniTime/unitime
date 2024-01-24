@@ -1790,7 +1790,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
 						if (cr.getEnrollment() == null) continue;
-						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						XOffering o = (server() == null ? null : server().getOffering(cr.getEnrollment().getOfferingId()));
 						XConfig g = (o == null ? null : o.getConfig(cr.getEnrollment().getConfigId()));
 						if (g != null) {
 							if ("!".equals(im) && g.getInstructionalMethod() != null && !g.getInstructionalMethod().getReference().equals(iServer.getAcademicSession().getDefaultInstructionalMethod())) continue;
@@ -1832,7 +1832,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (r instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)r;
 						if (cr.getEnrollment() == null) continue;
-						XOffering o = server().getOffering(cr.getEnrollment().getOfferingId());
+						XOffering o = (server() == null ? null : server().getOffering(cr.getEnrollment().getOfferingId()));
 						if (o != null)
 							for (XSection section: o.getSections(cr.getEnrollment())) {
 								if (section.getTime() == null) continue;

@@ -84,6 +84,7 @@ import org.cpsolver.studentsct.reservation.IndividualRestriction;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.cpsolver.studentsct.reservation.Restriction;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
@@ -148,6 +149,7 @@ import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -1112,6 +1114,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             		r.setCanAssignOverLimit(ApplicationProperty.ReservationCanOverLimitCourse.isTrue());
             		r.setMustBeUsed(ApplicationProperty.ReservationMustBeUsedCourse.isTrue());
         		}
+        	} else if (reservation instanceof UniversalOverrideReservation) {
+        		r = new UniversalOverride(reservation.getUniqueId(), reservation.isAlwaysExpired(), (reservation.getLimit() == null ? -1.0 : reservation.getLimit()), offering, ((UniversalOverrideReservation)reservation).getFilter());
+        		r.setPriority(reservation.getPriority());
+        		r.setMustBeUsed(reservation.isMustBeUsed());
+        		r.setAllowOverlap(reservation.isAllowOverlap());
+        		r.setCanAssignOverLimit(reservation.isCanAssignOverLimit());
+        		
         	}
         	if (r == null) {
         		iProgress.warn("Failed to load reservation " + reservation.getUniqueId() + "."); continue;
@@ -1233,6 +1242,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         							applicable = true; break;
         					}
         				}
+    			} else if (reservation instanceof UniversalOverride) {
+    				UniversalOverride u = (UniversalOverride)reservation;
+    				applicable = (u.getFilter() != null && !u.getFilter().isEmpty() && new Query(u.getFilter()).match(new DbStudentMatcher(s)));
     			}
     			if (!applicable) continue;
     			
@@ -1293,6 +1305,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 					CurriculumReservation c = (CurriculumReservation)reservation;
 					if (c.getReservationLimit() >= 1.0)
 						c.setReservationLimit(c.getReservationLimit() - 1.0);
+				} else if (reservation instanceof UniversalOverride) {
+					UniversalOverride u = (UniversalOverride)reservation;
+					if (u.getReservationLimit() >= 1.0)
+						u.setReservationLimit(u.getReservationLimit() - 1.0);
 				}
     		}
     	}
@@ -2294,6 +2310,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			(acm.getConcentration() == null ? null : acm.getConcentration().getCode()), (acm.getConcentration() == null ? null : acm.getConcentration().getName()),
         			(acm.getDegree() == null ? null : acm.getDegree().getReference()), (acm.getDegree() == null ? null : acm.getDegree().getLabel()),
         			(acm.getProgram() == null ? null : acm.getProgram().getReference()), (acm.getProgram() == null ? null : acm.getProgram().getLabel()),
+        			(acm.getCampus() == null ? null : acm.getCampus().getReference()), (acm.getCampus() == null ? null : acm.getCampus().getLabel()),
         			acm.getWeight()));
         }
         for (StudentAreaClassificationMinor acm: s.getAreaClasfMinors()) {
@@ -2728,6 +2745,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 					((IndividualReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
                 				} else if (enrollment.getReservation() instanceof CurriculumReservation && enrollment.getReservation().getReservationLimit() >= 1.0) {
                 					((CurriculumReservation)enrollment.getReservation()).setReservationLimit(enrollment.getReservation().getReservationLimit() - 1.0);
+                				} else if (enrollment.getReservation() instanceof UniversalOverride && enrollment.getReservation().getReservationLimit() >= 1.0) {
+                					((UniversalOverride)enrollment.getReservation()).setReservationLimit(enrollment.getReservation().getReservationLimit() - 1.0);
                 				}
                 			}
                 		}

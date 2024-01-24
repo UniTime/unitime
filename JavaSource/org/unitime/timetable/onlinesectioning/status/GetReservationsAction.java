@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.CurriculumReservationDAO;
@@ -71,6 +72,7 @@ import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.model.XUniversalReservation;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
@@ -278,6 +280,9 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 			group.setAbbv(sg.getGroupAbbreviation());
 			group.setLimit(sg.getStudents().size());
 			((ReservationInterface.GroupReservation) r).setGroup(group);
+		} else if (reservation instanceof UniversalOverrideReservation) {
+			r = new ReservationInterface.UniversalReservation();
+			((ReservationInterface.UniversalReservation) r).setFilter(((UniversalOverrideReservation)reservation).getFilter());
 		} else {
 			return null;
 		}
@@ -323,7 +328,7 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 		r.setLimit(reservation.getLimit());
 		r.setInclusive(reservation.getInclusive());
 		r.setId(reservation.getUniqueId());
-		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation || reservation instanceof CurriculumOverrideReservation);
+		r.setOverride(reservation instanceof IndividualOverrideReservation || reservation instanceof GroupOverrideReservation || reservation instanceof CurriculumOverrideReservation || reservation instanceof UniversalOverrideReservation);
 		r.setAllowOverlaps(reservation.isAllowOverlap());
 		r.setMustBeUsed(reservation.isMustBeUsed());
 		r.setAlwaysExpired(reservation.isAlwaysExpired());
@@ -598,6 +603,9 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 				group.setLimit(gr.getGroup().getStudents().size());
 			}
 			((ReservationInterface.GroupReservation) r).setGroup(group);
+		} else if (reservation instanceof XUniversalReservation) {
+			r = new ReservationInterface.UniversalReservation();
+			((ReservationInterface.UniversalReservation) r).setFilter(((XUniversalReservation)reservation).getFilter());			
 		} else {
 			return null;
 		}
@@ -661,7 +669,7 @@ public class GetReservationsAction implements OnlineSectioningAction<List<Reserv
 		r.setLimit(reservation.getReservationLimit() < 0 ? null : reservation.getReservationLimit());
 		r.setInclusive(reservation.isInclusive());
 		r.setId(reservation.getReservationId());
-		r.setOverride(reservation.getType() == XReservationType.IndividualOverride || reservation.getType() == XReservationType.CurriculumOverride || reservation.getType() == XReservationType.GroupOverride);
+		r.setOverride(reservation.getType() == XReservationType.IndividualOverride || reservation.getType() == XReservationType.CurriculumOverride || reservation.getType() == XReservationType.GroupOverride || reservation.getType() == XReservationType.Universal);
 		r.setAllowOverlaps(reservation.isAllowOverlap());
 		r.setMustBeUsed(reservation.mustBeUsed());
 		r.setAlwaysExpired(reservation.isAlwaysExpired());

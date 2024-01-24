@@ -17,25 +17,25 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.onlinesectioning.model;
-
-import java.io.Serializable;
+package org.unitime.timetable.model.dao;
 
 /**
- * @author Tomas Muller
+ * Do not change this class. It has been automatically generated using ant create-model.
+ * @see org.unitime.commons.ant.CreateBaseModelFromXml
  */
-public enum XReservationType implements Serializable {
-	Individual,
-	Group,
-	IndividualOverride,
-	GroupOverride,
-	Course,
-	Curriculum,
-	Dummy,
-	None,
-	LearningCommunity,
-	CurriculumOverride,
-	IndividualGroup,
-	Universal,
-	;
+import org.unitime.timetable.model.UniversalOverrideReservation;
+
+public class UniversalOverrideReservationDAO extends _RootDAO<UniversalOverrideReservation,Long> {
+	private static UniversalOverrideReservationDAO sInstance;
+
+	public UniversalOverrideReservationDAO() {}
+
+	public static UniversalOverrideReservationDAO getInstance() {
+		if (sInstance == null) sInstance = new UniversalOverrideReservationDAO();
+		return sInstance;
+	}
+
+	public Class<UniversalOverrideReservation> getReferenceClass() {
+		return UniversalOverrideReservation.class;
+	}
 }

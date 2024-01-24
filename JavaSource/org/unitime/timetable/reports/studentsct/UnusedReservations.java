@@ -56,6 +56,7 @@ import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
 import org.cpsolver.studentsct.reservation.ReservationOverride;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -92,6 +93,8 @@ public class UnusedReservations implements StudentSectioningReport {
         	return "course";
         } else if (reservation instanceof DummyReservation) {
         	return "dummy";
+        } else if (reservation instanceof UniversalOverride) {
+        	return "universal";
         } else {
         	return "other";
         }
@@ -112,6 +115,8 @@ public class UnusedReservations implements StudentSectioningReport {
         	return MSG.reservationCourse();
         } else if (reservation instanceof DummyReservation) {
         	return MSG.reservationDummy();
+        } else if (reservation instanceof UniversalOverride) {
+        	return MSG.reservationUniversal();
         } else {
         	return MSG.reservationOther();
         }

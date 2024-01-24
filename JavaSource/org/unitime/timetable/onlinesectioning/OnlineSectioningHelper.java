@@ -47,6 +47,7 @@ import org.cpsolver.studentsct.reservation.GroupReservation;
 import org.cpsolver.studentsct.reservation.IndividualReservation;
 import org.cpsolver.studentsct.reservation.LearningCommunityReservation;
 import org.cpsolver.studentsct.reservation.Reservation;
+import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -668,6 +669,10 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.CURRICULUM_RESERVATION);
     			CurriculumReservation cr = (CurriculumReservation)r;
     			reservation.setName(cr.getAcademicArea() + (cr.getClassifications().isEmpty() ? "" : " " + cr.getClassifications()) + (cr.getMajors().isEmpty() ? "" : cr.getMajors()));
+    		} else if (r instanceof UniversalOverride) {
+    			reservation.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION);
+    			UniversalOverride ur = (UniversalOverride)r;
+    			reservation.setName(ur.getFilter());
     		} else if (r instanceof CourseReservation)
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION);
     		section.setReservation(reservation);

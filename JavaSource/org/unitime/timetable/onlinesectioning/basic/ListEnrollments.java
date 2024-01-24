@@ -373,6 +373,9 @@ public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<Class
 							case LearningCommunity:
 								e.setReservation(MSG.reservationLearningCommunity());
 								break;
+							case Universal:
+								e.setReservation(MSG.reservationUniversal());
+								break;
 							}
 						}
 						e.setEnrolledDate(request.getEnrollment().getTimeStamp());
