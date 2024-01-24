@@ -317,35 +317,35 @@ Hibernate Commons Annotations (hibernate-commons-annotations-6.0.6.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.2.14.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.2.21.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.2.14.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.2.21.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Infinispan Commons Jakarta EE (infinispan-commons-jakarta-14.0.17.Final.jar)
+Infinispan Commons Jakarta EE (infinispan-commons-jakarta-14.0.22.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-commons-parent/infinispan-commons-jakarta
 
-Infinispan Core Jakarta EE (infinispan-core-jakarta-14.0.17.Final.jar)
+Infinispan Core Jakarta EE (infinispan-core-jakarta-14.0.22.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-core-jakarta
 
-Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-14.0.17.Final.jar)
+Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-14.0.22.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-commons
 
-Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-14.0.17.Final.jar)
+Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-14.0.22.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-spi
 
-Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-14.0.17.Final.jar)
+Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-14.0.22.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-v62
 
-Infinispan JBoss Marshalling (infinispan-jboss-marshalling-14.0.17.Final.jar)
+Infinispan JBoss Marshalling (infinispan-jboss-marshalling-14.0.22.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-jboss-marshalling
 
