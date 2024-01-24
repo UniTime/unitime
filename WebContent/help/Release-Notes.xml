@@ -60,7 +60,7 @@
 		</item>
 	</category>
 	<category>
-		<title>Course Timetabling</title>
+		<title>Student Scheduling</title>
 		<item>
 			<name>Student Scheduling Assistant / Course Requests: Access Control</name>
 			<description>
@@ -75,6 +75,15 @@
 					<line>unitime.accessCotrol.requests.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
 				</line>
 				<line>When the Inactive Warning shows, the user has a minute to dismiss the warning before the page is exited automatically.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Academic Session Export</name>
+			<description>
+				<line>Fixed the occasional "Unable to export: No row with the given identifier exists" error on records that do exists.</line>
 			</description>
 		</item>
 	</category>
