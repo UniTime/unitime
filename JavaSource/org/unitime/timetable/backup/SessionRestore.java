@@ -304,9 +304,13 @@ public class SessionRestore implements SessionRestoreInterface {
 	
 	private void setAttribute(Object object, Attribute attribute, Object value) {
 		try {
-			object.getClass().getMethod(getSetterMethod(attribute), attribute.getJavaType()).invoke(object, value);
+			try {
+				object.getClass().getMethod(getSetterMethod(attribute), attribute.getJavaType()).invoke(object, value);
+			} catch (NoSuchMethodException f) {
+				object.getClass().getMethod(getSetterMethod(attribute), value.getClass()).invoke(object, value);
+			}
 		} catch (Exception e) {
-			iProgress.warn("Failed to set " + object.getClass().getSimpleName() + "." + attribute + ": " + e.getMessage());
+			iProgress.warn("Failed to set " + object.getClass().getSimpleName() + "." + attribute.getName() + ": " + e.getMessage());
 		}
 	}
 	
