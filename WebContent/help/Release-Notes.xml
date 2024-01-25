@@ -42,6 +42,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Course Offering XML Import</name>
+			<description>
+				<line>Fixed checking of the seatingType attribute on exams.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.7.106</version>

@@ -2867,7 +2867,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Integer size = getOptionalIntegerAttribute(examElement, "size");
 				Integer length = getRequiredIntegerAttribute(examElement, "length", elementName);
 				String seating = getOptionalStringAttribute(examElement, "seatingType");
-				int seatingType = ("normal".equals(seating) ? Exam.sSeatingTypeNormal : Exam.sSeatingTypeNormal);
+				int seatingType = ("normal".equals(seating) ? Exam.sSeatingTypeNormal : Exam.sSeatingTypeExam);
 				String type = getRequiredStringAttribute(examElement, "type", elementName);
 				String note = getOptionalStringAttribute(examElement, "note");
 				Integer printOffset = getOptionalIntegerAttribute(examElement, "printOffset");
