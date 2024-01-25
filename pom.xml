@@ -739,7 +739,7 @@
 		<jackson.version>2.15.2</jackson.version>
 		<text.version>1.10.0</text.version>
 		<asm.version>9.5</asm.version>
-		<infinispan-hibernate.version>14.0.22.Final</infinispan-hibernate.version>
+		<infinispan-hibernate.version>14.0.21.Final</infinispan-hibernate.version>
 	</properties>
 
 	<distributionManagement>
