@@ -212,6 +212,7 @@ public abstract class RoomsExporter implements Exporter {
 		case EVENT_STATUS: return MESSAGES.colEventStatus();
 		case EVENT_AVAILABILITY: return MESSAGES.colEventAvailability();
 		case EVENT_MESSAGE: return MESSAGES.colEventMessage();
+		case EVENT_EMAIL: return MESSAGES.colEventEmail();
 		case BREAK_TIME: return MESSAGES.colBreakTime();
 		case GROUPS: return MESSAGES.colGroups();
 		case FEATURES:

@@ -14915,4 +14915,15 @@
 		<mysql>alter table %SCHEMA%.reservation add filter varchar(512)</mysql>
 		<pgsql>alter table %SCHEMA%.reservation add filter varchar(512)</pgsql>
 	</update>
+	<update version="267" date="26-Jan-2024" comment="Location Event Email">
+		<plsql>alter table %SCHEMA%.room add email varchar2(200)</plsql>
+		<mysql>alter table %SCHEMA%.room add email varchar(200)</mysql>
+		<pgsql>alter table %SCHEMA%.room add email varchar(200)</pgsql>
+		<plsql>alter table %SCHEMA%.non_university_location add email varchar2(200)</plsql>
+		<mysql>alter table %SCHEMA%.non_university_location add email varchar(200)</mysql>
+		<pgsql>alter table %SCHEMA%.non_university_location add email varchar(200)</pgsql>
+		<plsql>alter table %SCHEMA%.room_type_option add email varchar2(200)</plsql>
+		<mysql>alter table %SCHEMA%.room_type_option add email varchar(200)</mysql>
+		<pgsql>alter table %SCHEMA%.room_type_option add email varchar(200)</pgsql>
+	</update>
 </dbupdate>

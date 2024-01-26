@@ -834,6 +834,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event<br>Message")
 	String colEventMessage();
 	
+	@DefaultMessage("Event<br>Email")
+	String colEventEmail();
+	
 	@DefaultMessage("Break<br>Time")
 	String colBreakTime();
 	
@@ -4573,6 +4576,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event Message:")
 	String propEventNote();
 	
+	@DefaultMessage("Event Email:")
+	String propEventEmail();
+	
 	@DefaultMessage("Break Time:")
 	String propBreakTime();
 	
@@ -4821,6 +4827,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Event Status")
 	String fieldEventStatus();
+	
+	@DefaultMessage("Event Email")
+	String fieldEventEmail();
 	
 	@DefaultMessage("Room Note")
 	String fieldRoomNote();

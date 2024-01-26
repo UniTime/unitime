@@ -85,6 +85,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setEventStatus(null);
 		l.setBreakTime(getBreakTime());
 		l.setNote(getNote());
+		l.setEventEmail(getEventEmail());
 		l.setEventAvailability(getEventAvailability());
 		l.setExternalUniqueId(getExternalUniqueId());
 		l.setShareNote(getShareNote());

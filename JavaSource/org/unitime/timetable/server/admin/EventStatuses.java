@@ -88,18 +88,19 @@ public class EventStatuses implements AdminTable {
 			extra.add(new Field(provider.getReference(), FieldType.toggle, 40));
 		}
 		context.setAttribute(SessionAttribute.EventStatusServices, index2service);
-		Field[] fields = new Field[7 + extra.size()];
+		Field[] fields = new Field[8 + extra.size()];
 		fields[0] = new Field("&otimes;", FieldType.parent, 50, Flag.READ_ONLY);
 		fields[1] = new Field(MESSAGES.fieldDepartment() + "|" + MESSAGES.fieldType(), FieldType.text, 160, Flag.READ_ONLY);
 		fields[2] = new Field(MESSAGES.fieldRoomType() + "|" + MESSAGES.fieldRoom(), FieldType.text, 100, Flag.READ_ONLY);
 		fields[3] = new Field(MESSAGES.fieldEventStatus(), FieldType.list, 300, states, Flag.PARENT_NOT_EMPTY, Flag.SHOW_PARENT_IF_EMPTY);
 		fields[4] = new Field(MESSAGES.fieldRoomNote(), FieldType.textarea, 50, 3, 2048, Flag.SHOW_PARENT_IF_EMPTY);
-		fields[5] = new Field(MESSAGES.fieldBreakTime(), FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY);
-		fields[6] = new Field(MESSAGES.fieldSortOrder(), FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN);
+		fields[5] = new Field(MESSAGES.fieldEventEmail(), FieldType.text, 200, 200, Flag.SHOW_PARENT_IF_EMPTY);
+		fields[6] = new Field(MESSAGES.fieldBreakTime(), FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY);
+		fields[7] = new Field(MESSAGES.fieldSortOrder(), FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN);
 		for (int i = 0; i < extra.size(); i++)
-			fields[7 + i] = extra.get(i);
+			fields[8 + i] = extra.get(i);
 		SimpleEditInterface data = new SimpleEditInterface(fields);
-		data.setSortBy(6);
+		data.setSortBy(7);
 		data.setAddable(false);
 		long id = 0;
 		for (Department department: Department.getUserDepartments(context.getUser())) {
@@ -114,10 +115,11 @@ public class EventStatuses implements AdminTable {
 				r.setField(2, roomType.getLabel(), false);
 				r.setField(3, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
 				r.setField(4, option.getMessage() == null ? "" : option.getMessage());
-				r.setField(5, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
-				r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
+				r.setField(5, option.getEventEmail() == null ? "" : option.getEventEmail());
+				r.setField(6, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
+				r.setField(7, department.getDeptCode() + ":" + roomType.getOrd());
 				for (int i = 0; i < extra.size(); i++)
-					r.setField(7 + i, MESSAGES.notApplicable(), false);
+					r.setField(8 + i, MESSAGES.notApplicable(), false);
 				for (Room room: hibSession.createQuery(
 						"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber", Room.class)
 						.setParameter("departmentId", department.getUniqueId()).setParameter("roomTypeId", roomType.getUniqueId()).setCacheable(true).list()) {
@@ -127,12 +129,13 @@ public class EventStatuses implements AdminTable {
 					r.setField(2, room.getLabel(), false);
 					r.setField(3, room.getEventStatus() == null ? "" : room.getEventStatus().toString());
 					r.setField(4, room.getNote() == null ? "" : room.getNote());
-					r.setField(5, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
-					r.setField(6, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
+					r.setField(5, room.getEventEmail() == null ? "" : room.getEventEmail());
+					r.setField(6, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
+					r.setField(7, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
 					for (int i = 0; i < extra.size(); i++) {
 						EventServiceProvider provider = index2provider.get(i);
 						boolean hasToggle = provider.getDepartment() == null || provider.getDepartment().equals(department);
-						r.setField(7 + i, !hasToggle ? MESSAGES.notApplicable() : room.getAllowedServices().contains(provider) ? "true" : "false", hasToggle);
+						r.setField(8 + i, !hasToggle ? MESSAGES.notApplicable() : room.getAllowedServices().contains(provider) ? "true" : "false", hasToggle);
 					}
 				}
 			}
@@ -146,10 +149,11 @@ public class EventStatuses implements AdminTable {
 				r.setField(2, roomType.getLabel(), false);
 				r.setField(3, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
 				r.setField(4, option.getMessage() == null ? "" : option.getMessage());
-				r.setField(5, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
-				r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
+				r.setField(5, option.getEventEmail() == null ? "" : option.getEventEmail());
+				r.setField(6, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
+				r.setField(7, department.getDeptCode() + ":" + roomType.getOrd());
 				for (int i = 0; i < extra.size(); i++)
-					r.setField(7 + i, MESSAGES.notApplicable(), false);
+					r.setField(8 + i, MESSAGES.notApplicable(), false);
 				for (NonUniversityLocation room: hibSession.createQuery(
 						"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name", NonUniversityLocation.class)
 						.setParameter("departmentId", department.getUniqueId()).setParameter("roomTypeId", roomType.getUniqueId()).setCacheable(true).list()) {
@@ -159,12 +163,13 @@ public class EventStatuses implements AdminTable {
 					r.setField(2, room.getLabel(), false);
 					r.setField(3, room.getEventStatus() == null ? "" : room.getEventStatus().toString());
 					r.setField(4, room.getNote() == null ? "" : room.getNote());
-					r.setField(5, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
-					r.setField(6, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
+					r.setField(5, room.getEventEmail() == null ? "" : room.getEventEmail());
+					r.setField(6, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
+					r.setField(7, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
 					for (int i = 0; i < extra.size(); i++) {
 						EventServiceProvider provider = index2provider.get(i);
 						boolean hasToggle = provider.getDepartment() == null || provider.getDepartment().equals(department);
-						r.setField(7 + i, !hasToggle ? MESSAGES.notApplicable() : room.getAllowedServices().contains(provider) ? "true" : "false", hasToggle);
+						r.setField(8 + i, !hasToggle ? MESSAGES.notApplicable() : room.getAllowedServices().contains(provider) ? "true" : "false", hasToggle);
 					}
 				}
 			}
@@ -187,11 +192,13 @@ public class EventStatuses implements AdminTable {
 						boolean optionChanged = 
 								!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(3))) ||
 								!ToolBox.equals(option.getMessage(), r.getField(4)) ||
-								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(5));
+								!ToolBox.equals(option.getEventEmail(), r.getField(5)) ||
+								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(6));
 						option.setStatus(Integer.parseInt(r.getField(3)));
 						option.setMessage(r.getField(4));
+						option.setEventEmail(r.getField(5));
 						try {
-							option.setBreakTime(Integer.parseInt(r.getField(5)));
+							option.setBreakTime(Integer.parseInt(r.getField(6)));
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
@@ -217,11 +224,13 @@ public class EventStatuses implements AdminTable {
 						boolean optionChanged = 
 								!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(3))) ||
 								!ToolBox.equals(option.getMessage(), r.getField(4)) ||
-								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(5));
+								!ToolBox.equals(option.getEventEmail(), r.getField(5)) ||
+								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(6));
 						option.setStatus(Integer.parseInt(r.getField(3)));
 						option.setMessage(r.getField(4));
+						option.setEventEmail(r.getField(5));
 						try {
-							option.setBreakTime(Integer.parseInt(r.getField(5)));
+							option.setBreakTime(Integer.parseInt(r.getField(6)));
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
@@ -261,7 +270,7 @@ public class EventStatuses implements AdminTable {
 				services.add(service.getUniqueId());
 		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute(SessionAttribute.EventStatusServices);
 		for (Map.Entry<Integer, Long> e: index2service.entrySet()) {
-			if ("true".equals(record.getField(7 + e.getKey()))) {
+			if ("true".equals(record.getField(8 + e.getKey()))) {
 				if (!services.contains(e.getValue())) return false;
 			} else {
 				if (services.contains(e.getValue())) return false;
@@ -275,7 +284,7 @@ public class EventStatuses implements AdminTable {
 			location.setAllowedServices(new HashSet<EventServiceProvider>());
 		Map<Integer,Long> index2service = (Map<Integer,Long>)context.getAttribute(SessionAttribute.EventStatusServices);
 		for (Map.Entry<Integer, Long> e: index2service.entrySet()) {
-			if ("true".equals(record.getField(7 + e.getKey()))) 
+			if ("true".equals(record.getField(8 + e.getKey()))) 
 				location.getAllowedServices().add(EventServiceProviderDAO.getInstance().get(e.getValue()));
 			else
 				location.getAllowedServices().remove(EventServiceProviderDAO.getInstance().get(e.getValue()));
@@ -286,17 +295,20 @@ public class EventStatuses implements AdminTable {
 		if (location == null) return;
 		Integer status = record.getField(3) == null || record.getField(3).isEmpty() ? null : Integer.parseInt(record.getField(3));
 		String note = (record.getField(4) == null || record.getField(4).isEmpty() ? null : record.getField(4));
+		String email = (record.getField(5) == null || record.getField(5).isEmpty() ? null : record.getField(5));
 		Integer breakTime = null;
 		try {
-			breakTime = (record.getField(5) == null || record.getField(5).isEmpty() ? null : Integer.parseInt(record.getField(5)));
+			breakTime = (record.getField(6) == null || record.getField(6).isEmpty() ? null : Integer.parseInt(record.getField(6)));
 		} catch (NumberFormatException e) {}
 		if (ToolBox.equals(location.getEventStatus(), status) &&
 				ToolBox.equals(location.getNote(), note) &&
+				ToolBox.equals(location.getEventEmail(), email) &&
 				ToolBox.equals(location.getBreakTime(), breakTime) &&
 				sameServiceProviders(location, context, record)) return;
 		boolean noteChanged = !ToolBox.equals(location.getNote(), note);
 		location.setEventStatus(status);
 		location.setNote(note);
+		location.setEventEmail(email);
 		location.setBreakTime(breakTime);
 		setServiceProviders(location, context, record);
 		hibSession.merge(location);
@@ -332,11 +344,13 @@ public class EventStatuses implements AdminTable {
 						boolean optionChanged = 
 								!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(record.getField(3))) ||
 								!ToolBox.equals(option.getMessage(), record.getField(4)) ||
-								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), record.getField(5));
+								!ToolBox.equals(option.getEventEmail(), record.getField(5)) |
+								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), record.getField(6));
 						option.setStatus(Integer.parseInt(record.getField(3)));
 						option.setMessage(record.getField(4));
+						option.setEventEmail(record.getField(5));
 						try {
-							option.setBreakTime(Integer.parseInt(record.getField(5)));
+							option.setBreakTime(Integer.parseInt(record.getField(6)));
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}
@@ -361,11 +375,13 @@ public class EventStatuses implements AdminTable {
 						boolean optionChanged = 
 								!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(record.getField(3))) ||
 								!ToolBox.equals(option.getMessage(), record.getField(4)) ||
-								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), record.getField(5));
+								!ToolBox.equals(option.getEventEmail(), record.getField(5)) |
+								!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), record.getField(6));
 						option.setStatus(Integer.parseInt(record.getField(3)));
 						option.setMessage(record.getField(4));
+						option.setEventEmail(record.getField(5));
 						try {
-							option.setBreakTime(Integer.parseInt(record.getField(5)));
+							option.setBreakTime(Integer.parseInt(record.getField(6)));
 						} catch (NumberFormatException e) {
 							option.setBreakTime(0);
 						}

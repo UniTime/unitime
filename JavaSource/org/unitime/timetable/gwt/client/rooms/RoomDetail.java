@@ -238,6 +238,12 @@ public class RoomDetail extends Composite {
 			if (!iRoom.hasEventNote()) note.addStyleName("default");
 			iForm.addRow(MESSAGES.propEventNote(), note, 1);
 		}
+		if (events && (iRoom.hasEventEmail() || iRoom.hasDefaultEventEmail())) {
+			Label email = new Label(iRoom.hasEventEmail() ? iRoom.getEventEmail() : iRoom.getDefaultEventEmail());
+			email.addStyleName("email");
+			if (!iRoom.hasEventEmail()) email.addStyleName("default");
+			iForm.addRow(MESSAGES.propEventEmail(), email, 1);
+		}
 		if (events && (iRoom.getBreakTime() != null || iRoom.getDefaultBreakTime() != null)) {
 			Label bt = new Label((iRoom.getBreakTime() == null ? iRoom.getDefaultBreakTime() : iRoom.getBreakTime()).toString());
 			if (iRoom.getBreakTime() == null) bt.addStyleName("default");

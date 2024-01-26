@@ -400,6 +400,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	if (!future)
             		location.setEventStatus(room.getEventStatus());
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
+            	location.setEventEmail(room.getEventEmail());
             	Set<EventServiceProvider> services = new HashSet<EventServiceProvider>(location.getAllowedServices());
             	if (room.hasServices()) {
             		for (EventServiceProviderInterface service: room.getServices()) {
@@ -970,6 +971,7 @@ public class RoomUpdateBackend implements GwtRpcImplementation<RoomUpdateRpcRequ
             	if (!future)
             		location.setEventStatus(room.getEventStatus());
             	location.setNote(room.getEventNote() == null ? "" : room.getEventNote().length() > 2048 ? room.getEventNote().substring(0, 2048) : room.getEventNote());
+            	location.setEventEmail(room.getEventEmail());
             	location.setAllowedServices(new HashSet<EventServiceProvider>());
             	if (room.hasServices()) {
             		for (EventServiceProviderInterface service: room.getServices()) {

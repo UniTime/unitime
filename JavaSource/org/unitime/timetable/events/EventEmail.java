@@ -153,6 +153,37 @@ public class EventEmail {
 						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
+			Set<String> locationEmails = new HashSet<String>();
+			if (response().hasApprovedMeetings()) {
+				for (MeetingInterface m: response().getApprovedMeetings()) {
+					if (m.hasLocationEventEmail() && locationEmails.add(m.getLocationEventEmail()))
+						email.addRecipientCC(m.getLocationEventEmail(), m.getLocationName());
+				}
+			}
+			if (response().hasCreatedMeetings()) {
+				for (MeetingInterface m: response().getCreatedMeetings()) {
+					if (m.hasLocationEventEmail() && locationEmails.add(m.getLocationEventEmail()))
+						email.addRecipientCC(m.getLocationEventEmail(), m.getLocationName());
+				}
+			}
+			if (response().hasUpdatedMeetings()) {
+				for (MeetingInterface m: response().getUpdatedMeetings()) {
+					if (m.hasLocationEventEmail() && locationEmails.add(m.getLocationEventEmail()))
+						email.addRecipientCC(m.getLocationEventEmail(), m.getLocationName());
+				}
+			}
+			if (response().hasDeletedMeetings()) {
+				for (MeetingInterface m: response().getDeletedMeetings()) {
+					if (m.hasLocationEventEmail() && locationEmails.add(m.getLocationEventEmail()))
+						email.addRecipientCC(m.getLocationEventEmail(), m.getLocationName());
+				}
+			}
+			if (response().hasCancelledMeetings()) {
+				for (MeetingInterface m: response().getCancelledMeetings()) {
+					if (m.hasLocationEventEmail() && locationEmails.add(m.getLocationEventEmail()))
+						email.addRecipientCC(m.getLocationEventEmail(), m.getLocationName());
+				}
+			}
 			
 			Set<EventServiceProviderInterface> providers = new TreeSet<EventServiceProviderInterface>();
 			if (response().hasRemovedServices() && (event().hasMeetingsOfStatus(ApprovalStatus.Approved) || response().hasCancelledMeetings())) {

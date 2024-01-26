@@ -232,6 +232,9 @@ public class RoomsExportPDF extends RoomsExporter {
 		case EVENT_MESSAGE:
 			return room.getEventNote() != null ? new A(room.getEventNote()) : new A(room.getDefaultEventNote()).italic();
 			
+		case EVENT_EMAIL:
+			return room.getEventEmail() != null ? new A(room.getEventEmail()) : new A(room.getDefaultEventEmail()).italic();
+			
 		case BREAK_TIME:
 			return room.getBreakTime() != null ? new A(room.getBreakTime().toString()) : room.getDefaultBreakTime() != null ? new A(room.getDefaultBreakTime().toString()).italic() : new A();
 		

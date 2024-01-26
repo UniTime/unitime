@@ -504,6 +504,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iDisplayName = null;
 		private boolean iShowMessageInGrid = false;
 		private Long iPartitionParentId;
+		private String iEventEmail = null;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -523,6 +524,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setShowMessageInGrid("1".equals(room.getProperty("gridNote", "0")));
 			String parentId = room.getProperty("parentId", null);
 			setPartitionParentId(parentId == null ? null : Long.valueOf(parentId));
+			setBreakTime(Integer.parseInt(room.getProperty("breakTime" ,"0")));
+			setEventEmail(room.getProperty("email", null));
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -563,6 +566,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setShowMessageInGrid(boolean showMessageInGrid) { iShowMessageInGrid = showMessageInGrid; }
 		public Long getPartitionParentId() { return iPartitionParentId; }
 		public void setPartitionParentId(Long parentId) { iPartitionParentId = parentId; }
+		public String getEventEmail() { return iEventEmail; }
+		public boolean hasEventEmail() { return iEventEmail != null && !iEventEmail.isEmpty(); }
+		public void setEventEmail(String email) { iEventEmail = email; }
 		
 		public String getNameWithHint(GwtMessages msg) {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
@@ -799,6 +805,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getLocationCapacity() {
 			return (iLocation == null ? "" : iLocation.getSize() == null ? "" : iLocation.getSize().toString());
 		}
+		public boolean hasLocationEventEmail() { return iLocation != null && iLocation.hasEventEmail();}
+		public String getLocationEventEmail() { return iLocation == null ? null : iLocation.getEventEmail(); }
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }

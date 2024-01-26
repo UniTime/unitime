@@ -46,6 +46,7 @@ public abstract class BaseRoomTypeOption implements Serializable {
 	private Integer iStatus;
 	private String iMessage;
 	private Integer iBreakTime;
+	private String iEventEmail;
 
 
 	public BaseRoomTypeOption() {
@@ -76,6 +77,10 @@ public abstract class BaseRoomTypeOption implements Serializable {
 	public Integer getBreakTime() { return iBreakTime; }
 	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
 
+	@Column(name = "email", nullable = true, length = 200)
+	public String getEventEmail() { return iEventEmail; }
+	public void setEventEmail(String eventEmail) { iEventEmail = eventEmail; }
+
 	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomTypeOption)) return false;
@@ -99,6 +104,7 @@ public abstract class BaseRoomTypeOption implements Serializable {
 		return "RoomTypeOption[" +
 			"\n	BreakTime: " + getBreakTime() +
 			"\n	Department: " + getDepartment() +
+			"\n	EventEmail: " + getEventEmail() +
 			"\n	Message: " + getMessage() +
 			"\n	RoomType: " + getRoomType() +
 			"\n	Status: " + getStatus() +

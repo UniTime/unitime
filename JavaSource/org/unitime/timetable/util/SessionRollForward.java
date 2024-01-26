@@ -422,6 +422,7 @@ public class SessionRollForward {
 				toRoom.setEventStatus(null);
 				toRoom.setBreakTime(fromRoom.getBreakTime());
 				toRoom.setNote(fromRoom.getNote());
+				toRoom.setEventEmail(fromRoom.getEventEmail());
 				toRoom.setEventAvailability(fromRoom.getEventAvailability());
 				LocationPermIdGenerator.setPermanentId(toRoom);
 			} else {

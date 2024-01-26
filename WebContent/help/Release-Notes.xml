@@ -73,6 +73,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Rooms: Event Email</name>
+			<description>
+				<line>Added event emails on rooms, non-university locations, and event statuses.</line>
+				<line>When sending an event confirmation email, automatically CC all rooms of changed meetings.</line>
+				<line>Event Statuses page can now edit a default event email for a department and a room type pairs.</line>
+				<line>Event Statusess and Add/Edit Room pages can now edit event emails of an individual room.</line>
+			</description>
+		</item>
+	</category>	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Academic Session Export</name>

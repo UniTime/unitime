@@ -211,6 +211,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 						location.setDisplayName(m.getLocation().getDisplayName());
 						location.setPartitionParentId(m.getLocation().getPartitionParentId());
+						location.setEventEmail(m.getLocation().getEventEmail());
 						conflict.setLocation(location);
 					}
 						
@@ -395,6 +396,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							loc.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 							loc.setDisplayName(m.getLocation().getDisplayName());
 							loc.setPartitionParentId(m.getLocation().getPartitionParentId());
+							loc.setEventEmail(m.getLocation().getEventEmail());
 							conflict.setLocation(loc);
 						}
 						
@@ -475,6 +477,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		resource.setDisplayName(location.getDisplayName());
 		resource.setPartitionParentId(location.getPartitionParentId());
+		resource.setEventEmail(location.effectiveEventEmail());
 		
 		Calendar calendar = Calendar.getInstance();
         for (int day = 0; day < Constants.DAY_CODES.length; day++)
@@ -536,6 +539,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
 		resource.setDisplayName(location.getDisplayName());
 		resource.setPartitionParentId(location.getPartitionParentId());
+		resource.setEventEmail(location.effectiveEventEmail());
 		
 		int day = meeting.getDayOfWeek();
 		for (int startTime = 0; startTime < Constants.SLOTS_PER_DAY; ) {

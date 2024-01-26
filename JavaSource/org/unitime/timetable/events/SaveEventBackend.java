@@ -442,6 +442,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						location.setIgnoreRoomCheck(m.getLocation().isIgnoreRoomCheck());
 						location.setDisplayName(m.getLocation().getDisplayName());
 						location.setPartitionParentId(m.getLocation().getPartitionParentId());
+						location.setEventEmail(m.getLocation().getEventEmail());
 						meeting.setLocation(location);
 					}
 					response.addDeletedMeeting(meeting);

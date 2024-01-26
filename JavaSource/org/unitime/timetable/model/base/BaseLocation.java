@@ -78,6 +78,7 @@ public abstract class BaseLocation implements Serializable {
 	private Integer iExamCapacity;
 	private String iDisplayName;
 	private String iExternalUniqueId;
+	private String iEventEmail;
 
 	private Session iSession;
 	private Department iEventDepartment;
@@ -177,6 +178,10 @@ public abstract class BaseLocation implements Serializable {
 	@Column(name = "external_uid", nullable = true, length = 40)
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
+
+	@Column(name = "email", nullable = true, length = 200)
+	public String getEventEmail() { return iEventEmail; }
+	public void setEventEmail(String eventEmail) { iEventEmail = eventEmail; }
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "session_id", nullable = false)
@@ -308,6 +313,7 @@ public abstract class BaseLocation implements Serializable {
 			"\n	DisplayName: " + getDisplayName() +
 			"\n	EventAvailability: " + getEventAvailability() +
 			"\n	EventDepartment: " + getEventDepartment() +
+			"\n	EventEmail: " + getEventEmail() +
 			"\n	EventStatus: " + getEventStatus() +
 			"\n	ExamCapacity: " + getExamCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +

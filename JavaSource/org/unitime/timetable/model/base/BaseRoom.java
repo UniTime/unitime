@@ -162,6 +162,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 			"\n	DisplayName: " + getDisplayName() +
 			"\n	EventAvailability: " + getEventAvailability() +
 			"\n	EventDepartment: " + getEventDepartment() +
+			"\n	EventEmail: " + getEventEmail() +
 			"\n	EventStatus: " + getEventStatus() +
 			"\n	ExamCapacity: " + getExamCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +

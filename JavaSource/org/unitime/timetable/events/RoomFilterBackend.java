@@ -367,7 +367,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					"ignoreRoomCheck", location.isIgnoreRoomCheck() ? "1" : "0",
 					"display", location.getDisplayName(),
 					"gridNote", location.getEventMessage() != null && !location.getEventMessage().isEmpty() && (showRoomNoteAlways || (showRoomNoteWhenAvailable && context.hasPermission(location, Right.EventLocation))) ? "1" : "0",
-					"parentId", location.getPartitionParentId() == null ? null : location.getPartitionParentId().toString()
+					"parentId", location.getPartitionParentId() == null ? null : location.getPartitionParentId().toString(),
+					"email", location.effectiveEventEmail()
 					));
 		}
 	}
