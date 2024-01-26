@@ -183,19 +183,38 @@ public class UnusedReservations implements StudentSectioningReport {
 			}
 		}
 		CSVFile csv = new CSVFile();
-		csv.setHeader(new CSVFile.CSVField[] {
-				new CSVFile.CSVField("__Student"),
-        		new CSVFile.CSVField(MSG.reportStudentId()),
-        		new CSVFile.CSVField(MSG.reportStudentName()),
-        		new CSVFile.CSVField(MSG.reportStudentEmail()),
-        		new CSVFile.CSVField(MSG.reportStudentPriority()),
-        		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
-        		new CSVFile.CSVField(MSG.reportStudentGroup()),
-        		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
-        		new CSVFile.CSVField(MSG.reportRequestedCourse()),
-        		new CSVFile.CSVField(MSG.reportCourseRequestPriority()),
-        		new CSVFile.CSVField(MSG.reportAssignmentConflict())
-                });
+		if (types.contains("universal"))
+			csv.setHeader(new CSVFile.CSVField[] {
+					new CSVFile.CSVField("__Student"),
+	        		new CSVFile.CSVField(MSG.reportStudentId()),
+	        		new CSVFile.CSVField(MSG.reportStudentName()),
+	        		new CSVFile.CSVField(MSG.reportStudentEmail()),
+	        		new CSVFile.CSVField(MSG.reportStudentPriority()),
+	        		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
+	        		new CSVFile.CSVField(MSG.reportStudentGroup()),
+	        		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
+	        		new CSVFile.CSVField(MSG.reportRequestedCourse()),
+	        		new CSVFile.CSVField(MSG.reportCourseRequestPriority()),
+	        		new CSVFile.CSVField(MSG.reportAssignmentConflict()),
+	        		new CSVFile.CSVField(MSG.reportUniversalReservationStudentFilter())
+	                });
+		else
+			csv.setHeader(new CSVFile.CSVField[] {
+					new CSVFile.CSVField("__Student"),
+	        		new CSVFile.CSVField(MSG.reportStudentId()),
+	        		new CSVFile.CSVField(MSG.reportStudentName()),
+	        		new CSVFile.CSVField(MSG.reportStudentEmail()),
+	        		new CSVFile.CSVField(MSG.reportStudentPriority()),
+	        		new CSVFile.CSVField(MSG.reportStudentCurriculum()),
+	        		new CSVFile.CSVField(MSG.reportStudentGroup()),
+	        		new CSVFile.CSVField(MSG.reportStudentAdvisor()),
+	        		new CSVFile.CSVField(MSG.reportRequestedCourse()),
+	        		new CSVFile.CSVField(MSG.reportCourseRequestPriority()),
+	        		new CSVFile.CSVField(MSG.reportAssignmentConflict())
+	                });
+
+
+		
 		if (unused.isEmpty()) return csv;
 		for (Student student: getModel().getStudents()) {
 			List<Reservation> studentReservations = unused.get(student.getId());
@@ -310,6 +329,8 @@ public class UnusedReservations implements StudentSectioningReport {
 						}
 					}
 	            }
+	            if (reservation instanceof UniversalOverride)
+	            	line.add(new CSVFile.CSVField(((UniversalOverride)reservation).getFilter()));
 	            csv.addLine(line);
 			}
 		}
