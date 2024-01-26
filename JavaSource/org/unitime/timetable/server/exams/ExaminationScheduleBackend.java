@@ -184,6 +184,7 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 					location.setIgnoreRoomCheck(r.getLocation().isIgnoreRoomCheck());
 					location.setDisplayName(r.getLocation().getDisplayName());
 					location.setPartitionParentId(r.getLocation().getPartitionParentId());
+					location.setEventEmail(r.getLocation().effectiveEventEmail());
 					related.addLocation(location);
 				}
 			}

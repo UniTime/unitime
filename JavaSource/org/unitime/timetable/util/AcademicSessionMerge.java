@@ -426,6 +426,7 @@ public class AcademicSessionMerge {
         		newOption.setMessage(option.getMessage());
         		newOption.setRoomType(option.getRoomType());
         		newOption.setStatus(RoomTypeOption.getDefaultStatus());
+        		newOption.setEventEmail(option.getEventEmail());
         		hibSession.persist(newOption);
         	}
         }
@@ -967,6 +968,7 @@ public class AcademicSessionMerge {
 						toRoom.setEventStatus(null);
 						toRoom.setBreakTime(fromRoom.getBreakTime());
 						toRoom.setNote(fromRoom.getNote());
+						toRoom.setEventEmail(fromRoom.getEventEmail());
 						toRoom.setEventAvailability(fromRoom.getEventAvailability());
 						LocationPermIdGenerator.setPermanentId(toRoom);
 					} else {

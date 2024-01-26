@@ -418,6 +418,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EVENT_STATUS: return MESSAGES.colEventStatus();
 		case EVENT_AVAILABILITY: return MESSAGES.colEventAvailability();
 		case EVENT_MESSAGE: return MESSAGES.colEventMessage();
+		case EVENT_EMAIL: return MESSAGES.colEventEmail();
 		case BREAK_TIME: return MESSAGES.colBreakTime();
 		case GROUPS: return MESSAGES.colGroups();
 		case FEATURES:
@@ -501,6 +502,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EVENT_AVAILABILITY:
 		case EVENT_STATUS:
 		case EVENT_MESSAGE:
+		case EVENT_EMAIL:
 		case BREAK_TIME:
 		case SERVICES:
 			return RoomsColumn.EVENT_DEPARTMENT;
@@ -655,6 +657,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			switch (column) {
 			case EVENT_DEPARTMENT:
 			case EVENT_MESSAGE:
+			case EVENT_EMAIL:
 			case EVENT_AVAILABILITY:
 			case EVENT_STATUS:
 			case BREAK_TIME:
@@ -788,6 +791,12 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case EVENT_MESSAGE:
 			if (room.hasEventNote() || room.hasDefaultEventNote())
 				return new NoteCell(room.getEventNote(), room.getDefaultEventNote());
+			else
+				return null;
+			
+		case EVENT_EMAIL:
+			if (room.hasEventEmail() || room.hasDefaultEventEmail())
+				return new NoteCell(room.getEventEmail(), room.getDefaultEventEmail());
 			else
 				return null;
 			

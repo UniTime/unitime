@@ -226,6 +226,13 @@
        		class="RoomType"
        		column="room_type"
        		not-null="true"/>
+
+       	<property
+       		name="eventEmail"
+       		column="email"
+       		type="java.lang.String"
+       		not-null="false"
+       		length="200"/>
             
         <union-subclass
             name="Room"

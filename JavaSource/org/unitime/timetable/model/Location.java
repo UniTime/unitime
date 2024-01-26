@@ -1069,6 +1069,15 @@ public abstract class Location extends BaseLocation implements Comparable {
     	else
     		return getRoomType().getOption(getEventDepartment()).getMessage();
     }
+	
+	@Transient
+    public String effectiveEventEmail() {
+    	if (getEventEmail() != null && !getEventEmail().isEmpty()) return getEventEmail();
+    	if (getEventDepartment() == null)
+    		return null;
+    	else
+    		return getRoomType().getOption(getEventDepartment()).getEventEmail();
+    }
 
     
 	@Transient

@@ -112,6 +112,7 @@ public class Room extends BaseRoom {
 		r.setEventStatus(null);
 		r.setBreakTime(getBreakTime());
 		r.setNote(getNote());
+		r.setEventEmail(getEventEmail());
 		r.setEventAvailability(getEventAvailability());
 		r.setShareNote(getShareNote());
 		return r;

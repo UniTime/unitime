@@ -331,12 +331,14 @@ public class RoomDetailsBackend extends RoomFilterBackend {
         	
         	response.setEventNote(location.getNote());
         	response.setBreakTime(location.getBreakTime());
+        	response.setEventEmail(location.getEventEmail());
         	if (location.getEventDepartment() != null) {
             	response.setEventStatus(location.getEventStatus());
             	RoomTypeOption rto = location.getRoomType().getOption(location.getEventDepartment());
             	response.setDefaultEventStatus(rto.getStatus());
             	response.setDefaultBreakTime(rto.getBreakTime());
             	response.setDefaultEventNote(rto.getMessage());
+            	response.setDefaultEventEmail(rto.getEventEmail());
             	for (EventServiceProvider p: location.getAllowedServices()) {
 		    		if (!p.isVisible() || p.isAllRooms()) continue;
 		    		EventServiceProviderInterface provider = new EventServiceProviderInterface();

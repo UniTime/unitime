@@ -136,6 +136,7 @@ public class RoomEdit extends Composite {
 	private P iBreakTimePanel;
 	private NumberBox iBreakTime;
 	private UniTimeWidget<TextArea> iNote;
+	private TextBox iEventEmail;
 	private P iExaminationRoomsPanel;
 	private Map<Long, CheckBox> iExaminationRooms = new HashMap<Long, CheckBox>();
 	private Map<Long, CheckBox> iGroups = new HashMap<Long, CheckBox>();
@@ -421,6 +422,11 @@ public class RoomEdit extends Composite {
 		iNote.getWidget().setStyleName("unitime-TextArea");
 		iNote.getWidget().setVisibleLines(5);
 		iNote.getWidget().setCharacterWidth(70);
+		
+		iEventEmail = new TextBox();
+		iEventEmail.setStyleName("unitime-TextBox");
+		iEventEmail.setMaxLength(200);
+		iEventEmail.setWidth("480px");
 		
 		iBreakTime = new NumberBox();
 		iBreakTime.setDecimal(false);
@@ -872,6 +878,8 @@ public class RoomEdit extends Composite {
 			iForm.addRow(MESSAGES.propEventStatus(), iEventStatus, 1);
 			iNote.getWidget().setText(iRoom.getEventNote() == null ? "" : iRoom.getEventNote());
 			iForm.addRow(MESSAGES.propEventNote(), iNote, 1);
+			iEventEmail.setText(iRoom.getEventEmail() == null ? "" : iRoom.getEventEmail());
+			iForm.addRow(MESSAGES.propEventEmail(), iEventEmail, 1);
 			iBreakTime.setValue(iRoom.getBreakTime());
 			iForm.addRow(MESSAGES.propBreakTime(), iBreakTimePanel, 1);
 			for (Map.Entry<Long, CheckBox> e: iServices.entrySet())
@@ -901,6 +909,11 @@ public class RoomEdit extends Composite {
 				HTML note = new HTML(iRoom.hasEventNote() ? iRoom.getEventNote() : iRoom.getDefaultEventNote());
 				if (!iRoom.hasEventNote()) note.addStyleName("default");
 				iForm.addRow(MESSAGES.propEventNote(), note, 1);
+			}
+			if (iRoom.hasEventEmail() || iRoom.hasDefaultEventEmail()) {
+				Label email = new HTML(iRoom.hasEventEmail() ? iRoom.getEventEmail() : iRoom.getDefaultEventEmail());
+				if (!iRoom.hasEventEmail()) email.addStyleName("default");
+				iForm.addRow(MESSAGES.propEventEmail(), email, 1);
 			}
 			if (iRoom.getBreakTime() != null || iRoom.getDefaultBreakTime() != null) {
 				Label bt = new Label((iRoom.getBreakTime() == null ? iRoom.getDefaultBreakTime() : iRoom.getBreakTime()).toString());
@@ -1510,6 +1523,7 @@ public class RoomEdit extends Composite {
 				iNote.setErrorHint(MESSAGES.errorEventNoteTooLong());
 				result = false;
 			}
+			iRoom.setEventEmail(iEventEmail.getText().isEmpty() ? null : iEventEmail.getText());
 			iRoom.setBreakTime(iBreakTime.toInteger());
 			iRoom.clearServices();
 			if (iProperties.hasEventServiceProviders() && iRoom.getEventDepartment() != null)

@@ -146,6 +146,8 @@ public class RoomsExportCSV extends RoomsExporter {
 			return room.getEventAvailability();
 		case EVENT_MESSAGE:
 			return room.getEventNote() != null ? room.getEventNote() : room.getDefaultEventNote();
+		case EVENT_EMAIL:
+			return room.getEventEmail() != null ? room.getEventEmail() : room.getDefaultEventEmail();
 		case BREAK_TIME:
 			return room.getBreakTime() != null ? room.getBreakTime().toString() : room.getDefaultBreakTime() != null ? room.getDefaultBreakTime().toString() : "";
 		case GROUPS:
