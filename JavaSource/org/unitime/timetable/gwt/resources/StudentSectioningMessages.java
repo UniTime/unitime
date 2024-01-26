@@ -2081,6 +2081,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Conflict")
 	String reportAssignmentConflict();
 	
+	@DefaultMessage("Student Filter")
+	String reportUniversalReservationStudentFilter();
+	
 	@DefaultMessage("Not-Assigned Course Requests")
 	String reportUnassignedCourseRequests();
 	
@@ -2101,6 +2104,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not-Used Learning Community Reservations")
 	String reportUnusedLearningCommunityReservations();
+	
+	@DefaultMessage("Not-Used Student Filter Reservations")
+	String reportUnusedStudentFilterReservations();
 	
 	@DefaultMessage("Course Requests")
 	String reportCourseRequestsWithPriorities();
