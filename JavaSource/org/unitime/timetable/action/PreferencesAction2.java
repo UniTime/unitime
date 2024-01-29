@@ -562,7 +562,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 RoomPref sameParentRp = null;
                 for (Iterator j=parentRoomPrefs.iterator();j.hasNext();) {
                 	RoomPref p = (RoomPref)j.next();
-                	if (p.isSame(rp)) {
+                	if (p.isSame(rp, pg)) {
                 		if (p.getPrefLevel().equals(rp.getPrefLevel()))
                 			sameParentRp = rp;
                 		j.remove();
@@ -611,7 +611,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 BuildingPref sameParentBp = null;
                 for (Iterator j=parentBuildingPrefs.iterator();j.hasNext();) {
                 	BuildingPref p = (BuildingPref)j.next();
-                	if (p.isSame(bp)) {
+                	if (p.isSame(bp, pg)) {
                 		if (p.getPrefLevel().equals(bp.getPrefLevel()))
                 			sameParentBp = bp;
                 		j.remove();
@@ -734,7 +734,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 RoomFeaturePref sameParentRfp = null;
                 for (Iterator j=parentRoomFeaturePrefs.iterator();j.hasNext();) {
                 	RoomFeaturePref p = (RoomFeaturePref)j.next();
-                	if (p.isSame(rfp)) {
+                	if (p.isSame(rfp, pg)) {
                 		if (p.getPrefLevel().equals(rfp.getPrefLevel()))
                 			sameParentRfp = rfp;
                 		j.remove();
@@ -783,7 +783,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 RoomGroupPref sameParentGp = null;
                 for (Iterator j=parentRoomGroupPrefs.iterator();j.hasNext();) {
                 	RoomGroupPref p = (RoomGroupPref)j.next();
-                	if (p.isSame(gp)) {
+                	if (p.isSame(gp, pg)) {
                 		if (p.getPrefLevel().equals(gp.getPrefLevel()))
                 			sameParentGp = gp;
                 		j.remove();
@@ -829,7 +829,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 DatePatternPref sameParentDp = null;
                 for (Iterator j=parentDatePatternPrefs.iterator();j.hasNext();) {
                 	DatePatternPref p = (DatePatternPref)j.next();
-                	if (p.isSame(dpp)) {
+                	if (p.isSame(dpp, pg)) {
                 		if (p.getPrefLevel().equals(dpp.getPrefLevel()))
                 			sameParentDp = dpp;
                 		j.remove();
@@ -902,7 +902,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 InstructorAttributePref sameParentAp = null;
                 for (Iterator j=parentAttributePrefs.iterator();j.hasNext();) {
                 	InstructorAttributePref p = (InstructorAttributePref)j.next();
-                	if (p.isSame(ap)) {
+                	if (p.isSame(ap, pg)) {
                 		if (p.getPrefLevel().equals(ap.getPrefLevel()))
                 			sameParentAp = p;
                 		j.remove();
@@ -948,7 +948,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
                 InstructorPref sameParentAp = null;
                 for (Iterator j=parentInstructorPrefs.iterator();j.hasNext();) {
                 	InstructorPref p = (InstructorPref)j.next();
-                	if (p.isSame(ip)) {
+                	if (p.isSame(ip, pg)) {
                 		if (p.getPrefLevel().equals(ip.getPrefLevel()))
                 			sameParentAp = p;
                 		j.remove();
@@ -1039,7 +1039,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 		if (parentTimePrefs!=null && !parentTimePrefs.isEmpty()) {
 			for (Iterator i=parentTimePrefs.iterator();i.hasNext();) {
 				TimePref parentTimePref = (TimePref)i.next();
-				if (parentTimePref.isSame(tp)) {
+				if (parentTimePref.isSame(tp, owner)) {
 					if (parentTimePref.getPreference().equals(tp.getPreference()) && parentTimePref.getPrefLevel().equals(tp.getPrefLevel()))
 						sameParentTimePref = parentTimePref; 
 					i.remove(); break;

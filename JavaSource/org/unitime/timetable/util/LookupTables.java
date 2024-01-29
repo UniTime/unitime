@@ -62,6 +62,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimetableManager;
@@ -142,6 +143,17 @@ public class LookupTables {
     			List<ComboBoxLookup> indexes = new ArrayList<ComboBoxLookup>();
     			indexes.add(new ComboBoxLookup(MSG.itemAllRooms(), "-"));
     			for (int i = 0; i < clazz.getNbrRooms(); i++) {
+    				indexes.add(new ComboBoxLookup(MSG.itemOnlyRoom(i + 1), String.valueOf(i)));
+    			}
+    			request.setAttribute("roomIndexes", indexes);
+    		}
+    	} else if (pg instanceof SchedulingSubpart) {
+    		SchedulingSubpart subpart = (SchedulingSubpart)pg;
+    		int maxRooms = subpart.getMaxRooms();
+    		if (maxRooms > 1) {
+    			List<ComboBoxLookup> indexes = new ArrayList<ComboBoxLookup>();
+    			indexes.add(new ComboBoxLookup(MSG.itemAllRooms(), "-"));
+    			for (int i = 0; i < maxRooms; i++) {
     				indexes.add(new ComboBoxLookup(MSG.itemOnlyRoom(i + 1), String.valueOf(i)));
     			}
     			request.setAttribute("roomIndexes", indexes);

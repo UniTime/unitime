@@ -171,7 +171,7 @@ public class TeachingRequest extends BaseTeachingRequest implements Comparable<T
 		if (p1.size() != p2.size()) return false;
 		p1: for (Preference p: p1) {
 			for (Preference q: p2) {
-				if (p.isSame(q) && p.getPrefLevel().equals(q.getPrefLevel())) continue p1;
+				if (p.isSame(q, this) && p.getPrefLevel().equals(q.getPrefLevel())) continue p1;
 			}
 			return false;
 		}

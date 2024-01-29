@@ -52,15 +52,17 @@ public class BuildingPref extends BaseBuildingPref {
 
     public String preferenceText() {
     	String ret = getBuilding().getAbbreviation();
-    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
-    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+        if (getRoomIndex() != null)
+        	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
     	return ret;
     }
     
     public int compareTo(Object o) {
     	try {
     		BuildingPref p = (BuildingPref)o;
-    		int cmp = getBuilding().getAbbreviation().compareTo(p.getBuilding().getAbbreviation());
+    		int cmp = Integer.compare(getRoomIndex() == null ? -1 : getRoomIndex(), p.getRoomIndex() == null ? -1 : p.getRoomIndex());
+    		if (cmp != 0) return cmp;
+    		cmp = getBuilding().getAbbreviation().compareTo(p.getBuilding().getAbbreviation());
     		if (cmp!=0) return cmp;
     	} catch (Exception e) {}
     	
@@ -71,11 +73,21 @@ public class BuildingPref extends BaseBuildingPref {
     	BuildingPref pref = new BuildingPref();
     	pref.setPrefLevel(getPrefLevel());
     	pref.setBuilding(getBuilding());
+    	pref.setRoomIndex(getRoomIndex());
     	return pref;
     }
     public boolean isSame(Preference other) {
     	if (other==null || !(other instanceof BuildingPref)) return false;
     	return ToolBox.equals(getBuilding(),((BuildingPref)other).getBuilding()) && ToolBox.equals(getRoomIndex(), ((BuildingPref)other).getRoomIndex());
+    }
+    public boolean isSame(Preference other, PreferenceGroup level) {
+    	if (other==null || !(other instanceof BuildingPref)) return false;
+    	if (!ToolBox.equals(getBuilding(),((BuildingPref)other).getBuilding())) return false;
+    	if (level != null && level instanceof Class_ && ((Class_)level).getNbrRooms() == 1) {
+    		if (((getRoomIndex() == null || getRoomIndex() == 0) && (((BuildingPref)other).getRoomIndex() == null || ((BuildingPref)other).getRoomIndex() == 0)))
+    				return true;
+    	}
+    	return ToolBox.equals(getRoomIndex(), ((BuildingPref)other).getRoomIndex());
     }
     
     @Override
@@ -115,4 +127,14 @@ public class BuildingPref extends BaseBuildingPref {
 	
 	@Transient
 	public Type getType() { return Type.BUILDING; }
+	
+	@Override
+	public boolean appliesTo(PreferenceGroup group) {
+		if (!super.appliesTo(group)) return false;
+		if (getRoomIndex() != null && group instanceof Class_)
+			return getRoomIndex() < ((Class_)group).getNbrRooms();
+		if (getRoomIndex() != null && group instanceof SchedulingSubpart)
+			return getRoomIndex() < ((SchedulingSubpart)group).getMaxRooms();
+		return true;
+	}
 }
