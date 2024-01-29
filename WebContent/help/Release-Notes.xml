@@ -55,7 +55,7 @@
 			<description>
 				<line>The ability to provide different preferences for each room has been added for classes that need two or more rooms.</line>
 				<line>This includes cases when some rooms are prohibited in some positions, e.g., a class needs a classroom and some other room.</line>
-				<line>Room-related preferences can be only defined on the class level, for rooms, room groups, room features, and buildings.</line>
+				<line>Room-related preferences can be only defined on the class or the scheduling subpart level, for rooms, room groups, room features, and buildings.</line>
 			</description>
 		</item>
 	</category>

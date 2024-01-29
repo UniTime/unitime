@@ -52,22 +52,24 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
 
     public String preferenceText() {
     	String ret = getRoomFeature().getLabel();
-    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
-    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+        if (getRoomIndex() != null)
+        	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
     	return ret;
     }
     
     public String preferenceAbbv() {
     	String ret = getRoomFeature().getAbbv();
-    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
-    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+        if (getRoomIndex() != null)
+        	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
     	return ret;
     }
 
     public int compareTo(Object o) {
     	try {
     		RoomFeaturePref p = (RoomFeaturePref)o;
-    		int cmp = getRoomFeature().getLabel().compareTo(p.getRoomFeature().getLabel()); 
+    		int cmp = Integer.compare(getRoomIndex() == null ? -1 : getRoomIndex(), p.getRoomIndex() == null ? -1 : p.getRoomIndex());
+    		if (cmp != 0) return cmp;
+    		cmp = getRoomFeature().getLabel().compareTo(p.getRoomFeature().getLabel()); 
     		if (cmp!=0) return cmp;
     	} catch (Exception e) {}
     	
@@ -78,11 +80,21 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
     	RoomFeaturePref pref = new RoomFeaturePref();
     	pref.setPrefLevel(getPrefLevel());
     	pref.setRoomFeature(getRoomFeature());
+    	pref.setRoomIndex(getRoomIndex());
     	return pref;
     }
     public boolean isSame(Preference other) {
     	if (other==null || !(other instanceof RoomFeaturePref)) return false;
     	return ToolBox.equals(getRoomFeature(),((RoomFeaturePref)other).getRoomFeature()) && ToolBox.equals(getRoomIndex(), ((RoomFeaturePref)other).getRoomIndex());
+    }
+    public boolean isSame(Preference other, PreferenceGroup level) {
+    	if (other==null || !(other instanceof RoomFeaturePref)) return false;
+    	if (!ToolBox.equals(getRoomFeature(),((RoomFeaturePref)other).getRoomFeature())) return false;
+    	if (level != null && level instanceof Class_ && ((Class_)level).getNbrRooms() == 1) {
+    		if (((getRoomIndex() == null || getRoomIndex() == 0) && (((RoomFeaturePref)other).getRoomIndex() == null || ((RoomFeaturePref)other).getRoomIndex() == 0)))
+    				return true;
+    	}
+    	return ToolBox.equals(getRoomIndex(), ((RoomFeaturePref)other).getRoomIndex());
     }
     public boolean isApplicable(PreferenceGroup group) {
     	return true;
@@ -98,5 +110,15 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
 	@Override
 	public String preferenceDescription() {
 		return getRoomFeature().getDescription();
+	}
+	
+	@Override
+	public boolean appliesTo(PreferenceGroup group) {
+		if (!super.appliesTo(group)) return false;
+		if (getRoomIndex() != null && group instanceof Class_)
+			return getRoomIndex() < ((Class_)group).getNbrRooms();
+		if (getRoomIndex() != null && group instanceof SchedulingSubpart)
+			return getRoomIndex() < ((SchedulingSubpart)group).getMaxRooms();
+		return true;
 	}
 }

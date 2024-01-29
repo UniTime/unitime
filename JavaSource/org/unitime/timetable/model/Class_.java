@@ -323,7 +323,7 @@ public class Class_ extends BaseClass_ {
     			Preference p1 = null;
     			for (Iterator<Preference> j=ret.iterator();j.hasNext();) {
     				Preference p = j.next();
-    				if (p.isSame(p2)) {
+    				if (p.isSame(p2, this)) {
     					p1 = p; j.remove(); break;
     				}
     			}
@@ -369,7 +369,7 @@ public class Class_ extends BaseClass_ {
 			Preference subpartPref = null;
 			for (Iterator j=ret.iterator();j.hasNext();) {
 				Preference p = (Preference)j.next();
-				if (p.isSame(instrPref)) {
+				if (p.isSame(instrPref, this)) {
 					subpartPref = p; j.remove(); break;
 				}
 			}
@@ -398,7 +398,7 @@ public class Class_ extends BaseClass_ {
 			Preference classPref = null;
 			for (Iterator j=classPrefs.iterator();j.hasNext();) {
 				Preference p = (Preference)j.next();
-				if (p.isSame(combPref)) {
+				if (p.isSame(combPref, this)) {
 					classPref = p; break;
 				}
 			}

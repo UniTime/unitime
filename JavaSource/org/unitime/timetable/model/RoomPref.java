@@ -51,15 +51,17 @@ public class RoomPref extends BaseRoomPref {
 
 	public String preferenceText() { 
 		String ret = getRoom().getLabel();
-    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
-    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+        if (getRoomIndex() != null)
+        	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
 		return ret;
     }
 	
     public int compareTo(Object o) {
     	try {
     		RoomPref p = (RoomPref)o;
-    		int cmp = getRoom().getLabel().compareTo(p.getRoom().getLabel());
+    		int cmp = Integer.compare(getRoomIndex() == null ? -1 : getRoomIndex(), p.getRoomIndex() == null ? -1 : p.getRoomIndex());
+    		if (cmp != 0) return cmp;
+    		cmp = getRoom().getLabel().compareTo(p.getRoom().getLabel());
     		if (cmp!=0) return cmp;
     	} catch (Exception e) {}
     	
@@ -70,11 +72,21 @@ public class RoomPref extends BaseRoomPref {
  	   RoomPref pref = new RoomPref();
  	   pref.setPrefLevel(getPrefLevel());
  	   pref.setRoom(getRoom());
+ 	   pref.setRoomIndex(getRoomIndex());
  	   return pref;
     }
     public boolean isSame(Preference other) {
     	if (other==null || !(other instanceof RoomPref)) return false;
     	return ToolBox.equals(getRoom(),((RoomPref)other).getRoom()) && ToolBox.equals(getRoomIndex(), ((RoomPref)other).getRoomIndex());
+    }
+    public boolean isSame(Preference other, PreferenceGroup level) {
+    	if (other==null || !(other instanceof RoomPref)) return false;
+    	if (!ToolBox.equals(getRoom(),((RoomPref)other).getRoom())) return false;
+    	if (level != null && level instanceof Class_ && ((Class_)level).getNbrRooms() == 1) {
+    		if (((getRoomIndex() == null || getRoomIndex() == 0) && (((RoomPref)other).getRoomIndex() == null || ((RoomPref)other).getRoomIndex() == 0)))
+    				return true;
+    	}
+    	return ToolBox.equals(getRoomIndex(), ((RoomPref)other).getRoomIndex());
     }
     
     @Override
@@ -114,4 +126,14 @@ public class RoomPref extends BaseRoomPref {
 	
 	@Transient
 	public Type getType() { return Type.ROOM; }
+	
+	@Override
+	public boolean appliesTo(PreferenceGroup group) {
+		if (!super.appliesTo(group)) return false;
+		if (getRoomIndex() != null && group instanceof Class_)
+			return getRoomIndex() < ((Class_)group).getNbrRooms();
+		if (getRoomIndex() != null && group instanceof SchedulingSubpart)
+			return getRoomIndex() < ((SchedulingSubpart)group).getMaxRooms();
+		return true;
+	}
 }

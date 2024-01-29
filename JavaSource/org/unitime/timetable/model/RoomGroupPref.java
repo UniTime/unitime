@@ -52,27 +52,49 @@ public class RoomGroupPref extends BaseRoomGroupPref {
 	
 	public String preferenceText() { 
 		String ret = getRoomGroup().getName();
-    	if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
-    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+        if (getRoomIndex() != null)
+        	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
     	return ret;
     }
 
     public String preferenceAbbv() { 
         String ret = getRoomGroup().getAbbv();
-        if (getRoomIndex() != null && getOwner() instanceof Class_ && ((Class_)getOwner()).getNbrRooms() > 1 && getRoomIndex() < ((Class_)getOwner()).getNbrRooms())
-    		ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
+        if (getRoomIndex() != null)
+        	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
     	return ret;
+    }
+    
+    public int compareTo(Object o) {
+    	try {
+    		RoomGroupPref p = (RoomGroupPref)o;
+    		int cmp = Integer.compare(getRoomIndex() == null ? -1 : getRoomIndex(), p.getRoomIndex() == null ? -1 : p.getRoomIndex());
+    		if (cmp != 0) return cmp;
+    		cmp = getRoomGroup().getAbbv().compareTo(p.getRoomGroup().getAbbv());
+    		if (cmp!=0) return cmp;
+    	} catch (Exception e) {}
+    	
+    	return super.compareTo(o);
     }
 
     public Object clone() {
     	RoomGroupPref pref = new RoomGroupPref();
     	pref.setPrefLevel(getPrefLevel());
     	pref.setRoomGroup(getRoomGroup());
+    	pref.setRoomIndex(getRoomIndex());
     	return pref;
     }
     public boolean isSame(Preference other) {
     	if (other==null || !(other instanceof RoomGroupPref)) return false;
     	return ToolBox.equals(getRoomGroup(),((RoomGroupPref)other).getRoomGroup()) && ToolBox.equals(getRoomIndex(), ((RoomGroupPref)other).getRoomIndex());
+    }
+    public boolean isSame(Preference other, PreferenceGroup level) {
+    	if (other==null || !(other instanceof RoomGroupPref)) return false;
+    	if (!ToolBox.equals(getRoomGroup(),((RoomGroupPref)other).getRoomGroup())) return false;
+    	if (level != null && level instanceof Class_ && ((Class_)level).getNbrRooms() == 1) {
+    		if (((getRoomIndex() == null || getRoomIndex() == 0) && (((RoomGroupPref)other).getRoomIndex() == null || ((RoomGroupPref)other).getRoomIndex() == 0)))
+    				return true;
+    	}
+    	return ToolBox.equals(getRoomIndex(), ((RoomGroupPref)other).getRoomIndex());
     }
 
 	public String preferenceTitle() {
@@ -85,5 +107,15 @@ public class RoomGroupPref extends BaseRoomGroupPref {
 	@Override
 	public String preferenceDescription() {
 		return getRoomGroup().getDescription();
+	}
+	
+	@Override
+	public boolean appliesTo(PreferenceGroup group) {
+		if (!super.appliesTo(group)) return false;
+		if (getRoomIndex() != null && group instanceof Class_)
+			return getRoomIndex() < ((Class_)group).getNbrRooms();
+		if (getRoomIndex() != null && group instanceof SchedulingSubpart)
+			return getRoomIndex() < ((SchedulingSubpart)group).getMaxRooms();
+		return true;
 	}
 }

@@ -372,7 +372,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 			Preference parentPref = (Preference)i.next();
 			for (Iterator j = ret.iterator(); j.hasNext();) {
 				Preference p = (Preference)j.next();
-				if (p.isSame(parentPref)) continue prefs;
+				if (p.isSame(parentPref, this)) continue prefs;
 			}
 			ret.add(parentPref);
 		}

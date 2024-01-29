@@ -191,6 +191,7 @@ public abstract class Preference extends BasePreference implements Comparable {
     
     public abstract Object clone();
     public abstract boolean isSame(Preference other);
+    public boolean isSame(Preference other, PreferenceGroup level) { return isSame(other); }
 	@Transient
     public abstract Type getType();
 }
