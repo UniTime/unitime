@@ -14926,4 +14926,65 @@
 		<mysql>alter table %SCHEMA%.room_type_option add email varchar(200)</mysql>
 		<pgsql>alter table %SCHEMA%.room_type_option add email varchar(200)</pgsql>
 	</update>
+	<update version="268" date="30-Jan-2024" comment="Access Control Statistics">
+		<mysql>
+			create table %SCHEMA%.access_stats (
+				uniqueid decimal(20,0) primary key not null,
+				time_stamp datetime not null,
+				host varchar(50) not null,
+				page varchar(50) not null,
+				nbr_access decimal(10,0) not null,
+				nbr_active decimal(10,0) not null,
+				nbr_waiting decimal(10,0) not null,
+				nbr_opened decimal(10,0) not null,
+				nbr_tracking decimal(10,0) not null,
+				nbr_active1m decimal(10,0) not null,
+				nbr_active2m decimal(10,0) not null,
+				nbr_active5m decimal(10,0) not null,
+				nbr_active10m decimal(10,0) not null,
+				nbr_active15m decimal(10,0) not null
+			) engine = INNODB
+		</mysql>
+		<mysql>create index idx_access_stats on %SCHEMA%.access_stats(time_stamp, page)</mysql>
+		<plsql>
+			create table %SCHEMA%.access_stats (
+				uniqueid number(20,0) constraint nn_access_stats_uniqueid not null,
+				time_stamp date constraint nn_access_stats_time_stamp not null,
+				host varchar2(50 char) constraint nn_access_stats_host not null,
+				page varchar2(50 char) constraint nn_access_stats_page not null,
+				nbr_access decimal(10,0) constraint nn_access_stats_access not null,
+				nbr_active decimal(10,0) constraint nn_access_stats_active not null,
+				nbr_waiting decimal(10,0) constraint nn_access_stats_waiting not null,
+				nbr_opened decimal(10,0) constraint nn_access_stats_opened not null,
+				nbr_tracking decimal(10,0) constraint nn_access_stats_tracking not null,
+				nbr_active1m decimal(10,0) constraint nn_access_stats_active1 not null,
+				nbr_active2m decimal(10,0) constraint nn_access_stats_active2 not null,
+				nbr_active5m decimal(10,0) constraint nn_access_stats_active5 not null,
+				nbr_active10m decimal(10,0) constraint nn_access_stats_active10 not null,
+				nbr_active15m decimal(10,0) constraint nn_access_stats_active15 not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add constraint pk_access_stats primary key (uniqueid)</plsql>
+		<plsql>create index %SCHEMA%.idx_access_stats on %SCHEMA%.access_stats(time_stamp, page)</plsql>
+		<pgsql>
+			create table %SCHEMA%.access_stats (
+				uniqueid bigint not null,
+				time_stamp with time zone not null,
+				host varchar(50) not null,
+				page varchar(50) not null,
+				nbr_access integer not null,
+				nbr_active integer not null,
+				nbr_waiting integer not null,
+				nbr_opened integer not null,
+				nbr_tracking integer not null,
+				nbr_active1m integer not null,
+				nbr_active2m integer not null,
+				nbr_active5m integer not null,
+				nbr_active10m integer not null,
+				nbr_active15m integer not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add constraint pk_access_stats primary key (uniqueid)</pgsql>
+		<pgsql>create index %SCHEMA%.idx_access_stats on %SCHEMA%.access_stats(time_stamp, page)</pgsql>
+	</update>	
 </dbupdate>

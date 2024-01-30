@@ -3421,37 +3421,43 @@ public enum ApplicationProperty {
 	@Type(Integer.class)
 	@Description("Student Scheduling Assistant Access Control: Maximal number of users using the page at the same time (not set or zero for disabled).")
 	@Since(4.8)
-	AccessControlActiveMaxActiveUsersSectioning("unitime.accessCotrol.sectioning.maxActiveUsers"),
+	AccessControlActiveMaxActiveUsersSectioning("unitime.accessControl.sectioning.maxActiveUsers"),
 	
 	@Type(Integer.class)
 	@DefaultValue("15")
 	@Description("Student Scheduling Assistant Access Control: Number of minutes of inactivity for the user to get the Inactive Warning.")
 	@Since(4.8)
-	AccessControlLimitInSecondsSectioning("unitime.accessCotrol.sectioning.activeLimitInMinutes"),
+	AccessControlLimitInSecondsSectioning("unitime.accessControl.sectioning.activeLimitInMinutes"),
 	
 	@Type(Integer.class)
 	@Description("Student Course Requests Access Control: Maximal number of users using the page at the same time (not set or zero for disabled).")
 	@Since(4.8)
-	AccessControlActiveMaxActiveUsersRequests("unitime.accessCotrol.requests.maxActiveUsers"),
+	AccessControlActiveMaxActiveUsersRequests("unitime.accessControl.requests.maxActiveUsers"),
 	
 	@Type(Integer.class)
 	@DefaultValue("15")
 	@Description("Student Course Requests Access Control: Number of minutes of inactivity for the user to get the Inactive Warning.")
 	@Since(4.8)
-	AccessControlLimitInSecondsRequests("unitime.accessCotrol.requests.activeLimitInMinutes"),
+	AccessControlLimitInSecondsRequests("unitime.accessControl.requests.activeLimitInMinutes"),
 	
 	@Type(Integer.class)
 	@Description("Access Control for %: Maximal number of users using the page at the same time (not set or zero for disabled).")
 	@Parameter("sectioning for Scheduling Assitant, requests for Course Requests")
 	@Since(4.8)
-	AccessControlMaxActiveUsers("unitime.accessCotrol.%.maxActiveUsers"),
+	AccessControlMaxActiveUsers("unitime.accessControl.%.maxActiveUsers"),
 	
 	@Type(Integer.class)
 	@DefaultValue("15")
 	@Description("Access Control for %: Number of minutes of inactivity for the user to get the Inactive Warning.")
 	@Parameter("sectioning for Scheduling Assitant, requests for Course Requests")
 	@Since(4.8)
-	AccessControlActiveLimitInMinutes("unitime.accessCotrol.%.activeLimitInMinutes"),
+	AccessControlActiveLimitInMinutes("unitime.accessControl.%.activeLimitInMinutes"),
+	
+	@Type(Integer.class)
+	@DefaultValue("92")
+	@Description("Configuration: automatically remove access control statistics after the given number of days")
+	@Since(4.8)
+	LogCleanupAccessStatistics("unitime.cleanup.accessControlStatistics"),
 	;
 
 	String iKey;
