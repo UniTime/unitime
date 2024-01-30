@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="AccessStatistics" table="access_stats">
+        <cache include="non-lazy" usage="transactional"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="timeStamp"
+            column="time_stamp"
+            type="java.sql.Timestamp"
+            not-null="true"/>
+            
+        <property
+            name="host"
+            column="host"
+            type="java.lang.String"
+            not-null="true"
+            length="50"/>
+
+        <property
+            name="page"
+            column="page"
+            type="java.lang.String"
+            not-null="true"
+            length="50"/>
+
+        <property
+            name="access"
+            column="nbr_access"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="active"
+            column="nbr_active"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="waiting"
+            column="nbr_waiting"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="opened"
+            column="nbr_opened"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="tracking"
+            column="nbr_tracking"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="active1m"
+            column="nbr_active1m"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="active2m"
+            column="nbr_active2m"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="active5m"
+            column="nbr_active5m"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="active10m"
+            column="nbr_active10m"
+            type="java.lang.Integer"
+            not-null="true"/>
+
+        <property
+            name="active15m"
+            column="nbr_active15m"
+            type="java.lang.Integer"
+            not-null="true"/>
+    </class>
+</hibernate-mapping>
