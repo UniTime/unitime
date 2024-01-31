@@ -105,8 +105,12 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 			form = new InstructionalOfferingListForm();
     	sessionContext.checkPermission(Right.InstructionalOfferings);
     	
-    	if (getSubjectAreaIds() != null)
-    		form.setSubjectAreaIds(getSubjectAreaIds());
+    	if (getSubjectAreaIds() != null) {
+    		if (getSubjectAreaIds().length == 1 && getSubjectAreaIds()[0] != null && getSubjectAreaIds()[0].indexOf(',') >= 0)
+    			form.setSubjectAreaIds(getSubjectAreaIds()[0].split(","));
+    		else
+    			form.setSubjectAreaIds(getSubjectAreaIds());
+    	}
     	if (getCourseNbr() != null)
     		form.setCourseNbr(getCourseNbr());
     	if ("1".equals(getLoadInstrFilter()))
