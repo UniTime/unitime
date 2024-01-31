@@ -247,8 +247,8 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		@Override
 		public void accept(String t, PingData u) {
 			if (sLog.isDebugEnabled())
-				sLog.debug(t + ": " + u);
-			if (!unitimeBusySessions.isActive(t)) {
+				sLog.debug(t + ": " + u.toString(iT0));
+			if (!unitimeBusySessions.isActive(t) || u.getPingAge(iT0) > 30 * 60) {
 				iInactive.add(t);
 			} else {
 				if (u.isAccess() && !u.isOpened(iT0)) u.setAccess(false);
