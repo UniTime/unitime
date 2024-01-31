@@ -1076,6 +1076,9 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
                     }
                     j.remove();
                 }
+                
+                // Delete all distribution objects
+                tmpSubpart.deleteAllDistributionPreferences(hibSession);
 
                 // Delete from parent
                 SchedulingSubpart parentSubpart = tmpSubpart.getParentSubpart();
