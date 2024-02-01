@@ -805,6 +805,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		SpecialRegistrationRequest req = new SpecialRegistrationRequest();
 		req.studentId = getBannerId(original);
 		req.pgrmcode = SpecialRegistrationHelper.getProgramCode(original);
+		req.studentCampus = SpecialRegistrationHelper.getCampusCode(original);
 		req.term = getBannerTerm(server.getAcademicSession());
 		req.campus = getBannerCampus(server.getAcademicSession());
 		req.mode = getSpecialRegistrationApiMode();
@@ -1469,6 +1470,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		SpecialRegistrationRequest submitRequest = new SpecialRegistrationRequest();
 		submitRequest.studentId = getBannerId(original);
 		submitRequest.pgrmcode = SpecialRegistrationHelper.getProgramCode(original);
+		submitRequest.studentCampus = SpecialRegistrationHelper.getCampusCode(original);
 		submitRequest.term = getBannerTerm(server.getAcademicSession());
 		submitRequest.campus = getBannerCampus(server.getAcademicSession());
 		submitRequest.mode = getSpecialRegistrationApiMode();
