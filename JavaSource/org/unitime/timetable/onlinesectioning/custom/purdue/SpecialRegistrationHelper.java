@@ -190,5 +190,18 @@ public class SpecialRegistrationHelper {
 		if (primary == null || primary.getProgram() == null) return null;
 		return SpecialRegistrationHelper.pgrmcode(primary.getProgram().getReference());
 	}
+	
+	public static String getCampusCode(XStudent student) {
+		for (XAreaClassificationMajor acm: student.getMajors()) {
+			return acm.getCampus();
+		}
+		return null;
+	}
+
+	public static String getCampusCode(Student student) {
+		StudentAreaClassificationMajor primary = student.getPrimaryAreaClasfMajor();
+		if (primary == null || primary.getProgram() == null) return null;
+		return primary.getCampus().getReference();
+	}
 
 }

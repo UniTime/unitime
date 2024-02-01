@@ -117,6 +117,8 @@ public class SpecialRegistrationInterface {
 		public RestrictionsCheckRequest validation;
 		/** Primary program code */
 		public String pgrmcode;
+		/** Primary campus code of the student */
+		public String studentCampus;
 	}
 	
 	/** Possible operations for a change (work order) */
