@@ -111,5 +111,40 @@
             column="nbr_active15m"
             type="java.lang.Integer"
             not-null="true"/>
+            
+        <property
+            name="gotIn"
+            column="nbr_gotin"
+            type="java.lang.Integer"/>
+
+        <property
+            name="left"
+            column="nbr_left"
+            type="java.lang.Integer"/>
+
+        <property
+            name="gaveUp"
+            column="nbr_gaveup"
+            type="java.lang.Integer"/>
+
+        <property
+            name="avgAccessTime"
+            column="avg_access"
+            type="java.lang.Long"/>
+
+        <property
+            name="avgWaitTime"
+            column="avg_wait"
+            type="java.lang.Long"/>
+
+        <property
+            name="avgAccessTimeWhenLeft"
+            column="avg_access_out"
+            type="java.lang.Long"/>
+
+        <property
+            name="avgWaitTimeWhenGotIn"
+            column="avg_wait_in"
+            type="java.lang.Long"/>
     </class>
 </hibernate-mapping>

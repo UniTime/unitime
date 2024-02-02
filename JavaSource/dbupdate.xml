@@ -14986,5 +14986,28 @@
 		</pgsql>
 		<pgsql>alter table %SCHEMA%.access_stats add constraint pk_access_stats primary key (uniqueid)</pgsql>
 		<pgsql>create index %SCHEMA%.idx_access_stats on %SCHEMA%.access_stats(time_stamp, page)</pgsql>
+	</update>
+	<update version="269" date="2-Feb-2024" comment="Access Control Statistics Update">
+		<mysql>alter table %SCHEMA%.access_stats add nbr_gotin decimal(10,0)</mysql>
+		<mysql>alter table %SCHEMA%.access_stats add nbr_left decimal(10,0)</mysql>
+		<mysql>alter table %SCHEMA%.access_stats add nbr_gaveup decimal(10,0)</mysql>
+		<mysql>alter table %SCHEMA%.access_stats add avg_access decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.access_stats add avg_wait decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.access_stats add avg_access_out decimal(20,0)</mysql>
+		<mysql>alter table %SCHEMA%.access_stats add avg_wait_in decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.access_stats add nbr_gotin decimal(10,0)</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add nbr_left decimal(10,0)</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add nbr_gaveup decimal(10,0)</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add avg_access decimal(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add avg_wait decimal(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add avg_access_out decimal(20,0)</plsql>
+		<plsql>alter table %SCHEMA%.access_stats add avg_wait_in decimal(20,0)</plsql>
+		<pgsql>alter table %SCHEMA%.access_stats add nbr_gotin integer</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add nbr_left integer</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add nbr_gaveup integer</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add avg_access bigint</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add avg_wait bigint</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add avg_access_out bigint</pgsql>
+		<pgsql>alter table %SCHEMA%.access_stats add avg_wait_in bigint</pgsql>
 	</update>	
 </dbupdate>

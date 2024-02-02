@@ -137,6 +137,7 @@ public abstract class AccessControlClient {
 	}
 	
 	public void leave(final boolean openMainPage) {
+		iTimer.cancel();
 		PingRequest req = new PingRequest();
 		req.setPage(iPage);
 		req.setOperation(Operation.LOGOUT);
