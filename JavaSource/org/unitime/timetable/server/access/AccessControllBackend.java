@@ -2,20 +2,26 @@ package org.unitime.timetable.server.access;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
 
-import org.apache.commons.collections4.map.HashedMap;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.filter.BusySessions.Tracker;
 import org.unitime.timetable.gwt.client.access.AccessControlInterface.Operation;
@@ -33,9 +39,9 @@ import org.unitime.timetable.security.UserQualifier;
 
 @GwtRpcImplements(PingRequest.class)
 @GwtRpcLogging(Level.DISABLED)
-public class AccessControllBackend implements GwtRpcImplementation<PingRequest, PingResponse>, InitializingBean, DisposableBean{
+public class AccessControllBackend implements GwtRpcImplementation<PingRequest, PingResponse>, InitializingBean, DisposableBean {
 	private static Log sLog = LogFactory.getLog(AccessControllBackend.class);
-	private ConcurrentMap<String, PingData> iData = new ConcurrentHashMap<String, PingData>();
+	private ConcurrentMap<String, ConcurrentMap<String, PingData>> iData = new ConcurrentHashMap<>();
 	private Updater iUpdater;
 	
 	private @Autowired Tracker unitimeBusySessions;
@@ -43,7 +49,10 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 	@Override
 	public PingResponse execute(final PingRequest request, final  SessionContext context) {
 		final long t0 = System.currentTimeMillis();
-		PingData pd = iData.compute(context.getHttpSessionId(), (key, current) -> {
+		ConcurrentMap<String, PingData> data = iData.computeIfAbsent(request.getPage(), (key) -> {
+			return new ConcurrentHashMap<>();
+		});
+		PingData pd = data.compute(context.getHttpSessionId(), (key, current) -> {
 			if (current == null) current = new PingData(t0);
 			current.update(request, context, t0);
 			return current;
@@ -55,12 +64,12 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 			// check queue
 			Integer maxActiveUsers = getMaxActiveUsers(request.getPage());
 			if (maxActiveUsers == null) {
-				pd.setAccess(true);
+				pd.setAccess(true, t0);
 			} else {
 				CheckQueue cq = new CheckQueue(request.getPage(), context.getHttpSessionId(), pd, t0);
-				iData.forEach(cq);
+				data.forEach(cq);
 				if (cq.getUsersWithAccess() + cq.getUsersInQueueBeforeMe() + 1 <= maxActiveUsers) {
-					pd.setAccess(true);
+					pd.setAccess(true, t0);
 				} else {
 					ret.setQueue(1 + cq.getUsersInQueueBeforeMe());
 				}
@@ -100,6 +109,10 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		iUpdater.start();
 	}
 	
+	protected ConcurrentMap<String, ConcurrentMap<String, PingData>> getData() {
+		return iData;
+	}
+	
 	private static class PingData implements Comparable<PingData> {
 		private String iPage;
 		private String iUser;
@@ -108,22 +121,29 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		private long iFirstUse;
 		private long iLastPing;
 		private long iLastActive;
+		private long iGotAccess;
 		private boolean iAccess = false;
 		private boolean iLoggedOut = false;
+		private boolean iCountedIn = false, iCountedOut = false;
 		
 		PingData(long t0) {
-			iFirstUse =t0;
+			iFirstUse = t0;
 			iLastPing = iFirstUse;
 			iLastActive = iLastPing;
 		}
 		
 		void update(PingRequest request, SessionContext context, long t0) {
-			if (request.getOperation() == Operation.PING)
+			if (request.getOperation() == Operation.PING) {
+				if (!iAccess) { iGotAccess = t0; iCountedIn = false; }
 				iAccess = true;
-			else if (request.getOperation() == Operation.LOGOUT)
+			} else if (request.getOperation() == Operation.LOGOUT) {
+				if (iAccess) iCountedOut = false;
 				iAccess = false;
-			if (request.getOperation() == Operation.CHECK_ACCESS && !iAccess && !isOpened(t0))
+			}
+			if (request.getOperation() == Operation.CHECK_ACCESS && !iAccess && !isOpened(t0)) {
 				iFirstUse = t0;
+				iGotAccess = 0;
+			}
 			iLastPing = t0;
 			iLoggedOut = (request.getOperation() == Operation.LOGOUT);
 			if (request.isActive()) iLastActive = t0;
@@ -146,6 +166,12 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 			}
 		}
 		
+		public void logout() {
+			if (iAccess) iCountedOut = false;
+			iAccess = false;
+			iLoggedOut = true;
+		}
+		
 		public long getActiveAge(long t0) {
 			return (t0 - iLastActive) / 1000;
 		}
@@ -156,6 +182,21 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		
 		public long getAge(long t0) {
 			return (t0 - iFirstUse) / 1000;
+		}
+		
+		public boolean hadAccess() {
+			return iGotAccess > 0;
+		}
+		
+		public long getAccessTime() {
+			return (iLastPing - iGotAccess) / 1000;
+		}
+		
+		public long getWaitingTime() {
+			if (iGotAccess > 0)
+				return (iGotAccess - iFirstUse) / 1000;
+			else
+				return (iLastPing - iFirstUse) / 1000;
 		}
 		
 		public long getFirstUse() { return iFirstUse; }
@@ -174,9 +215,29 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		
 		public boolean isAccess() { return iAccess; }
 		
-		public void setAccess(boolean access) { iAccess = access; }
+		public void setAccess(boolean access, long t0) {
+			if (!iAccess && access) { iGotAccess = t0; iCountedIn = false; }
+			if (iAccess && !access) { iCountedOut = false; }
+			iAccess = access;
+		}
 		
 		public boolean isLoggedOut() { return iLoggedOut; }
+		
+		public boolean countIn() {
+			if (!iCountedIn) {
+				iCountedIn = true;
+				return true;
+			}
+			return false;
+		}
+		
+		public boolean countOut() {
+			if (!iCountedOut) {
+				iCountedOut = true;
+				return true;
+			}
+			return false;
+		}
 		
 		public String toString(long t0) {
 			return "PingData{" + (isLoggedOut() || !isOpened(t0) ? "expired, " : isAccess() ? "access, " : "waiting, ") + (getAge(t0)/60) + "m old, " + (getActiveAge(t0)/60) + "m inactive, " + (getPingAge(t0)/60) + "m unchecked" +
@@ -230,95 +291,212 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		}
 	}
 	
-	private class Counter implements BiConsumer<String, PingData> {
-		private Map<String, Integer> iWaiting = new HashedMap<>();
-		private Map<String, Integer> iActive1 = new HashedMap<>();
-		private Map<String, Integer> iActive2 = new HashedMap<>();
-		private Map<String, Integer> iActive5 = new HashedMap<>();
-		private Map<String, Integer> iActive10 = new HashedMap<>();
-		private Map<String, Integer> iActive15 = new HashedMap<>();
-		private Map<String, Integer> iActive = new HashedMap<>();
-		private Map<String, Integer> iAccess = new HashedMap<>();
-		private Map<String, Integer> iOpened = new HashedMap<>();
-		private Map<String, Integer> iTotal = new HashedMap<>();
-		private List<String> iInactive = new ArrayList<>();
-		private long iT0 = System.currentTimeMillis();
+	public static class Average {
+		private long iTotal;
+		private int iCount;
+		
+		Average() {
+			iTotal = 0l;
+			iCount = 0;
+		}
+		
+		private void add(long value) {
+			iTotal += value;
+			iCount ++;
+		}
+		
+		public int getCount() {
+			return iCount;
+		}
+		
+		public long getTotal() {
+			return iTotal;
+		}
+		
+		private long getAverage() {
+			return (iCount == 0 ? 0 : iTotal / iCount);
+		}
+	}
+	
+	private class PingCounter {
+		private String iPage;
+		private Integer iActiveLimitInSeconds;
+		private Integer iMaxActiveUsers;
+		private long iT0;
+		
+		private int iWaiting = 0;
+		private int iActive1 = 0;
+		private int iActive2 = 0;
+		private int iActive5 = 0;
+		private int iActive10 = 0;
+		private int iActive15 = 0;
+		private int iActive = 0;
+		private int iAccess = 0;
+		private int iOpened = 0;
+		private int iTotal = 0;
+		private int iGaveUp = 0;
+		private int iLeft = 0;
+		private int iGotIn = 0;
+		
+		private Average iWaitTime = new Average();
+		private Average iWaitTimeWhenGotIn = new Average();
+		private Average iAccessTime = new Average();
+		private Average iGaveUpTime = new Average();
+		private Average iAccessTimeWhenLeft = new Average();
+		
+		PingCounter(String page, long t0) {
+			iPage = page;
+			iActiveLimitInSeconds = getActiveLimitInSeconds(page);
+			iMaxActiveUsers = getMaxActiveUsers(page);
+			iT0 = t0;
+		}
+		
+		public void inc(PingData u) {
+			iTotal ++;
+			if (u.isAccess()) {
+				iAccess ++;
+				if (u.getActiveAge(iT0) <=  1 * 60)  iActive1 ++;
+				if (u.getActiveAge(iT0) <=  2 * 60)  iActive2 ++;
+				if (u.getActiveAge(iT0) <=  5 * 60)  iActive5 ++;
+				if (u.getActiveAge(iT0) <= 10 * 60) iActive10 ++;
+				if (u.getActiveAge(iT0) <= 15 * 60) iActive15 ++;
+				if (u.isActive(iT0, iActiveLimitInSeconds)) iActive ++;
+				iAccessTime.add(u.getAccessTime());
+				if (u.countIn()) {
+					// got access during the last minute
+					iGotIn ++;
+					iWaitTimeWhenGotIn.add(u.getWaitingTime());
+				}
+			} else if (u.isLoggedOut()) {
+				if (u.hadAccess()) {
+					iLeft ++;
+					iAccessTimeWhenLeft.add(u.getAccessTime());
+				} else {
+					iGaveUp ++;
+					iGaveUpTime.add(u.getWaitingTime());
+				}
+			} else if (u.isActive(iT0, iActiveLimitInSeconds)) {
+				iWaiting ++;
+				iWaitTime.add(u.getWaitingTime());
+			} else if (u.countOut()) {
+				if (u.hadAccess()) {
+					iLeft ++;
+					iAccessTimeWhenLeft.add(u.getAccessTime());
+				} else {
+					iGaveUp ++;
+					iGaveUpTime.add(u.getWaitingTime());
+				}
+			}
+			if (u.isOpened(iT0))
+				iOpened ++;
+		}
 		
 		@Override
-		public void accept(String t, PingData u) {
+		public String toString() {
+			DecimalFormat df = new DecimalFormat("0.0");
+			return iPage + "{" +
+					"access: " + iAccess + (iMaxActiveUsers == null ? "" : " of " + iMaxActiveUsers) +
+					", active: " + iActive + 
+					" (avg: " + df.format(iAccessTime.getAverage() / 60.0) + "m"
+						+ ", <1m: " + iActive1
+						+ ", <2m: " + iActive2
+						+ ", <5m: " + iActive5
+						+ ", <10m: " + iActive10
+						+ ", <15m: " + iActive15 + ")" +
+					", waiting: " + iWaiting +
+						(iWaiting > 0 ? " (avg: " + df.format(iWaitTime.getAverage() / 60.0) + "m)" : "") +
+					", gotin: " + iGotIn +
+						(iGotIn > 0 && iWaitTimeWhenGotIn.getTotal() > 0l ? " (avg: " + df.format(iWaitTimeWhenGotIn.getAverage() / 60.0) + "m)" : "") +
+					", left: " + iLeft +
+						(iLeft > 0 ? " (avg: " + df.format(iAccessTimeWhenLeft.getAverage() / 60.0) + "m)" : "") +
+					", gaveup: " + iGaveUp +
+						(iGaveUp > 0 ? " (avg: " + df.format(iGaveUpTime.getAverage() / 60.0) + "m)" : "") +
+					", opened: " + iOpened +
+					", tracking: " + iTotal + "}";
+		}
+		
+		public AccessStatistics generateAccessStatisticsRecord() {
+			AccessStatistics stat = new AccessStatistics();
+			stat.setTimeStamp(new Date(iT0));
+			stat.setPage(iPage);
+			stat.setAccess(iAccess);
+			stat.setActive(iActive);
+			stat.setOpened(iOpened);
+			stat.setWaiting(iWaiting);
+			stat.setTracking(iTotal);
+			stat.setActive1m(iActive1);
+			stat.setActive2m(iActive2);
+			stat.setActive5m(iActive5);
+			stat.setActive10m(iActive10);
+			stat.setActive15m(iActive15);
+			stat.setGotIn(iGotIn);
+			stat.setGaveUp(iGaveUp);
+			stat.setLeft(iLeft);
+			stat.setAvgAccessTime(iAccessTime.getAverage());
+			stat.setAvgAccessTimeWhenLeft(iAccessTimeWhenLeft.getAverage());
+			stat.setAvgWaitTime(iWaitTime.getAverage());
+			stat.setAvgWaitTimeWhenGotIn(iWaitTimeWhenGotIn.getAverage());
+			return stat;
+		}
+		
+		public boolean accept(String t, PingData u) {
 			if (sLog.isDebugEnabled())
 				sLog.debug(t + ": " + u.toString(iT0));
-			if (!unitimeBusySessions.isActive(t) || u.getPingAge(iT0) > 30 * 60) {
-				iInactive.add(t);
-			} else {
-				if (u.isAccess() && !u.isOpened(iT0)) u.setAccess(false);
-				iTotal.merge(u.getPage(), 1, (a, b) -> a + b);
-				if (u.isAccess()) {
-					iAccess.merge(u.getPage(), 1, (a, b) -> a + b);
-					if (u.getActiveAge(iT0) <=  1 * 60)  iActive1.merge(u.getPage(), 1, (a, b) -> a + b);
-					if (u.getActiveAge(iT0) <=  2 * 60)  iActive2.merge(u.getPage(), 1, (a, b) -> a + b);
-					if (u.getActiveAge(iT0) <=  5 * 60)  iActive5.merge(u.getPage(), 1, (a, b) -> a + b);
-					if (u.getActiveAge(iT0) <= 10 * 60) iActive10.merge(u.getPage(), 1, (a, b) -> a + b);
-					if (u.getActiveAge(iT0) <= 15 * 60) iActive15.merge(u.getPage(), 1, (a, b) -> a + b);
-					if (u.isActive(iT0, getActiveLimitInSeconds(u.getPage()))) iActive.merge(u.getPage(), 1, (a, b) -> a + b); 
-				} else if (u.isActive(iT0, getActiveLimitInSeconds(u.getPage()))) {
-					iWaiting.merge(u.getPage(), 1, (a, b) -> a + b);
-				}
-				if (u.isOpened(iT0))
-					iOpened.merge(u.getPage(), 1, (a, b) -> a + b);
-			}
+			if (u.getPingAge(iT0) > 30 * 60) return false;
+			if (u.isAccess() && !u.isOpened(iT0))
+				u.setAccess(false, iT0);
+			inc(u);
+			return !u.isLoggedOut();
 		}
-		
-		public List<String> getInactive() { return iInactive; }
 		
 		public boolean isEmpty() {
-			return iTotal.isEmpty();
+			return iTotal == 0;
 		}
+	}
+	
+	private class Counter implements BiConsumer<String, ConcurrentMap<String, PingData>> {
+		private long iT0 = System.currentTimeMillis();
+		List<PingCounter> iCounters = new ArrayList<>();
 
+		@Override
+		public void accept(String page, ConcurrentMap<String, PingData> u) {
+			PingCounter pc = new PingCounter(page, iT0);
+			for (Iterator<Map.Entry<String, PingData>> i = u.entrySet().iterator(); i.hasNext(); ) {
+				Map.Entry<String, PingData> e = i.next();
+				if (!pc.accept(e.getKey(), e.getValue())) {
+					if (sLog.isTraceEnabled())
+						sLog.trace(e.getKey() + ": removed");
+					i.remove();
+				}
+			}
+			if (!pc.isEmpty())
+				iCounters.add(pc);
+		}
+		
 		@Override
 		public String toString() {
 			String ret = "";
-			for (String page: iTotal.keySet()) {
-				Integer limit = getMaxActiveUsers(page);
-				ret = (ret.isEmpty() ? "" : ret + "\n") + page + "{" +
-					"access: " + iAccess.getOrDefault(page, 0) + (limit == null ? "" : " of " + limit) +
-					", active: " + iActive.getOrDefault(page, 0) + 
-					" (<1m: " + iActive1.getOrDefault(page, 0)
-						+ ", <2m: " + iActive2.getOrDefault(page, 0)
-						+ ", <5m: " + iActive5.getOrDefault(page, 0)
-						+ ", <10m: " + iActive10.getOrDefault(page, 0)
-						+ ", <15m: " + iActive15.getOrDefault(page, 0) + ")" +
-					", waiting: " + iWaiting.getOrDefault(page, 0) +
-					", opened: " + iOpened.getOrDefault(page, 0) +
-					", tracking: " + iTotal.getOrDefault(page, 0) + "}";
-			}
+			for (PingCounter pc: iCounters)
+				ret = (ret.isEmpty() ? "" : ret + "\n") + pc;
 			return ret;
 		}
 		
 		protected void record(String host) {
 			org.hibernate.Session hibSession = AccessStatisticsDAO.getInstance().createNewSession();
 			try {
-				for (String page: iTotal.keySet()) {
-					AccessStatistics stat = new AccessStatistics();
-					stat.setTimeStamp(new Date(iT0));
+				for (PingCounter pc: iCounters) {
+					AccessStatistics stat = pc.generateAccessStatisticsRecord();
 					stat.setHost(host);
-					stat.setPage(page);
-					stat.setAccess(iAccess.getOrDefault(page, 0));
-					stat.setActive(iActive.getOrDefault(page, 0));
-					stat.setOpened(iOpened.getOrDefault(page, 0));
-					stat.setWaiting(iWaiting.getOrDefault(page, 0));
-					stat.setTracking(iTotal.getOrDefault(page, 0));
-					stat.setActive1m(iActive1.getOrDefault(page, 0));
-					stat.setActive2m(iActive2.getOrDefault(page, 0));
-					stat.setActive5m(iActive5.getOrDefault(page, 0));
-					stat.setActive10m(iActive10.getOrDefault(page, 0));
-					stat.setActive15m(iActive15.getOrDefault(page, 0));
 					hibSession.persist(stat);
 				}
 				hibSession.flush();
 			} finally {
 				hibSession.close();
 			}
+		}
+		
+		public boolean isEmpty() {
+			return iCounters.isEmpty();
 		}
 	}
 	
@@ -353,11 +531,6 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 					} catch (InterruptedException e) {}
 					Counter c = new Counter();
 					iData.forEach(c);
-					for (String k: c.getInactive()) {
-						if (sLog.isTraceEnabled())
-							sLog.trace(k + ": removed");
-						iData.remove(k);
-					}
 					if (!c.isEmpty()) {
 						sLog.info(c);
 						try {
@@ -374,6 +547,36 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 			sLog.debug("Access Controll Updater is down.");
 		}
 	}
+	
+	public static class Listener implements HttpSessionListener {
+		private AccessControllBackend iBackend;
+		
+		private AccessControllBackend getBackend(HttpSessionEvent event) {
+			if (iBackend == null) {
+				WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(event.getSession().getServletContext());
+				iBackend = (AccessControllBackend)applicationContext.getBean(PingRequest.class.getName());
+			}
+			return iBackend;
+		}
+		
+		protected ConcurrentMap<String, ConcurrentMap<String, PingData>> getData(HttpSessionEvent event) {
+			return getBackend(event).getData();
+		}
+		
+		@Override
+		public void sessionCreated(HttpSessionEvent event) {
+		}
 
-
+		@Override
+		public void sessionDestroyed(HttpSessionEvent event) {
+			getData(event).forEach((page, data) -> {
+				PingData pd = data.get(event.getSession().getId());
+				if (pd != null) {
+					pd.logout();
+					if (sLog.isTraceEnabled())
+						sLog.trace(event.getSession().getId() + ": REMOVE " + pd.toString(System.currentTimeMillis()));
+				}
+			});
+		}
+	}
 }

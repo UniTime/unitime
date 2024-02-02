@@ -54,6 +54,13 @@ public abstract class BaseAccessStatistics implements Serializable {
 	private Integer iActive5m;
 	private Integer iActive10m;
 	private Integer iActive15m;
+	private Integer iGotIn;
+	private Integer iLeft;
+	private Integer iGaveUp;
+	private Long iAvgAccessTime;
+	private Long iAvgWaitTime;
+	private Long iAvgAccessTimeWhenLeft;
+	private Long iAvgWaitTimeWhenGotIn;
 
 
 	public BaseAccessStatistics() {
@@ -125,6 +132,34 @@ public abstract class BaseAccessStatistics implements Serializable {
 	public Integer getActive15m() { return iActive15m; }
 	public void setActive15m(Integer active15m) { iActive15m = active15m; }
 
+	@Column(name = "nbr_gotin", nullable = true)
+	public Integer getGotIn() { return iGotIn; }
+	public void setGotIn(Integer gotIn) { iGotIn = gotIn; }
+
+	@Column(name = "nbr_left", nullable = true)
+	public Integer getLeft() { return iLeft; }
+	public void setLeft(Integer left) { iLeft = left; }
+
+	@Column(name = "nbr_gaveup", nullable = true)
+	public Integer getGaveUp() { return iGaveUp; }
+	public void setGaveUp(Integer gaveUp) { iGaveUp = gaveUp; }
+
+	@Column(name = "avg_access", nullable = true)
+	public Long getAvgAccessTime() { return iAvgAccessTime; }
+	public void setAvgAccessTime(Long avgAccessTime) { iAvgAccessTime = avgAccessTime; }
+
+	@Column(name = "avg_wait", nullable = true)
+	public Long getAvgWaitTime() { return iAvgWaitTime; }
+	public void setAvgWaitTime(Long avgWaitTime) { iAvgWaitTime = avgWaitTime; }
+
+	@Column(name = "avg_access_out", nullable = true)
+	public Long getAvgAccessTimeWhenLeft() { return iAvgAccessTimeWhenLeft; }
+	public void setAvgAccessTimeWhenLeft(Long avgAccessTimeWhenLeft) { iAvgAccessTimeWhenLeft = avgAccessTimeWhenLeft; }
+
+	@Column(name = "avg_wait_in", nullable = true)
+	public Long getAvgWaitTimeWhenGotIn() { return iAvgWaitTimeWhenGotIn; }
+	public void setAvgWaitTimeWhenGotIn(Long avgWaitTimeWhenGotIn) { iAvgWaitTimeWhenGotIn = avgWaitTimeWhenGotIn; }
+
 	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof AccessStatistics)) return false;
@@ -152,7 +187,14 @@ public abstract class BaseAccessStatistics implements Serializable {
 			"\n	Active1m: " + getActive1m() +
 			"\n	Active2m: " + getActive2m() +
 			"\n	Active5m: " + getActive5m() +
+			"\n	AvgAccessTime: " + getAvgAccessTime() +
+			"\n	AvgAccessTimeWhenLeft: " + getAvgAccessTimeWhenLeft() +
+			"\n	AvgWaitTime: " + getAvgWaitTime() +
+			"\n	AvgWaitTimeWhenGotIn: " + getAvgWaitTimeWhenGotIn() +
+			"\n	GaveUp: " + getGaveUp() +
+			"\n	GotIn: " + getGotIn() +
 			"\n	Host: " + getHost() +
+			"\n	Left: " + getLeft() +
 			"\n	Opened: " + getOpened() +
 			"\n	Page: " + getPage() +
 			"\n	TimeStamp: " + getTimeStamp() +
