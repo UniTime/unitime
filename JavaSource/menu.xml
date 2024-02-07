@@ -1080,6 +1080,11 @@
 					<hasPermission name="PageStatistics"/>
 				</condition>
 			</item>
+			<item name="Access Statistics" page="accessStats.action">
+				<condition>
+					<hasPermission name="PageStatistics"/>
+				</condition>
+			</item>
 			<item name="Hibernate Statistics" page="hibernateStats.action">
 				<condition>
 					<hasPermission name="HibernateStatistics"/>
