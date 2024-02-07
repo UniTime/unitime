@@ -5880,4 +5880,88 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("... {0} more")
 	String moreAvailableRooms(int more);
+	
+	@DefaultMessage("Page:")
+	String filterPage();
+	
+	@DefaultMessage("Type:")
+	String filterChartType();
+	
+	@DefaultMessage("Interval:")
+	String filterChartInterval();
+	
+	@DefaultMessage("Basic Information")
+	String chartModeBasic();
+	
+	@DefaultMessage("Active Users")
+	String chartModeActive();
+	
+	@DefaultMessage("Average Times")
+	String chartModeTimes();
+	
+	@DefaultMessage("Last Day")
+	String chartIntervalLastDay();
+	
+	@DefaultMessage("Last Three Hours")
+	String chartIntervalLast3Hours();
+	
+	@DefaultMessage("Last Hour")
+	String chartIntervalLastHour();
+
+	@DefaultMessage("Last Week")
+	String chartIntervalLastWeek();
+
+	@DefaultMessage("Last Month")
+	String chartIntervalLastMonth();
+	
+	@DefaultMessage("Date")
+	String chartBasicDate();
+
+	@DefaultMessage("Opened")
+	String chartBasicOpened();
+	
+	@DefaultMessage("Access")
+	String chartBasicAccess();
+	
+	@DefaultMessage("Active")
+	String chartBasicActive();
+	
+	@DefaultMessage("Waiting")
+	String chartBasicWaiting();
+	
+	@DefaultMessage("Got In")
+	String chartBasicGotIn();
+
+	@DefaultMessage("Left")
+	String chartBasicLeft();
+
+	@DefaultMessage("Gave Up")
+	String chartBasicGaveUp();
+	
+	@DefaultMessage("1 min")
+	String chartActive1m();
+
+	@DefaultMessage("2 mins")
+	String chartActive2m();
+
+	@DefaultMessage("5 mins")
+	String chartActive5m();
+
+	@DefaultMessage("10 mins")
+	String chartActive10m();
+
+	@DefaultMessage("15 mins")
+	String chartActive15m();
+	
+	@DefaultMessage("Access Time [m]")
+	String chartTimesAccess();
+	
+	@DefaultMessage("Wait Time [m]")
+	String chartTimesWait();
+
+	@DefaultMessage("Access when left [m]")
+	String chartTimesAccessLeft();
+	
+	@DefaultMessage("Wait when got in [m]")
+	String chartTimesWaitGotIn();
 }

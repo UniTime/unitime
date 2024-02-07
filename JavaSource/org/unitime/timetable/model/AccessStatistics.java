@@ -30,5 +30,5 @@ import org.unitime.timetable.model.base.BaseAccessStatistics;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "access_stats")
 public class AccessStatistics extends BaseAccessStatistics {
-
+	private static final long serialVersionUID = 1L;
 }
