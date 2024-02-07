@@ -160,19 +160,19 @@ public class QueryLog extends BaseQueryLog {
 	public static enum ChartWindow {
 		LAST_HOUR("Last 3 Hours", "kkmm", Hours.THREE, 10, Minutes.ONE,
 				"k:mm", DateTimeFieldType.minuteOfHour(), 20, 0, 10, "Minute",
-				"to_char(timeStamp, 'HH24MI')", "timeStamp > current_date() - 1",
+				"to_char(timeStamp, 'HH24MI')", "timeStamp > adddate(current_date(), -1)",
 				"date_format(timeStamp, '%H%i')", "timeStamp > adddate(current_date(), -1)"),
 /*		LAST_DAY("Last 24 Hours (1-hour average)", "kk", Days.ONE, 1, Hours.ONE,
-				"k", 2, 60, "Hour",
-				"to_char(timeStamp, 'HH24')", "timeStamp > current_date() - 1",
+				"k", DateTimeFieldType.hourOfDay(), 3, 2, 60, "Hour",
+				"to_char(timeStamp, 'HH24')", "timeStamp > adddate(current_date(), -1)",
 				"date_format(timeStamp, '%H')", "timeStamp > adddate(current_date(), -1)"),*/
 		LAST_WEEK("Last 7 Days", "ddkk", Days.SEVEN, 1, Hours.ONE,
 				"MM/d", DateTimeFieldType.hourOfDay(), 24, 0, 60, "Hour",
-				"to_char(timeStamp, 'DDHH24')", "timeStamp > current_date() - 7",
+				"to_char(timeStamp, 'DDHH24')", "timeStamp > adddate(current_date(), - 7)",
 				"date_format(timeStamp, '%d%H')", "timeStamp > adddate(current_date(), -7)"),
 		LAST_MONTH("Last 3 Months", "MMdd", Months.THREE, 1, Days.ONE,
 				"MMM/d", DateTimeFieldType.dayOfMonth(), 32, 1, 24 * 60, "Day",
-				"to_char(timeStamp, 'MMDD')", "timeStamp > current_date() - 92",
+				"to_char(timeStamp, 'MMDD')", "timeStamp > adddate(current_date(), - 92)",
 				"date_format(timeStamp, '%m%d')", "timeStamp > adddate(current_date(), -92)"),
 		;
 		private String iName;
