@@ -213,6 +213,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iLinkedClassesMustBeUsed = false;
 	private boolean iAllowDefaultCourseAlternatives = false;
 	private boolean iIncludeUnavailabilities = true;
+	private boolean iIncludeUnavailabilitiesFromOtherSessions = true;
 	private String iShortDistanceAccomodationReference = null;
 	private boolean iCheckOverrideStatus = false, iValidateOverrides = false;
 	private CourseRequestsValidationProvider iValidationProvider = null;
@@ -296,6 +297,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iLinkedClassesMustBeUsed = model.getProperties().getPropertyBoolean("LinkedClasses.mustBeUsed", false);
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
+        iIncludeUnavailabilitiesFromOtherSessions = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilitiesFromOtherSessions", iIncludeUnavailabilitiesFromOtherSessions);
         iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
         for (StudentPriority priority: StudentPriority.values()) {
         	if (priority == StudentPriority.Normal) break;
@@ -2802,6 +2804,33 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			}
         		}
         		
+        	}
+        }
+        
+        if (iIncludeUnavailabilitiesFromOtherSessions) {
+        	List<StudentClassEnrollment> enrollments = hibSession.createQuery(
+    				"select e2 " +
+    				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
+    				"where s1.externalUniqueId is not null and z1.uniqueId = :sessionId and s1.externalUniqueId = s2.externalUniqueId and " +
+    				" z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+    				StudentClassEnrollment.class).setParameter("sessionId", session.getUniqueId()).list();
+        	setPhase("Loading unavailabilities from other academic sessions...", enrollments.size());
+        	for (StudentClassEnrollment enrollment: enrollments) {
+        		Student student = ext2student.get(enrollment.getStudent().getExternalUniqueId());
+        		if (student != null) {
+        			Section section = classTable.get(enrollment.getClazz().getUniqueId());
+        			if (section == null && !enrollment.getClazz().isCancelled() && enrollment.getClazz().getCommittedAssignment() != null) {
+    					Offering offering = loadOffering(enrollment.getCourseOffering().getInstructionalOffering(), courseTable, classTable);
+    		            if (offering != null) {
+    		            	getModel().addOffering(offering);
+        					section = classTable.get(enrollment.getClazz().getUniqueId());
+        					if (section != null && !section.isCancelled() && section.getTime() != null)
+        						new Unavailability(student, section, section.isAllowOverlap());        						
+    		            }
+        			} else if (section != null && !section.isCancelled() && section.getTime() != null) {
+        				new Unavailability(student, section, section.isAllowOverlap());
+        			}
+        		}
         	}
         }
         

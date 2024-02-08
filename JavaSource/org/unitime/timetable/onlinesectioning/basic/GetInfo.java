@@ -458,16 +458,16 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 				StudentClassEnrollment.class).setParameter("studentId", student.getId()).list();
 		if (!enrollments.isEmpty()) {
 			for (StudentClassEnrollment enrollment: enrollments) {
-				Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
-				if (placement != null)
+				if (!enrollment.getClazz().isCancelled() && enrollment.getClazz().getCommittedAssignment() != null) {
 					new Unavailability(student,
-						new Section(
-								enrollment.getClazz().getUniqueId(),
-								enrollment.getClazz().getMaxExpectedCapacity(),
-								enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()),
-								null,
-								placement, null),
-						false);
+							new Section(
+									enrollment.getClazz().getUniqueId(),
+									enrollment.getClazz().getMaxExpectedCapacity(),
+									enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()),
+									null,
+									enrollment.getClazz().getCommittedAssignment().getPlacement(), null),
+							enrollment.getClazz().getSchedulingSubpart().getStudentAllowOverlap());
+				}
 			}
 		}
 	}
