@@ -96,6 +96,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseDeadlines;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
+import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -279,6 +280,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 						if (offering != null)
 							offering.fillInUnavailabilities(student);
 					}
+				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, helper);
 			}
 			if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() || getSpecialRegistration() != null) {
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
