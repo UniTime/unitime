@@ -632,6 +632,7 @@ public enum Right {
     /** Administration: Utilities */
     
     PageStatistics,
+    AccessStatistics,
 
     HibernateStatistics,
     
