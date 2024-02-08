@@ -149,6 +149,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 					else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
 						noSubStates.add(status.getReference());
 			}
+	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false);
 			
 			Lock lock = server.readLock();
 			
@@ -417,6 +418,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 								if (offering != null)
 									offering.fillInUnavailabilities(clonnedStudent);
 							}
+						if (checkUnavailabilitiesFromOtherSessions)
+							GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, helper);
 					}
 				}
 				

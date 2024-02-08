@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
@@ -47,6 +48,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.selection.StudentSchedulingAssistantWeights;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
@@ -60,6 +62,7 @@ import org.cpsolver.studentsct.reservation.ReservationOverride;
 import org.cpsolver.studentsct.reservation.UniversalOverride;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
@@ -124,6 +127,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
     				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
     					noSubStates.add(status.getReference());
     		}
+	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false);
     		
     		for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
@@ -347,6 +351,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 							if (offering != null)
 								offering.fillInUnavailabilities(clonnedStudent);
 						}
+					if (checkUnavailabilitiesFromOtherSessions)
+						GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, helper);
 				}
 			}
 			
@@ -440,6 +446,30 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 			lock.release();
 		}
 		return info;		
+	}
+	
+	public static void fillInUnavailabilitiesFromOtherSessions(Student student, OnlineSectioningHelper helper) {
+		if (student == null || student.getId() < 0 || student.getExternalId() == null || student.getExternalId().isEmpty()) return;
+		List<StudentClassEnrollment> enrollments = helper.getHibSession().createQuery(
+				"select e2 " +
+				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
+				"where s1.uniqueId = :studentId and s1.externalUniqueId = s2.externalUniqueId and " +
+				" z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+				StudentClassEnrollment.class).setParameter("studentId", student.getId()).list();
+		if (!enrollments.isEmpty()) {
+			for (StudentClassEnrollment enrollment: enrollments) {
+				Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
+				if (placement != null)
+					new Unavailability(student,
+						new Section(
+								enrollment.getClazz().getUniqueId(),
+								enrollment.getClazz().getMaxExpectedCapacity(),
+								enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()),
+								null,
+								placement, null),
+						false);
+			}
+		}
 	}
 	
 	@Override

@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.basic;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
@@ -53,12 +55,24 @@ import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ErrorMessage;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseCreditUnitConfig;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
@@ -90,6 +104,7 @@ import org.unitime.timetable.onlinesectioning.model.XRoom;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
+import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.util.Formats;
@@ -315,6 +330,151 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		    	ret.add(ca);
 			}
 		}
+		if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false)) {
+			List<StudentClassEnrollment> enrollments = helper.getHibSession().createQuery(
+					"select e2 " +
+					"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
+					"where s1.uniqueId = :studentId and s1.externalUniqueId = s2.externalUniqueId and " +
+					" z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+					StudentClassEnrollment.class).setParameter("studentId", student.getStudentId()).list();
+			if (!enrollments.isEmpty()) {
+				Map<Long, CourseAssignment> courses = new HashMap<>();
+				Comparator<StudentClassEnrollment> cmp = new Comparator<StudentClassEnrollment>() {
+					public boolean isParent(SchedulingSubpart s1, SchedulingSubpart s2) {
+						SchedulingSubpart p1 = s1.getParentSubpart();
+						if (p1==null) return false;
+						if (p1.equals(s2)) return true;
+						return isParent(p1, s2);
+					}
+
+					@Override
+					public int compare(StudentClassEnrollment a, StudentClassEnrollment b) {
+						if (a.getCourseOffering().equals(b.getCourseOffering())) {
+							SchedulingSubpart s1 = a.getClazz().getSchedulingSubpart();
+							SchedulingSubpart s2 = b.getClazz().getSchedulingSubpart();
+							if (isParent(s1, s2)) return 1;
+							if (isParent(s2, s1)) return -1;
+							int cmp = s1.getItype().compareTo(s2.getItype());
+							if (cmp != 0) return cmp;
+							return Double.compare(s1.getUniqueId(), s2.getUniqueId());
+						} else {
+							int cmp = a.getCourseOffering().getCourseName().compareTo(b.getCourseOffering().getCourseName());
+							if (cmp != 0) return cmp;
+							return a.getCourseOffering().getUniqueId().compareTo(b.getCourseOffering().getUniqueId());
+						}
+					}
+				};
+				Collections.sort(enrollments, cmp);
+				HasGradableSubpart gs = null;
+				if (ApplicationProperty.OnlineSchedulingGradableIType.isTrue() && Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
+					gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
+				CourseCreditUnitConfig credit = null;
+				XCourse xc = null;
+				for (StudentClassEnrollment enrollment: enrollments) {
+					CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
+					if (course == null) {
+						course = new CourseAssignment();
+						courses.put(enrollment.getCourseOffering().getUniqueId(), course);
+						ret.add(course);
+						course.setAssigned(true);
+						course.setCourseId(enrollment.getCourseOffering().getUniqueId());
+						course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+						course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+						course.setTitle(enrollment.getCourseOffering().getTitle());
+						course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
+						course.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+						course.setAssigned(true);
+						course.setTeachingAssignment(true);
+						credit = enrollment.getCourseOffering().getCredit();
+						xc = new XCourse(enrollment.getCourseOffering());
+					}
+					ClassAssignment clazz = course.addClassAssignment();
+					clazz.setClassId(enrollment.getClazz().getUniqueId());
+					clazz.setCourseId(enrollment.getCourseOffering().getUniqueId());
+					clazz.setCourseAssigned(true);
+					clazz.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
+					clazz.setTitle(enrollment.getCourseOffering().getTitle());
+					clazz.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
+					clazz.setSection(enrollment.getClazz().getClassSuffix(enrollment.getCourseOffering()));
+					if (clazz.getSection() == null)
+						clazz.setSection(enrollment.getClazz().getSectionNumberString(helper.getHibSession()));
+					clazz.setExternalId(enrollment.getClazz().getExternalId(enrollment.getCourseOffering()));
+					clazz.setClassNumber(enrollment.getClazz().getSectionNumberString(helper.getHibSession()));
+					clazz.setSubpart(enrollment.getClazz().getSchedulingSubpart().getItypeDesc().trim());
+					if (enrollment.getClazz().getParentClass() != null) {
+						clazz.setParentSection(enrollment.getClazz().getParentClass().getClassSuffix(enrollment.getCourseOffering()));
+						if (clazz.getParentSection() == null)
+							clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(helper.getHibSession()));
+					}
+					if (enrollment.getCourseOffering().getScheduleBookNote() != null)
+						clazz.addNote(enrollment.getCourseOffering().getScheduleBookNote());
+					if (enrollment.getClazz().getSchedulePrintNote() != null)
+						clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
+					Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
+					int minLimit = enrollment.getClazz().getExpectedCapacity();
+	            	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();
+	            	int limit = maxLimit;
+	            	if (minLimit < maxLimit && placement != null) {
+	            		int roomLimit = (int) Math.floor(placement.getRoomSize() / (enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()));
+	            		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
+	            	}
+	                if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+	                clazz.setCancelled(enrollment.getClazz().isCancelled());
+					clazz.setLimit(new int[] { enrollment.getClazz().getEnrollment(), limit});
+					clazz.setEnrolledDate(enrollment.getTimestamp());
+					if (placement != null) {
+						if (placement.getTimeLocation() != null) {
+							for (DayCode d : DayCode.toDayCodes(placement.getTimeLocation().getDayCode()))
+								clazz.addDay(d.getIndex());
+							clazz.setStart(placement.getTimeLocation().getStartSlot());
+							clazz.setLength(placement.getTimeLocation().getLength());
+							clazz.setBreakTime(placement.getTimeLocation().getBreakTime());
+							clazz.setDatePattern(XTime.datePatternName(enrollment.getClazz().getCommittedAssignment(), helper.getDatePatternFormat()));
+						}
+						if (enrollment.getClazz().getCommittedAssignment() != null)
+							for (Location loc: enrollment.getClazz().getCommittedAssignment().getRooms())
+								clazz.addRoom(loc.getUniqueId(), loc.getLabelWithDisplayName());
+					} else {
+						for (Iterator<?> i = enrollment.getClazz().effectivePreferences(RoomPref.class).iterator(); i.hasNext(); ) {
+			        		RoomPref rp = (RoomPref)i.next();
+			        		if (PreferenceLevel.sRequired.equals(rp.getPrefLevel().getPrefProlog())) {
+			        			clazz.addRoom(rp.getRoom().getUniqueId(), rp.getRoom().getLabel());
+			        		}
+			        	}
+						DatePattern pattern = enrollment.getClazz().effectiveDatePattern();
+						if (pattern != null)
+							clazz.setDatePattern(datePatternName(pattern, helper.getDatePatternFormat()));
+					}
+					if (enrollment.getClazz().getDisplayInstructor())
+						for (ClassInstructor ci : enrollment.getClazz().getClassInstructors()) {
+							if (!ci.isLead()) continue;
+							clazz.addInstructor(helper.getInstructorNameFormat().format(ci.getInstructor()));
+							clazz.addInstructoEmail(ci.getInstructor().getEmail() == null ? "" : ci.getInstructor().getEmail());
+						}
+					if (credit != null && gs != null && gs.isGradableSubpart(enrollment.getClazz().getSchedulingSubpart(), enrollment.getCourseOffering(), helper.getHibSession())) {
+						clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						clazz.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());;
+						credit = null;
+					} else if (credit != null && gs == null) {
+						clazz.setCredit(credit.creditAbbv() + "|" + credit.creditText());
+						clazz.setCreditRange(credit.getMinCredit(), credit.getMaxCredit());
+						credit = null;
+					}
+					if (enrollment.getClazz().getSchedulingSubpart().getCredit() != null) {
+						clazz.setCredit(enrollment.getClazz().getSchedulingSubpart().getCredit().creditAbbv() + "|" + enrollment.getClazz().getSchedulingSubpart().getCredit().creditText());
+						clazz.setCreditRange(enrollment.getClazz().getSchedulingSubpart().getCredit().getMinCredit(), enrollment.getClazz().getSchedulingSubpart().getCredit().getMaxCredit());
+						credit = null;
+					}
+					Float creditOverride = enrollment.getClazz().getCredit(enrollment.getCourseOffering());
+					if (creditOverride != null) clazz.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
+					if (clazz.getParentSection() == null)
+						clazz.setParentSection(enrollment.getCourseOffering().getConsentType() == null ? null : enrollment.getCourseOffering().getConsentType().getLabel());
+					clazz.setTeachingAssignment(true);
+					sections.add(new CourseSection(xc, new XSection(enrollment.getClazz(), helper)));
+				}
+			}
+		}
+		
 		return sections;
 	}
 	
@@ -1003,5 +1163,14 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
         }
         return false;
     }
-
+	
+	protected static String datePatternName(DatePattern pattern, String datePatternFormat) {
+    	if ("never".equals(datePatternFormat)) return pattern.getName();
+    	if ("extended".equals(datePatternFormat) && !pattern.isExtended()) return pattern.getName();
+    	if ("alternate".equals(datePatternFormat) && pattern.isAlternate()) return pattern.getName();
+		Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
+		Date first = pattern.getStartDate();
+		Date last = pattern.getEndDate();
+		return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+	}
 }
