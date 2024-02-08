@@ -339,8 +339,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                hibSession.persist(io1);
 	                hibSession.flush();
 
-	    	        hibSession.refresh(io);
-	                hibSession.refresh(io1);
 	            	className = ApplicationProperty.ExternalActionInstructionalOfferingInCrosslistAdd.value();
 	            	if (className != null && className.trim().length() > 0){
 	            		ExternalInstructionalOfferingInCrosslistAddAction addAction = (ExternalInstructionalOfferingInCrosslistAddAction) (Class.forName(className).getDeclaredConstructor().newInstance());
@@ -373,7 +371,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                hibSession.merge(co);
 
 	                hibSession.flush();
-	                hibSession.refresh(co);
 	            }
 	        }
 	        
@@ -455,9 +452,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 
 	                    hibSession.remove(co2);
 	                    hibSession.flush();
-
-	                    //hibSession.refresh(sa2);
-	                    
 	                }
 	                
 	                //io1.setCourseOfferings(offerings);
@@ -470,8 +464,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                
 	                hibSession.merge(sa);
 	                saList.put(sa.getSubjectAreaAbbreviation(), sa);
-
-	    	        //hibSession.refresh(sa);
 	                
 	            }            
 	        }
@@ -486,7 +478,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	            hibSession.persist(co3);
 	            
 	            hibSession.flush();
-	            hibSession.refresh(co3);
 
 	            hibSession.merge(io);
 	        }
@@ -593,25 +584,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
             tx.commit();
 	        hibSession.flush();
 	        hibSession.clear();
-	        hibSession.refresh(io);
 	        
-	        // Refresh objects
-	        for (Iterator i1=io.getInstrOfferingConfigs().iterator();i1.hasNext();) {
-	        	InstrOfferingConfig cfg = (InstrOfferingConfig)i1.next();
-	        	for (Iterator i2=cfg.getSchedulingSubparts().iterator();i2.hasNext();) {
-	        		SchedulingSubpart ss = (SchedulingSubpart)i2.next();
-	        		for (Iterator i3=ss.getClasses().iterator();i3.hasNext();) {
-	        			Class_ c = (Class_)i3.next();
-	        			hibSession.refresh(c);
-	        		}
-	        		hibSession.refresh(ss);
-	        	}
-	        }
-	        
-	        Set keys = saList.keySet();
-	        for (Iterator i1=keys.iterator(); i1.hasNext();) {
-	        	hibSession.refresh(saList.get(i1.next()));
-	        }	
         	String className = ApplicationProperty.ExternalActionCourseCrosslist.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalCourseCrosslistAction addAction = (ExternalCourseCrosslistAction) (Class.forName(className).getDeclaredConstructor().newInstance());
