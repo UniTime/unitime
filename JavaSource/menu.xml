@@ -1082,7 +1082,7 @@
 			</item>
 			<item name="Access Statistics" page="accessStats.action">
 				<condition>
-					<hasPermission name="PageStatistics"/>
+					<hasPermission name="AccessStatistics"/>
 				</condition>
 			</item>
 			<item name="Hibernate Statistics" page="hibernateStats.action">

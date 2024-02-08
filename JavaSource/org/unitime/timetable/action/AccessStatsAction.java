@@ -124,7 +124,7 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 	
 	@Override
 	public String execute() {
-		sessionContext.checkPermission(Right.PageStatistics);
+		sessionContext.checkPermission(Right.AccessStatistics);
 		return "show";
 	}
 	
