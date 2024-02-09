@@ -74,6 +74,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -107,6 +108,7 @@ import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
 /**
@@ -335,7 +337,8 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 					"select e2 " +
 					"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
 					"where s1.uniqueId = :studentId and s1.externalUniqueId = s2.externalUniqueId and " +
-					" z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+					"e2.clazz.cancelled = false and e2.clazz.committedAssignment is not null and " +
+					"z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
 					StudentClassEnrollment.class).setParameter("studentId", student.getStudentId()).list();
 			if (!enrollments.isEmpty()) {
 				Map<Long, CourseAssignment> courses = new HashMap<>();
@@ -371,6 +374,10 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 				CourseCreditUnitConfig credit = null;
 				XCourse xc = null;
 				for (StudentClassEnrollment enrollment: enrollments) {
+					int shiftDays = DateUtils.daysBetween(
+							server.getAcademicSession().getDatePatternFirstDate(),
+							AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession())
+							);
 					CourseAssignment course = courses.get(enrollment.getCourseOffering().getUniqueId());
 					if (course == null) {
 						course = new CourseAssignment();
@@ -470,7 +477,10 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 					if (clazz.getParentSection() == null)
 						clazz.setParentSection(enrollment.getCourseOffering().getConsentType() == null ? null : enrollment.getCourseOffering().getConsentType().getLabel());
 					clazz.setTeachingAssignment(true);
-					sections.add(new CourseSection(xc, new XSection(enrollment.getClazz(), helper)));
+					XSection section = new XSection(enrollment.getClazz(), helper);
+					if (shiftDays != 0 && section.getTime() != null)
+						section.getTime().datePatternShiftDays(shiftDays);
+					sections.add(new CourseSection(xc, section));
 				}
 			}
 		}

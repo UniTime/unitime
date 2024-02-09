@@ -154,6 +154,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
@@ -532,7 +533,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         return ret;
     }
     
-    public TimeLocation makeupTime(Class_ c) {
+    public TimeLocation makeupTime(Class_ c, int shiftDays) {
         DatePattern datePattern = c.effectiveDatePattern(); 
         if (datePattern==null) {
             iProgress.warn("        -- makup time for "+c.getClassLabel(iShowClassSuffix, iShowConfigName)+": no date pattern set");
@@ -560,7 +561,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                                 pattern.getNormalizedPreference(day,time,0.77),
                                 datePattern.getUniqueId(),
                                 datePattern.getName(),
-                                datePattern.getPatternBitSet(),
+                                (shiftDays == 0 ? datePattern.getPatternBitSet() : Assignment.shift(datePattern.getPatternBitSet(), shiftDays)),
                                 pattern.getBreakTime());
                         }
                     }
@@ -598,8 +599,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         return rooms;
     }
     
-    public Placement makeupPlacement(Class_ c) {
-        TimeLocation time = makeupTime(c);
+    public Placement makeupPlacement(Class_ c, int shiftDays) {
+        TimeLocation time = makeupTime(c, shiftDays);
         if (time==null) return null;
         Vector rooms = makeupRooms(c);
         Vector times = new Vector(1); times.addElement(time);
@@ -811,7 +812,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		Assignment a = clazz.getCommittedAssignment();
             Placement p = null;
             if (iMakeupAssignmentsFromRequiredPrefs) {
-                p = makeupPlacement(clazz);
+                p = makeupPlacement(clazz, 0);
             } else if (a != null) {
                 p = a.getPlacement();
             }
@@ -824,7 +825,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         return classLimit;
     }
     
-    private Offering loadOffering(InstructionalOffering io, Hashtable<Long, Course> courseTable, Hashtable<Long, Section> classTable) {
+    private Offering loadOffering(InstructionalOffering io, Hashtable<Long, Course> courseTable, Hashtable<Long, Section> classTable, int shiftDays) {
     	if (io.getInstrOfferingConfigs().isEmpty()) {
     		return null;
     	}
@@ -878,9 +879,9 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     Assignment a = c.getCommittedAssignment();
                     Placement p = null;
                     if (iMakeupAssignmentsFromRequiredPrefs) {
-                        p = makeupPlacement(c);
+                        p = makeupPlacement(c, shiftDays);
                     } else if (a != null) {
-                        p = a.getPlacement();
+                        p = a.getPlacement(shiftDays);
                     }
                     if (p != null && p.getTimeLocation() != null) {
                     	p.getTimeLocation().setDatePattern(
@@ -2635,7 +2636,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         setPhase("Loading course offerings...", offerings.size());
         for (InstructionalOffering io: offerings) {
         	incProgress();
-            Offering offering = loadOffering(io, courseTable, classTable);
+            Offering offering = loadOffering(io, courseTable, classTable, 0);
             if (offering!=null) getModel().addOffering(offering);
         }
         
@@ -2812,7 +2813,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				"select e2 " +
     				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
     				"where s1.externalUniqueId is not null and z1.uniqueId = :sessionId and s1.externalUniqueId = s2.externalUniqueId and " +
-    				" z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+    				"e2.clazz.cancelled = false and e2.clazz.committedAssignment is not null and " +
+    				"z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
     				StudentClassEnrollment.class).setParameter("sessionId", session.getUniqueId()).list();
         	setPhase("Loading unavailabilities from other academic sessions...", enrollments.size());
         	for (StudentClassEnrollment enrollment: enrollments) {
@@ -2820,7 +2822,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		if (student != null) {
         			Section section = classTable.get(enrollment.getClazz().getUniqueId());
         			if (section == null && !enrollment.getClazz().isCancelled() && enrollment.getClazz().getCommittedAssignment() != null) {
-    					Offering offering = loadOffering(enrollment.getCourseOffering().getInstructionalOffering(), courseTable, classTable);
+    					int shiftDays = DateUtils.daysBetween(
+    							AcademicSessionInfo.getDatePatternFirstDay(session),
+    							AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession()));
+    					Offering offering = loadOffering(enrollment.getCourseOffering().getInstructionalOffering(), courseTable, classTable, shiftDays);
     		            if (offering != null) {
     		            	getModel().addOffering(offering);
         					section = classTable.get(enrollment.getClazz().getUniqueId());

@@ -419,7 +419,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 									offering.fillInUnavailabilities(clonnedStudent);
 							}
 						if (checkUnavailabilitiesFromOtherSessions)
-							GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, helper);
+							GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
 					}
 				}
 				

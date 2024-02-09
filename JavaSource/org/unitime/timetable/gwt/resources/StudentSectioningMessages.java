@@ -2246,7 +2246,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Problem")
 	String reportProblem();
 	
-	@DefaultMessage("{0} (TA)")
+	@DefaultMessage("{0}")
 	String teachingAssignment(String className);
 	
 	@DefaultMessage("Section is full")
