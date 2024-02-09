@@ -115,6 +115,16 @@ public class XTime implements Serializable, Externalizable {
 		iWeeks = time.getWeekCode();
 	}
 	
+	public XTime(XTime time) {
+		iSlot = time.getSlot();
+		iLength = time.getLength();
+		iBreakTime = time.getBreakTime();
+		iDays = time.getDays();
+		iWeeks = time.getWeeks();
+		iDatePatternId = time.getDatePatternId();
+		iDatePatternName = time.getDatePatternName();
+	}
+	
 	public void datePatternShiftDays(int days) {
 		if (days != 0 && iWeeks != null)
 			iWeeks = Assignment.shift(iWeeks, days);
@@ -380,6 +390,11 @@ public class XTime implements Serializable, Externalizable {
     
     public TimeLocation toTimeLocation() {
     	return new TimeLocation(getDays(), getSlot(), getLength(), 0, 0.0, getDatePatternId(), getDatePatternName(), getWeeks(), getBreakTime());
+    }
+    
+    public TimeLocation toTimeLocation(int shiftDays) {
+    	return new TimeLocation(getDays(), getSlot(), getLength(), 0, 0.0, getDatePatternId(), getDatePatternName(),
+    			(shiftDays == 0 ? getWeeks() : Assignment.shift(getWeeks(), shiftDays)), getBreakTime());
     }
     
     transient Integer iFirstMeeting = null;

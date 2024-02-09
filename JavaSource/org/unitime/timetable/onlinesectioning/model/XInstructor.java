@@ -100,6 +100,22 @@ public class XInstructor implements Serializable, Externalizable, NameInterface 
 		iInstructing = instructing;
 	}
 	
+	public XInstructor(XInstructor instructor) {
+		iUniqueId = instructor.getIntructorId();
+		iExternalId = instructor.getExternalId();
+		iName = instructor.getName();
+		iEmail = instructor.getEmail();
+		iAllowOverlap = instructor.isAllowOverlap();
+		iDisplay = instructor.isAllowDisplay();
+		iInstructing = instructor.isInstructing();
+		iFName = instructor.getFirstName();
+		iMName = instructor.getMiddleName();
+		iLName = instructor.getLastName();
+		iTitle = instructor.getAcademicTitle();
+		iPercentShare = instructor.getPercentShare();
+		iResponsibility = instructor.getResponsibility();
+	}
+	
 	public Long getIntructorId() {
 		return iUniqueId;
 	}

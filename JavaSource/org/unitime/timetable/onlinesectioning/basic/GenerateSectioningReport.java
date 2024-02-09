@@ -150,6 +150,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 						noSubStates.add(status.getReference());
 			}
 	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false);
+	        boolean checkUnavailabilitiesFromOtherSessionsUsingDatabase = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false);
 			
 			Lock lock = server.readLock();
 			
@@ -420,6 +421,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							}
 						if (checkUnavailabilitiesFromOtherSessions)
 							GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
+						else if (checkUnavailabilitiesFromOtherSessionsUsingDatabase)
+							GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(clonnedStudent, server, helper);
 					}
 				}
 				

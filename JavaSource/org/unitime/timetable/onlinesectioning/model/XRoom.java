@@ -64,6 +64,15 @@ public class XRoom implements Serializable, Externalizable {
 		iY = location.getPosY();
 	}
 	
+	public XRoom(XRoom room) {
+		iUniqueId = room.getUniqueId();
+		iName = room.getName();
+		iExternalId = room.getExternalId();
+		iIgnoreTooFar = room.getIgnoreTooFar();
+		iX = room.getX();
+		iY = room.getY();
+	}
+	
 	public Long getUniqueId() { return iUniqueId; }
 	public String getName() { return iName; }
 	public String getExternalId() { return iExternalId; }

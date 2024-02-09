@@ -72,6 +72,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.match.AnyCourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.AnyStudentMatcher;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -91,6 +92,8 @@ import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
+import org.unitime.timetable.solver.jgroups.SolverServer;
+import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
@@ -128,6 +131,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
     					noSubStates.add(status.getReference());
     		}
 	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false);
+	        boolean checkUnavailabilitiesFromOtherSessionsUsingDatabase = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false);
     		
     		for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
@@ -353,6 +357,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 						}
 					if (checkUnavailabilitiesFromOtherSessions)
 						GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
+					else if (checkUnavailabilitiesFromOtherSessionsUsingDatabase)
+						GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(clonnedStudent, server, helper);
 				}
 			}
 			
@@ -450,6 +456,26 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	
 	public static void fillInUnavailabilitiesFromOtherSessions(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (student == null || student.getId() < 0 || student.getExternalId() == null || student.getExternalId().isEmpty()) return;
+		SolverServer solverServer = SolverServerImplementation.getInstance();
+		if (solverServer != null) {
+			Collection<XClassEnrollment> unavailabilities = solverServer.getUnavailabilitiesFromOtherSessions(server.getAcademicSession(), student.getExternalId());
+			if (unavailabilities != null) {
+				for (XClassEnrollment e: unavailabilities) {
+					if (e.getSection().isCancelled() || e.getSection().getTime() == null) continue;
+					new Unavailability(student,
+							new Section(
+									e.getSection().getSectionId(),
+									e.getSection().getLimit(),
+									e.getCourseId().getCourseName() + " " + e.getSection().getSubpartName() + " " + e.getSection().getName(e.getCourseId().getCourseId()),
+									null,
+									e.getSection().toPlacement(e.getShiftDays()), null),
+							e.getSection().isAllowOverlap());
+				}
+			}
+		}
+	}
+	
+	public static void fillInUnavailabilitiesFromOtherSessionsUsingDatabase(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		List<StudentClassEnrollment> enrollments = helper.getHibSession().createQuery(
 				"select e2 " +
 				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +

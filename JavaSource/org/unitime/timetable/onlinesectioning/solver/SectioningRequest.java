@@ -557,6 +557,8 @@ public class SectioningRequest implements LastSectionProvider {
 				}
 			if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
 				GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
+			else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(clonnedStudent, server, helper);
 		}
 		return ret;
 	}
