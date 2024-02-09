@@ -255,7 +255,7 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 		List<XClassEnrollment> ret = new ArrayList<>();
 		for (String serverId: serverIds) {
 			OnlineSectioningServer server = getSolver(serverId);
-			if (server != null) {
+			if (server != null && server.isReady()) {
 				AcademicSessionInfo other = server.getAcademicSession();
 				if (session.equals(other)) continue;
 				if (session.getSessionBeginDate().after(other.getSessionEndDate()) || other.getSessionBeginDate().after(session.getSessionEndDate())) continue;

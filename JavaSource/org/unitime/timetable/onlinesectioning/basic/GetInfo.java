@@ -130,8 +130,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
     				else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
     					noSubStates.add(status.getReference());
     		}
-	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false);
-	        boolean checkUnavailabilitiesFromOtherSessionsUsingDatabase = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false);
+	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsForReporting", false);
     		
     		for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 	        	XOffering offering = server.getOffering(ci.getOfferingId());
@@ -355,12 +354,10 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 							if (offering != null)
 								offering.fillInUnavailabilities(clonnedStudent);
 						}
-					if (checkUnavailabilitiesFromOtherSessions)
-						GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
-					else if (checkUnavailabilitiesFromOtherSessionsUsingDatabase)
-						GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(clonnedStudent, server, helper);
 				}
 			}
+			if (checkUnavailabilitiesFromOtherSessions)
+				GetInfo.fillInAllUnavailabilitiesFromOtherSessionsUsingDatabase(students, server, helper);
 			
             DecimalFormat df = new DecimalFormat("0.00", new DecimalFormatSymbols(Locale.US));
             StudentSchedulingAssistantWeights w = new StudentSchedulingAssistantWeights(server.getConfig());
@@ -499,6 +496,36 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 									enrollment.getClazz().getCommittedAssignment().getPlacement(shiftDays), null),
 							enrollment.getClazz().getSchedulingSubpart().getStudentAllowOverlap());
 				}
+			}
+		}
+	}
+	
+	
+	public static void fillInAllUnavailabilitiesFromOtherSessionsUsingDatabase(Map<Long, Student> students, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		List<Object[]> enrollments = helper.getHibSession().createQuery(
+				"select s1.uniqueId, e2 " +
+				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
+				"where s1.externalUniqueId is not null and z1.uniqueId = :sessionId and s1.externalUniqueId = s2.externalUniqueId and " +
+				"e2.clazz.cancelled = false and e2.clazz.committedAssignment is not null and " +
+				"z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+				Object[].class).setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+		for (Object[] row: enrollments) {
+			Long studentId = (Long)row[0];
+			StudentClassEnrollment enrollment = (StudentClassEnrollment)row[1];
+			Student student = students.get(studentId);
+			if (student != null&& !enrollment.getClazz().isCancelled() && enrollment.getClazz().getCommittedAssignment() != null) {
+				int shiftDays = DateUtils.daysBetween(
+						server.getAcademicSession().getDatePatternFirstDate(),
+						AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession())
+						);
+				new Unavailability(student,
+						new Section(
+								enrollment.getClazz().getUniqueId(),
+								enrollment.getClazz().getMaxExpectedCapacity(),
+								enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()),
+								null,
+								enrollment.getClazz().getCommittedAssignment().getPlacement(shiftDays), null),
+						enrollment.getClazz().getSchedulingSubpart().getStudentAllowOverlap());
 			}
 		}
 	}
