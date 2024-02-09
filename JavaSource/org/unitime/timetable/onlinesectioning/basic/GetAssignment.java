@@ -90,6 +90,7 @@ import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentError;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider.EnrollmentFailure;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -108,6 +109,8 @@ import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
+import org.unitime.timetable.solver.jgroups.SolverServer;
+import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
@@ -333,6 +336,67 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 			}
 		}
 		if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false)) {
+			SolverServer solverServer = SolverServerImplementation.getInstance();
+			if (solverServer != null) {
+				Collection<XClassEnrollment> unavailabilities = solverServer.getUnavailabilitiesFromOtherSessions(server.getAcademicSession(), student.getExternalId());
+				if (unavailabilities != null) {
+					Map<Long, CourseAssignment> courses = new HashMap<>();
+					for (XClassEnrollment e: unavailabilities) {
+						CourseAssignment course = courses.get(e.getCourseId().getCourseId());
+						if (course == null) {
+							course = new CourseAssignment();
+							courses.put(e.getCourseId().getCourseId(), course);
+							ret.add(course);
+							course.setAssigned(true);
+							course.setCourseId(e.getCourseId().getCourseId());
+							course.setCourseNbr(e.getCourseId().getCourseNumber());
+							course.setSubject(e.getCourseId().getSubjectArea());
+							course.setTitle(e.getCourseId().getTitle());
+							course.setAssigned(true);
+							course.setTeachingAssignment(true);
+						}
+						if (eb != null)
+							eb.addSection(OnlineSectioningHelper.toProto(e.getSection(), e.getCourseId(), null));
+						ClassAssignmentInterface.ClassAssignment a = course.addClassAssignment();
+						a.setAlternative(false);
+						a.setClassId(e.getSection().getSectionId());
+						a.setSubpart(e.getSection().getSubpartName());
+						a.setClassNumber(e.getSection().getName(-1l));
+						a.setSection(e.getSection().getName(e.getCourseId().getCourseId()));
+						a.setExternalId(e.getSection().getExternalId(e.getCourseId().getCourseId()));
+						a.setCancelled(e.getSection().isCancelled());
+						a.setLimit(new int[] {e.getEnrollment(), e.getSection().getLimit()});
+						if (e.getSection().getTime() != null) {
+							for (DayCode d : DayCode.toDayCodes(e.getSection().getTime().getDays()))
+								a.addDay(d.getIndex());
+							a.setStart(e.getSection().getTime().getSlot());
+							a.setLength(e.getSection().getTime().getLength());
+							a.setBreakTime(e.getSection().getTime().getBreakTime());
+							a.setDatePattern(e.getSection().getTime().getDatePatternName());
+						}
+						if (e.getSection().getRooms() != null) {
+							for (XRoom room: e.getSection().getRooms()) {
+								a.addRoom(room.getUniqueId(), room.getName());
+							}
+						}
+						for (XInstructor instr: e.getSection().getInstructors()) {
+							a.addInstructor(instr.getName());
+							a.addInstructoEmail(instr.getEmail() == null ? "" : instr.getEmail());
+						}
+						if (e.getParentSectionName() != null)
+							a.setParentSection(e.getParentSectionName());
+						a.setSubpartId(e.getSection().getSubpartId());
+						a.setHasAlternatives(false);
+						a.addNote(course.getNote());
+						a.addNote(e.getSection().getNote());
+						a.setCredit(e.getCredit());
+						a.setTeachingAssignment(true);
+						a.setEnrolledDate(e.getTimeStamp());
+						sections.add(new CourseSection(e.getCourseId(), e.getShiftedSection()));
+					}
+				}
+			}
+		} else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false)) {
 			List<StudentClassEnrollment> enrollments = helper.getHibSession().createQuery(
 					"select e2 " +
 					"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
@@ -374,6 +438,8 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 				CourseCreditUnitConfig credit = null;
 				XCourse xc = null;
 				for (StudentClassEnrollment enrollment: enrollments) {
+					if (eb != null)
+						eb.addSection(OnlineSectioningHelper.toProto(enrollment.getClazz(), enrollment.getCourseOffering()));
 					int shiftDays = DateUtils.daysBetween(
 							server.getAcademicSession().getDatePatternFirstDate(),
 							AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession())
@@ -1147,12 +1213,12 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 	}
 	
 	public static class CourseSection {
-		XCourse iCourse;
+		XCourseId iCourse;
 		XSection iSection;
-		CourseSection(XCourse course, XSection section) {
+		CourseSection(XCourseId course, XSection section) {
 			iCourse = course; iSection = section;
 		}
-		public XCourse getCourse() { return iCourse; }
+		public XCourseId getCourse() { return iCourse; }
 		public XSection getSection() { return iSection; }
 	}
 	

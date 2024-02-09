@@ -67,7 +67,9 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.StudentSectioningPref;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
@@ -358,6 +360,7 @@ public class SolverServerImplementation extends AbstractSolverServer {
 			super.refreshCourseSolution(solutionIds);
 	}
 	
+	
 	@Override
 	public void refreshCourseSolution(Long... solutionIds) {
 		try {
@@ -394,6 +397,25 @@ public class SolverServerImplementation extends AbstractSolverServer {
 			sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 		}
 	}
+	
+	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessionsLocal(AcademicSessionInfo session, String studentExternalId) {
+		return iOnlineStudentSchedulingContainer.getUnavailabilitiesFromOtherSessions(session, studentExternalId);
+	}
+	
+	@Override
+	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
+		try {
+			List<XClassEnrollment> unavailabilities = new ArrayList<>();
+			RspList<Collection<XClassEnrollment>> ret = iDispatcher.callRemoteMethods(null, "getUnavailabilitiesFromOtherSessionsLocal", new Object[] { session,  studentExternalId}, new Class[] { AcademicSessionInfo.class, String.class }, sAllResponses);
+			for (Rsp<Collection<XClassEnrollment>> rsp : ret)
+				if (rsp != null && rsp.getValue() != null)
+					unavailabilities.addAll(rsp.getValue());
+			return unavailabilities;
+		} catch (Exception e) {
+			sLog.error("Failed to check for student unavailabilties from other academc sessions: " + e.getMessage(), e);
+			return null;
+		}
+	}	
 	
 	public void unloadSolverLocal(Integer type, String id) {
 		switch (SolverType.values()[type]) {

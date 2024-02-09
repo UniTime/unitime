@@ -38,7 +38,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	private Long iDatePatternId = null;
 	private BitSet iWeekPattern = null;
 	private BitSet iFreeTimePattern = null;
-	private Date iSessionBegin = null;
+	private Date iSessionBegin = null, iSessionEnd = null;
 	private Date iDatePatternFirstDate = null;
 	private boolean iSectioningEnabled = false;
 	private int iWkEnroll = 1, iWkChange = 1, iWkDrop = 4;
@@ -68,6 +68,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		}
 		iFreeTimePattern = getFreeTimeBitSet(session);
 		iSessionBegin = session.getSessionBeginDateTime();
+		iSessionEnd = session.getClassesEndDateTime();
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
 		iDayOfWeekOffset = Constants.getDayOfWeek(iDatePatternFirstDate);
 		iSectioningEnabled = session.getStatusType().canOnlineSectionStudents();
@@ -112,6 +113,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	public BitSet getFreeTimePattern() { return iFreeTimePattern; }
 	public Date getDatePatternFirstDate() { return iDatePatternFirstDate; }
 	public Date getSessionBeginDate() { return iSessionBegin; }
+	public Date getSessionEndDate() { return iSessionEnd; }
 	public int getDayOfWeekOffset() { return iDayOfWeekOffset; }
 	public Date getNotificationsBeginDate() { return iNotificationsBeginDate; }
 	public Date getNotificationsEndDate() { return iNotificationsEndDate; }
@@ -173,5 +175,11 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	
 	public Date getDefaultEndDate() {
 		return iDefaultEndDate;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof AcademicSessionInfo)) return false;
+		return getUniqueId().equals(((AcademicSessionInfo)o).getUniqueId());
 	}
 }

@@ -327,4 +327,22 @@ public class DatabaseServer extends AbstractLockingServer {
 				"select cr.courseOffering.uniqueId from CourseRequest cr where cr.courseDemand.student.uniqueId = :studentId", Long.class
 				).setParameter("studentId", studentId).setCacheable(true).list());
 	}
+
+	@Override
+	public XStudent getStudentForExternalId(String externalUniqueId) {
+		if (externalUniqueId == null || externalUniqueId.isEmpty()) return null;
+		Student s = getCurrentHelper().getHibSession().createQuery(
+				"select s from Student s " +
+				"left join fetch s.courseDemands as cd " +
+                "left join fetch cd.courseRequests as cr " +
+                "left join fetch cd.freeTime as ft " +
+                "left join fetch cr.courseOffering as co " +
+                "left join fetch cr.courseRequestOptions as cro " +
+                "left join fetch cr.classWaitLists as cwl " + 
+                "left join fetch s.classEnrollments as e " +
+				"where s.externalUniqueId = :studentId and s.session.uniqueId = :sessionId", Student.class)
+				.setParameter("sessionId", getAcademicSession().getUniqueId())
+				.setParameter("studentId", externalUniqueId).setCacheable(true).uniqueResult();
+		return s == null ? null : new XStudent(s, getCurrentHelper(), getAcademicSession().getFreeTimePattern(), getAcademicSession().getDatePatternFirstDate());
+	}
 }

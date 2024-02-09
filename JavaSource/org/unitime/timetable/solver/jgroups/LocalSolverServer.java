@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.jgroups;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +37,9 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -250,5 +253,10 @@ public class LocalSolverServer extends AbstractSolverServer {
 			getStudentSolverContainer().unloadSolver(id);
 			break;
 		}
+	}
+	
+	@Override
+	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
+		return iOnlineStudentSchedulingContainer.getUnavailabilitiesFromOtherSessions(session, studentExternalId);
 	}
 }

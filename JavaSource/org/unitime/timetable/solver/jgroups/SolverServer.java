@@ -26,7 +26,9 @@ import java.util.List;
 import org.jgroups.Address;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.instructor.InstructorSchedulingProxy;
@@ -110,4 +112,6 @@ public interface SolverServer {
 	public SolverServer crateServerProxy(Address address);
 	
 	public QueueProcessor getQueueProcessor();
+	
+	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessions(AcademicSessionInfo session, String studentExternalId);
 }

@@ -46,6 +46,7 @@ import org.unitime.timetable.onlinesectioning.model.XSchedulingRules;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 
 /**
  * @author Tomas Muller
@@ -158,4 +159,7 @@ public interface OnlineSectioningServer {
 		public boolean isEnabled();
 		public boolean checkDeadline(XTime sectionTime, Deadline type);
 	}
+
+	public XStudent getStudentForExternalId(String externalUniqueId);
+	public Collection<XClassEnrollment> getStudentSchedule(String studentExternalId);
 }

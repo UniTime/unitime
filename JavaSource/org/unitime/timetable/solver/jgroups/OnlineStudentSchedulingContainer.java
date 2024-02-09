@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.solver.jgroups;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,10 +38,13 @@ import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.server.InMemoryServer;
+import org.unitime.timetable.util.DateUtils;
 
 /**
  * @author Tomas Muller
@@ -241,6 +247,29 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			if (!session.getStatusType().canOnlineSectionStudents() && !session.getStatusType().canSectionAssistStudents() && session.getStatusType().canPreRegisterStudents()) return true;
 		}
 		return false;
+	}
+	
+	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
+		Set<String> serverIds = getSolvers();
+		if (serverIds == null || serverIds.isEmpty()) return null;
+		List<XClassEnrollment> ret = new ArrayList<>();
+		for (String serverId: serverIds) {
+			OnlineSectioningServer server = getSolver(serverId);
+			if (server != null) {
+				AcademicSessionInfo other = server.getAcademicSession();
+				if (session.equals(other)) continue;
+				if (session.getSessionBeginDate().after(other.getSessionEndDate()) || other.getSessionBeginDate().after(session.getSessionEndDate())) continue;
+				Collection<XClassEnrollment> u = server.getStudentSchedule(studentExternalId);
+				if (u != null && !u.isEmpty()) {
+					int shiftDays = DateUtils.daysBetween(session.getDatePatternFirstDate(), server.getAcademicSession().getDatePatternFirstDate());
+					for (XClassEnrollment e: u) {
+						e.setShiftDays(shiftDays);
+						ret.add(e);
+					}
+				}
+			}
+		}
+		return ret;
 	}
 	
 	public void unloadAll() {

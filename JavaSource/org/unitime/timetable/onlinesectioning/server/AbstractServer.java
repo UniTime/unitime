@@ -53,6 +53,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
@@ -77,11 +78,18 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
+import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
+import org.unitime.timetable.onlinesectioning.model.XOffering;
+import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSchedulingRules;
+import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
+import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
@@ -809,5 +817,34 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				mode,
 				StudentSchedulingRuleDAO.getInstance().getSession());
 		return (rule == null ? null : new XSchedulingRule(rule));
+	}
+	
+	@Override
+	public Collection<XClassEnrollment> getStudentSchedule(final String studentExternalId) {
+		XStudent student = getStudentForExternalId(studentExternalId);
+		if (student == null) return null;
+		List<XClassEnrollment> ret = new ArrayList<>();
+		for (XRequest request: student.getRequests()) {
+			if (request instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)request;
+				XEnrollment e = cr.getEnrollment();
+				if (e != null) {
+					XOffering offering = getOffering(e.getOfferingId());
+					XEnrollments enrl = getEnrollments(e.getOfferingId());
+					for (XSection section: offering.getSections(e)) {
+						XClassEnrollment ce = new XClassEnrollment(e, section);
+						if (section.getParentId() != null)
+							ce.setParentSectionName(offering.getSection(section.getParentId()).getName(e.getCourseId()));
+						if (enrl != null) ce.setEnrollment(enrl.countEnrollmentsForSection(section.getSectionId()));
+						XSubpart subpart = offering.getSubpart(section.getSubpartId());
+						ce.setCredit(subpart.getCredit(e.getCourseId()));
+						Float creditOverride = section.getCreditOverride(e.getCourseId());
+						if (creditOverride != null) ce.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
+						ret.add(ce);
+					}
+				}
+			}
+		}
+		return ret;
 	}
 }

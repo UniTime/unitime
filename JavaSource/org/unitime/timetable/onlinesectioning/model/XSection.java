@@ -209,6 +209,31 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
 		}
     }
     
+    public XSection(XSection section) {
+    	iUniqueId = section.getSectionId();
+    	iName = section.getName();
+    	iNameByCourse = new HashMap<Long, String>(getNameByCourse());
+        iSubpartId = section.getSubpartId();
+        iParentId = section.getParentId();
+        iLimit = section.getLimit();
+        iNote = section.getNote();
+        iTime = section.getTime() == null ? null : new XTime(section.getTime());
+        for (XRoom room: section.getRooms())
+        	iRooms.add(new XRoom(room));
+        for (XInstructor instructor: section.getInstructors())
+        	iInstructors.add(new XInstructor(instructor));
+        iAllowOverlap = section.isAllowOverlap();
+        iInstructionalType = section.getInstructionalType();
+        iSubpartName = section.getSubpartName();
+        iExternalId = section.iExternalId;
+        iExternalIdByCourse = new HashMap<Long, String>(section.iExternalIdByCourse);
+        iEnabledForScheduling = section.isEnabledForScheduling();
+        iCancelled = section.isCancelled();
+        iOnline = section.isOnline();
+        iPast = section.isPast();
+        iCreditByCourse = (section.iCreditByCourse == null ? null : new HashMap<Long, Float>(section.iCreditByCourse));
+    }
+    
     /** For testing only! */
     @Deprecated
     public XSection(String externalId) {
@@ -568,6 +593,17 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         return new Placement(
         		new Lecture(getSectionId(), null, getSubpartId(), getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), getNrRooms(), null, getLimit(), getLimit(), 1.0),
         		getTime().toTimeLocation(),
+        		rooms);
+    }
+    
+    public Placement toPlacement(int shiftDays) {
+    	if (getTime() == null) return null;
+        List<RoomLocation> rooms = new ArrayList<RoomLocation>();
+        for (XRoom r: getRooms())
+        	rooms.add(new RoomLocation(r.getUniqueId(), r.getName(), null, 0, 0, r.getX(), r.getY(), r.getIgnoreTooFar(), null));
+        return new Placement(
+        		new Lecture(getSectionId(), null, getSubpartId(), getName(), new ArrayList<TimeLocation>(), new ArrayList<RoomLocation>(), getNrRooms(), null, getLimit(), getLimit(), 1.0),
+        		getTime().toTimeLocation(shiftDays),
         		rooms);
     }
     

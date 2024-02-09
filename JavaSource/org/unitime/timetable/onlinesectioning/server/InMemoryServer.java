@@ -49,6 +49,7 @@ public class InMemoryServer extends AbstractLockingServer {
 	private Hashtable<String, TreeSet<XCourseId>> iCourseForName = new Hashtable<String, TreeSet<XCourseId>>();
 	
 	private Hashtable<Long, XStudent> iStudentTable = new Hashtable<Long, XStudent>();
+	private Hashtable<String, XStudent> iStudentExtTable = new Hashtable<String, XStudent>();
 	private Hashtable<Long, XOffering> iOfferingTable = new Hashtable<Long, XOffering>();
 	private Hashtable<Long, List<XCourseRequest>> iOfferingRequests = new Hashtable<Long, List<XCourseRequest>>();
 	private Hashtable<Long, XExpectations> iExpectations = new Hashtable<Long, XExpectations>();
@@ -209,6 +210,8 @@ public class InMemoryServer extends AbstractLockingServer {
 		try {
 			XStudent oldStudent = iStudentTable.remove(student.getStudentId());
 			if (oldStudent != null) {
+				if (oldStudent.getExternalId() != null && !oldStudent.getExternalId().isEmpty())
+					iStudentExtTable.remove(student.getExternalId());
 				for (XRequest request: oldStudent.getRequests())
 					if (request instanceof XCourseRequest)
 						for (XCourseId course: ((XCourseRequest)request).getCourseIds()) {
@@ -226,6 +229,10 @@ public class InMemoryServer extends AbstractLockingServer {
 		Lock lock = writeLock();
 		try {
 			XStudent oldStudent = iStudentTable.put(student.getStudentId(), student);
+			if (oldStudent != null && oldStudent.getExternalId() != null && !oldStudent.getExternalId().isEmpty() && !oldStudent.getExternalId().equals(student.getExternalId()))
+				iStudentExtTable.remove(oldStudent.getExternalId());
+			if (student.getExternalId() != null && !student.getExternalId().isEmpty())
+				iStudentExtTable.put(student.getExternalId(), student);
 			if (updateRequests) {
 				if (oldStudent != null) {
 					for (XRequest request: oldStudent.getRequests())
@@ -328,6 +335,10 @@ public class InMemoryServer extends AbstractLockingServer {
 				iStudentTable = new Hashtable<Long, XStudent>();
 			else
 				iStudentTable.clear();
+			if (iStudentExtTable == null)
+				iStudentExtTable = new Hashtable<String, XStudent>();
+			else
+				iStudentExtTable.clear();
 			if (iOfferingTable == null)
 				iOfferingTable = new Hashtable<Long, XOffering>();
 			else
@@ -362,6 +373,7 @@ public class InMemoryServer extends AbstractLockingServer {
 		Lock lock = writeLock();
 		try {
 			iStudentTable.clear();
+			iStudentExtTable.clear();
 			iOfferingRequests.clear();
 		} finally {
 			lock.release();
@@ -462,6 +474,17 @@ public class InMemoryServer extends AbstractLockingServer {
 		try {
 			XStudent student = iStudentTable.get(studentId);
 			return (student == null ? null : student.getRequestedCourseIds());
+		} finally {
+			lock.release();
+		}
+	}
+
+	@Override
+	public XStudent getStudentForExternalId(String externalUniqueId) {
+		if (externalUniqueId == null || externalUniqueId.isEmpty()) return null;
+		Lock lock = readLock();
+		try {
+			return iStudentExtTable.get(externalUniqueId);
 		} finally {
 			lock.release();
 		}
