@@ -149,8 +149,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 					else if (StudentSectioningStatus.hasEffectiveOption(status, dbSession, StudentSectioningStatus.Option.nosubs))
 						noSubStates.add(status.getReference());
 			}
-	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false);
-	        boolean checkUnavailabilitiesFromOtherSessionsUsingDatabase = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false);
+	        boolean checkUnavailabilitiesFromOtherSessions = server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsForReporting", false);
 			
 			Lock lock = server.readLock();
 			
@@ -419,12 +418,11 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 								if (offering != null)
 									offering.fillInUnavailabilities(clonnedStudent);
 							}
-						if (checkUnavailabilitiesFromOtherSessions)
-							GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
-						else if (checkUnavailabilitiesFromOtherSessionsUsingDatabase)
-							GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(clonnedStudent, server, helper);
 					}
 				}
+				
+				if (checkUnavailabilitiesFromOtherSessions)
+					GetInfo.fillInAllUnavailabilitiesFromOtherSessionsUsingDatabase(students, server, helper);
 				
 				for (XDistribution distribution: linkedSections) {
 					List<Section> linked = new ArrayList<Section>();
