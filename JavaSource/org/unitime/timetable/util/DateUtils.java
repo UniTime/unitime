@@ -167,4 +167,10 @@ public class DateUtils {
         }
         return idx - 1;
     }
+    
+    public static int daysBetween(Date d1, Date d2) {
+    	long millis = d2.getTime() - d1.getTime();
+    	double days = millis / (1000.0 * 60 * 60 * 24);
+    	return (int)Math.round(days);
+    }
 }

@@ -281,7 +281,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							offering.fillInUnavailabilities(student);
 					}
 				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
-					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, helper);
+					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
 			}
 			if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() || getSpecialRegistration() != null) {
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit

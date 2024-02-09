@@ -55,6 +55,7 @@ import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
@@ -554,6 +555,8 @@ public class SectioningRequest implements LastSectionProvider {
 					if (offering != null)
 						offering.fillInUnavailabilities(clonnedStudent);
 				}
+			if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
 		}
 		return ret;
 	}

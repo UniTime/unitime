@@ -115,6 +115,11 @@ public class XTime implements Serializable, Externalizable {
 		iWeeks = time.getWeekCode();
 	}
 	
+	public void datePatternShiftDays(int days) {
+		if (days != 0 && iWeeks != null)
+			iWeeks = Assignment.shift(iWeeks, days);
+	}
+	
 	public int getSlot() { return iSlot; }
 	public int getLength() { return iLength; }
 	public int getDays() { return iDays; }

@@ -249,6 +249,33 @@ public class Assignment extends BaseAssignment implements ClassAssignmentProxy.A
 		}
 		return iTimeLocation;
 	}
+	
+	@Transient
+	public TimeLocation getTimeLocation(int datePatternShiftDays) {
+		if (datePatternShiftDays == 0) return getTimeLocation();
+		DatePattern datePattern = getDatePattern();
+		TimeLocation t = new TimeLocation(
+			getDays().intValue(),
+			getStartSlot().intValue(),
+			getSlotPerMtg(),
+			0,0,
+			(datePattern == null ? null : datePattern.getUniqueId()),
+			(datePattern == null ? "?" : datePattern.getName()),
+			(datePattern == null ? new BitSet() : shift(datePattern.getPatternBitSet(), datePatternShiftDays)),
+			getBreakTime()
+			);
+		t.setTimePatternId(getTimePattern().getUniqueId());
+		return t;
+	}
+	
+	public static BitSet shift(BitSet bitset, int shiftAmount) {
+	    BitSet b = new BitSet();
+	    bitset.stream().map(bitPos -> bitPos + shiftAmount)
+	            .dropWhile(bitPos -> bitPos < 0)
+	            .forEach(bitPos -> b.set(bitPos));
+	    return b;
+	}
+	
 	@Transient
 	public Vector getRoomLocations() {
 		Vector ret = new Vector();
@@ -288,6 +315,26 @@ public class Assignment extends BaseAssignment implements ClassAssignmentProxy.A
 			lecture.setCommitted(getSolution().isCommited().booleanValue());
         iPlacement.setAssignment(this);
 		return iPlacement;
+	}
+	
+	@Transient
+	public Placement getPlacement(int datePatternShiftDays) {
+		if (datePatternShiftDays == 0) return getPlacement();
+		TimeLocation timeLocation = getTimeLocation(datePatternShiftDays);
+		Vector timeLocations = new Vector(1); timeLocations.addElement(timeLocation);
+		Vector roomLocations = getRoomLocations();
+    	Lecture lecture = new Lecture(getClassId(), (getSolution()==null || getSolution().getOwner()==null?null:getSolution().getOwner().getUniqueId()), (getClazz()==null?null:getClazz().getSchedulingSubpart().getUniqueId()), getClassName(), timeLocations, roomLocations, roomLocations.size(), new Placement(null,timeLocation,roomLocations),
+    			(getClazz() == null ? 0 : getClazz().getExpectedCapacity()), (getClazz() == null ? 0 : getClazz().getMaxExpectedCapacity()), (getClazz() == null ? 1.0f : getClazz().getRoomRatio()));
+		if (getClazz()!=null)
+			lecture.setNote(getClazz().getNotes());
+		Placement placement = lecture.getInitialAssignment();
+		placement.setVariable(lecture);
+		placement.setAssignmentId(getUniqueId());
+		lecture.setBestAssignment(placement, 0);
+		if (getSolution()!=null && getSolution().isCommited()!=null)
+			lecture.setCommitted(getSolution().isCommited().booleanValue());
+		placement.setAssignment(this);
+		return placement;
 	}
 	
 	public String toString() {

@@ -240,7 +240,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							offering.fillInUnavailabilities(student);
 					}
 				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
-					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, helper);
+					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
 			}
 			model.addStudent(student);
 			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));

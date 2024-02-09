@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
@@ -92,6 +91,7 @@ import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XUniversalReservation;
@@ -352,7 +352,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 								offering.fillInUnavailabilities(clonnedStudent);
 						}
 					if (checkUnavailabilitiesFromOtherSessions)
-						GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, helper);
+						GetInfo.fillInUnavailabilitiesFromOtherSessions(clonnedStudent, server, helper);
 				}
 			}
 			
@@ -448,24 +448,29 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 		return info;		
 	}
 	
-	public static void fillInUnavailabilitiesFromOtherSessions(Student student, OnlineSectioningHelper helper) {
+	public static void fillInUnavailabilitiesFromOtherSessions(Student student, OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (student == null || student.getId() < 0 || student.getExternalId() == null || student.getExternalId().isEmpty()) return;
 		List<StudentClassEnrollment> enrollments = helper.getHibSession().createQuery(
 				"select e2 " +
 				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
 				"where s1.uniqueId = :studentId and s1.externalUniqueId = s2.externalUniqueId and " +
-				" z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
+				"e2.clazz.cancelled = false and e2.clazz.committedAssignment is not null and " +
+				"z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
 				StudentClassEnrollment.class).setParameter("studentId", student.getId()).list();
 		if (!enrollments.isEmpty()) {
 			for (StudentClassEnrollment enrollment: enrollments) {
 				if (!enrollment.getClazz().isCancelled() && enrollment.getClazz().getCommittedAssignment() != null) {
+					int shiftDays = DateUtils.daysBetween(
+							server.getAcademicSession().getDatePatternFirstDate(),
+							AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession())
+							);
 					new Unavailability(student,
 							new Section(
 									enrollment.getClazz().getUniqueId(),
 									enrollment.getClazz().getMaxExpectedCapacity(),
 									enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()),
 									null,
-									enrollment.getClazz().getCommittedAssignment().getPlacement(), null),
+									enrollment.getClazz().getCommittedAssignment().getPlacement(shiftDays), null),
 							enrollment.getClazz().getSchedulingSubpart().getStudentAllowOverlap());
 				}
 			}
