@@ -90,6 +90,21 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Availability: Check Other Academic Sessions</name>
+			<description>
+				<line>Added an ability to check student schedules from other overlapping academic sessions.The classes of other academic sessions show up as unavailablies (blue color, not clickable).</line>
+				<line>They are also used as unavailabilities: the solver would not assign a class in the current academic session to a time that conflicts with a class of some other academic session that the student has.</line>
+				<line>Unless the class is of scheduling subpart that allows for overlaps, in which case the overlapping time is minimized instead.</line>
+				<line>This feature is not enabled by default, to enable it set the following properties:
+					<line>Batch student scheduling: set the solver parameter Load.IncludeUnavailabilitiesFromOtherSessions to true.</line>
+					<line>Online student scheduling: there are two options, 
+						<line>the unavailable times are either loaded from the database (when General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase is true),</line>
+						<line>or from the other online student scheduling solver servers (when General.CheckUnavailabilitiesFromOtherSessions is true).</line>
+					</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
