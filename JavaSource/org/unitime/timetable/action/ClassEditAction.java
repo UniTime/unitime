@@ -78,7 +78,7 @@ import org.unitime.timetable.webutil.BackTracker;
 		)
 	})
 @TilesDefinition(name = "classEditTile.tiles", extend = "baseLayout", putAttributes =  {
-		@TilesPutAttribute(name = "title", value = "Class Edit"),
+		@TilesPutAttribute(name = "title", value = "Edit Class"),
 		@TilesPutAttribute(name = "body", value = "/user/classEdit.jsp"),
 		@TilesPutAttribute(name = "showNavigation", value = "true")
 	})
