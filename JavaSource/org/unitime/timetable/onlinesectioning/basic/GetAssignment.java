@@ -401,7 +401,6 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 					"select e2 " +
 					"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
 					"where s1.uniqueId = :studentId and s1.externalUniqueId = s2.externalUniqueId and " +
-					"e2.clazz.cancelled = false and e2.clazz.committedAssignment is not null and " +
 					"z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
 					StudentClassEnrollment.class).setParameter("studentId", student.getStudentId()).list();
 			if (!enrollments.isEmpty()) {
