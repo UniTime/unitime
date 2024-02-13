@@ -106,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.onlinesectioning.custom.AdvisorCourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
@@ -434,6 +435,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						fixedCourses.add(course);
 				}
 			}
+		}
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
+			if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
+			else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(student, server, helper);
 		}
 		model.addStudent(student);
 		model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
@@ -2547,6 +2554,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
+			if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessions(s, server, helper);
+			else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(s, server, helper);
+		}
 		model.addStudent(s);
 		model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
 		// model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
@@ -3327,6 +3340,12 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						fixedCourses.add(course);
 				}
 			}
+		}
+		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
+			if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
+			else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
+				GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(student, server, helper);
 		}
 		model.addStudent(student);
 		model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));

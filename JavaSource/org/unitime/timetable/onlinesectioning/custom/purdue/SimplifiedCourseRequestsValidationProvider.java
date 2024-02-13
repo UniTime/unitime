@@ -84,6 +84,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
+import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.AdvisorCourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
@@ -890,6 +891,12 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
 			for (CourseRequestInterface.Request c: request.getAlternatives())
 				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
+				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
+				else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
+					GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(student, server, helper);
+			}
 			model.addStudent(student);
 			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
 			for (XDistribution link: distributions) {
@@ -1661,6 +1668,12 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
 			for (CourseRequestInterface.Request c: request.getAlternatives())
 				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
+			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
+				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
+					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
+				else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
+					GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(student, server, helper);
+			}
 			model.addStudent(student);
 			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
 			for (XDistribution link: distributions) {
