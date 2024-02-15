@@ -381,9 +381,6 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
                     null);
 
             tx.commit();
-	        hibSession.flush();
-	        hibSession.refresh(ioc);
-	        hibSession.refresh(ioc.getInstructionalOffering());
 	    	if (configChangeAction != null){
 	        	configChangeAction.performExternalInstrOffrConfigChangeAction(ioc.getInstructionalOffering(), hibSession);
         	}

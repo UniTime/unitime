@@ -125,7 +125,6 @@
                 name="childSubparts"
                 inverse="true"
                 lazy="true"
-                cascade="all-delete-orphan"
                 table="scheduling_subpart"
                 order-by="uniqueid">
 
@@ -267,7 +266,6 @@
             <set
                 name="childClasses"
                 inverse="true"
-                cascade="save-update"
                 lazy="true"
                 table="class_"
                 order-by="uniqueid">

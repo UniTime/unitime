@@ -216,7 +216,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentClass", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentClass")
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<Class_> getChildClasses() { return iChildClasses; }
 	public void setChildClasses(Set<Class_> childClasses) { iChildClasses = childClasses; }
