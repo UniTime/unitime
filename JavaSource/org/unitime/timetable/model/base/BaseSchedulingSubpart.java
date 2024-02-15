@@ -128,7 +128,7 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	public DatePattern getDatePattern() { return iDatePattern; }
 	public void setDatePattern(DatePattern datePattern) { iDatePattern = datePattern; }
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentSubpart", cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "parentSubpart")
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<SchedulingSubpart> getChildSubparts() { return iChildSubparts; }
 	public void setChildSubparts(Set<SchedulingSubpart> childSubparts) { iChildSubparts = childSubparts; }
