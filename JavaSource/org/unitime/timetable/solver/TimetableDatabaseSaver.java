@@ -103,6 +103,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 	private boolean iCreateNew = true;
 	private boolean iCommitSolution = false;
     private boolean iStudentSectioning = false;
+    private boolean iSaveConstraintInfos = true;
 	
 	private Hashtable<Long, Assignment> iAssignments = new Hashtable<Long, Assignment>();
 	private Hashtable<Long, Solution> iSolutions = new Hashtable<Long, Solution>();
@@ -122,6 +123,8 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         iCommitSolution = getModel().getProperties().getPropertyBoolean("General.CommitSolution",iCommitSolution);
         iStudentSectioning = getModel().getProperties().getPropertyBoolean("General.RunStudentSectioningOnSave", iStudentSectioning);
         iUseAmPm = getModel().getProperties().getPropertyBoolean("General.UseAmPm", iUseAmPm);
+        iSaveConstraintInfos = getModel().getProperties().getPropertyBoolean("General.SaveConstraintInfos", iSaveConstraintInfos);
+        
     }
 	
 	public TimetableInfoFileProxy getFileProxy() {
@@ -590,127 +593,129 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
-    		setPhase(MSG.phaseSavingInstructorBTBInfos(), getModel().variables().size());
-    		for (Lecture lecture1: getModel().variables()) {
-    			Placement placement1 = (Placement)getAssignment().getValue(lecture1);
-    			incProgress();
-    			if (placement1 == null) continue;
-    			for (InstructorConstraint ic: lecture1.getInstructorConstraints()) {
-    				for (Lecture lecture2: ic.variables()) {
-    					Placement placement2 = (Placement)getAssignment().getValue(lecture2);
-    					if (placement2 == null || lecture2.getClassId().compareTo(lecture1.getClassId()) <= 0) continue;
-    					int pref = ic.getDistancePreference(placement1, placement2);
-    					if (pref==PreferenceLevel.sIntLevelNeutral) continue;
-    					iProgress.trace("Back-to-back instructor constraint ("+pref+") between "+placement1+" and "+placement2);
-    					BtbInstructorConstraintInfo biInfo = new BtbInstructorConstraintInfo();
-    					biInfo.setPreference(pref);
-    					biInfo.setInstructorId(ic.getResourceId());
-    					ConstraintInfo constraintInfo = new ConstraintInfo();
-    					constraintInfo.setDefinition(defBtbInstrInfo);
-    					constraintInfo.setOpt(String.valueOf(ic.getResourceId()));
-    					HashSet biAssignments = new HashSet();
-    					Assignment assignment = (Assignment)iAssignments.get(lecture1.getClassId());
-    					if (assignment!=null)
-    						biAssignments.add(assignment);
-    					assignment = (Assignment)iAssignments.get(lecture2.getClassId());
-    					if (assignment!=null)
-    						biAssignments.add(assignment);
-    					if (!biAssignments.isEmpty()) {
-    						constraintInfo.setAssignments(biAssignments);
-    						constraintInfo.setInfo(biInfo,getFileProxy());
-    						hibSession.persist(constraintInfo);
-    						if (++batchIdx % BATCH_SIZE == 0) {
-    							hibSession.flush(); hibSession.clear();
-    						}
-    					} else {
-    						iProgress.trace("   NO ASSIGNMENTS !!!");
-    					}
-    				}
-    			}
-    		}
+    		if (iSaveConstraintInfos) {
+        		setPhase(MSG.phaseSavingInstructorBTBInfos(), getModel().variables().size());
+        		for (Lecture lecture1: getModel().variables()) {
+        			Placement placement1 = (Placement)getAssignment().getValue(lecture1);
+        			incProgress();
+        			if (placement1 == null) continue;
+        			for (InstructorConstraint ic: lecture1.getInstructorConstraints()) {
+        				for (Lecture lecture2: ic.variables()) {
+        					Placement placement2 = (Placement)getAssignment().getValue(lecture2);
+        					if (placement2 == null || lecture2.getClassId().compareTo(lecture1.getClassId()) <= 0) continue;
+        					int pref = ic.getDistancePreference(placement1, placement2);
+        					if (pref==PreferenceLevel.sIntLevelNeutral) continue;
+        					iProgress.trace("Back-to-back instructor constraint ("+pref+") between "+placement1+" and "+placement2);
+        					BtbInstructorConstraintInfo biInfo = new BtbInstructorConstraintInfo();
+        					biInfo.setPreference(pref);
+        					biInfo.setInstructorId(ic.getResourceId());
+        					ConstraintInfo constraintInfo = new ConstraintInfo();
+        					constraintInfo.setDefinition(defBtbInstrInfo);
+        					constraintInfo.setOpt(String.valueOf(ic.getResourceId()));
+        					HashSet biAssignments = new HashSet();
+        					Assignment assignment = (Assignment)iAssignments.get(lecture1.getClassId());
+        					if (assignment!=null)
+        						biAssignments.add(assignment);
+        					assignment = (Assignment)iAssignments.get(lecture2.getClassId());
+        					if (assignment!=null)
+        						biAssignments.add(assignment);
+        					if (!biAssignments.isEmpty()) {
+        						constraintInfo.setAssignments(biAssignments);
+        						constraintInfo.setInfo(biInfo,getFileProxy());
+        						hibSession.persist(constraintInfo);
+        						if (++batchIdx % BATCH_SIZE == 0) {
+        							hibSession.flush(); hibSession.clear();
+        						}
+        					} else {
+        						iProgress.trace("   NO ASSIGNMENTS !!!");
+        					}
+        				}
+        			}
+        		}
 
-    		hibSession.flush(); hibSession.clear(); batchIdx = 0;
-    		
-    		setPhase(MSG.phaseSavingGroupConstraintInfos(), getModel().getGroupConstraints().size());
-    		for (GroupConstraint gc: getModel().getGroupConstraints()) {
-    			GroupConstraintInfo gcInfo = new GroupConstraintInfo(getAssignment(), gc);
-    			ConstraintInfo constraintInfo = new ConstraintInfo();
-    			constraintInfo.setDefinition(defDistributionInfo);
-    			constraintInfo.setOpt(gcInfo.isSatisfied()?"1":"0");
-    			iProgress.trace("Distribution constraint "+gcInfo.getName()+" (p:"+gcInfo.getPreference()+", s:"+gcInfo.isSatisfied()+") between");
-    			HashSet gcAssignments = new HashSet();
-    			for (Lecture lecture: gc.variables()) {
-    				Assignment assignment = (Assignment)iAssignments.get(lecture.getClassId());
-    				iProgress.trace("  "+getAssignment().getValue(lecture));
-    				if (assignment!=null)
-    					gcAssignments.add(assignment);
-    			}
-    			
-    			if (!gcAssignments.isEmpty()) {
-    				constraintInfo.setAssignments(gcAssignments);
-        			constraintInfo.setInfo(gcInfo,getFileProxy());
-    				hibSession.persist(constraintInfo);
-    				if (++batchIdx % BATCH_SIZE == 0) {
-    					hibSession.flush(); hibSession.clear();
-    				}
-    			} else {
-    				iProgress.trace("   NO ASSIGNMENTS !!!");
-    			}
-    			
-    			incProgress();
+        		hibSession.flush(); hibSession.clear(); batchIdx = 0;
+        		
+        		setPhase(MSG.phaseSavingGroupConstraintInfos(), getModel().getGroupConstraints().size());
+        		for (GroupConstraint gc: getModel().getGroupConstraints()) {
+        			GroupConstraintInfo gcInfo = new GroupConstraintInfo(getAssignment(), gc);
+        			ConstraintInfo constraintInfo = new ConstraintInfo();
+        			constraintInfo.setDefinition(defDistributionInfo);
+        			constraintInfo.setOpt(gcInfo.isSatisfied()?"1":"0");
+        			iProgress.trace("Distribution constraint "+gcInfo.getName()+" (p:"+gcInfo.getPreference()+", s:"+gcInfo.isSatisfied()+") between");
+        			HashSet gcAssignments = new HashSet();
+        			for (Lecture lecture: gc.variables()) {
+        				Assignment assignment = (Assignment)iAssignments.get(lecture.getClassId());
+        				iProgress.trace("  "+getAssignment().getValue(lecture));
+        				if (assignment!=null)
+        					gcAssignments.add(assignment);
+        			}
+        			
+        			if (!gcAssignments.isEmpty()) {
+        				constraintInfo.setAssignments(gcAssignments);
+            			constraintInfo.setInfo(gcInfo,getFileProxy());
+        				hibSession.persist(constraintInfo);
+        				if (++batchIdx % BATCH_SIZE == 0) {
+        					hibSession.flush(); hibSession.clear();
+        				}
+        			} else {
+        				iProgress.trace("   NO ASSIGNMENTS !!!");
+        			}
+        			
+        			incProgress();
+        		}
+        		
+        		hibSession.flush(); hibSession.clear(); batchIdx = 0;
+        		
+        		setPhase(MSG.phaseSavingStudentEnrollmentInfos(), getModel().getJenrlConstraints().size());
+        		for (JenrlConstraint jc: getModel().getJenrlConstraints()) {
+        			if (!jc.isInConflict(getAssignment()) || !jc.isOfTheSameProblem()) {
+        				incProgress();
+        				continue;
+        			}
+        			JenrlInfo jInfo = new JenrlInfo(getSolver(), jc);
+        			ConstraintInfo constraintInfo = new ConstraintInfo();
+        			constraintInfo.setDefinition(defJenrlInfo);
+        			constraintInfo.setOpt((jInfo.isSatisfied()?"S":"")+(jInfo.isHard()?"H":"")+(jInfo.isDistance()?"D":"")+(jInfo.isFixed()?"F":"")+(jInfo.isImportant()?"I":"")+(jInfo.isInstructor()?"X":""));
+        			Assignment firstAssignment = (Assignment)iAssignments.get(((Lecture)jc.first()).getClassId());
+        			Assignment secondAssignment = (Assignment)iAssignments.get(((Lecture)jc.second()).getClassId());
+        			if (firstAssignment==null || secondAssignment==null) continue;
+           			HashSet jAssignments = new HashSet();
+        			jAssignments.add(firstAssignment);
+        			jAssignments.add(secondAssignment);
+       				constraintInfo.setAssignments(jAssignments);
+           			constraintInfo.setInfo(jInfo,getFileProxy());
+       				hibSession.persist(constraintInfo);
+       				if (++batchIdx % BATCH_SIZE == 0) {
+       					hibSession.flush(); hibSession.clear();
+       				}
+        			
+        			incProgress();
+        		}
+        		
+        		setPhase(MSG.phaseSavingStudentGroupInfos(), getModel().getStudentGroups().size());
+        		for (StudentGroup group: getModel().getStudentGroups()) {
+        			StudentGroupInfo gInfo = new StudentGroupInfo(getSolver(), group);
+        			ConstraintInfo constraintInfo = new ConstraintInfo();
+        			constraintInfo.setDefinition(defGroupInfo);
+        			constraintInfo.setOpt(gInfo.getGroupName());
+        			HashSet jAssignments = new HashSet();
+        			for (StudentGroupInfo.ClassInfo clazz: gInfo.getGroupAssignments()) {
+        				Assignment a = (Assignment)iAssignments.get(clazz.getClassId());
+        				if (a != null) jAssignments.add(a);
+        			}
+        			if (jAssignments.isEmpty()) continue;
+       				constraintInfo.setAssignments(jAssignments);
+           			constraintInfo.setInfo(gInfo, getFileProxy());
+       				hibSession.persist(constraintInfo);
+       				if (++batchIdx % BATCH_SIZE == 0) {
+       					hibSession.flush(); hibSession.clear();
+       				}
+        			
+        			incProgress();
+        		}
+        		
+        		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		}
-    		
-    		hibSession.flush(); hibSession.clear(); batchIdx = 0;
-    		
-    		setPhase(MSG.phaseSavingStudentEnrollmentInfos(), getModel().getJenrlConstraints().size());
-    		for (JenrlConstraint jc: getModel().getJenrlConstraints()) {
-    			if (!jc.isInConflict(getAssignment()) || !jc.isOfTheSameProblem()) {
-    				incProgress();
-    				continue;
-    			}
-    			JenrlInfo jInfo = new JenrlInfo(getSolver(), jc);
-    			ConstraintInfo constraintInfo = new ConstraintInfo();
-    			constraintInfo.setDefinition(defJenrlInfo);
-    			constraintInfo.setOpt((jInfo.isSatisfied()?"S":"")+(jInfo.isHard()?"H":"")+(jInfo.isDistance()?"D":"")+(jInfo.isFixed()?"F":"")+(jInfo.isImportant()?"I":"")+(jInfo.isInstructor()?"X":""));
-    			Assignment firstAssignment = (Assignment)iAssignments.get(((Lecture)jc.first()).getClassId());
-    			Assignment secondAssignment = (Assignment)iAssignments.get(((Lecture)jc.second()).getClassId());
-    			if (firstAssignment==null || secondAssignment==null) continue;
-       			HashSet jAssignments = new HashSet();
-    			jAssignments.add(firstAssignment);
-    			jAssignments.add(secondAssignment);
-   				constraintInfo.setAssignments(jAssignments);
-       			constraintInfo.setInfo(jInfo,getFileProxy());
-   				hibSession.persist(constraintInfo);
-   				if (++batchIdx % BATCH_SIZE == 0) {
-   					hibSession.flush(); hibSession.clear();
-   				}
-    			
-    			incProgress();
-    		}
-    		
-    		setPhase(MSG.phaseSavingStudentGroupInfos(), getModel().getStudentGroups().size());
-    		for (StudentGroup group: getModel().getStudentGroups()) {
-    			StudentGroupInfo gInfo = new StudentGroupInfo(getSolver(), group);
-    			ConstraintInfo constraintInfo = new ConstraintInfo();
-    			constraintInfo.setDefinition(defGroupInfo);
-    			constraintInfo.setOpt(gInfo.getGroupName());
-    			HashSet jAssignments = new HashSet();
-    			for (StudentGroupInfo.ClassInfo clazz: gInfo.getGroupAssignments()) {
-    				Assignment a = (Assignment)iAssignments.get(clazz.getClassId());
-    				if (a != null) jAssignments.add(a);
-    			}
-    			if (jAssignments.isEmpty()) continue;
-   				constraintInfo.setAssignments(jAssignments);
-       			constraintInfo.setInfo(gInfo, getFileProxy());
-   				hibSession.persist(constraintInfo);
-   				if (++batchIdx % BATCH_SIZE == 0) {
-   					hibSession.flush(); hibSession.clear();
-   				}
-    			
-    			incProgress();
-    		}
-    		
-    		hibSession.flush(); hibSession.clear(); batchIdx = 0;
     		
     		setPhase(MSG.phaseSavingCommittedStudentEnrollmentInfos(), iSolutions.size());
     		for (Enumeration e=iSolutions.elements();e.hasMoreElements();) {
