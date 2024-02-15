@@ -27,6 +27,7 @@ import java.util.Vector;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.duration.DurationModel;
@@ -70,7 +71,8 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 				assignment.getTimePattern(),
 				iDate,
 				assignment.getBreakTime(),
-				dm.getDates(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays(), assignment.getMinutesPerMeeting()));
+				dm.getDates(assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays(), assignment.getMinutesPerMeeting(),
+						EventDateMapping.getMapping(assignment.getDatePattern().getUniqueId())));
 	}
 	
 	public ClassAssignment(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms) {

@@ -948,7 +948,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	 * @return list of dates that meet the selected minutes and date pattern
 	 */
 	public List<Date> getDates(DatePattern datePattern, int dayCode, int minutesPerMeeting) {
-		return getInstrOfferingConfig().getDurationModel().getDates(getMinutesPerWk(), datePattern, dayCode, minutesPerMeeting);
+		EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(getSession().getUniqueId());
+		return getInstrOfferingConfig().getDurationModel().getDates(getMinutesPerWk(), datePattern, dayCode, minutesPerMeeting, class2eventDates);
 	}
 	
 	public boolean isParentOf(SchedulingSubpart subpart) {

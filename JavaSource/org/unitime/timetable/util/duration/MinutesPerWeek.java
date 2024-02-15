@@ -107,12 +107,11 @@ public class MinutesPerWeek implements DurationModel {
 	 * Return all dates marked yellow in the given date pattern that are matching the selected day code (days of week)
 	 */
 	@Override
-	public List<Date> getDates(int minsPerWeek, DatePattern datePattern, int dayCode, int minutesPerMeeting) {
+	public List<Date> getDates(int minsPerWeek, DatePattern datePattern, int dayCode, int minutesPerMeeting, EventDateMapping.Class2EventDateMap class2eventDates) {
 		List<Date> ret = new ArrayList<Date>();
 		if (datePattern == null) return ret;
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(datePattern.getStartDate()); cal.setLenient(true);
-        EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(datePattern.getSession().getUniqueId());
         String pattern = datePattern.getPattern();
         for (int idx = 0; idx < pattern.length(); idx++) {
         	if (pattern.charAt(idx) == '1') {

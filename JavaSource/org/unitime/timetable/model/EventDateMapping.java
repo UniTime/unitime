@@ -20,10 +20,13 @@
 package org.unitime.timetable.model;
 
 
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
+import org.hibernate.CacheMode;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -83,7 +86,11 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	public static List<EventDateMapping> findAll(Long sessionId) {
 		return EventDateMappingDAO.getInstance().getSession().createQuery(
 				"from EventDateMapping where session.uniqueId = :sessionId order by classDateOffset", EventDateMapping.class)
-				.setParameter("sessionId", sessionId).setCacheable(true).list();
+				.setParameter("sessionId", sessionId).setCacheable(true)
+				.setCacheMode(CacheMode.NORMAL)
+				.setCacheRetrieveMode(CacheRetrieveMode.USE)
+				.setCacheStoreMode(CacheStoreMode.USE)
+				.list();
 	}
 	
 	public static boolean hasMapping(Long sessionId) {

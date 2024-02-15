@@ -417,7 +417,7 @@ public class Assignment extends BaseAssignment implements ClassAssignmentProxy.A
 		}
 	}
 	
-    public ClassEvent generateCommittedEvent(ClassEvent event, boolean createNoRoomMeetings) {
+    public ClassEvent generateCommittedEvent(ClassEvent event, boolean createNoRoomMeetings, EventDateMapping.Class2EventDateMap class2eventDates) {
     	Class_ clazz = getClazz();
         if (event==null) {
             event = new ClassEvent();
@@ -449,7 +449,7 @@ public class Assignment extends BaseAssignment implements ClassAssignmentProxy.A
 		
 		DurationModel dm = getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 		TimeLocation time = getTimeLocation();
-		for (Date meetingDate: dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), time.getDayCode(), getMinutesPerMeeting())) {
+		for (Date meetingDate: dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), getDatePattern(), time.getDayCode(), getMinutesPerMeeting(), class2eventDates)) {
             if (changePast || !meetingDate.before(today)) {
                 boolean created = false;
                 for (Iterator i=getRooms().iterator();i.hasNext();) {
