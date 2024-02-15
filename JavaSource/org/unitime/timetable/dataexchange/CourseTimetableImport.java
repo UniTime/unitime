@@ -49,6 +49,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -86,6 +87,7 @@ public class CourseTimetableImport extends BaseImport {
 	private Session iSession;
 	private boolean iInstructors, iPreferExtId, iNotes;
 	private boolean iShowClassSuffix, iShowConfigName;
+	private EventDateMapping.Class2EventDateMap iClass2eventDates;
 	
 	public CourseTimetableImport() {
 		super();
@@ -125,6 +127,8 @@ public class CourseTimetableImport extends BaseImport {
 	        
 	        if (iSession == null)
 	           	throw new Exception("No session found for the given campus, year, and term.");
+	        
+	        iClass2eventDates = EventDateMapping.getMapping(iSession.getUniqueId());
 
 	    	iExtId2class = new HashMap<String, Class_>();
 	    	iName2class = new HashMap<String, Class_>();
@@ -449,7 +453,7 @@ public class CourseTimetableImport extends BaseImport {
 			assignment.setRooms(locations);
 			assignment.setInstructors(new HashSet<DepartmentalInstructor>());
 			if (solution.isCommited()) {
-	            Event event = assignment.generateCommittedEvent(clazz.getEvent(), true);
+	            Event event = assignment.generateCommittedEvent(clazz.getEvent(), true, iClass2eventDates);
 	            if (event != null) {
 	            	if (!event.getMeetings().isEmpty()) {
 	            		if (event.getUniqueId() == null)

@@ -35,6 +35,7 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -98,7 +99,8 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
 				new ClassDateInfo(assignment, datePreference),
 				assignment.getBreakTime(),
 				assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getDurationModel().getDates(
-						assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays(), assignment.getMinutesPerMeeting()));
+						assignment.getClazz().getSchedulingSubpart().getMinutesPerWk(), assignment.getDatePattern(), assignment.getDays(), assignment.getMinutesPerMeeting(),
+						EventDateMapping.getMapping(assignment.getDatePattern().getUniqueId())));
     }
     
     public ClassTimeInfo(ClassTimeInfo time, ClassDateInfo date, List<Date> dates) {

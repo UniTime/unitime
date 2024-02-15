@@ -67,6 +67,7 @@ import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -442,9 +443,12 @@ public class ClassInfoModel implements Serializable {
         DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         ClassTimeInfo time = (getSelectedAssignment() == null ? null : getSelectedAssignment().getTime());
         Collection<ClassRoomInfo> rooms = (getSelectedAssignment() == null ? null : getSelectedAssignment().getRooms());
+        EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(clazz.getSessionId());
         for (ClassAssignment date : getDates()) {
             if (dateId.equals(date.getDateId())) {
-                List<Date> dates = (time == null || !date.hasDate() ? null : dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), date.getDate().getDatePattern(), time.getDayCode(), time.getMinutesPerMeeting()));
+                List<Date> dates = (time == null || !date.hasDate() ? null : dm.getDates(
+                		clazz.getSchedulingSubpart().getMinutesPerWk(), date.getDate().getDatePattern(), time.getDayCode(), time.getMinutesPerMeeting(),
+                		class2eventDates));
                 iChange.addChange(
                 		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate(), dates)), date.getDate(), rooms, iChange.getAssignmentTable(), isUseRealStudents(), iConflicts), 
                 		getClassOldAssignment());
@@ -934,6 +938,7 @@ public class ClassInfoModel implements Serializable {
         	sLog.debug("Class "+getClazz().getClassName()+" has required times");
         }
 		DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+		EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(clazz.getSessionId());
         for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
         	TimePref timePref = (TimePref)i1.next();
         	TimePatternModel pattern = timePref.getTimePatternModel();
@@ -941,7 +946,7 @@ public class ClassInfoModel implements Serializable {
     			int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays());
         		int length = ExactTimeMins.getNrSlotsPerMtg(minsPerMeeting);
         		int breakTime = ExactTimeMins.getBreakTime(minsPerMeeting); 
-        		List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays(), minsPerMeeting);
+        		List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays(), minsPerMeeting, class2eventDates);
         		ClassTimeInfo time = new ClassTimeInfo(clazz.getUniqueId(), pattern.getExactDays(),pattern.getExactStartSlot(),length,minsPerMeeting,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime,dates);
         		if (iShowStudentConflicts)
         			times.add(new ClassAssignmentInfo(clazz, time, date, null, (iChange==null?null:iChange.getAssignmentTable()), isUseRealStudents(), iConflicts));
@@ -958,7 +963,7 @@ public class ClassInfoModel implements Serializable {
                     if (onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
                         pref = PreferenceLevel.sProhibited;
                     }
-                    List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getDayCode(day), timePref.getTimePattern().getMinPerMtg());
+                    List<Date> dates = dm.getDates(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getDayCode(day), timePref.getTimePattern().getMinPerMtg(), class2eventDates);
                     ClassTimeInfo loc = new ClassTimeInfo(
                             clazz.getUniqueId(),
                             pattern.getDayCode(day),

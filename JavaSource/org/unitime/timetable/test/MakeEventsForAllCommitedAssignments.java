@@ -29,6 +29,7 @@ import org.hibernate.Transaction;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -50,6 +51,7 @@ public class MakeEventsForAllCommitedAssignments {
             
             for (Iterator<Solution> i=commitedSolutions.iterator();i.hasNext();) {
                 Solution s = i.next();
+                EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(s.getSession().getUniqueId());
             
                 idx++;
                 
@@ -58,7 +60,7 @@ public class MakeEventsForAllCommitedAssignments {
                 Transaction tx = null;
                 try {
                     tx = hibSession.beginTransaction();
-
+                    
                     for (ClassEvent e: hibSession.createQuery(
                             "select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId", ClassEvent.class)
                             .setParameter("solutionId", s.getUniqueId())
@@ -70,7 +72,7 @@ public class MakeEventsForAllCommitedAssignments {
                             "where a.solution.uniqueId = :solutionId", Assignment.class)
                             .setParameter("solutionId", s.getUniqueId())
                             .list()) {
-                        ClassEvent event = a.generateCommittedEvent(null,true);
+                        ClassEvent event = a.generateCommittedEvent(null, true, class2eventDates);
                         if (event != null && !event.getMeetings().isEmpty()) {
                             System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName(true));
                             if (event.getUniqueId() == null)

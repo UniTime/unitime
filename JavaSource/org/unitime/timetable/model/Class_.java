@@ -1547,7 +1547,8 @@ public class Class_ extends BaseClass_ {
 			a.cleastAssignmentInfoCache();
             
             ClassEvent event = getEvent();
-            event = a.generateCommittedEvent(event, true);
+            EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(getSession().getUniqueId());
+            event = a.generateCommittedEvent(event, true, class2eventDates);
             if (event != null && !event.getMeetings().isEmpty()) {
     			if (event.getNotes() == null)
     				event.setNotes(new HashSet<EventNote>());

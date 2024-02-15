@@ -78,6 +78,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Course Timetabling: Solution Commit</name>
+			<description>
+				<line>Solution commit made a little faster by loading the event date mappings only once.</line>
+			</description>
+		</item>
+		<item>
 			<name>Universal Reservation Override: Student Filter</name>
 			<description>
 				<line>Added a universal reservation override type that allows to reserve space for students using a student filter.</line>

@@ -101,12 +101,11 @@ public abstract class MeetingCountingDuration implements DurationModel {
 	}
 	
 	@Override
-	public List<Date> getDates(int minutes, DatePattern datePattern, int dayCode, int minutesPerMeeting) {
+	public List<Date> getDates(int minutes, DatePattern datePattern, int dayCode, int minutesPerMeeting, EventDateMapping.Class2EventDateMap class2eventDates) {
 		List<Date> ret = new ArrayList<Date>();
 		if (datePattern == null) return ret;
 		Calendar cal = Calendar.getInstance(Locale.US);
 		cal.setTime(datePattern.getStartDate()); cal.setLenient(true);
-        EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(datePattern.getSession().getUniqueId());
         String pattern = datePattern.getPattern();
         Integer max = getMaxMeetings(minutes, minutesPerMeeting);
         for (int idx = 0; idx < pattern.length(); idx++) {

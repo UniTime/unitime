@@ -484,9 +484,10 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 .list()) {
             classEvents.put(e.getClazz().getUniqueId(),e);
         }
+        EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(getSession().getUniqueId());
 		for (Iterator i=getAssignments().iterator();i.hasNext();) {
 		    Assignment a = (Assignment)i.next();
-		    ClassEvent event = a.generateCommittedEvent(classEvents.get(a.getClassId()),true);
+		    ClassEvent event = a.generateCommittedEvent(classEvents.get(a.getClassId()), true, class2eventDates);
 		    classEvents.remove(a.getClassId());
 		    if (event != null && !event.getMeetings().isEmpty()) {
 		        event.setMainContact(contact);

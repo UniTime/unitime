@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.TimePattern;
 
 public interface DurationModel {
@@ -68,9 +69,10 @@ public interface DurationModel {
 	 * @param datePattern selected date pattern
 	 * @param dayCode selected days of week (alternative pattern sets are NOT allowed)
 	 * @param minutesPerMeeting minutes per meeting
+	 * @param dateMappping class to events date mapping
 	 * @return list of dates that meet the selected minutes and date pattern
 	 */
-	public List<Date> getDates(int minutes, DatePattern datePattern, int dayCode, int minutesPerMeeting);
+	public List<Date> getDates(int minutes, DatePattern datePattern, int dayCode, int minutesPerMeeting, EventDateMapping.Class2EventDateMap dateMapping);
 	
 	/**
 	 * Compute number of minutes for a selected exact time

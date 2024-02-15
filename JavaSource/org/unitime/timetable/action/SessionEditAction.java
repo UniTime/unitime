@@ -36,6 +36,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Session;
@@ -284,12 +285,13 @@ public class SessionEditAction extends UniTimeAction<SessionEditForm> {
             			"delete ClassEvent where clazz in (from Class_ c where c.committedAssignment.solution.owner.session.uniqueId = :sessionId)")
             			.setParameter("sessionId", sessn.getUniqueId()).executeUpdate();
             } else {
+            	EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(sessn.getUniqueId());
             	for (Assignment assignment: hibSession.createQuery(
             			"select a from Class_ c inner join c.assignments a inner join a.solution s where s.commited = true and s.owner.session.uniqueId = :sessionId " +
             			"and c.uniqueId not in (select e.clazz.uniqueId from ClassEvent e where e.clazz.controllingDept.session.uniqueId = :sessionId)",
             			Assignment.class)
             			.setParameter("sessionId", sessn.getUniqueId()).list()) {
-            		ClassEvent event = assignment.generateCommittedEvent(null,true);
+            		ClassEvent event = assignment.generateCommittedEvent(null, true, class2eventDates);
             		if (event != null && !event.getMeetings().isEmpty()) {
                     	event.setMainContact(contact);
                     	if (event.getUniqueId() == null)
