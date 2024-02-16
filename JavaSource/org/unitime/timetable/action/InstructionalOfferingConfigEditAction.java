@@ -1195,6 +1195,7 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
             subpart.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
             subpart.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
             subpart.setClasses(new HashSet<Class_>());
+            subpart.setChildSubparts(new HashSet<SchedulingSubpart>());
             ioc.addToschedulingSubparts(subpart);
 
             if (md<0 && !ioc.isUnlimitedEnrollment().booleanValue() && rg!=null) {
