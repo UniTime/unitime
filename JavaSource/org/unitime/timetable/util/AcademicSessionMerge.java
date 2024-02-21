@@ -91,6 +91,7 @@ import org.unitime.timetable.model.StandardEventNoteDepartment;
 import org.unitime.timetable.model.StandardEventNoteSession;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
@@ -134,6 +135,12 @@ import org.unitime.timetable.model.dao.TravelTimeDAO;
 import org.unitime.timetable.util.SessionRollForward.CancelledClassAction;
 import org.unitime.timetable.util.SessionRollForward.DistributionMode;
 
+import org.hibernate.mapping.PersistentClass;
+import org.hibernate.mapping.Property;
+import org.hibernate.boot.Metadata;
+import org.unitime.commons.hibernate.util.HibernateUtil;
+
+
 public class AcademicSessionMerge {
 	
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -143,11 +150,14 @@ public class AcademicSessionMerge {
 	private HashMap<String, GlobalRoomFeature> iPrefixRoomFeatureMap = new HashMap<String, GlobalRoomFeature>();
 	private HashMap<Object, Set<Location>> iRoomList;
 	private Session iMergedSession; 
+	private Session iPrimarySession;
+	private Session iSecondarySession;
 	private boolean iUseCampusPrefixForDepartments; 
 	private boolean iUseCampusPrefixForSubjectAreas;
 	private String iPrefixSeparator;
 	private HashMap<String, String> iDepartmentCodesWithDifferentPrefix;
 	private boolean iResetClassSuffix;
+	private HashMap<String, HashMap<String, Long>> dbColumnLengths = new HashMap<String, HashMap<String,Long>>();
 	
 	public AcademicSessionMerge(Long mergedSessionId, 
 			Long primarySessionId, 
@@ -168,138 +178,262 @@ public class AcademicSessionMerge {
 			Log log
 			) {
 		
-
 		if (hibSession.getTransaction() != null && hibSession.getTransaction().isActive()) {
 			hibSession.getTransaction().commit();
 		}
-		iMergedSession = Session.getSessionById(mergedSessionId);
-		Session primarySession = Session.getSessionById(primarySessionId);
-		Session secondarySession = Session.getSessionById(secondarySessionId);
 		iUseCampusPrefixForDepartments = useCampusPrefixForDepartments;
 		iUseCampusPrefixForSubjectAreas = useCampusPrefixForSubjectAreas;
 		iPrefixSeparator = prefixSeparator;
 		iDepartmentCodesWithDifferentPrefix = departmentCodesWithDifferentPrefix;
 		iLog = log;
 		iResetClassSuffix = ApplicationProperty.RollForwardResetClassSuffix.isTrue();
-		iSessionRollForward = new SessionRollForward(log);
+		initDbColumnLengths();
 		try {
 			// Pull the departments from both sessions together into set of departments
 			log.info("Pull the departments from both sessions together into set of departments");
-			log.info("Copying Primary Session Departments: " + primarySession.getLabel());
-			copyMergeDepartmentsToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Departments: " + secondarySession.getLabel());
-			copyMergeDepartmentsToSession(secondarySession, secondarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Departments: " + iPrimarySession.getLabel());
+			copyMergeDepartmentsToSession(iPrimarySession, primarySessionDefaultPrefix);
+			
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Departments: " + iSecondarySession.getLabel());
+			copyMergeDepartmentsToSession(iSecondarySession, secondarySessionDefaultPrefix);
 			
 			//Use the session roll forward to roll use the session configuration from the primary session
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 			log.info("Use the session roll forward to roll use the session configuration from the primary session");
-			copyMergeConfigurationToSession(primarySession, primarySessionDefaultPrefix);
+			copyMergeConfigurationToSession(iPrimarySession, primarySessionDefaultPrefix);
 
 			// Pull the timetable managers from both sessions together
 			log.info("Pull the timetable managers from both sessions together");
-			log.info("Copying Primary Session Managers: " + primarySession.getLabel());
-			copyMergeTimetableManagersToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Managers: " + secondarySession.getLabel());
-			copyMergeTimetableManagersToSession(secondarySession, secondarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Managers: " + iPrimarySession.getLabel());
+			copyMergeTimetableManagersToSession(iPrimarySession, primarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Managers: " + iSecondarySession.getLabel());
+			copyMergeTimetableManagersToSession(iSecondarySession, secondarySessionDefaultPrefix);
 	
 			// Pull the room features from both sessions together
 			log.info("Pull the room features from both sessions together");
-			log.info("Copying Primary Session Room Features: " + primarySession.getLabel());
-			copyMergeRoomFeaturesToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Room Features: " + secondarySession.getLabel());
-			copyMergeRoomFeaturesToSession(secondarySession, secondarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Room Features: " + iPrimarySession.getLabel());
+			copyMergeRoomFeaturesToSession(iPrimarySession, primarySessionDefaultPrefix);
+
+ 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			copyMergeRoomFeaturesToSession(iSecondarySession, secondarySessionDefaultPrefix);
 			
 			// Pull the room groups from both sessions together
 			log.info("Pull the room groups from both sessions together");
-			log.info("Copying Primary Session Room Groups: " + primarySession.getLabel());
-			copyMergeRoomGroupsToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Room Groups: " + secondarySession.getLabel());
-			copyMergeRoomGroupsToSession(secondarySession, secondarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Room Groups: " + iPrimarySession.getLabel());
+			copyMergeRoomGroupsToSession(iPrimarySession, primarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Room Groups: " + iSecondarySession.getLabel());
+			copyMergeRoomGroupsToSession(iSecondarySession, secondarySessionDefaultPrefix);
 			
 			
 			// Pull the buildings from both sessions together
 			log.info("Pull the buildings from both sessions together");
-			log.info("Copying Primary Session Buildings: " + primarySession.getLabel());
-			copyMergeBuildingsToSession(primarySession);
-			log.info("Copying Secondary Session Buildings: " + secondarySession.getLabel());
-			copyMergeBuildingsToSession(secondarySession);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Buildings: " + iPrimarySession.getLabel());
+			copyMergeBuildingsToSession(iPrimarySession);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Buildings: " + iSecondarySession.getLabel());
+			copyMergeBuildingsToSession(iSecondarySession);
 
 			// Pull the locations from both sessions together
 			log.info("Pull the locations from both sessions together");
-			log.info("Copying Primary Session Locations: " + primarySession.getLabel());
-			copyMergeLocationsToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Locations: " + secondarySession.getLabel());
-			copyMergeLocationsToSession(secondarySession, secondarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Locations: " + iPrimarySession.getLabel());
+			copyMergeLocationsToSession(iPrimarySession, primarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Locations: " + iSecondarySession.getLabel());
+			copyMergeLocationsToSession(iSecondarySession, secondarySessionDefaultPrefix);
 
 			
 			// Pull the travel times from both sessions together
 			log.info("Pull the travel times from both sessions together");
-			log.info("Copying Primary Session Travel Times: " + primarySession.getLabel());
-			copyMergeTravelTimesToSession(primarySession);
-			log.info("Copying Secondary Session Travel Times: " + secondarySession.getLabel());
-			copyMergeTravelTimesToSession(secondarySession);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Travel Times: " + iPrimarySession.getLabel());
+			copyMergeTravelTimesToSession(iPrimarySession);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Travel Times: " + iSecondarySession.getLabel());
+			copyMergeTravelTimesToSession(iSecondarySession);
 
 			// Pull the date patterns from the primary session into the session
 			log.info("Pull the date patterns from the primary session into the session");
-			log.info("Copying Primary Session Date Patterns: " + primarySession.getLabel());
-			copyMergeDatePatternsToSession(primarySession, primarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Date Patterns: " + iPrimarySession.getLabel());
+			copyMergeDatePatternsToSession(iPrimarySession, primarySessionDefaultPrefix);
 
 			// Pull the time patterns from the primary session into the session
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 			log.info("Pull the time patterns from the primary session into the session");
-			copyMergeTimePatternsToSession(primarySession, primarySessionDefaultPrefix);
+			copyMergeTimePatternsToSession(iPrimarySession, primarySessionDefaultPrefix);
 
 			// Pull the learning management system info from both sessions together
 			log.info("Pull the learning management system info from both sessions together");
-			log.info("Copying Primary Session Learning Management System Info: " + primarySession.getLabel());
-			copyMergeLearningManagementSystemInfoToSession(primarySession);
-			log.info("Copying Secondary Session Learning Management System Info: " + secondarySession.getLabel());
-			copyMergeLearningManagementSystemInfoToSession(secondarySession);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Learning Management System Info: " + iPrimarySession.getLabel());
+			copyMergeLearningManagementSystemInfoToSession(iPrimarySession);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Learning Management System Info: " + iSecondarySession.getLabel());
+			copyMergeLearningManagementSystemInfoToSession(iSecondarySession);
 
 			// Pull the subjectAreas from both sessions together
 			log.info("Pull the subjectAreas from both sessions together");
-			log.info("Copying Primary Session Subject Areas: " + primarySession.getLabel());
-			copyMergeSubjectAreasToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Subject Areas: " + secondarySession.getLabel());
-			copyMergeSubjectAreasToSession(secondarySession, secondarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Subject Areas: " + iPrimarySession.getLabel());
+			copyMergeSubjectAreasToSession(iPrimarySession, primarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Subject Areas: " + iSecondarySession.getLabel());
+			copyMergeSubjectAreasToSession(iSecondarySession, secondarySessionDefaultPrefix);
 		
 			// Pull the departmental instructors from both sessions together
 			log.info("Pull the departmental instructors from both sessions together");
-			log.info("Copying Primary Session Departmental Instructors: " + primarySession.getLabel());
-			copyMergeInstructorDataToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Departmental Instructors: " + secondarySession.getLabel());
-			copyMergeInstructorDataToSession(secondarySession, secondarySessionDefaultPrefix);
+			
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Departmental Instructors: " + iPrimarySession.getLabel());
+			copyMergeInstructorDataToSession(iPrimarySession, primarySessionDefaultPrefix);
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Departmental Instructors: " + iSecondarySession.getLabel());
+			copyMergeInstructorDataToSession(iSecondarySession, secondarySessionDefaultPrefix);
 			
 			// Pull the courses from both sessions together
 			log.info("Pull the courses from both sessions together");
-			log.info("Copying Primary Session Course Offerings: " + primarySession.getLabel());
-			copyMergeCourseOfferingsToSession(primarySession, classPrefsAction, subpartLocationPrefsAction,
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+
+			log.info("Copying Primary Session Course Offerings: " + iPrimarySession.getLabel());
+			copyMergeCourseOfferingsToSession(iPrimarySession, classPrefsAction, subpartLocationPrefsAction,
 					subpartTimePrefsAction, mergeWaitListsProhibitedOverrides, distributionPrefMode, 
 					cancelledClassAction, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Course Offerings: " + secondarySession.getLabel());
-			copyMergeCourseOfferingsToSession(secondarySession, classPrefsAction, subpartLocationPrefsAction,
+
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Secondary Session Course Offerings: " + iSecondarySession.getLabel());
+			copyMergeCourseOfferingsToSession(iSecondarySession, classPrefsAction, subpartLocationPrefsAction,
 					subpartTimePrefsAction, mergeWaitListsProhibitedOverrides, distributionPrefMode, 
 					cancelledClassAction, secondarySessionDefaultPrefix);
 
 			// Pull the instructors onto their classes for each session
-			log.info("Copying Primary Session Instructors onto Classes: " + primarySession.getLabel());
-			copyMergeClassInstructorsToSession(primarySession, primarySessionDefaultPrefix);
-			log.info("Copying Secondary Session Instructors onto Classes: " + secondarySession.getLabel());
-			copyMergeClassInstructorsToSession(secondarySession, secondarySessionDefaultPrefix);
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+			log.info("Copying Primary Session Instructors onto Classes: " + iPrimarySession.getLabel());
+			copyMergeClassInstructorsToSession(iPrimarySession, primarySessionDefaultPrefix);
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+
+			log.info("Copying Secondary Session Instructors onto Classes: " + iSecondarySession.getLabel());
+			copyMergeClassInstructorsToSession(iSecondarySession, secondarySessionDefaultPrefix);
+			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			log.error(e.getMessage());
 			e.printStackTrace();
 		}
-		
+
 	}
 	
+	private void resetHibSession(org.hibernate.Session hibSession, 
+			                     Long mergedSessionId, 
+			                     Long primarySessionId, 
+			                     Long secondarySessionId) {
+		org.hibernate.Session hs = null;
+		Long msi = null;
+		Long psi = null;
+		Long ssi = null;
+		
+		if (hibSession != null) {
+			hs = hibSession;
+		} else {
+			hs = SessionDAO.getInstance().getSession();
+		}
+		if (mergedSessionId != null) {
+			msi = mergedSessionId;
+		} else if (iMergedSession != null) {
+			msi = iMergedSession.getUniqueId();
+		} 
+		if (primarySessionId != null) {
+			psi = primarySessionId;
+		} else if (iPrimarySession != null) {
+			psi = iPrimarySession.getUniqueId();
+		} 
+		if (secondarySessionId != null) {
+			ssi = secondarySessionId;
+		} else if (iSecondarySession != null) {
+			ssi = iSecondarySession.getUniqueId();
+		}
+		
+		if (msi != null && psi != null && ssi != null) {
+			if (hs.getTransaction() != null && hs.getTransaction().isActive()) {
+				hs.getTransaction().commit();
+			}
+			hs = SessionDAO.getInstance().getSession();
+			hs.flush();
+			hs.clear();
+			hs.close();
+			iMergedSession = Session.getSessionById(msi);
+			iPrimarySession = Session.getSessionById(psi);
+			iSecondarySession = Session.getSessionById(ssi);	
+			iPrefixRoomFeatureMap = new HashMap<String, GlobalRoomFeature>();
+			iSessionRollForward = new SessionRollForward(iLog);
+		}
+	}
 	
-	private void addPrefixToDeptFields(Department department, String suffix) {
-		department.setDeptCode(suffix + iPrefixSeparator + department.getDeptCode());							
-		department.setAbbreviation(suffix + iPrefixSeparator + department.getAbbreviation());
-		department.setName(suffix + iPrefixSeparator + department.getName());
+	private void resetHibSession(org.hibernate.Session hibSession) {
+        resetHibSession(hibSession, null, null, null);		
+	}
+	
+	private void addPrefixToDeptFields(Department department, String suffix) throws Exception {
+		if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getDeptCode(), Department.class.getName(), "deptCode")) {
+			department.setDeptCode(suffix + iPrefixSeparator + department.getDeptCode());			
+		} else {
+			throw(new Exception("Prefix will make department code too long:  " + suffix + iPrefixSeparator + department.getDeptCode()));
+		}
+		if (department.getAbbreviation() == null || department.getAbbreviation().trim().isEmpty()) {
+			if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getDeptCode(),Department.class.getName(), "abbreviation")) {
+				department.setAbbreviation(department.getDeptCode());			
+			} else {
+				throw(new Exception("Prefix will make department abbreviation too long:  " + suffix + iPrefixSeparator + department.getDeptCode()));
+			}
+		} else {
+			if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getAbbreviation(),Department.class.getName(), "abbreviation")) {
+				department.setAbbreviation(suffix + iPrefixSeparator + department.getAbbreviation());
+			} else {
+				throw(new Exception("Prefix will make department abbreviation too long:  " + suffix + iPrefixSeparator + department.getAbbreviation()));
+			}
+		}
+		if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getName(),Department.class.getName(), "name")) {
+			department.setName(suffix + iPrefixSeparator + department.getName());
+		} else {
+			throw(new Exception("Prefix will make department name too long:  " + suffix + iPrefixSeparator + department.getName()));
+		}
 		if (department.isExternalManager()) {
-			department.setExternalMgrAbbv(suffix + iPrefixSeparator + department.getExternalMgrAbbv());
-			department.setExternalMgrLabel(suffix + iPrefixSeparator + department.getExternalMgrLabel());
+			if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getExternalMgrAbbv(),Department.class.getName(), "externalMgrAbbv")) {
+				department.setExternalMgrAbbv(suffix + iPrefixSeparator + department.getExternalMgrAbbv());
+			} else {
+				throw(new Exception("Prefix will make department external manager abbreviation too long:  " + suffix + iPrefixSeparator + department.getExternalMgrAbbv()));
+			}
+			if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getExternalMgrLabel(),Department.class.getName(), "externalMgrLabel")) {
+				department.setExternalMgrLabel(suffix + iPrefixSeparator + department.getExternalMgrLabel());
+			} else {
+				throw(new Exception("Prefix will make department external manager label too long:  " + suffix + iPrefixSeparator + department.getExternalMgrLabel()));
+			}
 		}	
 	}
 	
@@ -472,22 +606,36 @@ public class AcademicSessionMerge {
 		DepartmentDAO dDao = DepartmentDAO.getInstance();
 		SolverGroup sg = null;
 		String prefix = null;
+		boolean failedToCopy = false;
 
 
 		List<Department> departments = DepartmentDAO.getInstance().findBySession(dDao.getSession(), fromSession.getUniqueId());
 		dDao.getSession().refresh(iMergedSession);
 		for(Department fromDepartment : departments){
+			toDepartment = null;
+			sg = null;
+			prefix = null;
 			if (fromDepartment != null){
 				if (!iUseCampusPrefixForDepartments) {
 					toDepartment = Department.findByDeptCode(fromDepartment.getDeptCode(), iMergedSession.getUniqueId(), dDao.getSession());
 				} else {
+					toDepartment = findToDepartment(fromDepartment, defaultPrefix);
+					if (toDepartment != null) {
+						continue;
+					}
 					prefix = findPrefix(fromDepartment.getDeptCode(), defaultPrefix);
 				}
 				if (toDepartment == null) {
 					toDepartment = (Department) fromDepartment.clone();
 					toDepartment.setStatusType(null);
 					if (iUseCampusPrefixForDepartments && prefix != null) {
-						addPrefixToDeptFields(toDepartment, prefix);
+						try {
+							addPrefixToDeptFields(toDepartment, prefix);							
+						} catch (Exception e) {
+							iLog.error(e.getMessage());
+							failedToCopy = true;
+							continue;
+						}
 					}
 					toDepartment.setSession(iMergedSession);
 					iMergedSession.addToDepartments(toDepartment);
@@ -498,8 +646,13 @@ public class AcademicSessionMerge {
 					if (sg == null){
 						sg = (SolverGroup)fromDepartment.getSolverGroup().clone();
 						if (prefix != null) {
-							sg.setAbbv(prefix + iPrefixSeparator + sg.getAbbv());
-							sg.setName(prefix + iPrefixSeparator + sg.getName());
+							try {
+								addPrefixToSolverGroupFields(sg, prefix);
+							} catch (Exception e) {
+								iLog.error(e.getMessage());
+								failedToCopy = true;
+								continue;
+							}
 						}
 						sg.setSession(iMergedSession);
 					}
@@ -528,17 +681,27 @@ public class AcademicSessionMerge {
 					}
 				}
 			}
-			dDao.getSession().flush();
-			dDao.getSession().evict(toDepartment);
-			dDao.getSession().evict(fromDepartment);
-
 		}
 		dDao.getSession().flush();
-		dDao.getSession().clear();
-		
+		if (failedToCopy) {
+			throw (new Exception("Not all merged departments were successfully created."));
+		}
 	}
 
-    private Department findToDepartment(Department fromDepartment, String defaultPrefix) {
+    private void addPrefixToSolverGroupFields(SolverGroup solverGroup, String prefix) throws Exception {
+		if (isNewStringOfValidLength(prefix, iPrefixSeparator, solverGroup.getAbbv(), SolverGroup.class.getName(), "abbv")) {
+	    	solverGroup.setAbbv(prefix + iPrefixSeparator + solverGroup.getAbbv());
+		} else {
+			throw(new Exception("Prefix will make solver group abbreviation too long:  " + prefix + iPrefixSeparator + solverGroup.getAbbv()));
+		}
+		if (isNewStringOfValidLength(prefix, iPrefixSeparator, solverGroup.getName(), SolverGroup.class.getName(), "name")) {
+			solverGroup.setName(prefix + iPrefixSeparator + solverGroup.getName());
+		} else {
+			throw(new Exception("Prefix will make solver group abbreviation too long:  " + prefix + iPrefixSeparator + solverGroup.getName()));
+		}
+	}
+
+	private Department findToDepartment(Department fromDepartment, String defaultPrefix) {
 		String prefix = null;
     	Department toDepartment = null;
 		if (!iUseCampusPrefixForDepartments) {
@@ -568,7 +731,6 @@ public class AcademicSessionMerge {
 		try {
 			List<Department> departments = DepartmentDAO.getInstance().findBySession(tmDao.getSession(), fromSession.getUniqueId());
 			for(Department fromDepartment : departments){
-				tmDao.getSession().refresh(fromDepartment);
 				if (fromDepartment != null && fromDepartment.getTimetableManagers() != null){
 					toDepartment = findToDepartment(fromDepartment, defaultPrefix);
 
@@ -578,7 +740,6 @@ public class AcademicSessionMerge {
 						}
 						for (TimetableManager tm : fromDepartment.getTimetableManagers()){
 							if (tm != null){
-								tmDao.getSession().refresh(tm);
 								toDepartment.getTimetableManagers().add(tm);
 								tm.getDepartments().add(toDepartment);
 								tmDao.getSession().merge(tm);
@@ -598,9 +759,8 @@ public class AcademicSessionMerge {
 						}
 					}
 				}
-				tmDao.getSession().flush();
-				tmDao.getSession().clear();			
 			}
+			tmDao.getSession().flush();
 		} catch (Exception e) {
 			//TODO: handle errors
 			iLog.error("Failed to merge all timetable managers to session.", e);
@@ -733,7 +893,6 @@ public class AcademicSessionMerge {
 
 		BuildingDAO bDao = BuildingDAO.getInstance();
 		List<Building> fromBuildings = bDao.findBySession(bDao.getSession(), fromSession.getUniqueId());
-		bDao.getSession().refresh(iMergedSession);
 		if (fromBuildings != null && !fromBuildings.isEmpty()){
 			try{
 				ExternalBuilding toExternalBuilding = null;
@@ -767,10 +926,8 @@ public class AcademicSessionMerge {
 						iMergedSession.addToBuildings(toBldg);
 						bDao.getSession().persist(toBldg);
 					} 
-					bDao.getSession().flush();
-					bDao.getSession().evict(toBldg); // -- Previously commented out to prevent NonUniqueObjectException
-					bDao.getSession().evict(fromBldg);	
 				}
+				bDao.getSession().flush();
 			} catch (Exception e) {
 				//TODO: handle errors
 				iLog.error("Failed to merge all buildings to session.", e);
@@ -1084,9 +1241,6 @@ public class AcademicSessionMerge {
 				copyMergeRoomGroupsForLocation(fromRoom, toRoom, roomGroupCache);
 				rDao.getSession().merge(toRoom);
 			}
-			rDao.getSession().flush();
-			rDao.getSession().evict(toRoom); // --  Previously commented out to prevent NonUniqueObjectException
-			rDao.getSession().evict(fromRoom);
 		} catch (Exception e) {
 			//TODO: log errors
 			iLog.error("Failed to merge all rooms to session.", e);
@@ -1173,9 +1327,6 @@ public class AcademicSessionMerge {
 				copyMergeRoomGroupsForLocation(fromNonUniversityLocation, toNonUniversityLocation, roomGroupCache);
 				nulDao.getSession().merge(toNonUniversityLocation);
 			}
-			nulDao.getSession().flush();
-			nulDao.getSession().evict(toNonUniversityLocation);
-			nulDao.getSession().evict(fromNonUniversityLocation);
 		} catch (Exception e) {
 			iLog.error("Failed to merge all non university locations to session.", e);
 		}		
@@ -1257,8 +1408,6 @@ public class AcademicSessionMerge {
 		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
 		DatePattern toDatePattern = null;
 		DatePatternDAO dpDao = DatePatternDAO.getInstance();
-		dpDao.getSession().refresh(fromSession);
-		dpDao.getSession().refresh(iMergedSession);
 		HashMap<DatePattern, DatePattern> fromToDatePatternMap = new HashMap<DatePattern, DatePattern>();
 		try {
 			for(DatePattern fromDatePattern : fromDatePatterns){
@@ -1269,7 +1418,6 @@ public class AcademicSessionMerge {
 						toDatePattern.setSession(iMergedSession);
 						mergeDatePatternOntoDepartmentsToSession(fromDatePattern, toDatePattern, defaultPrefix);
 						dpDao.getSession().persist(toDatePattern);
-						dpDao.getSession().flush();
 					}
 					fromToDatePatternMap.put(fromDatePattern, toDatePattern);
 				}
@@ -1294,7 +1442,6 @@ public class AcademicSessionMerge {
 				}
 			}
 			dpDao.getSession().flush();
-			dpDao.getSession().clear();
 		} catch (Exception e) {
 			iLog.error("Failed to merge all date patterns to session.", e);
 		}		
@@ -1332,12 +1479,10 @@ public class AcademicSessionMerge {
 						toTimePattern.setSession(iMergedSession);
 						mergeTimePatternOntoDepartmentsToSession(fromTimePattern, toTimePattern, defaultPrefix);
 						tpDao.getSession().persist(toTimePattern);
-						tpDao.getSession().flush();
 					}
 				}
 			}
 			tpDao.getSession().flush();
-			tpDao.getSession().clear();
 		} catch (Exception e) {
 			iLog.error("Failed to merge all time patterns to session.", e);
 		}		
@@ -1355,12 +1500,10 @@ public class AcademicSessionMerge {
 						toLms = (LearningManagementSystemInfo) fromLms.clone();
 						toLms.setSession(iMergedSession);
 						lmsDao.getSession().persist(toLms);
-						lmsDao.getSession().flush();
 					}
 				}
 			}
-			lmsDao.getSession().flush();
-			
+			lmsDao.getSession().flush();			
 		} catch (Exception e) {
 			iLog.error("Failed to merge all learning management system infos to session.", e);
 		}		
@@ -1407,20 +1550,28 @@ public class AcademicSessionMerge {
 		return toSubjectArea;
     }
 
-	private void addPrefixToSubjectFields(SubjectArea subjectArea, String prefix) {
-		if (prefix != null && !prefix.isEmpty()  && !iPrefixSeparator.isEmpty()) {
-			subjectArea.setSubjectAreaAbbreviation(prefix + iPrefixSeparator + subjectArea.getSubjectAreaAbbreviation());	
-			subjectArea.setTitle(prefix + iPrefixSeparator + subjectArea.getTitle());
+	private void addPrefixToSubjectFields(SubjectArea subjectArea, String prefix) throws Exception {
+		if (prefix != null && !prefix.trim().isEmpty()  && !iPrefixSeparator.trim().isEmpty()) {
+			if (isNewStringOfValidLength(prefix, iPrefixSeparator, subjectArea.getSubjectAreaAbbreviation(), SubjectArea.class.getName(), "subjectAreaAbbreviation")) {
+				subjectArea.setSubjectAreaAbbreviation(prefix + iPrefixSeparator + subjectArea.getSubjectAreaAbbreviation());	
+			} else {
+				throw(new Exception("Prefix will make subject area abbreviation too long:  " + prefix + iPrefixSeparator + subjectArea.getSubjectAreaAbbreviation()));
+			}
+			if (isNewStringOfValidLength(prefix, iPrefixSeparator, subjectArea.getTitle(), SubjectArea.class.getName(), "title")) {
+				subjectArea.setTitle(prefix + iPrefixSeparator + subjectArea.getTitle());
+			} else {
+				throw(new Exception("Prefix will make subject area title too long:  " + prefix + iPrefixSeparator + subjectArea.getTitle()));
+			}
 		}	
 	}
 
 
 	public void copyMergeSubjectAreasToSession(Session fromSession, 
-			String prefix) {
+			String prefix) throws Exception {
 		SubjectArea toSubjectArea = null;
 		Department toDepartment = null;
 		SubjectAreaDAO sDao = SubjectAreaDAO.getInstance();
-		sDao.getSession().refresh(iMergedSession);
+		boolean failedToCopy = false;
 		try {
 			if (iSessionRollForward.sessionHasCourseCatalog(iMergedSession)) {
 				SubjectArea fromSubjectArea = null;
@@ -1451,7 +1602,13 @@ public class AcademicSessionMerge {
 								toSubjectArea.setDepartment(null);
 								toSubjectArea.setSubjectAreaAbbreviation(toSubject);									
 								if (subjectPrefix != null) {
-									addPrefixToSubjectFields(toSubjectArea, subjectPrefix);
+									try {
+										addPrefixToSubjectFields(toSubjectArea, subjectPrefix);
+									} catch (Exception e) {
+										iLog.error(e.getMessage());
+										failedToCopy = true;
+										continue;
+									}
 								}
 								if (fromSubjectArea.getFundingDept() != null){
 									Department toFundingDept = findToDepartment(fromSubjectArea.getFundingDept(), prefix);
@@ -1465,9 +1622,6 @@ public class AcademicSessionMerge {
 										toSubjectArea.setDepartment(toDepartment);
 										toDepartment.addToSubjectAreas(toSubjectArea);
 										sDao.getSession().persist(toSubjectArea);
-										sDao.getSession().flush();
-										sDao.getSession().evict(toSubjectArea);
-										sDao.getSession().evict(fromSubjectArea);
 									}
 								}
 								
@@ -1508,9 +1662,6 @@ public class AcademicSessionMerge {
 						toDepartment.addToSubjectAreas(toSubjectArea);
 						iMergedSession.addToSubjectAreas(toSubjectArea);
 						sDao.getSession().persist(toSubjectArea);
-						sDao.getSession().flush();
-						sDao.getSession().evict(toSubjectArea);
-						sDao.getSession().evict(fromSubjectArea);
 					}
 				}
 			} else {
@@ -1531,8 +1682,15 @@ public class AcademicSessionMerge {
 									toSubjectArea.setFundingDept(toFundingDept);
 								}
 								if (subjectPrefix != null) {
-									addPrefixToSubjectFields(toSubjectArea, subjectPrefix);
+									try {
+										addPrefixToSubjectFields(toSubjectArea, subjectPrefix);
+									} catch (Exception e) {
+										iLog.error(e.getMessage());
+										failedToCopy = true;
+										continue;
+									}
 								}
+
 								toSubjectArea.setDepartment(null);
 								toSubjectArea.setSession(iMergedSession);
 								iMergedSession.addToSubjectAreas(toSubjectArea);
@@ -1542,9 +1700,6 @@ public class AcademicSessionMerge {
 										toSubjectArea.setDepartment(toDepartment);
 										toDepartment.addToSubjectAreas(toSubjectArea);
 										sDao.getSession().persist(toSubjectArea);
-										sDao.getSession().flush();
-										sDao.getSession().evict(toSubjectArea);
-										sDao.getSession().evict(fromSubjectArea);									
 									}
 								}
 							}
@@ -1553,7 +1708,9 @@ public class AcademicSessionMerge {
 				}
 			}
 			sDao.getSession().flush();
-			sDao.getSession().clear();
+			if (failedToCopy) {
+				throw(new Exception("Failed to merge subject areas due to prefix issues."));
+			}
 		} catch (Exception e) {
 			iLog.error("Failed to merge all subject areas to session.", e);
 		}
@@ -2070,9 +2227,20 @@ public class AcademicSessionMerge {
 				if (fromTimePref.getTimePattern() == null) {
 					toTimePref = (TimePref)fromTimePref.clone();
 				} else {
-					toTimePref = TimePattern.getMatchingTimePreference(iMergedSession.getUniqueId(), fromTimePref);
-					if (toTimePref == null){
-						iLog.warn("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+					if (fromTimePref.getTimePattern().isExactTime()) {
+						TimePattern toTimePattern = TimePattern.findExactTime(iMergedSession.getUniqueId());
+						if (toTimePattern == null) {
+							iLog.warn("To Time Pattern not found, merge session does not contain an 'Exact Time' time pattern:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());													
+						} else {
+							toTimePref = (TimePref)fromTimePref.clone();
+							toTimePref.setTimePattern(toTimePattern);
+						}
+							
+					} else {
+						toTimePref = TimePattern.getMatchingTimePreference(iMergedSession.getUniqueId(), fromTimePref);
+						if (toTimePref == null){
+							iLog.warn("To Time Pattern not found:  " + fromTimePref.getTimePattern().getName() + " for " + fromPrefGroup.htmlLabel());						
+						}
 					}
 				}
 				if (toTimePref != null){
@@ -2213,7 +2381,6 @@ public class AcademicSessionMerge {
 						.list();
 				
 				List<Department> departments = DepartmentDAO.getInstance().findBySession(iDao.getSession(), fromSession.getUniqueId());
-				iDao.getSession().refresh(iMergedSession);
 
 				for(Department fromDepartment: departments){
 					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
@@ -2248,9 +2415,6 @@ public class AcademicSessionMerge {
 									mergeTimePrefsToSession(fromInstructor, toInstructor, false, false, false, null);
 									mergeInstructorDistributionPrefsToSession(fromInstructor, toInstructor);
 									iDao.getSession().persist(toInstructor);
-									iDao.getSession().flush();
-									iDao.getSession().evict(toInstructor);
-									iDao.getSession().evict(fromInstructor);
 								}
 							}
 						} else {
@@ -2259,7 +2423,6 @@ public class AcademicSessionMerge {
 					}
 				}
 				iDao.getSession().flush();
-				iDao.getSession().clear();
 			}
 			
 		} catch (Exception e) {
@@ -3177,13 +3340,6 @@ public class AcademicSessionMerge {
 				trns.commit();
 			}
 			ioDao.getSession().flush();
-			for (InstructionalOffering toInstructionalOffering : toInstructionalOfferingMap.values()) {
-				if (toInstructionalOffering == null) {
-					continue;
-				}
-				ioDao.getSession().evict(toInstructionalOffering);
-			}
-			ioDao.getSession().evict(fromInstructionalOffering);
 		} catch (Exception e){
 			iLog.error("Failed to merge " + fromInstructionalOffering.getCourseName(), e);
 			if (trns != null){
@@ -3215,7 +3371,6 @@ public class AcademicSessionMerge {
 				co = (CourseOffering) it.next();
 				mergeInstructionalOfferingToSession(co.getInstructionalOffering(), fromSession, mergeWaitListsProhibitedOverrides, isClassMerge, 
 						isSubpartTimePrefMerge, isSubpartLocationPrefMerge, isClassPrefsPushUp, distributionPrefMode, cancelledClassAction, prefix);
-				coDao.getSession().flush();
 			}
 		}
 	}
@@ -3236,8 +3391,19 @@ public class AcademicSessionMerge {
 		
 		if (iMergedSession.getSubjectAreas() != null) {
 			List<SubjectArea> fromSubjectAreas = SubjectAreaDAO.getInstance().findBySession(SubjectAreaDAO.getInstance().getSession(), fromSession.getUniqueId());
-			for (SubjectArea subjectArea : fromSubjectAreas){
-				mergeInstructionalOfferingsForASubjectAreaToSession(subjectArea, fromSession,
+			TreeSet<SubjectArea> fSa = new TreeSet<SubjectArea>();
+			fSa.addAll(fromSubjectAreas);
+			ArrayList<Long> subjectAreaIds = new ArrayList<Long>();
+			for (SubjectArea sa : fSa) {
+				subjectAreaIds.add(sa.getUniqueId());
+			}
+			Long fromSessionId = fromSession.getUniqueId();
+			//TODO set fromSessionId and get from Session and subject area
+			for (Long subjectAreaId : subjectAreaIds){
+				resetHibSession(null);
+				SubjectArea sa = SubjectAreaDAO.getInstance().get(subjectAreaId);
+				Session fs = SessionDAO.getInstance().get(fromSessionId);
+				mergeInstructionalOfferingsForASubjectAreaToSession(sa, fs,
 						mergeWaitListsProhibitedOverrides, isClassMerge, 
 						isSubpartTimePrefMerge, isSubpartLocationPrefMerge, isClassPrefsPushUp, distributionPrefMode, cancelledClassAction, prefix);
 			}
@@ -3248,7 +3414,6 @@ public class AcademicSessionMerge {
 			String prefix) {
 		SubjectAreaDAO sDao = SubjectAreaDAO.getInstance();
 		List<SubjectArea> subjects = sDao.findBySession(sDao.getSession(), fromSession.getUniqueId());
-		sDao.getSession().refresh(iMergedSession);
 		
 		if (iMergedSession.getSubjectAreas() != null) {
 			for (SubjectArea subjectArea : subjects){
@@ -3262,7 +3427,6 @@ public class AcademicSessionMerge {
 		iLog.info("Rolling forward class instructors for:  " + subjectAreaAbbreviation);
 		Class_DAO clsDao = new Class_DAO();
 		org.hibernate.Session hibSession = clsDao.getSession();
-		hibSession.clear();
 		List<Class_> classes = Class_.findAllForControllingSubjectArea(subjectAreaAbbreviation, iMergedSession.getUniqueId(), hibSession);
 		if (classes != null && !classes.isEmpty()){
 			Class_ toClass = null;
@@ -3292,22 +3456,57 @@ public class AcademicSessionMerge {
 									toClassInstr.setUniqueId(null);
 									toClass.addToClassInstructors(toClassInstr);
 									toDeptInstr.addToClasses(toClassInstr);
-									hibSession.evict(fromClassInstr);
 								}
 							}
-							hibSession.evict(fromClass);
 							Transaction t = hibSession.beginTransaction();
 							hibSession.merge(toClass);
 							t.commit();
-						} else {
-							hibSession.evict(fromClass);
-						}
+						} 
 					}
 				}
-				hibSession.evict(toClass);
 			}	
 		}
 	}
 
+	private void initDbColumnLengths() {
+		if (dbColumnLengths.isEmpty()) {
+			Metadata metaData = HibernateUtil.getHibernateContext().getMetadata() ;		        
+			List<PersistentClass> persistentClasses = new ArrayList<PersistentClass>(metaData.getEntityBindings());
+			for (PersistentClass pc : persistentClasses) {
+				String cn = pc.getClassName();
+				for (Property property : pc.getProperties()) {
+					if (property.isBasicPropertyAccessor() && property.isUpdateable()) {
+						String pn = property.getName();
+						if (property.getColumns() != null) {
+							for (org.hibernate.mapping.Column c : property.getColumns()) {
+								long length = c.getLength();
+								HashMap<String, Long> columnLengths = null;
+								if (dbColumnLengths.get(cn) == null) {
+									dbColumnLengths.put(cn, new HashMap<String, Long>());
+								} 
+								columnLengths = dbColumnLengths.get(cn);
+								columnLengths.put(pn, length);	
+								break;							
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+		
+	private int getColumnLength(String className, String propertyName) {
+		HashMap<String, Long> columnLengths = dbColumnLengths.get(className);
+		int length = -1;
+		if (columnLengths != null) {
+			length = columnLengths.get(propertyName).intValue();
+		}	    
+	    return length;
+	}
+
+	private boolean isNewStringOfValidLength(String prefix, String prefixSeparator, String currentString, String className, String propertyName) {
+		return currentString != null && prefix != null && prefixSeparator != null 
+				&& currentString.length() + prefix.length() + prefixSeparator.length() <= getColumnLength(className, propertyName);
+	}
 	
 }
