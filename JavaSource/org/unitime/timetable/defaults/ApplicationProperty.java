@@ -2143,42 +2143,42 @@ public enum ApplicationProperty {
 	@Description("Help: FAQ page")
 	HelpFAQ("tmtbl.help.faq"),
 
-	@DefaultValue("https://docs.google.com/document/d/1bDzKBMEKOFYN_aBwzA6E4PAsBOGV7Tx-A3i_kuMae6U")
+	@DefaultValue("https://help.unitime.org/manuals/events")
 	@Description("Manuals: event management manual")
 	ManualEvents("tmtbl.help.manual.events"),
 	
-	@DefaultValue("https://docs.google.com/document/d/1Aye5LrLiAcTBR7aNOJO6laYg7-eEDlkfd5s0EW3jFZ4")
+	@DefaultValue("https://help.unitime.org/manuals/event-administration")
 	@Description("Manuals: event administration manual")
 	ManualEventsAdmin("tmtbl.help.manual.events_admin"),
 
-	@DefaultValue("https://docs.google.com/document/d/1rjS_6ebwegSTcN5Iw57qui5CHG8_6TWnk8MCwBwAt58")
+	@DefaultValue("https://help.unitime.org/manuals/courses-entry")
 	@Description("Manuals: course timetabling data entry manual")
 	ManualCourseDataEntry("tmtbl.help.manual.input_data"),
 
-	@DefaultValue("https://docs.google.com/document/d/1NZmKnmrjM2Tqg7dO18cWcMIe_GrtilQtKw6d1WGWBtY")
+	@DefaultValue("https://help.unitime.org/manuals/courses-solver")
 	@Description("Manuals: course timetabling solver manual")
 	ManualCourseSolver("tmtbl.help.manual.solver"),
 	
-	@DefaultValue("https://docs.google.com/document/d/1JksFtB9ecIoKpuyY0SDdl3dKnATe8UQAPKlGfBWi2JU")
+	@DefaultValue("https://help.unitime.org/manuals/instructor-scheduling")
 	@Description("Manuals: instructor scheduling manual")
 	ManualInstructorScheduling("tmtbl.help.manual.instructorScheduling"),
 	
-	@DefaultValue("https://docs.google.com/document/d/1iuj9NwrqkiVeJvKn1Sd41qqaVEJGwO79y1KZo1mtwuw")
+	@DefaultValue("https://help.unitime.org/manuals/administration")
 	@Description("Manuals: administrative user manual")
 	ManualAdministration("tmtbl.help.manual.administration"),
 	
-	@DefaultValue("https://docs.google.com/document/d/1OoCI2GZ7-2R_HSuW7slNfN9sp-_guHxRCJaB2asOH7Y")
+	@DefaultValue("https://help.unitime.org/documentation")
 	@Description("Manuals: other UniTime documentation")
 	ManualOtherDocumentation("tmtbl.help.manual.other"),
 	
-	@DefaultValue("https://docs.google.com/document/d/1QTCKwLhU62yGtr6XlW_XM68q3hgohxLpwWXdyajr30g")
+	@DefaultValue("https://help.unitime.org/manuals/scheduling-assistant")
 	@Description("Manuals: Student Scheduling Asisstant user manual")
 	ManualSchedulingAssistant("tmtbl.help.manual.schedulingAssistant"),
 	
 	@Description("Manuals: Student Course Requests user manual")
 	ManualCourseRequests("tmtbl.help.manual.courseRequests"),
 	
-	@DefaultValue("https://docs.google.com/document/d/1ap13URaw7UVT0FN9NZtgSROEKoS-V7S1uq0214Sh43M")
+	@DefaultValue("https://help.unitime.org/manuals/scheduling-dashboard")
 	@Description("Manuals: Student Scheduling Dashboard user manual")
 	ManualSchedulinDashboard("tmtbl.help.manual.schedulingDashboard"),
 
