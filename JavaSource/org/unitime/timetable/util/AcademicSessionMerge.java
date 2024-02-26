@@ -91,7 +91,6 @@ import org.unitime.timetable.model.StandardEventNoteDepartment;
 import org.unitime.timetable.model.StandardEventNoteSession;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.model.TimePattern.TimePatternType;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
@@ -791,6 +790,7 @@ public class AcademicSessionMerge {
 				iCampusRoomFeatureType = new RoomFeatureType();
 				iCampusRoomFeatureType.setReference("campus");
 				iCampusRoomFeatureType.setLabel(MESSAGES.labelCampus());
+				iCampusRoomFeatureType.setShowInInstructorSurvey(false);
 				iCampusRoomFeatureType.setShowInEventManagement(true);
 				rftDao.getSession().persist(iCampusRoomFeatureType);
 			}
