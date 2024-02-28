@@ -29,6 +29,30 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Student Solver Reports: Export CSV</name>
+			<description>
+				<line>Corrected permission checking for the published student scheduling solver.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Technology Upgrade</name>
+			<description>
+				<line>Hibernate upgraded to version 6.4 (from 6.2).
+					<line>Please note that in HQL, = null or != null no longer works (use is null or is not null instead).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.110</version>
+	<release-date>Tue, 27 Feb 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructor Unavailability: Daylight Saving Dates</name>
@@ -46,7 +70,7 @@
 			<description>
 				<line>When a class needs two or more rooms, added an ability to set the class as requiring split attendance.</line>
 				<line>When split attendance is set for the class, the class is expected to be split among the assigned rooms (the total room capacity must meet the class limit times room ratio).</line>
-				<line>When split attendance is not set for the class (which is the default), each room must be big enough to fit the class.</line>
+				<line>When split attendance is not set for the class (which is the default), each room must be big enough to fit the class.</line>
 				<line>Split Attendance can be set on the Instructional Offering Configuration page (all classes of a subpart) or the Multiple Class Setup page (individual classes).</line>
 			</description>
 		</item>
@@ -58,8 +82,14 @@
 				<line>Room-related preferences can be only defined on the class or the scheduling subpart level, for rooms, room groups, room features, and buildings.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Solution Commit</name>
+			<description>
+				<line>Solution commit made a little faster by loading the event date mappings only once.</line>
+			</description>
+		</item>
 	</category>
-	<category>
+	<category>	
 		<title>Student Scheduling</title>
 		<item>
 			<name>Student Scheduling Assistant / Course Requests: Access Control</name>
@@ -67,20 +97,14 @@
 				<line>Added an ability to limit how many users can use the page (Scheduling Assistant and/or Course Requests) at the same time.</line>
 				<line>Automatically leave the page after a given time of inactivity (showing a warning first).</line>
 				<line>Parameters for Scheduling Assistant:
-					<line>unitime.accessCotrol.sectioning.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
-					<line>unitime.accessCotrol.sectioning.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
+					<line>unitime.accessControl.sectioning.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
+					<line>unitime.accessControl.sectioning.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
 				</line>
 				<line>Parameters for Course Requests:
-					<line>unitime.accessCotrol.requests.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
-					<line>unitime.accessCotrol.requests.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
+					<line>unitime.accessControl.requests.maxActiveUsers .. Maximal number of users using the page at the same time (not set or zero for disabled).</line>
+					<line>unitime.accessControl.requests.activeLimitInMinutes .. Number of minutes of inactivity for the user to get the Inactive Warning (defaults to 15 minutes, set to zero to disable).</line>
 				</line>
 				<line>When the Inactive Warning shows, the user has a minute to dismiss the warning before the page is exited automatically.</line>
-			</description>
-		</item>
-		<item>
-			<name>Course Timetabling: Solution Commit</name>
-			<description>
-				<line>Solution commit made a little faster by loading the event date mappings only once.</line>
 			</description>
 		</item>
 		<item>
@@ -103,15 +127,15 @@
 				<line>They are also used as unavailabilities: the solver would not assign a class in the current academic session to a time that conflicts with a class of some other academic session that the student has.</line>
 				<line>Unless the class is of scheduling subpart that allows for overlaps, in which case the overlapping time is minimized instead.</line>
 				<line>This feature is not enabled by default, to enable it set the following properties:
-					<line>Batch student scheduling: set the solver parameter Load.IncludeUnavailabilitiesFromOtherSessions to true.</line>
+					<line>Batch student scheduling: set the solver parameter Load.IncludeUnavailabilitiesFromOtherSessions to true.</line>
 					<line>Online student scheduling: there are two options, 
-						<line>the unavailable times are either loaded from the database (when General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase is true),</line>
+						<line>the unavailable times are either loaded from the database (when General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase is true),</line>
 						<line>or from the other online student scheduling solver servers (when General.CheckUnavailabilitiesFromOtherSessions is true).</line>
 					</line>
 				</line>
 			</description>
 		</item>
-	</category>
+	</category>	
 	<category>
 		<title>Event Management</title>
 		<item>
@@ -123,7 +147,8 @@
 				<line>Event Statusess and Add/Edit Room pages can now edit event emails of an individual room.</line>
 			</description>
 		</item>
-	</category>	<category>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Academic Session Export</name>
@@ -213,14 +238,6 @@
 			<name>Test HQL, Reports: Improved Error Handling</name>
 			<description>
 				<line>When the provided HQL is incorrect, display a more meaningful error message.</line>
-			</description>
-		</item>
-		<item>
-			<name>Technology Upgrade</name>
-			<description>
-				<line>Hibernate upgraded to version 6.4.1 (from 6.2.14).
-					<line>Please note that in HQL, = null or != null no longer works (use is null or is not null instead).</line>
-				</line>
 			</description>
 		</item>
 	</category>
