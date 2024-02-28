@@ -29,6 +29,19 @@
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Student Solver Reports: Export CSV</name>
+			<description>
+				<line>Corrected permission checking for the published student scheduling solver.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.7.109</version>
+	<release-date>Fri, 26 Jan 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructor Unavailability: Daylight Saving Dates</name>

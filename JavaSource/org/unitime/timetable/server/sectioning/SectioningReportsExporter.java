@@ -95,7 +95,8 @@ public class SectioningReportsExporter implements Exporter {
 		SessionContext context = helper.getSessionContext();
 		DataProperties config = null;
 		if (online == null) {
-			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentScheduling);
+			if (!context.hasPermission(Right.StudentSectioningSolverReports))
+				context.checkPermission(Right.StudentSectioningSolver);
 			
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver("PUBLISHED_" + sessionId, sessionId);
 			if (solver == null)
@@ -125,7 +126,8 @@ public class SectioningReportsExporter implements Exporter {
 			
 			csv = solver.getReport(parameters);
 		} else {
-			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentSectioningSolver);
+			if (!context.hasPermissionAnyAuthority(sessionId, "Session", Right.StudentSectioningSolverReports))
+				context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentSectioningSolver);
 			
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver();
 			if (solver == null)
