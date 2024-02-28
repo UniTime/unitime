@@ -29,6 +29,19 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Student Solver Reports: Export CSV</name>
+			<description>
+				<line>Corrected permission checking for the published student scheduling solver.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.110</version>
+	<release-date>Tue, 27 Feb 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructor Unavailability: Daylight Saving Dates</name>
@@ -46,7 +59,7 @@
 			<description>
 				<line>When a class needs two or more rooms, added an ability to set the class as requiring split attendance.</line>
 				<line>When split attendance is set for the class, the class is expected to be split among the assigned rooms (the total room capacity must meet the class limit times room ratio).</line>
-				<line>When split attendance is not set for the class (which is the default), each room must be big enough to fit the class.</line>
+				<line>When split attendance is not set for the class (which is the default), each room must be big enough to fit the class.</line>
 				<line>Split Attendance can be set on the Instructional Offering Configuration page (all classes of a subpart) or the Multiple Class Setup page (individual classes).</line>
 			</description>
 		</item>
@@ -103,9 +116,9 @@
 				<line>They are also used as unavailabilities: the solver would not assign a class in the current academic session to a time that conflicts with a class of some other academic session that the student has.</line>
 				<line>Unless the class is of scheduling subpart that allows for overlaps, in which case the overlapping time is minimized instead.</line>
 				<line>This feature is not enabled by default, to enable it set the following properties:
-					<line>Batch student scheduling: set the solver parameter Load.IncludeUnavailabilitiesFromOtherSessions to true.</line>
+					<line>Batch student scheduling: set the solver parameter Load.IncludeUnavailabilitiesFromOtherSessions to true.</line>
 					<line>Online student scheduling: there are two options, 
-						<line>the unavailable times are either loaded from the database (when General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase is true),</line>
+						<line>the unavailable times are either loaded from the database (when General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase is true),</line>
 						<line>or from the other online student scheduling solver servers (when General.CheckUnavailabilitiesFromOtherSessions is true).</line>
 					</line>
 				</line>
