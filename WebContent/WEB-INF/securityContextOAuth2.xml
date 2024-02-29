@@ -40,7 +40,7 @@
 		<form-login login-page="/login.action"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
-		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="/login.action"/>
+		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="${unitime.authentication.oauth2.logout:/login.action}"/>
 		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
@@ -50,6 +50,12 @@
 		<headers>
 		    <frame-options policy="SAMEORIGIN"/>
 		</headers>
+		<oauth2-login
+			user-service-ref="unitimeOAuth2UserService"
+			oidc-user-service-ref="unitimeOidcUserService"
+			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
+			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"
+			/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">

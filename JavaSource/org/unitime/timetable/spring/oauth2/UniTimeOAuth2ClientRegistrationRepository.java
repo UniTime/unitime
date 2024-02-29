@@ -22,6 +22,7 @@ package org.unitime.timetable.spring.oauth2;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.defaults.ApplicationProperty;
 
@@ -65,6 +66,21 @@ public class UniTimeOAuth2ClientRegistrationRepository implements ClientRegistra
 					.clientSecret(ApplicationProperty.AuthenticationOAuht2ClientSecret.value())
 					.scope(ApplicationProperty.AuthenticationOAuht2Scope.value().split(","))
 					.registrationId(registrationId)
+					.build();
+		}
+		if ("azure".equals(registrationId)) {
+			String tennantId = ApplicationProperty.AuthenticationOAuht2TenantId.value(); 
+			return ClientRegistration.withRegistrationId(registrationId)
+					.clientId(ApplicationProperty.AuthenticationOAuht2ClientId.value())
+					.clientSecret(ApplicationProperty.AuthenticationOAuht2ClientSecret.value())
+					.scope(ApplicationProperty.AuthenticationOAuht2Scope.value().split(","))
+					.redirectUri("{baseUrl}/{action}/oauth2/code/{registrationId}")
+					.authorizationUri("https://login.microsoftonline.com/" + tennantId + "/oauth2/v2.0/authorize")
+					.tokenUri("https://login.microsoftonline.com/" + tennantId + "/oauth2/v2.0/token")
+					.jwkSetUri("https://login.microsoftonline.com/" + tennantId + "/discovery/v2.0/keys")
+					.userInfoUri("https://graph.microsoft.com/oidc/userinfo")
+					.userNameAttributeName(ApplicationProperty.AuthenticationOAuht2NameAttribute.value())
+					.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 					.build();
 		}
 		
