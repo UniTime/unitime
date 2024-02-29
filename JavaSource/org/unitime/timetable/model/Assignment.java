@@ -250,7 +250,6 @@ public class Assignment extends BaseAssignment implements ClassAssignmentProxy.A
 		return iTimeLocation;
 	}
 	
-	@Transient
 	public TimeLocation getTimeLocation(int datePatternShiftDays) {
 		if (datePatternShiftDays == 0) return getTimeLocation();
 		DatePattern datePattern = getDatePattern();
@@ -317,7 +316,6 @@ public class Assignment extends BaseAssignment implements ClassAssignmentProxy.A
 		return iPlacement;
 	}
 	
-	@Transient
 	public Placement getPlacement(int datePatternShiftDays) {
 		if (datePatternShiftDays == 0) return getPlacement();
 		TimeLocation timeLocation = getTimeLocation(datePatternShiftDays);

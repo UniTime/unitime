@@ -789,7 +789,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	    	SchedulingSubpart ss = (SchedulingSubpart) prefGroup;
 	    	boolean unlimited = ss.getInstrOfferingConfig().isUnlimitedEnrollment().booleanValue();
 	    	if (!unlimited) {
-		    	int limit = (ss.getLimit()==null?0:ss.getLimit().intValue());
+	    		int limit = ss.getLimit();
 		    	int maxExpCap = ss.getMaxExpectedCapacity(); 
 		    	if (limit==maxExpCap)
 		    		addText(cell, String.valueOf(limit), false, false, Element.ALIGN_RIGHT, color, true);

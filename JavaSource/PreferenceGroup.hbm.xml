@@ -116,11 +116,6 @@
                 update="true"
                 foreign-key="fk_sched_subpart_itype"/>
 
-            <property
-                name="limit"
-                type="java.lang.Integer"
-                formula=" ( select sum(crs.expected_capacity) from %SCHEMA%.class_ crs where crs.subpart_id = uniqueid ) "/>
-
             <set
                 name="childSubparts"
                 inverse="true"
