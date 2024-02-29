@@ -2386,7 +2386,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					ss.setItype(itype);
 					ss.setSchedulingSubpartSuffixCache(suffix);
 					ss.setInstrOfferingConfig(ioc);
-					ss.setCourseName(ioc.getInstructionalOffering().getCourseName());
 					ioc.addToschedulingSubparts(ss);
 					if(parentSubpart != null){
 						ss.setParentSubpart(parentSubpart);

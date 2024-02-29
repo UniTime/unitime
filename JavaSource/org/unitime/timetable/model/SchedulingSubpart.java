@@ -71,12 +71,10 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	/*
 	@Transient
 	public String getCourseName(){
 		return(this.getInstrOfferingConfig().getCourseName());
 	}
-	*/
 	
 	@Transient
 	public String getCourseNameWithTitle(){
@@ -761,7 +759,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (deleted) hibSession.merge(this);
     }
     
-    @Transient
+	@Transient
     public Integer getLimit() {
     	int ret = 0;
     	for (Class_ c: getClasses()) {
