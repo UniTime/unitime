@@ -3590,6 +3590,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("You have been successfully logged out of UniTime, click <a href='logout'>here</a> to log out of all other applications as well.")
 	String casLoggedOut();
 	
+	@DefaultMessage("You have been successfully logged out of UniTime, click <a href='login.action'>here</a> to log in again.")
+	String opLoggedOut();
+	
 	@DefaultMessage("System Messages")
 	String sectSystemMessages();
 	

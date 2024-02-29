@@ -82,6 +82,8 @@ public class MainAction extends UniTimeAction<BlankForm>{
 			message = getSystemMessage();
 		if ("cas-logout".equals(op)) {
 			message = MSG.casLoggedOut();
+		} else  if ("logout".equals(op)) {
+			message = MSG.opLoggedOut();
 		}
 		return "main";
 	}
