@@ -761,15 +761,22 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	if (deleted) hibSession.merge(this);
     }
     
+    @Transient
+    public Integer getLimit() {
+    	int ret = 0;
+    	for (Class_ c: getClasses()) {
+    		if (c.getExpectedCapacity() != null)
+    			ret += c.getExpectedCapacity();
+    	}
+    	return ret;
+    }
+    
 	@Transient
     public int getMaxExpectedCapacity() {
     	int ret = 0;
-    	for (Iterator i=getClasses().iterator();i.hasNext();) {
-    		Class_ c = (Class_)i.next();
-    		if (c.getMaxExpectedCapacity()!=null)
-    			ret += c.getMaxExpectedCapacity().intValue();
-    		else if (c.getExpectedCapacity()!=null) 
-    			ret += c.getExpectedCapacity().intValue();
+    	for (Class_ c: getClasses()) {
+    		if (c.getMaxExpectedCapacity() != null)
+    			ret += c.getMaxExpectedCapacity();
     	}
     	return ret;
     }

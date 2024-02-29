@@ -28,6 +28,16 @@
 <release>
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
+		<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Scheduling Subpart Limit</name>
+			<description>
+				<line>Do not pre-compute scheduling subpart limits.</line>
+				<line>This fixes an issue of showing an incorrect limit after a class limit change or when a class has been added or removed from a subpart.</line>
+			</description>
+		</item>
+	</category>
 	<category>
 		<title>Student Scheduling</title>
 		<item>

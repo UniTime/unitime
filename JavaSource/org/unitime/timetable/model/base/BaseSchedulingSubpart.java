@@ -56,7 +56,6 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	private Boolean iStudentAllowOverlap;
 	private String iSchedulingSubpartSuffixCache;
 	private String iCourseName;
-	private Integer iLimit;
 	private Long iUniqueIdRolledForwardFrom;
 
 	private ItypeDesc iItype;
@@ -98,10 +97,6 @@ public abstract class BaseSchedulingSubpart extends PreferenceGroup implements S
 	@Formula("(select concat( concat( sa.subject_area_abbreviation , ' ') , co.course_nbr) from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid and co.is_control = %TRUE% and co.instr_offr_id=io.uniqueid and co.subject_area_id=sa.uniqueid)")
 	public String getCourseName() { return iCourseName; }
 	public void setCourseName(String courseName) { iCourseName = courseName; }
-
-	@Formula(" ( select sum(crs.expected_capacity) from %SCHEMA%.class_ crs where crs.subpart_id = uniqueid ) ")
-	public Integer getLimit() { return iLimit; }
-	public void setLimit(Integer limit) { iLimit = limit; }
 
 	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
