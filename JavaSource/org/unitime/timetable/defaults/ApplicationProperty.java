@@ -3484,7 +3484,7 @@ public enum ApplicationProperty {
 	@Description("OAuht2 Authentication: client registration id")
 	@DefaultValue("google")
 	@Since(4.7)
-	@Values({"google", "facebook", "github", "okta"})
+	@Values({"google", "facebook", "github", "okta", "azure"})
 	AuthenticationOAuht2Provider("unitime.authentication.oauth2.provider"),
 	
 	@Description("OAuht2 Authentication: client registration id")
@@ -3506,6 +3506,10 @@ public enum ApplicationProperty {
 	@DefaultValue("Log in using Google.")
 	@Since(4.7)
 	AuthenticationOAuht2LoginMessage("unitime.authentication.oauth2.login-message"),
+	
+	@Description("OAuht2 Authentication: tenant id (Azure AD only)")
+	@Since(4.7)
+	AuthenticationOAuht2TenantId("unitime.authentication.oauth2.tenant-id"),
 	;
 
 	String iKey;
