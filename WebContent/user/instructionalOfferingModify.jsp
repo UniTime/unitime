@@ -129,9 +129,9 @@ function checkNumberOfRooms(nbrRooms, id) {
 <TR><TD valign="middle" colspan="2"><tt:section-header>
 	<tt:section-title><s:property value="form.instrOfferingName"/></tt:section-title>
 	<s:submit name='op' value='%{#msg.actionUpdateMultipleClassSetup()}'
-		accesskey='%{#msg.accessUpdateMultipleClassSetup()}' title='%{#msg.titleUpdateMultipleClassSetup(#msg.accessUpdateMultipleClassSetup())}'/>
+		accesskey='%{#msg.accessUpdateMultipleClassSetup()}' title='%{#msg.titleUpdateMultipleClassSetup(#msg.accessUpdateMultipleClassSetup())}' disabled="true"/>
 	<s:submit name='op' value='%{#msg.actionBackToIODetail()}'
-		accesskey='%{#msg.accessBackToIODetail()}' title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}'/>
+		accesskey='%{#msg.accessBackToIODetail()}' title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}' disabled="true"/>
 </tt:section-header></TD></TR>
 <s:if test="!fieldErrors.isEmpty()"><TR><TD colspan="2" align="left" class="errorTable">
 	<div class='errorHeader'><loc:message name="formValidationErrors"/></div><s:fielderror escape="false"/>
@@ -599,9 +599,14 @@ function checkNumberOfRooms(nbrRooms, id) {
 <TR><TD colspan="2" valign="middle"><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD></TR>
 <TR><TD colspan="2" align="right">
 	<s:submit name='op' value='%{#msg.actionUpdateMultipleClassSetup()}'
-		accesskey='%{#msg.accessUpdateMultipleClassSetup()}' title='%{#msg.titleUpdateMultipleClassSetup(#msg.accessUpdateMultipleClassSetup())}'/>
+		accesskey='%{#msg.accessUpdateMultipleClassSetup()}' title='%{#msg.titleUpdateMultipleClassSetup(#msg.accessUpdateMultipleClassSetup())}' disabled="true"/>
 	<s:submit name='op' value='%{#msg.actionBackToIODetail()}'
-		accesskey='%{#msg.accessBackToIODetail()}' title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}'/>
+		accesskey='%{#msg.accessBackToIODetail()}' title='%{#msg.titleBackToIODetail(#msg.accessBackToIODetail())}' disabled="true"/>
 </TD></TR></TABLE>
 </s:form>
+<script type="text/javascript">
+	var buttons = document.getElementsByName('op');
+	for (var i = 0; i < buttons.length; i++)
+		buttons[i].disabled = false;
+</script>
 </loc:bundle>
