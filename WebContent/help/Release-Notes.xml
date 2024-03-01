@@ -37,6 +37,13 @@
 				<line>This fixes an issue of showing an incorrect limit after a class limit change or when a class has been added or removed from a subpart.</line>
 			</description>
 		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Prevent premature submission of the page by only enabling all the submit buttons after the page is fully loaded.</line>
+				<line>This fixes a problem when some classes are deleted because the page is submitted for a massive course configuration while it is still being loaded.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
