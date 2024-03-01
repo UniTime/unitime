@@ -31,10 +31,14 @@
 		<category>
 		<title>Course Timetabling</title>
 		<item>
-			<name>Scheduling Subpart Limit</name>
+			<name>Scheduling Subparts: Limit, Course Name</name>
 			<description>
-				<line>Do not pre-compute scheduling subpart limits.</line>
+				<line>Do not pre-compute scheduling subpart limits and course names.</line>
 				<line>This fixes an issue of showing an incorrect limit after a class limit change or when a class has been added or removed from a subpart.</line>
+				<line>The drawback is that these fields are no longer available in the reports, to fix this replace
+					<line>ss.limit with (select sum(c.expectedCapacity) from Class_ c where c.schedulingSubpart = s)</line>
+					<line>ss.courseName with (select co.subjectAreaAbbv || ' ' || co.courseNbr from CourseOffering co where co.isControl = true and co.instructionalOffering = ss.instrOfferingConfig.instructionalOffering)</line>
+				</line>
 			</description>
 		</item>
 		<item>
@@ -51,9 +55,7 @@
 					<line>It does not save anve time and just complicates the query.</line>
 					<line>This is to avoid showing old data, e.g., when an instructional offering configuration is updated.</line>
 				</line>
-				<line>The drawback is that this fields are no longer available in the reports, to fix this replace
-					<line>ss.limit with (select sum(c.expectedDemand) from Class_ c where c.schedulingSubpart = s)</line>
-					<line>ss.courseName with (select co.subjectAreaAbbv || ' ' || co.courseNumber from CourseOffering co where co.isControl = true and co.instructionalOffering = ss.instrOfferingConfig.instructionalOffering)</line>
+				<line>The drawback is that these fields are no longer available in the reports, to fix this replace
 					<line>io.limit with (select sum(ioc.limit) from InstrOfferingConfig ioc where ioc.instructionalOffering = io)</line>
 					<line>io.demand with (select sum(co.demand + (case when cox is null then 0 else cox.demand end)) from CourseOffering co left outer join co.demandOffering cox where co.instructionalOffering = io)</line>
 				</line>
