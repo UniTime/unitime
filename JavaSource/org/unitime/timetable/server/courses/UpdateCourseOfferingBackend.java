@@ -445,7 +445,6 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
 		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(subjArea.getSession());
 		    io.generateInstrOfferingPermId();
-		    io.setLimit(Integer.valueOf(0));
 		    io.setWaitlistMode(courseOfferingInterface.getWaitList());
 
 		    courseOffering.setInstructionalOffering(io);

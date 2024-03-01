@@ -257,8 +257,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                sessionContext.checkPermission(co1, Right.CourseOfferingDeleteFromCrossList);
 	                
 	                // Copy attributes of old instr offering - make not offered
-	                io1.setDemand(io.getDemand());
-	                io1.setLimit(io.getLimit());
 	                io1.setNotOffered(Boolean.valueOf(true));
 	                io1.setSession(io.getSession());
 	                io1.setByReservationOnly(io.getByReservationOnly());

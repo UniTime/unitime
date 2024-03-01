@@ -213,7 +213,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(acadSession);
 		    io.generateInstrOfferingPermId();
-		    io.setLimit(Integer.valueOf(0));
 		    io.setByReservationOnly(false);
 		    cdao.getSession().persist(io);
 		    idao.getSession().refresh(io);

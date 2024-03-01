@@ -822,4 +822,27 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     public Boolean isReschedule() {
     	return getWaitListMode().isReschedule();
     }
+
+	@Transient
+    public Integer getLimit() {
+		if (getInstrOfferingConfigs() == null || getInstrOfferingConfigs().isEmpty()) return 0;
+    	int ret = 0;
+    	for (InstrOfferingConfig config: getInstrOfferingConfigs()) {
+    		if (!config.isUnlimitedEnrollment())
+    			ret += config.getLimit();
+    	}
+    	return ret;
+    }
+
+	@Transient
+    public Integer getDemand() {
+		if (getCourseOfferings() == null || getCourseOfferings().isEmpty()) return 0;
+		int ret = 0;
+		for (CourseOffering co: getCourseOfferings()) {
+			ret += co.getDemand();
+			if (co.getDemandOffering() != null)
+				ret += co.getDemandOffering().getDemand();
+		}
+		return ret;
+    }
 }
