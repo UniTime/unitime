@@ -556,7 +556,6 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 		    io.setNotOffered(Boolean.valueOf(false));
 		    io.setSession(subjArea.getSession());
 		    io.generateInstrOfferingPermId();
-		    io.setLimit(Integer.valueOf(0));
 		    
 		    co.setInstructionalOffering(io);
 		    io.addToCourseOfferings(co);

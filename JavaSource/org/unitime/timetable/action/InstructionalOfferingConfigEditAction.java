@@ -730,8 +730,6 @@ public class InstructionalOfferingConfigEditAction extends UniTimeAction<Instruc
 	        io.removeConfiguration(ioc);
 
 	        io.computeLabels(hibSession);
-	        if (!ioc.isUnlimitedEnrollment().booleanValue())
-	        	io.setLimit(Integer.valueOf(io.getLimit().intValue() - ioc.getLimit().intValue()));
 
             ChangeLog.addChange(
                     hibSession,
