@@ -28,6 +28,7 @@ import org.jgroups.Address;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.JDBC_PING;
 import org.jgroups.protocols.PingData;
+import org.jgroups.util.ByteArray;
 import org.jgroups.util.Responses;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.model.ClusterDiscovery;
@@ -117,12 +118,14 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
 					"from ClusterDiscovery where clusterName = :clustername", ClusterDiscovery.class)
 				.setParameter("clustername", clustername).list()) {
 				try {
-					PingData data=deserialize(cd.getPingData());
-	                if(data == null || (members != null && !members.contains(data.getAddress())))
-	                    continue;
-	                responses.addResponse(data, false);
-	                if(local_addr != null && !local_addr.equals(data.getAddress()))
-	                    addDiscoveryResponseToCaches(data.getAddress(), data.getLogicalName(), data.getPhysicalAddr());
+					List<PingData> data=deserialize(cd.getPingData(), 0, cd.getPingData().length);
+					if (data == null || data.isEmpty()) continue;
+					for (PingData pd: data) {
+						if (members != null && !members.contains(pd.getAddress())) continue;
+						responses.addResponse(pd, false);
+						if(local_addr != null && !local_addr.equals(pd.getAddress()))
+							addDiscoveryResponseToCaches(pd.getAddress(), pd.getLogicalName(), pd.getPhysicalAddr());
+					}
 				} catch(Exception e) {
                     log.error("%s: failed deserializing row %s: %s; removing it from the table", local_addr, cd.getOwnAddress(), e);
                     hibSession.remove(cd);
@@ -141,14 +144,14 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
 	protected synchronized void writeToDB(PingData data, String clustername, boolean overwrite) {
 		if (!HibernateUtil.isConfigured()) return;
 		final String ownAddress = addressAsString(data.getAddress());
-		final byte[] serializedPingData = serializeWithoutView(data);
+		final ByteArray serializedPingData = serializeWithoutView(data);
         Session hibSession = HibernateUtil.createNewSession();
         Transaction tx = hibSession.beginTransaction();
         try {
         	ClusterDiscovery cd = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(ownAddress, cluster_name), hibSession);
         	if (cd != null) {
         		if (overwrite) {
-        			cd.setPingData(serializedPingData);
+        			cd.setPingData(serializedPingData.getBytes());
         			cd.setTimeStamp(new Date());
         			hibSession.merge(cd);
         		}
@@ -156,7 +159,7 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
         		cd = new ClusterDiscovery();
         		cd.setClusterName(clustername);
         		cd.setOwnAddress(ownAddress);
-        		cd.setPingData(serializedPingData);
+        		cd.setPingData(serializedPingData.getBytes());
         		cd.setTimeStamp(new Date());
         		hibSession.persist(cd);
         	}
