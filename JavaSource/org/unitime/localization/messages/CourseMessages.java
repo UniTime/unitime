@@ -5890,6 +5890,12 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Interval:")
 	String filterChartInterval();
 	
+	@DefaultMessage("From:")
+	String filterChartFrom();
+	
+	@DefaultMessage("To:")
+	String filterChartTo();
+	
 	@DefaultMessage("Basic Information")
 	String chartModeBasic();
 	
@@ -5913,6 +5919,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Last Month")
 	String chartIntervalLastMonth();
+	
+	@DefaultMessage("Custom")
+	String chartIntervalCustom();
 	
 	@DefaultMessage("Date")
 	String chartBasicDate();
