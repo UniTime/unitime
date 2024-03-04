@@ -38,7 +38,9 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.AccessStatistics;
 import org.unitime.timetable.model.dao.AccessStatisticsDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.IdValue;
 
 /** 
  * @author Tomas Muller
@@ -60,6 +62,9 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 	private Interval iInterval;
 	private DateFormat sDF = new SimpleDateFormat("yyyyMMdd-HHmm");
 	private Date iFrom, iTo;
+	
+	private String iFromDate, iToDate;
+	private Integer iFromSlot, iToSlot;
 	
 	public String getPage() {
 		return iPage == null ? null : iPage.getId();
@@ -84,6 +89,7 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 	}
 	
 	public String getInterval() {
+		if (iFrom != null) return Interval.CUSTOM.getId();
 		return (iInterval == null ? null : iInterval.getId());
 	}
 	
@@ -95,7 +101,7 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 		}
 	}
 	
-	public String getFrom() { return iFrom == null ? null : sDF.format(iFrom); }
+	public String getFrom() {return iFrom == null ? null : sDF.format(iFrom); }
 	public void setFrom(String date) {
 		if (date == null || date.isEmpty())
 			iFrom = null;
@@ -105,6 +111,24 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 			} catch (ParseException e) {
 				iFrom = null;
 			}
+		}
+	}
+	public void setFromDate(String date) { iFromDate = date; }
+	public String getFromDate() {
+		if (iFrom != null) {
+			return Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).format(iFrom);
+		} else {
+			return iFromDate;
+		}
+	}
+	public void setFromSlot(Integer slot) { iFromSlot = slot; }
+	public Integer getFromSlot() {
+		if (iFrom != null) {
+			Calendar c = Calendar.getInstance();
+			c.setTime(iFrom);
+			return c.get(Calendar.HOUR_OF_DAY) * 12 + c.get(Calendar.MINUTE) / 5;
+		} else {
+			return iFromSlot;
 		}
 	}
 	
@@ -120,7 +144,57 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 			}
 		}
 	}
+	public void setToDate(String date) { iToDate = date; }
+	public String getToDate() {
+		if (iTo != null) {
+			return Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).format(iTo);
+		} else {
+			return iToDate;
+		}
+	}
+	public void setToSlot(Integer slot) { iToSlot = slot; }
+	public Integer getToSlot() {
+		if (iTo != null) {
+			Calendar c = Calendar.getInstance();
+			c.setTime(iTo);
+			return c.get(Calendar.HOUR_OF_DAY) * 12 + c.get(Calendar.MINUTE) / 5;
+		} else {
+			return iToSlot;
+		}
+	}
 	
+	public Date getFromDateTime() {
+		if (iFrom != null) return iFrom;
+		if (iFromDate == null || iFromDate.isEmpty()) return null;
+		Calendar c = Calendar.getInstance();
+		try {
+			c.setTime(Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).parse(iFromDate));
+		} catch (ParseException e) {
+			return null;
+		}
+		if (iFromSlot != null) {
+			c.set(Calendar.HOUR_OF_DAY, iFromSlot / 12);
+			c.set(Calendar.MINUTE, 5 * (iFromSlot % 12));
+		}
+		return c.getTime();
+	}
+	
+	public Date getToDateTime() {
+		if (iTo != null) return iTo;
+		if (iToDate == null || iToDate.isEmpty()) return null;
+		Calendar c = Calendar.getInstance();
+		try {
+			c.setTime(Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).parse(iToDate));
+		} catch (ParseException e) {
+			return null;
+		}
+		if (iToSlot != null) {
+			c.set(Calendar.HOUR_OF_DAY, iToSlot / 12);
+			c.set(Calendar.MINUTE, 5 * (iToSlot % 12));
+		} else
+			c.add(Calendar.DAY_OF_YEAR, 1);
+		return c.getTime();
+	}
 	
 	@Override
 	public String execute() {
@@ -137,6 +211,16 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 					"group by host order by host", String.class)
 					.setParameter("page", iPage.name())
 					.setParameter("since", iFrom)
+					.setCacheable(true).list();
+		} else if (iInterval == Interval.CUSTOM) {
+			Date since = getFromDateTime();
+			if (since == null) return null;
+			return AccessStatisticsDAO.getInstance().getSession().createQuery(
+					"select host from AccessStatistics where access > 0 and page = :page " +
+					"and timeStamp > :since " + 
+					"group by host order by host", String.class)
+					.setParameter("page", iPage.name())
+					.setParameter("since", since)
 					.setCacheable(true).list();
 		} else if (iInterval != null) {
 			return AccessStatisticsDAO.getInstance().getSession().createQuery(
@@ -187,6 +271,7 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 		LAST_DAY,
 		LAST_WEEK,
 		LAST_MONTH,
+		CUSTOM,
 		;
 
 		public String getId() { return name(); }
@@ -197,6 +282,7 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 			case LAST_HOUR: return MSG.chartIntervalLastHour();
 			case LAST_WEEK: return MSG.chartIntervalLastWeek();
 			case LAST_MONTH: return MSG.chartIntervalLastMonth();
+			case CUSTOM: return MSG.chartIntervalCustom();
 			default: return name();
 			}
 		}
@@ -242,7 +328,34 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 						.setParameter("to", iTo)
 						.list();
 			}
-		} else if (iInterval != null) {
+		} else if (iInterval == Interval.CUSTOM) {
+			Date from = getFromDateTime();
+			Date to = getToDateTime();
+			if (from != null) {
+				if (to == null) {
+					return AccessStatisticsDAO.getInstance().getSession().createQuery(
+							"from AccessStatistics where access > 0 and host = :host and page = :page and " +
+							"timeStamp >= :from " +
+							"order by timeStamp", AccessStatistics.class)
+							.setParameter("host", host)
+							.setParameter("page", iPage.name())
+							.setParameter("from", from)
+							.list();
+				} else {
+					return AccessStatisticsDAO.getInstance().getSession().createQuery(
+							"from AccessStatistics where access > 0 and host = :host and page = :page and " +
+							"timeStamp >= :from and timeStamp <= :to " +
+							"order by timeStamp", AccessStatistics.class)
+							.setParameter("host", host)
+							.setParameter("page", iPage.name())
+							.setParameter("from", from)
+							.setParameter("to", to)
+							.list();
+				}
+			} else {
+				return null;
+			}
+		} else if (iInterval != null ) {
 			return AccessStatisticsDAO.getInstance().getSession().createQuery(
 					"from AccessStatistics where access > 0 and host = :host and page = :page and " +
 					"timeStamp >= :since " +
@@ -455,5 +568,12 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 			ret += "]";
 			return ret;
 		}
+	}
+	
+	public List<IdValue> getTimes() {
+		List<IdValue> ret = new ArrayList<>();
+		for (int slot = 0; slot <= 288; slot += 3)
+			ret.add(new IdValue((long)slot, Constants.slot2str(slot)));
+		return ret;
 	}
 }
