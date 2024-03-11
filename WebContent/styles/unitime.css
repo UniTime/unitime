@@ -22,6 +22,18 @@
 	box-sizing: border-box;
 }
 
+button {
+	color: #000;
+}
+
+input[type="submit"] {
+	color: #000;
+}
+
+input[type="button"] {
+	color: #000;
+}
+
 .unitime-Body {
 	font-family: sans-serif, verdana, arial;
 	background-color: #FFFFFF;
