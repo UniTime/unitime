@@ -134,7 +134,7 @@ public class AccessControllBackend implements GwtRpcImplementation<PingRequest, 
 		
 		void update(PingRequest request, SessionContext context, long t0) {
 			if (request.getOperation() == Operation.PING) {
-				if (!iAccess) { iGotAccess = t0; iCountedIn = false; }
+				if (!iAccess) { iGotAccess = t0; iCountedIn = false; iFirstUse = t0; }
 				iAccess = true;
 			} else if (request.getOperation() == Operation.LOGOUT) {
 				if (iAccess) iCountedOut = false;
