@@ -49,6 +49,7 @@ import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.criteria.Criterion;
 import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.model.GlobalConstraint;
 import org.cpsolver.ifs.solution.Solution;
 import org.cpsolver.ifs.solver.Solver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -409,6 +410,15 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         		}
             }
         }
+		for (GlobalConstraint constraint: p.variable().getModel().globalConstraints()) {
+			Set<Placement> conflicts = new HashSet<Placement>();
+            constraint.computeConflicts(assignment, p, conflicts);
+            for (Placement conflict: conflicts) {
+        		if (!descriptions.containsKey(conflict.variable().getClassId())) {
+    				descriptions.put(conflict.variable().getClassId(), TimetableSolver.getConstraintName(constraint));
+        		}
+            }
+		}
 	}
 	
 	public static Suggestion computeSuggestion(SuggestionsContext context, TimetableSolver solver, List<SelectedAssignment> assignments, Placement placement) {
