@@ -1054,7 +1054,7 @@ public enum ApplicationProperty {
 	ExaminationTravelTimeCourse("tmtbl.exam.eventConflicts.travelTime.courseEvent"),
 
 	@Type(Boolean.class)
-	@Description("Examinations: use class / course limits to compute examination size instead of the actual enrollment (defaults to false, except of final exams where it is true)")
+	@Description("Examinations: use class / course limits to compute examination size instead of the actual enrollment (defaults to false for final exams and true to midterm exams)")
 	@Parameter("examination type")
 	ExaminationSizeUseLimitInsteadOfEnrollment("tmtbl.exam.useLimit.%"),
 
