@@ -62,10 +62,13 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        	throw new Exception("Given XML file is not a Course Offerings load file.");
 	        }
 
-	        String campus = root.attributeValue("campus");
+			String campus = root.attributeValue("campus");
 	        String year   = root.attributeValue("year");
 	        String term   = root.attributeValue("term");
 	        String created = getOptionalStringAttribute(root, "created");
+
+			beginTransaction();
+
 	        Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
 	        if(session == null) {
 	           	throw new Exception("No session found for the given campus, year, and term.");
@@ -73,7 +76,6 @@ public class LastLikeCourseDemandImport extends BaseImport {
 	        loadSubjectAreas(session.getSessionId());
 	        loadCourseOfferings(session.getSessionId());
 
-			beginTransaction();
 	        if (created != null) {
 				ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_LASTLIKE_DEMAND, ChangeLog.Operation.UPDATE, null, null);
 	        }

@@ -28,6 +28,28 @@
 <release>
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Last-Like Course Demand Import</name>
+			<description>
+				<line>Open transaction before subject areas are loaded.</line>
+				<line>This fixes a Null exception introduced with Hibernate 6.x changes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Technology Upgrade</name>
+			<description>
+				<line>Hibernate upgraded to version 6.4 (from 6.2).
+					<line>Please note that in HQL, = null or != null no longer works (use is null or is not null instead).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.115</version>
+	<release-date>Wed, 13 Mar 2024</release-date>
 		<category>
 		<title>Course Timetabling</title>
 		<item>
@@ -69,17 +91,6 @@
 			<name>Batch Student Solver Reports: Export CSV</name>
 			<description>
 				<line>Corrected permission checking for the published student scheduling solver.</line>
-			</description>
-		</item>
-	</category>
-	<category>
-		<title>Administration</title>
-		<item>
-			<name>Technology Upgrade</name>
-			<description>
-				<line>Hibernate upgraded to version 6.4 (from 6.2).
-					<line>Please note that in HQL, = null or != null no longer works (use is null or is not null instead).</line>
-				</line>
 			</description>
 		</item>
 	</category>
