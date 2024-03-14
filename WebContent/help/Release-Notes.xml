@@ -29,6 +29,21 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Extended Student Conflicts</name>
+			<description>
+				<line>Added an experimental global constraint that does not allow any two classes that the same student can attend to have a conflict.</line>
+				<line>The constraint checks any two classes of different offerings that share at least one student and that the student is allowed to take (not restricted by reservations).
+					<line>Class pairs included in the Ignore Student Conflicts constraints are ignored.</line>
+				</line>
+				<line>Some classes may be excluded by using ExtendedStudentConflicts.IgnoreClasses parameter which may contain a regular expression matching class name(s).</line>
+				<line>To enable this constraint, add org.cpsolver.coursett.constraint.ExtendedStudentConflicts to General.GlobalConstraints
+					(which contains a semicolon separated list of global constraint classes that should be automatically added to the problem)</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Upgrade</name>
