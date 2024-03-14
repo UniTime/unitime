@@ -79,7 +79,7 @@ public class UniTimeOAuth2ClientRegistrationRepository implements ClientRegistra
 					.tokenUri("https://login.microsoftonline.com/" + tennantId + "/oauth2/v2.0/token")
 					.jwkSetUri("https://login.microsoftonline.com/" + tennantId + "/discovery/v2.0/keys")
 					.userInfoUri("https://graph.microsoft.com/oidc/userinfo")
-					.userNameAttributeName(ApplicationProperty.AuthenticationOAuht2NameAttribute.value())
+					.userNameAttributeName("name")
 					.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 					.build();
 		}

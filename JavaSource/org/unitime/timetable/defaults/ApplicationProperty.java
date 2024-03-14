@@ -3466,55 +3466,59 @@ public enum ApplicationProperty {
 
 	@Description("OAuht2 Authentication: user external id attribute, if not set uid translation will take place instead")
 	@DefaultValue("email")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2IdAttribute("unitime.authentication.oauth2.id-attribute"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("OAuht2 Authentication: always translate the id-attribute using the provided external user id translation class (see tmtbl.externalUid.translation property)")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2IdAlwaysTranslate("unitime.authentication.oauth2.id-translate"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("OAuht2 Authentication: trim leading zeros from the user external id")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2IdTrimLeadingZerosFrom("unitime.authentication.oauth2.id-trim"),
 	
 	@Description("OAuht2 Authentication: user full name attribute")
 	@DefaultValue("name")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2NameAttribute("unitime.authentication.oauth2.name-attribute"),
 	
 	@Description("OAuht2 Authentication: client registration id")
 	@DefaultValue("google")
-	@Since(4.7)
+	@Since(4.8)
 	@Values({"google", "facebook", "github", "okta", "azure"})
 	AuthenticationOAuht2Provider("unitime.authentication.oauth2.provider"),
 	
 	@Description("OAuht2 Authentication: client registration id")
-	@Since(4.7)
+	@Since(4.8)
 	@Secret
 	AuthenticationOAuht2ClientId("unitime.authentication.oauth2.client-id"),
 	
 	@Description("OAuht2 Authentication: client secret")
-	@Since(4.7)
+	@Since(4.8)
 	@Secret
 	AuthenticationOAuht2ClientSecret("unitime.authentication.oauth2.client-secret"),
 	
 	@Description("OAuht2 Authentication: scope")
 	@DefaultValue("email,profile")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2Scope("unitime.authentication.oauth2.scope"),
 	
 	@Description("OAuht2 Authentication: login message")
 	@DefaultValue("Log in using Google.")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2LoginMessage("unitime.authentication.oauth2.login-message"),
 	
 	@Description("OAuht2 Authentication: tenant id (Azure AD only)")
-	@Since(4.7)
+	@Since(4.8)
 	AuthenticationOAuht2TenantId("unitime.authentication.oauth2.tenant-id"),
+	
+	@Description("OAuht2 Authentication: URI to query for additional attributes")
+	@Since(4.8)
+	AuthenticationOAuht2AdditionalAttributes("unitime.authentication.oauth2.queryAttributes")
 	;
 
 	String iKey;
