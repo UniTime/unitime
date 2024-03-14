@@ -19,13 +19,25 @@
 */
 package org.unitime.timetable.spring.oauth2;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
@@ -38,6 +50,7 @@ import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 @Service("unitimeOidcUserService")
 public class UniTimeOidcUserService extends OidcUserService {
 	private ExternalUidTranslation iTranslation = null;
+	private RestOperations restOperations = null;
 	
 	public UniTimeOidcUserService() {
         if (ApplicationProperty.ExternalUserIdTranslation.value()!=null) {
@@ -45,11 +58,30 @@ public class UniTimeOidcUserService extends OidcUserService {
             	iTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperty.ExternalUserIdTranslation.value()).getConstructor().newInstance();
             } catch (Exception e) { Debug.error("Unable to instantiate external uid translation class, "+e.getMessage()); }
         }
+        RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+		this.restOperations = restTemplate;
 	}
 	
 	@Override
 	public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
 		OidcUser user = super.loadUser(userRequest);
+		
+		Map<String, Object> additionalAttributes = null;
+		if (ApplicationProperty.AuthenticationOAuht2AdditionalAttributes.value() != null && !ApplicationProperty.AuthenticationOAuht2AdditionalAttributes.value().isEmpty()) {
+			try {
+				HttpHeaders headers = new HttpHeaders();
+				headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+				headers.setBearerAuth(userRequest.getAccessToken().getTokenValue());
+				URI uri = new URI(ApplicationProperty.AuthenticationOAuht2AdditionalAttributes.value());
+				RequestEntity<?> request = new RequestEntity(headers, HttpMethod.GET, uri);
+				ResponseEntity<Map<String, Object>> response = restOperations.exchange(request, new ParameterizedTypeReference<Map<String, Object>>() {});
+				additionalAttributes = response.getBody();
+			} catch (Exception e) {
+				Debug.error("Failed to query additional attributes: " + e.getMessage(), e);
+			}
+		}
+			
 		String userId = user.getName();
 		if (ApplicationProperty.AuthenticationOAuht2IdAttribute.value() != null) {
 			String[] keys = ApplicationProperty.AuthenticationOAuht2IdAttribute.value().split(",");
@@ -59,6 +91,8 @@ public class UniTimeOidcUserService extends OidcUserService {
 				String key = keys[i];
 				String tr = translate[i < translate.length ? i : translate.length - 1];
 				Object value = user.getAttribute(key);
+				if (value == null && additionalAttributes != null)
+					value = additionalAttributes.get(key);
 				if (value != null) {
 					if (value instanceof List) {
 						for (Object o: ((List)value)) {
@@ -81,6 +115,8 @@ public class UniTimeOidcUserService extends OidcUserService {
 		String name = null;
 		if (ApplicationProperty.AuthenticationOAuht2NameAttribute.value() != null) {
 			Object value = user.getAttribute(ApplicationProperty.AuthenticationOAuht2NameAttribute.value());
+			if (value == null && additionalAttributes != null)
+				value = additionalAttributes.get(ApplicationProperty.AuthenticationOAuht2NameAttribute.value());
 			if (value != null) {
 				if (value instanceof List) {
 					for (Object o: ((List)value)) {
