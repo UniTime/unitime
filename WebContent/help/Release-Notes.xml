@@ -60,6 +60,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Authentication: OAuth2</name>
+			<description>
+				<line>Added an ability to use OAuth2 authentication.</line>
+				<line>See https://help.unitime.org/OAuth2 for more details.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
