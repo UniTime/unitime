@@ -1031,7 +1031,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasCampus() {
 			if (iCampus == null || iCampus.isEmpty()) return false;
 			for (CodeLabel camp: iCampus)
-				if (!camp.isEmpty() && !camp.getCode().equals(iDefaultCampus)) return true;
+				if (!camp.isEmpty()) return true;
 			return false;
 		}
 		public String getCampus(String delim) { 
