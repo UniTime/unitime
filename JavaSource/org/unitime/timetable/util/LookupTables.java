@@ -29,6 +29,7 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.query.Query;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -70,6 +71,7 @@ import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 
@@ -398,8 +400,17 @@ public class LookupTables {
     	
 		List<CourseOffering> list = new ArrayList<CourseOffering>();
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
-			for (CourseOffering co: subject.getCourseOfferings()) {
-				if (filter == null || filter.accept(co))
+			Iterator<CourseOffering> i = null;
+			try {
+				i = subject.getCourseOfferings().iterator();
+			}
+			catch (ObjectNotFoundException e) {
+			    new _RootDAO().getSession().refresh(subject);
+			    i = subject.getCourseOfferings().iterator();
+			}
+			for (;i.hasNext();) {
+				CourseOffering co = i.next();
+				if (co != null && (filter == null || filter.accept(co)))
 					list.add(co);
 			}
 		}

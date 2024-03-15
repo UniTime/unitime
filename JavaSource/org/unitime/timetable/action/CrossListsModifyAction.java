@@ -236,7 +236,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
         Session hibSession = idao.getSession();
         hibSession.setHibernateFlushMode(FlushMode.MANUAL);
         Transaction tx = null;
-        HashMap saList = new HashMap();
         List<CurriculumCourse> cc = new ArrayList<CurriculumCourse>();
         List<CourseRequest> courseRequests = new ArrayList<CourseRequest>();
         Map<String, List<AdvisorCourseRequest>> advCourseReqs = new HashMap<String, List<AdvisorCourseRequest>>();
@@ -253,6 +252,7 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                // Create new instructional offering 
 	                InstructionalOffering io1 = new InstructionalOffering();
 	                CourseOffering co1 = cdao.get(origCrs);
+	                SubjectArea sa1 = co1.getSubjectArea();
 	                
 	                sessionContext.checkPermission(co1, Right.CourseOfferingDeleteFromCrossList);
 	                
@@ -306,11 +306,13 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 					        SubjectArea sa = co3.getSubjectArea();
 					        sa.getCourseOfferings().remove(co1);
 			                hibSession.merge(sa);
-			                saList.put(sa.getSubjectAreaAbbreviation(), sa);
 			            }
 			        }
 			        
-			        // Delete old course offering
+			        sa1.getCourseOfferings().remove(co1);
+                    hibSession.merge(sa1);
+                    
+                    // Delete old course offering
 			        io.removeCourseOffering(co1);
 			        
                     Event.deleteFromEvents(hibSession, co1);
@@ -436,7 +438,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 
                         sa2.getCourseOfferings().remove(co2);
 	                    hibSession.merge(sa2);
-		                saList.put(sa2.getSubjectAreaAbbreviation(), sa2);
                         
 	                    // Delete course offering
                         io1.removeCourseOffering(co2);
@@ -461,7 +462,6 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                hibSession.flush();
 	                
 	                hibSession.merge(sa);
-	                saList.put(sa.getSubjectAreaAbbreviation(), sa);
 	                
 	            }            
 	        }
