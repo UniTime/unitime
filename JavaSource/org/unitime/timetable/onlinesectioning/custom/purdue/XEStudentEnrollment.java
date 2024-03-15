@@ -84,7 +84,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.google.gson.JsonSyntaxException;
 
 public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	private static Log sLog = LogFactory.getLog(XEStudentEnrollment.class);
@@ -357,16 +356,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			List<XEInterface.RegisterResponse> current = null;
 			try {
 				current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
-			} catch (IllegalStateException e) {
+			} catch (JsonParseException e) {
+				helper.warn("Failed to read Banner response: " + e.getMessage(), e);
 				try {
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(resource.getResponseEntity().getText());
+					helper.info("Received response: " + resource.getResponseEntity().getText());
 				} catch (Throwable t) {}
-				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.", e);
-			} catch (JsonSyntaxException e) {
-				try {
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(resource.getResponseEntity().getText());
-				} catch (Throwable t) {}
-				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.", e);
+				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.");
 			}
 			helper.getAction().addOptionBuilder().setKey("response").setValue(gson.toJson(current));
 			if (current != null && !current.isEmpty())
@@ -584,16 +579,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			List<XEInterface.RegisterResponse> current = null;
 			try {
 				current = new GsonRepresentation<List<XEInterface.RegisterResponse>>(resource.getResponseEntity(), XEInterface.RegisterResponse.TYPE_LIST).getObject();
-			} catch (IllegalStateException e) {
+			} catch (JsonParseException e) {
+				helper.warn("Failed to read Banner response: " + e.getMessage(), e);
 				try {
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(resource.getResponseEntity().getText());
+					helper.info("Received response: " + resource.getResponseEntity().getText());
 				} catch (Throwable t) {}
-				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.", e);
-			} catch (JsonSyntaxException e) {
-				try {
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(resource.getResponseEntity().getText());
-				} catch (Throwable t) {}
-				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.", e);
+				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.");
 			}
 			helper.getAction().addOptionBuilder().setKey("original").setValue(gson.toJson(current));
 			if (current != null && !current.isEmpty())
@@ -831,16 +822,12 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			XEInterface.RegisterResponse response = null;
 			try {
 				response = new GsonRepresentation<XEInterface.RegisterResponse>(resource.getResponseEntity(), XEInterface.RegisterResponse.class).getObject();
-			} catch (IllegalStateException e) {
+			} catch (JsonParseException e) {
+				helper.warn("Failed to read Banner response: " + e.getMessage(), e);
 				try {
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(resource.getResponseEntity().getText());
+					helper.info("Received response: " + resource.getResponseEntity().getText());
 				} catch (Throwable t) {}
-				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.", e);
-			} catch (JsonSyntaxException e) {
-				try {
-					helper.getAction().addOptionBuilder().setKey("exception").setValue(resource.getResponseEntity().getText());
-				} catch (Throwable t) {}
-				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.", e);
+				throw new SectioningException("Invalid response received from Banner, likely due to a timeout. Please try again. If the problem persists, please contact the admins.");
 			}
 			if (helper.isDebugEnabled())
 				helper.debug("Response: " + gson.toJson(response));
@@ -1465,6 +1452,9 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			}
 			if (exception != null) throw exception;		
 			return (ret.getSectionIds().isEmpty() ? null : ret);
+		} catch (JsonParseException e) { 
+			sectioningRequest.getAction().addMessageBuilder().setText("Banner enrollment failed: " + e.getMessage()).setLevel(OnlineSectioningLog.Message.Level.INFO);
+			throw new SectioningException("Invalid response received from Banner, likely due to a timeout.");
 		} catch (SectioningException e) {
 			sectioningRequest.getAction().addMessageBuilder().setText("Banner enrollment failed: " + e.getMessage()).setLevel(OnlineSectioningLog.Message.Level.INFO);
 			throw e;
