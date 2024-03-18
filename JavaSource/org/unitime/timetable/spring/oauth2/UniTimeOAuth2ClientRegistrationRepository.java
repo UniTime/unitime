@@ -74,7 +74,9 @@ public class UniTimeOAuth2ClientRegistrationRepository implements ClientRegistra
 					.clientId(ApplicationProperty.AuthenticationOAuht2ClientId.value())
 					.clientSecret(ApplicationProperty.AuthenticationOAuht2ClientSecret.value())
 					.scope(ApplicationProperty.AuthenticationOAuht2Scope.value().split(","))
-					.redirectUri("{baseUrl}/{action}/oauth2/code/{registrationId}")
+					.redirectUri(ApplicationProperty.UniTimeUrl.value() == null || ApplicationProperty.UniTimeUrl.value().isEmpty() ?
+							"{baseUrl}/{action}/oauth2/code/{registrationId}" :
+							ApplicationProperty.UniTimeUrl.value()+ "/login/oauth2/code/azure")
 					.authorizationUri("https://login.microsoftonline.com/" + tennantId + "/oauth2/v2.0/authorize")
 					.tokenUri("https://login.microsoftonline.com/" + tennantId + "/oauth2/v2.0/token")
 					.jwkSetUri("https://login.microsoftonline.com/" + tennantId + "/discovery/v2.0/keys")
