@@ -3458,6 +3458,11 @@ public enum ApplicationProperty {
 	@Description("Configuration: automatically remove access control statistics after the given number of days")
 	@Since(4.8)
 	LogCleanupAccessStatistics("unitime.cleanup.accessControlStatistics"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Room Edit: prefetch room relations when loading room details/edit page to make the page load faster (disable when having issues with room groups or features not showing up on the edit page)")
+	RoomEditPrefetchRelations("unitime.rooms.prefetchRelations"),
 	;
 
 	String iKey;

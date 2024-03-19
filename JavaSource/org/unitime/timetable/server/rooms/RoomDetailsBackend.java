@@ -112,7 +112,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		
 		Set<String> flags = (options == null ? null : options.get("flag"));
 		boolean fetch = (flags != null && flags.contains("fetch"));
-		if (fetch) {
+		if (fetch && ApplicationProperty.RoomEditPrefetchRelations.isTrue()) {
 			query.addFrom("fetch", "left join fetch l.roomDepts Frd " +
 				" left join fetch l.examTypes Fxt" +
 				" left join fetch l.features Ff" +
