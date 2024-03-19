@@ -52,6 +52,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Scheduling Assistant: Submit Schedule</name>
+			<description>
+				<line>Fixed a possible TransientObjectException when a new course request is added to an existing course demand.</line>
+				<line>The problem seems to be related to the recent Hibernate 6.2.22 update.</line>
+			</description>
+		</item>
+	</category>	
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Upgrade</name>
