@@ -42,6 +42,14 @@
 					(which contains a semicolon separated list of global constraint classes that should be automatically added to the problem)</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Edit: Room Features &amp; Groups</name>
+			<description>
+				<line>Disabled pre-fetching of room relations (such as departments, features, and groups) when loading the data for the Room Edit page.</line>
+				<line>This fixes a potential Hibernate issue that is causing room groups and features to disappear (not get loaded) in some cases that are hard to explain or reproduce.</line>
+				<line>The pre-fetching can be enabled by setting unitime.rooms.prefetchRelations to true.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
