@@ -434,7 +434,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr.setOverrideIntent(null);
 						}
 						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
-						course2request.put(co.getCourseId(), cr);
 						
 						if (failures != null) {
 							String message = null;
@@ -466,6 +465,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						helper.getHibSession().persist(cd);
 					else
 						helper.getHibSession().merge(cd);
+					for (CourseRequest cr: cd.getCourseRequests())
+						course2request.put(cr.getCourseOffering().getUniqueId(), cr);
 					
 					if (helper.isAlternativeCourseEnabled() && cd.getCourseRequests().size() == 1) {
 						CourseOffering alt = cd.getCourseRequests().iterator().next().getCourseOffering().getAlternativeOffering();
@@ -593,7 +594,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 						
 						cr.updatePreferences(r.getRequestedCourse(co.getCourseId()), helper.getHibSession());
-						course2request.put(co.getCourseId(), cr);
 					}
 					while (requests.hasNext()) {
 						CourseRequest cr = requests.next();
@@ -604,6 +604,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						helper.getHibSession().persist(cd);
 					else
 						helper.getHibSession().merge(cd);
+					for (CourseRequest cr: cd.getCourseRequests())
+						course2request.put(cr.getCourseOffering().getUniqueId(), cr);
 					priority++;
 				}
 				
@@ -683,11 +685,11 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 							cr.setOrder(cd.getCourseRequests().size());
 							cr.setCourseOffering(CourseOfferingDAO.getInstance().get(ca.getCourseId(), helper.getHibSession()));
 						}
-						course2request.put(ca.getCourseId(), cr);
 						if (cd.getUniqueId() == null)
 							helper.getHibSession().persist(cd);
 						else
 							helper.getHibSession().merge(cd);
+						course2request.put(ca.getCourseId(), cr);
 						courseDemandId2courseId.put(cd.getUniqueId(), ca.getCourseId());
 						includeRequestInTheReturnMessage = true;
 					} else {
