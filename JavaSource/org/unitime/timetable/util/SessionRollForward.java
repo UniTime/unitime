@@ -280,7 +280,6 @@ public class SessionRollForward {
 		rollLocationsForward(errors, fromSession, toSession);
 		rollTravelTimesForward(errors, fromSession, toSession);
 		rollRoomPartitionsForward(errors, fromSession, toSession);
-		getHibSession().flush();
 	}
 
 	private void rollRoomGroupsForward(RollForwardErrors errors, Session fromSession, Session toSession) {
@@ -299,6 +298,7 @@ public class SessionRollForward {
 				}
 			}
 		}
+		getHibSession().flush();
 	}
 
 	private void rollRoomFeaturesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
@@ -654,6 +654,7 @@ public class SessionRollForward {
 		if (sessionHasExternalRoomList(toSession)){
 			Room.addNewExternalRoomsToSession(toSession);
 		}
+		getHibSession().flush();
 	}
 	
 	private void rollTravelTimesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
@@ -679,6 +680,7 @@ public class SessionRollForward {
 			
 			getHibSession().persist(time);
 		}
+		getHibSession().flush();
 	}
 
 	private void rollRoomPartitionsForward(RollForwardErrors errors, Session fromSession, Session toSession) {
@@ -694,6 +696,7 @@ public class SessionRollForward {
 			
 			getHibSession().merge(room);
 		}
+		getHibSession().flush();
 	}
 
 	private Location findLocation(Long locationId, Long sessionId) {
@@ -762,6 +765,7 @@ public class SessionRollForward {
 				getHibSession().persist(toBldg);
 			}				
 		}
+		getHibSession().flush();
 	}
 
 	public void rollManagersForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
