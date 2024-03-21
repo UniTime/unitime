@@ -45,12 +45,12 @@
 					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
 						<s:submit name='op' value='%{#msg.actionLockIO()}'
 							accesskey='%{#msg.accessLockIO()}' title='%{#msg.titleLockIO(#msg.accessLockIO())}'
-							onclick='%{#msg.jsSubmitLockIO(#form.instrOfferingName)}'/>
+							onclick="%{#msg.jsSubmitLockIO(form.instrOfferingName)}"/>
 					</sec:authorize>
 					 <sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
 					 	<s:submit name='op' value='%{#msg.actionUnlockIO()}'
 							accesskey='%{#msg.accessUnlockIO()}' title='%{#msg.titleUnlockIO(#msg.accessUnlockIO())}'
-							onclick='%{#msg.jsSubmitUnlockIO(#form.instrOfferingName)}'/>
+							onclick='%{#msg.jsSubmitUnlockIO(form.instrOfferingName)}'/>
 					</sec:authorize>
 					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
 						<s:submit name='op' value='%{#msg.actionAddConfiguration()}'
@@ -520,12 +520,12 @@
 					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
 						<s:submit name='op' value='%{#msg.actionLockIO()}'
 							accesskey='%{#msg.accessLockIO()}' title='%{#msg.titleLockIO(#msg.accessLockIO())}'
-							onclick='%{#msg.jsSubmitLockIO(#form.instrOfferingName)}'/>
+							onclick='%{#msg.jsSubmitLockIO(form.instrOfferingName)}'/>
 					</sec:authorize>
 					 <sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
 					 	<s:submit name='op' value='%{#msg.actionUnlockIO()}'
 							accesskey='%{#msg.accessUnlockIO()}' title='%{#msg.titleUnlockIO(#msg.accessUnlockIO())}'
-							onclick='%{#msg.jsSubmitUnlockIO(#form.instrOfferingName)}'/>
+							onclick='%{#msg.jsSubmitUnlockIO(form.instrOfferingName)}'/>
 					</sec:authorize>
 					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
 						<s:submit name='op' value='%{#msg.actionAddConfiguration()}'

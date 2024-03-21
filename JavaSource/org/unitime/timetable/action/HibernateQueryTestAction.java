@@ -142,7 +142,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 					if (value == null || value.isEmpty()) {
 						Map<Long, String> vals = o.values(sessionContext.getUser());
 						if (vals == null || vals.isEmpty()) {
-							addFieldError("form.query", MSG.errorCannotSetQueryParameterNoValues());
+							addFieldError("form.query", MSG.errorCannotSetQueryParameterNoValues(o.name()));
 					        return "displayQueryForm";
 						}
 						value = "";
@@ -185,7 +185,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 						if (value == null || value.isEmpty()) {
 							Map<Long, String> vals = o.values(sessionContext.getUser());
 							if (vals == null || vals.isEmpty()) {
-								addFieldError("form.query", MSG.errorCannotSetQueryParameterNoValues());
+								addFieldError("form.query", MSG.errorCannotSetQueryParameterNoValues(o.name()));
 						        return "displayQueryForm";
 							}
 							value = "";

@@ -177,7 +177,7 @@ public class Localization {
 					value = value.replace("{" + i + ",number," + pattern + "}", number);
 				}
 			}
-			return value;
+			return value.replace("''", "'");
 		}
 		
 		private String[] string2array(String value) {

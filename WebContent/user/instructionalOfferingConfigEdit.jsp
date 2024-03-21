@@ -32,7 +32,7 @@
 
 		function confirmNumClasses(numClasses) {
 			if (numClasses > 100) {
-				if (!confirmDelete("<%=MSG.confirmCreateTooManyClasses()%>".replace("{0}",numClasses))){
+				if (!confirmDelete("<%=MSG.confirmCreateTooManyClasses(999)%>".replace("999",numClasses))){
 			        return(false);
 				}
 			}

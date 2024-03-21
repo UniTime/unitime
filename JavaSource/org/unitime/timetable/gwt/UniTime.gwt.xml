@@ -55,6 +55,7 @@
 	<inherits name='org.unitime.timetable.gwt.command.GwtRpcCommandPattern' />
 	<inherits name='org.unitime.timetable.gwt.client.page.PageWidgets'/>
 	<inherits name='org.unitime.timetable.gwt.client.widgets.Widgets'/>
+	<inherits name='org.unitime.localization.LegacyMessages'/>
 	
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='org.unitime.timetable.gwt.client.Client' />
