@@ -2462,7 +2462,7 @@ public interface CourseMessages extends Messages {
 	String confirmClearAllClassPreferences();
 	
 	@DefaultMessage("This will create {0} classes. Continue?")
-	String confirmCreateTooManyClasses();
+	String confirmCreateTooManyClasses(int number);
 	
 	@DefaultMessage("This operation may result in deletion of existing subparts/classes. Continue?")
 	String confirmMayDeleteSubpartsClasses();
@@ -2563,10 +2563,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Student are allowed to drop from this course up to {0}. week of classes.")
 	String textLastWeekDrop(String wkDrop);
 	
-	@DefaultMessage("displayLoading('Locking {0}...'); return true;")
+	@DefaultMessage("displayLoading(''Locking {0}...''); return true;")
 	String jsSubmitLockIO(String instrOfferingName);
 
-	@DefaultMessage("displayLoading('Unlocking {0}...'); return true;")
+	@DefaultMessage("displayLoading(''Unlocking {0}...''); return true;")
 	String jsSubmitUnlockIO(String instrOfferingName);
 	
 	@DefaultMessage("Course {0} is locked (students are not able to enroll to this course).")
@@ -3336,7 +3336,7 @@ public interface CourseMessages extends Messages {
 	String accessApplyInstructorFilter();
 	
 	@DefaultMessage("Apply Filter (Alt+{0})")
-	String titleApplyInstructorFilter();
+	String titleApplyInstructorFilter(String access);
 	
 	@DefaultMessage("Display:")
 	String propertyFilterDisplay();
@@ -3951,7 +3951,7 @@ public interface CourseMessages extends Messages {
 	String accessCancelSetting();
 	
 	@DefaultMessage("Add Application Setting (Alt + {0})")
-	String titleAddSetting();
+	String titleAddSetting(String access);
 	
 	@DefaultMessage("Save Application Setting (Alt + {0})")
 	String titleSaveSetting(String access);
@@ -4071,7 +4071,7 @@ public interface CourseMessages extends Messages {
 	String errorQueryIsRequired();
 	
 	@DefaultMessage("Unable to set parameter {0}: no available values.")
-	String errorCannotSetQueryParameterNoValues();
+	String errorCannotSetQueryParameterNoValues(String param);
 	
 	@DefaultMessage("Clear Cache")
 	String actionClearCache();
@@ -4466,34 +4466,34 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Exact Time")
 	String timePatterTypeExactTime();
 	
-	@DefaultMessage("Invalid days '{0}'.")
+	@DefaultMessage("Invalid days ''{0}''.")
 	String errorInvalidDaysForToken(String token);
 	
-	@DefaultMessage("Days {0} invalid -- wrong number of days.")
+	@DefaultMessage("Days ''{0}'' invalid -- wrong number of days.")
 	String errorWrongNumberOfDaysForToken(String token);
 	
-	@DefaultMessage("Days '{0}' included more than once.")
+	@DefaultMessage("Days ''{0}'' included more than once.")
 	String errorDuplicateDaysToken(String token);
 	
-	@DefaultMessage("Invalid time '{0}' -- hour ({1}) must be between 0 and 23.")
+	@DefaultMessage("Invalid time ''{0}'' -- hour ({1}) must be between 0 and 23.")
 	String errorWrongHoursForTimeToken(String token, int hours);
 	
-	@DefaultMessage("Invalid time '{0}' -- minute ({1}) must be between 0 and 59.")
+	@DefaultMessage("Invalid time ''{0}'' -- minute ({1}) must be between 0 and 59.")
 	String errorWrongMinutesForTimeToken(String token, int min);
 	
-	@DefaultMessage("Invalid time '{0}' -- minute ({1}) must be divisible by 5.")
+	@DefaultMessage("Invalid time ''{0}'' -- minute ({1}) must be divisible by 5.")
 	String errorMinutesNotDivisibleByFiveForTimeToken(String token, int min);
 	
-	@DefaultMessage("Invalid time '{0}' -- the time cannot go over midnight.")
+	@DefaultMessage("Invalid time ''{0}'' -- the time cannot go over midnight.")
 	String errorTimeGoesOverMidnightForToken(String token);
 	
-	@DefaultMessage("Invalid time '{0}' -- not a number.")
+	@DefaultMessage("Invalid time ''{0}'' -- not a number.")
 	String errorTimeNotNumberForToken(String token);
 	
-	@DefaultMessage("Invalid time '{0}'.")
+	@DefaultMessage("Invalid time ''{0}''.")
 	String errorNotValidTimeForToken(String token);
 	
-	@DefaultMessage("Time '{0}' included more than once.")
+	@DefaultMessage("Time ''{0}'' included more than once.")
 	String errorDiplicateTimeToken(String token);
 	
 	@DefaultMessage("There is no Exact Time time pattern defined.")
@@ -4721,7 +4721,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Default date pattern not set")
 	String infoNoDefaultDatePattern();
 	
-	@DefaultMessage("The academic session and all associated data will be deleted. Continue?'")
+	@DefaultMessage("The academic session and all associated data will be deleted. Continue?")
 	String confirmDeleteAcademicSession();
 	
 	@DefaultMessage("Add Academic Session")

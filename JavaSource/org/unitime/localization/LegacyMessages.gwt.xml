@@ -1,4 +1,6 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module>
+<!-- 
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
@@ -16,13 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
-*/
-package org.unitime.localization.messages;
-
-/**
- * @author Tomas Muller
- */
-public interface Messages extends org.unitime.timetable.gwt.resources.Messages {
-	@DefaultMessage("{0}({2}): {1}")
-	public String translateMessage(String name, String defaultMessage, Object... arguments);
-}
+ -->
+ <module>
+ 	<source path="messages"/>
+</module>
