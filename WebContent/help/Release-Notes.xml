@@ -38,6 +38,11 @@
 					<line>Class pairs included in the Ignore Student Conflicts constraints are ignored.</line>
 				</line>
 				<line>Some classes may be excluded by using ExtendedStudentConflicts.IgnoreClasses parameter which may contain a regular expression matching class name(s).</line>
+				<line>Pairs of classes of the same offering are checked, too.
+					<line>In this case, the course structure must allow the two classes to be attended together (e.g., they are from the same configuration),</line>
+					<line>and at least one student in the offering is allowed to take both classes.</line>
+					<line>This feature is enabled by default and can be disabled by setting ExtendedStudentConflicts.CheckSameCourse to false.</line>
+				</line>	
 				<line>To enable this constraint, add org.cpsolver.coursett.constraint.ExtendedStudentConflicts to General.GlobalConstraints
 					(which contains a semicolon separated list of global constraint classes that should be automatically added to the problem)</line>
 			</description>
