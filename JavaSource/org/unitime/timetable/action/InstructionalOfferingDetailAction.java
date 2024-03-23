@@ -593,13 +593,13 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
                     io.getControllingCourseOffering().getSubjectArea(),
                     null);
 
+            hibSession.flush();
+            hibSession.clear();
+
             // Unlock the offering, if needed
             if (sessionContext.hasPermission(io, Right.OfferingCanUnlock))
             	io.getSession().unlockOffering(io, sessionContext.getUser());
 
-            hibSession.flush();
-            hibSession.clear();
-            
         	String className = ApplicationProperty.ExternalActionInstructionalOfferingNotOffered.value();
         	if (className != null && className.trim().length() > 0){
 	        	ExternalInstructionalOfferingNotOfferedAction notOfferedAction = (ExternalInstructionalOfferingNotOfferedAction) (Class.forName(className).getDeclaredConstructor().newInstance());
