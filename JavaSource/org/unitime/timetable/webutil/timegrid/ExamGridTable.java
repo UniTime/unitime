@@ -36,6 +36,7 @@ import javax.servlet.jsp.JspWriter;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.action.ExamAssignmentReportAction.CacheAssignedExams;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -178,6 +179,11 @@ public class ExamGridTable {
 	        }
 	        periodsThisDay.put(period.getStartSlot(), period);
 	    }
+	    
+	    CacheAssignedExams cache = null;
+	    if (solver==null || !solver.getExamTypeId().equals(iForm.getExamType()))
+	    	cache = new CacheAssignedExams(iForm.getSessionId(), iForm.getExamType());
+	    
 	    if (iForm.getResource()==Resource.Room.ordinal()) {
 	        Date[] bounds = ExamPeriod.getBounds(form.getSessionId(),form.getExamBeginDate(), form.getExamType());
 	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
@@ -186,6 +192,10 @@ public class ExamGridTable {
 	                if (solver!=null && solver.getExamTypeId().equals(iForm.getExamType()))
 	                    iModels.add(new RoomExamGridModel(location,
 	                            solver.getAssignedExamsOfRoom(location.getUniqueId()),bounds));
+	                else if (cache != null)
+	                	iModels.add(new RoomExamGridModel(location,
+	                			cache.getAssignedExamsOfLocation(location.getUniqueId()),
+	                			bounds));
 	                else
                         iModels.add(new RoomExamGridModel(location,
                                 Exam.findAssignedExamsOfLocation(location.getUniqueId(), iForm.getExamType()),bounds));
@@ -200,6 +210,8 @@ public class ExamGridTable {
                     Collection<ExamAssignmentInfo> assignments = null;
                     if (solver!=null  && solver.getExamTypeId().equals(iForm.getExamType()))
                         assignments = solver.getAssignedExamsOfInstructor(instructor.getUniqueId());
+                    else if (cache != null)
+                    	assignments = cache.getAssignedExamsOfInstructor(instructor.getUniqueId());
                     else
                         assignments = Exam.findAssignedExamsOfInstructor(instructor.getUniqueId(), iForm.getExamType());
                     if (instructor.getExternalUniqueId()==null) {
@@ -233,6 +245,12 @@ public class ExamGridTable {
                                 subject.getSubjectAreaAbbreviation(),
                                 -1,
                                 solver.getAssignedExams(subject.getUniqueId())));
+                    else if (cache != null)
+                        iModels.add(new ExamGridModel(
+                                subject.getUniqueId(),
+                                subject.getSubjectAreaAbbreviation(),
+                                -1,
+                                cache.getAssignedExamsOfSubjectArea(subject.getUniqueId()))); 
                     else
                         iModels.add(new ExamGridModel(
                                 subject.getUniqueId(),

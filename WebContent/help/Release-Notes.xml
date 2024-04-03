@@ -65,6 +65,16 @@
 				<line>The problem seems to be related to the recent Hibernate 6.2.22 update.</line>
 			</description>
 		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Timetable</name>
+			<description>
+				<line>When showing data from the database, load the examination grid page faster.</line>
+				<line>This is done by pre-fetching all exams and their relations (like the Examination Reports page already does).</line>
+			</description>
+		</item>
 	</category>	
 	<category>
 		<title>Administration</title>
