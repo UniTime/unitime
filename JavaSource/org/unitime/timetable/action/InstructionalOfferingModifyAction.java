@@ -368,7 +368,7 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 	        		throw new Exception("Configuration change violates rules for Add On, rolling back the change.");
 	        	}
         	}
-
+        	
         	ioc.getInstructionalOffering().computeLabels(hibSession);
 
             ChangeLog.addChange(
@@ -592,12 +592,12 @@ public class InstructionalOfferingModifyAction extends UniTimeAction<Instruction
 						parent.getChildClasses().remove(c);
 						hibSession.merge(parent);
 					}
-					c.getSchedulingSubpart().getClasses().remove(c);
 					if (c.getPreferences() != null)
 					    c.getPreferences().removeAll(c.getPreferences());
 					
 					c.deleteAllDependentObjects(hibSession, false);
 					
+					c.getSchedulingSubpart().getClasses().remove(c);
 					hibSession.remove(c);
 	        	}
 	        }
