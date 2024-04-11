@@ -7619,3 +7619,105 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	padding-left: 10px;	
 }
+
+.unitime-MultipleClassSetup .supart-limits {
+	display: table;
+}
+
+.unitime-MultipleClassSetup .subpart-limit {
+	display: table-row;
+}
+
+.unitime-MultipleClassSetup .limit-too-low {
+	color: red;
+	font-weight: bold;
+}
+
+.unitime-MultipleClassSetup .limit-too-low-cancel {
+	color: orange;
+	font-weight: bold;
+}
+
+.unitime-MultipleClassSetup .subpart-limit * {
+	display: table-cell;
+	padding: 0px 5px 0px 2px;
+	vertical-align: middle;
+}
+
+.unitime-MultipleClassSetup .subpart-limit .subpart-counter {
+	width: 50px;
+}
+
+.unitime-MultipleClassSetup .subpart-limit input {
+	vertical-align: middle;
+}
+
+.unitime-MultipleClassSetup .subpart-limit .subpart-label {
+	font-weight: bold;
+}
+
+.unitime-MultipleClassSetup .subpart-limit .display-instructors-label {
+	padding: 0px 2px 0px 20px;
+}
+
+.unitime-MultipleClassSetup .subpart-limit .student-scheduling-label {
+	padding: 0px 2px 0px 20px;
+}
+
+.unitime-MultipleClassSetup .class-enrollment {
+	text-align: right;
+}
+
+.unitime-MultipleClassSetup .class-cancelled {
+	font-style: italic;
+	color: gray !important;
+}
+
+.unitime-MultipleClassSetup .class-snapshot {
+	text-align: right;
+}
+
+.unitime-MultipleClassSetup .not-editable {
+	color: black;
+}
+
+.unitime-MultipleClassSetup select:disabled {
+	background-color: transparent;
+	border: 1px solid transparent;
+	padding-left: 4px;
+	appearance: none;
+	color: black;
+	opacity: inherit;
+}
+
+.unitime-MultipleClassSetup .gwt-SuggestBox-readonly {
+	border: 1px solid transparent;
+	font-style: normal;
+	background: transparent;
+	color: black;
+	opacity: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	font-weight: inherit;
+}
+
+.unitime-MultipleClassSetup .bad-limit .gwt-SuggestBox {
+	background-color: #FFD7D7;
+}
+
+.unitime-MultipleClassSetup .bad-limit-cancel .gwt-SuggestBox {
+	background-color: #FFF0AB;
+}
+
+.unitime-MultipleClassSetup .error-table {
+	color: red;
+	border: 1px solid red;
+	padding: 5px;
+	margin: 5px;
+}
+
+.unitime-MultipleClassSetup .error-message {
+	padding-left: 10px;
+	display: list-item;
+	list-style-position: inside;
+}

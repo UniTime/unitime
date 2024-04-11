@@ -81,6 +81,8 @@ import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
+import com.google.gson.annotations.Since;
+
 /**
  * @author Tomas Muller
  */
@@ -3100,6 +3102,12 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Edit Course Offering: switch the user interface back to the old (Struts-based) edit course offering page")
 	LegacyCourseEdit("unitime.legacy.course_edit"),
+	
+	@Type(Boolean.class)
+	@Since(4.8)
+	@DefaultValue("false")
+	@Description("Multiple Class Setup: switch the user interface back to the old (Struts-based) class setup page")
+	LegacyClassSetup("unitime.legacy.course.multiple_class_setup"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

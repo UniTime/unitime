@@ -3920,6 +3920,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageInstructorSurvey();
 	
+	@DefaultMessage("Multiple Class Setup")
+	@DoNotTranslate
+	String pageMultipleClassSetup();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

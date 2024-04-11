@@ -509,7 +509,7 @@ function checkNumberOfRooms(nbrRooms, id) {
 						<s:checkbox name="form.displayInstructors[%{#ctr}]" tabindex="%{(18000 + #ctr)}"/>
 					</s:if>
 					<s:if test="form.readOnlyClasses[#ctr] == 'true'">
-						<s:if test="form.displayInstructors[#ctr] == true">
+						<s:if test="form.displayInstructors[#ctr] == 'true'">
 							<IMG border='0' title='${MSG.titleDisplayAllInstrForSubpartInSchedBook()}' alt='true' align='middle' src='images/accept.png'>
 						</s:if>
 						<s:hidden name="form.displayInstructors[%{#ctr}]"/>

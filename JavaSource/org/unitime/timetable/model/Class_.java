@@ -1270,7 +1270,7 @@ public class Class_ extends BaseClass_ {
 		newClass.setSchedulePrintNote(getSchedulePrintNote());
 		newClass.setSchedulingSubpart(getSchedulingSubpart());
 		newClass.setCancelled(isCancelled());
-		newClass.setLms(getLms());
+		newClass.setLmsInfo(getLmsInfo());
 		newClass.setFundingDept(getFundingDept());
 		return(newClass);
 	}

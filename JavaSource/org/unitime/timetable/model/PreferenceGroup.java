@@ -73,18 +73,17 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getTimePreferences(){
+    public Set<TimePref> getTimePreferences(){
     	return getPreferences(TimePref.class);
     }
 
 	@Transient
-    public Set getTimePatterns() {
-    	Set timePrefs = getTimePreferences();
+    public Set<TimePattern> getTimePatterns() {
+    	Set<TimePref> timePrefs = getTimePreferences();
     	if (timePrefs==null) return null;
-    	TreeSet ret = new TreeSet();
-    	for (Iterator i=timePrefs.iterator();i.hasNext();) {
-    		TimePref tp = (TimePref)i.next();
-    		if (tp.getTimePattern()!=null)
+    	Set<TimePattern> ret = new TreeSet<>();
+    	for (TimePref tp: timePrefs) {
+    		if (tp.getTimePattern() != null)
     			ret.add(tp.getTimePattern());
     	}
     	return ret;
@@ -116,7 +115,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getRoomPreferences(){
+    public Set<RoomPref> getRoomPreferences(){
     	return getPreferences(RoomPref.class);
     }
 
@@ -134,7 +133,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getBuildingPreferences(){
+    public Set<BuildingPref> getBuildingPreferences(){
     	return getPreferences(BuildingPref.class);
     }
 
@@ -152,7 +151,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getRoomFeaturePreferences(){
+    public Set<RoomFeaturePref> getRoomFeaturePreferences(){
     	return getPreferences(RoomFeaturePref.class);
     }
  
@@ -161,7 +160,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getRoomGroupPreferences(){
+    public Set<RoomGroupPref> getRoomGroupPreferences(){
     	return getPreferences(RoomGroupPref.class);
     }
 

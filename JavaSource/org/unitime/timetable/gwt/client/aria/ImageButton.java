@@ -109,6 +109,10 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 	public ImageButton(ImageResource faceUp, ImageResource faceOver) {
 		this(faceUp, null, faceOver, null);
 	}
+	
+	public ImageButton(ImageResource faceUp) {
+		this(faceUp, null, faceUp, null);
+	}
 
 	@Override
 	public boolean isEnabled() {
