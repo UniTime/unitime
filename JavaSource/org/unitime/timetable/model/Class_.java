@@ -1648,6 +1648,18 @@ public class Class_ extends BaseClass_ {
 		}
 	    return(sb.toString());
 	}
+    
+    public String buildAssignedDateHtml(ClassAssignmentProxy proxy){
+    	ClassAssignmentProxy.AssignmentInfo a = null;
+		try {
+			a = proxy.getAssignment(this);
+		} catch (Exception e) {
+			Debug.error(e);
+		}
+		if (a != null && a.getTimeLocation() != null && a.getTimeLocation().getDatePatternName() != null)
+			return a.getTimeLocation().getDatePatternName();
+		return " ";
+	}
 
 	public String buildAssignedRoomHtml(ClassAssignmentProxy proxy){
 		ClassAssignmentProxy.AssignmentInfo a = null;

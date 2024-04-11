@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 
@@ -63,6 +64,8 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	private Boolean iValidateLimits;
 	private Operation iOperation;
 	private long iLastGeneratedId = 0;
+	private Boolean iHasTimeRooms;
+	private Boolean iHasInstructors;
 	
 	public static enum Operation implements IsSerializable, Serializable {
 		LOAD,
@@ -137,9 +140,9 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		return null;
 	}
 	
-	public void addDatePattern(Long id, String ref, String label) {
+	public void addDatePattern(Long id, String ref, String label, boolean selectable) {
 		if (iDatePatterns == null) iDatePatterns = new ArrayList<Reference>();
-		iDatePatterns.add(new Reference(id, ref, label, true));
+		iDatePatterns.add(new Reference(id, ref, label, selectable));
 	}
 	public boolean hasDatePatterns() { return iDatePatterns != null && !iDatePatterns.isEmpty(); }
 	public List<Reference> getDatePatterns() { return iDatePatterns; }
@@ -208,6 +211,11 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	public boolean isDisplaySnapshotLimit() { return Boolean.TRUE.equals(iDisplaySnapshotLimit); }
 	public void setValidateLimits(boolean validateLimits) { iValidateLimits = validateLimits; }
 	public boolean isValidateLimits() { return Boolean.TRUE.equals(iValidateLimits); }
+	
+	public void setHasTimeRooms(boolean hasTimeRooms) { iHasTimeRooms = hasTimeRooms; }
+	public boolean isHasTimeRooms() { return Boolean.TRUE.equals(iHasTimeRooms); }
+	public void setHasInstructors(boolean hasInstructors) { iHasInstructors = hasInstructors; }
+	public boolean isHasInstructors() { return Boolean.TRUE.equals(iHasInstructors); }
 	
 	public void setInstructionalMethodId(Long instructionalMethodId) { iInstructionalMethodId = instructionalMethodId; }
 	public Long getInstructionalMethodId() { return iInstructionalMethodId; }
@@ -401,6 +409,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		private Long iLMS;
 		private Boolean iSplitAttendance;
 		private String iTime;
+		private String iDate;
 		private String iRoom;
 		private String iInstructor;
 		private String iExternalId;
@@ -484,6 +493,8 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		public void setSplitAttendance(Boolean splitAttendance) { iSplitAttendance = splitAttendance; }
 		public String getTime() { return iTime; }
 		public void setTime(String time) { iTime = time; }
+		public String getDate() { return iDate; }
+		public void setDate(String date) { iDate = date; }
 		public String getRoom() { return iRoom; }
 		public void setRoom(String room) { iRoom = room; }
 		public String getInstructor() { return iInstructor; }
@@ -560,6 +571,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		DISPLAY_INSTRUCTOR,
 		STUDENT_SCHEDULING,
 		TIME,
+		DATE,
 		ROOM,
 		INSTRUCTOR,
 	}

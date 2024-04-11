@@ -178,10 +178,10 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 		}
     	
     	DatePattern dpDefault = io.getSession().getDefaultDatePatternNotNull();
-    	form.addDatePattern(-1l, MSG.dropDefaultDatePattern(), MSG.dropDefaultDatePattern() + (dpDefault == null ? "" : " (" + dpDefault.getName() + ")"));
+    	form.addDatePattern(-1l, MSG.dropDefaultDatePattern(), MSG.dropDefaultDatePattern() + (dpDefault == null ? "" : " (" + dpDefault.getName() + ")"), true);
     	try {
     		for (DatePattern dp: DatePattern.findAll(context.getUser(), io.getDepartment(), io.getSession().getDefaultDatePatternNotNull()))
-    			form.addDatePattern(dp.getUniqueId(), dp.getName(), dp.getName());
+    			form.addDatePattern(dp.getUniqueId(), dp.getName(), dp.getName(), !dp.isExtended());
     	} catch (Exception e) {}
 		
 		return form;
@@ -208,6 +208,10 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 	    		line.setCanDelete(context.hasPermission(cls, Right.ClassDelete));
 	    		line.setCanCancel(context.hasPermission(cls, Right.ClassCancel));
 	    		line.setIndent(indent);
+	    		if (!" ".equals(line.getTime()) || !" ".equals(line.getRoom()))
+	    			form.setHasTimeRooms(true);
+	    		if (!" ".equals(line.getInstructor()))
+	    			form.setHasInstructors(true);
 	    		form.addClassLine(line);
 	    		
 	    		loadClasses(form, cls.getChildClasses(), true, indent + 1, proxy, context);
@@ -239,6 +243,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 		String suffix = clazz.getSchedulingSubpart().getSchedulingSubpartSuffix();
 		line.setSubpartLabel(clazz.getSchedulingSubpart().getItypeDesc() + (suffix.isEmpty() ? "" : " (" + suffix + ")"));
 		line.setTime(clazz.buildAssignedTimeHtml(proxy));
+		line.setDate(clazz.buildAssignedDateHtml(proxy));
 		line.setRoom(clazz.buildAssignedRoomHtml(proxy));
 		line.setInstructor(clazz.buildInstructorHtml(nameFormat));
 		return line;
