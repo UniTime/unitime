@@ -49,6 +49,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
@@ -103,6 +104,16 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		if (classes != null)
 			for (ClassLine clazz: classes)
 				addRow(clazz);
+	}
+	
+	public void updateButtons() {
+		for (int row = 1; row < getRowCount(); row++) {
+			for (int col = 0; col < getCellCount(row); col++) {
+				Widget w = getWidget(row, col);
+				if (w != null && w instanceof HasUpdate)
+					((HasUpdate)w).update(row);
+			}
+		}
 	}
 	
 	protected void onLimitChange() {}
@@ -164,16 +175,11 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		case EXTERNAL_ID: return iData.isDisplayExternalId() || iData.isEditExternalId();
 		case ENROLLMENT: return iData.isDisplayEnrollments();
 		case TIME:
+		case DATE:
 		case ROOM:
-			for (ClassLine line: iData.getClassLines()) {
-				if (!" ".equals(line.getTime())) return true;
-				if (!" ".equals(line.getRoom())) return true;
-			}
-			return false;
+			return iData.isHasTimeRooms();
 		case INSTRUCTOR:
-			for (ClassLine line: iData.getClassLines())
-				if (!" ".equals(line.getInstructor())) return true;
-			return false;
+			return iData.isHasInstructors();
 		default: return true;
 		}
 	}
@@ -201,6 +207,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		case DISPLAY_INSTRUCTOR: return MESSAGES.columnDisplayInstr();
 		case STUDENT_SCHEDULING: return MESSAGES.columnStudentScheduling();
 		case TIME: return MESSAGES.columnAssignedTime();
+		case DATE: return MESSAGES.columnAssignedDatePattern();
 		case ROOM: return MESSAGES.columnAssignedRoom();
 		case INSTRUCTOR: return MESSAGES.columnInstructors();
 		default: return column.name();
@@ -250,10 +257,14 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 	
 	protected void cancelClass(ClassLine line, boolean cancel) {
 		if (cancel == line.getCancelled() || !line.isCanCancel()) return;
-		for (ClassLine l: iData.getLines(line))
+		for (ClassLine l: iData.getLines(line)) {
 			if (l.isCanCancel())
 				l.setCancelled(cancel);
-		setData(iData.getClassLines());
+			int row = getRow(l);
+			setRow(insertRow(row), l, generateRow(l));
+			removeRow(row+1);
+		}
+		updateButtons();
 		onLimitChange();
 		P buttons = (P)getWidget(getRow(line), getIndex(ClassSetupColumn.BUTTONS));
 		focus(buttons.getWidget(4));
@@ -261,8 +272,11 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 	
 	protected void deleteClass(ClassLine line) {
 		int row = getRow(line);
-		iData.getClassLines().removeAll(iData.getLines(line));
-		setData(iData.getClassLines());
+		List<ClassLine> deletes = iData.getLines(line);
+		iData.getClassLines().removeAll(deletes);
+		for (int idx = 0; idx < deletes.size(); idx++)
+			removeRow(row);
+		updateButtons();
 		onLimitChange();
 		if (row >= getRowCount()) row = getRowCount() - 1;
 		P buttons = (P)getWidget(row, getIndex(ClassSetupColumn.BUTTONS));
@@ -294,7 +308,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			}
 		}
 		iData.getClassLines().addAll(row, copies);
-		setData(iData.getClassLines());
+		int idx = 0;
+		for (ClassLine l: copies)
+			setRow(insertRow(row + 1 + (idx++)), l, generateRow(l));
+		updateButtons();
 		onLimitChange();
 		P buttons = (P)getWidget(row + 1, getIndex(ClassSetupColumn.BUTTONS));
 		focus(buttons.getWidget(3));
@@ -312,13 +329,19 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			else if (newParent.getClassId().equals(l.getParentId()) && iData.getSubpartIndex(l.getSubpartId()) <= subIdx)
 				prev = iData.getLastLine(l);
 		}
-		int row = iData.getClassLines().indexOf(prev) + 1;
+		int oldRow = iData.getClassLines().indexOf(line) + 1;
 		iData.getClassLines().removeAll(data);
-		iData.getClassLines().addAll(row, data);
+		for (int idx = 0; idx < data.size(); idx++)
+			removeRow(oldRow);
 		line.setParentId(newParent.getClassId());
-		setData(iData.getClassLines());
+		int newRow = iData.getClassLines().indexOf(prev) + 1;
+		iData.getClassLines().addAll(newRow, data);
+		int idx = 0;
+		for (ClassLine l: data)
+			setRow(insertRow(newRow + 1 + (idx++)), l, generateRow(l));
+		updateButtons();
 		onLimitChange();
-		P buttons = (P)getWidget(row + 1, getIndex(ClassSetupColumn.BUTTONS));
+		P buttons = (P)getWidget(newRow + 1, getIndex(ClassSetupColumn.BUTTONS));
 		if (!focus(buttons.getWidget(0))) focus(buttons.getWidget(1));
 	}
 	
@@ -334,13 +357,19 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			else if (newParent.getClassId().equals(l.getParentId()) && iData.getSubpartIndex(l.getSubpartId()) < subIdx)
 				prev = iData.getLastLine(l);
 		}
+		int oldRow = iData.getClassLines().indexOf(line) + 1;
 		iData.getClassLines().removeAll(data);
-		int row = iData.getClassLines().indexOf(prev) + 1;
-		iData.getClassLines().addAll(row, data);
+		for (int idx = 0; idx < data.size(); idx++)
+			removeRow(oldRow);
 		line.setParentId(newParent.getClassId());
-		setData(iData.getClassLines());
+		int newRow = iData.getClassLines().indexOf(prev) + 1;
+		iData.getClassLines().addAll(newRow, data);
+		int idx = 0;
+		for (ClassLine l: data)
+			setRow(insertRow(newRow + 1 + (idx++)), l, generateRow(l));
+		updateButtons();
 		onLimitChange();
-		P buttons = (P)getWidget(row + 1, getIndex(ClassSetupColumn.BUTTONS));
+		P buttons = (P)getWidget(newRow + 1, getIndex(ClassSetupColumn.BUTTONS));
 		if (!focus(buttons.getWidget(1))) focus(buttons.getWidget(0));
 	}
 
@@ -368,95 +397,102 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				className.addStyleName("not-editable");
 			return className;
 		case BUTTONS:
-			final P buttons = new P("class-buttons");
-			if (iData.getPreviousParentId(line) != null && iData.canMoveAway(line)) {
-				ImageButton up = new ImageButton(RESOURCES.orderUp());
-				up.setTitle(MESSAGES.titleMoveClassUp());
-				up.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						moveClassUp(line);
-					}
-				});
-				up.setTabIndex(2000 + 5 * getRowCount());
-				buttons.add(up);
-			} else {
-				Image blank = new Image(RESOURCES.blank());
-				buttons.add(blank);			
-			}
-			if (iData.getNextParentId(line) != null && iData.canMoveAway(line)) {
-				ImageButton down = new ImageButton(RESOURCES.orderDown());
-				down.setTitle(MESSAGES.titleMoveClassDown());
-				down.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						moveClassDown(line);
-					}
-				});
-				down.setTabIndex(2000 + 5 * getRowCount() + 1);
-				buttons.add(down);
-			} else {
-				Image blank = new Image(RESOURCES.blank());
-				buttons.add(blank);			
-			}
-			if (iData.canDelete(line)) {
-				ImageButton delete = new ImageButton(RESOURCES.delete());
-				delete.setTitle(MESSAGES.titleRemoveClassFromIO());
-				delete.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						deleteClass(line);
-					}
-				});
-				delete.setTabIndex(2000 + 5 * getRowCount() + 2);
-				buttons.add(delete);
-			} else {
-				Image blank = new Image(RESOURCES.blank());
-				buttons.add(blank);
-			}
-			if (Boolean.FALSE.equals(line.getCancelled())) {
-				ImageButton add = new ImageButton(RESOURCES.add());
-				add.setTitle(MESSAGES.titleAddClassToIO());
-				add.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						duplicateClass(line);
-					}
-				});
-				add.setTabIndex(2000 + 5 * getRowCount() + 3);
-				buttons.add(add);
-			} else {
-				Image blank = new Image(RESOURCES.blank());
-				buttons.add(blank);
-			}
-			if (iData.canCancel(line)) {
-				if (line.getCancelled()) {
-					ImageButton reopen = new ImageButton(RESOURCES.reopenClass());
-					reopen.setTitle(MESSAGES.titleReopenClass());
-					reopen.addClickHandler(new ClickHandler() {
+			final Buttons buttons = new Buttons();
+			int row = getRowCount();
+			Operation up = new Operation(line, RESOURCES.orderUp(), MESSAGES.titleMoveClassUp(), 0,
+					new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							cancelClass(line, false);
+							moveClassUp(line);
+						}
+					},
+					new Check() {
+						@Override
+						public boolean check(ClassLine line) {
+							return iData.getPreviousParentId(line) != null && iData.canMoveAway(line);
 						}
 					});
-					reopen.setTabIndex(2000 + 5 * getRowCount() + 4);
-					buttons.add(reopen);
-				} else {
-					ImageButton cancel = new ImageButton(RESOURCES.cancelClass());
-					cancel.setTitle(MESSAGES.titleCancelClass());
-					cancel.addClickHandler(new ClickHandler() {
+			up.update(row);
+			buttons.add(up);
+			Operation down = new Operation(line, RESOURCES.orderDown(), MESSAGES.titleMoveClassDown(), 1,
+					new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							cancelClass(line, true);
+							moveClassDown(line);
+						}
+					},
+					new Check() {
+						@Override
+						public boolean check(ClassLine line) {
+							return iData.getNextParentId(line) != null && iData.canMoveAway(line);
 						}
 					});
-					cancel.setTabIndex(2000 + 5 * getRowCount() + 4);
-					buttons.add(cancel);
-				}
-			} else {
-				Image blank = new Image(RESOURCES.blank());
-				buttons.add(blank);
-			}
+			down.update(row);
+			buttons.add(down);
+			Operation delete = new Operation(line, RESOURCES.delete(), MESSAGES.titleRemoveClassFromIO(), 2,
+					new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							deleteClass(line);
+						}
+					},
+					new Check() {
+						@Override
+						public boolean check(ClassLine line) {
+							return iData.canDelete(line);
+						}
+					});
+			delete.update(row);
+			buttons.add(delete);
+			Operation add = new Operation(line, RESOURCES.add(), MESSAGES.titleAddClassToIO(), 3,
+					new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							duplicateClass(line);
+						}
+					},
+					new Check() {
+						@Override
+						public boolean check(ClassLine line) {
+							return Boolean.FALSE.equals(line.getCancelled());
+						}
+					});
+			add.update(row);
+			buttons.add(add);
+			MultiOperation cancel = new MultiOperation(line,
+					new ImageResource[] { RESOURCES.reopenClass(), RESOURCES.cancelClass()},
+					new String[] { MESSAGES.titleReopenClass(), MESSAGES.titleCancelClass()},
+					4,
+					new ClickHandler[] {
+						new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								cancelClass(line, false);
+							}
+						},
+						new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent event) {
+								cancelClass(line, true);
+							}
+						}
+					},
+					new MultiCheck() {
+						@Override
+						public int check(ClassLine line) {
+							if (iData.canCancel(line)) {
+								if (line.getCancelled()) {
+									return 0;
+								} else {
+									return 1;
+								}
+							} else {
+								return -1;
+							}
+						}
+					});
+			cancel.update(row);
+			buttons.add(cancel);
 			return buttons;
 		case ENROLLMENT:
 			Label enrollment = new Label(line.getEnrollment() == null ? "" : line.getEnrollment().toString());
@@ -470,10 +506,12 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			else
 				return new Label();
 		case LIMIT:
-			return new ClassLimit(line);
+			ClassLimit limit = new ClassLimit(line);
+			limit.update(getRowCount());
+			return limit;
 		case SNAPSHOT:
 			if (iData.isEditSnapshotLimits()) {
-				final NumberBox snapshot = new NumberBox();
+				final MyNumberBox snapshot = new MyNumberBox(9000);
 				snapshot.setMaxLength(5);
 				snapshot.setWidth("40px");
 				snapshot.setValue(line.getSnapshotLimit());
@@ -491,7 +529,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				});
 				snapshot.addStyleName("class-snapshot");
 				snapshot.setReadOnly(!line.isEditable() || line.getCancelled());
-				snapshot.setTabIndex(9000 + getRowCount());
+				snapshot.update(getRowCount());
 				return snapshot;
 			} else {
 				Label snapshot = new Label(line.getSnapshotLimit() == null ? "" : line.getSnapshotLimit().toString());
@@ -499,7 +537,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				return snapshot;
 			}
 		case ROOM_RATIO:
-			final NumberBox roomRatio = new NumberBox();
+			final MyNumberBox roomRatio = new MyNumberBox(10000);
 			roomRatio.setDecimal(true);
 			roomRatio.setMaxLength(6);
 			roomRatio.setWidth("40px");
@@ -517,10 +555,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 					roomRatio.setValue(sRoomRatioFormat.format(line.getRoomRatio()));
 				}
 			});
-			roomRatio.setTabIndex(10000 + getRowCount());
+			roomRatio.update(getRowCount());
 			return roomRatio;
 		case NBR_ROOMS:
-			final NumberBox nbrRooms = new NumberBox();
+			final MyNumberBox nbrRooms = new MyNumberBox(11000);
 			nbrRooms.setMaxLength(5);
 			nbrRooms.setDecimal(false);
 			nbrRooms.setWidth("40px");
@@ -542,10 +580,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 						splitAttendance.setValue(false, true);
 				}
 			});
-			nbrRooms.setTabIndex(11000 + getRowCount());
+			nbrRooms.update(getRowCount());
 			return nbrRooms;
 		case SPLIT_ATTENDANCE:
-			final CheckBox splitAttendance = new CheckBox();
+			final MyCheckBox splitAttendance = new MyCheckBox(12000);
 			splitAttendance.setValue(line.getSplitAttendance());
 			splitAttendance.addStyleName("class-split-attendace");
 			splitAttendance.setEnabled(line.isEditable() && (line.getNumberOfRooms() != null && line.getNumberOfRooms() > 1));
@@ -555,10 +593,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 					line.setSplitAttendance(event.getValue());
 				}
 			});
-			splitAttendance.setTabIndex(12000 + getRowCount());
+			splitAttendance.update(getRowCount());
 			return splitAttendance;
 		case DEPARTMENT:
-			final ListBox department = new ListBox();
+			final MyListBox department = new MyListBox(13000);
 			department.addStyleName("class-department");
 			department.setWidth("150px");
 			for (Reference d: iData.getDepartments()) {
@@ -574,10 +612,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				}
 			});
 			department.setEnabled(line.isEditable());
-			department.setTabIndex(13000 + getRowCount());
+			department.update(getRowCount());
 			return department;
 		case DATE_PATTERN:
-			final ListBox datePattern = new ListBox();
+			final MyListBox datePattern = new MyListBox(14000);
 			datePattern.setWidth("150px");
 			datePattern.addStyleName("class-date-pattern");
 			for (Reference d: iData.getDatePatterns()) {
@@ -597,10 +635,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				}
 			});
 			datePattern.setEnabled(line.isEditable() && line.isEditableDatePattern());
-			datePattern.setTabIndex(14000 + getRowCount());
+			datePattern.update(getRowCount());
 			return datePattern;
 		case DISPLAY_INSTRUCTOR:
-			CheckBox displayInstructor = new CheckBox();
+			MyCheckBox displayInstructor = new MyCheckBox(16000);
 			displayInstructor.addStyleName("class-display-instructor");
 			displayInstructor.setValue(line.getDisplayInstructors());
 			displayInstructor.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -611,10 +649,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				}
 			});
 			displayInstructor.setEnabled(line.isEditable());
-			displayInstructor.setTabIndex(16000 + getRowCount());
+			displayInstructor.update(getRowCount());
 			return displayInstructor;
 		case STUDENT_SCHEDULING:
-			CheckBox studentScheduling = new CheckBox();
+			MyCheckBox studentScheduling = new MyCheckBox(17000);
 			studentScheduling.addStyleName("class-display-instructor");
 			studentScheduling.setValue(line.getEnabledForStudentScheduling());
 			studentScheduling.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -625,10 +663,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				}
 			});
 			studentScheduling.setEnabled(line.isEditable());
-			studentScheduling.setTabIndex(17000 + getRowCount());
+			studentScheduling.update(getRowCount());
 			return studentScheduling;
 		case EXTERNAL_ID:
-			UniTimeTextBox extId = new UniTimeTextBox();
+			MyTextBox extId = new MyTextBox(1000);
 			extId.addStyleName("class-external-id");
 			extId.setMaxLength(40);
 			extId.setWidth("135px");
@@ -646,10 +684,10 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			if (line.getCancelled())
 				extId.addStyleName("not-editable");
 			extId.setReadOnly(!line.isEditable() || !iData.isEditExternalId());
-			extId.setTabIndex(1000 + getRowCount());
+			extId.update(getRowCount());
 			return extId;
 		case LMS:
-			final ListBox lms = new ListBox();
+			final MyListBox lms = new MyListBox(15000);
 			lms.addStyleName("class-lms");
 			lms.setWidth("150px");
 			for (Reference d: iData.getLMSs()) {
@@ -669,7 +707,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				}
 			});
 			lms.setEnabled(line.isEditable());
-			lms.setTabIndex(15000 + getRowCount());
+			lms.update(15000);
 			return lms;
 		case TIME:
 			HTML time = new HTML(line.getTime() == null ? "" : line.getTime());
@@ -677,6 +715,12 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			if (line.getCancelled()) time.addStyleName("class-cancelled");
 			else if (!line.isEditable()) time.addStyleName("not-editable");
 			return time;
+		case DATE:
+			HTML date = new HTML(line.getDate() == null ? "" : line.getDate());
+			date.addStyleName("class-date");
+			if (line.getCancelled()) date.addStyleName("class-cancelled");
+			else if (!line.isEditable()) date.addStyleName("not-editable");
+			return date;
 		case ROOM:
 			HTML room = new HTML(line.getRoom() == null ? "" : line.getRoom());
 			room.addStyleName("class-room");
@@ -693,7 +737,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		}
 	}
 	
-	class ClassLimit extends P {
+	class ClassLimit extends P implements HasUpdate {
 		private NumberBox iMin, iMax;
 		ClassLimit(ClassLine line) {
 			super("class-limit");
@@ -701,7 +745,6 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			iMin.setValue(line.getMinClassLimit());
 			iMin.setReadOnly(!line.isEditable() || line.getCancelled());
 			iMin.setWidth("40px");
-			iMin.setTabIndex(7000 + 2 * getRowCount());
 			if (line.getCancelled()) iMin.addStyleName("class-cancelled");
 			add(iMin);
 			iMax = new NumberBox(); iMax.setMaxLength(5);
@@ -710,7 +753,6 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			iMax.setWidth("40px");
 			iMax.getElement().getStyle().setMarginLeft(2, Unit.PX);
 			iMax.setVisible(iData.isDisplayMaxLimit());
-			iMax.setTabIndex(7000 + 2 * getRowCount() + 1);
 			if (line.getCancelled()) iMax.addStyleName("class-cancelled");
 			add(iMax);
 			iMin.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -747,6 +789,11 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		public void setMaxVisible(boolean visible) {
 			iMax.setVisible(visible);
 		}
+		@Override
+		public void update(int row) {
+			iMin.setTabIndex(7000 + 2 * getRowCount());
+			iMax.setTabIndex(7000 + 2 * getRowCount() + 1);
+		}
 	}
 	
 	private class Cancelled extends Label implements HasColSpan {
@@ -764,5 +811,208 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			return colSpan;
 		}
 		
+	}
+	
+	private interface Check {
+		public boolean check(ClassLine line);
+	}
+	
+	private interface HasUpdate {
+		public void update(int row);
+	}
+	
+	private class Buttons extends P implements HasUpdate {
+		private Buttons() {
+			super("class-buttons");
+		}
+
+		@Override
+		public void update(int row) {
+			for (int i = 0; i < getWidgetCount(); i++)
+				((HasUpdate)getWidget(i)).update(row);
+		}
+	}
+	
+	private class Operation extends P implements HasUpdate, Focusable {
+		private Image iBlank;
+		private ImageButton iButton;
+		private ClassLine iLine;
+		private int iButtonIndex;
+		private ClickHandler iClickHandler;
+		private Check iCheck;
+		private boolean iLastCheck = false;
+		
+		private Operation(ClassLine line, ImageResource image, String title, int buttonIndex, ClickHandler click, Check check) {
+			iButton = new ImageButton(image);
+			iButton.setTitle(title);
+			iButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (isEnabled())
+						iClickHandler.onClick(event);
+				}
+			});
+			iBlank = new Image(RESOURCES.blank());
+			iLine = line; iClickHandler = click; iCheck = check;
+			iButtonIndex = buttonIndex;
+			add(iBlank);
+		}
+		
+		@Override
+		public void update(int row) {
+			boolean check = iCheck.check(iLine);
+			if (check != iLastCheck) {
+				iLastCheck = check;
+				clear();
+				if (iLastCheck) {
+					add(iButton);
+					iButton.setTabIndex(2000 + 5 * row + iButtonIndex);
+				} else {
+					add(iBlank);
+				}
+			}
+		}
+		
+		@Override
+		public void setFocus(boolean focus) {
+			if (iLastCheck)
+				iButton.setFocus(focus);
+		}
+
+		@Override
+		public int getTabIndex() {
+			if (iLastCheck)
+				return iButton.getTabIndex();
+			else
+				return -1;
+		}
+
+		@Override
+		public void setAccessKey(char key) {
+			iButton.setAccessKey(key);
+		}
+
+		@Override
+		public void setTabIndex(int index) {
+			iButton.setTabIndex(index);
+		}
+	}
+	
+	private interface MultiCheck {
+		public int check(ClassLine line);
+	}
+	
+	private class MultiOperation extends P implements HasUpdate, Focusable {
+		private ClassLine iLine;
+		private Image iBlank;
+		private ImageButton[] iButton;
+		private int iButtonIndex;
+		protected ClickHandler[] iClickHandler;
+		protected MultiCheck iCheck;
+		protected int iLastCheck = -1;
+		
+		private MultiOperation(ClassLine line, ImageResource[] image, String[] title, int buttonIndex, ClickHandler[] click, MultiCheck check) {
+			iBlank = new Image(RESOURCES.blank());
+			iButton = new ImageButton[image.length];
+			for (int i = 0; i < image.length; i++) {
+				iButton[i] = new ImageButton(image[i]);
+				iButton[i].setTitle(title[i]);
+				iButton[i].addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						if (iLastCheck >= 0)
+							iClickHandler[iLastCheck].onClick(event);
+					}
+				});
+			}
+			iLine = line; iClickHandler = click; iCheck = check;
+			iButtonIndex = buttonIndex;
+			add(iBlank);
+		}
+		
+		@Override
+		public void update(int row) {
+			int check = iCheck.check(iLine);
+			if (check != iLastCheck) {
+				iLastCheck = check;
+				clear();
+				if (iLastCheck >= 0) {
+					add(iButton[iLastCheck]);
+					iButton[iLastCheck].setTabIndex(2000 + 5 * row + iButtonIndex);
+				} else {
+					add(iBlank);
+				}
+			}
+		}
+		
+		@Override
+		public void setFocus(boolean focus) {
+			if (iLastCheck >= 0)
+				iButton[iLastCheck].setFocus(focus);
+		}
+
+		@Override
+		public int getTabIndex() {
+			if (iLastCheck >= 0)
+				return iButton[iLastCheck].getTabIndex();
+			else
+				return -1;
+		}
+
+		@Override
+		public void setAccessKey(char key) {
+			for (int i = 0; i < iButton.length; i++)
+				iButton[i].setAccessKey(key);
+		}
+
+		@Override
+		public void setTabIndex(int index) {
+			if (iLastCheck >= 0)
+				iButton[iLastCheck].setTabIndex(index);
+		}
+	}
+	
+	private class MyNumberBox extends NumberBox implements HasUpdate {
+		private int iBaseIndex;
+		MyNumberBox(int baseIndex) {
+			iBaseIndex = baseIndex;
+		}
+		@Override
+		public void update(int row) {
+			setTabIndex(iBaseIndex + row);
+		}
+	}
+	
+	private class MyCheckBox extends CheckBox implements HasUpdate {
+		private int iBaseIndex;
+		MyCheckBox(int baseIndex) {
+			iBaseIndex = baseIndex;
+		}
+		@Override
+		public void update(int row) {
+			setTabIndex(iBaseIndex + row);
+		}
+	}
+	
+	private class MyListBox extends ListBox implements HasUpdate {
+		private int iBaseIndex;
+		MyListBox(int baseIndex) {
+			iBaseIndex = baseIndex;
+		}
+		@Override
+		public void update(int row) {
+			setTabIndex(iBaseIndex + row);
+		}
+	}
+	
+	private class MyTextBox extends UniTimeTextBox implements HasUpdate {
+		private int iBaseIndex;
+		MyTextBox(int baseIndex) {
+			iBaseIndex = baseIndex;
+		}
+		@Override
+		public void update(int row) {
+			setTabIndex(iBaseIndex + row);
+		}
 	}
 }

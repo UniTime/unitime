@@ -7721,3 +7721,16 @@ unitime-RoomSharingWidget .legend .blank {
 	display: list-item;
 	list-style-position: inside;
 }
+
+.unitime-MultipleClassSetup .class-buttons {
+	padding: 0px 1px 0px 1px;
+}
+
+.unitime-MultipleClassSetup .class-buttons div {
+	display: inline-block;
+	margin: -2px;
+}
+
+.unitime-MultipleClassSetup .class-buttons img {
+	margin: 2px;
+}
