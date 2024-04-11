@@ -125,4 +125,16 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/accept_gold.png")
 	ImageResource reSchedulingOn();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/cancel.png")
+	ImageResource cancelClass();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/reopen.png")
+	ImageResource reopenClass();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/blank-action.png")
+	ImageResource blank();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/attention.png")
+	ImageResource attention();
 }

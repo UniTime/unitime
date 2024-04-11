@@ -68,6 +68,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	
 	public String buttonsTable(InstrOfferingConfig ioc, SessionContext context) {
 		StringBuffer btnTable = new StringBuffer("");
+		btnTable.append("<A name=\"ioc" + ioc.getUniqueId() + "\"></A>");
 		btnTable.append("<div class='unitime-MainTableHeader'><div class='unitime-HeaderPanel' style='margin-bottom: 0px;'>");
 		btnTable.append("<div class='left'><div class='title'>");
 		String configName = ioc.getName();
@@ -91,12 +92,20 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("</td>");
 	        }
 	        
-	        if (context.hasPermission(ioc, Right.MultipleClassSetup)) {
-		        btnTable.append("<td>");
+	        if (ApplicationProperty.LegacyClassSetup.isTrue() && context.hasPermission(ioc, Right.MultipleClassSetup)) {
+	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingModify.action' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
+		        btnTable.append("</td>");
+	        }
+	        
+	        if (ApplicationProperty.LegacyClassSetup.isFalse() && context.hasPermission(ioc, Right.MultipleClassSetup)) {
+	        	btnTable.append("<td>");
+				btnTable.append("<span id='" + ioc.getUniqueId().toString() + "' name='UniTimeGWT:MultipleClassSetupButton' style=\"display: none;\">");
+				btnTable.append(ioc.getUniqueId().toString());
+				btnTable.append("</span>");
 		        btnTable.append("</td>");
 	        }
 

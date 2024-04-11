@@ -55,6 +55,13 @@
 				<line>The pre-fetching can be enabled by setting unitime.rooms.prefetchRelations to true.</line>
 			</description>
 		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Multiple Class Setup page rewritten to GWT to make the page faster and more reliable.</line>
+				<line>To use the old (Struts2-based) page, set unitime.legacy.course.multiple_class_setup to true.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
