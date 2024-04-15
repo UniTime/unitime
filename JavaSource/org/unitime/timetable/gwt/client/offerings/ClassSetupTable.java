@@ -376,18 +376,8 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 	public Widget getColumnWidget(ClassSetupColumn column, final ClassLine line) {
 		switch (column) {
 		case ERROR:
-			P error = new P("class-error");
-			if (line.hasError()) {
-				Image err = new Image(RESOURCES.attention());
-				err.setTitle(line.getError());
-				err.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						UniTimeConfirmationDialog.alert(line.getError());
-					}
-				});
-				error.add(err);
-			}
+			Error error = new Error(line);
+			error.update(getRowCount());
 			return error;
 		case CLASS_NAME:
 			Label className = new Label(line.getLabel());
@@ -1013,6 +1003,32 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		@Override
 		public void update(int row) {
 			setTabIndex(iBaseIndex + row);
+		}
+	}
+	
+	private class Error extends P implements HasUpdate {
+		private ClassLine iLine;
+		private Image iError;
+		
+		Error(ClassLine line) {
+			super("class-error");
+			iLine = line;
+			iError = new Image(RESOURCES.attention());
+			iError.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					UniTimeConfirmationDialog.alert(iLine.getError());
+				}
+			});
+		}
+		
+		@Override
+		public void update(int row) {
+			clear();
+			if (iLine.hasError()) {
+				iError.setTitle(iLine.getError());
+				add(iError);
+			}
 		}
 	}
 }

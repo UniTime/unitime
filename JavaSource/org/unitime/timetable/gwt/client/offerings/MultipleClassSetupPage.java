@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.shared.ClassSetupInterface.Operation;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface.Reference;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -96,7 +98,14 @@ public class MultipleClassSetupPage extends Composite {
 			@Override
 			public void onSuccess(ClassSetupInterface result) {
 				initPage(result);
-				LoadingWidget.getInstance().hide();
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iHeader.setEnabled("back", true);
+						iHeader.setEnabled("update", true);
+						LoadingWidget.getInstance().hide();
+					}
+				});
 			}
 			
 			@Override
@@ -119,31 +128,52 @@ public class MultipleClassSetupPage extends Composite {
 		iHeader.addButton("update", GWTMSG.buttonUpdate(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (validate()) {
-					LoadingWidget.getInstance().show(GWTMSG.waitSavingData());
-					iData.setOperation(Operation.SAVE);
-					RPC.execute(iData, new AsyncCallback<ClassSetupInterface>() {
-						@Override
-						public void onSuccess(ClassSetupInterface result) {
-							ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
-						}
-						
-						@Override
-						public void onFailure(Throwable caught) {
+				iHeader.setEnabled("back", false);
+				iHeader.setEnabled("update", false);
+				LoadingWidget.getInstance().show(GWTMSG.waitSavingData());
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						if (validate()) {
+							iData.setOperation(Operation.SAVE);
+							RPC.execute(iData, new AsyncCallback<ClassSetupInterface>() {
+								@Override
+								public void onSuccess(ClassSetupInterface result) {
+									ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(GWTMSG.failedSave(caught.getMessage()), caught);
+									ToolBox.checkAccess(caught);
+									iHeader.setEnabled("update", true);
+									iHeader.setEnabled("back", true);
+									iError.clear();
+									P eh = new P("error-header"); eh.setText(GWTMSG.failedSave("")); iError.add(eh);
+									P em = new P("error-message"); em.setText(caught.getMessage()); iError.add(em);
+									iError.setVisible(true);									
+								}
+							});
+						} else {
 							LoadingWidget.getInstance().hide();
-							UniTimeNotifications.error(GWTMSG.failedSave(caught.getMessage()), caught);
-							ToolBox.checkAccess(caught);
+							iHeader.setEnabled("update", true);
+							iHeader.setEnabled("back", true);
 						}
-					});
-				}
+					}
+				});
 			}
 		});
 		iHeader.addButton("back", GWTMSG.buttonBack(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				iHeader.setEnabled("back", false);
+				iHeader.setEnabled("update", false);
 				ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
 			}
 		});
+		iHeader.setEnabled("update", false);
+		iHeader.setEnabled("back", false);
 		
 		iError = new P("error-table");
 		iForm.addRow(iError);
@@ -311,7 +341,10 @@ public class MultipleClassSetupPage extends Composite {
 		Set<String> errors = new TreeSet<>();
 		for (ClassLine line: iData.getClassLines()) {
 			line.setError(null);
-			if (line.getMinClassLimit() != null && line.getMaxClassLimit() != null && line.getMinClassLimit() > line.getMaxClassLimit()) {
+			if (line.getMinClassLimit() == null || line.getMaxClassLimit() == null) {
+				line.addError(MESSAGES.errorRequiredField(MESSAGES.columnLimit()));
+				errors.add(MESSAGES.errorRequiredField(MESSAGES.columnLimit()));
+			} else if (line.getMinClassLimit() > line.getMaxClassLimit()) {
 				line.addError(MESSAGES.errorMaxLessThanMinLimit(line.getLabel()));
 				errors.add(MESSAGES.errorMaxLessThanMinLimit(line.getLabel()));
 			}
@@ -407,7 +440,7 @@ public class MultipleClassSetupPage extends Composite {
 				}
 			}
 		}
-		iTable.setData(iData.getClassLines());
+		iTable.updateButtons();
 		updateCounts();
 		if (errors.isEmpty()) {
 			iError.clear(); iError.setVisible(false);
@@ -548,6 +581,8 @@ public class MultipleClassSetupPage extends Composite {
 						boolean badLimit = false;
 						boolean badLimitCancel = false;
 						if (!iData.isUnlimited()) {
+							if (line.getMinClassLimit() == null || line.getMaxClassLimit() == null)
+								badLimit = true;
 							if (iLimit.toInteger() == null || iLimit.toInteger() > maxLimit + canceled)
 								badLimit = true;
 							if (iLimit.toInteger() == null || iLimit.toInteger() > maxLimit)
