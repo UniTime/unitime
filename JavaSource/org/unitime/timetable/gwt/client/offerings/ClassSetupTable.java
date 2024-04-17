@@ -781,8 +781,8 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		}
 		@Override
 		public void update(int row) {
-			iMin.setTabIndex(7000 + 2 * getRowCount());
-			iMax.setTabIndex(7000 + 2 * getRowCount() + 1);
+			iMin.setTabIndex(7000 + 2 * row);
+			iMax.setTabIndex(7000 + 2 * row + 1);
 		}
 	}
 	
@@ -856,11 +856,12 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				clear();
 				if (iLastCheck) {
 					add(iButton);
-					iButton.setTabIndex(2000 + 5 * row + iButtonIndex);
 				} else {
 					add(iBlank);
 				}
 			}
+			if (check)
+				iButton.setTabIndex(2000 + 5 * row + iButtonIndex);
 		}
 		
 		@Override
@@ -928,11 +929,12 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 				clear();
 				if (iLastCheck >= 0) {
 					add(iButton[iLastCheck]);
-					iButton[iLastCheck].setTabIndex(2000 + 5 * row + iButtonIndex);
 				} else {
 					add(iBlank);
 				}
 			}
+			if (check >= 0)
+				iButton[iLastCheck].setTabIndex(2000 + 5 * row + iButtonIndex);
 		}
 		
 		@Override
