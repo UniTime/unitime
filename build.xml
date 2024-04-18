@@ -291,6 +291,7 @@
 			<tarfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
 			<tarfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<tarfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
+			<tarfileset dir="${basedir}/Documentation/Docker" includes="*.*" prefix="docker"/>
 			<tarfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
 			<tarfileset dir="${dist.dir}/tomcat10" includes="*.war" prefix="web-tomcat10"/>
 			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
@@ -358,6 +359,7 @@
 			<zipfileset dir="${basedir}/Documentation/Interfaces/Examples" includes="*.xml" prefix="doc/dtd"/>
 			<zipfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<zipfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
+			<zipfileset dir="${basedir}/Documentation/Docker" includes="*.*" prefix="docker"/>
 			<zipfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
 			<zipfileset dir="${dist.dir}/tomcat10" includes="*.war" prefix="web-tomcat10"/>
 			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
