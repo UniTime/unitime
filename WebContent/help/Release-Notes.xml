@@ -57,6 +57,13 @@
 				<line>A number of security updates following the recent advisories.</line>
 			</description>
 		</item>		
+		<item>
+			<name>Docker Installation</name>
+			<description>
+				<line>Added an ability to install UniTime as a Docker container.</line>
+				<line>See https://help.unitime.org/docker for more details.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
