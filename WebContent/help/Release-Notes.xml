@@ -100,6 +100,13 @@
 				<line>See https://help.unitime.org/OAuth2 for more details.</line>
 			</description>
 		</item>
+		<item>
+			<name>Docker Installation</name>
+			<description>
+				<line>Added an ability to install UniTime as a Docker container.</line>
+				<line>See https://help.unitime.org/docker for more details.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
