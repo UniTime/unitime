@@ -162,12 +162,12 @@ public class ImportTranslations {
 				CloseableHttpClient client = HttpClients.createDefault();
 				
 				for (Locale locale: iLocales) {
-					debug("Locale " + locale);
+					info("Locale " + locale.getValue().replace('_', '-').toLowerCase());
 					HttpPost post = new HttpPost("https://api.poeditor.com/v2/projects/export");
 					List<NameValuePair> params = new ArrayList<NameValuePair>(2);
 					params.add(new BasicNameValuePair("api_token", iToken));
 					params.add(new BasicNameValuePair("id", "568029"));
-					params.add(new BasicNameValuePair("language", locale.getValue()));
+					params.add(new BasicNameValuePair("language", locale.getValue().replace('_', '-').toLowerCase()));
 					params.add(new BasicNameValuePair("type", "po"));
 					post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 					CloseableHttpResponse response = client.execute(post);
