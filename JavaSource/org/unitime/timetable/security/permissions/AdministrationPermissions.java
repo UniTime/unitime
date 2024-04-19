@@ -24,6 +24,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
@@ -169,10 +170,23 @@ public class AdministrationPermissions {
 	public static class TimetableManagerDelete extends TimetableManagerEdit {
 		@Override
 		public boolean check(UserContext user, TimetableManager source) {
-			for (Department d: source.getDepartments())
-				if (!permissionSession.check(user, d.getSession()))
+			// Check the Edit permission first
+			if (!super.check(user, source)) return false;
+			// Session independent role -> can delete
+			if (user.getCurrentAuthority().hasRight(Right.SessionIndependent)) return true;
+			// Not session independent, must have the role for all sessions that the user has access to
+			//   except for inactive sessions
+			for (Department d: source.getDepartments()) {
+				// skip inactive and test sessions
+				if (d.getSession().getStatusType() == null || !d.getSession().getStatusType().isActive() || d.getSession().getStatusType().isTestSession()) continue;
+				// does not have the role in this session -> cannot delete
+				if (user.getAuthorities(user.getCurrentAuthority().getRole(), d.getSession()).isEmpty())
 					return false;
-			
+			}
+			// Session dependent role cannot delete a user with session independent role
+			for (ManagerRole role: source.getManagerRoles())
+				if (role.getRole().hasRight(Right.SessionIndependent))
+					return false;
 			return true;
 		}
 	}
