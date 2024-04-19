@@ -81,8 +81,6 @@ import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
 
-import com.google.gson.annotations.Since;
-
 /**
  * @author Tomas Muller
  */
