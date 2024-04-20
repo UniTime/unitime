@@ -82,6 +82,13 @@
 				<line>This is done by pre-fetching all exams and their relations (like the Examination Reports page already does).</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Splits</name>
+			<description>
+				<line>No longer impose a limit on the number of rooms an exam can use.</line>
+				<line>This fixes the ArrayIndexOutOfBoundsException when an exam is being split into more than 32 rooms.</line>
+			</description>
+		</item>
 	</category>	
 	<category>
 		<title>Administration</title>
