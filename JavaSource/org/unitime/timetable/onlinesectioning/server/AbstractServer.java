@@ -847,4 +847,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		}
 		return ret;
 	}
+	
+	@Override
+	public XSchedulingRule getSchedulingRule(Long studentId, StudentSchedulingRule.Mode mode, boolean isAdvisor, boolean isAdmin) {
+		XStudent student = getStudent(studentId);
+		if (student == null) return null;
+		return getSchedulingRule(student, mode, isAdvisor, isAdmin);
+	}
 }

@@ -1558,6 +1558,13 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				StudentSchedulingRuleDAO.getInstance().getSession());
 		return (rule == null ? null : new XSchedulingRule(rule));
 	}
+	
+	@Override
+	public XSchedulingRule getSchedulingRule(Long studentId, Mode mode, boolean isAdvisor, boolean isAdmin) {
+		XStudent student = getStudent(studentId);
+		if (student == null) return null;
+		return getSchedulingRule(student, mode, isAdvisor, isAdmin);
+	}
 
 	@Override
 	public Collection<XClassEnrollment> getStudentSchedule(String studentExternalId) {
