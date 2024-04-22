@@ -144,6 +144,7 @@ public interface OnlineSectioningServer {
 	public <E> void setProperty(String name, E value);
 	
 	public void setSchedulingRules(XSchedulingRules rules);
+	public XSchedulingRule getSchedulingRule(Long studentId, StudentSchedulingRule.Mode mode, boolean isAdvisor, boolean isAdmin);
 	public XSchedulingRule getSchedulingRule(XStudent student, StudentSchedulingRule.Mode mode, boolean isAdvisor, boolean isAdmin);
 	
 	public static interface Lock {
