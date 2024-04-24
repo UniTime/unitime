@@ -37,6 +37,7 @@ import org.jgroups.fork.ForkChannel;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.solver.jgroups.UniTimeRpcDispatcher;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 
 /**
@@ -51,7 +52,7 @@ public class RemoteQueueProcessor extends LocalQueueProcessor {
 	public RemoteQueueProcessor(JChannel channel, short scope) throws Exception {
 		super();
 		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
-		iDispatcher = new RpcDispatcher(iChannel, this);
+		iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		sInstance = this;
 	}
 	
@@ -60,7 +61,7 @@ public class RemoteQueueProcessor extends LocalQueueProcessor {
 		if (channel != null) {
 			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
 			iChannel.connect("UniTime:RPC:Queue");
-			iDispatcher = new RpcDispatcher(iChannel, this);
+			iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		}
 		if (oldChannel != null && oldChannel.isConnected()) {
 			oldChannel.disconnect();

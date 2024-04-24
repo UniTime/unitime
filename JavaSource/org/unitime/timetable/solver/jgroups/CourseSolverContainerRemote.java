@@ -65,7 +65,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 		
 	public CourseSolverContainerRemote(JChannel channel, short scope, boolean saveFileInfos) throws Exception {
 		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
-		iDispatcher = new RpcDispatcher(iChannel, this);
+		iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		iSaveFileInfos = saveFileInfos;
 	}
 	
@@ -75,7 +75,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 		if (channel != null) {
 			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
 			iChannel.connect("UniTime:RPC:Courses");
-			iDispatcher = new RpcDispatcher(iChannel, this);
+			iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		}
 		if (oldChannel != null && oldChannel.isConnected()) {
 			oldChannel.disconnect();

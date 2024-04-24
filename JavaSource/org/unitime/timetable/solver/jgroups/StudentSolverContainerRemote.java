@@ -47,7 +47,7 @@ public class StudentSolverContainerRemote extends StudentSolverContainer impleme
 		
 	public StudentSolverContainerRemote(JChannel channel, short scope) throws Exception {
 		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
-		iDispatcher = new RpcDispatcher(iChannel, this);
+		iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 	}
 	
 	@Override
@@ -56,7 +56,7 @@ public class StudentSolverContainerRemote extends StudentSolverContainer impleme
 		if (channel != null) {
 			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
 			iChannel.connect("UniTime:RPC:Students");
-			iDispatcher = new RpcDispatcher(iChannel, this);
+			iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		}
 		if (oldChannel != null && oldChannel.isConnected()) {
 			oldChannel.disconnect();

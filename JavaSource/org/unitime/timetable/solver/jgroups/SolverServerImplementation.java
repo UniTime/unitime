@@ -110,7 +110,7 @@ public class SolverServerImplementation extends AbstractSolverServer {
 		iLocal = local;
 		iChannel = channel;
 		iServerChannel = new ForkChannel(channel, String.valueOf(SCOPE_SERVER), "fork-" + SCOPE_SERVER);
-		iDispatcher = new RpcDispatcher(iChannel, this) {
+		iDispatcher = new UniTimeRpcDispatcher(iChannel, this) {
 			protected Object handleUpEvent(Event evt) throws Exception {
 				Object ret = super.handleUpEvent(evt);
 				switch(evt.getType()) {

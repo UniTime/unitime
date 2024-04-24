@@ -47,7 +47,7 @@ public class InstructorSchedulingContainerRemote extends InstructorSchedulingCon
 		
 	public InstructorSchedulingContainerRemote(JChannel channel, short scope) throws Exception {
 		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
-		iDispatcher = new RpcDispatcher(iChannel, this);
+		iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 	}
 	
 	@Override
@@ -56,7 +56,7 @@ public class InstructorSchedulingContainerRemote extends InstructorSchedulingCon
 		if (channel != null) {
 			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
 			iChannel.connect("UniTime:RPC:Instructors");
-			iDispatcher = new RpcDispatcher(iChannel, this);
+			iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		}
 		if (oldChannel != null && oldChannel.isConnected()) {
 			oldChannel.disconnect();
