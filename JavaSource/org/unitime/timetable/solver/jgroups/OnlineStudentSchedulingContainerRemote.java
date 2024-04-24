@@ -48,7 +48,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 
 	public OnlineStudentSchedulingContainerRemote(JChannel channel, short scope) throws Exception {
 		iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
-		iDispatcher = new RpcDispatcher(iChannel, this);
+		iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 	}
 	
 	@Override
@@ -57,7 +57,7 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 		if (channel != null) {
 			iChannel = new ForkChannel(channel, String.valueOf(scope), "fork-" + scope);
 			iChannel.connect("UniTime:RPC:Online");
-			iDispatcher = new RpcDispatcher(iChannel, this);
+			iDispatcher = new UniTimeRpcDispatcher(iChannel, this);
 		}
 		if (oldChannel != null && oldChannel.isConnected()) {
 			oldChannel.disconnect();
