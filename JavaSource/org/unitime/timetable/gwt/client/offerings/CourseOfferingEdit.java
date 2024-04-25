@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.client.courseofferings;
+package org.unitime.timetable.gwt.client.offerings;
 
 import java.util.ArrayList;
 import java.util.List;
