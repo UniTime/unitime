@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.hibernate.ObjectNotFoundException;
-import org.springframework.security.crypto.codec.Base64;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -420,7 +420,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 		public UrlSigner(String keyString) throws IOException {
 			keyString = keyString.replace('-', '+');
 			keyString = keyString.replace('_', '/');
-			key = Base64.decode(keyString.getBytes());
+			key = Base64.getDecoder().decode(keyString.getBytes());
 		}
 		
 		public String signRequest(String mapsUrl) throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, URISyntaxException, MalformedURLException {
@@ -430,7 +430,7 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			Mac mac = Mac.getInstance("HmacSHA1");
 			mac.init(sha1Key);
 			byte[] sigBytes = mac.doFinal(resource.getBytes());
-			String signature = new String(Base64.encode(sigBytes));
+			String signature = new String(Base64.getEncoder().encode(sigBytes));
 			signature = signature.replace('+', '-');
 			signature = signature.replace('/', '_');
 			return signature;
