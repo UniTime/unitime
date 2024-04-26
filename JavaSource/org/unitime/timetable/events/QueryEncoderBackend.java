@@ -24,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Base64;
 import java.util.Date;
 
 import javax.crypto.Cipher;
@@ -42,8 +43,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.model.HashedQuery;
 import org.unitime.timetable.model.dao.HashedQueryDAO;
 import org.unitime.timetable.security.SessionContext;
-
-import biweekly.util.org.apache.commons.codec.binary.Base64;
 
 /**
  * @author Tomas Muller
@@ -75,8 +74,7 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 		try {
 			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, secret());
-			//return new BigInteger(cipher.doFinal(text.getBytes())).toString(36);
-			return new Base64(-1, new byte[] {}, true).encodeAsString(cipher.doFinal(text.getBytes()));
+			return Base64.getUrlEncoder().withoutPadding().encodeToString(cipher.doFinal(text.getBytes()));
 		} catch (Exception e) {
 			throw new GwtRpcException("Encoding failed: " + e.getMessage(), e);
 		}
@@ -122,7 +120,7 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 				Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 				cipher.init(Cipher.DECRYPT_MODE, secret());
 				try {
-					return new String(cipher.doFinal(new Base64(-1, new byte[] {}, true).decode(text)));
+					return new String(cipher.doFinal(Base64.getUrlDecoder().decode(text)));
 				} catch (Exception e) {
 					try {
 						return new String(cipher.doFinal(new BigInteger(text, 36).toByteArray()));
