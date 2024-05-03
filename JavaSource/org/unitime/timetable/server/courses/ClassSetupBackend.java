@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,13 +50,17 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
@@ -322,6 +325,207 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
         }
 	}
 	
+	protected static boolean hasPreference(Preference p, Department currentManagingDept) {
+		if (p instanceof RoomPref) {
+			Location loc = ((RoomPref)p).getRoom();
+			for (RoomDept rd: loc.getRoomDepts())
+				if (rd.getDepartment().equals(currentManagingDept))
+					return true;
+		} else if (p instanceof BuildingPref) {
+			Building b = ((BuildingPref)p).getBuilding();
+			for (RoomDept rd: currentManagingDept.getRoomDepts())
+				if (rd.getRoom() instanceof Room && ((Room)rd.getRoom()).getBuilding().equals(b)) return true;
+		} else if (p instanceof RoomFeaturePref) {
+			RoomFeature rf = ((RoomFeaturePref)p).getRoomFeature();
+			return !(rf instanceof DepartmentRoomFeature) || ((DepartmentRoomFeature)rf).getDepartment().equals(currentManagingDept);
+		} else if (p instanceof RoomGroupPref) {
+			RoomGroup rg = ((RoomGroupPref)p).getRoomGroup();
+			return rg.isGlobal() || currentManagingDept.equals(rg.getDepartment());
+		}
+		return false;
+	}
+	
+	protected static boolean wouldGetWeakened(Preference p, boolean weaken) {
+		if (!weaken) return false;
+		return PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog()) || PreferenceLevel.sProhibited.equals(p.getPrefLevel().getPrefProlog());
+	}
+	
+	protected void updatePreferences(SchedulingSubpart ss, Department controllingDept, Department origManagingDept, Department currentManagingDept, Session hibSession, SessionContext context) {
+		if (ApplicationProperty.ClearPreferencesWhenManagingDepartmentIsChanged.isTrue()) {
+			// Push preferences up
+			if (!origManagingDept.equals(controllingDept)) {
+				for (Class_ c: ss.getClasses()) {
+					boolean classChanged = false;
+					if (c.getManagingDept().equals(origManagingDept)) {
+						Set<TimePattern> timePatterns = c.getTimePatterns();
+						for (TimePref tp: ss.getTimePreferences()) {
+							if (timePatterns != null && !timePatterns.contains(tp.getTimePattern())) {
+								TimePref ntp = new TimePref();
+								ntp.setOwner(c);
+								ntp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+								ntp.setTimePattern(tp.getTimePattern());
+								ntp.setPreference(tp.getPreference());
+								c.addToPreferences(ntp);
+								classChanged = true;
+							}
+						}
+						Set<Building> buildings = new HashSet<>();
+						for (BuildingPref bp: c.getBuildingPreferences())
+							buildings.add(bp.getBuilding());
+						for (BuildingPref bp: ss.getBuildingPreferences()) {
+							if (!buildings.contains(bp.getBuilding())){
+								BuildingPref nbp = new BuildingPref();
+								nbp.setOwner(c);
+								nbp.setPrefLevel(bp.getPrefLevel());
+								nbp.setBuilding(bp.getBuilding());
+								nbp.setDistanceFrom(bp.getDistanceFrom());
+								c.addToPreferences(nbp);
+								classChanged = true;
+							}
+						}
+						Set<Location> rooms = new HashSet<>();
+						for (RoomPref rp: c.getRoomPreferences())
+							rooms.add(rp.getRoom());
+						for (RoomPref rp: ss.getRoomPreferences()) {
+							if (!rooms.contains(rp.getRoom())){
+								RoomPref nrp = new RoomPref();
+								nrp.setOwner(c);
+								nrp.setPrefLevel(rp.getPrefLevel());
+								nrp.setRoom(rp.getRoom());
+								c.addToPreferences(nrp);
+								classChanged = true;
+							}
+						}
+						Set<RoomFeature> roomFeatures = new HashSet<>();
+						for (RoomFeaturePref rfp: c.getRoomFeaturePreferences())
+							roomFeatures.add(rfp.getRoomFeature());
+						for (RoomFeaturePref rfp: ss.getRoomFeaturePreferences()) {
+							if (!roomFeatures.contains(rfp.getRoomFeature())){
+								RoomFeaturePref nrfp = new RoomFeaturePref();
+								nrfp.setOwner(c);
+								nrfp.setPrefLevel(rfp.getPrefLevel());
+								nrfp.setRoomFeature(rfp.getRoomFeature());
+								c.addToPreferences(nrfp);
+								classChanged = true;
+							}
+						}
+						Set<RoomGroup> roomGroups = new HashSet<>();
+						for (RoomGroupPref rgp: c.getRoomGroupPreferences())
+							roomGroups.add(rgp.getRoomGroup());
+						for (RoomGroupPref rgp: ss.getRoomGroupPreferences()) {
+							if (!roomGroups.contains(rgp.getRoomGroup())){
+								RoomGroupPref nrgp = new RoomGroupPref();
+								nrgp.setOwner(c);
+								nrgp.setPrefLevel(rgp.getPrefLevel());
+								nrgp.setRoomGroup(rgp.getRoomGroup());
+								c.addToPreferences(nrgp);
+								classChanged = true;
+							}
+						}
+						if (classChanged)
+							hibSession.merge(c);
+					}
+				}
+			}
+		} else {
+			if (!origManagingDept.equals(controllingDept)) {
+		        boolean weakenTime = true;
+		        boolean weakenRoom = true;
+		        if (!currentManagingDept.isExternalManager()) {
+		        	weakenTime = false; 
+		        	weakenRoom = false;
+		        }
+		        if (weakenTime && (Boolean.TRUE.equals(currentManagingDept.isAllowReqTime()) || Boolean.TRUE.equals(controllingDept.isAllowReqTime())))
+		            weakenTime = false;
+		        if (weakenRoom && (Boolean.TRUE.equals(currentManagingDept.isAllowReqRoom()) || Boolean.TRUE.equals(controllingDept.isAllowReqRoom())))
+		            weakenRoom = false;
+		        for (Class_ c: ss.getClasses()) {
+					boolean classChanged = false;
+					if (c.getManagingDept().equals(origManagingDept)) {
+						Set<TimePattern> timePatterns = c.getTimePatterns();
+						for (TimePref tp: ss.getTimePreferences()) {
+							if (InstrOfferingConfigBackend.hasPreference(tp, currentManagingDept) && !InstrOfferingConfigBackend.toBeWeakened(tp, weakenRoom))
+								continue;
+							if (timePatterns != null && !timePatterns.contains(tp.getTimePattern())) {
+								TimePref ntp = new TimePref();
+								ntp.setOwner(c);
+								ntp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+								ntp.setTimePattern(tp.getTimePattern());
+								ntp.setPreference(tp.getPreference());
+								c.addToPreferences(ntp);
+								classChanged = true;
+							}
+						}
+						Set<Building> buildings = new HashSet<>();
+						for (BuildingPref bp: c.getBuildingPreferences())
+							buildings.add(bp.getBuilding());
+						for (BuildingPref bp: ss.getBuildingPreferences()) {
+							if (InstrOfferingConfigBackend.hasPreference(bp, currentManagingDept) && !InstrOfferingConfigBackend.toBeWeakened(bp, weakenRoom))
+								continue;
+							if (!buildings.contains(bp.getBuilding())){
+								BuildingPref nbp = new BuildingPref();
+								nbp.setOwner(c);
+								nbp.setPrefLevel(bp.getPrefLevel());
+								nbp.setBuilding(bp.getBuilding());
+								nbp.setDistanceFrom(bp.getDistanceFrom());
+								c.addToPreferences(nbp);
+								classChanged = true;
+							}
+						}
+						Set<Location> rooms = new HashSet<>();
+						for (RoomPref rp: c.getRoomPreferences())
+							rooms.add(rp.getRoom());
+						for (RoomPref rp: ss.getRoomPreferences()) {
+							if (InstrOfferingConfigBackend.hasPreference(rp, currentManagingDept) && !InstrOfferingConfigBackend.toBeWeakened(rp, weakenRoom))
+								continue;
+							if (!rooms.contains(rp.getRoom()) && !ss.getAvailableRooms().contains(rp.getRoom())){
+								RoomPref nrp = new RoomPref();
+								nrp.setOwner(c);
+								nrp.setPrefLevel(rp.getPrefLevel());
+								nrp.setRoom(rp.getRoom());
+								c.addToPreferences(nrp);
+								classChanged = true;
+							}
+						}
+						Set<RoomFeature> roomFeatures = new HashSet<>();
+						for (RoomFeaturePref rfp: c.getRoomFeaturePreferences())
+							roomFeatures.add(rfp.getRoomFeature());
+						for (RoomFeaturePref rfp: ss.getRoomFeaturePreferences()) {
+							if (InstrOfferingConfigBackend.hasPreference(rfp, currentManagingDept) && !InstrOfferingConfigBackend.toBeWeakened(rfp, weakenRoom))
+								continue;
+							if (!roomFeatures.contains(rfp.getRoomFeature()) && !ss.getAvailableRoomFeatures().contains(rfp.getRoomFeature())) {
+								RoomFeaturePref nrfp = new RoomFeaturePref();
+								nrfp.setOwner(c);
+								nrfp.setPrefLevel(rfp.getPrefLevel());
+								nrfp.setRoomFeature(rfp.getRoomFeature());
+								c.addToPreferences(nrfp);
+								classChanged = true;
+							}
+						}
+						Set<RoomGroup> roomGroups = new HashSet<>();
+						for (RoomGroupPref rgp: c.getRoomGroupPreferences())
+							roomGroups.add(rgp.getRoomGroup());
+						for (RoomGroupPref rgp: ss.getRoomGroupPreferences()) {
+							if (InstrOfferingConfigBackend.hasPreference(rgp, currentManagingDept) && !InstrOfferingConfigBackend.toBeWeakened(rgp, weakenRoom))
+								continue;
+							if (!roomGroups.contains(rgp.getRoomGroup()) && !ss.getAvailableRoomGroups().contains(rgp.getRoomGroup())) {
+								RoomGroupPref nrgp = new RoomGroupPref();
+								nrgp.setOwner(c);
+								nrgp.setPrefLevel(rgp.getPrefLevel());
+								nrgp.setRoomGroup(rgp.getRoomGroup());
+								c.addToPreferences(nrgp);
+								classChanged = true;
+							}
+						}
+						if (classChanged)
+							hibSession.merge(c);
+					}
+				}
+			}
+		}
+		InstrOfferingConfigBackend.updatePreferences(ss, controllingDept, currentManagingDept, hibSession, context);
+	}	
+	
 	private void addOrUpdateClasses(ClassSetupInterface form, InstrOfferingConfig ioc, Session hibSession, SessionContext context) {
 		Map<Long, Class_> tmpClsToRealClass = new HashMap<>();
 		Map<Long, Class_> deleteClasses = new HashMap<>();
@@ -417,29 +621,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 					changed = true;
 					Department managingDept = DepartmentDAO.getInstance().get(managingDeptId, hibSession);
 					modifiedClass.setManagingDept(managingDept, context.getUser(), hibSession);
-					Set<TimePref> timePrefs = modifiedClass.getTimePreferences();
-					modifiedClass.getPreferences().clear();
-
-                    boolean weaken = true;
-                    if (!managingDept.isExternalManager()) weaken = false;
-                    if (weaken && Boolean.TRUE.equals(managingDept.isAllowReqTime()))
-                        weaken = false;
-                    if (weaken && Boolean.TRUE.equals(modifiedClass.getControllingDept().isAllowReqTime()))
-                        weaken = false;
-
-					for(Iterator it = timePrefs.iterator(); it.hasNext();){
-                        TimePref timePref = (TimePref)it.next();
-						TimePattern timePattern = timePref.getTimePattern();
-						if (timePattern.isExactTime()) continue;
-						TimePref tp = new TimePref();
-						tp.setOwner(modifiedClass);
-						tp.setPrefLevel(timePref.getPrefLevel());
-						tp.setTimePattern(timePattern);
-						tp.setPreference(timePref.getPreference());
-                        if (weaken) tp.weakenHardPreferences();
-						modifiedClass.addToPreferences(tp);
-					}
-					modifiedClass.deleteAllDistributionPreferences(hibSession);
+					InstrOfferingConfigBackend.updatePreferences(modifiedClass, managingDept, modifiedClass.getControllingDept(), hibSession, context);
 				}
 				if (!ToolBox.equals(modifiedClass.getDatePattern() == null ? null : modifiedClass.getDatePattern().getUniqueId(), datePatternId)) {
 					changed = true;
@@ -518,119 +700,12 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 	}
 	
     private void modifySubparts(ClassSetupInterface form, InstrOfferingConfig ioc, Map<Long, Department> origSubpartManagingDept, Session hibSession, SessionContext context) {
-    	PreferenceLevel prefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired);
-    	RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(ioc.getSession());
     	for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
     		Department controllingDept = ss.getControllingDept();
     		Department currentManagingDept = ss.getManagingDept();
     		Department origManagingDept = origSubpartManagingDept.get(ss.getUniqueId());
-
-    		if (origManagingDept != null && !currentManagingDept.equals(origManagingDept)) {
-    			if (!origManagingDept.equals(controllingDept)) {
-    				for (Class_ c: ss.getClasses()) {
-    					boolean classChanged = false;
-    					if (c.getManagingDept().equals(origManagingDept)) {
-    						Set<TimePattern> timePatterns = c.getTimePatterns();
-    						for (TimePref tp: ss.getTimePreferences()) {
-    							if (timePatterns != null && !timePatterns.contains(tp.getTimePattern())) {
-    								TimePref ntp = new TimePref();
-    								ntp.setOwner(c);
-    								ntp.setPrefLevel(prefLevel);
-    								ntp.setTimePattern(tp.getTimePattern());
-    								ntp.setPreference(tp.getPreference());
-    								c.addToPreferences(ntp);
-    								classChanged = true;
-    							}
-    						}
-    						Set<Building> buildings = new HashSet<>();
-    						for (BuildingPref bp: c.getBuildingPreferences())
-    							buildings.add(bp.getBuilding());
-    						for (BuildingPref bp: ss.getBuildingPreferences()) {
-								if (!buildings.contains(bp.getBuilding())){
-									BuildingPref nbp = new BuildingPref();
-									nbp.setOwner(c);
-									nbp.setPrefLevel(bp.getPrefLevel());
-									nbp.setBuilding(bp.getBuilding());
-									nbp.setDistanceFrom(bp.getDistanceFrom());
-									c.addToPreferences(nbp);
-									classChanged = true;
-								}
-							}
-    						Set<Location> rooms = new HashSet<>();
-    						for (RoomPref rp: c.getRoomPreferences())
-    							rooms.add(rp.getRoom());
-    						for (RoomPref rp: ss.getRoomPreferences()) {
-    							if (!rooms.contains(rp.getRoom())){
-									RoomPref nrp = new RoomPref();
-									nrp.setOwner(c);
-									nrp.setPrefLevel(rp.getPrefLevel());
-									nrp.setRoom(rp.getRoom());
-									c.addToPreferences(nrp);
-									classChanged = true;
-								}
-							}
-    						Set<RoomFeature> roomFeatures = new HashSet<>();
-    						for (RoomFeaturePref rfp: c.getRoomFeaturePreferences())
-    							roomFeatures.add(rfp.getRoomFeature());
-    						for (RoomFeaturePref rfp: ss.getRoomFeaturePreferences()) {
-    							if (!roomFeatures.contains(rfp.getRoomFeature())){
-    								RoomFeaturePref nrfp = new RoomFeaturePref();
-									nrfp.setOwner(c);
-									nrfp.setPrefLevel(rfp.getPrefLevel());
-									nrfp.setRoomFeature(rfp.getRoomFeature());
-									c.addToPreferences(nrfp);
-									classChanged = true;
-								}
-							}
-    						Set<RoomGroup> roomGroups = new HashSet<>();
-    						for (RoomGroupPref rgp: c.getRoomGroupPreferences())
-    							roomGroups.add(rgp.getRoomGroup());
-    						for (RoomGroupPref rgp: ss.getRoomGroupPreferences()) {
-    							if (!roomGroups.contains(rgp.getRoomGroup())){
-    								RoomGroupPref nrgp = new RoomGroupPref();
-    								nrgp.setOwner(c);
-									nrgp.setPrefLevel(rgp.getPrefLevel());
-									nrgp.setRoomGroup(rgp.getRoomGroup());
-									c.addToPreferences(nrgp);
-									classChanged = true;
-    							}
-    						}
-    						if (classChanged)
-    							hibSession.merge(c);
-    					}
-    				}
-    			}
-    			
-    			ss.deleteAllDistributionPreferences(hibSession);
-
-                boolean weaken = true;
-                if (!currentManagingDept.isExternalManager()) weaken = false;
-                if (weaken && Boolean.TRUE.equals(currentManagingDept.isAllowReqTime()))
-                    weaken = false;
-                if (weaken && Boolean.TRUE.equals(ss.getControllingDept().isAllowReqTime()))
-                    weaken = false;
-
-				Set<TimePref> timePrefs = ss.getTimePreferences();
-				ss.getPreferences().clear();
-				for (TimePref timePref: timePrefs) {
-					TimePref tp = new TimePref();
-					tp.setOwner(ss);
-					tp.setPrefLevel(timePref.getPrefLevel());
-					tp.setTimePattern(timePref.getTimePattern());
-					tp.setPreference(timePref.getPreference());
-                    if (weaken)
-                        tp.weakenHardPreferences();
-					ss.addToPreferences(tp);
-				}
-    			if (currentManagingDept.equals(controllingDept) && rg!=null) {
-    				RoomGroupPref rgp = new RoomGroupPref();
-					rgp.setOwner(ss);
-					rgp.setPrefLevel(prefLevel);
-					rgp.setRoomGroup(rg);
-					ss.addToPreferences(rgp);
-    			}
-    			hibSession.merge(ss);
-    		}
+    		if (origManagingDept != null && !currentManagingDept.equals(origManagingDept))
+    			updatePreferences(ss, controllingDept, origManagingDept, currentManagingDept, hibSession, context);
     	}
 	}
 }

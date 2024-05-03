@@ -83,12 +83,20 @@ public class WebInstrOfferingConfigTableBuilder extends
 		    btnTable.append("<div class='right unitime-NoPrint' style='line-height: 29px; vertical-align: bottom; font-size: small;'>");
 	        btnTable.append("<table border='0' align='right' cellspacing='1' cellpadding='0'><tr>");
 	        
-	        if (context.hasPermission(ioc, Right.InstrOfferingConfigEdit)) {
+	        if (ApplicationProperty.LegacyInstrOfferingConfig.isTrue() && context.hasPermission(ioc, Right.InstrOfferingConfigEdit)) {
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.action' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='form.configId' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='gwt-Button'>");
 		        btnTable.append("	</form>");
+		        btnTable.append("</td>");
+	        }
+	        
+	        if (ApplicationProperty.LegacyInstrOfferingConfig.isFalse() && context.hasPermission(ioc, Right.InstrOfferingConfigEdit)) {
+	        	btnTable.append("<td>");
+				btnTable.append("<span id='" + ioc.getUniqueId().toString() + "' name='UniTimeGWT:InstrOfferingConfigButton' style=\"display: none;\">");
+				btnTable.append(ioc.getUniqueId().toString());
+				btnTable.append("</span>");
 		        btnTable.append("</td>");
 	        }
 	        

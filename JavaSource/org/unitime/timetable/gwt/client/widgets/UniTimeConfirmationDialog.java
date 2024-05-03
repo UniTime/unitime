@@ -219,6 +219,10 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 		new UniTimeConfirmationDialog(Type.ALERT, message, null, null, null).center();
 	}
 	
+	public static void alert(String message, boolean html) {
+		new UniTimeConfirmationDialog(Type.ALERT, message, html, null, null, null).center();
+	}
+
 	public static void info(String message) {
 		new UniTimeConfirmationDialog(Type.INFO, message, null, null, null).center();
 	}

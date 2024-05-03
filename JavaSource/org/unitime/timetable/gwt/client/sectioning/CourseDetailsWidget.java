@@ -204,6 +204,10 @@ public class CourseDetailsWidget extends Composite {
 		reload(new CourseDetailsRpcRequest(subjectId, courseNumber));
 	}
 	
+	public void reload(Long courseId) {
+		reload(new CourseDetailsRpcRequest(courseId));
+	}
+	
 	private void reload(CourseDetailsRpcRequest request) {
 		iLoadingImage.setVisible(true);
 		if (iAnchor != null) {

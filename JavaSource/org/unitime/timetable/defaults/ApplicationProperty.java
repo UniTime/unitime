@@ -3106,7 +3106,19 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Multiple Class Setup: switch the user interface back to the old (Struts-based) class setup page")
 	LegacyClassSetup("unitime.legacy.course.multiple_class_setup"),
-	
+
+	@Type(Boolean.class)
+	@Since(4.8)
+	@DefaultValue("false")
+	@Description("Instructional Offering Config: switch the user interface back to the old (Struts-based) offering configuration page")
+	LegacyInstrOfferingConfig("unitime.legacy.course.instr_offering_config"),
+
+	@Type(Boolean.class)
+	@Since(4.8)
+	@DefaultValue("false")
+	@Description("Multiple Class Setup & Instructional Offering Config: when set to true, clear out all prefrences when a managing department is updated (except of time preferences which can be weakened)")
+	ClearPreferencesWhenManagingDepartmentIsChanged("unitime.legacy.course.clear_preferences"),
+
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Departments: switch the user interface back to the old (Struts-based) departments pages")

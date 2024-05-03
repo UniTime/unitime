@@ -90,6 +90,8 @@ import org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder;
 		@Result(name = "showConfigDetail", type = "tiles", location = "instructionalOfferingDetail.tiles"),
 		@Result(name = "addConfig", type = "redirect", location = "/instructionalOfferingConfigEdit.action",
 			params = { "form.instrOfferingId", "${form.instrOfferingId}", "uid", "${form.ctrlCrsOfferingId}", "op", "${op}"}),
+		@Result(name = "addConfigGWT", type = "redirect", location = "/gwt.action",
+			params = { "page", "instrOfferingConfig", "offering", "${form.instrOfferingId}", "op", "${op}"}),
 		@Result(name = "showInstructionalOfferings", type = "redirect", location = "/instructionalOfferingSearch.action",
 				params = { "backType", "InstructionalOffering", "backId", "${form.instrOfferingId}",
 						"anchor", "back"}),
@@ -195,7 +197,10 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 		// Add Configuration
 		if (op.equals(MSG.actionAddConfiguration())) {
 	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
-		    return "addConfig";
+			if (ApplicationProperty.LegacyInstrOfferingConfig.isTrue())
+				return "addConfig";
+			else
+				return "addConfigGWT";
 		}
 		
 		// Make Offering 'Offered'
@@ -203,7 +208,10 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 	    	sessionContext.checkPermission(form.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
 		    doMakeOffered();
 		    // Redirect to config edit
-		    return "addConfig";
+			if (ApplicationProperty.LegacyInstrOfferingConfig.isTrue())
+				return "addConfig";
+			else
+				return "addConfigGWT";
 		}
 		
 		// Make Offering 'Not Offered'

@@ -60,6 +60,19 @@
 			<description>
 				<line>Multiple Class Setup page rewritten to GWT to make the page faster and more reliable.</line>
 				<line>To use the old (Struts2-based) page, set unitime.legacy.course.multiple_class_setup to true.</line>
+				<line>When managing department is changed, only remove preferences that no longer apply (e.g., keep global room feature/group preferences).
+					<line>Former behavior (clear all room-related preferences) set unitime.legacy.course.clear_preferences to true.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Configuration</name>
+			<description>
+				<line>Instructional Offering Configuration page rewritten to GWT to make the page faster and more reliable.</line>
+				<line>To use the old (Struts2-based) page, set unitime.legacy.course.instr_offering_config to true.</line>
+				<line>When managing department is changed, only remove preferences that no longer apply (e.g., keep global room feature/group preferences).
+					<line>Former behavior (clear all room-related preferences) set unitime.legacy.course.clear_preferences to true.</line>
+				</line>
 			</description>
 		</item>
 	</category>

@@ -3924,6 +3924,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageMultipleClassSetup();
 	
+	@DefaultMessage("Instructional Offering Configuration")
+	@DoNotTranslate
+	String pageInstrOfferingConfig();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
