@@ -614,6 +614,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 						newClass.setRoomsSplitAttendance(line.getSplitAttendance());
 						newClass.setEnrollment(0);
 						newClass.setAssignments(new HashSet<Assignment>());
+						newClass.setPreferences(new HashSet<Preference>());
 						if (managingDeptId != null)
 							newClass.setManagingDept(DepartmentDAO.getInstance().get(managingDeptId, hibSession), context.getUser(), hibSession);
 						else
