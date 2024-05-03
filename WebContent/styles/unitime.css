@@ -7734,3 +7734,87 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-MultipleClassSetup .class-buttons img {
 	margin: 2px;
 }
+
+.unitime-InstrOfferingConfig .instructional-type-selection {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.unitime-InstrOfferingConfig .instructional-type-selection button {
+	height: 22px;
+	margin-left: 3px;
+}
+
+.unitime-InstrOfferingConfig .subpart-label {
+	display: inline-block;
+	white-space: nowrap;
+	min-width: 200px;
+}
+
+.unitime-InstrOfferingConfig .subpart-label .gwt-Label {
+	display: inline-block;
+}
+
+.unitime-InstrOfferingConfig .subpart-label img {
+	vertical-align: middle;
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.unitime-InstrOfferingConfig .subpart-buttons {
+	padding: 0px 1px 0px 1px;
+}
+
+.unitime-InstrOfferingConfig .subpart-buttons div {
+	display: inline-block;
+	margin: -2px;
+}
+
+.unitime-InstrOfferingConfig .subpart-buttons img {
+	margin: 2px;
+}
+
+.unitime-InstrOfferingConfig .error-table {
+	color: red;
+	border: 1px solid red;
+	padding: 5px;
+	margin: 5px;
+}
+
+.unitime-InstrOfferingConfig .error-message {
+	padding-left: 10px;
+	display: list-item;
+	list-style-position: inside;
+}
+
+.unitime-InstrOfferingConfig .bad-limit .class-limit input {
+	background-color: #FFD7D7;
+}
+
+.unitime-InstrOfferingConfig .bad-nbr-classes .subpart-nbr-classes {
+	background-color: #FFD7D7;
+}
+
+.unitime-InstrOfferingConfig .not-editable {
+	color: black;
+}
+
+.unitime-InstrOfferingConfig select:disabled {
+	background-color: transparent;
+	border: 1px solid transparent;
+	padding-left: 4px;
+	appearance: none;
+	color: black;
+	opacity: inherit;
+}
+
+.unitime-InstrOfferingConfig .gwt-SuggestBox-readonly {
+	border: 1px solid transparent;
+	font-style: normal;
+	background: transparent;
+	color: black;
+	opacity: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	font-weight: inherit;
+}

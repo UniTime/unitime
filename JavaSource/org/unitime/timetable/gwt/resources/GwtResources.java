@@ -137,4 +137,16 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/attention.png")
 	ImageResource attention();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/indent.png")
+	ImageResource indent();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/arrow_right.png")
+	ImageResource arrowRight();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/arrow_left.png")
+	ImageResource arrowLeft();
+
+	@Source("org/unitime/timetable/gwt/resources/icons/lock.png")
+	ImageResource lock();
 }
