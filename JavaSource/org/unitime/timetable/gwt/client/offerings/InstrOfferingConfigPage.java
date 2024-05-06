@@ -449,7 +449,7 @@ public class InstrOfferingConfigPage extends Composite {
 			boolean hasVariable = false;
 			int row = 1;
 			for (SubpartLine line: iData.getSubpartLines()) {
-				if (line.getMinClassLimit() != null && line.getMaxClassLimit() != null && line.getMinClassLimit() != line.getMaxClassLimit()) {
+				if (line.getMinClassLimit() != null && line.getMaxClassLimit() != null && !line.getMinClassLimit().equals(line.getMaxClassLimit())) {
 					hasVariable = true;
 				}
 				boolean badLimit = false;
@@ -476,7 +476,7 @@ public class InstrOfferingConfigPage extends Composite {
 							if (iData.isCheckLimits()) {
 								 if (line.getNumberOfClasses() * line.getMaxClassLimit() < iData.getLimit())
 										badLimit = true; // below configuration limit
-									else if (line.getNumberOfClasses() == 1 && line.getMaxClassLimit() != iData.getLimit())
+									else if (line.getNumberOfClasses() == 1 && !line.getMaxClassLimit().equals(iData.getLimit()))
 										badLimit = true;
 									else if (line.getNumberOfClasses() > 1 && line.getMaxClassLimit() > iData.getLimit())
 										badLimit = true;
@@ -583,7 +583,7 @@ public class InstrOfferingConfigPage extends Composite {
 			}
 
 			if (!iData.isUnlimited() && iData.isCheckLimits() && iData.getLimit() != null && !line.hasError()) {
-				if (line.getNumberOfClasses() == 1 && line.getMaxClassLimit() != iData.getLimit()) {
+				if (line.getNumberOfClasses() == 1 && !line.getMaxClassLimit().equals(iData.getLimit())) {
 					String error = MESSAGES.errorEqual(MESSAGES.messageLimitPerClassForIType(lblMax, line.getLabel()), MESSAGES.messageConfigurationLimit(iData.getLimit()));
 					errors.add(error);
 					line.addError(error);

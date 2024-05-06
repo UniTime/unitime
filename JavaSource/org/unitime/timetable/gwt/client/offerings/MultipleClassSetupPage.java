@@ -296,7 +296,7 @@ public class MultipleClassSetupPage extends Composite {
 			iVariableLimits.setVisible(!iData.isUnlimited());
 			boolean hasVariable = false;
 			for (ClassLine line: iData.getClassLines()) {
-				if (line.getMinClassLimit() != null && line.getMaxClassLimit() != null && line.getMinClassLimit() != line.getMaxClassLimit()) {
+				if (line.getMinClassLimit() != null && line.getMaxClassLimit() != null && !line.getMinClassLimit().equals(line.getMaxClassLimit())) {
 					hasVariable = true;
 				}
 			}

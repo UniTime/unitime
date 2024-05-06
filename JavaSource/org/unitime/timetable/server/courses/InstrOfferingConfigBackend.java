@@ -216,7 +216,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 		SubpartLine line = toLine(subpart, context);
 		line.setIndent(indent);
 		form.addSubpartLine(line);
-		if (line.getMinClassLimit() != line.getMaxClassLimit()) {
+		if (!line.getMinClassLimit().equals(line.getMaxClassLimit())) {
 			form.setDisplayOptionForMaxLimit(true);
 			form.setDisplayMaxLimit(true);
 		}
@@ -246,7 +246,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 		SubpartLine line = new SubpartLine();
 		line.setSubpartId(subpart.getUniqueId());
 		line.setIType(subpart.getItype().getItype());
-		line.setLabel(subpart.getItype().getAbbv().trim());
+		line.setLabel(subpart.getItype().getDesc().trim());
         if (subpart.getClasses() != null && !subpart.getClasses().isEmpty()) {
             line.setMinClassLimit(subpart.getMinClassLimit());
             line.setMaxClassLimit(subpart.getMaxClassLimit());
