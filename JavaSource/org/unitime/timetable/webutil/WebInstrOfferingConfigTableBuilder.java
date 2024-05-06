@@ -179,37 +179,6 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        
 	        this.setDisplayDistributionPrefs(false);
 	        
-	        if (isShowTimetable()) {
-	        	boolean hasTimetable = false;
-	        	if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
-	        		try {
-	                	if (classAssignment instanceof CachedClassAssignmentProxy) {
-	                		Vector allClasses = new Vector();
-		        			for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
-		        				SchedulingSubpart ss = (SchedulingSubpart)k.next();
-		        				for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
-		        					Class_ clazz = (Class_)l.next();
-		        					allClasses.add(clazz);
-		        				}
-		        			}
-	                		((CachedClassAssignmentProxy)classAssignment).setCache(allClasses);
-	                		hasTimetable = !classAssignment.getAssignmentTable(allClasses).isEmpty();
-	                	} else {
-		        			for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
-		        				SchedulingSubpart ss = (SchedulingSubpart)k.next();
-		        				for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
-		        					Class_ clazz = (Class_)l.next();
-		        					if (classAssignment.getAssignment(clazz)!=null) {
-		        						hasTimetable = true; break;
-		        					}
-		        				}
-		        			}
-	                	}
-	        		} catch (Exception e) {}
-	        	}
-	        	setDisplayTimetable(hasTimetable);
-	        }
-	        
 	        if (getDisplayConfigOpButtons()) {
         		try {
         			outputStream.write(this.buttonsTable(ioc, context));
@@ -244,13 +213,57 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        }
 	    	}
             setVisibleColumns(columnList);
-	        boolean hasInstructorAssignments = false;
-	        ss: for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
-	        	if (ss.isInstructorAssignmentNeeded()) { hasInstructorAssignments = true; break; }
-	        	for (Class_ c: ss.getClasses())
-	        		if (c.isInstructorAssignmentNeeded()) { hasInstructorAssignments = true; break ss; }
+            
+	        if (isShowTimetable()) {
+	        	boolean hasTimetable = false;
+	        	if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
+	        		try {
+	                	if (classAssignment instanceof CachedClassAssignmentProxy) {
+	                		Vector allClasses = new Vector();
+		        			for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
+		        				SchedulingSubpart ss = (SchedulingSubpart)k.next();
+		        				for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
+		        					Class_ clazz = (Class_)l.next();
+		        					allClasses.add(clazz);
+		        				}
+		        			}
+	                		((CachedClassAssignmentProxy)classAssignment).setCache(allClasses);
+	                		hasTimetable = !classAssignment.getAssignmentTable(allClasses).isEmpty();
+	                	} else {
+		        			for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
+		        				SchedulingSubpart ss = (SchedulingSubpart)k.next();
+		        				for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
+		        					Class_ clazz = (Class_)l.next();
+		        					if (classAssignment.getAssignment(clazz)!=null) {
+		        						hasTimetable = true; break;
+		        					}
+		        				}
+		        			}
+	                	}
+	        		} catch (Exception e) {}
+	        	}
+	        	setDisplayTimetable(hasTimetable);
 	        }
+            
+            // Show the External Id column when there is at least one class with an external id filled in
+	        // Show schedule print note when there is a class with a note filled in
+            boolean hasDivSec = false;
+            boolean hasSchedulePrintNote = false;
+	        boolean hasInstructorAssignments = false;
+            CourseOffering co = ioc.getInstructionalOffering().getControllingCourseOffering();
+	        for (SchedulingSubpart ss: ioc.getSchedulingSubparts()) {
+	        	if (ss.isInstructorAssignmentNeeded()) hasInstructorAssignments = true;
+	        	for (Class_ c: ss.getClasses()) {
+	        		String divSec = (isShowOriginalDivSecs() ? c.getClassSuffix() : c.getClassSuffix(co));
+	        		if (divSec != null && !divSec.isEmpty()) hasDivSec = true;
+	        		if (c.getSchedulePrintNote() != null && !c.getSchedulePrintNote().trim().isEmpty()) hasSchedulePrintNote = true;
+	        		if (c.isInstructorAssignmentNeeded()) hasInstructorAssignments = true;
+	        	}
+	        }
+	        setShowDivSec(hasDivSec);
+	        setShowSchedulePrintNote(hasSchedulePrintNote);
 	        setShowInstructorAssignment(hasInstructorAssignments);
+
 	        setDisplayInstructorPrefs(false);
 	        ClassDurationType dtype = ioc.getEffectiveDurationType();
         	TableStream configTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId(), dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());

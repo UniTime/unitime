@@ -213,11 +213,30 @@ public class WebClassListTableBuilder extends
     	columnList.add(MSG.columnPreferences());
     	columnList.add(MSG.columnInstructor());
     	columnList.add(MSG.columnTimetable());
-    	columnList.add(MSG.columnSchedulePrintNote());
+    	// columnList.add(MSG.columnSchedulePrintNote());
     	if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(co.getInstructionalOffering().getSessionId())) {
     		columnList.add(MSG.columnLms());
     	}
         setVisibleColumns(columnList);
+        
+        // Show the External Id column when there is at least one class with an external id filled in
+        for (Iterator i=classes.iterator();i.hasNext();) {
+			Class_ clazz = (Class_)i.next();
+        	String divSec = (isShowOriginalDivSecs() ? clazz.getClassSuffix() : clazz.getClassSuffix(co));
+        	if (divSec != null && !divSec.isEmpty()) {
+        		setShowDivSec(true);
+        		break;
+        	}
+        }
+        
+        // Show schedule print note when there is a class with a note filled in
+        for (Iterator i=classes.iterator();i.hasNext();) {
+			Class_ clazz = (Class_)i.next();
+        	if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().trim().isEmpty()) {
+        		setShowSchedulePrintNote(true);
+        		break;
+        	}
+        }
 
         if (isShowTimetable()) {
         	boolean hasTimetable = false;
@@ -235,7 +254,6 @@ public class WebClassListTableBuilder extends
         		} catch (Exception e) {}
         	}
         	setDisplayTimetable(hasTimetable);
-        	setShowDivSec(hasTimetable);
         }
         setUserSettings(context.getUser());
         

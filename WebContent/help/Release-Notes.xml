@@ -75,6 +75,26 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Scheduling Subpart Detail: Classes</name>
+			<description>
+				<line>Show External Id column when there is at least one classes with an external id filled in
+					(instead of showing the column when there is a class with a timetable).</line>
+				<line>Show Student Schedule Note when there is at least one class with a note
+					(instead of always showing the column).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Detail: Configuration</name>
+			<description>
+				<line>Show Timetable column when there is at least one class with a timetable
+					  (instead of always showing the Timetable columns).</line>
+				<line>Show External Id column when there is at least one classes with an external id filled in
+					(instead of always showing the column).</line>
+				<line>Show Student Schedule Note when there is at least one class with a note
+					(instead of never showing the column).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
