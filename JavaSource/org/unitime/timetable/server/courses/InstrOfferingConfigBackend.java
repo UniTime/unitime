@@ -152,6 +152,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
         form.setMaxNumberOfClasses(ApplicationProperty.SubpartMaxNumClasses.intValue());
         
         Department contrDept = io.getControllingCourseOffering().getSubjectArea().getDepartment();
+        form.addDepartment(-1l, "-", MSG.subpartMultipleManagers(), false);
         form.addDepartment(contrDept.getUniqueId(), contrDept.getDeptCode(), MSG.dropDeptDepartment());
 		for (Department d: Department.findAllExternal(io.getSessionId())) {
 			form.addDepartment(d.getUniqueId(), d.getDeptCode(), d.getExternalMgrLabel(),
@@ -270,6 +271,8 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
         if (!context.hasPermission(subpart, Right.InstrOfferingConfigEditSubpart) || mixedManaged) {
         	line.setEditable(false);
         	line.setCanDelete(false);
+        	if (mixedManaged)
+        		line.setDepartmentId(-1l);
         } else {
         	for (Class_ c: subpart.getClasses())
         		if (!context.hasPermission(c, Right.ClassDelete)) {

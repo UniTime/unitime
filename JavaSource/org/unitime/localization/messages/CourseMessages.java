@@ -5976,4 +5976,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Wait when got in [m]")
 	String chartTimesWaitGotIn();
+	
+	@DefaultMessage("Multiple Departments")
+	String subpartMultipleManagers();
 }
