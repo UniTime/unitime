@@ -22,37 +22,45 @@ package org.unitime.timetable.solver.jgroups;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import org.jgroups.Address;
 import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.blocks.MethodCall;
+import org.jgroups.blocks.Request;
+import org.jgroups.blocks.RequestCorrelator;
+import org.jgroups.blocks.RequestHandler;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.stack.Protocol;
 import org.jgroups.util.RspList;
-import org.jgroups.util.Util;
 
 /**
  * A special version of the {@link RpcDispatcher} to avoid an endless loop when
- * a message fails to be parsed (see JGRP-2790 issue). All RPC messages are sent
- * as {@link BytesMessage} to avoid an issue when any of the arguments cannot be parsed.
- * Moreover, {@link UniTimeRpcDispatcher#callRemoteMethod(Address, MethodCall, RequestOptions)}
- * will also ensure that the serialization error gets passed back to the client when it
- * happens on the response message.
+ * a message fails to be parsed (see JGRP-2790 issue).
+ * 
+ * All RPC messages are sent as {@link BytesMessage} to ensure that the message
+ * is serialized when {@link Message#getPayload()} {@link Message#setPayload(Object)}
+ * methods are called.
+ * 
+ * Moreover, a custom {@link RpcRequestCorrelator#handleResponse(Message, Header)}
+ * and {@link RpcRequestCorrelator#sendReply(Message, long, Object, boolean)} will also ensure
+ * that any serialization errors that happen on the other side are passed back to the caller.
  * 
  * @author Tomas Muller
  */
 public class UniTimeRpcDispatcher extends RpcDispatcher {
+	// register the custom request correlator
+	private static final short PROTOCOL_CUSTOM_CORRELATOR = 1234;
+	static {
+		ClassConfigurator.addProtocol(PROTOCOL_CUSTOM_CORRELATOR, RpcRequestCorrelator.class);
+	}
 	
 	public UniTimeRpcDispatcher(JChannel channel, Object server_obj) {
 		super(channel, server_obj);
-		try {
-			channel.getProtocolStack().getTransport().getMessageFactory().register((short)99, RpcMessage::new);
-		} catch (IllegalArgumentException e) {
-			// ignore duplicate registrations
-		}
+		setCorrelator(new RpcRequestCorrelator(prot_adapter, req_handler, local_addr));
 	}
 
 	@Override
@@ -87,7 +95,7 @@ public class UniTimeRpcDispatcher extends RpcDispatcher {
 	public <T> T callRemoteMethod(Address dest, MethodCall call, RequestOptions options) throws Exception {
 		// serialize immediately, not during transport
 		// also pass serialization errors back to the client
-        Message req=new RpcMessage(dest, call);
+        Message req=new BytesMessage(dest, call);
         T retval=super.sendMessage(req, options);
         if(log.isTraceEnabled())
             log.trace("dest=%s, method_call=%s, options=%s, retval: %s", dest, call, options, retval);
@@ -104,44 +112,48 @@ public class UniTimeRpcDispatcher extends RpcDispatcher {
         Message msg=new BytesMessage(dest, call);
         return super.sendMessageWithFuture(msg, opts);
     }
-	
-	@Override
-	public Object handle(Message req) throws Exception {
-		try {
-			return super.handle(req);
-		} catch (ClassCastException e) {
-			// check if the request message could not be parsed -> pass the parse error instead
-			Object method_call = req.getObject();
-			if (method_call instanceof InvocationTargetException)
-				throw (InvocationTargetException) method_call;
-			throw e;
-		}
-    }
-	
-	public static class RpcMessage extends BytesMessage {
-		RpcMessage() {
-			super();
-		}
-		
-		RpcMessage(Address dest, MethodCall call) {
-			super(dest, call);
-		}
-		
-		public Supplier<Message> create() { return RpcMessage::new; }
-		public short getType() { return 99; }
 
+	/**
+	 * Custom request correlator that checks for serialization errors during
+	 * {@link Message#getPayload()} {@link Message#setPayload(Object)} calls. When there is an error,
+	 * it is passed along instead of the original message.
+	 */
+	public static class RpcRequestCorrelator extends RequestCorrelator {
+		public RpcRequestCorrelator(Protocol down_prot, RequestHandler handler, Address local_addr) {
+			super(down_prot, handler, local_addr);
+		}
+		
 		@Override
-		public <T extends Object> T getObject(ClassLoader loader) {
-			if(array == null)
-	            return null;
-	        try {
-	            return isFlagSet(Flag.SERIALIZED)? Util.objectFromByteBuffer(array, offset, length, loader) : (T)getArray();
-	        } catch (Exception e) {
-	        	// message cannot be parsed > pretend the serialization error is the message
-	        	// this is to ensure that the serialization error gets returned back to the client
-	        	// and not just thrown in RequestCorrelator.handleResponse(..) and caught by UNICAST3.deliverMessage(..)
-	        	return (T)new InvocationTargetException(e);
+		protected void handleResponse(Message rsp, Header hdr) {
+			Request<?> req=requests.get(hdr.req_id);
+	        if (req != null) {
+	        	boolean threw_exception = false; 
+	        	Object retval = null;
+	        	try {
+	        		retval = rsp.getPayload();
+	        	} catch (Exception e) {
+		        	// message cannot be read > return the serialization error as the message
+		        	// this is to ensure that the serialization error gets returned back to the client
+					retval = wrap_exceptions ? new InvocationTargetException(e) : e;
+					threw_exception = true;
+				}
+	            req.receiveResponse(retval, rsp.getSrc(), hdr.type == Header.EXC_RSP || threw_exception);
 	        }
 		}
+		
+		@Override
+		protected void sendReply(final Message req, final long req_id, Object reply, boolean is_exception) {
+			Message rsp = makeReply(req).setFlag(req.getFlags(false), false, true);
+			try {
+		        rsp.setPayload(reply);
+			} catch (Exception e) {
+	        	// message cannot be written > send the serialization error as the message
+	        	// this is to ensure that the serialization error gets returned back to the client
+				rsp.setPayload(wrap_exceptions ? new InvocationTargetException(e) : e);
+				is_exception = true;
+			}
+			rsp.clearFlag(Message.Flag.RSVP); // JGRP-1940
+	        sendResponse(rsp, req_id, is_exception);
+	    }
 	}
 }
