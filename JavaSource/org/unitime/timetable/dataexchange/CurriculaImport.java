@@ -25,7 +25,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.dom4j.Element;
@@ -61,6 +61,10 @@ public class CurriculaImport extends BaseImport {
             String term   = root.attributeValue("term");
             String created = root.attributeValue("created");
 
+            boolean incremental = "true".equalsIgnoreCase(root.attributeValue("incremental", "false"));
+	        if (incremental)
+	        	info("Incremental mode.");
+
             Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
             if(session == null) {
                 throw new Exception("No session found for the given campus, year, and term.");
@@ -69,11 +73,30 @@ public class CurriculaImport extends BaseImport {
                 ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_CURRICULA, ChangeLog.Operation.UPDATE, null, null);
             }
             
-        	info("Deleting existing curricula...");
-        	for (Curriculum c: getHibSession().createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId", Curriculum.class).
-            	setParameter("sessionId", session.getUniqueId()).list()) {
-        		getHibSession().remove(c);
-        	}
+            if (!incremental) {
+            	info("Deleting all existing curricula...");
+            	for (Curriculum c: getHibSession().createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId", Curriculum.class).
+                	setParameter("sessionId", session.getUniqueId()).list()) {
+            		getHibSession().remove(c);
+            	}
+            } else {
+            	Set<String> curAbbvs = new HashSet<String>();
+            	for (Iterator i = root.elementIterator(); i.hasNext(); ) {
+                    Element curriculumElement = (Element) i.next();
+                    String abbv = curriculumElement.attributeValue("abbreviation");
+                    if (abbv != null) curAbbvs.add(abbv);
+            	}
+            	info("Deleting existing curricula with the same abbreviation as in the XML file...");
+            	int count = 0;
+            	for (Curriculum c: getHibSession().createQuery("select c from Curriculum c where c.department.session.uniqueId=:sessionId", Curriculum.class).
+                	setParameter("sessionId", session.getUniqueId()).list()) {
+            		if (curAbbvs.contains(c.getAbbv())) {
+            			getHibSession().remove(c);
+            			count++;
+            		}
+            	}
+            	info(count + " curricula removed.");
+            }
         	flush(false);
         	
         	info("Loading areas, departments, majors, and classifications...");

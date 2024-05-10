@@ -126,6 +126,15 @@
 	<category>
 		<title>Administration</title>
 		<item>
+			<name>Data Exchange: Curriculum Import</name>
+			<description>
+				<line>Added an incremental mode (when incremental="true" in the root element).</line>
+				<line>Only curricula of matching abbreviations are removed.
+					<line>If the XML contains curriculum A/M1, the existing A/M1 curriculum is deleted first.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Authentication: OAuth2</name>
 			<description>
 				<line>Added an ability to use OAuth2 authentication.</line>
