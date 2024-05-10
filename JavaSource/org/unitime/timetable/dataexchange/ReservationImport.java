@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Set;
 
 import org.dom4j.Element;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
@@ -68,6 +69,9 @@ public class ReservationImport  extends BaseImport {
             String term   = root.attributeValue("term");
             String created = root.attributeValue("created");
             String dateFormat = root.attributeValue("dateFormat", ReservationExport.sDateFormat);
+            boolean incremental = "true".equalsIgnoreCase(root.attributeValue("incremental", "false"));
+	        if (incremental)
+	        	info("Incremental mode.");
 
             Session session = Session.getSessionUsingInitiativeYearTerm(campus, year, term);
             if(session == null)
@@ -77,13 +81,39 @@ public class ReservationImport  extends BaseImport {
                 ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_RESERVATIONS, ChangeLog.Operation.UPDATE, null, null);
             }
             
-        	info("Deleting existing reservations...");
-        	for (Reservation r: getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session.uniqueId=:sessionId", Reservation.class).
-            	setParameter("sessionId", session.getUniqueId()).list()) {
-        		getHibSession().remove(r);
-        	}
+            if (!incremental) {
+            	info("Deleting all existing reservations...");
+            	for (Reservation r: getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session.uniqueId=:sessionId", Reservation.class).
+                	setParameter("sessionId", session.getUniqueId()).list()) {
+            		getHibSession().remove(r);
+            	}
+            } else {
+            	Set<String> courses = new HashSet<String>();
+            	for (Iterator i = root.elementIterator(); i.hasNext(); ) {
+                    Element reservationElement = (Element) i.next();
+                    courses.add(reservationElement.attributeValue("subject") + "|" + reservationElement.attributeValue("courseNbr") + "|" + reservationElement.attributeValue("type", "course"));
+            	}
+            	info("Deleting existing reservations for courses & types listed in the XML file...");
+            	int count = 0;
+            	for (Reservation r: getHibSession().createQuery("select r from Reservation r where r.instructionalOffering.session.uniqueId=:sessionId", Reservation.class).
+                    	setParameter("sessionId", session.getUniqueId()).list()) {
+            		boolean hasCourse = false;
+            		String type = getType(r);
+            		for (CourseOffering co: r.getInstructionalOffering().getCourseOfferings()) {
+            			if (courses.contains(co.getSubjectAreaAbbv() + "|" + co.getCourseNbr() + "|" + type)) {
+            				hasCourse = true;
+            				break;
+            			}
+            		}
+            		if (hasCourse) {
+            			getHibSession().remove(r);
+            			count ++;
+            		}
+            	}
+            	info(count + " reservations removed.");
+            }
         	flush(false);
-        	
+            
         	info("Loading areas, majors, classifications, and student groups...");
         	
         	Hashtable<String, AcademicArea> areasByAbbv = new Hashtable<String, AcademicArea>();
@@ -436,5 +466,25 @@ public class ReservationImport  extends BaseImport {
             throw e;
         }
 	}
+    
+    private String getType(Reservation reservation) {
+    	if (reservation instanceof OverrideReservation) {
+    		return ((OverrideReservation)reservation).getOverrideType().getReference().toLowerCase();
+    	} else if (reservation instanceof IndividualReservation) {
+    		return "individual";
+    	} else if (reservation instanceof LearningCommunityReservation) {
+    		return "lc";
+    	} else if (reservation instanceof StudentGroupReservation) {
+    		return "group";
+    	} else if (reservation instanceof CurriculumReservation) {
+    		return "curriculum";
+    	} else if (reservation instanceof CourseReservation) {
+    		return "course";
+    	} else if (reservation instanceof UniversalOverrideReservation) {
+    		return "universal";
+    	} else {
+    		return "unknown";
+    	}
+    }
     
 }
