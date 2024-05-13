@@ -412,6 +412,11 @@
 		<param-value>log4j2-UniTime.xml</param-value>
 	</context-param>
 	
+	<context-param>
+		<param-name>org.apache.tiles.definition.DefinitionsFactory.DEFINITIONS_CONFIG</param-name>
+		<param-value>/WEB-INF/tiles.xml</param-value>
+	</context-param> 
+	
 	<listener>
         <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
     </listener>

@@ -20,46 +20,46 @@
 <span<#rt/>
  name='UniTimeGWT:Calendar'<#rt/>
 <#if parameters.get("format")?has_content>
- format="${parameters.get("format")?html}"<#rt/>
+ format="${parameters.get("format")}"<#rt/>
 </#if>
 <#if parameters.get("outerStyle")?has_content>
- style="${parameters.get("outerStyle")?html}"<#rt/>
+ style="${parameters.get("outerStyle")}"<#rt/>
 </#if>
 <#if parameters.disabled!false>
  disabled="disabled"<#rt/>
 </#if>
 <#if fieldErrors?? && fieldErrors.containsKey(parameters.name)><#assign eValue = fieldErrors.get(parameters.name)>
- error="${eValue[0]!?html}"<#rt/>
+ error="${eValue[0]!}"<#rt/>
 </#if>
 <#if parameters.onchange??>
-  onchange="${parameters.onchange?html}"<#rt/>
+  onchange="${parameters.onchange}"<#rt/>
 </#if>
 ><#rt/>
 <input<#rt/>
- type="${(parameters.type!"text")?html}"<#rt/>
- name="${(parameters.name!"")?html}"<#rt/>
+ type="${(parameters.type!"text")}"<#rt/>
+ name="${(parameters.name!"")}"<#rt/>
  class="unitime-DateSelectionBox"<#rt/>
 <#if parameters.get("size")?has_content>
- size="${parameters.get("size")?html}"<#rt/>
+ size="${parameters.get("size")}"<#rt/>
 </#if>
 <#if parameters.maxlength?has_content>
- maxlength="${parameters.maxlength?html}"<#rt/>
+ maxlength="${parameters.maxlength}"<#rt/>
 </#if>
 <#if parameters.nameValue??>
- value="${parameters.nameValue?html}"<#rt/>
+ value="${parameters.nameValue}"<#rt/>
 </#if>
 <#if parameters.readonly!false>
  readonly="readonly"<#rt/>
 </#if>
 <#if parameters.tabindex?has_content>
- tabindex="${parameters.tabindex?html}"<#rt/>
+ tabindex="${parameters.tabindex}"<#rt/>
 </#if>
 <#if parameters.id?has_content>
- id="${parameters.id?html}"<#rt/>
+ id="${parameters.id}"<#rt/>
 </#if>
 <#include "/${parameters.templateDir}/${parameters.expandTheme}/css.ftl" />
 <#if parameters.title?has_content>
- title="${parameters.title?html}"<#rt/>
+ title="${parameters.title}"<#rt/>
 </#if>
 <#include "/${parameters.templateDir}/${parameters.expandTheme}/common-attributes.ftl" />
 <#include "/${parameters.templateDir}/${parameters.expandTheme}/dynamic-attributes.ftl" />

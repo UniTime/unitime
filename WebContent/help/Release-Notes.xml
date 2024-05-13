@@ -151,6 +151,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Technology Upgrade</name>
+			<description>
+				<line>Hibernate upgraded to version 6.4 (from 6.2).
+					<line>Please note that in HQL, = null or != null no longer works (use is null or is not null instead).</line>
+				</line>
+				<line>Apache Struts upgraded to version 6.4 (from 2.5).</line>
+			</description>
+		</item>
+		<item>
 			<name>Authentication: OAuth2</name>
 			<description>
 				<line>Added an ability to use OAuth2 authentication.</line>
