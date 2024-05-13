@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
- <!DOCTYPE struts PUBLIC
-    "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
-    "http://struts.apache.org/dtds/struts-2.5.dtd">
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 6.0//EN"
+        "https://struts.apache.org/dtds/struts-6.0.dtd">
 <!-- 
  * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
@@ -32,6 +32,7 @@
     <constant name="struts.multipart.saveDir" value="${catalina.base}/data/unitime/uploads"/>
     <constant name="struts.multipart.maxSize" value="10737418240"/>
     <constant name="struts.el.throwExceptionOnFailure" value="true"/>
+    <constant name="struts.ui.checkbox.submitUnchecked" value="true"/>
     <package name="unitime" extends="convention-default">
     	<result-types>
 	        <result-type name="tiles" class="org.apache.struts2.views.tiles.TilesResult" />
