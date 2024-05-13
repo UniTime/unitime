@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
 
 import org.apache.struts2.StrutsStatics;
-import org.apache.struts2.interceptor.ServletRequestAware;
-import org.apache.struts2.interceptor.ServletResponseAware;
+import org.apache.struts2.action.ServletRequestAware;
+import org.apache.struts2.action.ServletResponseAware;
 import org.springframework.context.ApplicationContext;
 import org.unitime.timetable.form.UniTimeForm;
 import org.unitime.timetable.security.SessionContext;
@@ -64,12 +64,14 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 	public String getOp() { return op; }
 	public void setOp(String op) { this.op = op; }
 	
-	public void setServletRequest(HttpServletRequest request) {
+	@Override
+	public void withServletRequest(HttpServletRequest request) {
 		this.request = request;
 		this.sessionContext = new HttpSessionContext(request.getSession());
 	}
 	
-	public void setServletResponse(HttpServletResponse response) {
+	@Override
+	public void withServletResponse(HttpServletResponse response) {
 		this.response = response;
 	}
 	
