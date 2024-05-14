@@ -151,6 +151,13 @@
 			</description>
 		</item>
 		<item>
+			<name>User Context: Test Sessions</name>
+			<description>
+				<line>Added checking for test session status for Advisor, Instructor, and Student roles.</line>
+				<line>The test session is only available when the role has the Allow Test Sessions permission.</line>
+			</description>
+		</item>
+		<item>
 			<name>Technology Upgrade</name>
 			<description>
 				<line>Hibernate upgraded to version 6.4 (from 6.2).
