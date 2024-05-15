@@ -302,8 +302,10 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
 	                	classInstr.setResponsibility(null);
 	                }
 	                
-	                hibSession.merge(deptInstr);
-	                
+	                if (classInstr.getUniqueId() == null)
+	                	hibSession.persist(classInstr);
+	                else
+	                	hibSession.merge(classInstr);
 	            };
             };
             
@@ -334,6 +336,7 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
 	    	}
 	    	
 			String classId = (String) classIds.get(i);
+			instructorUids.set(i, "");
 		    Class_ c = cdao.get(Long.valueOf(classId));
 
 		    org.hibernate.Session hibSession = cdao.getSession();
@@ -346,7 +349,6 @@ public class ClassInstructorAssignmentForm implements UniTimeForm {
         		tx.rollback(); throw e;
         	}
 		}
-	    this.getInstructorUids().clear();
 	}
 
 	public String getOp() {
