@@ -57,13 +57,24 @@ public class EnrollmentsConnector extends ApiConnector {
 	public void doGet(ApiHelper helper) throws IOException {
 		String eventId = helper.getParameter("eventId");
 		if (eventId != null) {
-			Event event = EventDAO.getInstance().get(Long.parseLong(eventId), helper.getHibSession());
-			if (event == null)
-				throw new IllegalArgumentException("Event with the given ID does not exist.");
-			
-			helper.getSessionContext().checkPermissionAnyAuthority(event.getSession(), Right.ApiRetrieveEnrollments);
+			if (Long.valueOf(eventId) < 0) {
+				// The event is an arranged hours class without an event
+				Class_ clazz = Class_DAO.getInstance().get(- Long.valueOf(eventId), helper.getHibSession());
+				if (clazz == null)
+					throw new IllegalArgumentException("Class with the given ID does not exist.");
+				
+				helper.getSessionContext().checkPermissionAnyAuthority(clazz.getManagingDept().getSession(), Right.ApiRetrieveEnrollments);
 
-	    	helper.setResponse(convert(event.getStudentClassEnrollments()));
+				helper.setResponse(convert(clazz.getStudentEnrollments()));
+			} else {
+				Event event = EventDAO.getInstance().get(Long.parseLong(eventId), helper.getHibSession());
+				if (event == null)
+					throw new IllegalArgumentException("Event with the given ID does not exist.");
+				
+				helper.getSessionContext().checkPermissionAnyAuthority(event.getSession(), Right.ApiRetrieveEnrollments);
+
+		    	helper.setResponse(convert(event.getStudentClassEnrollments()));
+			}
 		}
 		String classId = helper.getParameter("classId");
 		if (classId != null) {
