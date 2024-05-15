@@ -71,6 +71,7 @@
         <copy todir="${build.dir}" overwrite="Yes" preservelastmodified="Yes">
             <fileset dir="${src.dir}" includes="**/*.java"/>
             <fileset dir="${src.dir}" includes="**/*.gwt.xml"/>
+        	<fileset dir="${src.dir}" includes="org/unitime/localization/messages/**"/>
             <fileset dir="${src.dir}" includes="org/unitime/timetable/gwt/resources/**/*.*"/>
             <fileset dir="${src.dir}" includes="org/unitime/timetable/gwt/mobile/resources/**/*.*"/>
         </copy>
