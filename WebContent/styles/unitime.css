@@ -7722,8 +7722,17 @@ unitime-RoomSharingWidget .legend .blank {
 	list-style-position: inside;
 }
 
+.unitime-MultipleClassSetup .class-name {
+	white-space: nowrap;
+}
+
 .unitime-MultipleClassSetup .class-buttons {
 	padding: 0px 1px 0px 1px;
+	white-space: nowrap;
+}
+
+.unitime-MultipleClassSetup .class-limit {
+	white-space: nowrap;
 }
 
 .unitime-MultipleClassSetup .class-buttons div {
@@ -7761,8 +7770,17 @@ unitime-RoomSharingWidget .legend .blank {
 	margin-left: 4px;
 }
 
+.unitime-InstrOfferingConfig .subpart-limit {
+	white-space: nowrap;
+}
+
 .unitime-InstrOfferingConfig .subpart-buttons {
 	padding: 0px 1px 0px 1px;
+	white-space: nowrap;
+}
+
+.unitime-InstrOfferingConfig .class-limit {
+	white-space: nowrap;
 }
 
 .unitime-InstrOfferingConfig .subpart-buttons div {

@@ -25,6 +25,8 @@ import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.i18n.client.NumberFormat;
 
 /**
  * @author Tomas Muller
@@ -36,6 +38,7 @@ public class NumberBox extends AriaTextBox {
 		setStyleName("gwt-SuggestBox");
 		setWidth("100px");
 		getElement().getStyle().setTextAlign(TextAlign.RIGHT);
+		final String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
 		addKeyPressHandler(new KeyPressHandler() {
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
@@ -54,6 +57,7 @@ public class NumberBox extends AriaTextBox {
 				}
 
 	            if (isDecimal() && event.getCharCode() == '.' && !getValue().contains(".")) return;
+	            if (isDecimal() && decimalSeparator != null && event.getCharCode() == decimalSeparator.charAt(0) && !getValue().contains(decimalSeparator)) return;
 	            if (isNegative() && event.getCharCode() == '-' && !getValue().contains("-") && (getCursorPos() == 0 || getSelectionLength() == getValue().length()))
 	            	return;
 
@@ -73,6 +77,9 @@ public class NumberBox extends AriaTextBox {
 
 	public Double toDouble() {
 		try {
+			return NumberFormat.getDecimalFormat().parse(getValue());
+		} catch (NumberFormatException e) {}
+		try {
 			return Double.parseDouble(getValue());
 		} catch (NumberFormatException e) {
 			return null;
@@ -80,6 +87,9 @@ public class NumberBox extends AriaTextBox {
 	}
 	
 	public Float toFloat() {
+		try {
+			return (float) NumberFormat.getDecimalFormat().parse(getValue());
+		} catch (NumberFormatException e) {}
 		try {
 			return Float.parseFloat(getValue());
 		} catch (NumberFormatException e) {
