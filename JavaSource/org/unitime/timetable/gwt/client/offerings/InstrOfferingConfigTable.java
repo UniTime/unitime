@@ -493,9 +493,13 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
 					try {
-						line.setRoomRatio(Float.parseFloat(event.getValue()));
+						line.setRoomRatio((float)NumberFormat.getDecimalFormat().parse(event.getValue()));
 					} catch (NumberFormatException e) {
-						line.setRoomRatio(1.0f);
+						try {
+							line.setRoomRatio(Float.parseFloat(event.getValue()));
+						} catch (NumberFormatException f) {
+							line.setRoomRatio(1.0f);
+						}
 					}
 					roomRatio.setValue(sRoomRatioFormat.format(line.getRoomRatio()));
 				}
