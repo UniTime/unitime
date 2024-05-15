@@ -144,7 +144,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			TreeSet<Session> sessions = new TreeSet<Session>();
 			
 			for (Advisor advisor: hibSession.createQuery(
-					"from Advisor where externalUniqueId = :id", Advisor.class)
+					"from Advisor where externalUniqueId = :id order by session.sessionBeginDateTime desc", Advisor.class)
 					.setParameter("id", userId).list()) {
 				if (advisor.getRole() == null || !advisor.getRole().isEnabled()) continue;
 				if (ApplicationProperty.AuthorizationAdvisorMustHaveStudents.isTrue() && advisor.getStudents().isEmpty()) continue;
@@ -160,7 +160,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			Roles instructorRole = Roles.getRole(Roles.ROLE_INSTRUCTOR, hibSession);
 			if (instructorRole != null && instructorRole.isEnabled()) {
 				for (DepartmentalInstructor instructor: hibSession.createQuery(
-						"from DepartmentalInstructor where externalUniqueId = :id", DepartmentalInstructor.class)
+						"from DepartmentalInstructor where externalUniqueId = :id order by department.session.sessionBeginDateTime desc, department.deptCode", DepartmentalInstructor.class)
 						.setParameter("id", userId).list()) {
 					if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = instructor.getEmail();
@@ -196,7 +196,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT, hibSession);
 			if (studentRole != null && studentRole.isEnabled()) {
 				for (Student student: hibSession.createQuery(
-						"from Student where externalUniqueId = :id", Student.class)
+						"from Student where externalUniqueId = :id order by session.sessionBeginDateTime desc", Student.class)
 						.setParameter("id", userId).list()) {
 					if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = student.getEmail();

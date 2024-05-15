@@ -1116,7 +1116,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			getSessionContext().checkPermissionAnySession(Right.StudentSchedulingAdvisor);
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
 			try {
-				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid", Student.class).setParameter("uid", password).list();
+				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid order by m.session.sessionBeginDateTime desc", Student.class).setParameter("uid", password).list();
 				if (!student.isEmpty()) {
 					UserContext user = getSessionContext().getUser();
 					UniTimePrincipal principal = new UniTimePrincipal(user.getTrueExternalUserId(), password, user.getTrueName());
