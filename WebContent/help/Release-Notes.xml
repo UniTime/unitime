@@ -105,6 +105,21 @@
 				<line>The problem seems to be related to the recent Hibernate 6.2.22 update.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Reservations</name>
+			<description>
+				<line>Student Scheduling Solver: Improved handling of reservations with restrictions from two or more configurations by computing and using configuration-specific limit caps and reservation limits.
+					<line>This makes the computation of reserved and unreserved space for a config or a section much more accurate.</line>
+				</line>
+				<line>Online Student Scheduling: Corrected the computation of reservation limit for reservations with restrictions from two or more configurations.
+					<line>This fixes an issue causing some space not to be reserved when a reservation was set between a configuration and one or more sections of a different config.</line>
+				</line>
+				<line>Online Student Scheduling: The checking of available space (e.g., when a student clicks Submit Schedule) for reservations with restrictions from two or more configurations has been corrected.
+					<line>This is especially applicable to reservations marked as exclusive (to be checked only at the levels they are set).</line>
+				</line>
+				<line>Add/Edit Reservation: Corrected computation of the selected spaces when restrictions from two or more configurations are selected.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

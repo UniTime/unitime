@@ -456,6 +456,20 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 		int total = 0, limit = -1;
 		boolean totalUnlimited = false, unlimited = false;
 		for (Config config: iOffering.getConfigs()) {
+			if (config.getLimit() == null)
+				totalUnlimited = true;
+			else
+				total += config.getLimit();
+
+			int limitThisConfig = -1;
+			Node cfg = iConfigs.get(config.getId());
+			if (cfg != null && cfg.getValue()) {
+				if (cfg.getConfig().getLimit() == null)
+					unlimited = true;
+				else
+					limitThisConfig = cfg.getConfig().getLimit();
+			}
+			
 			for (Subpart subpart: config.getSubparts()) {
 				int lim = 0; boolean selected = false;
 				for (Clazz clazz: subpart.getClasses()) {
@@ -465,25 +479,16 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 						selected = true;
 					}
 				}
-				if (selected && (limit < 0 || limit > lim)) { limit = lim; }
+				if (selected && (limitThisConfig < 0 || limitThisConfig > lim)) { limitThisConfig = lim; }
 			}
-		}
-		int lim = 0; boolean selected = false;
-		for (Config config: iOffering.getConfigs()) {
-			if (config.getLimit() == null)
-				totalUnlimited = true;
-			else
-				total += config.getLimit();
-			Node cfg = iConfigs.get(config.getId());
-			if (cfg != null && cfg.getValue()) {
-				selected = true;
-				if (cfg.getConfig().getLimit() == null)
-					unlimited = true;
+			
+			if (limitThisConfig >= 0) {
+				if (limit < 0)
+					limit = limitThisConfig;
 				else
-					lim += cfg.getConfig().getLimit();
+					limit += limitThisConfig;
 			}
 		}
-		if (selected && (limit < 0 || limit > lim)) { limit = lim; }
 		int entered = Integer.MAX_VALUE;
 		try {
 			entered = Integer.parseInt(iLimit.getWidget().getValue());

@@ -1320,17 +1320,15 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 
 			List<XReservation> reservations = new ArrayList<XReservation>();
 			boolean canAssignOverLimit = false;
-			reservations: for (XReservation r: offering.getReservations()) {
+			for (XReservation r: offering.getReservations()) {
 				if (!r.isApplicable(student, course)) continue;
+				if (!r.isIncluded(config.getConfigId(), sections)) continue;
 				if (r.getLimit() >= 0 && r.getLimit() <= enrollments.countEnrollmentsForReservation(r.getReservationId())) {
 					boolean contain = false;
 					for (XEnrollment e: enrollments.getEnrollmentsForReservation(r.getReservationId()))
 						if (e.getStudentId().equals(student.getStudentId())) { contain = true; break; }
 					if (!contain) continue;
 				}
-				if (!r.getConfigsIds().isEmpty() && !r.getConfigsIds().contains(config.getConfigId())) continue;
-				for (XSection section: sections)
-					if (r.getSectionIds(section.getSubpartId()) != null && !r.getSectionIds(section.getSubpartId()).contains(section.getSectionId())) continue reservations;
 				if (r.canAssignOverLimit())
 					canAssignOverLimit = true;
 				reservations.add(r);

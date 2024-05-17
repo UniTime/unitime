@@ -61,7 +61,7 @@ public class XLearningCommunityReservation extends XReservation {
     	super(XReservationType.LearningCommunity, reservation);
     	iStudentIds.addAll(reservation.getStudentIds());
     	iCourseId = new XCourseId(reservation.getCourse());
-    	iLimit = (int)Math.round(reservation.getLimit());
+    	iLimit = (int)Math.round(reservation.getReservationLimit());
     	setAllowDisabled(reservation.isAllowDisabled());
     }
     
