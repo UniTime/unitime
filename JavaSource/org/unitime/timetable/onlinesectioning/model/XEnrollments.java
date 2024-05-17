@@ -159,6 +159,16 @@ public class XEnrollments implements Serializable, Externalizable {
 		return ret == null ? 0 : ret.size();
 	}
 	
+	public int countEnrollmentsForReservation(Long reservationId, Long config) {
+		List<XEnrollment> ret = iReservation2Enrl.get(reservationId);
+		if (ret == null) return 0;
+		int count = 0;
+		for (XEnrollment e: ret) {
+			if (config.equals(e.getConfigId())) count ++; 
+		}
+		return count;
+	}
+	
 	private boolean contain(List<XEnrollment> enrollments, Long studentId) {
 		if (studentId == null || enrollments == null) return false;
 		for (XEnrollment e: enrollments)

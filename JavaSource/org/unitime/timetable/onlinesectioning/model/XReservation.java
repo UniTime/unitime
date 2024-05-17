@@ -50,6 +50,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
     private Map<Long, Set<Long>> iSections = new HashMap<Long, Set<Long>>();
     private Set<Long> iIds = new HashSet<Long>();
     private int iLimitCap = -1;
+    private Map<Long, Integer> iConfigLimitCap = new HashMap<Long, Integer>();
     private double iRestrictivity = 1.0;
     
     private int iPriority = 1000;
@@ -170,10 +171,7 @@ public abstract class XReservation extends XReservationId implements Comparable<
             	// config cap
             	int cap = 0;
             	for (XConfig config: offering.getConfigs()) {
-            		if (iConfigs.contains(config.getConfigId()))
-            			cap = add(cap, config.getLimit());
-            	}
-            	for (XConfig config: offering.getConfigs()) {
+            		int configCap = config.getLimit();
             		for (XSubpart subpart: config.getSubparts()) {
             			Set<Long> sections = iSections.get(subpart.getSubpartId());
             			if (sections == null) continue;
@@ -183,7 +181,13 @@ public abstract class XReservation extends XReservationId implements Comparable<
             				if (sections.contains(section.getSectionId()))
             					subpartCap = add(subpartCap, section.getLimit());
                 		// minimize
-                		cap = min(cap, subpartCap);
+            			configCap = min(configCap, subpartCap);
+            		}	
+            		if (iConfigs.contains(config.getConfigId())) {
+            			cap = add(cap, configCap);
+            			iConfigLimitCap.put(config.getConfigId(), configCap);
+            		} else {
+            			iConfigLimitCap.put(config.getConfigId(), 0);
             		}
             	}
             	iLimitCap = cap;
@@ -192,8 +196,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
         	if ((!iConfigs.isEmpty() || !iSections.isEmpty()) && !canAssignOverLimit()) {
         		int cap = 0;
             	for (XConfig config: offering.getConfigs()) {
+            		int configCap = 0;
             		if (iConfigs.contains(config.getConfigId())) {
             			cap = add(cap, config.getLimit());
+            			configCap = add(configCap, config.getLimit());
             		} else {
             			for (XSubpart subpart: config.getSubparts()) {
                 			Set<Long> sections = iSections.get(subpart.getSubpartId());
@@ -203,8 +209,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
                 				if (sections.contains(section.getSectionId()))
                 					subpartCap = add(subpartCap, section.getLimit());
                 			cap = add(cap, subpartCap);
+                			configCap = add(configCap, subpartCap);
             			}
             		}
+        			iConfigLimitCap.put(config.getConfigId(), configCap);
             	}
             	iLimitCap = cap;
         	}
@@ -216,6 +224,9 @@ public abstract class XReservation extends XReservationId implements Comparable<
     public XReservation(XReservationType type, org.cpsolver.studentsct.reservation.Reservation reservation) {
     	super(type, reservation.getOffering().getId(), reservation.getId());
     	iLimitCap = (int)Math.round(reservation.getLimitCap());
+    	for (Config config: reservation.getOffering().getConfigs()) {
+    		iConfigLimitCap.put(config.getId(), (int)Math.round(reservation.getLimitCap(config)));
+    	}
     	iRestrictivity = reservation.getRestrictivity();
     	iExpirationDate = (reservation.isExpired() ? new Date(0) : null);
     	iNeverIncluded = reservation.neverIncluded();
@@ -321,7 +332,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
     
     public void setCanAssignOverLimit(boolean canAssignOverLimit) {
     	iFlags = Flags.CanAssignOverLimit.set(iFlags, canAssignOverLimit);
-    	if (canAssignOverLimit) iLimitCap = -1;
+    	if (canAssignOverLimit) {
+    		iLimitCap = -1;
+    		iConfigLimitCap.clear();
+    	}
     }
     
     /**
@@ -360,6 +374,12 @@ public abstract class XReservation extends XReservationId implements Comparable<
      */
     public int getLimit() {
         return min(iLimitCap, getReservationLimit());
+    }
+    
+    public int getLimit(Long configId) {
+    	if (iConfigLimitCap.isEmpty() || canAssignOverLimit()) return getReservationLimit();
+    	Integer limitCap = iConfigLimitCap.get(configId);
+        return limitCap == null ? 0 : min(limitCap, getReservationLimit());
     }
     
     /**
@@ -537,6 +557,13 @@ public abstract class XReservation extends XReservationId implements Comparable<
         return getLimit() - enrollments.countEnrollmentsForReservation(getReservationId());
     }
     
+    public int getReservedAvailableSpace(XEnrollments enrollments, Long configId) {
+        // Unlimited
+        if (getLimit(configId) < 0) return Integer.MAX_VALUE;
+        
+        return getLimit(configId) - enrollments.countEnrollmentsForReservation(getReservationId(), configId);
+    }
+    
     @Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	super.readExternal(in);
@@ -558,6 +585,10 @@ public abstract class XReservation extends XReservationId implements Comparable<
     		}
     	}
     	iLimitCap = in.readInt();
+    	iConfigLimitCap.clear();
+    	int nrCaps = in.readInt();
+    	for (int i = 0; i < nrCaps; i++)
+    		iConfigLimitCap.put(in.readLong(), in.readInt());
     	iRestrictivity = in.readDouble();
     	iPriority = in.readInt();
     	iFlags = in.readInt();
@@ -590,6 +621,11 @@ public abstract class XReservation extends XReservationId implements Comparable<
 		}
 		
 		out.writeInt(iLimitCap);
+		out.writeInt(iConfigLimitCap.size());
+		for (Map.Entry<Long, Integer> e: iConfigLimitCap.entrySet()) {
+			out.writeLong(e.getKey());
+			out.writeInt(e.getValue());
+		}
 		out.writeDouble(iRestrictivity);
 		out.writeInt(iPriority);
 		out.writeInt(iFlags);
