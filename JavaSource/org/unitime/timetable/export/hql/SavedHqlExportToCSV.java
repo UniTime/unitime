@@ -356,7 +356,8 @@ public class SavedHqlExportToCSV implements Exporter {
         	EntityType et = null;
         	try {
         		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
-        	} catch (IllegalArgumentException e) {}
+        	} catch (IllegalArgumentException e) {
+        	} catch (NullPointerException e) {}
         	if (et == null) {
         		len++;
         	} else {
@@ -413,7 +414,8 @@ public class SavedHqlExportToCSV implements Exporter {
         	EntityType et = null;
         	try {
         		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
-        	} catch (IllegalArgumentException e) {}
+        	} catch (IllegalArgumentException e) {
+        	} catch (NullPointerException e) {}
         	Object x = o.get(te);
         	if (et == null) {
         		ret[idx++] = toString(x);
