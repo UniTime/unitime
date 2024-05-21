@@ -190,13 +190,14 @@ public class TestHqlExportToCSV implements Exporter {
         	EntityType et = null;
         	try {
         		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
-        	} catch (IllegalArgumentException e) {}
+        	} catch (IllegalArgumentException e) {
+        	} catch (NullPointerException e) {}
         	if (et == null) {
         		if (te.getAlias() == null || te.getAlias().isEmpty()) {
         			if (o.getElements().size() == 1)
         				ret[idx++] = "Result";
         			else
-        				ret[idx++] = "Column" + (idx ++);
+        				ret[idx++] = "Column" + (idx+1);
         		} else
         			ret[idx++] = te.getAlias();
         	} else {
