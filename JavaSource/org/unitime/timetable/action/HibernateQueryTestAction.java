@@ -434,7 +434,8 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         	EntityType et = null;
         	try {
         		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
-        	} catch (IllegalArgumentException e) {}
+        	} catch (IllegalArgumentException e) {
+        	} catch (NullPointerException e) {}
         	if (et == null) {
         		header(s, idx++, te.getAlias());
         	} else {
@@ -500,7 +501,8 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
         	EntityType et = null;
         	try {
         		et = new _RootDAO().getSession().getMetamodel().entity(te.getJavaType());
-        	} catch (IllegalArgumentException e) {}
+        	} catch (IllegalArgumentException e) {
+        	} catch (NullPointerException e) {}
         	if (et == null) {
         		line(s, x);
         	} else {
