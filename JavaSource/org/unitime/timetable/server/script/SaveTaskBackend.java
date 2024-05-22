@@ -100,7 +100,7 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 						t.setInputFile(null);
 					}
 				}
-				if (value != null) {
+				if (value != null && !value.isEmpty()) {
 					if (tp == null) {
 						tp = new TaskParameter();
 						tp.setTask(t); tp.setName(p.getName());
@@ -108,6 +108,7 @@ public class SaveTaskBackend implements GwtRpcImplementation<SaveTaskDetailsRpcR
 					}
 					tp.setValue(value);
 				} else if (tp != null) {
+					t.getParameters().remove(tp);
 					tp.setTask(null); hibSession.remove(tp);
 				}
 			}
