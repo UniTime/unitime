@@ -3476,11 +3476,6 @@ public enum ApplicationProperty {
 	@Description("Configuration: automatically remove access control statistics after the given number of days")
 	@Since(4.8)
 	LogCleanupAccessStatistics("unitime.cleanup.accessControlStatistics"),
-	
-	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Room Edit: prefetch room relations when loading room details/edit page to make the page load faster (disable when having issues with room groups or features not showing up on the edit page)")
-	RoomEditPrefetchRelations("unitime.rooms.prefetchRelations"),
 
 	@Description("OAuht2 Authentication: user external id attribute, if not set uid translation will take place instead")
 	@DefaultValue("email")
@@ -3536,7 +3531,12 @@ public enum ApplicationProperty {
 	
 	@Description("OAuht2 Authentication: URI to query for additional attributes")
 	@Since(4.8)
-	AuthenticationOAuht2AdditionalAttributes("unitime.authentication.oauth2.queryAttributes")
+	AuthenticationOAuht2AdditionalAttributes("unitime.authentication.oauth2.queryAttributes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Room Edit: prefetch room relations when loading room details/edit page to make the page load faster (disable when having issues with room groups or features not showing up on the edit page)")
+	RoomEditPrefetchRelations("unitime.rooms.prefetchRelations"),
 	;
 
 	String iKey;
