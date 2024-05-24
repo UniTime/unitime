@@ -54,6 +54,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -122,6 +123,19 @@ public class InstrOfferingConfigPage extends Composite {
 			public void onFailure(Throwable caught) {
 				LoadingWidget.getInstance().hide();
 				UniTimeNotifications.error(GWTMSG.failedLoadData(caught.getMessage()), caught);
+				iHeader = new UniTimeHeaderPanel("");
+				iForm.addHeaderRow(iHeader);
+				iError = new P("error-table");
+				P eh = new P("error-header"); eh.setText(GWTMSG.failedLoadData("")); iError.add(eh);
+				P em = new P("error-message"); em.setText(caught.getMessage()); iError.add(em);
+				iForm.addRow(iError);
+				iHeader.addButton("back", GWTMSG.buttonBack(), new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						History.back();
+					}
+				});
+				iForm.addBottomRow(iHeader.clonePanel());
 				ToolBox.checkAccess(caught);
 			}
 		});
