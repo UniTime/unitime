@@ -597,15 +597,19 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 				SubpartLine parent = iData.getSubpartLine(iLine.getParentId());
 				if (parent != null && parent.getMaxClassLimit() != null && parent.getNumberOfClasses() != null) {
 					int classesPerParent = (int)Math.ceil(parent.getMaxClassLimit().doubleValue() / iLine.getMaxClassLimit());
-					if (iLine.getMaxClassLimit() <= 0)
+					if (iLine.getMaxClassLimit() < 0)
 						iLine.setNumberOfClasses(null);
+					else if (iLine.getMaxClassLimit() == 0)
+						iLine.setNumberOfClasses(1);
 					else
 						iLine.setNumberOfClasses(parent.getNumberOfClasses() * classesPerParent);
 				} else {
-					if (iLine.getMaxClassLimit() <= 0)
+					if (iLine.getMaxClassLimit() < 0)
 						iLine.setNumberOfClasses(null);
+					else if (iLine.getMaxClassLimit() == 0)
+						iLine.setNumberOfClasses(1);
 					else
-						iLine.setNumberOfClasses((int)Math.ceil(iData.getLimit().doubleValue() / iLine.getMaxClassLimit()));
+						iLine.setNumberOfClasses(Math.max(1, (int)Math.ceil(iData.getLimit().doubleValue() / iLine.getMaxClassLimit())));
 				}
 				nbrClasses.setValue(iLine.getNumberOfClasses());
 			}

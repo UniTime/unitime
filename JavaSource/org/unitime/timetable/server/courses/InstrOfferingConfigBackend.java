@@ -607,9 +607,9 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 						newClass.setSchedulingSubpart(ss);
 						ss.addToClasses(newClass);
 						newClass.setControllingDept(ss.getControllingDept());
-						newClass.setExpectedCapacity(line.getMinClassLimit());
+						newClass.setExpectedCapacity(line.getMinClassLimit() == null ? 0 : line.getMinClassLimit());
 						newClass.setNbrRooms(line.getNumberOfRooms());
-						newClass.setMaxExpectedCapacity(line.getMaxClassLimit());
+						newClass.setMaxExpectedCapacity(line.getMaxClassLimit() == null ? 0 : line.getMaxClassLimit());
 						newClass.setRoomRatio(line.getRoomRatio());
 						newClass.setDisplayInstructor(true);
 						newClass.setEnabledForStudentScheduling(true);
@@ -670,8 +670,8 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 						adept.setManagingDept(DepartmentDAO.getInstance().get(managingDeptId, hibSession), context.getUser(), hibSession);
 					else
 						adept.setManagingDept(ioc.getDepartment(), context.getUser(), hibSession);
-					adept.setExpectedCapacity(line.getMinClassLimit());
-					adept.setMaxExpectedCapacity(line.getMaxClassLimit());
+					adept.setExpectedCapacity(line.getMinClassLimit() == null ? 0 : line.getMinClassLimit());
+					adept.setMaxExpectedCapacity(line.getMaxClassLimit() == null ? 0 : line.getMaxClassLimit());
 					adept.setNbrRooms(line.getNumberOfRooms());
 					adept.setRoomRatio(line.getRoomRatio());
 					adept.setRoomsSplitAttendance(line.getSplitAttendance());
