@@ -474,7 +474,7 @@ public class InstrOfferingConfigPage extends Composite {
 						if (parent != null && parent.getNumberOfClasses() != null && parent.getMaxClassLimit() != null) {
 							if (line.getNumberOfClasses() <= 0 || parent.getNumberOfClasses() <= 0 || (line.getNumberOfClasses() % parent.getNumberOfClasses()) != 0)
 								badNbrClasses = true; // not divisible # children
-							if (line.getMaxClassLimit() <= 0 || parent.getMaxClassLimit() <= 0)
+							if (line.getMaxClassLimit() < 0 || parent.getMaxClassLimit() < 0)
 								badLimit = true; // class too small
 							if (line.getNumberOfClasses() * line.getMaxClassLimit() < parent.getNumberOfClasses() * parent.getMaxClassLimit())
 								badLimit = true; // class too small
@@ -485,7 +485,7 @@ public class InstrOfferingConfigPage extends Composite {
 						} else if (parent == null && iData.getLimit() != null) {
 							if (line.getNumberOfClasses() <= 0)
 								badNbrClasses = true;
-							if (line.getMaxClassLimit() <= 0)
+							if (line.getMaxClassLimit() < 0)
 								badLimit = true;
 							if (iData.isCheckLimits()) {
 								 if (line.getNumberOfClasses() * line.getMaxClassLimit() < iData.getLimit())
@@ -571,7 +571,7 @@ public class InstrOfferingConfigPage extends Composite {
 				errors.add(error);
 				line.addError(error);
 			}
-			if (iData.isUnlimited() && (line.getMinClassLimit() == null || line.getMaxClassLimit() == null || line.getMinClassLimit() <= 0 || line.getMaxClassLimit() <= 0)) {
+			if (!iData.isUnlimited() && (line.getMinClassLimit() == null || line.getMaxClassLimit() == null || line.getMinClassLimit() < 0 || line.getMaxClassLimit() < 0)) {
 				String error = MESSAGES.errorIntegerGtEq(MESSAGES.messageLimitPerClassForIType(lblMax, line.getLabel()), "0");
 				errors.add(error);
 				line.addError(error);
