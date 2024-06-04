@@ -702,8 +702,8 @@ public class SessionRollForward {
 	private Location findLocation(Long locationId, Long sessionId) {
 		Room room = getHibSession().createQuery(
 				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
-				"((r1.externalUniqueId is not null and r1.externalUniqueId <> '' and r1.externalUniqueId = r2.externalUniqueId) or " +
-				"((r1.externalUniqueId is null or r1.externalUniqueId = '') and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
+				"((r1.externalUniqueId is not null and length(r1.externalUniqueId) > 0 and r1.externalUniqueId = r2.externalUniqueId) or " +
+				"((r1.externalUniqueId is null or length(r1.externalUniqueId) = 0) and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
 				.setParameter("sessionId", sessionId)
 				.setParameter("locationId", locationId)
 				.setCacheable(true)
@@ -725,8 +725,8 @@ public class SessionRollForward {
 	private Room findRoom(Long locationId, Long sessionId) {
 		return getHibSession().createQuery(
 				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
-				"((r1.externalUniqueId is not null and r1.externalUniqueId <> '' and r1.externalUniqueId = r2.externalUniqueId) or " +
-				"((r1.externalUniqueId is null or r1.externalUniqueId = '') and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
+				"((r1.externalUniqueId is not null and length(r1.externalUniqueId) > 0 and r1.externalUniqueId = r2.externalUniqueId) or " +
+				"((r1.externalUniqueId is null or length(r1.externalUniqueId) = 0) and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
 				.setParameter("sessionId", sessionId)
 				.setParameter("locationId", locationId)
 				.setCacheable(true)
