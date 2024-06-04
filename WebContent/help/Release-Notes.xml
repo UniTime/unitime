@@ -29,6 +29,20 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Roll Forward: Travel Times, Room Partitions</name>
+			<description>
+				<line>Corrected roll forward of room partitions and travel times on Oracle (empty external id check was incorrect).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.8.134</version>
+	<release-date>Wed, 29 May 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Extended Student Conflicts</name>
