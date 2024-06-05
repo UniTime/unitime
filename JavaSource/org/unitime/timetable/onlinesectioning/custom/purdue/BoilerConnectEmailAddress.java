@@ -173,4 +173,9 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 			return iEmail.getMessageId();
 		}
 	}
+
+	@Override
+	public boolean isPlainText() {
+		return true;
+	}
 }

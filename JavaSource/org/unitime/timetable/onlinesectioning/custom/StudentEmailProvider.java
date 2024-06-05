@@ -17,4 +17,6 @@ public interface StudentEmailProvider {
 	public String getToggleCaptionIfOptional();
 	
 	public boolean isOptionCheckedByDefault();
+	
+	public boolean isPlainText();
 }

@@ -33,6 +33,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Version {0} built on {1}")
 	String pageVersion(String version, String buildDate);
 	
+	@DefaultMessage("UniTime {0}")
+	String unitimeVersion(String version);
+	
 	@DefaultMessage("&copy; 2008 - 2024 The Apereo Foundation,<br>distributed under the Apache License, Version 2.")
 	String pageCopyright();
 	
