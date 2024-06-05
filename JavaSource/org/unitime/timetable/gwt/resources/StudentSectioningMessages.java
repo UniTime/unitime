@@ -3659,4 +3659,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Share")
 	String colPercentShare();
+	
+	@DefaultMessage("{0} (was {1})")
+	String textDiff(String newValue, String oldValue);
+	
+	@DefaultMessage("N/A")
+	String textNotApplicable();
+	
+	@DefaultMessage("For an up to date schedule, please visit {0}.")
+	String textEmailLinkToUniTime(String baseUrl);
 }

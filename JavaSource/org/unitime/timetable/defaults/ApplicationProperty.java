@@ -2428,8 +2428,18 @@ public enum ApplicationProperty {
 	
 	@Type(String.class)
 	@DefaultValue("org/unitime/timetable/onlinesectioning/updates/StudentEmail.ftl")
-	@Description("Online Student Scheduling: confirmation email template")
+	@Description("Online Student Scheduling: confirmation email template in HTML format")
 	OnlineSchedulingEmailTemplate("unitime.enrollment.email.teplate"),
+	
+	@Type(String.class)
+	@DefaultValue("org/unitime/timetable/onlinesectioning/updates/StudentEmail-txt.ftl")
+	@Description("Online Student Scheduling: confirmation email template in plain text")
+	OnlineSchedulingEmailPlainTextTemplate("unitime.enrollment.email.plainTextTemplate"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: sent student confirmation emails in plain text")
+	OnlineSchedulingEmailPlainText("unitime.enrollment.email.plainText"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")
