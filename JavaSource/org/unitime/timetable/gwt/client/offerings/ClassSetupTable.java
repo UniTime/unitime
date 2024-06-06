@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
+import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
@@ -46,6 +47,10 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -139,6 +144,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		case SNAPSHOT:
 		case LIMIT:
 		case ROOM:
+		case ROOM_CAP:
 		case NBR_ROOMS:
 		case ROOM_RATIO:
 		case SPLIT_ATTENDANCE:
@@ -177,6 +183,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		case TIME:
 		case DATE:
 		case ROOM:
+		case ROOM_CAP:
 			return iData.isHasTimeRooms();
 		case INSTRUCTOR:
 			return iData.isHasInstructors();
@@ -209,6 +216,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		case TIME: return MESSAGES.columnAssignedTime();
 		case DATE: return MESSAGES.columnAssignedDatePattern();
 		case ROOM: return MESSAGES.columnAssignedRoom();
+		case ROOM_CAP: return MESSAGES.columnAssignedRoomCap();
 		case INSTRUCTOR: return MESSAGES.columnInstructors();
 		default: return column.name();
 		}
@@ -218,6 +226,8 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		switch (column) {
 		case LIMIT:
 			return HasHorizontalAlignment.ALIGN_CENTER;
+		case ROOM_CAP:
+			return HasHorizontalAlignment.ALIGN_RIGHT;
 		default:
 			return HasHorizontalAlignment.ALIGN_LEFT;
 		}
@@ -716,11 +726,49 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			else if (!line.isEditable()) date.addStyleName("not-editable");
 			return date;
 		case ROOM:
-			HTML room = new HTML(line.getRoom() == null ? "" : line.getRoom());
-			room.addStyleName("class-room");
-			if (line.getCancelled()) room.addStyleName("class-cancelled");
-			else if (!line.isEditable()) room.addStyleName("not-editable");
-			return room;
+			P rooms = new P("class-room");
+			if (line.hasRooms())
+				for (final Reference room: line.getRooms()) {
+					final Label roomLabel = new Label(room.getLabel());
+					roomLabel.addMouseOverHandler(new MouseOverHandler() {
+						@Override
+						public void onMouseOver(MouseOverEvent event) {
+							RoomHint.showHint(roomLabel.getElement(), room.getId(), null, null, true);
+						}
+					});
+					roomLabel.addMouseOutHandler(new MouseOutHandler() {
+						@Override
+						public void onMouseOut(MouseOutEvent event) {
+							RoomHint.hideHint();
+						}
+					});
+					rooms.add(roomLabel);
+				}
+			if (line.getCancelled()) rooms.addStyleName("class-cancelled");
+			else if (!line.isEditable()) rooms.addStyleName("not-editable");
+			return rooms;
+		case ROOM_CAP:
+			P roomsCap = new P("class-room-cap");
+			if (line.hasRooms())
+				for (final Reference room: line.getRooms()) {
+					final Label roomCap = new Label(room.getReference());
+					roomCap.addMouseOverHandler(new MouseOverHandler() {
+						@Override
+						public void onMouseOver(MouseOverEvent event) {
+							RoomHint.showHint(roomCap.getElement(), room.getId(), null, null, true);
+						}
+					});
+					roomCap.addMouseOutHandler(new MouseOutHandler() {
+						@Override
+						public void onMouseOut(MouseOutEvent event) {
+							RoomHint.hideHint();
+						}
+					});
+					roomsCap.add(roomCap);
+				}
+			if (line.getCancelled()) roomsCap.addStyleName("class-cancelled");
+			else if (!line.isEditable()) roomsCap.addStyleName("not-editable");
+			return roomsCap;
 		case INSTRUCTOR:
 			HTML instructor = new HTML(line.getInstructor() == null ? "" : line.getInstructor());
 			instructor.addStyleName("class-instructor");

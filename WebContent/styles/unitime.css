@@ -7740,6 +7740,10 @@ unitime-RoomSharingWidget .legend .blank {
 	margin: -2px;
 }
 
+.unitime-MultipleClassSetup .class-room-cap .gwt-Label {
+	text-align: right;
+}
+
 .unitime-MultipleClassSetup .class-buttons img {
 	margin: 2px;
 }

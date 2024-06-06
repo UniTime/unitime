@@ -211,8 +211,11 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 	    		line.setCanDelete(context.hasPermission(cls, Right.ClassDelete));
 	    		line.setCanCancel(context.hasPermission(cls, Right.ClassCancel));
 	    		line.setIndent(indent);
-	    		if (!" ".equals(line.getTime()) || !" ".equals(line.getRoom()))
-	    			form.setHasTimeRooms(true);
+	    		if (!form.isHasTimeRooms()) {
+	    			try {
+	    				if (proxy.getAssignment(cls) != null) form.setHasTimeRooms(true);
+	    			} catch (Exception e) {}
+	    		}
 	    		if (!" ".equals(line.getInstructor()))
 	    			form.setHasInstructors(true);
 	    		form.addClassLine(line);
@@ -247,7 +250,23 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 		line.setSubpartLabel(clazz.getSchedulingSubpart().getItypeDesc() + (suffix.isEmpty() ? "" : " (" + suffix + ")"));
 		line.setTime(clazz.buildAssignedTimeHtml(proxy));
 		line.setDate(clazz.buildAssignedDateHtml(proxy));
-		line.setRoom(clazz.buildAssignedRoomHtml(proxy));
+		ClassAssignmentProxy.AssignmentInfo a = null;
+		try {
+			a = proxy.getAssignment(clazz);
+		} catch (Exception e) {
+			Debug.error(e);
+		}
+		if (a != null) {
+			for (Location room : a.getRooms())
+				line.addRoom(room.getUniqueId(), room.getLabel(), room.getCapacity());
+		} else {
+			if (clazz.getEffectiveTimePreferences().isEmpty()) {
+	            for (RoomPref rp : (Set<RoomPref>)clazz.getEffectiveRoomPreferences()) {
+	            	if (rp.getPrefLevel().getPrefId().toString().equals(PreferenceLevel.PREF_LEVEL_REQUIRED))
+	            		line.addRoom(rp.getRoom().getUniqueId(), rp.getRoom().getLabel(), rp.getRoom().getCapacity());
+	            }
+			}
+		}
 		line.setInstructor(clazz.buildInstructorHtml(nameFormat));
 		return line;
 	}
