@@ -1392,7 +1392,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		int priority = 1;
 		for (Request request: requests.getCourses()) {
 			if (!request.hasRequestedCourse()) continue;
-			boolean first = true;
+			boolean first = true; int idx = 0;
+			String firstChoice = null;
 			if (request.isWaitlistOrNoSub(wlMode)) courseRequests.hasWait = true;
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isCourse()) {
@@ -1495,6 +1496,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (first && request.isWaitList() && wlMode == WaitListMode.WaitList && request.getWaitListedTimeStamp() != null)
 						line.waitListDate = sTimeStampFormat.format(request.getWaitListedTimeStamp());
 					line.first = (priority > 1 && first);
+					line.idx = idx;
+					if (firstChoice == null) firstChoice = rc.getCourseName();
+					line.firstChoice = firstChoice;
 					courseRequests.add(line);
 				} else if (rc.isFreeTime()) {
 					CourseRequestLine line = new CourseRequestLine();
@@ -1515,9 +1519,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					line.status = MSG.reqStatusRegistered();
 					line.waitlist = false;
 					line.first = (priority > 1 && first);
+					line.idx = idx;
+					if (firstChoice == null) firstChoice = CONST.freePrefix() + free;
+					line.firstChoice = firstChoice;
 					courseRequests.add(line);
 				}
-				first = false;
+				first = false; idx ++;
 			}
 			priority ++;
 		}
@@ -1525,7 +1532,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		priority = 1;
 		for (Request request: requests.getAlternatives()) {
 			if (!request.hasRequestedCourse()) continue;
-			boolean first = true;
+			boolean first = true; int idx = 0; String firstChoice = null;
 			if (request.isWaitlistOrNoSub(wlMode)) courseRequests.hasWait = true;
 			for (RequestedCourse rc: request.getRequestedCourse()) {
 				if (rc.isCourse()) {
@@ -1623,7 +1630,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (first && request.isWaitList() && wlMode == WaitListMode.WaitList && request.getWaitListedTimeStamp() != null)
 						line.waitListDate = sTimeStampFormat.format(request.getWaitListedTimeStamp());
 					line.first = first;
+					line.idx = idx;
 					line.firstalt = (first && priority == 1);
+					if (firstChoice == null) firstChoice = rc.getCourseName();
+					line.firstChoice = firstChoice;
 					courseRequests.add(line);
 				} else if (rc.isFreeTime()) {
 					CourseRequestLine line = new CourseRequestLine();
@@ -1642,10 +1652,13 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					line.status = MSG.reqStatusRegistered();
 					line.waitlist = false;
 					line.first = first;
+					line.idx = idx;
 					line.firstalt = (first && priority == 1);
+					if (firstChoice == null) firstChoice = CONST.freePrefix() + free;
+					line.firstChoice = firstChoice;
 					courseRequests.add(line);
 				}
-				first = false;
+				first = false; idx ++;
 			}
 			priority ++;
 		}
@@ -1756,7 +1769,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		for (Request request: requests.getCourses()) {
 			if (request.hasRequestedCourse()) {
-				boolean first = true;
+				boolean first = true; int idx = 0; String firstChoice = null;
 				if (request.isWaitlistOrNoSub(wlMode)) courseRequests.hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
@@ -1785,11 +1798,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.note = note;
 						line.first = (priority > 1 && first);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
+						line.idx = idx;
 						line.waitlist = (first && request.isWaitlistOrNoSub(wlMode));
 						if (first && critical != null && critical.equals(request.getCritical())) {
 							line.critical = true;
 							courseRequests.hasCritical = true;
 						}
+						if (firstChoice == null) firstChoice = rc.getCourseName();
+						line.firstChoice = firstChoice;
 						courseRequests.add(line);
 					} else if (rc.isFreeTime()) {
 						String  free = "";
@@ -1807,11 +1823,14 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.note = note;
 						line.prefs = "";
 						line.first = (priority > 1 && first);
+						line.idx = idx;
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
 						line.waitlist = false;
+						if (firstChoice == null) firstChoice = CONST.freePrefix() + free;
+						line.firstChoice = firstChoice;
 						courseRequests.add(line);
 					}
-					first = false;
+					first = false; idx ++;
 				}
 			} else {
 				String credit = (request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
@@ -1824,6 +1843,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				line.note = note;
 				line.prefs = "";
 				line.first = (priority > 1);
+				line.idx = 0;
 				courseRequests.add(line);
 			}
 			priority ++;				
@@ -1831,7 +1851,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		priority = 1;
 		for (Request request: requests.getAlternatives()) {
 			if (request.hasRequestedCourse()) {
-				boolean first = true;
+				boolean first = true; int idx = 0; String firstChoice = null;
 				if (request.isWaitlistOrNoSub(wlMode)) courseRequests.hasWait = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
@@ -1858,9 +1878,12 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.prefs = toString(prefs);
 						line.note = note;
 						line.first = first;
+						line.idx = idx;
 						line.firstalt = (first && priority == 1);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
 						line.waitlist = (first && request.isWaitlistOrNoSub(wlMode));
+						if (firstChoice == null) firstChoice = rc.getCourseName();
+						line.firstChoice = firstChoice;
 						courseRequests.add(line);
 					} else if (rc.isFreeTime()) {
 						CourseRequestLine line = new CourseRequestLine();
@@ -1878,12 +1901,15 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						line.prefs = "";
 						line.note = note;
 						line.first = first;
+						line.idx = idx;
 						line.firstalt = (first && priority == 1);
 						line.rows = (first ? request.getRequestedCourse().size() : 0);
 						line.waitlist = false;
+						if (firstChoice == null) firstChoice = CONST.freePrefix() + free;
+						line.firstChoice = firstChoice;
 						courseRequests.add(line);
 					}
-					first = false;
+					first = false; idx ++;
 				}
 			} else {
 				String credit = (request.hasAdvisorCredit() ? request.getAdvisorCredit() : "");
@@ -1896,6 +1922,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				line.note = note;
 				line.prefs = "";
 				line.first = (priority > 1);
+				line.idx = 0;
 				courseRequests.add(line);
 			}
 			priority ++;
@@ -2949,6 +2976,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public int rows = 1;
 		public String waitListDate = null;
 		public URL url;
+		public int idx = 0;
+		String firstChoice = null;
 		
 		public String getPriority() { return priority; }
 		public String getCourseName() { return courseName; }
@@ -2967,5 +2996,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		public boolean isCritical() { return critical; }
 		public int getRows() { return rows; }
 		public URL getUrl() { return url; }
+		public int getIdx() { return idx; }
+		public String getFirstChoice() { return firstChoice; }
 	}
 }

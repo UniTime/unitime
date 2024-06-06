@@ -108,7 +108,8 @@ ${line.note}
 <#else>
 <#if line.priority?has_content>
 ${line.priority}: ${line.courseName}<#if line.courseTitle?has_content> - ${line.courseTitle}</#if>
-<#else> - ${line.courseName}<#if line.courseTitle?has_content> - ${line.courseTitle}</#if>
+<#else><#if line.idx == 1>   ${msg.courseRequestsHintAlt(line.firstChoice)}:
+</#if>    - ${line.courseName}<#if line.courseTitle?has_content> - ${line.courseTitle}</#if>
 </#if><#if advisor.hasPref && line.prefs?has_content && !line.last>   ${msg.colPreferences()}: ${line.prefs}
 </#if><#if line.credit?has_content>   ${msg.colCredit()}: ${line.credit}
 </#if><#if advisor.hasCritical && line.critical>   ${advisor.criticalColumnDescription}
