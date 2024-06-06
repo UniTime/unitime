@@ -3419,6 +3419,15 @@ public interface CourseMessages extends Messages {
     @DefaultMessage("Arr Hrs")
     String arrHrs();
     
+    @DefaultMessage("Arr {0} Hrs")
+    String arrHrsN(int n);
+    
+    @DefaultMessage("Arrange Hours")
+    String arrangeHours();
+    
+    @DefaultMessage("Arrange {0} Hours")
+    String arrangeHoursN(int n);
+    
     @DefaultMessage("Course")
 	String columnCourse();
     

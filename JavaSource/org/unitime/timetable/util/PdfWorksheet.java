@@ -41,6 +41,7 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.query.Query;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -84,6 +85,7 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class PdfWorksheet {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	private boolean iUseCommitedAssignments = true;
     private static int sNrChars = 133;
@@ -246,9 +248,9 @@ public class PdfWorksheet {
             	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
             	Integer ah = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
                 if (ah != null)
-                    return new String[]{"Arr "+ah+" Hrs"+dpat};
+                    return new String[]{MSG.arrHrsN(ah)+dpat};
                 else
-                    return new String[]{"Arr Hrs"+dpat};
+                    return new String[]{MSG.arrHrs()+dpat};
             }
             boolean onlyOneReq = true;
             TimeLocation req = null;

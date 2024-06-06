@@ -641,9 +641,9 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         	Integer ah = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
             if (ah == null) {
-                addText(cell, "Arr Hrs", false, false, Element.ALIGN_CENTER, color, true);
+                addText(cell, MSG.arrHrs(), false, false, Element.ALIGN_CENTER, color, true);
             } else {
-                addText(cell, "Arr "+ah+" Hrs", false, false, Element.ALIGN_CENTER, color, true);
+                addText(cell, MSG.arrHrsN(ah), false, false, Element.ALIGN_CENTER, color, true);
             }
         }
         return cell;
