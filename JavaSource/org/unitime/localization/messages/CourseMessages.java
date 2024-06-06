@@ -5979,4 +5979,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Multiple Departments")
 	String subpartMultipleManagers();
+	
+	@DefaultMessage("Cap")
+	String columnAssignedRoomCap();
 }

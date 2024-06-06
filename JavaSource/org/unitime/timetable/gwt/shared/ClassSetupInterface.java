@@ -383,7 +383,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		else
 			return opened == 1;
 	}
-
+	
 	public static class ClassLine implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 8206025602292396756L;
 		private Long iClassId;
@@ -409,7 +409,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		private Boolean iSplitAttendance;
 		private String iTime;
 		private String iDate;
-		private String iRoom;
+		private List<Reference> iRooms;
 		private String iInstructor;
 		private String iExternalId;
 		private Integer iIndent;
@@ -494,8 +494,12 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		public void setTime(String time) { iTime = time; }
 		public String getDate() { return iDate; }
 		public void setDate(String date) { iDate = date; }
-		public String getRoom() { return iRoom; }
-		public void setRoom(String room) { iRoom = room; }
+		public boolean hasRooms() { return iRooms != null && !iRooms.isEmpty(); }
+		public List<Reference> getRooms() { return iRooms; }
+		public void addRoom(Long id, String name, Integer capacity) {
+			if (iRooms == null) iRooms = new ArrayList<Reference>();
+			iRooms.add(new Reference(id, capacity == null ? "" : capacity.toString(), name, false));
+		}
 		public String getInstructor() { return iInstructor; }
 		public void setInstructor(String instructor) { iInstructor = instructor; }
 		public String getExternalId() { return iExternalId; }
@@ -572,6 +576,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		TIME,
 		DATE,
 		ROOM,
+		ROOM_CAP,
 		INSTRUCTOR,
 	}
 }

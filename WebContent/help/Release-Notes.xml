@@ -29,6 +29,16 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Added column with the capacity of the assigned room (Cap).</line>
+				<line>Added mouse-over for assigned rooms.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Roll Forward: Travel Times, Room Partitions</name>
