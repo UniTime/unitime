@@ -679,9 +679,9 @@ public class Class_ extends BaseClass_ {
         	DurationModel dm = getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 			Integer ah = dm.getArrangedHours(getSchedulingSubpart().getMinutesPerWk(), effectiveDatePattern());
             if (ah == null) {
-                sb.append("<span title='Arrange Hours'>Arr Hrs</span>");
+                sb.append("<span title='" + MSG.arrangeHours() + "'>" + MSG.arrHrs() + "</span>");
             } else {
-                sb.append("<span title='Arrange "+ah+" Hours'>Arr "+ah+" Hrs</span>");
+                sb.append("<span title='" + MSG.arrangeHoursN(ah) + "'>" + MSG.arrHrsN(ah) + "</span>");
             }
         }
 		return(sb.toString());
@@ -1637,9 +1637,9 @@ public class Class_ extends BaseClass_ {
 				DurationModel dm = getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
 				Integer ah = dm.getArrangedHours(getSchedulingSubpart().getMinutesPerWk(), effectiveDatePattern());
 	            if (ah == null) {
-	                sb.append("Arr Hrs");
+	                sb.append(MSG.arrHrs());
 	            } else {
-	                sb.append("Arr "+ah+" Hrs");
+	                sb.append(MSG.arrHrsN(ah));
 	            }	
 			}
 		}

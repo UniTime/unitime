@@ -355,9 +355,9 @@ public class CsvInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         	Integer ah = dm.getArrangedHours(clazz.getSchedulingSubpart().getMinutesPerWk(), clazz.effectiveDatePattern());
             if (ah == null) {
-                addText(cell, "Arr Hrs", true);
+                addText(cell, MSG.arrHrs(), true);
             } else {
-                addText(cell, "Arr "+ah+" Hrs", true);
+                addText(cell, MSG.arrHrsN(ah), true);
             }
         }
         return cell;
