@@ -207,6 +207,7 @@ public class AdvisorConfirmationPDF {
 		}
 		
 		sign.setTotalWidth(document.right() - document.left());
+		if (writer.getVerticalPosition(true) < sign.getTotalHeight() + document.bottom()) document.newPage();
 		sign.writeSelectedRows(0, -1, document.left(), sign.getTotalHeight() + document.bottom(), writer.getDirectContent());
 		// document.add(sign);
 		

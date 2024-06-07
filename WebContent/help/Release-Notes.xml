@@ -47,6 +47,12 @@
 				<line>Plain-text student emails can be enabled by setting unitime.enrollment.email.plainText to true (defaults to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Advisor Course Recommendations</name>
+			<description>
+				<line>Ensure that the advisor's additional notes do not overlap with signature on the generated PDF.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
