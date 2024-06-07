@@ -39,6 +39,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Email Notifications</name>
+			<description>
+				<line>Created a plain-text template alternative for student scheduling emails.</line>
+				<line>Plain-text student emails can be enabled by setting unitime.enrollment.email.plainText to true (defaults to false).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Roll Forward: Travel Times, Room Partitions</name>
