@@ -35,6 +35,7 @@
 			<description>
 				<line>Added column with the capacity of the assigned room (Cap).</line>
 				<line>Added mouse-over for assigned rooms.</line>
+				<line>Fixed the ability to clear External Id (when modification of external ids is allowed).</line>
 			</description>
 		</item>
 	</category>
