@@ -674,8 +674,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 					changed = true;
 					modifiedClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
 				}
-				if (suffix != null) {
-					if (suffix.isEmpty()) suffix = null;
+				if (form.isEditExternalId()) {
 					if (suffix == null ? modifiedClass.getClassSuffix() != null : !suffix.equals(modifiedClass.getClassSuffix())) {
 						modifiedClass.setClassSuffix(suffix);
 						changed = true;
