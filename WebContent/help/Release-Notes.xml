@@ -66,6 +66,18 @@
     			<line>For example, a:A% matches all areas starting with A. Or, LC:% matches all students that are in a group of LC type.</line>
 			</description>
 		</item>
+		<item>
+			<name>Universal Reservation Override: Student Filter</name>
+			<description>
+    			<line>Added a missing check on student minors.</line>
+				<line>The the following checks now allow for partial match using %:
+					<line>area, classification, major, concentration, </line>
+					<line>campus, accommodation, degree, program, minor, </line>
+    				<line>primary-area, primary-classification, primary-major, primary-concentration, primary-degree, </line>
+    				<line>group, status</line>
+    			</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
