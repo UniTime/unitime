@@ -9,7 +9,8 @@ ${reason}
 <#list changes as line>
 <@classTableLine line/></#list>
 </#if><#if changeMessage??>
-${changeMessage}</#if><#elseif changes??>
+
+${changeMessage?replace("<br>","\n")}</#if><#elseif changes??>
 
 -- ${msg.emailEnrollmentChanges()} -----------
 <@classTableHeader/>
