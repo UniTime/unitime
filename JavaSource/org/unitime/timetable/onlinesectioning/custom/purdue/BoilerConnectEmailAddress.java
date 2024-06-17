@@ -175,7 +175,16 @@ public class BoilerConnectEmailAddress implements StudentEmailProvider {
 	}
 
 	@Override
-	public boolean isPlainText() {
-		return true;
+	public Boolean isPlainText(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional, String operation) {
+		if (optional == null) {
+			if (isAlwaysUse(operation))
+				return true;
+			else
+				return null;
+		} else if (optional.booleanValue()) {
+			return true;
+		} else {
+			return null;
+		}
 	}
 }
