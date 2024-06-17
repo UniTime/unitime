@@ -18,5 +18,5 @@ public interface StudentEmailProvider {
 	
 	public boolean isOptionCheckedByDefault();
 	
-	public boolean isPlainText();
+	public Boolean isPlainText(OnlineSectioningServer server, OnlineSectioningHelper helper, Boolean optional, String operation);
 }

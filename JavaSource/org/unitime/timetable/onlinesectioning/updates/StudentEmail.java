@@ -404,8 +404,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (Customization.StudentEmailProvider.hasProvider())
 						emailProvider = Customization.StudentEmailProvider.getProvider();
 					boolean plainText = ApplicationProperty.OnlineSchedulingEmailPlainText.isTrue();
-					if (emailProvider != null)
-						plainText = emailProvider.isPlainText();
+					if (emailProvider != null) {
+						Boolean epPlainText = emailProvider.isPlainText(server, helper, iOptional, iSourceAction);
+						if (epPlainText != null)
+							plainText = epPlainText.booleanValue();
+					}
 					final String html = generateMessage(dbStudent, server, helper, plainText);
 					if (html != null) {
 						Email email = null;
