@@ -14969,7 +14969,7 @@
 		<pgsql>
 			create table %SCHEMA%.access_stats (
 				uniqueid bigint not null,
-				time_stamp with time zone not null,
+				time_stamp timestamp with time zone not null,
 				host varchar(50) not null,
 				page varchar(50) not null,
 				nbr_access integer not null,
@@ -14985,7 +14985,7 @@
 			)
 		</pgsql>
 		<pgsql>alter table %SCHEMA%.access_stats add constraint pk_access_stats primary key (uniqueid)</pgsql>
-		<pgsql>create index %SCHEMA%.idx_access_stats on %SCHEMA%.access_stats(time_stamp, page)</pgsql>
+		<pgsql>create index idx_access_stats on %SCHEMA%.access_stats(time_stamp, page)</pgsql>
 	</update>
 	<update version="269" date="2-Feb-2024" comment="Access Control Statistics Update">
 		<mysql>alter table %SCHEMA%.access_stats add nbr_gotin decimal(10,0)</mysql>

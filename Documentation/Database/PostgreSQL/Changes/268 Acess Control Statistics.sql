@@ -20,7 +20,7 @@
 
 create table access_stats (
 	uniqueid bigint not null,
-	time_stamp with time zone not null,
+	time_stamp timestamp with time zone not null,
 	host varchar(50) not null,
 	page varchar(50) not null,
 	nbr_access integer not null,
