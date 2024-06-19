@@ -452,12 +452,7 @@ public class HibernateUtil {
     }
     
     public static String dayOfWeek(String field) {
-    	if (isOracle())
-    		return "weekday(" + field + ")";
-    	else if (isPostgress())
-    		return "extract(isodow from " + field + ") - 1";
-    	else
-    		return "weekday(" + field + ")";
+    	return "weekday(" + field + ")";
     }
     
     public static String date(Date date) {
@@ -471,12 +466,14 @@ public class HibernateUtil {
     	if (PostgreSQLDialect.class.isAssignableFrom(dialect)) {
     		builder.applySqlFunction("adddate", PostgreSQLAddDateFunction.INSTANCE);
     		builder.applySqlFunction("days", PostgreSQLDaysFunction.INSTANCE);
+    		builder.applySqlFunction("weekday", PostgreSQLWeekdayFunction.INSTANCE);
         } else if (OracleDialect.class.isAssignableFrom(dialect)) {
         	builder.applySqlFunction("weekday", OracleWeekdayFunction.INSTANCE);
         	builder.applySqlFunction("days", OracleDaysFunction.INSTANCE);
         	builder.applySqlFunction("adddate", OracleAddDateFunction.INSTANCE);
         } else if (MySQLDialect.class.isAssignableFrom(dialect)) {
         	builder.applySqlFunction("days", MySQLDaysFunction.INSTANCE);
+        	builder.applySqlFunction("weekday", MySQLWeekdayFunction.INSTANCE);
         }
     }
     
@@ -613,6 +610,53 @@ public class HibernateUtil {
     		sqlAppender.appendSql(") - date(");
     		translator.render(sqlAstArguments.get(1), SqlAstNodeRenderingMode.DEFAULT);
     		sqlAppender.appendSql("))");
+    	}
+    }
+    
+    public static class MySQLWeekdayFunction extends NamedSqmFunctionDescriptor {
+    	public static final MySQLWeekdayFunction INSTANCE = new MySQLWeekdayFunction();
+    	public MySQLWeekdayFunction() {
+    		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
+    			@Override
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
+				}
+				@Override
+				public BasicValuedMapping resolveFunctionReturnType(Supplier<BasicValuedMapping> impliedTypeAccess, List<? extends SqlAstNode> arguments) {
+					return impliedTypeAccess.get();
+				}
+			});
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
+    		sqlAppender.appendSql("weekday(");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(")");
+    	}
+    }
+    
+    public static class PostgreSQLWeekdayFunction extends NamedSqmFunctionDescriptor {
+    	public static final PostgreSQLWeekdayFunction INSTANCE = new PostgreSQLWeekdayFunction();
+    	public PostgreSQLWeekdayFunction() {
+    		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
+    			@Override
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
+				}
+				@Override
+				public BasicValuedMapping resolveFunctionReturnType(Supplier<BasicValuedMapping> impliedTypeAccess, List<? extends SqlAstNode> arguments) {
+					return impliedTypeAccess.get();
+				}
+			});
+    	}
+    	
+    	@Override
+    	public void render(SqlAppender sqlAppender, List<? extends SqlAstNode> sqlAstArguments, ReturnableType<?> returnType, SqlAstTranslator<?> translator) {
+    		// (extract(isodow from " + field + ") - 1)
+    		sqlAppender.appendSql("(extract(isodow from ");
+    		translator.render(sqlAstArguments.get(0), SqlAstNodeRenderingMode.DEFAULT);
+    		sqlAppender.appendSql(") - 1)");
     	}
     }
     
