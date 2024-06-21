@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -32,10 +31,8 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JoinFormula;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -65,10 +62,7 @@ public abstract class BaseRoomDept implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "room_dept_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "room_sharing_group_seq")
-	})
-	@GeneratedValue(generator = "room_dept_id")
+	@UniqueIdGenerator(sequence = "room_sharing_group_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -28,9 +27,7 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Session;
 
@@ -58,10 +55,7 @@ public abstract class BaseAcademicClassification implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "academic_classification_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "acad_class_seq")
-	})
-	@GeneratedValue(generator = "academic_classification_id")
+	@UniqueIdGenerator(sequence = "acad_class_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

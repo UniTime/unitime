@@ -19,6 +19,10 @@
 */
 package org.unitime.commons.hibernate.id;
 
+import static org.hibernate.generator.EventTypeSets.INSERT_ONLY;
+
+import java.lang.reflect.Member;
+import java.util.EnumSet;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
@@ -27,7 +31,12 @@ import org.hibernate.boot.cfgxml.spi.LoadedConfig;
 import org.hibernate.boot.model.relational.Database;
 import org.hibernate.boot.model.relational.SqlStringGenerationContext;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.generator.AnnotationBasedGenerator;
+import org.hibernate.generator.BeforeExecutionGenerator;
+import org.hibernate.generator.EventType;
+import org.hibernate.generator.GeneratorCreationContext;
 import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.service.ServiceRegistry;
@@ -36,16 +45,50 @@ import org.hibernate.type.Type;
 /**
  * @author Tomas Muller
  */
-public class UniqueIdGenerator implements IdentifierGenerator {
+public class UniqueIdGenerator implements BeforeExecutionGenerator, AnnotationBasedGenerator<org.unitime.commons.annotations.UniqueIdGenerator> {
 	private static final long serialVersionUID = -2217592981811005640L;
 	IdentifierGenerator iGenerator = null;
     private static String sGenClass = null;
     private static String sDefaultSchema = null;
+    private boolean iInitialized = false;
     
     public static void configure(LoadedConfig config) {
         sGenClass = (String)config.getConfigurationValues().get("tmtbl.uniqueid.generator");
         if (sGenClass==null) sGenClass = "org.hibernate.id.enhanced.SequenceStyleGenerator";
         sDefaultSchema = (String)config.getConfigurationValues().get("hibernate.default_schema");
+    }
+    
+    @Override
+    public void initialize(org.unitime.commons.annotations.UniqueIdGenerator config, Member idMember, GeneratorCreationContext context) {
+    	Properties params = new Properties();
+    	params.put(SequenceStyleGenerator.SEQUENCE_PARAM, config.sequence());
+    	configure(context.getProperty().getType(), params, context.getServiceRegistry());
+    	registerExportables(context.getDatabase());
+    }
+    
+    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
+    	if (params.getProperty(PersistentIdentifierGenerator.SCHEMA) == null && sDefaultSchema != null)
+            params.setProperty(PersistentIdentifierGenerator.SCHEMA, sDefaultSchema);
+    	if (getGenerator() instanceof TableGenerator) {
+    		params.setProperty(TableGenerator.SEGMENT_VALUE_PARAM, "default");
+    		params.setProperty(TableGenerator.OPT_PARAM, "legacy-hilo");
+    		params.setProperty(TableGenerator.INCREMENT_PARAM, "32767");
+    		params.setProperty(TableGenerator.VALUE_COLUMN_PARAM, "next_hi");
+    		params.setProperty(TableGenerator.TABLE_PARAM, "hibernate_unique_key");
+    	} else if (getGenerator() instanceof SequenceStyleGenerator) {
+    		params.setProperty(SequenceStyleGenerator.INCREMENT_PARAM, "1");
+    	}
+        getGenerator().configure(type, params, serviceRegistry);
+    }
+    
+    public void registerExportables(Database database) {
+    	getGenerator().registerExportables(database);
+    }
+    
+    public synchronized void initialize(SqlStringGenerationContext context) {
+    	if (!iInitialized)
+    		getGenerator().initialize(context);
+    	iInitialized = true;
     }
     
     public IdentifierGenerator getGenerator() throws HibernateException {
@@ -66,35 +109,19 @@ public class UniqueIdGenerator implements IdentifierGenerator {
         }
         return iGenerator;
     }
-    
+
     @Override
-    public Object generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
-        return getGenerator().generate(session, object);
-    }
-    
-    @Override
-    public void configure(Type type, Properties params, ServiceRegistry serviceRegistry) throws MappingException {
-    	if (params.getProperty("schema") == null && sDefaultSchema != null)
-            params.setProperty("schema", sDefaultSchema);
-    	if (getGenerator() instanceof TableGenerator) {
-    		params.setProperty("segment_value", "default");//params.getProperty("sequence_name", params.getProperty("sequence")));
-    		params.setProperty("optimizer", "legacy-hilo");
-    		params.setProperty("increment_size", "32767");
-    		params.setProperty("value_column_name", "next_hi");
-    		params.setProperty("table_name", "hibernate_unique_key");
-    	} else if (getGenerator() instanceof SequenceStyleGenerator) {
-    		params.setProperty("increment_size", "1");
-    	}
-        getGenerator().configure(type, params, serviceRegistry);
-    }
-    
-    @Override
-	public void initialize(SqlStringGenerationContext context) {
-    	getGenerator().initialize(context);
-    }
-    
-    @Override
-	public void registerExportables(Database database) {
-    	getGenerator().registerExportables(database);
-    }
+	public EnumSet<EventType> getEventTypes() {
+		return INSERT_ONLY;
+	}
+
+	public Object generate(SharedSessionContractImplementor session, Object owner) {
+		initialize(session.getSessionFactory().getSqlStringGenerationContext());
+		return getGenerator().generate(session, owner);
+	}
+
+	@Override
+	public Object generate(SharedSessionContractImplementor session, Object owner, Object currentValue, EventType eventType) {
+		return generate(session, owner);
+	}
 }

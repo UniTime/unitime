@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -32,10 +31,8 @@ import java.io.Serializable;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 import org.hibernate.proxy.HibernateProxy;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -63,10 +60,7 @@ public abstract class BaseDistributionObject implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "distribution_object_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "dist_obj_seq")
-	})
-	@GeneratedValue(generator = "distribution_object_id")
+	@UniqueIdGenerator(sequence = "dist_obj_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

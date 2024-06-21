@@ -20,7 +20,6 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MappedSuperclass;
@@ -32,9 +31,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.ManagerSettings;
 import org.unitime.timetable.model.Settings;
 
@@ -63,10 +60,7 @@ public abstract class BaseSettings implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "settings_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "settings_seq")
-	})
-	@GeneratedValue(generator = "settings_id")
+	@UniqueIdGenerator(sequence = "settings_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

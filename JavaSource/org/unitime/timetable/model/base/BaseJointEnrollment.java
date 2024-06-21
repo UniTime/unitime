@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -29,9 +28,7 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.JointEnrollment;
 import org.unitime.timetable.model.Solution;
@@ -60,10 +57,7 @@ public abstract class BaseJointEnrollment implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "jenrl_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "jenrl_seq")
-	})
-	@GeneratedValue(generator = "jenrl_id")
+	@UniqueIdGenerator(sequence = "jenrl_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

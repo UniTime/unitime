@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -32,10 +31,8 @@ import java.io.Serializable;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JoinFormula;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
@@ -69,10 +66,7 @@ public abstract class BaseCourseCreditUnitConfig implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "course_credit_unit_config_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "crs_credit_unig_cfg_seq")
-	})
-	@GeneratedValue(generator = "course_credit_unit_config_id")
+	@UniqueIdGenerator(sequence = "crs_credit_unig_cfg_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.type.Type;
@@ -39,11 +38,11 @@ import org.unitime.timetable.model.dao._RootDAO;
  *
  */
 public class LocationPermIdGenerator {
-    private static IdentifierGenerator sGenerator = null;
+    private static UniqueIdGenerator sGenerator = null;
     
     protected static String sSequence = "loc_perm_id_seq";
     
-    public static IdentifierGenerator getGenerator() throws HibernateException {
+    public static UniqueIdGenerator getGenerator() throws HibernateException {
     	try {
             if (sGenerator!=null) return sGenerator;
             UniqueIdGenerator idGen = new UniqueIdGenerator();

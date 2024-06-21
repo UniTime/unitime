@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -35,9 +34,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.Advisor;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
@@ -72,10 +69,7 @@ public abstract class BaseAdvisor implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "advisor_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "pref_group_seq")
-	})
-	@GeneratedValue(generator = "advisor_id")
+	@UniqueIdGenerator(sequence = "pref_group_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
