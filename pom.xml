@@ -723,13 +723,13 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
-		<hibernate.version>6.4.8.Final</hibernate.version>
+		<hibernate.version>6.4.9.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts2.version>6.4.0</struts2.version>
 		<protobuf.version>3.25.3</protobuf.version>
 		<gwt.version>2.11.0</gwt.version>
-		<spring.version>5.3.34</spring.version>
-		<spring-security.version>5.8.12</spring-security.version>
+		<spring.version>5.3.37</spring.version>
+		<spring-security.version>5.8.13</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 		<servlet.version>3.1.0</servlet.version>
 		<jsp.version>2.3.3</jsp.version>
@@ -744,10 +744,10 @@
 		<freemarker.version>2.3.32</freemarker.version>
 		<oracle.version>23.2.0.0</oracle.version>
 		<jython.version>2.7.3</jython.version>
-		<jgroups.version>5.3.6.Final</jgroups.version>
+		<jgroups.version>5.3.7.Final</jgroups.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
 		<joda.version>2.12.7</joda.version>
-		<gson.version>2.10.1</gson.version>
+		<gson.version>2.11.0</gson.version>
 		<biweekly.version>0.6.8</biweekly.version>
 		<poi.version>5.2.5</poi.version>
 		<dom4j.version>2.1.4</dom4j.version>
@@ -755,7 +755,7 @@
 		<text.version>1.12.0</text.version>
 		<lang3.version>3.14.0</lang3.version>
 		<asm.version>9.7</asm.version>
-		<infinispan-hibernate.version>14.0.28.Final</infinispan-hibernate.version>
+		<infinispan-hibernate.version>14.0.29.Final</infinispan-hibernate.version>
 	</properties>
 
 	<distributionManagement>
