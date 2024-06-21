@@ -20,7 +20,6 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -28,9 +27,7 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.SolverInfoDef;
 
@@ -57,10 +54,7 @@ public abstract class BaseSolverInfo implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "solver_info_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "solver_info_seq")
-	})
-	@GeneratedValue(generator = "solver_info_id")
+	@UniqueIdGenerator(sequence = "solver_info_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

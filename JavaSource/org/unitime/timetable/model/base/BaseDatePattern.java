@@ -21,7 +21,6 @@ package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -36,9 +35,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
@@ -73,10 +70,7 @@ public abstract class BaseDatePattern implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "date_pattern_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "date_pattern_seq")
-	})
-	@GeneratedValue(generator = "date_pattern_id")
+	@UniqueIdGenerator(sequence = "date_pattern_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

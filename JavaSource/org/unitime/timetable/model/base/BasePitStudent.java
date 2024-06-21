@@ -22,7 +22,6 @@ package org.unitime.timetable.model.base;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -35,9 +34,7 @@ import java.util.Set;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.PitStudent;
 import org.unitime.timetable.model.PitStudentAcadAreaMajorClassification;
 import org.unitime.timetable.model.PitStudentAcadAreaMinorClassification;
@@ -75,10 +72,7 @@ public abstract class BasePitStudent implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pit_student_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "point_in_time_seq")
-	})
-	@GeneratedValue(generator = "pit_student_id")
+	@UniqueIdGenerator(sequence = "point_in_time_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

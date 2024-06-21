@@ -22,7 +22,6 @@ package org.unitime.timetable.model.base;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -38,10 +37,8 @@ import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Formula;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JoinFormula;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.JointEnrollment;
 import org.unitime.timetable.model.Solution;
@@ -85,10 +82,7 @@ public abstract class BaseSolution implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "solution_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "solution_seq")
-	})
-	@GeneratedValue(generator = "solution_id")
+	@UniqueIdGenerator(sequence = "solution_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

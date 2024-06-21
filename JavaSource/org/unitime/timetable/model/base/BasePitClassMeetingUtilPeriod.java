@@ -20,7 +20,6 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -28,9 +27,7 @@ import jakarta.persistence.MappedSuperclass;
 
 import java.io.Serializable;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.PitClassMeeting;
 import org.unitime.timetable.model.PitClassMeetingUtilPeriod;
 
@@ -56,10 +53,7 @@ public abstract class BasePitClassMeetingUtilPeriod implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "pit_class_mtg_util_period_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "point_in_time_seq")
-	})
-	@GeneratedValue(generator = "pit_class_mtg_util_period_id")
+	@UniqueIdGenerator(sequence = "point_in_time_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

@@ -20,7 +20,6 @@
 package org.unitime.timetable.model.base;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -29,9 +28,7 @@ import jakarta.persistence.MappedSuperclass;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.unitime.commons.hibernate.id.UniqueIdGenerator;
+import org.unitime.commons.annotations.UniqueIdGenerator;
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.LocationPicture;
 
@@ -60,10 +57,7 @@ public abstract class BaseLocationPicture implements Serializable {
 
 
 	@Id
-	@GenericGenerator(name = "room_pict_id", type = UniqueIdGenerator.class, parameters = {
-		@Parameter(name = "sequence", value = "room_seq")
-	})
-	@GeneratedValue(generator = "room_pict_id")
+	@UniqueIdGenerator(sequence = "room_seq")
 	@Column(name="uniqueid")
 	public Long getUniqueId() { return iUniqueId; }
 	public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }

@@ -364,21 +364,9 @@ public class CreateBaseModelFromXml extends Task {
 			pwb.println();
 			imports.add("jakarta.persistence.Id");
 			pwb.println("	@Id");
-			String tableid = table + "_id";
-			if ("Location".equals(className)) tableid = "room_id";
-			if ("LocationPicture".equals(className)) tableid = "room_pict_id";
-			if ("Preference".equals(className)) tableid = "pref_id";
-			if ("PreferenceGroup".equals(className)) tableid = "pref_group_id";
-			if ("RefTableEntry".equals(className)) tableid = "ref_table_id";
 			if (sequence != null) {
-				imports.add("org.hibernate.annotations.GenericGenerator");
-				imports.add("org.hibernate.annotations.Parameter");
-				imports.add("org.unitime.commons.hibernate.id.UniqueIdGenerator");
-				pwb.println("	@GenericGenerator(name = \"" + tableid + "\", type = UniqueIdGenerator.class, parameters = {");
-				pwb.println("		@Parameter(name = \"sequence\", value = \"" + sequence + "\")");
-				pwb.println("	})");
-				imports.add("jakarta.persistence.GeneratedValue");
-				pwb.println("	@GeneratedValue(generator = \"" + tableid + "\")");
+				imports.add("org.unitime.commons.annotations.UniqueIdGenerator");
+				pwb.println("	@UniqueIdGenerator(sequence = \"" + sequence + "\")");
 			}
 			imports.add("jakarta.persistence.Column");
 			pwb.println("	@Column(name=\"" + column + "\")");

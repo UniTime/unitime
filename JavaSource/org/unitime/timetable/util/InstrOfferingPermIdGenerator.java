@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.spi.MetadataImplementor;
-import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.type.Type;
@@ -36,11 +35,11 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
  *
  */
 public class InstrOfferingPermIdGenerator {
-    private static IdentifierGenerator sGenerator = null;
+    private static UniqueIdGenerator sGenerator = null;
     
     protected static String sSequence = "instr_offr_permid_seq";
     
-    public static IdentifierGenerator getGenerator() throws HibernateException {
+    public static UniqueIdGenerator getGenerator() throws HibernateException {
         try {
             if (sGenerator!=null) return sGenerator;
             UniqueIdGenerator idGen = new UniqueIdGenerator();
