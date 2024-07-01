@@ -36,6 +36,12 @@
 				<line>Fixed a Hibernate 6.x issue when filtering by day of the week on MySQL and PostreSQL.</line>
 			</description>
 		</item>
+		<item>
+			<name>Administration: Event Statuses</name>
+			<description>
+				<line>Corrected an issue causing a room sometimes being shown under a wrong department/room type.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
