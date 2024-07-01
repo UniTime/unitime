@@ -98,6 +98,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	public PageName getPageName() { return iPageName; } 
 	
 	public List<Record> getRecords() { return iRecords; }
+	public void setRecords(List<Record> records) { iRecords = records; }
 	public Record addRecord(Long uniqueId, boolean deletable) {
 		Record r = new Record(uniqueId, iFields.length, deletable);
 		for (int i = 0; i < iFields.length; i++) {

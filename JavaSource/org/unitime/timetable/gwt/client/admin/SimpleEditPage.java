@@ -711,7 +711,8 @@ public class SimpleEditPage extends Composite {
 										r.setField(0, open.indexOf("|" + r.getUniqueId() + "|") >= 0 ? "-" : "+");
 								}
 							}
-							Collections.sort(iData.getRecords(), new Comparator<Record>() {
+							List<Record> sorted = new ArrayList<SimpleEditInterface.Record>(iData.getRecords());
+							Collections.sort(sorted, new Comparator<Record>() {
 								public int compare(Record r1, Record r2) {
 									if (iData.getFields()[0].getType() == FieldType.parent) {
 										Record p1 = ("+".equals(r1.getField(0)) || "-".equals(r1.getField(0)) ? null : iData.getRecord(Long.valueOf(r1.getField(0))));
@@ -734,6 +735,7 @@ public class SimpleEditPage extends Composite {
 									return cmp.compare(r1, r2);
 								}
 							});
+							iData.setRecords(sorted);
 							refreshTable("|" + result.get("SimpleEdit.Hidden[" + iType.toString() + "]") + "|");
 							LoadingWidget.hideLoading();
 							if (callback != null) callback.onSuccess(true);
