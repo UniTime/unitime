@@ -43,6 +43,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Rooms: Custom URL</name>
+			<description>
+				<line>Added an ability to provide custom URLs for rooms (based on their name, building, room number, or external id).</line>
+				<line>For more details, see the unitime.rooms.url properties.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

@@ -59,6 +59,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -80,6 +81,7 @@ public class RoomDetail extends Composite {
 	private RoomPropertiesInterface iProperties = null;
 	private RoomDetailInterface iRoom = null;
 	private RoomsPageMode iMode = null;
+	private Anchor iLink = null;
 	
 	public RoomDetail(RoomsPageMode mode) {
 		iMode = mode;
@@ -172,6 +174,18 @@ public class RoomDetail extends Composite {
 
 		iHeader.clearMessage();
 		iHeader.setHeaderTitle(iRoom.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : iRoom.getLabel());
+		if (room.hasUrl()) {
+			if (iLink == null) {
+				iLink = new Anchor(MESSAGES.roomExternalLink());
+				iLink.setTarget("_blank");
+				iLink.addStyleName("roomlink");
+				iHeader.add(iLink);
+			}
+			iLink.setHref(room.getUrl());
+			iLink.setVisible(true);
+		} else if (iLink != null) {
+			iLink.setVisible(false);
+		}
 		iHeader.setEnabled("edit", iRoom.isCanEdit());
 		iHeader.setEnabled("previous", getPrevious(iRoom.getUniqueId()) != null);
 		iHeader.setEnabled("next", getNext(iRoom.getUniqueId()) != null);

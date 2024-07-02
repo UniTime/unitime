@@ -22,6 +22,8 @@ package org.unitime.timetable.server.rooms;
 import java.text.DecimalFormat;
 import java.util.TreeSet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -36,6 +38,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
+import org.unitime.timetable.interfaces.RoomUrlProvider;
 import org.unitime.timetable.model.AttachmentType;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.EventServiceProvider;
@@ -46,6 +49,7 @@ import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
 
@@ -54,6 +58,7 @@ import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
  */
 @GwtRpcImplements(RoomHintRequest.class)
 public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, RoomHintResponse> {
+	private static Log sLog = LogFactory.getLog(RoomHintBackend.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
@@ -125,6 +130,15 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    		response.setBreakTime(location.getEffectiveBreakTime());
 	    	
 	    	response.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
+	    	
+	    	RoomUrlProvider url = Customization.RoomUrlProvider.getProvider();
+	    	if (url != null) {
+	    		try {
+	    			response.setUrl(url.getRoomUrl(location));
+	    		} catch (Exception e) {
+	    			sLog.error("Failed to get room URL: " + e.getMessage(), e);
+	    		}
+	    	}
 	    	
 	    	for (LocationPicture picture: new TreeSet<LocationPicture>(location.getRoomPictures())) {
 	    		if (picture.getType() != null && (

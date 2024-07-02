@@ -36,6 +36,8 @@ import java.util.TreeSet;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -61,6 +63,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomDetailInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomPictureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
+import org.unitime.timetable.interfaces.RoomUrlProvider;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -77,6 +80,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomTypeOption;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
@@ -87,6 +91,7 @@ import org.unitime.timetable.security.rights.Right;
  */
 @GwtRpcImplements(RoomFilterRpcRequest.class)
 public class RoomDetailsBackend extends RoomFilterBackend {
+	private static Log sLog = LogFactory.getLog(RoomDetailsBackend.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	public static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	
@@ -411,6 +416,15 @@ public class RoomDetailsBackend extends RoomFilterBackend {
             	response.setLastChange(lch.getShortLabel());
     	}
     	
+    	RoomUrlProvider url = Customization.RoomUrlProvider.getProvider();
+    	if (url != null) {
+    		try {
+    			response.setUrl(url.getRoomUrl(location));
+    		} catch (Exception e) {
+    			sLog.error("Failed to get room URL: " + e.getMessage(), e);
+    		}
+    	}
+
     	return response;
 	}
 	

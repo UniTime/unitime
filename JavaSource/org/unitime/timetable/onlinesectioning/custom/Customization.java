@@ -21,6 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
+import org.unitime.timetable.interfaces.RoomUrlProvider;
 import org.unitime.timetable.onlinesectioning.match.RuleCheckingCourseMatcherProvider;
 import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 
@@ -46,7 +47,8 @@ public enum Customization {
 	AdvisorCourseRequestsValidationProvider(AdvisorCourseRequestsValidationProvider.class, ApplicationProperty.CustomizationAdvisorsCourseRequestsValidation),
 	VariableTitleCourseProvider(VariableTitleCourseProvider.class, ApplicationProperty.CustomizationVariableTitleCourseProvider),
 	WaitListValidationProvider(WaitListValidationProvider.class, ApplicationProperty.CustomizationWaitListValidationProvider),
-	WaitListComparatorProvider(WaitListComparatorProvider.class, ApplicationProperty.CustomizationWaitListComparatorProvider)
+	WaitListComparatorProvider(WaitListComparatorProvider.class, ApplicationProperty.CustomizationWaitListComparatorProvider),
+	RoomUrlProvider(RoomUrlProvider.class, ApplicationProperty.CustomRoomUrlProvider),
 	;
 	
 	private Holder<?> iHolder;

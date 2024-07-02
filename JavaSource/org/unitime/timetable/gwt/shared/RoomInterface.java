@@ -453,6 +453,7 @@ public class RoomInterface implements IsSerializable {
 		private String iEventDepartment = null;
 		private String iNote = null;
 		private boolean iIgnoreRoomCheck = false;
+		private String iUrl = null;
 
 		private List<FeatureInterface> iFeatures = null;
 		private List<RoomPictureInterface> iPictures = null;
@@ -579,6 +580,10 @@ public class RoomInterface implements IsSerializable {
 			}
 			return ret;
 		}
+		
+		public String getUrl() { return iUrl; }
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public void setUrl(String url) { iUrl = url; }
 	}
 	
 	public static class RoomHintRequest implements GwtRpcRequest<RoomHintResponse> {
@@ -1256,6 +1261,7 @@ public class RoomInterface implements IsSerializable {
 		private Set<EventServiceProviderInterface> iServices = null;
 		private RoomDetailInterface iParent = null;
 		private String iDefaultEventEmail = null, iEventEmail = null;
+		private String iUrl;
 		
 		public RoomDetailInterface() {}
 		
@@ -1622,6 +1628,10 @@ public class RoomInterface implements IsSerializable {
 		public String getEventEmail() { return iEventEmail; }
 		public boolean hasEventEmail() { return iEventEmail != null && !iEventEmail.isEmpty(); }
 		public void setEventEmail(String eventEmail) { iEventEmail = eventEmail; }
+		
+		public String getUrl() { return iUrl; }
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public void setUrl(String url) { iUrl = url; }
 	}
 	
 	public static class RoomDetailsRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
