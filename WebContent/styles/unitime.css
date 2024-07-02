@@ -4106,6 +4106,12 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: pre-wrap;
 }
 
+.unitime-RoomDetail .roomlink {
+	padding-left: 10px;
+	font-size: small;
+	vertical-align: bottom;
+}
+
 .unitime-RoomEdit .coordinates .number {
 	float: left;
 }

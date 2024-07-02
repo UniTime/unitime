@@ -3547,6 +3547,32 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Room Edit: prefetch room relations when loading room details/edit page to make the page load faster (disable when having issues with room groups or features not showing up on the edit page)")
 	RoomEditPrefetchRelations("unitime.rooms.prefetchRelations"),
+	
+	@Description("Rooms: custom room URL provider (class implementing the RoomUrlProvider interface)")
+	@DefaultValue("org.unitime.timetable.util.DefaultRoomUrlProvider")
+	@Since(4.8)
+	CustomRoomUrlProvider("unitime.rooms.url.provider"),
+	
+	@Description("Room URL: room URL when the default room URL provider is used\n"
+			+ "Use:\n"
+			+ " - :building for building abbreviation and :roomNbr for room number,\n"
+			+ " - :name for the room name,\n"
+			+ " - :roomId and :buildingId for the room and building external ids,\n"
+			+ " - :campus, :term, :year for academic session identification or\n"
+			+ " - :xcampus, :xterm when ExternalTermProvider is configured,\n"
+			+ "Example: https://www.university.edu/inventory?location=:building+:roomNbr")
+	@Since(4.8)
+	DefaultRoomUrlRoom("unitime.rooms.url.room"),
+
+	@Description("Room URL: non-university location URL when the default room URL provider is used\n"
+			+ "Use:\n"
+			+ " - :name for the location name,\n"
+			+ " - :id the location external id,\n"
+			+ " - :campus, :term, :year for academic session identification or\n"
+			+ " - :xcampus, :xterm when ExternalTermProvider is configured,\n"
+			+ "Example: https://www.university.edu/inventory?location=:name")
+	@Since(4.8)
+	DefaultRoomUrlLoncation("unitime.rooms.url.location"),
 	;
 
 	String iKey;

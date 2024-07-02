@@ -7946,4 +7946,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Student filter cannot remain empty.")
 	String hintReservationNoFilter();
+	
+	@DefaultMessage("(Link)")
+	String roomExternalLink();
 }

@@ -74,6 +74,7 @@ import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -669,6 +670,8 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		case NAME:
 			if (iSelectable) {
 				return new SelectableRoomNameCell(room);	
+			} else if (room.hasUrl()) {
+				return new ClickableRoomNameCell(room);
 			} else {
 				return new RoomNameCell(room);
 			}
@@ -925,6 +928,40 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
 					RoomHint.showHint(RoomNameCell.this.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
+				}
+			});
+			addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					RoomHint.hideHint();
+				}
+			});
+			if (iDepartment != null && iProperties != null && iProperties.isCanSeeCourses()) {
+				for (DepartmentInterface d: room.getDepartments()) {
+					if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
+						getElement().getStyle().setColor(d.getPreference().getColor());
+						room.setPrefix(d.getPreference().getName());
+					}
+				}
+			}
+		}
+	}
+	
+	class ClickableRoomNameCell extends Anchor {
+		ClickableRoomNameCell(final RoomDetailInterface room) {
+			super(room.hasDisplayName() ? MESSAGES.label(room.getLabel(), room.getDisplayName()) : room.getLabel(), room.hasDisplayName());
+			setHref(room.getUrl());
+			setTarget("_blank");
+			addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.getNativeEvent().stopPropagation();
+				}
+			});
+			addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					RoomHint.showHint(ClickableRoomNameCell.this.getElement(), room.getUniqueId(), room.getPrefix(), room.getProperty("distance", null), true);
 				}
 			});
 			addMouseOutHandler(new MouseOutHandler() {
