@@ -23,11 +23,19 @@ package org.unitime.commons.web.htmlgen;
  * @author Tomas Muller
  */
 public class ScrollTable extends Table {
+	private boolean iSticky = false;
+	
+	public void setSticky(boolean sticky) {
+		iSticky = sticky;
+	}
 
 	@Override
 	public String startTagHtml(){
 		StringBuffer sb = new StringBuffer();
-		sb.append("<div class='unitime-ScrollTable'>");
+		if (iSticky)
+			sb.append("<div class='unitime-StickyTable'>");
+		else
+			sb.append("<div class='unitime-ScrollTable'>");
 		sb.append(super.startTagHtml());
 		return sb.toString();
 	}

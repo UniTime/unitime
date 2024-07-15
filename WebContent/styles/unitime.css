@@ -5594,6 +5594,33 @@ unitime-RoomSharingWidget .legend .blank {
 	zoom: 1;
 }
 
+.unitime-StickyTable {
+	overflow: auto;
+	position: relative;
+	zoom: 1;
+	max-height: 100vh;
+}
+
+.unitime-StickyTable .WebTableHeader {
+	font-family: sans-serif, verdana, arial;
+	position: sticky;
+	top: 0;
+}
+
+.unitime-StickyTable .WebTableHeaderFirstRow {
+	font-family: sans-serif, verdana, arial;
+	position: sticky;
+	top: 0;
+	height: 23px;
+}
+
+.unitime-StickyTable .WebTableHeaderSecondRow {
+	font-family: sans-serif, verdana, arial;
+	position: sticky;
+	top: 23px;
+	height: 23px;
+}
+
 .unitime-ScrollTableCell {
 	overflow: auto;
 	position: relative;

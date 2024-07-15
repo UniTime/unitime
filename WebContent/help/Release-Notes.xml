@@ -29,6 +29,16 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructional Offerings / Classes</name>
+			<description>
+				<line>Added an experimental user settings that allows for the header row on the Instructional Offerings and Classes pages to freeze (has sticky position).</line>
+				<line>To enable, add stickyTables manager setting with yes and no options (using Default Manager Settings page, sticky table headers are enabled when set to yes).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Events: Filter by Day of Week</name>
