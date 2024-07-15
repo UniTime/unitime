@@ -263,7 +263,6 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        setShowDivSec(hasDivSec);
 	        setShowSchedulePrintNote(hasSchedulePrintNote);
 	        setShowInstructorAssignment(hasInstructorAssignments);
-
 	        setDisplayInstructorPrefs(false);
 	        ClassDurationType dtype = ioc.getEffectiveDurationType();
         	TableStream configTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId(), dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());
