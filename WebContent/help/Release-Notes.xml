@@ -37,6 +37,12 @@
 				<line>To enable, add stickyTables manager setting with yes and no options (using Default Manager Settings page, sticky table headers are enabled when set to yes).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Configuration</name>
+			<description>
+				<line>When unlimited enrollment is selected, make sure that all classes have zero number of rooms.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
