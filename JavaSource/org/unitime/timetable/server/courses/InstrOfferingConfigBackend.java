@@ -607,10 +607,10 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 						newClass.setSchedulingSubpart(ss);
 						ss.addToClasses(newClass);
 						newClass.setControllingDept(ss.getControllingDept());
-						newClass.setExpectedCapacity(line.getMinClassLimit() == null ? 0 : line.getMinClassLimit());
-						newClass.setNbrRooms(line.getNumberOfRooms());
-						newClass.setMaxExpectedCapacity(line.getMaxClassLimit() == null ? 0 : line.getMaxClassLimit());
-						newClass.setRoomRatio(line.getRoomRatio());
+						newClass.setExpectedCapacity(line.getMinClassLimit() == null || ioc.isUnlimitedEnrollment() ? 0 : line.getMinClassLimit());
+						newClass.setNbrRooms(ioc.isUnlimitedEnrollment() ? 0 : line.getNumberOfRooms());
+						newClass.setMaxExpectedCapacity(line.getMaxClassLimit() == null || ioc.isUnlimitedEnrollment() ? 0 : line.getMaxClassLimit());
+						newClass.setRoomRatio(ioc.isUnlimitedEnrollment() ? 1.0f : line.getRoomRatio());
 						newClass.setDisplayInstructor(true);
 						newClass.setEnabledForStudentScheduling(true);
 						newClass.setCancelled(false);
@@ -670,10 +670,10 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 						adept.setManagingDept(DepartmentDAO.getInstance().get(managingDeptId, hibSession), context.getUser(), hibSession);
 					else
 						adept.setManagingDept(ioc.getDepartment(), context.getUser(), hibSession);
-					adept.setExpectedCapacity(line.getMinClassLimit() == null ? 0 : line.getMinClassLimit());
-					adept.setMaxExpectedCapacity(line.getMaxClassLimit() == null ? 0 : line.getMaxClassLimit());
-					adept.setNbrRooms(line.getNumberOfRooms());
-					adept.setRoomRatio(line.getRoomRatio());
+					adept.setExpectedCapacity(line.getMinClassLimit() == null || ioc.isUnlimitedEnrollment() ? 0 : line.getMinClassLimit());
+					adept.setMaxExpectedCapacity(line.getMaxClassLimit() == null || ioc.isUnlimitedEnrollment() ? 0 : line.getMaxClassLimit());
+					adept.setNbrRooms(ioc.isUnlimitedEnrollment() ? 0 : line.getNumberOfRooms());
+					adept.setRoomRatio(ioc.isUnlimitedEnrollment() ? 1.0f : line.getRoomRatio());
 					adept.setRoomsSplitAttendance(line.getSplitAttendance());
 					
 					if (adept.getParentClass() != null)
