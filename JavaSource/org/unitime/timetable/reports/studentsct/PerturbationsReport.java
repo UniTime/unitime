@@ -39,7 +39,7 @@ import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -47,17 +47,16 @@ import org.unitime.timetable.model.dao.StudentDAO;
 /**
  * @author Tomas Muller
  */
-public class PerturbationsReport implements StudentSectioningReport {
+public class PerturbationsReport extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
     private static DecimalFormat sDF = new DecimalFormat("0.000");
-    private StudentSectioningModel iModel;
     
     protected double iSameChoiceWeight = 0.900;
     protected double iSameTimeWeight = 0.700;
     protected double iSameConfigWeight = 0.500;
     
     public PerturbationsReport(StudentSectioningModel model) {
-        iModel = model;
+        super(model);
         iSameChoiceWeight = model.getProperties().getPropertyDouble("StudentWeights.SameChoice", iSameChoiceWeight);
         iSameTimeWeight = model.getProperties().getPropertyDouble("StudentWeights.SameTime", iSameTimeWeight);
         iSameConfigWeight = model.getProperties().getPropertyDouble("StudentWeights.SameConfig", iSameConfigWeight);
@@ -115,8 +114,7 @@ public class PerturbationsReport implements StudentSectioningReport {
     }
 
     @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-        boolean useAmPm = properties.getPropertyBoolean("useAmPm", true);
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {
         		new CSVFile.CSVField("__Student"),
@@ -145,19 +143,15 @@ public class PerturbationsReport implements StudentSectioningReport {
 				return s1.getExternalId().compareTo(s2.getExternalId());
 			}
 		});
-        students.addAll(iModel.getStudents());
-        
-        boolean includeLastLikeStudents = properties.getPropertyBoolean("lastlike", false);
-		boolean includeRealStudents = properties.getPropertyBoolean("real", true);
+        students.addAll(getModel().getStudents());
         
         for (Student student: students) {
         	if (student.isDummy()) continue;
-        	if (student.isDummy() && !includeLastLikeStudents) continue;
-        	if (!student.isDummy() && !includeRealStudents) continue;
         	for (Request r: student.getRequests()) {
         		Enrollment e = assignment.getValue(r);
         		Enrollment i = r.getInitialAssignment();
         		if (i == null || r instanceof FreeTimeRequest || i.equals(e)) continue;
+        		if (!matches(r, i)) continue;
         		org.unitime.timetable.model.Student s = StudentDAO.getInstance().get(student.getId());
         		if (e == null) {
         			for (Section sct : i.getSections()) {
@@ -172,7 +166,7 @@ public class PerturbationsReport implements StudentSectioningReport {
         	            line.add(new CSVFile.CSVField(advisor(student)));
         	            line.add(new CSVFile.CSVField(i.getCourse().getName()));
         	            line.add(new CSVFile.CSVField(sct.getSubpart().getName() + " " + sct.getName(i.getCourse().getId())));
-        	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDayHeader() + " " + sct.getTime().getStartTimeHeader(useAmPm) + " - " + sct.getTime().getEndTimeHeader(useAmPm)));
+        	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDayHeader() + " " + sct.getTime().getStartTimeHeader(isUseAmPm()) + " - " + sct.getTime().getEndTimeHeader(isUseAmPm())));
         	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDatePatternName()));
         	            line.add(new CSVFile.CSVField(sct.getNrRooms() == 0 ? "" : sct.getPlacement().getRoomName(", ")));
         	            line.add(new CSVFile.CSVField(MSG.reportNotAssigned()));
@@ -198,11 +192,11 @@ public class PerturbationsReport implements StudentSectioningReport {
         	            line.add(new CSVFile.CSVField(advisor(student)));
         	            line.add(new CSVFile.CSVField(i.getCourse().getName()));
         	            line.add(new CSVFile.CSVField(org.getSubpart().getName() + " " + org.getName(i.getCourse().getId())));
-        	            line.add(new CSVFile.CSVField(org.getTime() == null ? "" : org.getTime().getDayHeader() + " " + org.getTime().getStartTimeHeader(useAmPm) + " - " + org.getTime().getEndTimeHeader(useAmPm)));
+        	            line.add(new CSVFile.CSVField(org.getTime() == null ? "" : org.getTime().getDayHeader() + " " + org.getTime().getStartTimeHeader(isUseAmPm()) + " - " + org.getTime().getEndTimeHeader(isUseAmPm())));
         	            line.add(new CSVFile.CSVField(org.getTime() == null ? "" : org.getTime().getDatePatternName()));
         	            line.add(new CSVFile.CSVField(org.getNrRooms() == 0 ? "" : org.getPlacement().getRoomName(", ")));
         	            line.add(new CSVFile.CSVField(sct.getSubpart().getName() + " " + sct.getName(i.getCourse().getId())));
-        	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDayHeader() + " " + sct.getTime().getStartTimeHeader(useAmPm) + " - " + sct.getTime().getEndTimeHeader(useAmPm)));
+        	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDayHeader() + " " + sct.getTime().getStartTimeHeader(isUseAmPm()) + " - " + sct.getTime().getEndTimeHeader(isUseAmPm())));
         	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDatePatternName()));
         	            line.add(new CSVFile.CSVField(sct.getNrRooms() == 0 ? "" : sct.getPlacement().getRoomName(", ")));
         	            line.add(new CSVFile.CSVField(sDF.format(1.0 - getDifference(sct, i))));
@@ -225,7 +219,7 @@ public class PerturbationsReport implements StudentSectioningReport {
         	            line.add(new CSVFile.CSVField(i.getCourse().getName()));
         	            if (org != null) {
         	            	line.add(new CSVFile.CSVField(org.getSubpart().getName() + " " + org.getName(i.getCourse().getId())));
-        	            	line.add(new CSVFile.CSVField(org.getTime() == null ? "" : org.getTime().getDayHeader() + " " + org.getTime().getStartTimeHeader(useAmPm) + " - " + org.getTime().getEndTimeHeader(useAmPm)));
+        	            	line.add(new CSVFile.CSVField(org.getTime() == null ? "" : org.getTime().getDayHeader() + " " + org.getTime().getStartTimeHeader(isUseAmPm()) + " - " + org.getTime().getEndTimeHeader(isUseAmPm())));
             	            line.add(new CSVFile.CSVField(org.getTime() == null ? "" : org.getTime().getDatePatternName()));
         	            	line.add(new CSVFile.CSVField(org.getNrRooms() == 0 ? "" : org.getPlacement().getRoomName(", ")));
         	            } else {
@@ -236,7 +230,7 @@ public class PerturbationsReport implements StudentSectioningReport {
         	            }
         	            if (sct != null) {
         	            	line.add(new CSVFile.CSVField(sct.getSubpart().getName() + " " + sct.getName(i.getCourse().getId())));
-        	            	line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDayHeader() + " " + sct.getTime().getStartTimeHeader(useAmPm) + " - " + sct.getTime().getEndTimeHeader(useAmPm)));
+        	            	line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDayHeader() + " " + sct.getTime().getStartTimeHeader(isUseAmPm()) + " - " + sct.getTime().getEndTimeHeader(isUseAmPm())));
             	            line.add(new CSVFile.CSVField(sct.getTime() == null ? "" : sct.getTime().getDatePatternName()));
         	            	line.add(new CSVFile.CSVField(sct.getNrRooms() == 0 ? "" : sct.getPlacement().getRoomName(", ")));
         	            	line.add(new CSVFile.CSVField(sDF.format(1.0 - getDifference(sct, i))));

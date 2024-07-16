@@ -107,7 +107,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		public String getImplementation() { return iImplementation; }
 		public String[] getParameters() { return iParameters; }
 		public ReportTypeInterface toReportTypeInterface() {
-			return new ReportTypeInterface(name(), iName, iImplementation, iParameters);
+			return new ReportTypeInterface(name(), iName, iImplementation, true, iParameters);
 		}
 	}
 

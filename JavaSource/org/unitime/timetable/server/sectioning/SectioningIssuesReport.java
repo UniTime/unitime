@@ -20,7 +20,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -35,17 +35,12 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest.ReschedulingReason;
 
-public class SectioningIssuesReport implements StudentSectioningReport {
-	private StudentSectioningModel iModel = null;
+public class SectioningIssuesReport extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static CourseMessages CMSG = Localization.create(CourseMessages.class);
 
 	public SectioningIssuesReport(StudentSectioningModel model) {
-        iModel = model;
-    }
-	
-    public StudentSectioningModel getModel() {
-        return iModel;
+        super(model);
     }
 
     protected String rooms(SctAssignment section) {
@@ -141,7 +136,9 @@ public class SectioningIssuesReport implements StudentSectioningReport {
 		return null;
 	}
 
-    public CSVFile createTable(Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, boolean useAmPm, boolean all) {
+    @Override
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
+    	boolean all = properties.getPropertyBoolean("all", true);
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {
                 new CSVFile.CSVField("__Student"),
@@ -154,13 +151,12 @@ public class SectioningIssuesReport implements StudentSectioningReport {
                 });
         
         for (Student student: getModel().getStudents()) {
-        	if (student.isDummy() && !includeLastLikeStudents) continue;
-            if (!student.isDummy() && !includeRealStudents) continue;
             XStudent xStudent = new XStudent(student, assignment);
             
         	for (Request request: student.getRequests()) {
         		Enrollment enrollment = assignment.getValue(request);
     			if (enrollment == null || !enrollment.isCourseRequest()) continue;
+    			if (!matches(request, enrollment)) continue;
     			
     			ReschedulingReason reason = check(xStudent, getOffering(enrollment.getCourse().getOffering()), new XCourseRequest((CourseRequest)request, enrollment));
     			if (reason != null) {
@@ -176,7 +172,7 @@ public class SectioningIssuesReport implements StudentSectioningReport {
 		            for (Section s: enrollment.getSections()) {
 		            	type += (type.isEmpty() ? "" : "\n") + (s.getSubpart().getName() == null ? s.getSubpart().getInstructionalType() : s.getSubpart().getName());
 		            	section += (section.isEmpty() ? "" : "\n") + s.getName(enrollment.getCourse().getId());
-		            	time += (time.isEmpty() ? "" : "\n") + (s.getTime() == null || s.getTime().getDayCode() == 0 ? "" : s.getTime().getDayHeader() + " " + s.getTime().getStartTimeHeader(useAmPm) + " - " + s.getTime().getEndTimeHeader(useAmPm));
+		            	time += (time.isEmpty() ? "" : "\n") + (s.getTime() == null || s.getTime().getDayCode() == 0 ? "" : s.getTime().getDayHeader() + " " + s.getTime().getStartTimeHeader(isUseAmPm()) + " - " + s.getTime().getEndTimeHeader(isUseAmPm()));
 		            	date += (date.isEmpty() ? "" : "\n") + (s.getTime() == null || s.getTime().getDatePatternName() == null ? "" : s.getTime().getDatePatternName());
 		            	room += (room.isEmpty() ? "" : "\n") + rooms(s);
 		            }
@@ -218,14 +214,5 @@ public class SectioningIssuesReport implements StudentSectioningReport {
         	}
         }
         return csv;
-    }
-
-    @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-        return createTable(assignment, 
-        		properties.getPropertyBoolean("lastlike", false),
-        		properties.getPropertyBoolean("real", true),
-        		properties.getPropertyBoolean("useAmPm", true),
-        		properties.getPropertyBoolean("all", true));
     }
 }

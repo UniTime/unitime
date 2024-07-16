@@ -60,6 +60,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Student Solver Reports, Online Student Scheduling Reports</name>
+			<description>
+				<line>Added an ability to filter reports using a Filter with similar capabilities as on the dashboard pages.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Rooms: Custom URL</name>

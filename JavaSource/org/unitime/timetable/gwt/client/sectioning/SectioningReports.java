@@ -72,6 +72,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
@@ -108,6 +109,7 @@ public class SectioningReports extends Composite {
 	private int iFirstLine = 0;
 	private int iLastSort = 0;
 	private String iLastHistory = null;
+	private String iLastFilter = null;
 	private boolean iOnline = false;
 	private List<ReportTypeInterface> iReportTypes = null;
 	
@@ -116,6 +118,8 @@ public class SectioningReports extends Composite {
 	private Set<StudentStatusInfo> iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
 	private Map<Long, List<CheckBox>> iStudentId2Checks = new HashMap<Long, List<CheckBox>>();
+	private SectioningStatusFilterBox iFilter = null;
+	private int iFilterLine = -1;
 	
 	public SectioningReports(boolean online) {
 		iOnline = online;
@@ -223,6 +227,8 @@ public class SectioningReports extends Composite {
 				}
 				ReportTypeInterface type = getReportType(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
 				String query = "output=sct-report.csv&name=" + type.getReference() + "&report=" + type.getImplementation() + "&online=" + (iOnline ? "true" : "false") + "&sort=" + iLastSort;
+				if (type.isFilter())
+					query += "&filter=" + URL.encodeQueryString(iFilter.getValue());
 				for (int i = 0; i + 1 < type.getParameters().length; i += 2)
 					query += "&" + type.getParameters()[i] + "=" + type.getParameters()[i + 1];
 				
@@ -268,9 +274,24 @@ public class SectioningReports extends Composite {
 			public void onChange(ChangeEvent event) {
 				iReportSelector.clearHint();
 				iReportSelector.setPrintText(iReportSelector.getWidget().getItemText(iReportSelector.getWidget().getSelectedIndex()));
+				if (iReportSelector.getWidget().getSelectedIndex() <= 0) {
+					iForm.getRowFormatter().setVisible(iFilterLine, false);
+				} else {
+					ReportTypeInterface type = getReportType(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
+					iForm.getRowFormatter().setVisible(iFilterLine, type.isFilter());
+				}
 				queryChanged();
 			}
 		});
+		
+		iFilter = new SectioningStatusFilterBox(iOnline);
+		iFilter.removeFilter("mode");
+		iFilter.removeFilter("consent");
+		iFilter.removeFilter("approver");
+		iFilter.removeFilter("override");
+		iFilter.removeFilter("operation");
+		iFilterLine = iForm.addRow(MESSAGES.propFilter(), iFilter);
+		iForm.getRowFormatter().setVisible(iFilterLine, false);
 		
 		iTableHeader = new UniTimeHeaderPanel(MESSAGES.sectResults());
 		iTableHeader.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
@@ -278,7 +299,7 @@ public class SectioningReports extends Composite {
 			public void onClick(ClickEvent event) {
 				iFirstLine -= 100;
 				populate(false);
-				History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
+				History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort + ":" + iLastFilter, false);
 			}
 		});
 		iTableHeader.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
@@ -286,7 +307,7 @@ public class SectioningReports extends Composite {
 			public void onClick(ClickEvent event) {
 				iFirstLine += 100;
 				populate(false);
-				History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
+				History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort + ":" + iLastFilter, false);
 			}
 		});
 		iTableHeader.setEnabled("previous", false);
@@ -442,7 +463,7 @@ public class SectioningReports extends Composite {
 						boolean asc = (h.getOrder() == null ? true : !h.getOrder());
 						iLastSort = (asc ? 1 + col : -1 - col);
 						populate(true);
-						History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
+						History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort + ":" + iLastFilter, false);
 					}
 					@Override
 					public boolean isApplicable() {
@@ -931,9 +952,11 @@ public class SectioningReports extends Composite {
 				iReportSelector.getWidget().setSelectedIndex(i); break;
 			}
 		}
+		iForm.getRowFormatter().setVisible(iFilterLine, type.isFilter());
 		queryChanged();
 		iFirstLine = Integer.parseInt(params[1]);
 		iLastSort = Integer.parseInt(params[2]);
+		iFilter.setValue(history.substring(params[0].length() + params[1].length() + params[2].length() + 3), true);
 		execute();
 	}
 	
@@ -947,17 +970,20 @@ public class SectioningReports extends Composite {
 		
 		ReportTypeInterface type = getReportType(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
 		iLastHistory = type.getReference();
+		iLastFilter = (type.isFilter() ? iFilter.getValue() : "");
 		iTable.clearTable();
 		iTableHeader.clearMessage();
 		iHeader.clearMessage();
 		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(type.getName()));
-		History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
+		History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort + ":" + iLastFilter, false);
 		
 		SectioningReportRpcRequest request = new SectioningReportRpcRequest();
 		request.setParameter("report", type.getImplementation());
 		request.setParameter("online", iOnline ? "true" : "false");
 		for (int i = 0; i + 1 < type.getParameters().length; i += 2)
 			request.setParameter(type.getParameters()[i], type.getParameters()[i + 1]);
+		if (type.isFilter())
+			request.setParameter("filter", iFilter.getValue());
 		
 		RPC.execute(request, new AsyncCallback<SectioningReportRpcResponse>() {
 			@Override
@@ -996,10 +1022,11 @@ public class SectioningReports extends Composite {
 		private static final long serialVersionUID = 1L;
 		String iReference, iName, iImplementation;
 		String[] iParameters;
+		boolean iFilter;
 		
 		public ReportTypeInterface() {}
-		public ReportTypeInterface(String reference, String name, String implementation, String... params) {
-			iReference = reference; iName = name; iImplementation = implementation; iParameters = params;
+		public ReportTypeInterface(String reference, String name, String implementation, boolean filter, String... params) {
+			iReference = reference; iName = name; iImplementation = implementation; iFilter = filter; iParameters = params;
 		}
 		
 		public void setReference(String reference) { iReference = reference; }
@@ -1010,6 +1037,8 @@ public class SectioningReports extends Composite {
 		public String getImplementation() { return iImplementation; }
 		public void setParameters(String... params) { iParameters = params; }
 		public String[] getParameters() { return iParameters; }
+		public boolean isFilter() { return iFilter; }
+		public void setFilter(boolean filter) { iFilter = filter; }
 		
 		@Override
 		public int hashCode() { return getReference().hashCode(); }

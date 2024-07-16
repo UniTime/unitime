@@ -596,6 +596,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		if (!result.hasEntities()) return;
 		boolean added = false;
 		types: for (String type: result.getTypes()) {
+			if (iRemovedFilters.contains(type)) continue;
 			for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
 				if (filter.getCommand().equals(type)) continue types;
 			}

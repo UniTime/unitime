@@ -60,6 +60,7 @@ public class SectioningReportsBackend implements GwtRpcImplementation<Sectioning
 		boolean online = parameters.getPropertyBoolean("online", false);
 		parameters.setProperty("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
 		parameters.setProperty("dateformat", CONSTANTS.timeStampFormat());
+		parameters.setProperty("user", context.getUser().getExternalUserId());
 		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		if (session != null) {
 			parameters.setProperty("DatePattern.DayOfWeekOffset",
