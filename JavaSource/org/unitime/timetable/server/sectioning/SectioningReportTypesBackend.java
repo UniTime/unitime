@@ -86,6 +86,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		UNUSED_INDIVIDUAL_RES(SCT_MSG.reportUnusedIndividualReservations(), UnusedReservations.class.getName(), "type", "individual"),
 		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), UnusedReservations.class.getName(), "type", "override"),
 		UNUSED_LC_RES(SCT_MSG.reportUnusedLearningCommunityReservations(), UnusedReservations.class.getName(), "type", "lc"),
+		UNUSED_CUR_RES(SCT_MSG.reportUnusedCurriculumReservations(), UnusedReservations.class.getName(), "type", "curriculum"),
 		UNUSED_UNIV_RES(SCT_MSG.reportUnusedStudentFilterReservations(), UnusedReservations.class.getName(), "type", "universal"),
 		COURSE_REQUESTS(SCT_MSG.reportCourseRequestsWithPriorities(), RequestPriorityTable.class.getName(), "pritify", "false"),
 		TABLEAU_REPORT(SCT_MSG.reportTableauReport(), TableauReport.class.getName(), "pritify", "false"),
