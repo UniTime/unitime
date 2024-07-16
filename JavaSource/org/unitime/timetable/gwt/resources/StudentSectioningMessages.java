@@ -2087,6 +2087,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not-Assigned Course Requests")
 	String reportUnassignedCourseRequests();
 	
+	@DefaultMessage("Conflicting Course Requests")
+	String reportConflictingCourseRequests();
+	
 	@DefaultMessage("Not-Assigned Critical Course Requests")
 	String reportUnassignedCriticalCourseRequests();
 	

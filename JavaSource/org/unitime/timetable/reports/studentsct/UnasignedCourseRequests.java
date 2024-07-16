@@ -89,6 +89,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 		for (String type: properties.getProperty("type", "").split("\\,"))
 			if (!type.isEmpty())
 				types.add(type);		
+		boolean skipFull = properties.getPropertyBoolean("skipFull", false);
 		CSVFile csv = new CSVFile();
 		if (types.size() != 1)
 			csv.setHeader(new CSVFile.CSVField[] {
@@ -154,12 +155,14 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 				List<Enrollment> av = courseRequest.getAvaiableEnrollmentsSkipSameTime(assignment);
 				RequestPriority conflictPriority = null;
 				if (av.isEmpty() || (av.size() == 1 && av.get(0).equals(courseRequest.getInitialAssignment()) && getModel().inConflict(assignment, av.get(0)))) {
-					if (courseRequest.getCourses().get(0).getLimit() >= 0)
+					if (skipFull) continue;
+					if (courseRequest.getCourses().get(0).getLimit() >= 0) {
 						line.add(new CSVFile.CSVField(MSG.courseIsFull()));
-					else if (SectioningRequest.hasInconsistentRequirements(courseRequest, null))
+					} else if (SectioningRequest.hasInconsistentRequirements(courseRequest, null)) {
 						line.add(new CSVFile.CSVField(MSG.classNotAvailableDueToStudentPrefs()));
-					else
+					} else {
 						line.add(new CSVFile.CSVField(MSG.classNotAvailable()));
+					}
 				} else {
 					for (Iterator<Enrollment> e = av.iterator(); e.hasNext();) {
 						Enrollment enrl = e.next();
@@ -213,6 +216,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 						}
 						line.add(new CSVFile.CSVField(message));
 					} else {
+						if (skipFull) continue;
 						line.add(new CSVFile.CSVField(MSG.courseNotAssigned()));
 					}
 				}
