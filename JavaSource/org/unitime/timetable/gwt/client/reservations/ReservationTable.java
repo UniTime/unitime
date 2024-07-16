@@ -297,6 +297,13 @@ public class ReservationTable extends Composite {
 				for (IdName student: ((IndividualReservation) reservation).getStudents()) {
 					students.add(new Label(student.getName(), false));
 				}
+				if (students.getWidgetCount() > 6) {
+					int more = students.getWidgetCount();
+					while (students.getWidgetCount() > 5)
+						students.remove(5);
+					Label l = new Label(MESSAGES.moreItems(more), false); l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+					students.add(l);
+				}
 				line.add(students);
 			} else if (reservation instanceof GroupReservation) {
 				if (reservation.isOverride()) {
@@ -320,7 +327,13 @@ public class ReservationTable extends Composite {
 				IdName group = ((LCReservation) reservation).getGroup();
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));
 			} else if (reservation instanceof CurriculumReservation) {
-				line.add(new Label(MESSAGES.reservationCurriculumAbbv()));
+				if (reservation.isOverride()) {
+					Label label = new Label(MESSAGES.reservationCurriculumOverride() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
+				} else {
+					line.add(new Label(MESSAGES.reservationCurriculumAbbv()));
+				}
 				Areas curriculum = ((CurriculumReservation) reservation).getCurriculum();
 				VerticalPanel owner = new VerticalPanel();
 				for (IdName area: curriculum.getAreas()) {
@@ -374,6 +387,13 @@ public class ReservationTable extends Composite {
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}
+				if (owner.getWidgetCount() > 6) {
+					int more = owner.getWidgetCount() - 5;
+					while (owner.getWidgetCount() > 5)
+						owner.remove(5);
+					Label l = new Label(MESSAGES.moreItems(more), false); l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+					owner.add(l);
+				}
 				line.add(owner);
 			} else if (reservation instanceof UniversalReservation) {
 				Label label = new Label(MESSAGES.reservationUniversalOverrideAbbv() + flags);
@@ -390,7 +410,7 @@ public class ReservationTable extends Composite {
 				restrictions.add(new Label(MESSAGES.selectionConfiguration(config.getName(), config.getLimit() == null ? MESSAGES.configUnlimited() : config.getLimit().toString())));
 			}
 			for (Clazz clazz: reservation.getClasses()) {
-				restrictions.add(new Label(clazz.getName() + " (" + clazz.getLimit() + ")", false));
+				restrictions.add(new Label(clazz.getName() + (clazz.getLimit() == null ? "" : " (" + clazz.getLimit() + ")"), false));
 			}
 			line.add(restrictions);
 			if (reservation.hasInclusive() && reservation.isInclusive()) {
