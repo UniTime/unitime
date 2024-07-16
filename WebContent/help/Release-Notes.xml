@@ -65,6 +65,7 @@
 			<name>Batch Student Solver Reports, Online Student Scheduling Reports</name>
 			<description>
 				<line>Added an ability to filter reports using a Filter with similar capabilities as on the dashboard pages.</line>
+				<line>Added Conflicting Course Requests report: variant of Not-Assigned Course Requests report, but only showing course requests with time conflict.</line>
 			</description>
 		</item>
 		<item>

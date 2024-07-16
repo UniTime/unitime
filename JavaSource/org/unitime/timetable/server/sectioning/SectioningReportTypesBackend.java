@@ -81,6 +81,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		NOT_ASSIGNED_COURSE_REQUESTS_LC(SCT_MSG.reportUnassignedLCCourseRequests(), UnasignedCourseRequests.class.getName(), "type", RequestPriority.LC.name()),
 		NOT_ASSIGNED_COURSE_REQUESTS_CRITICAL(SCT_MSG.reportUnassignedCriticalCourseRequests(), UnasignedCourseRequests.class.getName(), "type",
 				RequestPriority.Critical.name() + "," + RequestPriority.Vital.name() + "," + RequestPriority.Important.name()),
+		CONFLICTING_COURSE_REQUESTS(SCT_MSG.reportConflictingCourseRequests(), UnasignedCourseRequests.class.getName(), "skipFull", "true"),
 		UNUSED_GROUP_RES(SCT_MSG.reportUnusedGroupReservations(), UnusedReservations.class.getName(), "type", "group"),
 		UNUSED_INDIVIDUAL_RES(SCT_MSG.reportUnusedIndividualReservations(), UnusedReservations.class.getName(), "type", "individual"),
 		UNUSED_OVERRIDE_RES(SCT_MSG.reportUnusedOverrideReservations(), UnusedReservations.class.getName(), "type", "override"),
