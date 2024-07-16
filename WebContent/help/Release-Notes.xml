@@ -66,6 +66,7 @@
 			<description>
 				<line>Added an ability to filter reports using a Filter with similar capabilities as on the dashboard pages.</line>
 				<line>Added Conflicting Course Requests report: variant of Not-Assigned Course Requests report, but only showing course requests with time conflict.</line>
+				<line>Added Not-Used Curriculum Reservations report.</line>
 			</description>
 		</item>
 		<item>

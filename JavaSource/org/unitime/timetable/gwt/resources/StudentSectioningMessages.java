@@ -2108,6 +2108,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not-Used Learning Community Reservations")
 	String reportUnusedLearningCommunityReservations();
 	
+	@DefaultMessage("Not-Used Curriculum Reservations")
+	String reportUnusedCurriculumReservations();
+	
 	@DefaultMessage("Not-Used Student Filter Reservations")
 	String reportUnusedStudentFilterReservations();
 	
