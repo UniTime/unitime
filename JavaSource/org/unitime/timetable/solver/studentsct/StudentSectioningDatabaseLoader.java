@@ -1987,8 +1987,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                		if (hasOverlap) reservation.setAllowOverlap(true);
     				if (hasDisabled) reservation.setAllowDisabled(hasDisabled);
     				if (hasMustUse) { reservation.setMustBeUsed(true); reservation.setExpired(false); }
-    				if (hasLinked) { reservation.setBreakLinkedSections(true); }
     				else { reservation.setExpired(true); }
+    				if (hasLinked) { reservation.setBreakLinkedSections(true); }
     				Set<String> props = new TreeSet<String>();
     				if (reservation.mustBeUsed()) props.add("mustBeUsed");
     				if (reservation.isAllowOverlap()) props.add("allowOverlap");
