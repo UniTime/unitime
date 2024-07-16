@@ -21,7 +21,9 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
@@ -67,6 +69,7 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
 	protected UniTimeWidget<FilterBox> iFilter;
+	protected Set<String> iRemovedFilters = new HashSet<String>();
 	private boolean iInitialized = false;
 	
 	public UniTimeFilterBox(AcademicSessionProvider session) {
@@ -271,6 +274,11 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	
 	public void addFilter(FilterBox.Filter filter) {
 		iFilter.getWidget().addFilter(filter);
+	}
+	
+	public FilterBox.Filter removeFilter(String command) {
+		iRemovedFilters.add(command);
+		return iFilter.getWidget().removeFilter(command);
 	}
 	
 	public Chip getChip(String command) {

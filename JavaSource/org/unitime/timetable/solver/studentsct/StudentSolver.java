@@ -1021,7 +1021,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	public Collection<ReportTypeInterface> getReportTypes() {
 		List<ReportTypeInterface> ret = new ArrayList<ReportTypeInterface>();
 		for (InMemoryReport report: new TreeSet<InMemoryReport>(iReports.values()))
-			ret.add(new ReportTypeInterface(report.getReference(), report.getName(), StudentSolver.class.getName(), "reference", report.getReference()));
+			ret.add(new ReportTypeInterface(report.getReference(), report.getName(), StudentSolver.class.getName(), false, "reference", report.getReference()));
 		return ret;
 	}
 	

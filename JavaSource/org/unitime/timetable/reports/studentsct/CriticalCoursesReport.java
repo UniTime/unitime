@@ -34,7 +34,7 @@ import org.cpsolver.studentsct.model.Instructor;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -42,18 +42,13 @@ import org.unitime.timetable.model.dao.StudentDAO;
 /**
  * @author Tomas Muller
  */
-public class CriticalCoursesReport implements StudentSectioningReport {
+public class CriticalCoursesReport extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-    private StudentSectioningModel iModel = null;
 
     public CriticalCoursesReport(StudentSectioningModel model) {
-        iModel = model;
+        super(model);
     }
 
-    public StudentSectioningModel getModel() {
-        return iModel;
-    }
-    
     protected String curriculum(Student student) {
         String curriculum = "";
         for (AreaClassificationMajor acm: student.getAreaClassificationMajors())
@@ -79,7 +74,7 @@ public class CriticalCoursesReport implements StudentSectioningReport {
     }
     
     @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {
                 new CSVFile.CSVField("__Student"),
@@ -107,6 +102,7 @@ public class CriticalCoursesReport implements StudentSectioningReport {
                     priority ++;
                     if (!cr.isCritical() || cr.isAlternative()) continue;
                     Enrollment e = cr.getAssignment(assignment);
+                    if (!matches(cr, e)) continue;
                     Course course = cr.getCourses().get(0);
                     Course alt1 = (cr.getCourses().size() < 2 ? null : cr.getCourses().get(1));
                     Course alt2 = (cr.getCourses().size() < 3 ? null : cr.getCourses().get(2));

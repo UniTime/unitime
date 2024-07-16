@@ -38,25 +38,20 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 
 /**
  * @author Tomas Muller
  */
-public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
-	private StudentSectioningModel iModel = null;
+public class ZeroBreakTimeBackToBacksReport extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
 	public ZeroBreakTimeBackToBacksReport(StudentSectioningModel model) {
-        iModel = model;
+        super(model);
     }
 	
-    public StudentSectioningModel getModel() {
-        return iModel;
-    }
-    
     protected String rooms(SctAssignment section) {
         if (section.getNrRooms() == 0) return "";
         String ret = "";
@@ -89,7 +84,8 @@ public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
         return advisors;
     }
 
-    public CSVFile createTable(Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, boolean useAmPm) {
+    @Override
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {
                 new CSVFile.CSVField("__Student"),
@@ -101,11 +97,10 @@ public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
                 });
         
         for (Student student: getModel().getStudents()) {
-        	if (student.isDummy() && !includeLastLikeStudents) continue;
-            if (!student.isDummy() && !includeRealStudents) continue;
         	for (Request request: student.getRequests()) {
         		Enrollment enrollment = assignment.getValue(request);
     			if (enrollment == null || !enrollment.isCourseRequest()) continue;
+    			if (!matches(request, enrollment)) continue;
     			for (Section section: enrollment.getSections()) {
     				TimeLocation time = section.getTime();
     				if (time == null || time.getBreakTime() > 0) continue;
@@ -124,11 +119,11 @@ public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
     	    		            line.add(new CSVFile.CSVField(advisor(student)));
     	    		            line.add(new CSVFile.CSVField(enrollment.getCourse().getName()));
     	    		            line.add(new CSVFile.CSVField(section.getName(enrollment.getCourse().getId())));
-    	    		            line.add(new CSVFile.CSVField(time.getDayHeader() + " " + time.getStartTimeHeader(useAmPm) + " - " + time.getEndTimeHeader(useAmPm)));
+    	    		            line.add(new CSVFile.CSVField(time.getDayHeader() + " " + time.getStartTimeHeader(isUseAmPm()) + " - " + time.getEndTimeHeader(isUseAmPm())));
     	    		            line.add(new CSVFile.CSVField(rooms(section)));
     	    		            line.add(new CSVFile.CSVField(btbEnrollment.getCourse().getName()));
     	    		            line.add(new CSVFile.CSVField(btbSection.getName(btbEnrollment.getCourse().getId())));
-    	    		            line.add(new CSVFile.CSVField(btbTime.getDayHeader() + " " + btbTime.getStartTimeHeader(useAmPm) + " - " + btbTime.getEndTimeHeader(useAmPm)));
+    	    		            line.add(new CSVFile.CSVField(btbTime.getDayHeader() + " " + btbTime.getStartTimeHeader(isUseAmPm()) + " - " + btbTime.getEndTimeHeader(isUseAmPm())));
     	    		            line.add(new CSVFile.CSVField(rooms(btbSection)));
     	    		            csv.addLine(line);
     	    				}
@@ -138,10 +133,5 @@ public class ZeroBreakTimeBackToBacksReport implements StudentSectioningReport {
         	}
         }
         return csv;
-    }
-
-    @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-        return createTable(assignment, properties.getPropertyBoolean("lastlike", false), properties.getPropertyBoolean("real", true), properties.getPropertyBoolean("useAmPm", true));
     }
 }

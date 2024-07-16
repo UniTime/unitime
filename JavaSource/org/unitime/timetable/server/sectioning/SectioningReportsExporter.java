@@ -77,6 +77,7 @@ public class SectioningReportsExporter implements Exporter {
 			parameters.put(name, helper.getParameter(name));
 		}
 		parameters.put("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
+		parameters.setProperty("user", helper.getSessionContext().getUser().getExternalUserId());
 		
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null && helper.getSessionContext().isAuthenticated())

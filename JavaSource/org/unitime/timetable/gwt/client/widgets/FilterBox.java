@@ -357,6 +357,17 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		return null;
 	}
 	
+	public Filter removeFilter(String command) {
+		for (Iterator<Filter> i = iFilters.iterator(); i.hasNext(); ) {
+			Filter filter = i.next();
+			if (filter.getCommand().equals(command)) {
+				i.remove();
+				return filter;
+			}
+		}
+		return null;
+	}
+	
 	public void showFilterPopup() {
 		if (!isEnabled()) return;
 		iFilterPopup.setWidget(createFilterPopup());

@@ -55,23 +55,19 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.cpsolver.studentsct.report.StudentSectioningReport;
 
 /**
  * @author Tomas Muller
  */
-public class StudentSchedulingSolutionStatisticsReport implements StudentSectioningReport {
-    private StudentSectioningModel iModel = null;
+public class StudentSchedulingSolutionStatisticsReport extends AbstractStudentSectioningReport {
     protected static DecimalFormat sIntFormat = new DecimalFormat("#,##0");
     protected static DecimalFormat sPercentFormat = new DecimalFormat("0.00");
     protected static DecimalFormat sDoubleFormat = new DecimalFormat("0.00");
 
     public StudentSchedulingSolutionStatisticsReport(StudentSectioningModel model) {
-        iModel = model;
-    }
-
-    public StudentSectioningModel getModel() {
-        return iModel;
+        super(model);
     }
     
     public static interface StudentFilter {
@@ -224,7 +220,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
     private static StudentFilter FILTER_ALL = new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OnlineLateFilter()));
     private static StudentFilter FILTER_ALL_RES = new AndFilter(new NotFilter(new DummyOrNoRequestsFilter()), new NotFilter(new OnlineFilter()));
     
-    public static enum StudentGroup implements StudentFilter {
+    public enum StudentGroup implements StudentFilter {
         ALL("All Students", FILTER_ALL),
         
         DUMMY("Projected", new DummyFilter()),
@@ -259,24 +255,26 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             iFilter = filter;
         }
         public String getName() { return iName; }
+
         @Override
-        public boolean matches(Student student) { return iFilter.matches(student); }
+        public boolean matches(Student student) { return iFilter.matches(student); } 
+        public boolean matches(Student student, StudentSectioningReport.Filter filter) { return iFilter.matches(student) && filter.matches(student); }
     }
     
     public static interface Statistic {
-        public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment);
+        public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter);
     }
     
-    public static enum Statistics {
+    public enum Statistics {
         NBR_STUDENTS(
         		"Number of Students",
         		"Number of students for which a schedule was computed",
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int count = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     count ++;
                 }
                 return new String[] {sIntFormat.format(count)};
@@ -291,17 +289,18 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int total = 0;
                 int[] missing = new int[] {0, 0, 0, 0};
                 int complete = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     total ++;
                     int nrRequests = 0;
                     int nrAssignedRequests = 0;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         if (!r.isAlternative()) nrRequests++;
                         if (r.isAssigned(assignment)) nrAssignedRequests++;
                     }
@@ -335,7 +334,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int requests = 0, students = 0, assigned = 0;
                 int fixed = 0, initial = 0;
                 int noenrl = 0;
@@ -343,10 +342,11 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 int assignedSubst = 0;
                 int assignedChoiceTotal = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     students ++;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         if (!r.isAlternative()) requests ++;
                         if (!r.isAlternative() && ((CourseRequest)r).isFixed()) fixed++;
                         if (!r.isAlternative() && ((CourseRequest)r).computeRandomEnrollments(assignment, 1).isEmpty()) noenrl ++;
@@ -402,14 +402,15 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int[] notAssignedPriority = new int[] {0, 0, 0, 0, 0, 0};
                 int notAssignedTotal = 0;
                 int avgPriority = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         Enrollment e = r.getAssignment(assignment);
                         if (e == null) {
                             if (!r.isAlternative()) {
@@ -462,14 +463,15 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 return false;
             }
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
             	
             	
                 int assigned = 0, notAssigned = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         Enrollment e = cr.getAssignment(assignment);
                         if (e != null && isComCourse(e.getCourse())) {
@@ -488,12 +490,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int assigned = 0, total = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.LC) {
                             total ++;
@@ -511,12 +514,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int assigned = 0, total = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.Critical) {
                             total ++;
@@ -534,12 +538,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int assigned = 0, total = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.Vital) {
                             total ++;
@@ -557,12 +562,13 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int assigned = 0, total = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         if (!cr.isAlternative() && cr.getRequestPriority() == RequestPriority.Important) {
                             total ++;
@@ -583,14 +589,15 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int prefs = 0, configPrefs = 0, sectionPrefs = 0;
                 double sectionPref = 0.0, configPref = 0.0;
                 double satisfied = 0.0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         Enrollment e = r.getAssignment(assignment);
                         if (e != null) {
@@ -627,7 +634,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		new String[] {"Classes dis-balanced by 10% or more", "Average difference between target and actual enrollment in the section"},
         	new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
             	double disbWeight = 0;
             	int disb10Sections = 0;
                 int totalSections = 0;
@@ -635,7 +642,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                     for (Config config: offering.getConfigs()) {
                         double enrl = 0;
                         for (Enrollment e: config.getEnrollments(assignment)) {
-                            if (group.matches(e.getStudent())) enrl += e.getRequest().getWeight();
+                            if (group.matches(e.getStudent()) && filter.matches(e.getRequest(), e)) enrl += e.getRequest().getWeight();
                         }
                         for (Subpart subpart: config.getSubparts()) {
                             if (subpart.getSections().size() <= 1) continue;
@@ -645,7 +652,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                                 for (Section section: subpart.getSections()) {
                                     double sectEnrl = 0;
                                     for (Enrollment e: section.getEnrollments(assignment)) {
-                                        if (group.matches(e.getStudent())) sectEnrl += e.getRequest().getWeight();
+                                        if (group.matches(e.getStudent()) && filter.matches(e.getRequest(), e)) sectEnrl += e.getRequest().getWeight();
                                     }
                                     double desired = ratio * section.getLimit();
                                     disbWeight += Math.abs(sectEnrl - desired);
@@ -659,7 +666,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                                 for (Section section: subpart.getSections()) {
                                     double sectEnrl = 0;
                                     for (Enrollment e: section.getEnrollments(assignment)) {
-                                        if (group.matches(e.getStudent())) sectEnrl += e.getRequest().getWeight();
+                                        if (group.matches(e.getStudent()) && filter.matches(e.getRequest(), e)) sectEnrl += e.getRequest().getWeight();
                                     }
                                     double desired = enrl / subpart.getSections().size();
                                     disbWeight += Math.abs(sectEnrl - desired);
@@ -829,7 +836,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             }
         	
         	@Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
         		if (model.getDistanceMetric() == null)
         			return new String[] {"N/A", "", ""};
         		Set<DistanceConflict.Conflict> conflicts = computeAllConflicts(model, assignment);
@@ -837,7 +844,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             	double distance = 0, distanceSD = 0;
             	int total = 0, totalSD = 0;
             	for (DistanceConflict.Conflict conflict: conflicts) {
-            		if (group.matches(conflict.getStudent())) {
+            		if (group.matches(conflict.getStudent()) && filter.matches(conflict.getR1(), conflict.getE1())) {
             			if (conflict.getStudent().isNeedShortDistances()) {
             				totalSD ++;
             				studentsSD.add(conflict.getStudent());
@@ -920,7 +927,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             }
         	
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
             	Set<Student> timeFt = new HashSet<Student>();
             	Set<Student> timeCourse = new HashSet<Student>();
             	Set<Student> timeUnav = new HashSet<Student>();
@@ -928,7 +935,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
             	int totFt = 0, totCourse = 0, totUn = 0;
                 Set<TimeOverlapsCounter.Conflict> conf = computeAllConflicts(model, assignment);
                 for (TimeOverlapsCounter.Conflict c: conf) {
-                    if (group.matches(c.getStudent())) {
+                    if (group.matches(c.getStudent()) && filter.matches(c.getR1(), c.getE1())) {
                         if (c.getR1() instanceof CourseRequest && c.getR2() instanceof CourseRequest) {
                         	totCourse ++;
                             courseMin += 5 * c.getShare();
@@ -966,15 +973,16 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
                 int total12 = 0, assigned12 = 0;
                 int total15 = 0, assigned15 = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     float credit = 0;
                     float assignedCredit = 0;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         CourseRequest cr = (CourseRequest)r;
                         if (!cr.isAlternative()) {
                             Course c = cr.getCourses().get(0);
@@ -1022,11 +1030,11 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         		},
         		new Statistic() {
             @Override
-            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+            public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
             	int arrClass = 0, onlineClass = 0, allClass = 0;
             	int residentialStudents = 0;
             	for (Student student: model.getStudents()) {
-            		if (!group.matches(student)) continue;
+            		if (!group.matches(student, filter)) continue;
             		if (!FILTER_ALL_RES.matches(student)) { continue; }
             		residentialStudents ++;
             		for (Request r: student.getRequests()) {
@@ -1044,7 +1052,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 int half = 0;
                 int total = 0;
                 for (Student student: model.getStudents()) {
-                    if (!group.matches(student)) continue;
+                    if (!group.matches(student, filter)) continue;
                     if (!FILTER_ALL_RES.matches(student)) continue;
                     boolean gr = false;
                     for (AreaClassificationMajor acm: student.getAreaClassificationMajors()) {
@@ -1054,6 +1062,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                     int sections = 0, onlineSections = 0;
                     for (Request r : student.getRequests()) {
                         if (!(r instanceof CourseRequest)) continue; // ignore free times
+                        if (!filter.matches(r)) continue; // check the filter
                         Enrollment e = r.getAssignment(assignment);
                         if (e != null)
                             for (Section s: e.getSections()) {
@@ -1111,39 +1120,37 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         				},
         new Statistic() {
         	
-        	protected int getEnrollments(StudentGroup group, Section section, Assignment<Request, Enrollment> assignment) {
+        	protected int getEnrollments(StudentGroup group, Section section, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
         		int enrl = 0;
         		for (Enrollment e: section.getEnrollments(assignment)) {
-                    if (group.matches(e.getStudent())) enrl ++;
+                    if (group.matches(e.getStudent()) && filter.matches(e.getRequest(), e)) enrl ++;
                 }
         		return enrl;
         	}
         	
-        	protected int getEnrollments(StudentGroup group, Config config, Assignment<Request, Enrollment> assignment) {
+        	protected int getEnrollments(StudentGroup group, Config config, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
         		int enrl = 0;
         		for (Enrollment e: config.getEnrollments(assignment)) {
-                    if (group.matches(e.getStudent())) enrl ++;
+                    if (group.matches(e.getStudent()) && filter.matches(e.getRequest(), e)) enrl ++;
                 }
         		return enrl;
         	}
         	
 			@Override
-			public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
+			public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
 				
 		        int nbrSections = 0, nbrFullSections = 0, nbrSections98 = 0, nbrSections95 = 0, nbrSections90 = 0, nbrSectionsDis = 0;
 		        int enrlSections = 0, enrlFullSections = 0, enrlSections98 = 0, enrlSections95 = 0, enrlSections90 = 0, enrlSectionsDis = 0;
 		        int nbrOfferings = 0, nbrFullOfferings = 0, nbrOfferings98 = 0, nbrOfferings95 = 0, nbrOfferings90 = 0;
 		        int enrlOfferings = 0, enrlOfferingsFull = 0, enrlOfferings98 = 0, enrlOfferings95 = 0, enrlOfferings90 = 0;
 		        for (Offering offering: model.getOfferings()) {
-		        	if (group != StudentGroup.ALL || true) {
-		        		int crs = 0;
-		        		for (Course course: offering.getCourses()) {
-		        			for (CourseRequest cr: course.getRequests()) {
-		        				if (group.matches(cr.getStudent())) crs++;
-		        			}
-		        		}
-		        		if (crs == 0) continue;
-		        	}
+		        	int crs = 0;
+	        		for (Course course: offering.getCourses()) {
+	        			for (CourseRequest cr: course.getRequests()) {
+	        				if (group.matches(cr.getStudent()) && filter.matches(cr)) crs++;
+	        			}
+	        		}
+	        		if (crs == 0) continue;
 		            int offeringLimit = 0, offeringEnrollment = 0, offeringMatchingEnrollment = 0;
 		            for (Config config: offering.getConfigs()) {
 		                int configLimit = config.getLimit();
@@ -1152,7 +1159,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
 		                    for (Section section: subpart.getSections()) {
 		                        if (section.isCancelled()) continue;
 		                        int enrl = section.getEnrollments(assignment).size();
-		                        int matchingEnrl = (group == StudentGroup.ALL ? section.getEnrollments(assignment).size() : getEnrollments(group, section, assignment));
+		                        int matchingEnrl = getEnrollments(group, section, assignment, filter);
 		                        if (section.getLimit() < 0 || subpartLimit < 0)
 		                            subpartLimit = -1;
 		                        else
@@ -1190,7 +1197,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
 		                else
 		                    offeringLimit += configLimit;
 		                offeringEnrollment += config.getEnrollments(assignment).size();
-		                offeringMatchingEnrollment += (group == StudentGroup.ALL ? config.getEnrollments(assignment).size() : getEnrollments(group, config, assignment));
+		                offeringMatchingEnrollment += getEnrollments(group, config, assignment, filter);
 		            }
 		            nbrOfferings ++;
 		            enrlOfferings += offeringMatchingEnrollment;
@@ -1244,23 +1251,24 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
         }
         public String[] getNames() { return iNames; }
         public String[] getNotes() { return iNotes; }
-        public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
-            return iStatistic.getValues(group, model, assignment);
+        public String[] getValues(StudentGroup group, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, StudentSectioningReport.Filter filter) {
+            return iStatistic.getValues(group, model, assignment, filter);
         }
         public boolean isNewLine() { return iNewLine; }
     }
     
     @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
         CSVFile csv = new CSVFile();
         List<CSVField> header = new ArrayList<CSVField>();
         List<StudentGroup> groups = new ArrayList<StudentGroup>();
         header.add(new CSVField(""));
         Map<Integer, StudentGroup> counts = new HashMap<Integer, StudentGroup>();
+
         for (StudentGroup g: StudentGroup.values()) {
             int nrStudents = 0;
             for (Student student: getModel().getStudents()) {
-                if (g.matches(student)) nrStudents ++;
+                if (g.matches(student, this)) nrStudents ++;
             }
             if (nrStudents > 0 && !counts.containsKey(nrStudents)) {
                 groups.add(g);
@@ -1278,7 +1286,7 @@ public class StudentSchedulingSolutionStatisticsReport implements StudentSection
                 table.add(line);
             }
             for (StudentGroup g: groups) {
-                String[] values = stat.getValues(g, getModel(), assignment);
+                String[] values = stat.getValues(g, getModel(), assignment, this);
                 for (int i = 0; i < values.length; i++) {
                     table.get(i).add(new CSVField(values[i]));
                 }

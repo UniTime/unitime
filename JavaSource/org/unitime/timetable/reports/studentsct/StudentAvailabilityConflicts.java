@@ -42,7 +42,7 @@ import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.model.Unavailability;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -51,24 +51,19 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller
  */
-public class StudentAvailabilityConflicts implements StudentSectioningReport {
+public class StudentAvailabilityConflicts extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
     private static DecimalFormat sDF1 = new DecimalFormat("0.####");
-    private StudentSectioningModel iModel = null;
     private TimeOverlapsCounter iTOC = null;
     
     public StudentAvailabilityConflicts(StudentSectioningModel model) {
-        iModel = model;
+        super(model);
         iTOC = model.getTimeOverlaps();
         if (iTOC == null) {
             iTOC = new TimeOverlapsCounter(null, model.getProperties());
         }
     }
 
-    public StudentSectioningModel getModel() {
-        return iModel;
-    }
-    
     public boolean shareHoursIgnoreBreakTime(TimeLocation t1, TimeLocation t2) {
     	int s1 = t1.getStartSlot() * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN;
     	int e1 = (t1.getStartSlot() + t1.getLength()) * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN - t1.getBreakTime();
@@ -131,7 +126,10 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
         return advisors;
     }
     
-    public CSVFile createTable(final Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, final boolean useAmPm, boolean includeAllowedOverlaps, boolean ignoreBreakTimeConflicts) {
+    @Override
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
+    	boolean includeAllowedOverlaps = properties.getPropertyBoolean("includeAllowedOverlaps", true);
+    	boolean ignoreBreakTimeConflicts = properties.getPropertyBoolean("ignoreBreakTimeConflicts", false); 
         CSVFile csv = new CSVFile();
         if (includeAllowedOverlaps) {
             csv.setHeader(new CSVFile.CSVField[] {
@@ -172,12 +170,11 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
         students.addAll(getModel().getStudents());
         
         for (Student student: students) {
-        	if (student.isDummy() && !includeLastLikeStudents) continue;
-        	if (!student.isDummy() && !includeRealStudents) continue;
         	if (student.getUnavailabilities().isEmpty()) continue;
         	for (Request r: student.getRequests()) {
         		Enrollment e = assignment.getValue(r);
         		if (e == null || r instanceof FreeTimeRequest) continue;
+        		if (!matches(r, e)) continue;
         		for (Section s : e.getSections()) {
         			for (Unavailability u: student.getUnavailabilities()) {
         				if (inConflict(s, u, ignoreBreakTimeConflicts)) {
@@ -198,7 +195,7 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
             	            	line.add(new CSVFile.CSVField(e.isAllowOverlap() || u.isAllowOverlap() || !s.isOverlapping(u)));
             	            line.add(new CSVFile.CSVField(e.getCourse().getName()));
             	            line.add(new CSVFile.CSVField(s.getSubpart().getName() + " " + s.getName(e.getCourse().getId())));
-            	            line.add(new CSVFile.CSVField(s.getTime() == null ? "" : s.getTime().getDayHeader() + " " + s.getTime().getStartTimeHeader(useAmPm) + " - " + s.getTime().getEndTimeHeader(useAmPm)));
+            	            line.add(new CSVFile.CSVField(s.getTime() == null ? "" : s.getTime().getDayHeader() + " " + s.getTime().getStartTimeHeader(isUseAmPm()) + " - " + s.getTime().getEndTimeHeader(isUseAmPm())));
             	            if (includeAllowedOverlaps) {
             	            	line.add(new CSVFile.CSVField(s.getSubpart().isAllowOverlap()));
             	            	line.add(new CSVFile.CSVField(e.getReservation() != null && e.getReservation().isAllowOverlap()));
@@ -207,7 +204,7 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
                 	            line.add(new CSVFile.CSVField(u.getSection().getName()));
             	            else
             	            	line.add(new CSVFile.CSVField(u.getSection().getSubpart().getConfig().getOffering().getName() + " " + u.getSection().getSubpart().getName() + " " + u.getSection().getName()));
-            	            line.add(new CSVFile.CSVField(u.getTime() == null ? "" : u.getTime().getDayHeader() + " " + u.getTime().getStartTimeHeader(useAmPm) + " - " + u.getTime().getEndTimeHeader(useAmPm)));
+            	            line.add(new CSVFile.CSVField(u.getTime() == null ? "" : u.getTime().getDayHeader() + " " + u.getTime().getStartTimeHeader(isUseAmPm()) + " - " + u.getTime().getEndTimeHeader(isUseAmPm())));
             	            if (includeAllowedOverlaps) {
                 	            line.add(new CSVFile.CSVField(u.isAllowOverlap()));
             	            }
@@ -220,16 +217,5 @@ public class StudentAvailabilityConflicts implements StudentSectioningReport {
         }
  
         return csv;
-    }
-
-    @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-        return createTable(assignment,
-        		properties.getPropertyBoolean("lastlike", false),
-        		properties.getPropertyBoolean("real", true),
-        		properties.getPropertyBoolean("useAmPm", true),
-        		properties.getPropertyBoolean("includeAllowedOverlaps", true),
-        		properties.getPropertyBoolean("ignoreBreakTimeConflicts", false)
-        		);
     }
 }

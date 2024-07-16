@@ -40,7 +40,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -49,18 +49,12 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller
  */
-public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
+public class IndividualStudentTimeOverlaps extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
     private static DecimalFormat sDF1 = new DecimalFormat("0.####");
 
-    private StudentSectioningModel iModel = null;
-
     public IndividualStudentTimeOverlaps(StudentSectioningModel model) {
-        iModel = model;
-    }
-
-    public StudentSectioningModel getModel() {
-        return iModel;
+        super(model);
     }
     
     public boolean shareHoursIgnoreBreakTime(TimeLocation t1, TimeLocation t2) {
@@ -136,7 +130,11 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
         return advisors;
     }
     
-    public CSVFile createTable(final Assignment<Request, Enrollment> assignment, boolean includeLastLikeStudents, boolean includeRealStudents, final boolean useAmPm, boolean includeAllowedOverlaps, boolean ignoreBreakTimeConflicts, int dayOfWeekOffset) {
+    @Override
+    public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
+    	boolean includeAllowedOverlaps = properties.getPropertyBoolean("includeAllowedOverlaps", true);
+    	boolean ignoreBreakTimeConflicts = properties.getPropertyBoolean("ignoreBreakTimeConflicts", false);
+    	int dayOfWeekOffset = properties.getPropertyInt("DatePattern.DayOfWeekOffset", 0);
         CSVFile csv = new CSVFile();
         if (includeAllowedOverlaps) {
             csv.setHeader(new CSVFile.CSVField[] {
@@ -181,11 +179,10 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
         students.addAll(getModel().getStudents());
         
         for (Student student: students) {
-        	if (student.isDummy() && !includeLastLikeStudents) continue;
-        	if (!student.isDummy() && !includeRealStudents) continue;
         	for (int i = 0; i < student.getRequests().size() - 1; i++) {
         		Request r1 = student.getRequests().get(i);
         		Enrollment e1 = assignment.getValue(r1);
+        		if (!matches(r1, e1)) continue;
         		if (e1 == null || r1 instanceof FreeTimeRequest) continue;
         		for (int j = i + 1; j < student.getRequests().size(); j++) {
         			Request r2 = student.getRequests().get(j);
@@ -215,7 +212,7 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
                 	            
                 	            line.add(new CSVFile.CSVField(e1.getCourse().getName()));
                 	            line.add(new CSVFile.CSVField(s1.getSubpart().getName() + " " + s1.getName(e1.getCourse().getId())));
-                	            line.add(new CSVFile.CSVField(s1.getTime() == null ? "" : s1.getTime().getDayHeader() + " " + s1.getTime().getStartTimeHeader(useAmPm) + " - " + s1.getTime().getEndTimeHeader(useAmPm)));
+                	            line.add(new CSVFile.CSVField(s1.getTime() == null ? "" : s1.getTime().getDayHeader() + " " + s1.getTime().getStartTimeHeader(isUseAmPm()) + " - " + s1.getTime().getEndTimeHeader(isUseAmPm())));
                 	            line.add(new CSVFile.CSVField(s1.getTime() == null ? "" : s1.getTime().getDatePatternName()));
                 	            if (includeAllowedOverlaps) {
                 	            	line.add(new CSVFile.CSVField(s1.getSubpart().isAllowOverlap()));
@@ -224,7 +221,7 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
                 	            
                 	            line.add(new CSVFile.CSVField(e2.getCourse().getName()));
                 	            line.add(new CSVFile.CSVField(s2.getSubpart().getName() + " " + s2.getName(e2.getCourse().getId())));
-                	            line.add(new CSVFile.CSVField(s2.getTime() == null ? "" : s2.getTime().getDayHeader() + " " + s2.getTime().getStartTimeHeader(useAmPm) + " - " + s2.getTime().getEndTimeHeader(useAmPm)));
+                	            line.add(new CSVFile.CSVField(s2.getTime() == null ? "" : s2.getTime().getDayHeader() + " " + s2.getTime().getStartTimeHeader(isUseAmPm()) + " - " + s2.getTime().getEndTimeHeader(isUseAmPm())));
                 	            line.add(new CSVFile.CSVField(s2.getTime() == null ? "" : s2.getTime().getDatePatternName()));
                 	            if (includeAllowedOverlaps) {
                 	            	line.add(new CSVFile.CSVField(s2.getSubpart().isAllowOverlap()));
@@ -245,17 +242,5 @@ public class IndividualStudentTimeOverlaps implements StudentSectioningReport {
         }
  
         return csv;
-    }
-
-    @Override
-    public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-        return createTable(assignment,
-        		properties.getPropertyBoolean("lastlike", false),
-        		properties.getPropertyBoolean("real", true),
-        		properties.getPropertyBoolean("useAmPm", true),
-        		properties.getPropertyBoolean("includeAllowedOverlaps", true),
-        		properties.getPropertyBoolean("ignoreBreakTimeConflicts", false),
-        		properties.getPropertyInt("DatePattern.DayOfWeekOffset", 0)
-        		);
     }
 }

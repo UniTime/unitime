@@ -47,7 +47,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
-import org.cpsolver.studentsct.report.StudentSectioningReport;
+import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumReservation;
 import org.cpsolver.studentsct.reservation.DummyReservation;
@@ -66,16 +66,11 @@ import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 /**
  * @author Tomas Muller
  */
-public class UnusedReservations implements StudentSectioningReport {
+public class UnusedReservations extends AbstractStudentSectioningReport {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-    private StudentSectioningModel iModel = null;
     
     public UnusedReservations(StudentSectioningModel model) {
-        iModel = model;
-    }
-
-    public StudentSectioningModel getModel() {
-        return iModel;
+        super(model);
     }
     
     protected String type(Reservation reservation) {
@@ -144,9 +139,7 @@ public class UnusedReservations implements StudentSectioningReport {
     }
 
 	@Override
-	public CSVFile create(Assignment<Request, Enrollment> assignment, DataProperties properties) {
-		boolean includeLastLikeStudents = properties.getPropertyBoolean("lastlike", false);
-		boolean includeRealStudents = properties.getPropertyBoolean("real", true);
+	public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
 		Set<String> types = new HashSet<String>();
 		for (String type: properties.getProperty("type", "group").split("\\,"))
 			types.add(type);
@@ -160,12 +153,13 @@ public class UnusedReservations implements StudentSectioningReport {
 				} else if (reservation instanceof CourseReservation) {
 					studentIds = new HashSet<Long>();
 					for (CourseRequest cr: ((CourseReservation)reservation).getCourse().getRequests())
-						studentIds.add(cr.getStudent().getId());
+						if (matches(cr))
+							studentIds.add(cr.getStudent().getId());
 				} else {
 					studentIds = new HashSet<Long>();
 					for (Course course: reservation.getOffering().getCourses())
 						for (CourseRequest cr: course.getRequests())
-							if (reservation.isApplicable(cr.getStudent()))
+							if (reservation.isApplicable(cr.getStudent()) && matches(cr))
 								studentIds.add(cr.getStudent().getId());
 				}
 				if (studentIds != null && !studentIds.isEmpty()) {
@@ -220,8 +214,7 @@ public class UnusedReservations implements StudentSectioningReport {
 			List<Reservation> studentReservations = unused.get(student.getId());
 			if (studentReservations == null || studentReservations.isEmpty()) continue;
 			for (Reservation reservation: studentReservations) {
-				if (student.isDummy() && !includeLastLikeStudents) continue;
-	        	if (!student.isDummy() && !includeRealStudents) continue;
+				if (!matches(student)) continue;
 				List<CSVFile.CSVField> line = new ArrayList<CSVFile.CSVField>();
         		line.add(new CSVFile.CSVField(student.getId()));
         		line.add(new CSVFile.CSVField(student.getExternalId()));
@@ -248,10 +241,13 @@ public class UnusedReservations implements StudentSectioningReport {
 	            	}
 	            }
 	            if (course == null) {
+	            	Course c = (reservation instanceof CourseReservation ? ((CourseReservation)reservation).getCourse() : reservation.getOffering().getCourses().get(0));
+	            	if (!matches(c)) continue;
 	            	line.add(new CSVFile.CSVField(reservation instanceof CourseReservation ? ((CourseReservation)reservation).getCourse().getName() : reservation.getOffering().getName()));
 	            	line.add(new CSVFile.CSVField(""));
 	            	line.add(new CSVFile.CSVField(MSG.courseNotRequested()));
 	            } else {
+	            	if (!matches(courseRequest)) continue;
 	            	line.add(new CSVFile.CSVField(course.getName()));
 	            	line.add(new CSVFile.CSVField(courseRequest.getRequestPriority() == null ? "" : courseRequest.getRequestPriority().name()));
 		        	Enrollment enrollment = courseRequest.getAssignment(assignment);
