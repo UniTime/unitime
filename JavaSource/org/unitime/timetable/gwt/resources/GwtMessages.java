@@ -7949,4 +7949,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("(Link)")
 	String roomExternalLink();
+	
+	@DefaultMessage("\u2026 {0} more")
+	String moreItems(int count);
 }

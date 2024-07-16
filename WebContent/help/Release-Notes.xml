@@ -67,6 +67,16 @@
 				<line>Added an ability to filter reports using a Filter with similar capabilities as on the dashboard pages.</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Solver Dashboard, Online Student Scheduling Dashboard</name>
+			<description>
+				<line>Reservation Tooltip:
+					<line>Do not show limit (null) for unlimited classes.</line>
+					<line>Show flags for curriculum override reservations.</line>
+					<line>Individual, Curriculum: Limit the number of restrictions to 5 lines.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
