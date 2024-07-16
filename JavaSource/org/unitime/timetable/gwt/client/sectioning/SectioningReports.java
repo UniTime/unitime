@@ -169,7 +169,9 @@ public class SectioningReports extends Composite {
 							try {
 								Double.parseDouble(t);
 								n = true;
-							} catch (Exception e) {}
+							} catch (Exception e) {
+								if ("\u221E".equals(t)) n = true;
+							}
 							if (iHead.getCell(x).contains("%") && n)
 								t = PF.format(Double.parseDouble(t));
 							else if (t.matches("[\\-]?[0-9]+\\.[0-9]+(<br>[\\-]?[0-9]+\\.[0-9]+)*") && n)
@@ -865,7 +867,9 @@ public class SectioningReports extends Composite {
 						try {
 							Double.parseDouble(t);
 							n = true;
-						} catch (Exception e) {}
+						} catch (Exception e) {
+							if ("\u221E".equals(t)) n = true;
+						}
 						if (iHead.getCell(x).contains("%") && n)
 							t = PF.format(Double.parseDouble(t));
 						else if (t.matches("[\\-]?[0-9]+\\.[0-9]+(<br>[\\-]?[0-9]+\\.[0-9]+)*") && n)
