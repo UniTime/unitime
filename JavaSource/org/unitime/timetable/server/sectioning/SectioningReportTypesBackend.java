@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.reports.studentsct.CriticalCoursesReport;
 import org.unitime.timetable.reports.studentsct.IndividualStudentTimeOverlaps;
 import org.unitime.timetable.reports.studentsct.PerturbationsReport;
+import org.unitime.timetable.reports.studentsct.Reservations;
 import org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts;
 import org.unitime.timetable.reports.studentsct.UnasignedCourseRequests;
 import org.unitime.timetable.reports.studentsct.UnusedReservations;
@@ -97,6 +98,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		BTB_NO_BREAKS(SCT_MSG.reportBackToBacksNoBreak(), ZeroBreakTimeBackToBacksReport.class.getName()),
 		SECTIONING_ISSUES(SCT_MSG.reportSectioningIssues(), SectioningIssuesReport.class.getName(), "all", "false"),
 		SECTIONING_ISSUES_ALL(SCT_MSG.reportSectioningIssuesAllCourses(), SectioningIssuesReport.class.getName(), "all", "true"),
+		RESERVATIONS(SCT_MSG.reportReservations(), Reservations.class.getName()),
 		;
 		
 		String iName, iImplementation;

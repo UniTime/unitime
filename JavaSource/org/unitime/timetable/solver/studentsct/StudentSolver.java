@@ -1262,7 +1262,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		};
 	}
 	
-	private ReservationInterface convert(Reservation reservation, Assignment<Request, Enrollment> assignment) {
+	public static ReservationInterface convert(Reservation reservation, StudentSectioningModel model, Assignment<Request, Enrollment> assignment) {
 		ReservationInterface r = null;
 		Course co = null;
 		for (Course c: reservation.getOffering().getCourses()) {
@@ -1433,7 +1433,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 						reservation.isAllowDisabled() != IndividualReservation.DEFAULT_ALLOW_OVERLAP);
 			}
 			
-			for (Student student: getModel().getStudents()) {
+			for (Student student: model.getStudents()) {
 				if (((IndividualReservation)reservation).getStudentIds().contains(student.getId())) {
 					ReservationInterface.IdName s = new ReservationInterface.IdName();
 					s.setId(student.getId());
@@ -1528,7 +1528,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			if (offeringId.equals(offering.getId())) {
 				List<ReservationInterface> ret = new ArrayList<ReservationInterface>();
 				for (Reservation r: offering.getReservations()) {
-					ReservationInterface res = convert(r, assignment);
+					ReservationInterface res = convert(r, getModel(), assignment);
 					if (res != null)
 						ret.add(res);
 				}
