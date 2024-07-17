@@ -3677,4 +3677,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("For an up to date schedule, please visit {0}.")
 	String textEmailLinkToUniTime(String baseUrl);
+	
+	@DefaultMessage("Enrolled in {0} instead.")
+	String enrolledInAlt(String course);
 }
