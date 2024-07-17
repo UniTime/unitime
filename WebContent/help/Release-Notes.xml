@@ -43,6 +43,14 @@
 				<line>When unlimited enrollment is selected, make sure that all classes have zero number of rooms.</line>
 			</description>
 		</item>
+		<item>
+			<name>Reservations, Instructional Offering Detail, Student Scheduling Dashboards</name>
+			<description>
+				<line>Reservations table: Always show the reservation flags such as Allow Time Conflict,
+					Can Assign Over Limit, Student Must Follow, and Do Not Reserve Space.</line>
+				<line>This is to ensure that it is always clear what the reservation/override does.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
