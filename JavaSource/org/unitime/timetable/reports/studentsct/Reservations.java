@@ -122,9 +122,9 @@ public class Reservations extends AbstractStudentSectioningReport {
 			line.add(new CSVFile.CSVField(course));
 
 			String flags = "";
-			if (reservation.isOverride() && reservation.isAllowOverlaps())
+			if (reservation.isAllowOverlaps())
 				flags += "\n  " + MESSAGES.checkCanOverlap();
-			if (reservation.isOverride() && reservation.isOverLimit())
+			if (reservation.isOverLimit())
 				flags += "\n  " + MESSAGES.checkCanOverLimit();
 			if (reservation.isMustBeUsed())
 				flags += "\n  " + MESSAGES.checkMustBeUsed();
@@ -143,7 +143,7 @@ public class Reservations extends AbstractStudentSectioningReport {
 					line.add(new CSVFile.CSVField(MESSAGES.reservationIndividualOverrideAbbv() + flags));
 				} else if (reservation instanceof OverrideReservation) {
 					String type = CONSTANTS.reservationOverrideTypeAbbv()[((OverrideReservation)reservation).getType().ordinal()];
-					line.add(new CSVFile.CSVField((type == null ? ((OverrideReservation)reservation).getType().name() : type) + flags));
+					line.add(new CSVFile.CSVField(type == null ? ((OverrideReservation)reservation).getType().name() + flags: type));
 				} else {
 					line.add(new CSVFile.CSVField(MESSAGES.reservationIndividualAbbv() + flags));
 				}

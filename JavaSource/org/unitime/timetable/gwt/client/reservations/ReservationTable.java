@@ -268,19 +268,19 @@ public class ReservationTable extends Composite {
 			}
 			
 			String flags = "";
-			if (reservation.isOverride()) {
-				if (reservation.isAllowOverlaps())
-					flags += "\n  " + MESSAGES.checkCanOverlap();
-				if (reservation.isOverLimit())
-					flags += "\n  " + MESSAGES.checkCanOverLimit();
-				if (reservation.isMustBeUsed())
-					flags += "\n  " + MESSAGES.checkMustBeUsed();
-				if (reservation.isAlwaysExpired())
-					flags += "\n  " + MESSAGES.checkAllwaysExpired();
-			}
+			if (reservation.isAllowOverlaps())
+				flags += "\n  " + MESSAGES.checkCanOverlap();
+			if (reservation.isOverLimit())
+				flags += "\n  " + MESSAGES.checkCanOverLimit();
+			if (reservation.isMustBeUsed())
+				flags += "\n  " + MESSAGES.checkMustBeUsed();
+			if (reservation.isAlwaysExpired())
+				flags += "\n  " + MESSAGES.checkAllwaysExpired();
 			Integer limit = reservation.getReservationLimit();
 			if (reservation instanceof CourseReservation) {
-				line.add(new Label(MESSAGES.reservationCourseAbbv()));
+				Label label = new Label(MESSAGES.reservationCourseAbbv() + flags);
+				label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+				line.add(label);
 				Course course = ((CourseReservation) reservation).getCourse();
 				limit = course.getLimit();
 				line.add(new Label(course.getAbbv(), false));
@@ -291,9 +291,13 @@ public class ReservationTable extends Composite {
 					line.add(label);
 				} else if (reservation instanceof OverrideReservation) {
 					String type = CONSTANTS.reservationOverrideTypeAbbv()[((OverrideReservation)reservation).getType().ordinal()];
-					line.add(new Label(type == null ? ((OverrideReservation)reservation).getType().name() : type));
+					Label label = new Label(type == null ? ((OverrideReservation)reservation).getType().name() + flags : type);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
 				} else {
-					line.add(new Label(MESSAGES.reservationIndividualAbbv()));
+					Label label = new Label(MESSAGES.reservationIndividualAbbv() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
 				}
 				VerticalPanel students = new VerticalPanel();
 				if (limit == null)
@@ -315,18 +319,22 @@ public class ReservationTable extends Composite {
 					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
 					line.add(label);
 				} else {
-					line.add(new Label(MESSAGES.reservationStudentGroupAbbv()));
+					Label label = new Label(MESSAGES.reservationStudentGroupAbbv() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
 				}
 				IdName group = ((GroupReservation) reservation).getGroup();
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));
 			} else if (reservation instanceof LCReservation) {
 				if (reservation.getOffering().getCourses().size() > 1 && iOfferingId != null) {
 					Course course = ((LCReservation) reservation).getCourse();
-					Label label = new Label(MESSAGES.reservationLearningCommunityAbbv() + "\n  " + course.getAbbv());
+					Label label = new Label(MESSAGES.reservationLearningCommunityAbbv() + "\n  " + course.getAbbv() + flags);
 					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
 					line.add(label);
 				} else {
-					line.add(new Label(MESSAGES.reservationLearningCommunityAbbv()));
+					Label label = new Label(MESSAGES.reservationLearningCommunityAbbv() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
 				}
 				IdName group = ((LCReservation) reservation).getGroup();
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));
@@ -336,7 +344,9 @@ public class ReservationTable extends Composite {
 					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
 					line.add(label);
 				} else {
-					line.add(new Label(MESSAGES.reservationCurriculumAbbv()));
+					Label label = new Label(MESSAGES.reservationCurriculumAbbv() + flags);
+					label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+					line.add(label);
 				}
 				Areas curriculum = ((CurriculumReservation) reservation).getCurriculum();
 				VerticalPanel owner = new VerticalPanel();
@@ -406,7 +416,9 @@ public class ReservationTable extends Composite {
 				String filter = ((UniversalReservation) reservation).getFilter();
 				line.add(new Label(filter == null ? "" : filter, false));
 			} else {
-				line.add(new Label(MESSAGES.reservationUnknownAbbv()));
+				Label label = new Label(MESSAGES.reservationUnknownAbbv() + flags);
+				label.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+				line.add(label);
 				line.add(new Label());
 			}
 			VerticalPanel restrictions = new VerticalPanel();
