@@ -3154,7 +3154,7 @@ public class SectioningStatusPage extends Composite {
 									}
 								if (result != null && !result.isEmpty() && iMouseOver) {
 									ReservationTable rt = new ReservationTable(false, false);
-									rt.populate(result);
+									rt.populate(result, 5);
 									rt.getTable().setColumnVisible(ReservationColumn.LAST_LIKE.ordinal(), false);
 									rt.getTable().setColumnVisible(ReservationColumn.PROJECTED_BY_RULE.ordinal(), false);
 									rt.getTable().setColumnVisible(ReservationColumn.EXPIRATION_DATE.ordinal(), iOnline);
