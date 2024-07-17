@@ -153,13 +153,13 @@ public class UnusedReservations extends AbstractStudentSectioningReport {
 				} else if (reservation instanceof CourseReservation) {
 					studentIds = new HashSet<Long>();
 					for (CourseRequest cr: ((CourseReservation)reservation).getCourse().getRequests())
-						if (matches(cr))
+						if (matches(cr) && matches(offering.getCourse(cr.getStudent())))
 							studentIds.add(cr.getStudent().getId());
 				} else {
 					studentIds = new HashSet<Long>();
 					for (Course course: reservation.getOffering().getCourses())
 						for (CourseRequest cr: course.getRequests())
-							if (reservation.isApplicable(cr.getStudent()) && matches(cr))
+							if (reservation.isApplicable(cr.getStudent()) && matches(cr) && matches(offering.getCourse(cr.getStudent())))
 								studentIds.add(cr.getStudent().getId());
 				}
 				if (studentIds != null && !studentIds.isEmpty()) {
@@ -260,7 +260,12 @@ public class UnusedReservations extends AbstractStudentSectioningReport {
 					});
 					Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 					List<Enrollment> av = courseRequest.getAvaiableEnrollmentsSkipSameTime(assignment);
-					if (av.isEmpty() || (av.size() == 1 && av.get(0).equals(courseRequest.getInitialAssignment()) && getModel().inConflict(assignment, av.get(0)))) {
+					if (enrollment != null) {
+						if (enrollment.getOffering().equals(reservation.getOffering()))
+							line.add(new CSVFile.CSVField(MSG.reservationNotUsed()));
+						else
+							line.add(new CSVFile.CSVField(MSG.enrolledInAlt(enrollment.getCourse().getName())));
+					} else if (av.isEmpty() || (av.size() == 1 && av.get(0).equals(courseRequest.getInitialAssignment()) && getModel().inConflict(assignment, av.get(0)))) {
 						if (courseRequest.getCourses().get(0).getLimit() >= 0)
 							line.add(new CSVFile.CSVField(MSG.courseIsFull()));
 						else if (SectioningRequest.hasInconsistentRequirements(courseRequest, null))
@@ -318,10 +323,7 @@ public class UnusedReservations extends AbstractStudentSectioningReport {
 							}
 							line.add(new CSVFile.CSVField(message));
 						} else {
-							if (courseRequest.getAssignment(assignment) == null)
-								line.add(new CSVFile.CSVField(MSG.courseNotAssigned()));
-							else
-								line.add(new CSVFile.CSVField(MSG.reservationNotUsed()));
+							line.add(new CSVFile.CSVField(MSG.courseNotAssigned()));
 						}
 					}
 	            }
