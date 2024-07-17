@@ -201,9 +201,13 @@ public class ReservationTable extends Composite {
 		else
 			iHeader.clearMessage();
 	}
-
-
+	
 	public void populate(List<ReservationInterface> reservations) {
+		populate(reservations, -1);
+	}
+
+
+	public void populate(List<ReservationInterface> reservations, int owLimit) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		for (final ReservationColumn column: ReservationColumn.values()) {
@@ -297,10 +301,10 @@ public class ReservationTable extends Composite {
 				for (IdName student: ((IndividualReservation) reservation).getStudents()) {
 					students.add(new Label(student.getName(), false));
 				}
-				if (students.getWidgetCount() > 6) {
-					int more = students.getWidgetCount();
-					while (students.getWidgetCount() > 5)
-						students.remove(5);
+				if (owLimit > 0 && students.getWidgetCount() > owLimit + 1) {
+					int more = students.getWidgetCount() - owLimit;
+					while (students.getWidgetCount() > owLimit)
+						students.remove(owLimit);
 					Label l = new Label(MESSAGES.moreItems(more), false); l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					students.add(l);
 				}
@@ -387,10 +391,10 @@ public class ReservationTable extends Composite {
 					l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}
-				if (owner.getWidgetCount() > 6) {
-					int more = owner.getWidgetCount() - 5;
-					while (owner.getWidgetCount() > 5)
-						owner.remove(5);
+				if (owLimit > 0 && owner.getWidgetCount() > owLimit + 1) {
+					int more = owner.getWidgetCount() - owLimit;
+					while (owner.getWidgetCount() > owLimit)
+						owner.remove(owLimit);
 					Label l = new Label(MESSAGES.moreItems(more), false); l.getElement().getStyle().setMarginLeft(10, Unit.PX);
 					owner.add(l);
 				}
@@ -411,6 +415,13 @@ public class ReservationTable extends Composite {
 			}
 			for (Clazz clazz: reservation.getClasses()) {
 				restrictions.add(new Label(clazz.getName() + (clazz.getLimit() == null ? "" : " (" + clazz.getLimit() + ")"), false));
+			}
+			if (owLimit > 0 && restrictions.getWidgetCount() > owLimit + 1) {
+				int more = restrictions.getWidgetCount() - owLimit;
+				while (restrictions.getWidgetCount() > owLimit)
+					restrictions.remove(owLimit);
+				Label l = new Label(MESSAGES.moreItems(more), false); l.getElement().getStyle().setMarginLeft(10, Unit.PX);
+				restrictions.add(l);
 			}
 			line.add(restrictions);
 			if (reservation.hasInclusive() && reservation.isInclusive()) {
