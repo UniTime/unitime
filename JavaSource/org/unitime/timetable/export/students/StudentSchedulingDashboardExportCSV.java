@@ -161,9 +161,14 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
     	}
 	}
 	
-	protected void populateCourseTable(ExportHelper helper, List<EnrollmentInfo> enrollments) throws IOException {
+	protected Printer getPrinter(ExportHelper helper) throws IOException {
 		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
+		return out;
+	}
+	
+	protected void populateCourseTable(ExportHelper helper, List<EnrollmentInfo> enrollments) throws IOException {
+		Printer out = getPrinter(helper);
 		
 		boolean hasSnapshot = false;
 		for (EnrollmentInfo e: enrollments) {
@@ -246,8 +251,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	}
 	
 	protected void populateStudentTable(ExportHelper helper, boolean online, List<StudentInfo> students) throws IOException {
-		Printer out = new CSVPrinter(helper, false);
-		helper.setup(out.getContentType(), reference(), false);
+		Printer out = getPrinter(helper);
 		
 		boolean hasExtId = false;
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
@@ -572,8 +576,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 	}
 	
 	protected void populateChangeLogTable(ExportHelper helper, List<SectioningAction> changelog) throws IOException {
-		Printer out = new CSVPrinter(helper, false);
-		helper.setup(out.getContentType(), reference(), false);
+		Printer out = getPrinter(helper);
 		
 		boolean hasExtId = false;
 		if (changelog != null)

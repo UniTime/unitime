@@ -245,11 +245,38 @@ public class SectioningReports extends Composite {
 				});
 			}
 		});
+		
+		iHeader.addButton("exportXls", MESSAGES.buttonExportXLS(), 85, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iReportSelector.getWidget().getSelectedIndex() <= 0) {
+					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
+					return;
+				}
+				ReportTypeInterface type = getReportType(iReportSelector.getWidget().getValue(iReportSelector.getWidget().getSelectedIndex()));
+				String query = "output=sct-report.xls&name=" + type.getReference() + "&report=" + type.getImplementation() + "&online=" + (iOnline ? "true" : "false") + "&sort=" + iLastSort;
+				if (type.isFilter())
+					query += "&filter=" + URL.encodeQueryString(iFilter.getValue());
+				for (int i = 0; i + 1 < type.getParameters().length; i += 2)
+					query += "&" + type.getParameters()[i] + "=" + type.getParameters()[i + 1];
+				
+				RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+					@Override
+					public void onSuccess(EncodeQueryRpcResponse result) {
+						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+					}
+				});
+			}
+		});
 
 		iForm.addHeaderRow(iHeader);
 		iHeader.setEnabled("execute", false);
 		iHeader.setEnabled("print", false);
 		iHeader.setEnabled("export", false);
+		iHeader.setEnabled("exportXls", false);
 
 		iForm.getColumnFormatter().setWidth(0, "120px");
 		iForm.getColumnFormatter().setWidth(1, "100%");
@@ -431,9 +458,11 @@ public class SectioningReports extends Composite {
 		if (iReportSelector.getWidget().getSelectedIndex() <= 0) {
 			iHeader.setEnabled("execute", false);
 			iHeader.setEnabled("export", false);
+			iHeader.setEnabled("exportXls", false);
 		} else {
 			iHeader.setEnabled("execute", true);
 			iHeader.setEnabled("export", true);
+			iHeader.setEnabled("exportXls", true);
 		}
 	}
 	
@@ -934,6 +963,7 @@ public class SectioningReports extends Composite {
 			iTable.setColumnVisible(0, !iHead.getCell(0).startsWith("__") || (iSectioningProperties != null && "__Student".equals(iHead.getCell(0)) && iSectioningProperties.isCanSelectStudent()));
 			iHeader.setEnabled("print", true);
 			iHeader.setEnabled("export", true);
+			iHeader.setEnabled("exportXls", true);
 			if (iData.size() <= 100 && iFirstLine == 0)
 				iTableHeader.setMessage(MESSAGES.infoShowingAllLines(iData.size()));
 			else

@@ -76,6 +76,7 @@
 				<line>Added Conflicting Course Requests report: variant of Not-Assigned Course Requests report, but only showing course requests with time conflict.</line>
 				<line>Added Not-Used Curriculum Reservations report.</line>
 				<line>Added Reservations report: showing all reservations and their current enrollments / limits.</line>
+				<line>Added XLS export.</line>
 			</description>
 		</item>
 		<item>
@@ -86,6 +87,7 @@
 					<line>Show flags for curriculum override reservations.</line>
 					<line>Individual, Curriculum: Limit the number of restrictions to 5 lines.</line>
 				</line>
+				<line>Added XLS export.</line>
 			</description>
 		</item>
 	</category>

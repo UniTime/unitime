@@ -58,12 +58,16 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.unitime.timetable.export.Exporter.Printer;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.export.PDFPrinter.F;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 
 /**
  * @author Tomas Muller
  */
 public class XLSPrinter implements Printer {
-	private static Pattern sNumber = Pattern.compile("[+-]?[0-9]*\\.?[0-9]*[a-z]?");
+	private static Pattern sNumber = Pattern.compile("[+-]?[0-9\\,]*\\.?[0-9]*[a-z\\%]?|N/A|NaN|NaN%|\u221e");
+	private static Format<Number> sDFP = Formats.getNumberFormat("#,###,##0.###%");
+	private static Format<Number> sDF = Formats.getNumberFormat("#,###,##0.###");
 	private OutputStream iOutput;
 	private Workbook iWorkbook;
 	private Object[] iLastLine = null;
@@ -108,6 +112,13 @@ public class XLSPrinter implements Printer {
         style.setVerticalAlignment(VerticalAlignment.TOP);
         style.setFont(getFont(false, false, false, Color.BLACK));
         iStyles.put("number", style);
+        
+        style = iWorkbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.RIGHT);
+        style.setVerticalAlignment(VerticalAlignment.TOP);
+        style.setFont(getFont(false, false, false, Color.BLACK));
+        style.setDataFormat(iWorkbook.createDataFormat().getFormat("#,###,##0.0##%"));
+        iStyles.put("percent", style);
         
 		newSheet();
 	}
@@ -190,9 +201,30 @@ public class XLSPrinter implements Printer {
 			if (f == null || f.isEmpty()) {
 			} else if (number) {
 				try {
-					cell.setCellValue(Double.valueOf(f));
+					Double val = Double.parseDouble(f);
+					if (!val.isInfinite() && !val.isNaN())
+						cell.setCellValue(val);
 				} catch (NumberFormatException e) {
-					cell.setCellValue(f);
+					try {
+						if (f.endsWith("%")) {
+							Double val = sDFP.parse(f).doubleValue();
+							if (!val.isInfinite() && !val.isNaN()) {
+								cell.setCellValue(val);
+								cell.setCellStyle(iStyles.get("percent"));
+							} else {
+								cell.setCellValue(f);
+							}
+						} else {
+							Double val = sDF.parse(f).doubleValue();
+							if (!val.isInfinite() && !val.isNaN()) {
+								cell.setCellValue(val);
+							} else {
+								cell.setCellValue(f);
+							}
+						}
+					} catch (Exception p) {
+						cell.setCellValue(f);
+					}
 				}
 			} else {
 				nrLines = Math.max(nrLines, f.split("\n").length);

@@ -67,6 +67,12 @@ public class SectioningReportsExporter implements Exporter {
 	public String reference() {
 		return "sct-report.csv";
 	}
+	
+	protected Printer getPrinter(ExportHelper helper) throws IOException {
+		Printer out = new CSVPrinter(helper, false);
+		helper.setup(out.getContentType(), helper.getParameter("name").toLowerCase().replace('_', '-') + ".csv", false);
+		return out;
+	}
 
 	@Override
 	public void export(ExportHelper helper) throws IOException {
@@ -139,8 +145,7 @@ public class SectioningReportsExporter implements Exporter {
 		if (csv == null)
 			throw new GwtRpcException("No report was created.");
 		
-		Printer out = new CSVPrinter(helper, false);
-		helper.setup(out.getContentType(), helper.getParameter("name").toLowerCase().replace('_', '-') + ".csv", false);
+		Printer out = getPrinter(helper);
 		
 		if (config != null) {
             String term = config.getProperty("Data.Term");
