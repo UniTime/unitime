@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.ClassSetupInterface;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface.ClassLine;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface.ClassSetupColumn;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface.Reference;
+import org.unitime.timetable.gwt.shared.ClassSetupInterface.Subpart;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -622,6 +623,9 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			final MyListBox datePattern = new MyListBox(14000);
 			datePattern.setWidth("150px");
 			datePattern.addStyleName("class-date-pattern");
+			Subpart subpart = iData.getSubpart(line.getSubpartId());
+			datePattern.addItem(MESSAGES.dropDefaultDatePattern() + (subpart != null && subpart.hasDefaultDatePatternName() ? " (" + subpart.getDefaultDatePatternName() + ")" : ""), "-1");
+			if (line.getDatePatternId() == null) datePattern.setSelectedIndex(0);
 			for (Reference d: iData.getDatePatterns()) {
 				if (d.isSelectable() || d.getId().equals(line.getDatePatternId()))
 					datePattern.addItem(d.getLabel(), d.getId().toString());
