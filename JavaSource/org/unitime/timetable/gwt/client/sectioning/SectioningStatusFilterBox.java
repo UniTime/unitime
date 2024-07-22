@@ -42,6 +42,8 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
@@ -55,6 +57,7 @@ import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextBox;
@@ -74,8 +77,15 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 	
 	private AriaSuggestBox iStudent;
 	private Chip iLastStudent;
+	private AriaSuggestBox iAdvisor = null;
+	private CheckBox iMyStudents = null;
+	private Chip iLastAdvisor;
 	
 	public SectioningStatusFilterBox(boolean online) {
+		this(online, false);
+	}
+	
+	public SectioningStatusFilterBox(boolean online, boolean advisorFilter) {
 		super(null);
 		
 		iOnline = online;
@@ -298,96 +308,162 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		
 		addFilter(new FilterBox.StaticSimpleFilter("lookup", GWT_MESSAGES.tagLookup()));
 		
-		addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(), courseLab, iCourse, studentLab, iStudent) {
-			@Override
-			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
-				if (text.isEmpty()) {
-					callback.onSuccess(null);
-				} else {
-					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
-					Chip old = null;
-					for (Chip c: chips) { if (c.getCommand().equals("limit")) { old = c; break; } }
-					try {
-						if (Integer.parseInt(text) <= 9999)
-							suggestions.add(new Suggestion(new Chip("limit", text).withTranslatedCommand(GWT_MESSAGES.tagLimit()), old));
-					} catch (NumberFormatException e) {}
-					
-					old = null;
-					for (Chip c: chips) { if (c.getCommand().equals("credit")) { old = c; break; } }
-					try {
-						String number = text;
-						String prefix = "";
-						if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
-						else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
-						try {
-						if (Float.parseFloat(number) <= 99) {
-							suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-							if (prefix.isEmpty()) {
-								suggestions.add(new Suggestion(new Chip("credit", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-								suggestions.add(new Suggestion(new Chip("credit", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-							}
-						}
-						} catch (NumberFormatException e) {
-							RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)([^0-9\\.].*)$");
-							MatchResult m = rx.exec(number);
-							if (m != null) {
-								Float.parseFloat(m.getGroup(1));
-								String im = m.getGroup(2).trim();
-								suggestions.add(new Suggestion(new Chip("credit", prefix + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-								if (prefix.isEmpty()) {
-									suggestions.add(new Suggestion(new Chip("credit", "<=" + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-									suggestions.add(new Suggestion(new Chip("credit", ">=" + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-								}
-							}
-						}
-					} catch (Exception e) {}
-					try {
-						if (text.contains("..")) {
-							try {
-								String first = text.substring(0, text.indexOf('.'));
-								String second = text.substring(text.indexOf("..") + 2);
-								if (Float.parseFloat(first) < Float.parseFloat(second) &&  Float.parseFloat(second) <= 99) {
-									suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-								}
-							} catch (NumberFormatException e) {
-								RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)$");
-								MatchResult m = rx.exec(text);
-								if (m != null) {
-									suggestions.add(new Suggestion(new Chip("credit", m.getGroup(1) + ".." + m.getGroup(2) + " " + m.getGroup(3).trim()).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
-								}
-							}
-						}
-					} catch (Exception e) {}
-					
-					old = null;
-					for (Chip c: chips) { if (c.getCommand().equals("overlap")) { old = c; break; } }
-					try {
-						String number = text;
-						String prefix = "";
-						if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
-						else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
-						if (Integer.parseInt(number) <= 999) {
-							suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
-							if (prefix.isEmpty()) {
-								suggestions.add(new Suggestion(new Chip("overlap", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
-								suggestions.add(new Suggestion(new Chip("overlap", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
-							}
-						}
-					} catch (Exception e) {}
-					if (text.contains("..")) {
-						try {
-							String first = text.substring(0, text.indexOf('.'));
-							String second = text.substring(text.indexOf("..") + 2);
-							if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
-								suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
-							}
-						} catch (Exception e) {}
-					}
-					
-					callback.onSuccess(suggestions);
+        if (!advisorFilter) {
+            addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(), courseLab, iCourse, studentLab, iStudent) {
+                @Override
+                public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
+                        if (text.isEmpty()) {
+                                callback.onSuccess(null);
+                        } else {
+                                List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
+                                Chip old = null;
+                                for (Chip c: chips) { if (c.getCommand().equals("limit")) { old = c; break; } }
+                                try {
+                                        if (Integer.parseInt(text) <= 9999)
+                                                suggestions.add(new Suggestion(new Chip("limit", text).withTranslatedCommand(GWT_MESSAGES.tagLimit()), old));
+                                } catch (NumberFormatException e) {}
+                                
+                                old = null;
+                                for (Chip c: chips) { if (c.getCommand().equals("credit")) { old = c; break; } }
+                                try {
+                                        String number = text;
+                                        String prefix = "";
+                                        if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
+                                        else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
+                                        try {
+                                        if (Float.parseFloat(number) <= 99) {
+                                                suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                if (prefix.isEmpty()) {
+                                                        suggestions.add(new Suggestion(new Chip("credit", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                        suggestions.add(new Suggestion(new Chip("credit", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                }
+                                        }
+                                        } catch (NumberFormatException e) {
+                                                RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)([^0-9\\.].*)$");
+                                                MatchResult m = rx.exec(number);
+                                                if (m != null) {
+                                                        Float.parseFloat(m.getGroup(1));
+                                                        String im = m.getGroup(2).trim();
+                                                        suggestions.add(new Suggestion(new Chip("credit", prefix + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                        if (prefix.isEmpty()) {
+                                                                suggestions.add(new Suggestion(new Chip("credit", "<=" + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                                suggestions.add(new Suggestion(new Chip("credit", ">=" + m.getGroup(1) + " " + im).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                        }
+                                                }
+                                        }
+                                } catch (Exception e) {}
+                                try {
+                                        if (text.contains("..")) {
+                                                try {
+                                                        String first = text.substring(0, text.indexOf('.'));
+                                                        String second = text.substring(text.indexOf("..") + 2);
+                                                        if (Float.parseFloat(first) < Float.parseFloat(second) &&  Float.parseFloat(second) <= 99) {
+                                                                suggestions.add(new Suggestion(new Chip("credit", text).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                        }
+                                                } catch (NumberFormatException e) {
+                                                        RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)$");
+                                                        MatchResult m = rx.exec(text);
+                                                        if (m != null) {
+                                                                suggestions.add(new Suggestion(new Chip("credit", m.getGroup(1) + ".." + m.getGroup(2) + " " + m.getGroup(3).trim()).withTranslatedCommand(GWT_MESSAGES.tagCredit()), old));
+                                                        }
+                                                }
+                                        }
+                                } catch (Exception e) {}
+                                
+                                old = null;
+                                for (Chip c: chips) { if (c.getCommand().equals("overlap")) { old = c; break; } }
+                                try {
+                                        String number = text;
+                                        String prefix = "";
+                                        if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
+                                        else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
+                                        if (Integer.parseInt(number) <= 999) {
+                                                suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+                                                if (prefix.isEmpty()) {
+                                                        suggestions.add(new Suggestion(new Chip("overlap", "<=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+                                                        suggestions.add(new Suggestion(new Chip("overlap", ">=" + text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+                                                }
+                                        }
+                                } catch (Exception e) {}
+                                if (text.contains("..")) {
+                                        try {
+                                                String first = text.substring(0, text.indexOf('.'));
+                                                String second = text.substring(text.indexOf("..") + 2);
+                                                if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
+                                                        suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+                                                }
+                                        } catch (Exception e) {}
+                                }
+                                
+                                callback.onSuccess(suggestions);
+                        }
+                }
+            });
+        } else {
+        	Label advisorLab = new Label(MESSAGES.propAdvisor());
+        	// advisorLab.getElement().getStyle().setMarginLeft(10, Unit.PX);
+            iAdvisor = new AriaSuggestBox(new AdvisorOracle());
+            iAdvisor.setStyleName("unitime-TextArea");
+            iAdvisor.setWidth("200px");
+            iAdvisor.getValueBox().addChangeHandler(new ChangeHandler() {
+                    @Override
+                    public void onChange(ChangeEvent event) {
+                            advisorChanged(true);
+                    }
+            });
+            iAdvisor.getValueBox().addKeyPressHandler(new KeyPressHandler() {
+                    @Override
+                    public void onKeyPress(KeyPressEvent event) {
+                            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                                    @Override
+                                    public void execute() {
+                                    	advisorChanged(false);
+                                    }
+                            });
+                    }
+            });
+            iAdvisor.getValueBox().addKeyUpHandler(new KeyUpHandler() {
+                    @Override
+                    public void onKeyUp(KeyUpEvent event) {
+                            if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE)
+                                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                                            @Override
+                                            public void execute() {
+                                            	advisorChanged(false);
+                                            }
+                                    });
+                    }
+            });
+            iAdvisor.getValueBox().addBlurHandler(new BlurHandler() {
+                    @Override
+                    public void onBlur(BlurEvent event) {
+                    	advisorChanged(true);
+                    }
+            });
+            iAdvisor.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
+                    @Override
+                    public void onSelection(SelectionEvent<com.google.gwt.user.client.ui.SuggestOracle.Suggestion> event) {
+                    	advisorChanged(true);
+                    }
+            });
+            iMyStudents = new CheckBox(MESSAGES.modeMyStudents());
+            iMyStudents.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.stopPropagation();
 				}
-			}
-		});
+			});
+            iMyStudents.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Boolean> event) {
+					myStudentsChanged(true);
+				}
+			});
+            addFilter(new FilterBox.CustomFilter("Other", GWT_MESSAGES.tagOther(),
+            		courseLab, iCourse, studentLab, iStudent,
+            		advisorLab, iAdvisor, iMyStudents));
+        }
+
 		
 		addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -395,6 +471,7 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 				List<Chip> courses = getChips("course");
 				iLastCourse = (courses.isEmpty() ? null : courses.get(courses.size() - 1));
 				iLastStudent = getChip("student");
+				iLastAdvisor = getChip("advisor");
 
 				if (!isFilterPopupShowing()) {
 					Chip chip = getChip("curriculum");
@@ -413,6 +490,21 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 						iStudent.setText("");
 					else
 						iStudent.setText(student.getValue());
+					
+					if (iAdvisor != null) {
+						Chip advisor = getChip("advisor");
+						if (advisor == null)
+							iAdvisor.setText("");
+						else
+							iAdvisor.setText(advisor.getValue());
+					}
+					if (iMyStudents != null) {
+						Chip mode = getChip("mode");
+						if (mode != null && MESSAGES.modeMyStudents().equals(mode.getValue()))
+							iMyStudents.setValue(true);
+						else
+							iMyStudents.setValue(false);
+					}
 				}
 				
 				init(false, getAcademicSessionId(), new Command() {
@@ -461,6 +553,37 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			}
 			addChip(newChip, fireChange);
 		}
+	}
+	
+	private void advisorChanged(boolean fireChange) {
+        Chip oldChip = getChip("advisor");
+        if (iAdvisor.getText().isEmpty()) {
+                if (oldChip != null)
+                        removeChip(oldChip, fireChange);
+        } else {
+                Chip newChip = new Chip("advisor", iAdvisor.getText()).withTranslatedCommand(GWT_MESSAGES.tagAdvisor());
+                if (oldChip != null) {
+                        if (newChip.equals(oldChip)) {
+                                if (fireChange && !newChip.equals(iLastAdvisor)) fireValueChangeEvent();
+                                return;
+                        }
+                        removeChip(oldChip, false);
+                }
+                addChip(newChip, fireChange);
+        }
+	}
+	
+	private void myStudentsChanged(boolean fireChange) {
+        Chip oldChip = getChip("mode");
+        if (!iMyStudents.getValue()) {
+                if (oldChip != null && MESSAGES.modeMyStudents().equals(oldChip.getValue()))
+                        removeChip(oldChip, fireChange);
+        } else {
+        	if (oldChip == null || !MESSAGES.modeMyStudents().equals(oldChip.getValue())) {
+        		removeChip(oldChip, false);
+        		addChip(new Chip("mode", MESSAGES.modeMyStudents()).withTranslatedCommand(GWT_MESSAGES.tagSectioningMode()), fireChange);
+        	}
+        }
 	}
 	
 	@Override
@@ -590,6 +713,33 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 			}
 		}
 	}
+	
+	public class AdvisorOracle extends SuggestOracle {
+
+        @Override
+        public void requestSuggestions(final Request request, final Callback callback) {
+                if (!request.getQuery().isEmpty()) {
+                        iFilter.getWidget().getSuggestionsProvider().getSuggestions(iFilter.getWidget().getChips(null), request.getQuery(), new AsyncCallback<Collection<FilterBox.Suggestion>>() {
+
+                                @Override
+                                public void onFailure(Throwable caught) {
+                                }
+
+                                @Override
+                                public void onSuccess(Collection<FilterBox.Suggestion> result) {
+                                        if (result == null) return;
+                                        List<StudentSuggestion> suggestions = new ArrayList<StudentSuggestion>();
+                                        for (FilterBox.Suggestion suggestion: result) {
+                                                if (suggestion.getChipToAdd() != null && "advisor".equals(suggestion.getChipToAdd().getCommand())) {
+                                                        suggestions.add(new StudentSuggestion(suggestion));
+                                                }
+                                        }
+                                        callback.onSuggestionsReady(request, new Response(suggestions));
+                                }
+                        });
+                }
+        }
+}
 	
 	@Override
 	protected void onLoad(FilterRpcResponse result) {

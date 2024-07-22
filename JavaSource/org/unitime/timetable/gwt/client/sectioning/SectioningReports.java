@@ -313,7 +313,7 @@ public class SectioningReports extends Composite {
 			}
 		});
 		
-		iFilter = new SectioningStatusFilterBox(iOnline);
+		iFilter = new SectioningStatusFilterBox(iOnline, true);
 		iFilter.removeFilter("mode");
 		iFilter.removeFilter("consent");
 		iFilter.removeFilter("approver");
