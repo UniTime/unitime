@@ -3680,4 +3680,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Enrolled in {0} instead.")
 	String enrolledInAlt(String course);
+	
+	@DefaultMessage("Advisor:")
+	String propAdvisor();
 }

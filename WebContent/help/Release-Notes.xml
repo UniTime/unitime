@@ -29,6 +29,21 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Student Solver Reports, Online Student Scheduling Reports</name>
+			<description>
+				<line>Filter: In the filter's drop-down, added Advisor text field and My Students checkbox.
+					<line>This is to make it easier for non-admin users to use.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.145</version>
+	<release-date>Fri, 19 Jul 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offerings / Classes</name>
