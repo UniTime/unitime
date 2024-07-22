@@ -40,7 +40,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	private List<Reference> iInstructionalMethods;
 	private List<Reference> iLMSs;
 	private List<Reference> iDatePatterns;
-	private List<Reference> iSubparts;
+	private List<Subpart> iSubparts;
 	
 	private Long iConfigId;
 	private Integer iLimit;
@@ -152,15 +152,15 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		return null;
 	}
 	
-	public void addSubpart(Long id, String ref, String label) {
-		if (iSubparts == null) iSubparts = new ArrayList<Reference>();
-		iSubparts.add(new Reference(id, ref, label, true));
+	public void addSubpart(Long id, String ref, String label, String defaultDatePatternName) {
+		if (iSubparts == null) iSubparts = new ArrayList<Subpart>();
+		iSubparts.add(new Subpart(id, ref, label, true, defaultDatePatternName));
 	}
 	public boolean hasSubparts() { return iSubparts != null && !iSubparts.isEmpty(); }
-	public List<Reference> getSubparts() { return iSubparts; }
-	public Reference getSubpart(Long id) {
+	public List<Subpart> getSubparts() { return iSubparts; }
+	public Subpart getSubpart(Long id) {
 		if (iSubparts == null || id == null) return null;
-		for (Reference ref: iSubparts)
+		for (Subpart ref: iSubparts)
 			if (ref.getId().equals(id)) return ref;
 		return null;
 	}
@@ -554,6 +554,21 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 		public String toString() {
 			return getReference() + " - " + getLabel();
 		}
+	}
+	
+	public static class Subpart extends Reference implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 5252024032132689730L;
+		private String iDefaultDatePatternName;
+		
+		public Subpart() { super(); }
+		public Subpart(Long id, String ref, String label, boolean selectable, String defaultDatePatternName) {
+			super(id, ref, label, selectable);
+			iDefaultDatePatternName = defaultDatePatternName;
+		}
+		
+		public String getDefaultDatePatternName() { return iDefaultDatePatternName; }
+		public boolean hasDefaultDatePatternName() { return iDefaultDatePatternName != null && !iDefaultDatePatternName.isEmpty(); }
+		public void setDefaultDatePatternName(String defaultDatePatternName) { iDefaultDatePatternName = defaultDatePatternName; }
 	}
 	
 	public static enum ClassSetupColumn {

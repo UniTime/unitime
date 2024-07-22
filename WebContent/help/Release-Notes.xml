@@ -29,6 +29,15 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Date Pattern: Corrected the name of the default date pattern when a date pattern is set on the scheduling subpart.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Batch Student Solver Reports, Online Student Scheduling Reports</name>

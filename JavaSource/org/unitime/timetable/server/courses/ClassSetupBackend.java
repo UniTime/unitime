@@ -149,7 +149,8 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
         for (SchedulingSubpart ss: subparts) {
         	if (ss.getClasses() == null || ss.getClasses().isEmpty())
     			throw new GwtRpcException(MSG.errorInitialIOSetupIncomplete());
-    		form.addSubpart(ss.getUniqueId(), ss.getItype().getAbbv(), ss.getItype().getDesc());
+        	DatePattern dp = ss.effectiveDatePattern();
+    		form.addSubpart(ss.getUniqueId(), ss.getItype().getAbbv(), ss.getItype().getDesc(), dp == null ? null : dp.getName());
     		if (ss.getParentSubpart() == null)
     			loadClasses(form, ss.getClasses(), true, 0, proxy, context);
         }
@@ -180,8 +181,6 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 	    			form.addInstructionalMethod(type.getUniqueId(), type.getReference(), type.getLabel());
 		}
     	
-    	DatePattern dpDefault = io.getSession().getDefaultDatePatternNotNull();
-    	form.addDatePattern(-1l, MSG.dropDefaultDatePattern(), MSG.dropDefaultDatePattern() + (dpDefault == null ? "" : " (" + dpDefault.getName() + ")"), true);
     	try {
     		for (DatePattern dp: DatePattern.findAll(context.getUser(), io.getDepartment(), io.getSession().getDefaultDatePatternNotNull()))
     			form.addDatePattern(dp.getUniqueId(), dp.getName(), dp.getName(), !dp.isExtended());
