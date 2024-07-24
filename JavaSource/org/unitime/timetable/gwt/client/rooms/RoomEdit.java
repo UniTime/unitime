@@ -885,8 +885,10 @@ public class RoomEdit extends Composite {
 			for (Map.Entry<Long, CheckBox> e: iServices.entrySet())
 				e.getValue().setValue(false);
 			if (iRoom.hasServices())
-				for (EventServiceProviderInterface service: iRoom.getServices())
-					iServices.get(service.getId()).setValue(true);
+				for (EventServiceProviderInterface service: iRoom.getServices()) {
+					CheckBox ch = iServices.get(service.getId());
+					if (ch != null) ch.setValue(true);
+				}
 			if (iProperties.hasEventServiceProviders()) {
 				Long deptId = Long.valueOf(iEventDepartment.getValue(iEventDepartment.getSelectedIndex()));
 				for (EventServiceProviderInterface service: iProperties.getEventServiceProviders()) {
