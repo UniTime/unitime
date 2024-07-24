@@ -121,9 +121,18 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		model.setNoteEditable(editable);
 		
 		if (includeRoomPreferences) {
+			boolean hasReq = false;
+			if (location != null && location.getRoomDepts() != null)
+				for (RoomDept rd: location.getRoomDepts())
+					if (rd.getPreference() != null && PreferenceLevel.sRequired.equals(rd.getPreference().getPrefProlog())) {
+						hasReq = true;
+						break;
+					}
 			boolean prefEditable = (location == null ? context.getUser().getCurrentAuthority().hasRight(Right.RoomEditPreference) : context.hasPermission(location, Right.RoomEditPreference));
-			for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false))
-				model.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), prefEditable));
+			for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
+				if (hasReq || !PreferenceLevel.sRequired.equals(pref.getPrefProlog()))
+					model.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), prefEditable));
+			}
 		}
 
 		boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);

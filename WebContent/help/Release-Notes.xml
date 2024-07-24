@@ -36,6 +36,14 @@
 				<line>Date Pattern: Corrected the name of the default date pattern when a date pattern is set on the scheduling subpart.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Room</name>
+			<description>
+				<line>Preference: Do not allow for Required preference (for a department) unless there is already a required department for the room.
+					<line>Required preference set directly on a room usually makes no or very little sense and usually only creates confusion when a room is accidentally marked as required (as no other rooms can be used for the department by the course timetabling solver).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
