@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.io.IOException;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
@@ -78,7 +79,9 @@ public class MainAction extends UniTimeAction<BlankForm>{
 	}
 	
 	public String execute() throws Exception {
-		if (message == null)
+		if (message != null && !message.isEmpty())
+			message = StringEscapeUtils.escapeHtml4(message);
+		else if (message == null)
 			message = getSystemMessage();
 		if ("cas-logout".equals(op)) {
 			message = MSG.casLoggedOut();
