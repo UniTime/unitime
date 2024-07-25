@@ -56,6 +56,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>Main page</name>
+			<description>
+				<line>To prevent an XSS vulnerability, sanitize the message when provided as a parameter.</line>				
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.145</version>
