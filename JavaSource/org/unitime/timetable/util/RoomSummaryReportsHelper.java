@@ -999,10 +999,54 @@ public abstract class RoomSummaryReportsHelper {
 		sb.append("and om.stop_period = m.stop_period");
 	    newline(sb, 8);
 		sb.append(") as nbr_rooms");
-       return sb.toString();
+        return sb.toString();
 	}
 	
+	protected String getRoomControllingRoomDeptQuery() {
+		StringBuffer sb = new StringBuffer();
+	    newline(sb, 4);
+	    sb.append("(select concat(concat(rdpt.dept_code, ' - '), rdpt.name)");
+	    newline(sb, 8);
+	    sb.append("from ")
+	      .append(getSchema())
+	      .append(".room_dept rd");
+	    newline(sb, 8);
+	    sb.append("inner join ")
+	    	.append(getSchema())
+	    	.append(".department rdpt on rdpt.uniqueId = rd.department_id");
+	    newline(sb, 8);
+	    sb.append("where rd.room_id = r.uniqueId and rd.is_control = 1)");
+	    return(sb.toString());
+	}
+	
+	protected String getSectionNumberDecodeCase() {
+		StringBuffer sb = new StringBuffer();
+	    newline(sb, 4);
+	    sb.append("( case ");
+	    newline(sb, 8);
+	    sb.append("         when (ss.subpart_suffix is null and c.section_number is null)");
+	    newline(sb, 8);
+	    sb.append("         then null");
+	    newline(sb, 8);
+	    sb.append("         when (ss.subpart_suffix is null and c.section_number is not null)");
+	    newline(sb, 8);
+	    sb.append("         then to_char(c.section_number)");
+	    newline(sb, 8);
+	    sb.append("         when (ss.subpart_suffix != '-')");
+	    newline(sb, 8);
+	    sb.append("         then concat(to_char(c.section_number), ss.subpart_suffix)");
+	    newline(sb, 8);
+	    sb.append("         else to_char(c.section_number)");
+	    newline(sb, 8);
+	    sb.append("         end )");
+	    return(sb.toString());
+	}
 	protected String getBaseQuerySelectClause(boolean includeSubjectArea, boolean includeDept) {
+	    return	getBaseQuerySelectClause(includeSubjectArea, includeDept, false, false);
+	}
+	
+	protected String getBaseQuerySelectClause(boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer();
 	    sb.append("select distinct sess.academic_initiative as ")
 	      .append(MESSAGES.utilSqlAcademicInitiative())
@@ -1075,11 +1119,34 @@ public abstract class RoomSummaryReportsHelper {
 		      .append(MESSAGES.utilSqlDepartment())
 		      .append(",");	    
 	    }
-	    if (includeSubjectArea) {
+	    if (includeRoomControlingDepartment) {
+	    	sb.append(getRoomControllingRoomDeptQuery());
+		    newline(sb, 4);
+		    sb.append("as ")
+		      .append(MESSAGES.utilSqlRoomDept())
+		      .append(",");	    
+	    	
+	    }
+	    if (includeSubjectArea || includeSection) {
 		    newline(sb, 4);
 		    sb.append("sa.subject_area_abbreviation as ")
 		      .append(MESSAGES.utilSqlSubject())
 		      .append(",");	    
+	    }
+	    if (includeSection) {
+		    newline(sb, 4);
+		    sb.append("co.course_nbr as ")
+		      .append(MESSAGES.utilSqlCourseNbr())
+		      .append(",");	    
+		    newline(sb, 4);
+		    sb.append("i.abbv as ")
+		      .append(MESSAGES.utilSqlItype())
+		      .append(",");	  
+		    sb.append(getSectionNumberDecodeCase());
+		    newline(sb, 4);
+		    sb.append("as ")
+		      .append(MESSAGES.utilSqlSection())
+		      .append(",");	    	    	
 	    }
 	    sb.append(getBaseQueryAdditionalSelectColumns());
 	    newline(sb, 4);
@@ -1182,8 +1249,13 @@ public abstract class RoomSummaryReportsHelper {
 	}
 
 	protected String getBaseQuery(String campus, String year, String term, boolean includeSubjectArea, boolean includeDept) {
+		return getBaseQuery(campus, year, term, includeSubjectArea, includeDept, false, false);
+	}
+
+	protected String getBaseQuery(String campus, String year, String term, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer();
-	    sb.append(getBaseQuerySelectClause(includeSubjectArea, includeDept));
+	    sb.append(getBaseQuerySelectClause(includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment));
 	    newline(sb, 0);
 	    sb.append(getBaseQueryFromClause());
 	    newline(sb, 0);
@@ -1280,6 +1352,17 @@ public abstract class RoomSummaryReportsHelper {
 			Integer saturday, String campus, String year, String term, 
 			ArrayList<Object> headerRow, boolean includeDayOfWkTimeOfDayInHeaderRow, 
 			boolean includeSubjectArea, boolean includeDept) {
+		return getPivotedBaseSummaryQuery(allDays, weekDays, 
+				saturday, campus, year, term, 
+				headerRow, includeDayOfWkTimeOfDayInHeaderRow, 
+				includeSubjectArea, includeDept, false, false);
+	}
+	
+	protected String getPivotedBaseSummaryQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, 
+			Integer saturday, String campus, String year, String term, 
+			ArrayList<Object> headerRow, boolean includeDayOfWkTimeOfDayInHeaderRow, 
+			boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer();
 	    sb.append("select ");
 		appendSelectedField(sb, "z", MESSAGES.utilSqlAcademicInitiative(), false, true);
@@ -1325,10 +1408,26 @@ public abstract class RoomSummaryReportsHelper {
 			appendSelectedField(sb, "z", MESSAGES.utilSqlDepartment(), false, true);
 			headerRow.add(MESSAGES.utilSqlDepartment());
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlRoomDept(), false, true);
+			headerRow.add(MESSAGES.utilSqlRoomDept());			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, "z", MESSAGES.utilSqlSubject(), false, true);
 		    headerRow.add(MESSAGES.utilSqlSubject());
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlCourseNbr(), false, true);
+		    headerRow.add(MESSAGES.utilSqlCourseNbr());
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlItype(), false, true);
+		    headerRow.add(MESSAGES.utilSqlItype());
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlSection(), false, true);
+		    headerRow.add(MESSAGES.utilSqlSection());	
 		}
 	    
 	    newline(sb, 4);
@@ -1358,7 +1457,7 @@ public abstract class RoomSummaryReportsHelper {
 	    }
 	    newline(sb, 0);
 	    sb.append("from (");
-	    sb.append(getBaseQuery(campus, year, term, includeSubjectArea, includeDept));
+	    sb.append(getBaseQuery(campus, year, term, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment));
 	    sb.append(") z");
 	    newline(sb, 0);
 	    sb.append("group by ");
@@ -1393,19 +1492,48 @@ public abstract class RoomSummaryReportsHelper {
 			newline(sb, 4);
 			appendSelectedField(sb, "z", MESSAGES.utilSqlDepartment(), true, false);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlRoomDept(), true, false);			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, "z", MESSAGES.utilSqlSubject(), true, false);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlCourseNbr(), true, false);
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlItype(), true, false);
+			newline(sb, 4);
+			appendSelectedField(sb, "z", MESSAGES.utilSqlSection(), true, false);			
 		}
 	    
 	    return(sb.toString());
 	}
 	
-	public abstract String getPivotedQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept); 
+	public String getPivotedQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, 
+			Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, 
+			boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept) {
+		return getPivotedQuery(allDays, weekDays, saturday, campus, year, term, headerRow, 
+				includeDayOfWkTimeOfDayInHeaderRow, includeSubjectArea, includeDept, false, false);
+	}; 
 
-	protected String getSortedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeSubjectArea, boolean includeDept) {
+	public abstract String getPivotedQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, 
+			Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, 
+			boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment); 
+
+	protected String getSortedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, 
+			Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, 
+			boolean includeSubjectArea, boolean includeDept) {
+		return getSortedRoomUtilizationQuery(allDays, weekDays, saturday, campus, year, term, headerRow, 
+				includeSubjectArea, includeDept, false, false);
+	}
+
+	protected String getSortedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeSubjectArea, boolean includeDept, boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer() ;
-	    sb.append(getPivotedQuery(allDays, weekDays, saturday, campus, year, term, headerRow, true, includeSubjectArea, includeDept));
+	    sb.append(getPivotedQuery(allDays, weekDays, saturday, campus, year, term, headerRow, true, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment));
 	    newline(sb, 0);
 	    sb.append("order by ")
 	    .append(MESSAGES.utilSqlAcademicInitiative())
@@ -1427,15 +1555,35 @@ public abstract class RoomSummaryReportsHelper {
 		    newline(sb, 10);
 		    sb.append(MESSAGES.utilSqlDepartment());	    	
 	    }
-	    if (includeSubjectArea) {
+	    if (includeRoomControlingDepartment) {
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlRoomDept());	    		    	
+	    }
+	    if (includeSubjectArea || includeSection) {
 		    sb.append(",");
 		    newline(sb, 10);
 		    sb.append(MESSAGES.utilSqlSubject());	    	
+	    }
+	    if (includeSection) {
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlCourseNbr());	    		    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlItype());	    		    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlSection());	    		    	
 	    }
 	    return(sb.toString());
 	}
 
 	public String getUnpivotedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeSubjectArea, boolean includeDept) {
+		return getUnpivotedRoomUtilizationQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeSubjectArea, includeDept, false, false);
+	}
+
+	public String getUnpivotedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeSubjectArea, boolean includeDept, boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer() ;
 		ArrayList<String> newColumns = new ArrayList<String>();
 		ArrayList<String> dayTimeColumnPrefixes = new ArrayList<String>();
@@ -1455,7 +1603,7 @@ public abstract class RoomSummaryReportsHelper {
 	    newline(sb, 0);
 	    sb.append("(");
 	    newline(sb, 0);
-	    sb.append(getPivotedQuery (allDays, weekDays, saturday, campus, year, term, headerRow, false, includeSubjectArea, includeDept));
+	    sb.append(getPivotedQuery (allDays, weekDays, saturday, campus, year, term, headerRow, false, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment));
 	    newline(sb, 0);
 	    sb.append(") y");
 	    newline(sb, 0);
@@ -1480,8 +1628,12 @@ public abstract class RoomSummaryReportsHelper {
 	}
 
 	protected String getSortedUnpivotedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeSubjectArea, boolean includeDept) {
+		return getSortedUnpivotedRoomUtilizationQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeSubjectArea, includeDept, false, false);
+	}
+	
+	protected String getSortedUnpivotedRoomUtilizationQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday, String campus, String year, String term, ArrayList<Object> headerRow, boolean includeSubjectArea, boolean includeDept, boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer() ;
-	    sb.append(getUnpivotedRoomUtilizationQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeSubjectArea, includeDept));
+	    sb.append(getUnpivotedRoomUtilizationQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment));
 	    newline(sb, 0);
 	    sb.append("order by ")
 	      .append(MESSAGES.utilSqlAcademicInitiative())
@@ -1503,11 +1655,27 @@ public abstract class RoomSummaryReportsHelper {
   		    newline(sb, 10);
   		    sb.append(MESSAGES.utilSqlDepartment());	    	
   	    }
-  	    if (includeSubjectArea) {
+	    if (includeRoomControlingDepartment) {
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlRoomDept());	    		    	
+	    }
+  	    if (includeSubjectArea || includeSection) {
   		    sb.append(",");
   		    newline(sb, 10);
   		    sb.append(MESSAGES.utilSqlSubject());	    	
   	    }
+	    if (includeSection) {
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlCourseNbr());	    		    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlItype());	    		    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlSection());	    		    	
+	    }
 	    sb.append(",");
 	    newline(sb, 10);
 	    sb.append(MESSAGES.utilSqlDayTime());	    	
@@ -1515,16 +1683,20 @@ public abstract class RoomSummaryReportsHelper {
 	}
 
 	public String getPivotedAndUnpivotedUtilizationQueries(Session acadSession, boolean includeSubjectArea, boolean includeDept) {
+		return getPivotedAndUnpivotedUtilizationQueries(acadSession, includeSubjectArea, includeDept, false, false);
+	}
+	
+	public String getPivotedAndUnpivotedUtilizationQueries(Session acadSession, boolean includeSubjectArea, boolean includeDept, boolean includeSection, boolean includeRoomControlingDepartment) {
 	    
 		StringBuffer sb = new StringBuffer() ;
 		ArrayList<Object> headerRow1 = new ArrayList<Object>();
 		ArrayList<Object> headerRow2 = new ArrayList<Object>();
-	    String utilQuery = getSortedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow1, includeSubjectArea, includeDept);
+	    String utilQuery = getSortedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow1, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment);
 	    sb.append(utilQuery);
 	    sb.append(";");
 	    newline(sb, 0);
 	    newline(sb, 0);
-	    String unpivotedUtilQuery = getSortedUnpivotedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow2, includeSubjectArea, includeDept);
+	    String unpivotedUtilQuery = getSortedUnpivotedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow2, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment);
 	    sb.append(unpivotedUtilQuery);
 	    sb.append(";");
 	    newline(sb, 0);
@@ -1532,15 +1704,24 @@ public abstract class RoomSummaryReportsHelper {
 	}
 
 	public List<List<Object>> getQueryResultsForSortedRoomUtilizationQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept){
+		return getQueryResultsForSortedRoomUtilizationQuery(acadSession, includeSubjectArea, includeDept, false, false);
+	}
+
+	public List<List<Object>> getQueryResultsForSortedRoomUtilizationQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, boolean includeSection, boolean includeRoomControlingDepartment){
 		ArrayList<Object> headerRow = new ArrayList<Object>();
-		String query = getSortedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow, includeSubjectArea, includeDept);
+		String query = getSortedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment);
 		 
 		return getUtilQueryResultsForQuery(query, headerRow);
 	}
 
 	public List<List<Object>> getQueryResultsForSortedUnPivotedRoomUtilizationQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept){
+		return getQueryResultsForSortedUnPivotedRoomUtilizationQuery(acadSession, includeSubjectArea, includeDept, false, false);
+	}
+
+	public List<List<Object>> getQueryResultsForSortedUnPivotedRoomUtilizationQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment){
 		ArrayList<Object> headerRow = new ArrayList<Object>();
-		String query = getSortedUnpivotedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow, includeSubjectArea, includeDept);
+		String query = getSortedUnpivotedRoomUtilizationQuery(getAllDays(), getWeekDays(), getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment);
  
 		return getUtilQueryResultsForQuery(query, headerRow);
 	}

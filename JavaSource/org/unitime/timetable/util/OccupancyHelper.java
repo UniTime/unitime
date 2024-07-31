@@ -119,8 +119,9 @@ public class OccupancyHelper extends RoomSummaryReportsHelper {
 	@Override
 	public String getPivotedQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday,
 			String campus, String year, String term, ArrayList<Object> headerRow,
-			boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept) {
-		return getPivotedBaseSummaryQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeDayOfWkTimeOfDayInHeaderRow, includeSubjectArea, includeDept);
+			boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment) {
+		return getPivotedBaseSummaryQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeDayOfWkTimeOfDayInHeaderRow, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment);
 	}
 
 	@Override
