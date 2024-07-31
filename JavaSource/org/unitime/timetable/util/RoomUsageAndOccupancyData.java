@@ -130,10 +130,39 @@ public class RoomUsageAndOccupancyData {
 	}
 
 	private void fromClause(StringBuffer sb, Session acadSession, boolean hasDayTime, boolean includeSubjectArea, boolean includeDept, boolean isCheckNull) {
+		fromClause(sb, acadSession, hasDayTime, includeSubjectArea, includeDept, false, false, isCheckNull);
+	}
+
+	private void fromClause(StringBuffer sb, Session acadSession, boolean hasDayTime, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, boolean isCheckNull) {
 		ArrayList<Object> headerRow1 = new ArrayList<Object>();
 		ArrayList<Object> headerRow2 = new ArrayList<Object>();
-		String utilizationQuery = getRoomUtilizationHelper().getUnpivotedRoomUtilizationQuery(getRoomUtilizationHelper().getAllDays(), getRoomUtilizationHelper().getWeekDays(), getRoomUtilizationHelper().getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow1, includeSubjectArea, includeDept); 
-		String occupancyQuery = getOccupancyHelper().getUnpivotedRoomUtilizationQuery(getRoomUtilizationHelper().getAllDays(), getRoomUtilizationHelper().getWeekDays(), getRoomUtilizationHelper().getSaturday(), acadSession.getAcademicInitiative(), acadSession.getAcademicYear(), acadSession.getAcademicTerm(), headerRow2, includeSubjectArea, includeDept);
+		String utilizationQuery = getRoomUtilizationHelper()
+				.getUnpivotedRoomUtilizationQuery(
+						getRoomUtilizationHelper().getAllDays(), 
+						getRoomUtilizationHelper().getWeekDays(), 
+						getRoomUtilizationHelper().getSaturday(), 
+						acadSession.getAcademicInitiative(), 
+						acadSession.getAcademicYear(), 
+						acadSession.getAcademicTerm(), 
+						headerRow1, 
+						includeSubjectArea, 
+						includeDept,
+						includeSection,
+						includeRoomControlingDepartment); 
+		String occupancyQuery = getOccupancyHelper()
+				.getUnpivotedRoomUtilizationQuery(
+						getRoomUtilizationHelper().getAllDays(), 
+						getRoomUtilizationHelper().getWeekDays(), 
+						getRoomUtilizationHelper().getSaturday(), 
+						acadSession.getAcademicInitiative(), 
+						acadSession.getAcademicYear(), 
+						acadSession.getAcademicTerm(), 
+						headerRow2, 
+						includeSubjectArea, 
+						includeDept,
+						includeSection,
+						includeRoomControlingDepartment);
 		
 		sb.append("from");
 		newline(sb, 0);
@@ -177,13 +206,42 @@ public class RoomUsageAndOccupancyData {
 				appendValueNotNullAndEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlDepartment(), true);
 			}
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			if (isCheckNull) {
+				appendValuesAreNull(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlRoomDept(), true);				
+			} else {
+				appendValueNotNullAndEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlRoomDept(), true);
+			}
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			if (isCheckNull) {
 				appendValuesAreNull(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlSubject(), true);
 			} else {
 				appendValueNotNullAndEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlSubject(), true);
 			}
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			if (isCheckNull) {
+				appendValuesAreNull(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlCourseNbr(), true);
+			} else {
+				appendValueNotNullAndEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlCourseNbr(), true);
+			}
+			newline(sb, 4);
+			if (isCheckNull) {
+				appendValuesAreNull(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlItype(), true);
+			} else {
+				appendValueNotNullAndEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlItype(), true);
+			}
+			newline(sb, 4);
+			if (isCheckNull) {
+				appendValuesAreNull(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlSection(), true);
+			} else {
+				appendValueNotNullAndEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlSection(), true);
+			}
+	
 		}
 		newline(sb, 4);
 		appendValueEqualsSql(sb, roomUsageTable, seatUsageTable, MESSAGES.utilSqlEventType(), true);
@@ -322,7 +380,15 @@ public class RoomUsageAndOccupancyData {
 		}
 	}
 	
-	public void getRoomUsageAndOccupancyQuery(StringBuffer sb, Session acadSession, boolean includeSubjectArea, boolean includeDept, boolean isCheckNull, ArrayList<String> headerRow) {
+	public void getRoomUsageAndOccupancyQuery(StringBuffer sb, Session acadSession, boolean includeSubjectArea, boolean includeDept, 
+			boolean isCheckNull, ArrayList<String> headerRow) {
+		getRoomUsageAndOccupancyQuery(sb, acadSession, includeSubjectArea, includeDept, 
+				false, false, isCheckNull, headerRow);
+
+	}
+	
+	public void getRoomUsageAndOccupancyQuery(StringBuffer sb, Session acadSession, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, boolean isCheckNull, ArrayList<String> headerRow) {
 		
 		sb.append("select ");
 		appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlAcademicInitiative(), false, true, headerRow);
@@ -350,9 +416,21 @@ public class RoomUsageAndOccupancyData {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlDepartment(), false, true, headerRow);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlRoomDept(), false, true, headerRow);			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSubject(), false, true, headerRow);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlCourseNbr(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlItype(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSection(), false, true, headerRow);			
 		}
 		newline(sb, 4);
 		appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlEventType(), false, true, headerRow);
@@ -412,25 +490,31 @@ public class RoomUsageAndOccupancyData {
 		newline(sb, 4);
 		appendDataZeroIfNull(sb, seatUsageTable,  MESSAGES.utilSqlStationsRequested(), false, headerRow);
 		newline(sb, 0);
-		fromClause(sb, acadSession, true, includeSubjectArea, includeDept, isCheckNull);
+		fromClause(sb, acadSession, true, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment,isCheckNull);
 		newline(sb, 0);
 		
 
 	}
-	
+
 	public String getRoomUsageAndOccupancyQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, ArrayList<String> headerRow) {
+		return getRoomUsageAndOccupancyQuery(acadSession, includeSubjectArea, includeDept, false, false, headerRow);
+	}
+
+	
+	public String getRoomUsageAndOccupancyQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, ArrayList<String> headerRow) {
 		StringBuffer sb = new StringBuffer();
-		getRoomUsageAndOccupancyQuery(sb, acadSession, includeSubjectArea, includeDept, false, headerRow);
+		getRoomUsageAndOccupancyQuery(sb, acadSession, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, false, headerRow);
 		newline(sb, 0);
 		sb.append("where ")
 		  .append(roomUsageTable)
 		  .append(".")
 		  .append(MESSAGES.utilSqlAcademicInitiative())
 		  .append(" is not null");
-		if (includeDept || includeSubjectArea) {
+		if (includeDept || includeSubjectArea || includeSection || includeRoomControlingDepartment) {
 			sb.append(" union all ");
 			newline(sb, 0);
-			getRoomUsageAndOccupancyQuery(sb, acadSession, includeSubjectArea, includeDept, true, null);
+			getRoomUsageAndOccupancyQuery(sb, acadSession, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, true, null);
 			newline(sb, 0);
 			sb.append("where ")
 			  .append(roomUsageTable)
@@ -460,10 +544,26 @@ public class RoomUsageAndOccupancyData {
 		    newline(sb, 10);
 		    sb.append(MESSAGES.utilSqlDepartment());	    	
 	    }
-	    if (includeSubjectArea) {
+	    if (includeRoomControlingDepartment) {
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlRoomDept());	    	
+	    }
+	    if (includeSubjectArea || includeSection) {
 		    sb.append(",");
 		    newline(sb, 10);
 		    sb.append(MESSAGES.utilSqlSubject());	    	
+	    }
+	    if (includeSection) {
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlCourseNbr());	   
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlItype());	    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlSection());	    		    
 	    }
 	    sb.append(",");
 		newline(sb, 4);
@@ -475,6 +575,16 @@ public class RoomUsageAndOccupancyData {
 
 	public void getBuildingUsageAndOccupancyTimeDayQuery(StringBuffer sb, Session acadSession, 
 			boolean isByRoomType, boolean includeSubjectArea, boolean includeDept, 
+			boolean isCheckNull, ArrayList<String> headerRow) {
+		getBuildingUsageAndOccupancyTimeDayQuery(sb, acadSession, 
+				isByRoomType, includeSubjectArea, includeDept, 
+				false, false, 
+				isCheckNull, headerRow);
+	}
+	
+	public void getBuildingUsageAndOccupancyTimeDayQuery(StringBuffer sb, Session acadSession, 
+			boolean isByRoomType, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, 
 			boolean isCheckNull, ArrayList<String> headerRow) {
 
 		sb.append("select ");
@@ -492,9 +602,23 @@ public class RoomUsageAndOccupancyData {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlDepartment(), false, true, headerRow);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlRoomDept(), false, true, headerRow);
+			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSubject(), false, true, headerRow);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlCourseNbr(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlItype(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSection(), false, true, headerRow);
+			
 		}
 		newline(sb, 4);
 		appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlEventType(), false, true, headerRow);
@@ -514,7 +638,7 @@ public class RoomUsageAndOccupancyData {
 		newline(sb, 4);
 		appendSumZeroIfNull(sb, seatUsageTable, MESSAGES.utilSqlStationsRequested(), false, headerRow);
 		newline(sb, 0);
-		fromClause(sb, acadSession, true, includeSubjectArea, includeDept, isCheckNull);
+		fromClause(sb, acadSession, true, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, isCheckNull);
 		newline(sb, 0);
 		sb.append("where ")
 		  .append(roomUsageTable)
@@ -542,9 +666,22 @@ public class RoomUsageAndOccupancyData {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlDepartment(), false, true, null);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlRoomDept(), false, true, null);		
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSubject(), false, true, null);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlCourseNbr(), false, true, null);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlItype(), false, true, null);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSection(), false, true, null);
+			
 		}
 		newline(sb, 4);
 		appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlDayTime(), false, false, null);
@@ -555,13 +692,21 @@ public class RoomUsageAndOccupancyData {
 
 	public String getBuildingUsageAndOccupancyTimeDayQuery(Session acadSession, boolean isByRoomType, 
 			boolean includeSubjectArea, boolean includeDept, ArrayList<String> headerRow) {
+		return getBuildingUsageAndOccupancyTimeDayQuery(acadSession, isByRoomType, 
+				includeSubjectArea, includeDept, 
+				false, false, headerRow);
+	}
+	
+	public String getBuildingUsageAndOccupancyTimeDayQuery(Session acadSession, boolean isByRoomType, 
+			boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, ArrayList<String> headerRow) {
 		StringBuffer sb = new StringBuffer();
-		getBuildingUsageAndOccupancyTimeDayQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, false, headerRow);
+		getBuildingUsageAndOccupancyTimeDayQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment,false, headerRow);
 		newline(sb, 0);
-		if(includeDept || includeSubjectArea) {
+		if(includeDept || includeSubjectArea || includeSection || includeRoomControlingDepartment) {
 			sb.append(" union all ");
 			newline(sb, 0);
-			getBuildingUsageAndOccupancyTimeDayQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, true, null);
+			getBuildingUsageAndOccupancyTimeDayQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, true, null);
 			newline(sb, 0);
 		}
 		newline(sb, 0);
@@ -584,9 +729,25 @@ public class RoomUsageAndOccupancyData {
 		    sb.append(MESSAGES.utilSqlDepartment());	    	
 		    sb.append(",");
 	    }
-	    if (includeSubjectArea) {
+	    if (includeRoomControlingDepartment) {
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlRoomDept());	    	
+		    sb.append(",");	    	
+	    }
+	    if (includeSubjectArea || includeSection) {
 		    newline(sb, 10);
 		    sb.append(MESSAGES.utilSqlSubject());	    	
+		    sb.append(",");
+	    }
+	    if (includeSection) {
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlCourseNbr());	    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlItype());	    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlSection());	    	
 		    sb.append(",");
 	    }
 	    newline(sb, 10);
@@ -604,9 +765,9 @@ public class RoomUsageAndOccupancyData {
    }
 	
 	
-	
 	private void buildingData(StringBuffer sb, Session acadSession, boolean isByRoomType, boolean includeSubjectArea,
-			boolean includeDept, boolean isCheckNull, ArrayList<String> headerRow) {
+			boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, boolean isCheckNull, ArrayList<String> headerRow) {
 		sb.append("(");
 		newline(sb, 0);
 		
@@ -638,9 +799,21 @@ public class RoomUsageAndOccupancyData {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlDepartment(), false, true, headerRow);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlRoomDept(), false, true, headerRow);			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSubject(), false, true, headerRow);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlCourseNbr(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlItype(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlSection(), false, true, headerRow);
 		}
 		newline(sb, 4);
 		appendSelectedField(sb, roomUsageTable, MESSAGES.utilSqlEventType(), false, true, headerRow);
@@ -674,7 +847,7 @@ public class RoomUsageAndOccupancyData {
 		appendSelectedField(sb, seatUsageTable, MESSAGES.utilSqlStationsRequested() + MESSAGES.utilSqlTotalAllHoursSuffix(), false, false, headerRow);
 		newline(sb, 4);
 		newline(sb, 0);
-		fromClause(sb, acadSession, false, includeSubjectArea, includeDept, isCheckNull);
+		fromClause(sb, acadSession, false, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, isCheckNull);
 		newline(sb, 0);
 		sb.append(") ")
 		  .append(buildingDataTable);
@@ -684,6 +857,14 @@ public class RoomUsageAndOccupancyData {
 	
 	public void getBuildingUsageAndOccupancyQuery(StringBuffer sb, Session acadSession, boolean isByRoomType, boolean includeSubjectArea, 
 			boolean includeDept, boolean isCheckNull, ArrayList<String> headerRow) {
+		getBuildingUsageAndOccupancyQuery(sb, acadSession, isByRoomType, includeSubjectArea, 
+				includeDept, false, false, isCheckNull, headerRow);
+	}
+
+	
+	public void getBuildingUsageAndOccupancyQuery(StringBuffer sb, Session acadSession, boolean isByRoomType, boolean includeSubjectArea, 
+			boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, boolean isCheckNull, ArrayList<String> headerRow) {
 		
 		newline(sb, 0);
 		sb.append("select ");
@@ -701,9 +882,21 @@ public class RoomUsageAndOccupancyData {
 			newline(sb, 4);
 			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlDepartment(), false, true, headerRow);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlRoomDept(), false, true, headerRow);			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlSubject(), false, true, headerRow);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlCourseNbr(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlItype(), false, true, headerRow);
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlSection(), false, true, headerRow);
 		}
 		newline(sb, 4);
 		appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlEventType(), false, true, headerRow);
@@ -763,7 +956,7 @@ public class RoomUsageAndOccupancyData {
 		newline(sb, 0);
 		sb.append("from");
 		newline(sb, 0);
-		buildingData(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, isCheckNull, null);
+		buildingData(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, isCheckNull, null);
 		newline(sb, 0);
 		sb.append("where ")
 		  .append(buildingDataTable)
@@ -791,24 +984,42 @@ public class RoomUsageAndOccupancyData {
 			newline(sb, 4);
 			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlDepartment(), true, false, null);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlRoomDept(), true, false, null);
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlSubject(), true, false, null);
+		}
+		if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlCourseNbr(), true, false, null);
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlItype(), true, false, null);
+			newline(sb, 4);
+			appendSelectedField(sb, buildingDataTable, MESSAGES.utilSqlSection(), true, false, null);
 		}
 		
 		newline(sb, 0);
 	
 	}
 	
-	public String getBuildingUsageAndOccupancyQuery(Session acadSession, boolean isByRoomType, boolean includeSubjectArea, boolean includeDept, ArrayList<String> headerRow) {
+	public String getBuildingUsageAndOccupancyQuery(Session acadSession, boolean isByRoomType, boolean includeSubjectArea, boolean includeDept, 
+			 ArrayList<String> headerRow) {
+		return getBuildingUsageAndOccupancyQuery(acadSession, isByRoomType, includeSubjectArea, includeDept, 
+				false, false, headerRow);
+	}
+	public String getBuildingUsageAndOccupancyQuery(Session acadSession, boolean isByRoomType, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, ArrayList<String> headerRow) {
 		StringBuffer sb = new StringBuffer();
-		getBuildingUsageAndOccupancyQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, false, headerRow);
+		getBuildingUsageAndOccupancyQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, false, headerRow);
 		newline(sb, 0);
-		if(includeDept || includeSubjectArea) {
+		if(includeDept || includeSubjectArea || includeSection || includeRoomControlingDepartment) {
 			newline(sb, 0);
 			sb.append(" union all ");
 			newline(sb, 0);
-			getBuildingUsageAndOccupancyQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, true, null);
+			getBuildingUsageAndOccupancyQuery(sb, acadSession, isByRoomType, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, true, null);
 			newline(sb, 0);
 		}
 		newline(sb, 0);
@@ -831,9 +1042,25 @@ public class RoomUsageAndOccupancyData {
 		    sb.append(MESSAGES.utilSqlDepartment());	    	
 		    sb.append(",");
 	    }
-	    if (includeSubjectArea) {
+	    if (includeRoomControlingDepartment) {
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlRoomDept());	    	
+		    sb.append(",");	    	
+	    }
+	    if (includeSubjectArea || includeSection) {
 		    newline(sb, 10);
 		    sb.append(MESSAGES.utilSqlSubject());	    	
+		    sb.append(",");
+	    }
+	    if (includeSection) {
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlCourseNbr());	    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlItype());	    	
+		    sb.append(",");
+		    newline(sb, 10);
+		    sb.append(MESSAGES.utilSqlSection());	    	
 		    sb.append(",");
 	    }
 	    newline(sb, 10);
@@ -848,11 +1075,22 @@ public class RoomUsageAndOccupancyData {
 	
 
 	public String getBuildingUsageAndOccupancyByRoomTypeQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, ArrayList<String> headerRow) {
-		return getBuildingUsageAndOccupancyQuery(acadSession, true, includeSubjectArea, includeDept, headerRow);
+		return getBuildingUsageAndOccupancyByRoomTypeQuery(acadSession, includeSubjectArea, includeDept, false, false, headerRow);
+	}
+
+	public String getBuildingUsageAndOccupancyByRoomTypeQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment, ArrayList<String> headerRow) {
+		return getBuildingUsageAndOccupancyQuery(acadSession, true, includeSubjectArea, includeDept, 
+				includeSection, includeRoomControlingDepartment, headerRow);
 	}
 
 	public String getBuildingUsageAndOccupancyWholeBuildingQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept, ArrayList<String> headerRow) {
-		return getBuildingUsageAndOccupancyQuery(acadSession, false, includeSubjectArea, includeDept, headerRow);
+		return getBuildingUsageAndOccupancyWholeBuildingQuery(acadSession, includeSubjectArea, includeDept, false, false, headerRow);
+	}
+
+	public String getBuildingUsageAndOccupancyWholeBuildingQuery(Session acadSession, boolean includeSubjectArea, boolean includeDept,
+			boolean includeSection, boolean includeRoomControlingDepartment, ArrayList<String> headerRow) {
+		return getBuildingUsageAndOccupancyQuery(acadSession, false, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment, headerRow);
 	}
 
 	protected void indent(StringBuffer stringBuffer, int indentSizeInChars) {

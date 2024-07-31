@@ -67,7 +67,8 @@ public class RoomUtilizationHelper extends RoomSummaryReportsHelper {
 	@Override
 	public String getPivotedQuery(ArrayList<Integer> allDays, ArrayList<Integer> weekDays, Integer saturday,
 			String campus, String year, String term, ArrayList<Object> headerRow,
-			boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept) {
+			boolean includeDayOfWkTimeOfDayInHeaderRow, boolean includeSubjectArea, boolean includeDept, 
+			boolean includeSection, boolean includeRoomControlingDepartment) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("select ");
 		appendSelectedField(sb, "zz", MESSAGES.utilSqlAcademicInitiative(), false, true);
@@ -98,11 +99,23 @@ public class RoomUtilizationHelper extends RoomSummaryReportsHelper {
 			newline(sb, 4);
 			appendSelectedField(sb, "zz", MESSAGES.utilSqlDepartment(), false, true);
 		}
-		if (includeSubjectArea) {
+		if (includeRoomControlingDepartment) {
+			newline(sb, 4);
+			appendSelectedField(sb, "zz", MESSAGES.utilSqlRoomDept(), false, true);			
+		}
+		if (includeSubjectArea || includeSection) {
 			newline(sb, 4);
 			appendSelectedField(sb, "zz", MESSAGES.utilSqlSubject(), false, true);
 		}
-	    
+	    if (includeSection) {
+			newline(sb, 4);
+			appendSelectedField(sb, "zz", MESSAGES.utilSqlCourseNbr(), false, true);
+			newline(sb, 4);
+			appendSelectedField(sb, "zz", MESSAGES.utilSqlItype(), false, true);
+			newline(sb, 4);
+			appendSelectedField(sb, "zz", MESSAGES.utilSqlSection(), false, true);
+	    	
+	    }
 	    newline(sb, 4);
 		appendSelectedField(sb, "zz", MESSAGES.utilSqlEventType(), false, true);
 	    newline(sb, 4);
@@ -124,7 +137,8 @@ public class RoomUtilizationHelper extends RoomSummaryReportsHelper {
 		newline(sb, 0);
 		sb.append("from ( ");
 		newline(sb,4);
-		sb.append(getPivotedBaseSummaryQuery(allDays, weekDays, saturday, campus, year, term, headerRow, includeDayOfWkTimeOfDayInHeaderRow, includeSubjectArea, includeDept));
+		sb.append(getPivotedBaseSummaryQuery(allDays, weekDays, saturday, campus, year, term, 
+				headerRow, includeDayOfWkTimeOfDayInHeaderRow, includeSubjectArea, includeDept, includeSection, includeRoomControlingDepartment));
 		newline(sb,4);
 		sb.append(" ) zz ");
 		return sb.toString();

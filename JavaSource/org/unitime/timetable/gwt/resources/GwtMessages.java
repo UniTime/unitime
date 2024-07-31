@@ -6963,12 +6963,24 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Utilization_Type")
 	String utilSqlUtilizationType();
 
-	@DefaultMessage("Department")
+	@DefaultMessage("Course_Department")
 	String utilSqlDepartment();
 
 	@DefaultMessage("Subject")
 	String utilSqlSubject();
 
+	@DefaultMessage("Course_Number")
+	String utilSqlCourseNbr();
+
+	@DefaultMessage("Instr_Type")
+	String utilSqlItype();
+
+	@DefaultMessage("Section")
+	String utilSqlSection();
+
+	@DefaultMessage("Room_Controling_Dept")
+	String utilSqlRoomDept();
+	
 	@DefaultMessage("Size_Group")
 	String utilSqlRangeOfSizes();
 
