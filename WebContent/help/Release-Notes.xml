@@ -34,6 +34,7 @@
 			<name>Wait-Listing</name>
 			<description>
 				<line>Position: Consider current enrollment when computing wait-list position.</line>
+				<line>Processing Order: Do not prioritize students wait-listing for a course swap.</line>
 			</description>
 		</item>
 	</category>
