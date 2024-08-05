@@ -238,7 +238,9 @@ public class TimetableManagerEditAction extends UniTimeAction<TimetableManagerFo
     			if (form.getTitle() == null || form.getTitle().trim().length() == 0){
     				form.setTitle(results.getAcademicTitle());
     			}
-    			form.setEmail(results.getEmail());
+    			if (form.getEmail() == null || form.getEmail().trim().length() == 0){
+    				form.setEmail(results.getEmail());
+    			}
             }
     	} catch (Exception e) {
     		Debug.error(MSG.errorLookupManager(e.getMessage()), e);

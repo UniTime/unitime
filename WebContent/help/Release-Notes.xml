@@ -38,6 +38,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Add/Edit Timetable Manager</name>
+			<description>
+				<line>External Manager Lookup: Only reset the email address (to the one from the LDAP directory) when it is left blank.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.147</version>
