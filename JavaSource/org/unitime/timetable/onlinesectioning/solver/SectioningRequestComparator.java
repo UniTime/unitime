@@ -108,13 +108,13 @@ public class SectioningRequestComparator implements Comparator<SectioningRequest
 	@Override
 	public int compare(SectioningRequest s, SectioningRequest r) {
 		// Requests with last enrollment (recently unassigned requests) have priority
-		if (s.getLastEnrollment() == null && r.getLastEnrollment() != null) return 1;
-		if (s.getLastEnrollment() != null && r.getLastEnrollment() == null) return -1;
+		if (!s.hasLastEnrollment() && r.hasLastEnrollment()) return 1;
+		if (s.hasLastEnrollment() && !r.hasLastEnrollment()) return -1;
 		
 		int cmp = compareBothAssignedOrNotAssigned(s, r);
 		if (cmp != 0) return cmp;
 		
-		if (s.getLastEnrollment() == null) {
+		if (!s.hasLastEnrollment()) {
 			cmp = compareBothNotAssigned(s, r);
 		} else {
 			cmp = compareBothAssigned(s, r);

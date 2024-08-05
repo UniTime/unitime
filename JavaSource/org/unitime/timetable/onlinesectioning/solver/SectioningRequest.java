@@ -160,6 +160,7 @@ public class SectioningRequest implements LastSectionProvider {
 	
 	public SectioningRequest setLastEnrollment(XEnrollment enrollment) { iLastEnrollment = enrollment; return this; }
 	public XEnrollment getLastEnrollment() { return iLastEnrollment == null ? iNewEnrollment : iLastEnrollment; }
+	public boolean hasLastEnrollment() { return iLastEnrollment != null; }
 	public SectioningRequest setNewEnrollment(XEnrollment enrollment) { iNewEnrollment = enrollment; return this; }
 	public XEnrollment getNewEnrollment() { return iNewEnrollment == null ? iLastEnrollment : iNewEnrollment; }
 	
