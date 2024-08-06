@@ -37,6 +37,13 @@
 				<line>Processing Order: Do not prioritize students wait-listing for a course swap.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>Suggestions: When the Suggestions dialog is opened, include ARIA status labels for drop and wait-list buttons when the buttons are present.</line>
+				<line>Suggestions: Made the Drop and Wait-List buttons easier to get to.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

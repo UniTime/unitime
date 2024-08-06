@@ -105,7 +105,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private HTML iMessages;
 	private HTML iLegend;
 	private ScrollPanel iSuggestionsScroll;
-	private String iSource;
+	private String iSource, iSourceCourse;
 	private AriaTextBox iFilter;
 	private int iIndex;
 	private CourseRequestInterface iRequest;
@@ -199,11 +199,11 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			}
 		});
 		
-		iFilterPanel.add(buttons);
-		
 		P text = new P(DOM.createSpan(), "text"); text.add(iFilter);
 		iFilterPanel.add(text);
 
+		iFilterPanel.add(buttons);
+		
 		panel.add(iFilterPanel);
 
 		iSuggestions = new WebTable();
@@ -362,6 +362,12 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					}
 					LoadingWidget.getInstance().hide();
 					center();
+					if (iQuickDrop.isEnabled())
+						ariaStatus = (ariaStatus == null ? "" : ariaStatus + " ") + ARIA.suggestionsToDrop(iSourceCourse);
+					if (iWaitList.isEnabled())
+						ariaStatus = (ariaStatus == null ? "" : ariaStatus + " ") + ARIA.suggestionsToWaitlist(iSourceCourse);
+					if (ariaStatus != null)
+						AriaStatus.getInstance().setHTML(ariaStatus);
 				} else {
 					ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 					int lastSize = 0;
@@ -599,6 +605,10 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					}
 					LoadingWidget.getInstance().hide();
 					center();
+					if (iQuickDrop.isEnabled())
+						ariaStatus = (ariaStatus == null ? "" : ariaStatus + " ") + ARIA.suggestionsToDrop(iSourceCourse);
+					if (iWaitList.isEnabled())
+						ariaStatus = (ariaStatus == null ? "" : ariaStatus + " ") + ARIA.suggestionsToWaitlist(iSourceCourse);
 					if (ariaStatus != null)
 						AriaStatus.getInstance().setHTML(ariaStatus);
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -785,17 +795,20 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iAssignment = row;
 		iCurrent = rows;
 		iSource = null;
+		iSourceCourse = null;
 		iRequest = request;
 		iIndex = index;
 		iHintId = null;
 		iUseGwtConfirmations = useGwtConfirmations;
 		if (row.isFreeTime()) {
 			iSource = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()));
+			iSourceCourse = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()));
 		} else {
 			if (row.getSubpart() == null)
 				iSource = MESSAGES.course(row.getSubject(), row.getCourseNbr());
 			else
 				iSource = MESSAGES.clazz(row.getSubject(), row.getCourseNbr(), row.getSubpart(), row.getSection());
+			iSourceCourse = MESSAGES.course(row.getSubject(), row.getCourseNbr());
 		}
 		setText(MESSAGES.suggestionsAlternatives(iSource));
 		iSuggestions.setSelectedRow(-1);
@@ -839,6 +852,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iHintId = null;
 		iUseGwtConfirmations = useGwtConfirmations;
 		iSource = course.getCourseName();
+		iSourceCourse = course.getCourseName();
 		setText(MESSAGES.suggestionsChoices(iSource));
 		iSuggestions.setSelectedRow(-1);
 		iSuggestions.clearData(true);
@@ -981,9 +995,8 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				if (iSuggestions.getRowsCount() > 0) {
 					String id = (iSuggestions.getSelectedRow() < 0 ? null : iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId());
 					int row = iSuggestions.getSelectedRow() + 1;
-					while (id != null && id.equals(iSuggestions.getRows()[row % iSuggestions.getRowsCount()].getId())) row++;
+					while (id != null && id.equals(iSuggestions.getRows()[row % iSuggestions.getRowsCount()].getId()) && row <= iSuggestions.getRowsCount()) row++;
 					iSuggestions.setSelectedRow(row % iSuggestions.getRowsCount());
-					
 					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
 					AriaStatus.getInstance().setText(ARIA.showingAlternative(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()), Integer.parseInt(iSuggestions.getRows()[iSuggestions.getRows().length - 1].getId()), toString(suggestion)));
 				}
@@ -992,7 +1005,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				if (iSuggestions.getRowsCount() > 0) {
 					int row = iSuggestions.getSelectedRow() <= 0 ? iSuggestions.getRowsCount() - 1 : iSuggestions.getSelectedRow() - 1;
 					String id = iSuggestions.getRows()[row % iSuggestions.getRowsCount()].getId();
-					while (id.equals(iSuggestions.getRows()[(iSuggestions.getRowsCount() + row - 1) % iSuggestions.getRowsCount()].getId())) row--;
+					while (id.equals(iSuggestions.getRows()[(iSuggestions.getRowsCount() + row - 1) % iSuggestions.getRowsCount()].getId()) && row >= 0) row--;
 					iSuggestions.setSelectedRow((iSuggestions.getRowsCount() + row) % iSuggestions.getRowsCount());
 					
 					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
