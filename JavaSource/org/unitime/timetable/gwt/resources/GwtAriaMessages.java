@@ -262,6 +262,12 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("There are no alternatives for {0} matching {1}. Change the filter and click the Search button. Press Escape to hide alternatives.")
 	String suggestionsNoAlternativeWithFilter(String source, String filter);
 	
+	@DefaultMessage("Press Alt D to drop the {0} course.")
+	String suggestionsToDrop(String course);
+	
+	@DefaultMessage("Press Alt W to waitlist for the {0} course.")
+	String suggestionsToWaitlist(String course);
+	
 	@DefaultMessage("There are {0, number} alternatives to {1}. Use up and down arrows to navigate. To select an alternative press enter. Press Escape to hide alternatives. To filter alternatives type in a text and click the Search button.")
 	String showingAlternatives(int nbrSuggestions, String query);
 	

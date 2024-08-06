@@ -5391,19 +5391,19 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SuggestionsBox .filter {
 	display: block;
-	width: 90%;
+	text-align: center;
 	overflow: hidden;
 	margin: auto;
 	padding: 2px;
 }
 
 .unitime-SuggestionsBox .filter .label {
-	margin: 3px 2px 0px 2px;
-	float: left;
+	margin: 3px 2px 3px 2px;
+	display: inline-block;
 }
 
 .unitime-SuggestionsBox .filter .buttons {
-	float: right;
+	display: inline-block;
 }
 
 .unitime-SuggestionsBox .filter .buttons .gwt-Button {
@@ -5413,12 +5413,15 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SuggestionsBox .filter .text {
 	overflow: hidden;
-	display: block;
+	display: inline-block;
+	width: 400px;
+	max-width: calc(90vw - 100px);
 }
 
 .unitime-SuggestionsBox .filter .text .gwt-SuggestBox {
 	width: 100%;
 	height: 25px;
+	padding-bottom: 2px;
 }
 
 .unitime-SuggestionsBox .unitime-ScrollPanel {
