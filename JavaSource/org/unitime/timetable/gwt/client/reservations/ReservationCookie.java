@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.reservations;
 
-import com.google.gwt.user.client.Cookies;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -32,7 +32,7 @@ public class ReservationCookie {
 	
 	private ReservationCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Reservations");
+			String cookie = ToolBox.getSessionCookie("UniTime:Reservations");
 			if (cookie != null && cookie.length() > 0) {
 				String[] values = cookie.split(":");
 				iCourseDetails = "T".equals(values[0]);
@@ -44,7 +44,7 @@ public class ReservationCookie {
 	
 	private void save() {
 		String cookie =  (iCourseDetails ? "T": "F") + ":" + iSortBy;
-		Cookies.setCookie("UniTime:Reservations", cookie);
+		ToolBox.setSessionCookie("UniTime:Reservations", cookie);
 	}
 	
 	public static ReservationCookie getInstance() {

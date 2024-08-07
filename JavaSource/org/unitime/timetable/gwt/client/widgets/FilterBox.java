@@ -21,12 +21,12 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
@@ -80,7 +80,6 @@ import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
@@ -1681,7 +1680,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		
 		private CarrotCookie() {
 			try {
-				String cookie = Cookies.getCookie("UniTime:FilterCarrots");
+				String cookie = ToolBox.getCookie("UniTime:FilterCarrots");
 				if (cookie != null)
 					for (String cmd: cookie.split("\\|"))
 						iCommands.add(cmd);
@@ -1693,8 +1692,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			String cookie = "";
 			for (String cmd: iCommands)
 				cookie += (cookie.isEmpty() ? "" : "|") + cmd;
-			Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-			Cookies.setCookie("UniTime:FilterCarrots", cookie, expires);
+			ToolBox.setCookie("UniTime:FilterCarrots", cookie);
 		}
 		
 		public boolean hasCarot(String command) {

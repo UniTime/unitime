@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -45,7 +46,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -294,7 +294,7 @@ public class RoomNoteChanges extends Composite implements HasMobileScroll {
 		
 		private LastChangesCookie() {
 			try {
-				String cookie = Cookies.getCookie("UniTime:LastChanges");
+				String cookie = ToolBox.getSessionCookie("UniTime:LastChanges");
 				if (cookie != null && cookie.length() > 0) {
 					String[] values = cookie.split(":");
 					iShowDetails = "T".equals(values[0]);
@@ -308,7 +308,7 @@ public class RoomNoteChanges extends Composite implements HasMobileScroll {
 		
 		private void save() {
 			String cookie = (iShowDetails ? "T": "F") + ":" + iSortColumn + ":" + (iSortOrder ? "T": "F") + ":" + (iMultiSession ? "T" : "F");
-			Cookies.setCookie("UniTime:LastChanges", cookie);
+			ToolBox.setSessionCookie("UniTime:LastChanges", cookie);
 		}
 		
 		public static LastChangesCookie getInstance() {

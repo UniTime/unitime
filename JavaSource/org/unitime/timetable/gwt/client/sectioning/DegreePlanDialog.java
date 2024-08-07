@@ -51,7 +51,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -105,7 +104,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 		iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				Cookies.setCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
+				ToolBox.setSessionCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
 			}
 		});
 		iForm.addRow(iCourseDetailsTabPanel);
@@ -167,7 +166,7 @@ public class DegreePlanDialog extends UniTimeDialogBox {
 	
 	private void selectLastTab() {
 		try {
-			int tab = Integer.valueOf(Cookies.getCookie("UniTime:CourseFinderCourses"));
+			int tab = Integer.valueOf(ToolBox.getSessionCookie("UniTime:CourseFinderCourses"));
 			if (tab >= 0 || tab < iCourseDetailsTabPanel.getTabCount() && tab != iCourseDetailsTabPanel.getSelectedTab())
 				iCourseDetailsTabPanel.selectTab(tab);
 			else

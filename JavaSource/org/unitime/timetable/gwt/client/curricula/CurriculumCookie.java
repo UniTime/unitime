@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.curricula;
 
-import com.google.gwt.user.client.Cookies;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -44,7 +44,7 @@ public class CurriculumCookie {
 	
 	private CurriculumCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Curriculum");
+			String cookie = ToolBox.getSessionCookie("UniTime:Curriculum");
 			if (cookie != null && cookie.length() > 0) {
 				String[] values = cookie.split(":");
 				iType = CourseCurriculaTable.Type.valueOf(values[0]);
@@ -85,7 +85,7 @@ public class CurriculumCookie {
 			(iShowSnapshotProjected ? "T" : "F") + ":" +
 			iSortBy;
 			;
-		Cookies.setCookie("UniTime:Curriculum", cookie);
+		ToolBox.setSessionCookie("UniTime:Curriculum", cookie);
 	}
 	
 	public static CurriculumCookie getInstance() {

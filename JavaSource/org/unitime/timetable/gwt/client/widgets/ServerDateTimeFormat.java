@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -33,7 +34,6 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.TimeZone;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
@@ -45,7 +45,7 @@ public class ServerDateTimeFormat extends DateTimeFormat {
 	private static final Map<String, ServerDateTimeFormat> sFormatCache;
 	
 	static {
-		String cookie = Cookies.getCookie("UniTime:ServerTimeZone");
+		String cookie = ToolBox.getSessionCookie("UniTime:ServerTimeZone");
 		if (cookie != null) {
 			try {
 				sServerTimeZone = TimeZone.createTimeZone(cookie);
@@ -59,7 +59,7 @@ public class ServerDateTimeFormat extends DateTimeFormat {
 				@Override
 				public void onSuccess(ServerTimeZoneResponse result) {
 					sServerTimeZone = TimeZone.createTimeZone(result.toJsonString());
-					Cookies.setCookie("UniTime:ServerTimeZone", result.toJsonString());
+					ToolBox.setSessionCookie("UniTime:ServerTimeZone", result.toJsonString());
 				}
 			});
 		}

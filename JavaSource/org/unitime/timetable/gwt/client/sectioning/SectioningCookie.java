@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
-import com.google.gwt.user.client.Cookies;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -48,7 +48,7 @@ public class SectioningCookie {
 	
 	private SectioningCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Sectioning");
+			String cookie = ToolBox.getSessionCookie("UniTime:Sectioning");
 			if (cookie != null && cookie.length() > 0) {
 				String[] values = cookie.split(":");
 				iCourseDetails = "T".equals(values[0]);
@@ -75,7 +75,7 @@ public class SectioningCookie {
 			":" + (iAllChoices ? "T" : "F") + 
 			":" + (iShowAllChanges ? "T" : "F") + ":" + (iRequestOverridesOpened ? "T" : "F") + ":" + iSolutionsSortBy + ":" + iEnrollmentSortByGroup +
 			":" + (iWaitListsOpened ? "T" : "F");
-		Cookies.setCookie("UniTime:Sectioning", cookie);
+		ToolBox.setSessionCookie("UniTime:Sectioning", cookie);
 	}
 	
 	public static SectioningCookie getInstance() {

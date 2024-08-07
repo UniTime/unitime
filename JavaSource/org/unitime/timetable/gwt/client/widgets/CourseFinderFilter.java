@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.Date;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -52,7 +53,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -216,7 +216,7 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 	}
 	
 	public void init() {
-		String showFilter = Cookies.getCookie("UniTime:CourseFinderFilter");
+		String showFilter = ToolBox.getSessionCookie("UniTime:CourseFinderFilter");
 		iFilterButton.setValue("1".equals(showFilter), true);
 		if (iContext.hasSessionDates()) {
 			iDateFrom.init(iContext);
@@ -320,7 +320,7 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 				@Override
 				public void onClick(ClickEvent event) {
 					setValue(!getValue(), true);
-					Cookies.setCookie("UniTime:CourseFinderFilter", getValue() ? "1" : "0");
+					ToolBox.setSessionCookie("UniTime:CourseFinderFilter", getValue() ? "1" : "0");
 				}
 			});
 		}

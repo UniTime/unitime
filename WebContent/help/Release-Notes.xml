@@ -46,6 +46,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Other</title>
+		<item>
+			<name>GWT-Based Pages: Cookies</name>
+			<description>
+				<line>Avoid using cookies when possible (e.g., to store filter settings). Use HTML5 local/session storage instead.</line>
+				<line>This is to avoid error 400 - Bad Request: Request header is too large when using long texts in the filters.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Add/Edit Timetable Manager</name>

@@ -60,7 +60,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -127,8 +126,7 @@ public class SpecialRegistrationsPanel extends P {
 		add(iPanel);
 		
 		iShowAllChanges = new CheckBox(MESSAGES.checkOverridesShowAllChanges());
-		String showAllChanges = Cookies.getCookie("UniTime:ShowAllChanges");
-		iShowAllChanges.setValue(showAllChanges != null && SectioningCookie.getInstance().isShowAllChanges());
+		iShowAllChanges.setValue(SectioningCookie.getInstance().isShowAllChanges());
 		iShowAllChanges.addStyleName("registrations-toggle");
 		add(iShowAllChanges);
 		
