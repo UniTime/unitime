@@ -37,6 +37,8 @@ import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -342,6 +344,53 @@ public class ToolBox {
 					list = MESSAGES.itemSeparatorLast(list, item);
 			}
 			return list;
+		}
+	}
+	
+	public static String getCookie(String key) {
+		Storage storage = Storage.getLocalStorageIfSupported();
+		if (storage == null) storage = Storage.getSessionStorageIfSupported();
+		if (storage != null) {
+			String value = storage.getItem(key);
+			if (value != null) {
+				try {
+					long expire = Long.parseLong(value.substring(0, value.indexOf(':')));
+					if (expire > new Date().getTime())
+						return value.substring(value.indexOf(':') + 1);
+				} catch (Exception e) {}
+			}
+			return null;
+		} else {
+			return Cookies.getCookie(key);
+		}
+	}
+	
+	public static void setCookie(String key, String value) {
+		Storage storage = Storage.getLocalStorageIfSupported();
+		if (storage == null) storage = Storage.getSessionStorageIfSupported();
+		if (storage != null) {
+			storage.setItem(key, (new Date().getTime() + 604800000l) + ":" + value);
+		} else {
+			Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
+			Cookies.setCookie(key, value, expires);
+		}
+	}
+	
+	public static String getSessionCookie(String key) {
+		Storage storage = Storage.getSessionStorageIfSupported();
+		if (storage != null) {
+			return storage.getItem(key);
+		} else {
+			return Cookies.getCookie(key);
+		}
+	}
+	
+	public static void setSessionCookie(String key, String value) {
+		Storage storage = Storage.getSessionStorageIfSupported();
+		if (storage != null) {
+			storage.setItem(key, value);
+		} else {
+			Cookies.setCookie(key, value);
 		}
 	}
 }

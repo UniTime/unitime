@@ -60,7 +60,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -295,7 +294,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 			sideBarCookie += node;
 		}
 		sideBarCookie += "|W:" + iPanel.getElement().getClientWidth();
-		Cookies.setCookie("UniTime:SideBar", sideBarCookie);
+		ToolBox.setSessionCookie("UniTime:SideBar", sideBarCookie);
 		resizeWideTables();
 		if (iPanel.getElement().getClientWidth() != iDisclosurePanel.getElement().getClientWidth()) {
 			// panel width has not been updated, force redraw by hiding it and showing it again
@@ -317,7 +316,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 
 	public void restoreState() {
 		Set<String> nodes = new HashSet<String>();
-		String sideBarCookie = Cookies.getCookie("UniTime:SideBar");
+		String sideBarCookie = ToolBox.getSessionCookie("UniTime:SideBar");
 		if (sideBarCookie != null)
 			for (String node: sideBarCookie.split("\\|"))
 				nodes.add(node);

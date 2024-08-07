@@ -128,7 +128,6 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -1057,7 +1056,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		panel.add(iWaitListsPanel);
 
 		iShowUnassignments.setVisible(false);
-		String showUnassignments = Cookies.getCookie("UniTime:Unassignments");
+		String showUnassignments = ToolBox.getSessionCookie("UniTime:Unassignments");
 		iShowUnassignments.setValue(showUnassignments == null || "1".equals(showUnassignments));
 		
 		iAssignmentGrid = new TimeGrid();
@@ -1547,7 +1546,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iShowUnassignments.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Cookies.setCookie("UniTime:Unassignments", event.getValue() ? "1" : "0");
+				ToolBox.setSessionCookie("UniTime:Unassignments", event.getValue() ? "1" : "0");
 				fillIn(iLastAssignment);
 			}
 		});

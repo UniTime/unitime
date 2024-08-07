@@ -19,14 +19,12 @@
 */
 package org.unitime.timetable.gwt.client.events;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
-
-import com.google.gwt.user.client.Cookies;
 
 /**
  * @author Tomas Muller
@@ -44,7 +42,7 @@ public class EventCookie {
 	
 	private EventCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Event");
+			String cookie = ToolBox.getCookie("UniTime:Event");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
@@ -75,8 +73,7 @@ public class EventCookie {
 				"|" + (iHideDuplicitiesForMeetings ? "T" : "F");
 		for (Map.Entry<String, String> entry: iHash.entrySet())
 			cookie += "|" + entry.getKey() + ":" + entry.getValue();
-		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-		Cookies.setCookie("UniTime:Event", cookie, expires);
+		ToolBox.setCookie("UniTime:Event", cookie);
 	}
 	
 	public static EventCookie getInstance() { 

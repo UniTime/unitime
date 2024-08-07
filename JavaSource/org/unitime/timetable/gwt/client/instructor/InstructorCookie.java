@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.instructor;
 
-import java.util.Date;
-
-import com.google.gwt.user.client.Cookies;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -45,7 +43,7 @@ public class InstructorCookie {
 
 	private InstructorCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Instructor");
+			String cookie = ToolBox.getCookie("UniTime:Instructor");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
@@ -84,8 +82,7 @@ public class InstructorCookie {
 				"|" + (iShowTeachingAssignments ? "T" : "F") +
 				"|" + (iQuery[0] == null ? "" : iQuery[0]) + "|" + (iQuery[1] == null ? "" : iQuery[1]) + "|" + (iQuery[2] == null ? "" : iQuery[2]) +
 				"|" + (iShowSurveyDetails ? "T" : "F") + "|" + (iHighlightSurveyChanges ? "T": "F");
-		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-		Cookies.setCookie("UniTime:Instructor", cookie, expires);
+		ToolBox.setCookie("UniTime:Instructor", cookie);
 	}
 	
 	public int getSortAttributesBy() {

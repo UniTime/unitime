@@ -56,7 +56,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -154,7 +153,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		iCourseDetailsTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				Cookies.setCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
+				ToolBox.setSessionCookie("UniTime:CourseFinderCourses", String.valueOf(event.getSelectedItem()));
 				iCourseDetailsPanel.setWidget(iDetails[event.getSelectedItem()]);
 			}
 		});
@@ -505,7 +504,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 	
 	private void selectLastTab() {
 		try {
-			int tab = Integer.valueOf(Cookies.getCookie("UniTime:CourseFinderCourses"));
+			int tab = Integer.valueOf(ToolBox.getSessionCookie("UniTime:CourseFinderCourses"));
 			if (tab >= 0 || tab < iCourseDetailsTabBar.getTabCount() && tab != iCourseDetailsTabBar.getSelectedTab())
 				iCourseDetailsTabBar.selectTab(tab, true);
 			else

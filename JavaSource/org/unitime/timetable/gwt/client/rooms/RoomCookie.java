@@ -19,16 +19,15 @@
 */
 package org.unitime.timetable.gwt.client.rooms;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsColumn;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Cookies;
 
 /**
  * @author Tomas Muller
@@ -55,7 +54,7 @@ public class RoomCookie {
 			iHash[i] = "";
 		}
 		try {
-			String cookie = Cookies.getCookie("UniTime:Room");
+			String cookie = ToolBox.getCookie("UniTime:Room");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
@@ -85,8 +84,7 @@ public class RoomCookie {
 		for (Map.Entry<Long, Integer> e: iFutures.entrySet()) {
 			cookie += "|" + e.getKey() + ":" + e.getValue();
 		}
-		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-		Cookies.setCookie("UniTime:Room", cookie, expires);
+		ToolBox.setCookie("UniTime:Room", cookie);
 	}
 	
 	private void setOrientation(String parameter) {

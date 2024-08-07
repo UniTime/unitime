@@ -49,7 +49,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -156,7 +155,7 @@ public class UniTimeMobileMenu extends UniTimeMenu {
 			if (!sideBarCookie.isEmpty()) sideBarCookie += "|";
 			sideBarCookie += node;
 		}
-		Cookies.setCookie("UniTime:MobileMenu", sideBarCookie);
+		ToolBox.setSessionCookie("UniTime:MobileMenu", sideBarCookie);
 	}
 	
 	private void openNodes(Set<String> nodes, TreeItem item, String prefix) {
@@ -167,7 +166,7 @@ public class UniTimeMobileMenu extends UniTimeMenu {
 
 	public void restoreState() {
 		Set<String> nodes = new HashSet<String>();
-		String sideBarCookie = Cookies.getCookie("UniTime:MobileMenu");
+		String sideBarCookie = ToolBox.getSessionCookie("UniTime:MobileMenu");
 		if (sideBarCookie != null)
 			for (String node: sideBarCookie.split("\\|"))
 				nodes.add(node);

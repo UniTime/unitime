@@ -19,11 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.solver;
 
-import java.util.Date;
-
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.shared.SolverInterface.ProgressLogLevel;
-
-import com.google.gwt.user.client.Cookies;
 
 /**
  * @author Tomas Muller
@@ -45,7 +42,7 @@ public class SolverCookie {
 	
 	private SolverCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Solver");
+			String cookie = ToolBox.getCookie("UniTime:Solver");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
@@ -90,8 +87,7 @@ public class SolverCookie {
 				+ "|" + (iAssignmentHistoryFilter ? "1" : "0") + "|" + iAssignmentHistorySort
 				+ "|" + iListSolutionsSort
 				+ "|" + (iSuggestionsFilter == null ? "" : iSuggestionsFilter);
-		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-		Cookies.setCookie("UniTime:Solver", cookie, expires);
+		ToolBox.setCookie("UniTime:Solver", cookie);
 	}
 	
 	public static SolverCookie getInstance() { 

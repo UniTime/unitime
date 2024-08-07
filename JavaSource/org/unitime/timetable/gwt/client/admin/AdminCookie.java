@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.admin;
 
-import java.util.Date;
-
-import com.google.gwt.user.client.Cookies;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -33,7 +31,7 @@ public class AdminCookie {
 	
 	private AdminCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:Admin");
+			String cookie = ToolBox.getCookie("UniTime:Admin");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
@@ -52,8 +50,7 @@ public class AdminCookie {
 	private void save() {
 		String cookie = iSortTasksBy + "|" + iSortTaskExecutionsBy + "|" + iSortBuildingsBy+ "|" + iSortDepartmentsBy + "|" + iShowAlldepartments +
 				"|" + iSortSurveyCourses + "|" + iSortCourseRequirements;
-		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-		Cookies.setCookie("UniTime:Admin", cookie, expires);
+		ToolBox.setCookie("UniTime:Admin", cookie);
 	}
 	
 	public static AdminCookie getInstance() { 

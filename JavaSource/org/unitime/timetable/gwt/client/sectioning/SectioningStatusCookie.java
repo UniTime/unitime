@@ -19,11 +19,10 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.gwt.user.client.Cookies;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 /**
  * @author Tomas Muller
@@ -45,7 +44,7 @@ public class SectioningStatusCookie {
 	
 	private SectioningStatusCookie() {
 		try {
-			String cookie = Cookies.getCookie("UniTime:StudentStatus");
+			String cookie = ToolBox.getCookie("UniTime:StudentStatus");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
 				int idx = 0;
@@ -101,8 +100,7 @@ public class SectioningStatusCookie {
 				hide += (hide.isEmpty()?"":",") + col;
 			cookie += "|" + hide;
 		}
-		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
-		Cookies.setCookie("UniTime:StudentStatus", cookie, expires);
+		ToolBox.setCookie("UniTime:StudentStatus", cookie);
 	}
 	
 	public String getQuery(boolean online) {

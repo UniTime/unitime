@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
@@ -72,7 +73,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -185,7 +185,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 		iCourseDetailsTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				Cookies.setCookie("UniTime:WLPrefsTab", String.valueOf(event.getSelectedItem()));
+				ToolBox.setSessionCookie("UniTime:WLPrefsTab", String.valueOf(event.getSelectedItem()));
 				iCourseDetailsPanel.setWidget(iDetails[event.getSelectedItem()]);
 			}
 		});
@@ -306,7 +306,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 	
 	private void selectLastTab() {
 		try {
-			int tab = Integer.valueOf(Cookies.getCookie("UniTime:WLPrefsTab"));
+			int tab = Integer.valueOf(ToolBox.getSessionCookie("UniTime:WLPrefsTab"));
 			if (tab >= 0 || tab < iCourseDetailsTabBar.getTabCount() && tab != iCourseDetailsTabBar.getSelectedTab())
 				iCourseDetailsTabBar.selectTab(tab, true);
 			else
