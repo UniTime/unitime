@@ -1418,6 +1418,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Events: expected attendance must be set when creating a new event")
 	EventExpectedAttendanceRequired("unitime.events.expectedAttendanceRequired"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Events Personal Schedule: check for events with matching additional email")
+	EventPersonalConsiderAdditionalEmails("unitime.events.personal.considerAdditionalEmails"),
 
 	@Type(Class.class)
 	@Implements(Email.class)
