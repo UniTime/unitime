@@ -46,6 +46,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Events</title>
+		<item>
+			<name>Personal Schedule: Additional Emails</name>
+			<description>
+				<line>Added an option to disable lookup for events where the person's email is listed in the Additional Emails field.
+					<line>Disable by setting unitime.events.personal.considerAdditionalEmails to false, defaults to true.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other</title>
 		<item>
 			<name>GWT-Based Pages: Cookies</name>

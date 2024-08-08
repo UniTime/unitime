@@ -1316,7 +1316,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 	                    		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 	                    		.query(hibSession).list());
 
-					if (contact && (limit <= 0 || meetings.size() < limit))
+					if (contact && (limit <= 0 || meetings.size() < limit) && ApplicationProperty.EventPersonalConsiderAdditionalEmails.isTrue())
 						meetings.addAll(query.select("distinct m")
                     		.from("EventContact c")
                     		.where("c.externalUniqueId = :externalId")
