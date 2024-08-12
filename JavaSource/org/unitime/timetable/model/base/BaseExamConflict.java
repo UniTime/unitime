@@ -80,11 +80,11 @@ public abstract class BaseExamConflict implements Serializable {
 	public Double getDistance() { return iDistance; }
 	public void setDistance(Double distance) { iDistance = distance; }
 
-	@Formula("(select count(*) from %SCHEMA%.xconflict_student x where x.conflict_id = uniqueid)")
+	@Formula("(select count(xs.student_id) from %SCHEMA%.xconflict_student xs where xs.conflict_id = uniqueid)")
 	public Integer getNrStudents() { return iNrStudents; }
 	public void setNrStudents(Integer nrStudents) { iNrStudents = nrStudents; }
 
-	@Formula("(select count(*) from %SCHEMA%.xconflict_instructor x where x.conflict_id = uniqueid)")
+	@Formula("(select count(xi.instructor_id) from %SCHEMA%.xconflict_instructor xi where xi.conflict_id = uniqueid)")
 	public Integer getNrInstructors() { return iNrInstructors; }
 	public void setNrInstructors(Integer nrInstructors) { iNrInstructors = nrInstructors; }
 

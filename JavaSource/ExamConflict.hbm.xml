@@ -48,12 +48,12 @@
         <property
             name="nrStudents"
             type="java.lang.Integer"
-            formula="(select count(*) from %SCHEMA%.xconflict_student x where x.conflict_id = uniqueid)"/>
+            formula="(select count(xs.student_id) from %SCHEMA%.xconflict_student xs where xs.conflict_id = uniqueid)"/>
 
         <property
             name="nrInstructors"
             type="java.lang.Integer"
-            formula="(select count(*) from %SCHEMA%.xconflict_instructor x where x.conflict_id = uniqueid)"/>
+            formula="(select count(xi.instructor_id) from %SCHEMA%.xconflict_instructor xi where xi.conflict_id = uniqueid)"/>
 
         <set
             name="exams"
