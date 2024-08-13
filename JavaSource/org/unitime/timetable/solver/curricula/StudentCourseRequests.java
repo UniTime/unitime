@@ -70,7 +70,7 @@ public class StudentCourseRequests implements StudentCourseDemands {
 					(iIncludeAlternatives ? ", r.order, " +
 						"(select max(x.order) from CourseRequest x where x.courseDemand = r.courseDemand)," +
 						"(select x.courseOffering.instructionalOffering.uniqueId from CourseRequest x where x.courseDemand = r.courseDemand and x.order = 0)" : "") +
-					" from CourseRequest r inner join r.courseDemand.student s where " +
+					" from CourseRequest r inner join r.courseDemand.student s left join fetch s.areaClasfMajors where " +
 					"r.courseOffering.subjectArea.uniqueId = :subjectId" + (iIncludeAlternatives ? "" : " and r.order = 0"), Object[].class)
 					.setParameter("subjectId", subjectArea.getUniqueId()).setCacheable(true).list()) {
 			Student s = (Student)o[0];

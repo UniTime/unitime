@@ -723,7 +723,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
-		<hibernate.version>6.6.0.Final</hibernate.version>
+		<hibernate.version>6.4.10.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
 		<struts2.version>6.6.0</struts2.version>
 		<protobuf.version>4.27.3</protobuf.version>

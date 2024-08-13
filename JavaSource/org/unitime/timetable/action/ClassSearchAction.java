@@ -408,7 +408,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 				}
 			}
 
-        boolean fetchStructure = false; // fails in Hibernate 6.6.0
+        boolean fetchStructure = true;
         boolean fetchCredits = false;//form.getCredit().booleanValue();
         boolean fetchInstructors = false;//form.getInstructor().booleanValue();
         boolean fetchPreferences = false;//form.getPreferences().booleanValue() || form.getTimePattern().booleanValue();

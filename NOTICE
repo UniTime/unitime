@@ -134,7 +134,7 @@ RxJava (rxjava-3.1.8.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/ReactiveX/RxJava
 
-Jandex: Core (jandex-3.2.0.jar)
+Jandex: Core (jandex-3.1.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://smallrye.io
 
@@ -169,7 +169,7 @@ Joda-Time (joda-time-2.12.7.jar)
 jstl (jstl-1.2.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 
-Byte Buddy (without dependencies) (byte-buddy-1.14.18.jar)
+Byte Buddy (without dependencies) (byte-buddy-1.14.11.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://bytebuddy.net/byte-buddy
 
@@ -301,15 +301,15 @@ gwt-servlet (gwt-servlet-2.11.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
 
-Hibernate Commons Annotations (hibernate-commons-annotations-7.0.1.Final.jar)
-	under Apache Software License (ASL), Version 2.0
+Hibernate Commons Annotations (hibernate-commons-annotations-6.0.6.Final.jar)
+	under GNU Library General Public License v2.1 or later
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.0.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.4.10.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.6.0.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.4.10.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
