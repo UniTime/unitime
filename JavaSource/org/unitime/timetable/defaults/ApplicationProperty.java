@@ -1359,6 +1359,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Event Filter: do not count conflicting events (faster load, especially on MySQL)")
 	EventFilterSkipConflictCounts("unitime.events.eventFilter.skipConflictCounts"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Event Filter: do not count most of the items (faster load, but less interactive behaviour)")
+	EventFilterSkipMostCounts("unitime.events.eventFilter.skipCounts"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")
