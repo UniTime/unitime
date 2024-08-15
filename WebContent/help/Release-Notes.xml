@@ -67,6 +67,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Filter</name>
+			<description>
+				<line>Added an ability to skip computation of most event counts on the filter to make it load and operate faster.
+					<line>To enable set unitime.events.eventFilter.skipCounts to true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other</title>

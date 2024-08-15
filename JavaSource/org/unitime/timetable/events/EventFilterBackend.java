@@ -77,14 +77,17 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		Date today = cal.getTime();
+		
+		boolean skipMostCounts = ApplicationProperty.EventFilterSkipMostCounts.isTrue();
 
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		Map<Class, Integer> type2count = new HashMap<Class, Integer>();
-		for (Object[] o: (List<Object[]>)query.select("type(e), count(distinct e)").group("type(e)").order("type(e)").exclude("query").exclude("type").query(hibSession).list()) {
-			Class type = (Class)o[0];
-			int count = ((Number)o[1]).intValue();
-			type2count.put(type, count);
-		}
+		if (!skipMostCounts)
+			for (Object[] o: (List<Object[]>)query.select("type(e), count(distinct e)").group("type(e)").order("type(e)").exclude("query").exclude("type").query(hibSession).list()) {
+				Class type = (Class)o[0];
+				int count = ((Number)o[1]).intValue();
+				type2count.put(type, count);
+			}
 		for (int i = 0; i < Event.sEventTypesAbbv.length; i++) {
 			Entity e = new Entity(Long.valueOf(i), Event.sEventTypesAbbv[i], CONSTANTS.eventTypeAbbv()[i], "translated-value", CONSTANTS.eventTypeShort()[i]);
 			Integer count = null;
@@ -101,13 +104,14 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		}
 		
 		Map<Integer, Integer> day2count = new HashMap<Integer, Integer>();
-		for (Object[] o: (List<Object[]>)query.select(HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e)")
-				.order(HibernateUtil.dayOfWeek("m.meetingDate")).group(HibernateUtil.dayOfWeek("m.meetingDate"))
-				.exclude("query").exclude("day").query(hibSession).list()) {
-			int type = ((Number)o[0]).intValue();
-			int count = ((Number)o[1]).intValue();
-			day2count.put(type, count);
-		}
+		if (!skipMostCounts)
+			for (Object[] o: (List<Object[]>)query.select(HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e)")
+					.order(HibernateUtil.dayOfWeek("m.meetingDate")).group(HibernateUtil.dayOfWeek("m.meetingDate"))
+					.exclude("query").exclude("day").query(hibSession).list()) {
+				int type = ((Number)o[0]).intValue();
+				int count = ((Number)o[1]).intValue();
+				day2count.put(type, count);
+			}
 		for (int i = 0; i < Constants.DAY_NAMES_FULL.length; i++) {
 			String day = Constants.DAY_NAMES_FULL[i];
 			int type = 0;
@@ -127,27 +131,37 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		}
 		
 		Entity all = new Entity(0l, "All", CONSTANTS.eventModeLabel()[0], "translated-value", CONSTANTS.eventModeAbbv()[0]);
-		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
+		if (!skipMostCounts)
+			all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
 		if (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null) {
-			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user and type(e) not in (ClassEvent, FinalExamEvent, MidtermExamEvent)").set("user", context.getUser().getExternalUserId())
-					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-			Entity my = new Entity(1l, "My", CONSTANTS.eventModeLabel()[1], "translated-value", CONSTANTS.eventModeAbbv()[1]); my.setCount(myCnt);
+			Entity my = new Entity(1l, "My", CONSTANTS.eventModeLabel()[1], "translated-value", CONSTANTS.eventModeAbbv()[1]);
+			if (!skipMostCounts) {
+				int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user and type(e) not in (ClassEvent, FinalExamEvent, MidtermExamEvent)").set("user", context.getUser().getExternalUserId())
+						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+				my.setCount(myCnt);
+			}
 			response.add("mode", my);
 			
 			if (context.hasPermission(Right.HasRole)) {
-				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 1")
-						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
-				Entity approved = new Entity(2l, "Approved", CONSTANTS.eventModeLabel()[2], "translated-value", CONSTANTS.eventModeAbbv()[2]); approved.setCount(approvedCnt);
+				Entity approved = new Entity(2l, "Approved", CONSTANTS.eventModeLabel()[2], "translated-value", CONSTANTS.eventModeAbbv()[2]);
+				if (!skipMostCounts) {
+					int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 1")
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
+					approved.setCount(approvedCnt);
+				}
 				response.add("mode", approved);
 				
-				int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0")
-						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-				Entity notApproved = new Entity(3l, "Unapproved", CONSTANTS.eventModeLabel()[3], "translated-value", CONSTANTS.eventModeAbbv()[3]); notApproved.setCount(notApprovedCnt);
+				Entity notApproved = new Entity(3l, "Unapproved", CONSTANTS.eventModeLabel()[3], "translated-value", CONSTANTS.eventModeAbbv()[3]);
+				if (!skipMostCounts) {
+					int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0")
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+					 notApproved.setCount(notApprovedCnt);
+				}
 				response.add("mode", notApproved);
 
 				Entity conflicting = new Entity(5l, "Conflicting", CONSTANTS.eventModeLabel()[5], "translated-value", CONSTANTS.eventModeAbbv()[5]);
-				if (ApplicationProperty.EventFilterSkipConflictCounts.isFalse()) {
+				if (!skipMostCounts && ApplicationProperty.EventFilterSkipConflictCounts.isFalse()) {
 					int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx").joinWithLocation()
 							.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1 and l.ignoreRoomCheck = false")
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
@@ -156,29 +170,41 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				response.add("mode", conflicting);
 				
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
-					int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and m.meetingDate >= :today").set("today", today)
-							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					Entity awaiting = new Entity(4l, "Awaiting", CONSTANTS.eventModeLabel()[4], "translated-value", CONSTANTS.eventModeAbbv()[4]); awaiting.setCount(awaitingCnt);
+					Entity awaiting = new Entity(4l, "Awaiting", CONSTANTS.eventModeLabel()[4], "translated-value", CONSTANTS.eventModeAbbv()[4]);
+					if (!skipMostCounts) {
+						int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and m.meetingDate >= :today").set("today", today)
+								.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+						awaiting.setCount(awaitingCnt);
+					}
 					response.add("mode", awaiting);
 
 					if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
-						int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.eventDepartment.timetableManagers g")
-								.where("m.approvalStatus = 0 and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
-								.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-						Entity myAwaiting = new Entity(6l, "My Awaiting", CONSTANTS.eventModeLabel()[6], "translated-value", CONSTANTS.eventModeAbbv()[6]); myAwaiting.setCount(myApprovalCnt);
+						Entity myAwaiting = new Entity(6l, "My Awaiting", CONSTANTS.eventModeLabel()[6], "translated-value", CONSTANTS.eventModeAbbv()[6]);
 						response.add("mode", myAwaiting);
+						if (!skipMostCounts) {
+							int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.eventDepartment.timetableManagers g")
+									.where("m.approvalStatus = 0 and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
+									.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+							 myAwaiting.setCount(myApprovalCnt);
+						}
 					}
 					
-					int rejectedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus >= 2")
-							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					Entity rejected = new Entity(7l, "Cancelled", CONSTANTS.eventModeLabel()[7], "translated-value", CONSTANTS.eventModeAbbv()[7]); rejected.setCount(rejectedCnt);
+					Entity rejected = new Entity(7l, "Cancelled", CONSTANTS.eventModeLabel()[7], "translated-value", CONSTANTS.eventModeAbbv()[7]);
+					if (!skipMostCounts) {
+						int rejectedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus >= 2")
+								.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+						rejected.setCount(rejectedCnt);
+					}
 					response.add("mode", rejected);
 				}
 				
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventSetExpiration)) {
-					int expiringCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and e.expirationDate is not null")
-							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					Entity expiring = new Entity(8l, "Expiring", CONSTANTS.eventModeLabel()[8]); expiring.setCount(expiringCnt);
+					Entity expiring = new Entity(8l, "Expiring", CONSTANTS.eventModeLabel()[8]);
+					if (!skipMostCounts) {
+						int expiringCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and e.expirationDate is not null")
+								.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+						 expiring.setCount(expiringCnt);
+					}
 					response.add("mode", expiring);
 				}
 			}
