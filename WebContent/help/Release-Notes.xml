@@ -46,6 +46,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Distribution Constraints</name>
+			<description>
+				<line>The examination distribution constraints were rewritten to make them easier to extend and customize.</line>
+				<line>For soft constraints, penalizations are now counted on individual examination pairs.
+					<line>This better ascertains how well the constraint is satisfied, especially for constraints posted between many exams.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Events</title>
 		<item>
 			<name>Personal Schedule: Additional Emails</name>
