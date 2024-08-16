@@ -1364,6 +1364,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Event Filter: do not count most of the items (faster load, but less interactive behaviour)")
 	EventFilterSkipMostCounts("unitime.events.eventFilter.skipCounts"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Room Filter: faster computation of the filter items (experimental)")
+	RoomFilterFasterCounts("unitime.events.roomFilter.fasterCounts"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

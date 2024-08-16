@@ -56,6 +56,7 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -83,34 +84,32 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	public void load(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Set<String> departments = request.getOptions("department");
 		
-		Set<Long> userDepts = null;
-		if (request.hasOption("user")) {
-			userDepts = new HashSet<Long>(
-					TimetableManagerDAO.getInstance().getSession().createQuery(
-							"select d.uniqueId from TimetableManager m inner join m.departments d where " +
-							"m.externalUniqueId = :user and d.session.uniqueId = :sessionId", Long.class)
-							.setParameter("sessionId", request.getSessionId())
-							.setParameter("user", request.getOption("user"))
-							.setCacheable(true).list()
-					);
+		boolean fastCount = ApplicationProperty.RoomFilterFasterCounts.isTrue();
+		if (fastCount) {
+			Set<String> building = request.getOptions("building");
+			Set<String> flag = request.getOptions("flag");
+			boolean nearby = (flag != null && (flag.contains("nearby") || flag.contains("Nearby")));
+			if (nearby && building != null && !building.isEmpty()) fastCount = false;
 		}
 		
 		fixRoomFeatureTypes(request);
 		
-		Map<Long, Entity> types = new HashMap<Long, Entity>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type", context)) {
-			Entity type = types.get(location.getRoomType().getUniqueId());
-			if (type == null) {
-				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", sNF.format(location.getRoomType().getOrd()), "translated-value", location.getRoomType().getLabel());
-				types.put(type.getUniqueId(), type);
+		if (fastCount) {
+			RoomQuery query = getQuery(request.getSessionId(), request.getOptions(), context);
+			org.hibernate.Session hibSession = RoomDAO.getInstance().getSession();
+			
+			TreeSet<Entity> types = new TreeSet<Entity>();
+			for (Object[] o: (List<Object[]>)query.select("l.roomType, count(distinct l)").group("l.roomType").exclude("type").query(hibSession).list()) {
+				RoomType rt = (RoomType)o[0];
+				Entity type = new Entity(rt.getUniqueId(), rt.getReference(), rt.getLabel(), "order", sNF.format(rt.getOrd()), "translated-value", rt.getLabel());
+				type.setCount(((Number)o[1]).intValue());
+				types.add(type);
 			}
-			type.incCount();
-		}
-		response.add("type", new TreeSet<Entity>(types.values()));
-		
-		Map<String, Map<Long, Entity>> featuresByType = new HashMap<String, Map<Long, Entity>>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, null, context)) {
-			for (RoomFeature rf: location.getFeatures()) {
+			response.add("type", types);
+			
+			Map<String, Map<Long, Entity>> featuresByType = new HashMap<String, Map<Long, Entity>>();
+			for (Object[] o: (List<Object[]>)query.select("xf, count(distinct l)").from("inner join l.features xf").group("xf").query(hibSession).list()) {
+				RoomFeature rf = (RoomFeature)o[0];
 				if (rf instanceof GlobalRoomFeature || (rf instanceof DepartmentRoomFeature && departments != null && departments.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()))) {
 					if (showRoomFeature(rf.getFeatureType())) {
 						String type = (rf.getFeatureType() == null ? "feature" : rf.getFeatureType().getReference());
@@ -124,110 +123,242 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 							feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel(), "translated-value", rf.getLabel(), "hint", rf.getDescription());
 							features.put(feature.getUniqueId(), feature);
 						}
-						feature.incCount();
+						feature.setCount(((Number)o[1]).intValue());
 					}
 				}
 			}
-		}
-		for (String type: new TreeSet<String>(featuresByType.keySet())) {
-			response.add(type.replace(' ', '_'), new TreeSet<Entity>(featuresByType.get(type).values()));
-		}
-		
-		Map<Long, Entity> groups = new HashMap<Long, Entity>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "group", context)) {
-			for (RoomGroup rg: location.getRoomGroups()) {
+			for (String type: new TreeSet<String>(featuresByType.keySet())) {
+				response.add(type.replace(' ', '_'), new TreeSet<Entity>(featuresByType.get(type).values()));
+			}
+			
+			TreeSet<Entity> groups = new TreeSet<Entity>();
+			for (Object[] o: (List<Object[]>)query.select("xg, count(distinct l)").from("inner join l.roomGroups xg").group("xg").exclude("group").query(hibSession).list()) {
+				RoomGroup rg = (RoomGroup)o[0];
 				if (rg.isGlobal() || (departments != null && departments.contains(rg.getDepartment().getDeptCode()))) {
-					Entity group = groups.get(rg.getUniqueId());
-					if (group == null) {
-						group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName(), "translated-value", rg.getName(), "hint", rg.getDescription());
-						groups.put(group.getUniqueId(), group);
-					}
-					group.incCount();
+					Entity group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName(), "translated-value", rg.getName(), "hint", rg.getDescription());
+					group.setCount(((Number)o[1]).intValue());
+					groups.add(group);
 				}
 			}
-		}
-		response.add("group", new TreeSet<Entity>(groups.values()));
-		
-		Map<Long, Entity> buildings = new HashMap<Long, Entity>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "building", context)) {
-			if (location instanceof Room) {
-				Room room = (Room)location;
-				Entity building = buildings.get(room.getBuilding().getUniqueId());
-				if (building == null) {
-					building = new Entity(room.getBuilding().getUniqueId(), room.getBuilding().getAbbreviation(), room.getBuilding().getAbbrName());
-					buildings.put(building.getUniqueId(), building);
-				}
-				building.incCount();
+			response.add("group", groups);
+			
+			TreeSet<Entity> buildings = new TreeSet<Entity>();
+			for (Object[] o: (List<Object[]>)query.select("l.building, count(distinct l)").group("l.building").exclude("building").query(hibSession).list()) {
+				Building b = (Building)o[0];
+				Entity building = new Entity(b.getUniqueId(), b.getAbbreviation(), b.getAbbrName());
+				building.setCount(((Number)o[1]).intValue());
+				buildings.add(building);
 			}
-		}
-		response.add("building", new TreeSet<Entity>(buildings.values()));
+			response.add("building", buildings);
+			
+			
+			Entity managed = new Entity(0l, "Managed", MESSAGES.labelDepartmentManagedRooms(), "translated-value", MESSAGES.attrDepartmentManagedRooms());
+			int isManaged = 0;
 
-		Entity managed = new Entity(0l, "Managed", MESSAGES.labelDepartmentManagedRooms(), "translated-value", MESSAGES.attrDepartmentManagedRooms());
-		Map<Long, Entity> exams = null;
-		if (context.hasPermission(request.getSessionId(), Right.Examinations) || context.hasPermission(request.getSessionId(), Right.ExaminationSchedule)) {
-			exams = new HashMap<Long, Entity>();
-			for (ExamType type: ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable)) {
-				Entity e = new Entity(-type.getUniqueId(), type.getReference(), MESSAGES.examinationRooms(type.getLabel()));
-				exams.put(type.getUniqueId(), e);
+			boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
+			boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
+			boolean deptIndep = context.hasPermission(Right.DepartmentIndependent);
+			Set<Long> userDepts = null;
+			if (request.hasOption("user")) {
+				userDepts = new HashSet<Long>(
+						TimetableManagerDAO.getInstance().getSession().createQuery(
+								"select d.uniqueId from TimetableManager m inner join m.departments d where " +
+								"m.externalUniqueId = :user and d.session.uniqueId = :sessionId", Long.class)
+								.setParameter("sessionId", request.getSessionId())
+								.setParameter("user", request.getOption("user"))
+								.setCacheable(true).list()
+						);
 			}
-		}
-		Map<Long, Entity> depts = new HashMap<Long, Entity>();
-		boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
-		boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
-		boolean deptIndep = context.hasPermission(Right.DepartmentIndependent);
-		UserAuthority autority = (context.getUser() == null ? null : context.getUser().getCurrentAuthority());
-		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department", context)) {
-			Department evtDept = (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() ? location.getEventDepartment() : null);
-			boolean isManaged = false;
+			
+			UserAuthority autority = (context.getUser() == null ? null : context.getUser().getCurrentAuthority());
+			TreeSet<Entity> exams = new TreeSet<Entity>();
+			TreeSet<Entity> depts = new TreeSet<Entity>();
 			if (eventRooms) {
-				Entity department = depts.get(location.getEventDepartment().getUniqueId());
-				if (department == null) {
-					department = new Entity(location.getEventDepartment().getUniqueId(), location.getEventDepartment().getDeptCode(), location.getEventDepartment().getDeptCode() + " - " + location.getEventDepartment().getName());
-					depts.put(department.getUniqueId(), department);
+				for (Object[] o: (List<Object[]>)query.select("l.eventDepartment, count(distinct l)").group("l.eventDepartment").exclude("department").query(hibSession).list()) {
+					Department d = (Department)o[0];
+					Entity department = new Entity(d.getUniqueId(), d.getDeptCode(), d.getDeptCode() + " - " + d.getName());
+					department.setCount(((Number)o[1]).intValue());
+					depts.add(department);
+					if (deptIndep || (userDepts != null && userDepts.contains(d.getUniqueId()))) {
+						isManaged++;
+						managed.setCount(managed.getCount() + ((Number)o[1]).intValue());
+					}
 				}
-				department.incCount();
-				if (deptIndep || (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId()))) isManaged = true;
 			} else {
-				for (RoomDept rd: location.getRoomDepts()) {
-					if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(rd.getDepartment().getUniqueId())))
-							&& (autority == null || !autority.hasQualifier(rd.getDepartment()))) continue;
-					if (evtDept != null && rd.getDepartment().equals(evtDept)) evtDept = null;
-					Entity department = depts.get(rd.getDepartment().getUniqueId());
+				for (Object[] o: (List<Object[]>)query.select("xd.department, count(distinct l)").from("inner join l.roomDepts xd").group("xd.department").exclude("department").query(hibSession).list()) {
+					Department d = (Department)o[0];
+					if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(d.getUniqueId())))
+							&& (autority == null || !autority.hasQualifier(d))) continue;
+					Entity department = new Entity(d.getUniqueId(), d.getDeptCode(), d.getDeptCode() + " - " + d.getName());
+					department.setCount(((Number)o[1]).intValue());
+					depts.add(department);
+					if (deptIndep || (userDepts != null && userDepts.contains(d.getUniqueId()))) {
+						isManaged ++;
+						if (isManaged == 1)
+							managed.setCount(((Number)o[1]).intValue());
+						else
+							managed.setCount(0);
+					}
+				}
+				if (context.hasPermission(request.getSessionId(), Right.Examinations) || context.hasPermission(request.getSessionId(), Right.ExaminationSchedule)) {
+					for (Object[] o: (List<Object[]>)query.select("xt, count(distinct l)").from("inner join l.examTypes xt").group("xt").exclude("department").query(hibSession).list()) {
+						ExamType type = (ExamType)o[0];
+						Entity e = new Entity(-type.getUniqueId(), type.getReference(), MESSAGES.examinationRooms(type.getLabel()));
+						e.setCount(((Number)o[1]).intValue());
+						exams.add(e);
+					}
+				}
+			}
+			
+			if (isManaged > 0) response.add("department",managed);
+			response.add("department", exams);
+			response.add("department", depts);
+		} else {
+			Set<Long> userDepts = null;
+			if (request.hasOption("user")) {
+				userDepts = new HashSet<Long>(
+						TimetableManagerDAO.getInstance().getSession().createQuery(
+								"select d.uniqueId from TimetableManager m inner join m.departments d where " +
+								"m.externalUniqueId = :user and d.session.uniqueId = :sessionId", Long.class)
+								.setParameter("sessionId", request.getSessionId())
+								.setParameter("user", request.getOption("user"))
+								.setCacheable(true).list()
+						);
+			}
+			
+			
+			Map<Long, Entity> types = new HashMap<Long, Entity>();
+			for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type", context)) {
+				Entity type = types.get(location.getRoomType().getUniqueId());
+				if (type == null) {
+					type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", sNF.format(location.getRoomType().getOrd()), "translated-value", location.getRoomType().getLabel());
+					types.put(type.getUniqueId(), type);
+				}
+				type.incCount();
+			}
+			response.add("type", new TreeSet<Entity>(types.values()));
+			
+			Map<String, Map<Long, Entity>> featuresByType = new HashMap<String, Map<Long, Entity>>();
+			for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, null, context)) {
+				for (RoomFeature rf: location.getFeatures()) {
+					if (rf instanceof GlobalRoomFeature || (rf instanceof DepartmentRoomFeature && departments != null && departments.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()))) {
+						if (showRoomFeature(rf.getFeatureType())) {
+							String type = (rf.getFeatureType() == null ? "feature" : rf.getFeatureType().getReference());
+							Map<Long, Entity> features = featuresByType.get(type);
+							if (features == null) {
+								features = new HashMap<Long, Entity>();
+								featuresByType.put(type, features);
+							}
+							Entity feature = features.get(rf.getUniqueId());
+							if (feature == null) {
+								feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel(), "translated-value", rf.getLabel(), "hint", rf.getDescription());
+								features.put(feature.getUniqueId(), feature);
+							}
+							feature.incCount();
+						}
+					}
+				}
+			}
+			for (String type: new TreeSet<String>(featuresByType.keySet())) {
+				response.add(type.replace(' ', '_'), new TreeSet<Entity>(featuresByType.get(type).values()));
+			}
+			
+			Map<Long, Entity> groups = new HashMap<Long, Entity>();
+			for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "group", context)) {
+				for (RoomGroup rg: location.getRoomGroups()) {
+					if (rg.isGlobal() || (departments != null && departments.contains(rg.getDepartment().getDeptCode()))) {
+						Entity group = groups.get(rg.getUniqueId());
+						if (group == null) {
+							group = new Entity(rg.getUniqueId(), rg.getAbbv(), rg.getName(), "translated-value", rg.getName(), "hint", rg.getDescription());
+							groups.put(group.getUniqueId(), group);
+						}
+						group.incCount();
+					}
+				}
+			}
+			response.add("group", new TreeSet<Entity>(groups.values()));
+			
+			Map<Long, Entity> buildings = new HashMap<Long, Entity>();
+			for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "building", context)) {
+				if (location instanceof Room) {
+					Room room = (Room)location;
+					Entity building = buildings.get(room.getBuilding().getUniqueId());
+					if (building == null) {
+						building = new Entity(room.getBuilding().getUniqueId(), room.getBuilding().getAbbreviation(), room.getBuilding().getAbbrName());
+						buildings.put(building.getUniqueId(), building);
+					}
+					building.incCount();
+				}
+			}
+			response.add("building", new TreeSet<Entity>(buildings.values()));
+
+			Entity managed = new Entity(0l, "Managed", MESSAGES.labelDepartmentManagedRooms(), "translated-value", MESSAGES.attrDepartmentManagedRooms());
+			Map<Long, Entity> exams = null;
+			if (context.hasPermission(request.getSessionId(), Right.Examinations) || context.hasPermission(request.getSessionId(), Right.ExaminationSchedule)) {
+				exams = new HashMap<Long, Entity>();
+				for (ExamType type: ExamType.findAllApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable)) {
+					Entity e = new Entity(-type.getUniqueId(), type.getReference(), MESSAGES.examinationRooms(type.getLabel()));
+					exams.put(type.getUniqueId(), e);
+				}
+			}
+			Map<Long, Entity> depts = new HashMap<Long, Entity>();
+			boolean eventRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("event") || request.getOptions("flag").contains("Event")));
+			boolean allRooms = (request.hasOptions("flag") && (request.getOptions("flag").contains("all") || request.getOptions("flag").contains("All")));
+			boolean deptIndep = context.hasPermission(Right.DepartmentIndependent);
+			UserAuthority autority = (context.getUser() == null ? null : context.getUser().getCurrentAuthority());
+			for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department", context)) {
+				Department evtDept = (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() ? location.getEventDepartment() : null);
+				boolean isManaged = false;
+				if (eventRooms) {
+					Entity department = depts.get(location.getEventDepartment().getUniqueId());
 					if (department == null) {
-						department = new Entity(rd.getDepartment().getUniqueId(), rd.getDepartment().getDeptCode(),
-								rd.getDepartment().getDeptCode() + " - " + rd.getDepartment().getName() + (rd.getDepartment().isExternalManager() ? " (" + rd.getDepartment().getExternalMgrLabel() + ")" : ""));
+						department = new Entity(location.getEventDepartment().getUniqueId(), location.getEventDepartment().getDeptCode(), location.getEventDepartment().getDeptCode() + " - " + location.getEventDepartment().getName());
 						depts.put(department.getUniqueId(), department);
 					}
 					department.incCount();
-					if (deptIndep || (userDepts != null && userDepts.contains(rd.getDepartment().getUniqueId()))) isManaged = true;
-				}
-				if (evtDept != null && allRooms) {
-					Entity department = depts.get(evtDept.getUniqueId());
-					if (department == null) {
-						department = new Entity(evtDept.getUniqueId(), evtDept.getDeptCode(),
-								evtDept.getDeptCode() + " - " + evtDept.getName() + (evtDept.isExternalManager() ? " (" + evtDept.getExternalMgrLabel() + ")" : ""));
-						depts.put(department.getUniqueId(), department);
+					if (deptIndep || (userDepts != null && userDepts.contains(location.getEventDepartment().getUniqueId()))) isManaged = true;
+				} else {
+					for (RoomDept rd: location.getRoomDepts()) {
+						if (!deptIndep && !allRooms && (userDepts == null || !(userDepts.contains(rd.getDepartment().getUniqueId())))
+								&& (autority == null || !autority.hasQualifier(rd.getDepartment()))) continue;
+						if (evtDept != null && rd.getDepartment().equals(evtDept)) evtDept = null;
+						Entity department = depts.get(rd.getDepartment().getUniqueId());
+						if (department == null) {
+							department = new Entity(rd.getDepartment().getUniqueId(), rd.getDepartment().getDeptCode(),
+									rd.getDepartment().getDeptCode() + " - " + rd.getDepartment().getName() + (rd.getDepartment().isExternalManager() ? " (" + rd.getDepartment().getExternalMgrLabel() + ")" : ""));
+							depts.put(department.getUniqueId(), department);
+						}
+						department.incCount();
+						if (deptIndep || (userDepts != null && userDepts.contains(rd.getDepartment().getUniqueId()))) isManaged = true;
 					}
-					if (deptIndep || (userDepts != null && userDepts.contains(evtDept.getUniqueId()))) isManaged = true;
-					department.incCount();					
+					if (evtDept != null && allRooms) {
+						Entity department = depts.get(evtDept.getUniqueId());
+						if (department == null) {
+							department = new Entity(evtDept.getUniqueId(), evtDept.getDeptCode(),
+									evtDept.getDeptCode() + " - " + evtDept.getName() + (evtDept.isExternalManager() ? " (" + evtDept.getExternalMgrLabel() + ")" : ""));
+							depts.put(department.getUniqueId(), department);
+						}
+						if (deptIndep || (userDepts != null && userDepts.contains(evtDept.getUniqueId()))) isManaged = true;
+						department.incCount();					
+					}
 				}
-			}
-			if (exams != null && !exams.isEmpty()) {
-				for (ExamType type: location.getExamTypes()) {
-					Entity e = exams.get(type.getUniqueId());
-					if (e != null) e.incCount();
+				if (exams != null && !exams.isEmpty()) {
+					for (ExamType type: location.getExamTypes()) {
+						Entity e = exams.get(type.getUniqueId());
+						if (e != null) e.incCount();
+					}
 				}
+				if (isManaged)
+					managed.incCount();
 			}
-			if (isManaged)
-				managed.incCount();
+			if (managed.getCount() > 0)
+				response.add("department",managed);
+			if (exams != null && !exams.isEmpty())
+				for (Entity e: new TreeSet<Entity>(exams.values()))
+					if (e.getCount() > 0)
+						response.add("department", e);
+			response.add("department", new TreeSet<Entity>(depts.values()));
 		}
-		if (managed.getCount() > 0)
-			response.add("department",managed);
-		if (exams != null && !exams.isEmpty())
-			for (Entity e: new TreeSet<Entity>(exams.values()))
-				if (e.getCount() > 0)
-					response.add("department", e);
-		response.add("department", new TreeSet<Entity>(depts.values()));
 	}
 	
 	protected void fixRoomFeatureTypes(RoomFilterRpcRequest request) {
