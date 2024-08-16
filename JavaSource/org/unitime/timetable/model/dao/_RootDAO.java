@@ -130,6 +130,7 @@ public class _RootDAO<T, K extends Serializable> {
 		Root<T> root = cr.from(getReferenceClass());
 		cr.select(root);
 		Query<T> query = s.createQuery(cr);
+		query.setCacheable(true);
 		return query.getResultList();
 	}
 

@@ -485,7 +485,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			iDepartments.addItem(MESSAGES.itemAllDepartments(), "");
 			if (entities != null)
 				for (FilterRpcResponse.Entity entity: entities)
-					iDepartments.addItem(entity.getName() + " (" + entity.getCount() + ")", entity.getAbbreviation());
+					iDepartments.addItem(entity.getName() + (entity.getCount() > 0 ? " (" + entity.getCount() + ")" : ""), entity.getAbbreviation());
 			
 			iDepartments.setSelectedIndex(0);
 			Chip dept = getChip("department");
