@@ -225,7 +225,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iTimes = new StartEndTimeSelector();
 		form.addRow(MESSAGES.propTimes(), iTimes);
 		
-		iRooms = new RoomFilterBox(session);
+		iRooms = new RoomFilterBox(session, false);
 		form.addRow(MESSAGES.propLocations(), iRooms);
 		
 		iScrollDates = new ScrollPanel(form);
@@ -719,7 +719,6 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iMatchingRooms = null;
 		iDates.setValue(selectedDates);
 		iTimes.setValue(selectedTimes, true); iTimes.setDiff(12);
-		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue, true);
 		iSelected.clear();
 		if (meetings != null && !meetings.isEmpty()) {
 			MeetingInterface first = meetings.get(0);
@@ -740,6 +739,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				roomFilter += room;
 			}
 			iRooms.setValue((roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue) + (roomFilter.isEmpty() ? "" : " " + roomFilter), true);
+		} else {
+			iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue, true);
 		}
 	}
 

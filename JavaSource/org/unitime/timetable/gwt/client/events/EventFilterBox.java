@@ -92,7 +92,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private ListBox iServices;
 	
 	public EventFilterBox(AcademicSessionProvider session) {
-		super(session);
+		super(session, false);
 		
 		addFilter(new FilterBox.StaticSimpleFilter("type", MESSAGES.tagEventType()) {
 			@Override
@@ -728,6 +728,11 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 				setAriaLabel(ARIA.eventFilter(toAriaString()));
 			}
 		});
+	}
+	
+	@Override
+	public void setValue(String value, boolean fireEvents) {
+		iFilter.getWidget().setValue(value, fireEvents);
 	}
 	
 	public void setOtherVisible(boolean visible) { iOther.setVisible(visible); }

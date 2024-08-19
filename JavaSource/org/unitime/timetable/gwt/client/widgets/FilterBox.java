@@ -1151,6 +1151,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		}
 		
 		public void setValues(List<Chip> values) { iValues = values; }
+		public List<Chip> getValues() { return iValues; }
 
 		@Override
 		public void validate(String text, AsyncCallback<Chip> callback) {

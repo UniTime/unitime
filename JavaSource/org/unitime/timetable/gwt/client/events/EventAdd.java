@@ -151,7 +151,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	
 	private CourseRelatedObjectsTable iCourses;
 	
-	private AddMeetingsDialog iEventAddMeetings, iEventModifyMeetings;
+	private AddMeetingsDialog iEventAddMeetings = null, iEventModifyMeetings = null;
 	private AcademicSessionSelectionBox iSession;
 	private Lookup iLookup, iAdditionalLookup;
 	private UniTimeTable<ContactInterface> iContacts;
@@ -755,127 +755,11 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			}
 		});
 		
-		iEventAddMeetings = new AddMeetingsDialog(session, iProperties, new AsyncCallback<List<MeetingInterface>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedAddMeetings(caught.getMessage()), caught);
-			}
-
-			@Override
-			public void onSuccess(List<MeetingInterface> result) {
-				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
-					}
-
-					@Override
-					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
-						LoadingWidget.getInstance().hide();
-						addMeetings(result.getMeetings());
-						iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
-					}
-				});
-			}
-		});
-		iEventModifyMeetings = new AddMeetingsDialog(session, iProperties, new AsyncCallback<List<MeetingInterface>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedChangeMeetings(caught.getMessage()), caught);
-			}
-
-			@Override
-			public void onSuccess(List<MeetingInterface> result) {
-				final List<MeetingInterface> meetings = iMeetings.getMeetings();
-				if (!iEventType.isReadOnly())
-					iEvent.setType(getEventType());
-				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
-					}
-
-					@Override
-					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
-						LoadingWidget.getInstance().hide();
-						List<MeetingInterface> added = new ArrayList<EventInterface.MeetingInterface>(result.getMeetings());
-						current: for (Iterator<MeetingInterface> i = meetings.iterator(); i.hasNext(); ) {
-							MeetingInterface meeting = i.next();
-							if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
-							if (!iSelection.contains(meeting)) continue;
-							for (Iterator<MeetingInterface> j = added.iterator(); j.hasNext();) {
-								MeetingInterface m = j.next();
-								if (m.getDayOfYear() == meeting.getDayOfYear() && EventInterface.equals(meeting.getLocation(), m.getLocation()) && meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot()) {
-									j.remove();
-									continue current;
-								}
-							}
-							if (meeting.getId() == null) {
-								i.remove();
-							} else if (meeting.getApprovalStatus() == ApprovalStatus.Cancelled || meeting.getApprovalStatus() == ApprovalStatus.Deleted) {
-								// already cancelled or deleted
-							} else if (meeting.isCanDelete()) {
-								meeting.setApprovalStatus(ApprovalStatus.Deleted);
-								meeting.setCanApprove(false); meeting.setCanCancel(false); meeting.setCanInquire(false); meeting.setCanEdit(false); meeting.setCanDelete(false);
-							} else if (meeting.isCanCancel()) {
-								meeting.setApprovalStatus(ApprovalStatus.Cancelled);
-								meeting.setCanApprove(false); meeting.setCanCancel(false); meeting.setCanInquire(false); meeting.setCanEdit(false); meeting.setCanDelete(false);
-							}
-						}
-						added: for (MeetingInterface meeting: added) {
-							if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue; 
-							for (MeetingInterface existing: meetings) {
-								if (existing.getApprovalStatus() != ApprovalStatus.Pending && existing.getApprovalStatus() != ApprovalStatus.Approved) continue;
-								if (existing.inConflict(meeting)) {
-									UniTimeNotifications.warn(MESSAGES.warnNewMeetingOverlaps(meeting.toString(), existing.toString()));
-									continue added;
-								}
-							}
-							meetings.add(meeting);
-						}
-						Collections.sort(meetings);
-						
-						boolean hasSelection = false;
-						for (int row = 1; row < iMeetings.getRowCount(); row++) {
-							Widget w =  iMeetings.getWidget(row, 0);
-							if (w != null && w instanceof CheckBox) {
-								CheckBox ch = (CheckBox)w;
-								if (ch.getValue()) { hasSelection = true; break; }
-							}
-						}
-
-						iMeetings.setMeetings(iEvent, meetings);
-						showCreateButtonIfApplicable();
-						ValueChangeEvent.fire(iMeetings, iMeetings.getValue());
-						
-						if (hasSelection)
-							rows: for (int row = 1; row < iMeetings.getRowCount(); row++) {
-								Widget w =  iMeetings.getWidget(row, 0);
-								if (w != null && w instanceof CheckBox) {
-									CheckBox ch = (CheckBox)w;
-									MeetingInterface meeting = iMeetings.getData(row).getMeeting();
-									for (MeetingInterface m: result.getMeetings()) {
-										if (m.getDayOfYear() == meeting.getDayOfYear() && EventInterface.equals(meeting.getLocation(), m.getLocation()) && meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot()) {
-											ch.setValue(true);
-											continue rows;
-										}
-									}
-								}
-							}
-					}
-				});
-			}
-		});
-		iEventModifyMeetings.setText(MESSAGES.dialogModifyMeetings());
-		
 		iMeetingsHeader = new UniTimeHeaderPanel(MESSAGES.sectMeetings());
 		iMeetingsHeader.addButton("add", MESSAGES.buttonAddMeetings(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iEventAddMeetings.showDialog(getEventId(), getConflicts());
+				getEventAddMeetings().showDialog(getEventId(), getConflicts());
 			}
 		});
 		iMeetingsHeader.addButton("operations", MESSAGES.buttonMoreOperations(), 75, new ClickHandler() {
@@ -1453,7 +1337,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			for (StandardEventNoteInterface note: getProperties().getStandardNotes())
 				iStandardNotes.addItem(note.toString(), note.getNote());
 		
-		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
+		getEventAddMeetings().reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
 		
 		DomEvent.fireNativeEvent(Document.get().createChangeEvent(), iEventType.getWidget());
 		
@@ -1979,7 +1863,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public void execute(EventMeetingTable source, OperationType operation, List<EventMeetingRow> selection) {
 		switch (operation) {
 		case AddMeetings:
-			iEventAddMeetings.showDialog(getEventId(), getConflicts());
+			getEventAddMeetings().showDialog(getEventId(), getConflicts());
 			break;
 		case Delete:
 		case Cancel:
@@ -1995,8 +1879,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				if ((m.getApprovalStatus() == ApprovalStatus.Approved || m.getApprovalStatus() == ApprovalStatus.Pending) && !iSelection.contains(m))
 					conflicts.add(generateConflict(m));
 			}
-			iEventModifyMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iSelection, iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
-			iEventModifyMeetings.showDialog(getEventId(), conflicts);
+			getEventModifyMeetings().reset(iProperties == null ? null : iProperties.getRoomFilter(), iSelection, iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
+			getEventModifyMeetings().showDialog(getEventId(), conflicts);
 			break;
 		}
 	}
@@ -2073,6 +1957,133 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			}
 			return false;
 		}
+	}
+	
+	private AddMeetingsDialog getEventAddMeetings() {
+		if (iEventAddMeetings == null) {
+			iEventAddMeetings = new AddMeetingsDialog(iSession, iProperties, new AsyncCallback<List<MeetingInterface>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					UniTimeNotifications.error(MESSAGES.failedAddMeetings(caught.getMessage()), caught);
+				}
+
+				@Override
+				public void onSuccess(List<MeetingInterface> result) {
+					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
+					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
+						}
+
+						@Override
+						public void onSuccess(EventRoomAvailabilityRpcResponse result) {
+							LoadingWidget.getInstance().hide();
+							addMeetings(result.getMeetings());
+							iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
+						}
+					});
+				}
+			});
+		}
+		return iEventAddMeetings;
+	}
+	
+	private AddMeetingsDialog getEventModifyMeetings() {
+		if (iEventModifyMeetings == null) {
+			iEventModifyMeetings = new AddMeetingsDialog(iSession, iProperties, new AsyncCallback<List<MeetingInterface>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					UniTimeNotifications.error(MESSAGES.failedChangeMeetings(caught.getMessage()), caught);
+				}
+
+				@Override
+				public void onSuccess(List<MeetingInterface> result) {
+					final List<MeetingInterface> meetings = iMeetings.getMeetings();
+					if (!iEventType.isReadOnly())
+						iEvent.setType(getEventType());
+					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
+						}
+
+						@Override
+						public void onSuccess(EventRoomAvailabilityRpcResponse result) {
+							LoadingWidget.getInstance().hide();
+							List<MeetingInterface> added = new ArrayList<EventInterface.MeetingInterface>(result.getMeetings());
+							current: for (Iterator<MeetingInterface> i = meetings.iterator(); i.hasNext(); ) {
+								MeetingInterface meeting = i.next();
+								if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
+								if (!iSelection.contains(meeting)) continue;
+								for (Iterator<MeetingInterface> j = added.iterator(); j.hasNext();) {
+									MeetingInterface m = j.next();
+									if (m.getDayOfYear() == meeting.getDayOfYear() && EventInterface.equals(meeting.getLocation(), m.getLocation()) && meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot()) {
+										j.remove();
+										continue current;
+									}
+								}
+								if (meeting.getId() == null) {
+									i.remove();
+								} else if (meeting.getApprovalStatus() == ApprovalStatus.Cancelled || meeting.getApprovalStatus() == ApprovalStatus.Deleted) {
+									// already cancelled or deleted
+								} else if (meeting.isCanDelete()) {
+									meeting.setApprovalStatus(ApprovalStatus.Deleted);
+									meeting.setCanApprove(false); meeting.setCanCancel(false); meeting.setCanInquire(false); meeting.setCanEdit(false); meeting.setCanDelete(false);
+								} else if (meeting.isCanCancel()) {
+									meeting.setApprovalStatus(ApprovalStatus.Cancelled);
+									meeting.setCanApprove(false); meeting.setCanCancel(false); meeting.setCanInquire(false); meeting.setCanEdit(false); meeting.setCanDelete(false);
+								}
+							}
+							added: for (MeetingInterface meeting: added) {
+								if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue; 
+								for (MeetingInterface existing: meetings) {
+									if (existing.getApprovalStatus() != ApprovalStatus.Pending && existing.getApprovalStatus() != ApprovalStatus.Approved) continue;
+									if (existing.inConflict(meeting)) {
+										UniTimeNotifications.warn(MESSAGES.warnNewMeetingOverlaps(meeting.toString(), existing.toString()));
+										continue added;
+									}
+								}
+								meetings.add(meeting);
+							}
+							Collections.sort(meetings);
+							
+							boolean hasSelection = false;
+							for (int row = 1; row < iMeetings.getRowCount(); row++) {
+								Widget w =  iMeetings.getWidget(row, 0);
+								if (w != null && w instanceof CheckBox) {
+									CheckBox ch = (CheckBox)w;
+									if (ch.getValue()) { hasSelection = true; break; }
+								}
+							}
+
+							iMeetings.setMeetings(iEvent, meetings);
+							showCreateButtonIfApplicable();
+							ValueChangeEvent.fire(iMeetings, iMeetings.getValue());
+							
+							if (hasSelection)
+								rows: for (int row = 1; row < iMeetings.getRowCount(); row++) {
+									Widget w =  iMeetings.getWidget(row, 0);
+									if (w != null && w instanceof CheckBox) {
+										CheckBox ch = (CheckBox)w;
+										MeetingInterface meeting = iMeetings.getData(row).getMeeting();
+										for (MeetingInterface m: result.getMeetings()) {
+											if (m.getDayOfYear() == meeting.getDayOfYear() && EventInterface.equals(meeting.getLocation(), m.getLocation()) && meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot()) {
+												ch.setValue(true);
+												continue rows;
+											}
+										}
+									}
+								}
+						}
+					});
+				}
+			});
+			iEventModifyMeetings.setText(MESSAGES.dialogModifyMeetings());			
+		}
+		return iEventModifyMeetings;
 	}
 
 }
