@@ -134,8 +134,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	private List<EventInterface> iData;
 	private List<SessionMonth> iSessionMonths = null;
 	
-	private EventDetail iEventDetail;
-	private EventAdd iEventAdd;
+	private EventDetail iEventDetail = null;
+	private EventAdd iEventAdd = null;
 	private MeetingClickHandler iMeetingClickHandler;
 	
 	public EventRoomAvailability() {
@@ -149,8 +149,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iFilterHeader.addButton("add", MESSAGES.buttonAddEvent(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iEventAdd.setEvent(null);
-				iEventAdd.show();
+				getEventAdd().setEvent(null);
+				getEventAdd().show();
 			}
 		});
 		iFilterHeader.setEnabled("add", false);
@@ -196,7 +196,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iTimes = new StartEndTimeSelector(); iTimes.setDiff(12);
 		iFilter.addRow(MESSAGES.propTimes(), iTimes);
 		
-		iRooms = new RoomFilterBox(iSession);
+		iRooms = new RoomFilterBox(iSession, false);
+		iRooms.setValue("flag:Event");
 		iFilter.addRow(MESSAGES.propLocations(), iRooms);
 
 		iPanel = new SimpleForm(2);
@@ -206,8 +207,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iHeader.addButton("add", MESSAGES.buttonAddEvent(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iEventAdd.setEvent(null);
-				iEventAdd.show();
+				getEventAdd().setEvent(null);
+				getEventAdd().show();
 			}
 		});
 		iHeader.setEnabled("add", false);
@@ -396,112 +397,14 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 					public void onSuccess(EventPropertiesRpcResponse result) {
 						if (!iInitialized)
 							setup(true);
-						else
+						else {
 							reload(false);
+							iRooms.init(true, iSession.getAcademicSessionId(), null);
+						}
 					}
 				});
 			}
 		});
-		
-		iEventDetail = new EventDetail(this) {
-			@Override
-			protected void onHide() {
-				iRootPanel.setWidget(iPanel);
-				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventRoomAvailability());
-				if (!isShowingResults())
-					reload(true);
-				changeUrl();
-			}
-			@Override
-			protected void onShow() {
-				iRootPanel.setWidget(iEventDetail);
-				changeUrl();
-			}
-			@Override
-			protected void edit() {
-				hide();
-				iEventAdd.setEvent(getEvent());
-				iEventAdd.show();
-			}
-			@Override
-			protected EventInterface getPrevious(Long eventId) {
-				return null;
-			}
-			@Override
-			protected EventInterface getNext(Long eventId) {
-				return null;
-			}
-			@Override
-			protected void previous(final EventInterface event) {
-				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getId()), new AsyncCallback<EventInterface>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(event.getName(), caught.getMessage()), caught);
-					}
-					@Override
-					public void onSuccess(EventInterface result) {
-						LoadingWidget.getInstance().hide();
-						setEvent(result);
-						changeUrl();
-					}
-				}, MESSAGES.waitLoading(event.getName()));
-			}
-			@Override
-			protected void next(final EventInterface event) {
-				previous(event);
-			}
-			@Override
-			public void hide() {
-				super.hide();
-			}
-			@Override
-			protected void onApprovalOrReject(Long eventId, EventInterface event) {
-				if (iData != null)
-					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event), null);
-			}
-		};
-		
-		iEventAdd = new EventAdd(iSession, this) {
-			@Override
-			protected void onHide() {
-				iSession.setFilter(EventRoomAvailability.this);
-				iFilter.setWidget(iSessionRow, 1, iSession);
-				final EventInterface modified = iEventAdd.getEvent(), detail = iEventDetail.getEvent(), saved = iEventAdd.getSavedEvent();
-				if (saved != null) {
-					if (iData != null)
-						populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved), null);
-					if (saved.getId() != null) {
-						iEventDetail.setEvent(saved);
-						iEventDetail.show();
-					} else {
-						iRootPanel.setWidget(iPanel);
-						UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventRoomAvailability());
-					}
-				} else if (modified != null && detail != null && detail.getId().equals(modified.getId())) {
-					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							UniTimeNotifications.error(MESSAGES.failedLoad(detail.getName(), caught.getMessage()), caught);
-						}
-						@Override
-						public void onSuccess(EventInterface result) {
-							LoadingWidget.getInstance().hide();
-							iEventDetail.setEvent(result);
-							iEventDetail.show();
-						}
-					}, MESSAGES.waitLoading(detail.getName()));
-				} else {
-					iRootPanel.setWidget(iPanel);
-					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventRoomAvailability());
-				}
-				changeUrl();
-			}
-			@Override
-			protected void onShow() {
-				iRootPanel.setWidget(iEventAdd);
-				changeUrl();
-			}
-		};
 		
 		iMeetingClickHandler = new MeetingClickHandler() {
 			@Override
@@ -515,8 +418,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 					@Override
 					public void onSuccess(EventInterface result) {
 						LoadingWidget.getInstance().hide();
-						iEventDetail.setEvent(result);
-						iEventDetail.show();
+						getEventDetail().setEvent(result);
+						getEventDetail().show();
 					}
 				}, MESSAGES.waitLoading(event.getEvent().getName()));
 			}
@@ -653,6 +556,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			if (!iRooms.getValue().equals("flag:Event")) {
 				isDefault = false;
 			}
+		} else if (init) {
+			iRooms.init(true, iSession.getAcademicSessionId(), null);
 		}
 		if (iHistoryToken.isChanged("after", iTimes.getValue().getStart() == null ? "" : iTimes.getValue().getStart().toString()) || iHistoryToken.isChanged("before", iTimes.getValue().getEnd() == null ? "" : iTimes.getValue().getEnd().toString())) {
 			String after = iHistoryToken.getParameter("after");
@@ -682,8 +587,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			iSession.selectSession(iHistoryToken.getParameter("term"), null);
 		if (iHistoryToken.hasParameter("event")) {
 			if ("add".equals(iHistoryToken.getParameter("event"))) {
-				iEventAdd.setEvent(null);
-				iEventAdd.show();
+				getEventAdd().setEvent(null);
+				getEventAdd().show();
 			} else {
 				Long eventId = Long.valueOf(iHistoryToken.getParameter("event"));
 				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), eventId), new AsyncCallback<EventInterface>() {
@@ -694,8 +599,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 					@Override
 					public void onSuccess(EventInterface result) {
 						LoadingWidget.getInstance().hide();
-						iEventDetail.setEvent(result);
-						iEventDetail.show();
+						getEventDetail().setEvent(result);
+						getEventDetail().show();
 					}
 				}, MESSAGES.waitLoading(MESSAGES.anEvent()));
 			}
@@ -850,7 +755,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 							iSessionMonths = months;
 							iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							iFooter.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
-							iEventAdd.setup(result);
+							if (iEventAdd != null) iEventAdd.setup(result);
 							if (callback != null)
 								callback.onSuccess(result);
 						}
@@ -1097,9 +1002,9 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iHistoryToken.reset(null);
 		iHistoryToken.setParameter("term", iSession.getAcademicSessionAbbreviation());
 		iHistoryToken.setParameter("rooms", iRooms.getValue().trim());
-		if (iEventDetail.equals(iRootPanel.getWidget()))
+		if (iEventDetail != null && iEventDetail.equals(iRootPanel.getWidget()))
 			iHistoryToken.setParameter("event", iEventDetail.getEvent().getId());
-		else if (iEventAdd.equals(iRootPanel.getWidget())) {
+		else if (iEventAdd != null && iEventAdd.equals(iRootPanel.getWidget())) {
 			Long id = iEventAdd.getEventId();
 			iHistoryToken.setParameter("event", id == null ? "add" : id.toString());
 		}
@@ -1141,5 +1046,117 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			data.add(newEvent);
 		
 		return data;
+	}
+	
+	public EventAdd getEventAdd() {
+		if (iEventAdd == null) {
+			iEventAdd = new EventAdd(iSession, this) {
+				@Override
+				protected void onHide() {
+					iSession.setFilter(EventRoomAvailability.this);
+					iFilter.setWidget(iSessionRow, 1, iSession);
+					final EventInterface modified = iEventAdd.getEvent(), detail = getEventDetail().getEvent(), saved = iEventAdd.getSavedEvent();
+					if (saved != null) {
+						if (iData != null)
+							populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved), null);
+						if (saved.getId() != null) {
+							getEventDetail().setEvent(saved);
+							getEventDetail().show();
+						} else {
+							iRootPanel.setWidget(iPanel);
+							UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventRoomAvailability());
+						}
+					} else if (modified != null && detail != null && detail.getId().equals(modified.getId())) {
+						LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								UniTimeNotifications.error(MESSAGES.failedLoad(detail.getName(), caught.getMessage()), caught);
+							}
+							@Override
+							public void onSuccess(EventInterface result) {
+								LoadingWidget.getInstance().hide();
+								getEventDetail().setEvent(result);
+								getEventDetail().show();
+							}
+						}, MESSAGES.waitLoading(detail.getName()));
+					} else {
+						iRootPanel.setWidget(iPanel);
+						UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventRoomAvailability());
+					}
+					changeUrl();
+				}
+				@Override
+				protected void onShow() {
+					iRootPanel.setWidget(iEventAdd);
+					changeUrl();
+				}
+			};
+			if (iProperties != null)
+				iEventAdd.setup(iProperties);
+		}
+		return iEventAdd;
+	}
+	
+	public EventDetail getEventDetail() {
+		if (iEventDetail == null) {
+			iEventDetail = new EventDetail(this) {
+				@Override
+				protected void onHide() {
+					iRootPanel.setWidget(iPanel);
+					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventRoomAvailability());
+					if (!isShowingResults())
+						reload(true);
+					changeUrl();
+				}
+				@Override
+				protected void onShow() {
+					iRootPanel.setWidget(iEventDetail);
+					changeUrl();
+				}
+				@Override
+				protected void edit() {
+					hide();
+					getEventAdd().setEvent(getEvent());
+					getEventAdd().show();
+				}
+				@Override
+				protected EventInterface getPrevious(Long eventId) {
+					return null;
+				}
+				@Override
+				protected EventInterface getNext(Long eventId) {
+					return null;
+				}
+				@Override
+				protected void previous(final EventInterface event) {
+					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getId()), new AsyncCallback<EventInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							UniTimeNotifications.error(MESSAGES.failedLoad(event.getName(), caught.getMessage()), caught);
+						}
+						@Override
+						public void onSuccess(EventInterface result) {
+							LoadingWidget.getInstance().hide();
+							setEvent(result);
+							changeUrl();
+						}
+					}, MESSAGES.waitLoading(event.getName()));
+				}
+				@Override
+				protected void next(final EventInterface event) {
+					previous(event);
+				}
+				@Override
+				public void hide() {
+					super.hide();
+				}
+				@Override
+				protected void onApprovalOrReject(Long eventId, EventInterface event) {
+					if (iData != null)
+						populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event), null);
+				}
+			};
+		}
+		return iEventDetail;
 	}
 }

@@ -70,7 +70,11 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	private FilterBox.CustomFilter iDepartmentFilter;
 	
 	public RoomFilterBox(AcademicSessionProvider session) {
-		super(session);
+		this(session, true);
+	}
+	
+	public RoomFilterBox(AcademicSessionProvider session, boolean init) {
+		super(session, init);
 		
 		iDepartments = new ListBox();
 		iDepartments.setMultipleSelect(false);
@@ -434,7 +438,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 						}
 					}
 				}
-				if (getAcademicSessionId() != null)
+				if (getAcademicSessionId() != null) {
 					init(false, getAcademicSessionId(), new Command() {
 						@Override
 						public void execute() {
@@ -442,6 +446,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 								showFilterPopup();
 						}
 					});
+				}
 				setAriaLabel(ARIA.roomFilter(toAriaString()));
 			}
 		});
@@ -452,6 +457,11 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 				setAriaLabel(ARIA.roomFilter(toAriaString()));
 			}
 		});
+	}
+	
+	@Override
+	public void setValue(String value, boolean fireEvents) {
+		iFilter.getWidget().setValue(value, fireEvents);
 	}
 	
 	@Override

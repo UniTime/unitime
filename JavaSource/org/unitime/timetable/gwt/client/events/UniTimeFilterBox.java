@@ -42,8 +42,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasAllFocusHandlers;
@@ -56,6 +54,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.TakesValue;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
@@ -64,7 +63,7 @@ import com.google.gwt.user.client.ui.HasValue;
 /**
  * @author Tomas Muller
  */
-public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel {
+public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel, FilterBoxInterface<T> {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
@@ -73,6 +72,10 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	private boolean iInitialized = false;
 	
 	public UniTimeFilterBox(AcademicSessionProvider session) {
+		this(session, true);
+	}
+	
+	public UniTimeFilterBox(AcademicSessionProvider session, boolean init) {
 		iFilter = new UniTimeWidget<FilterBox>(new FilterBox());
 		iFilter.addStyleName("unitime-FilterBoxContainer");
 		
@@ -109,20 +112,21 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 		
 		iAcademicSession = session;
 		
-		if (iAcademicSession != null)
-			iAcademicSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
+		if (init) {
+			if (iAcademicSession != null)
+				iAcademicSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
+					@Override
+					public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+						if (event.isChanged()) init(true, event.getNewAcademicSessionId(), null);
+					}
+				});
+			new Timer() {
 				@Override
-				public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-					if (event.isChanged()) init(true, event.getNewAcademicSessionId(), null);
+				public void run() {
+					init(true, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), null);
 				}
-			});
-		
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				init(true, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), null);
-			}
-		});
+			}.schedule(500);
+		}
 	}
 	
 	protected void addSuggestion(List<FilterBox.Suggestion> suggestions, FilterRpcResponse.Entity entity) {
@@ -137,17 +141,29 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	
 	protected void initAsync() {
 		setValue(getValue());
+		for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
+			if (filter instanceof FilterBox.StaticSimpleFilter) {
+				for (Chip chip: ((FilterBox.StaticSimpleFilter)filter).getValues()) {
+					if (!chip.getValue().equals(chip.getTranslatedValue()))
+						iFilter.getWidget().fixLabel(chip);
+				}
+			}
+		}
 	}
+	
+	private String iLastInit = null;
 
 	protected void init(final boolean init, Long academicSessionId, final Command onSuccess) {
 		if (academicSessionId == null && iAcademicSession != null) {
 			setHint(MESSAGES.hintNoSession());
 		} else {
-			if (init) {
+			final String value = iFilter.getWidget().getValue();
+			if ((academicSessionId+":"+value).equals(iLastInit)) return;
+			iLastInit = (academicSessionId+":"+value);
+			if (init || !iInitialized) {
 				setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession == null ? "" : iAcademicSession.getAcademicSessionName()));
 				iInitialized = false;
 			}
-			final String value = iFilter.getWidget().getValue();
 			RPC.execute(createRpcRequest(FilterRpcRequest.Command.LOAD, academicSessionId, iFilter.getWidget().getChips(null), iFilter.getWidget().getText()), new AsyncCallback<FilterRpcResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -158,14 +174,13 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 				public void onSuccess(FilterRpcResponse result) {
 					clearHint();
 					if (!value.equals(iFilter.getWidget().getValue())) return;
-					onLoad(result);
 					for (FilterBox.Filter filter: iFilter.getWidget().getFilters())
 						populateFilter(filter, result.getEntities(filter.getCommand()));
+					onLoad(result);
 					if (onSuccess != null) onSuccess.execute();
-					if (init) {
-						iInitialized = true;
+					if (init)
 						initAsync();
-					}
+					iInitialized = true;
 				}
 			});
 		}
