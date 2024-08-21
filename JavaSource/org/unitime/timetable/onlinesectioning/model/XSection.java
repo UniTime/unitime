@@ -402,68 +402,86 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
     	return false;
     }
     
-	@Override
-	public int compareTo(XSection section) {
-		return getSectionId().compareTo(section.getSectionId());
-	}
-	
-	private int getDistanceInMinutes(DistanceMetric m,  List<XRoom> other) {
+    
+    @Override
+    public int compareTo(XSection section) {
+        return getSectionId().compareTo(section.getSectionId());
+    }
+    
+    private int getDistanceInMinutes(DistanceMetric m,  List<XRoom> other) {
         int dist = 0;
         for (XRoom r1 : getRooms())
             for (XRoom r2 : other) {
                 dist = Math.max(dist, r1.getDistanceInMinutes(m, r2));
             }
         return dist;
-	}
-	
-	public int getDistanceInMinutes(XSection other, DistanceMetric m) {
-		if (getNrRooms() == 0 || other.getNrRooms() == 0) return 0;
-		XTime t1 = getTime();
-		XTime t2 = other.getTime();
-		if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
-        int a1 = t1.getSlot(), a2 = t2.getSlot();
-        if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
-        	if (a1 + t1.getLength() <= a2) {
-        		int dist = getDistanceInMinutes(m, other.getRooms());
-        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
-        			return dist;
-        	}
-        } else {
-        	if (a1 + t1.getLength() == a2)
-        		return getDistanceInMinutes(m, other.getRooms());
-        }
-        return 0;
     }
-	
-	public boolean isDistanceConflict(XStudent student, XSection other, DistanceMetric m) {
-		if (getNrRooms() == 0 || other.getNrRooms() == 0) return false;
-		XTime t1 = getTime();
-		XTime t2 = other.getTime();
-		if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return false;
+    
+    public int getDistanceInMinutes(XSection other, DistanceMetric m) {
+    	if (getNrRooms() == 0 || other.getNrRooms() == 0) return 0;
+    	XTime t1 = getTime();
+    	XTime t2 = other.getTime();
+    	if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return 0;
+    	int a1 = t1.getSlot(), a2 = t2.getSlot();
+    	if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+    		if (a1 + t1.getLength() <= a2) {
+    			int dist = getDistanceInMinutes(m, other.getRooms());
+    			if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
+    				return dist;
+    		}
+    	} else {
+    		if (a1 + t1.getLength() == a2)
+    			return getDistanceInMinutes(m, other.getRooms());
+    	}
+    	return 0;
+    }
+
+    public boolean isDistanceConflict(XStudent student, XSection other, DistanceMetric m) {
+    	if (getNrRooms() == 0 || other.getNrRooms() == 0) return false;
+    	XTime t1 = getTime();
+    	XTime t2 = other.getTime();
+    	if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return false;
+    	int a1 = t1.getSlot(), a2 = t2.getSlot();
+    	if (student.hasAccomodation(m.getShortDistanceAccommodationReference())) {
+    		if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+    			if (a1 + t1.getLength() <= a2) {
+    				int dist = getDistanceInMinutes(m, other.getRooms());
+    				return (dist > Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
+    			}
+    		} else {
+    			if (a1 + t1.getLength() == a2)
+    				return getDistanceInMinutes(m, other.getRooms()) > 0;
+    		}
+    	} else {
+    		if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
+    			if (a1 + t1.getLength() <= a2) {
+    				int dist = getDistanceInMinutes(m, other.getRooms());
+    				return (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
+    			}
+    		} else {
+    			if (a1 + t1.getLength() == a2)
+    				return getDistanceInMinutes(m, other.getRooms()) > t1.getBreakTime();
+    		}
+    	}
+    	return false;
+    }
+
+    public boolean isUnavailabilityDistanceConflict(XStudent student, XSection other, DistanceMetric m) {
+        if (getNrRooms() == 0 || other.getNrRooms() == 0) return false;
+        XTime t1 = getTime();
+        XTime t2 = other.getTime();
+        if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) return false;
         int a1 = t1.getSlot(), a2 = t2.getSlot();
-        if (student.hasAccomodation(m.getShortDistanceAccommodationReference())) {
-        	if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
-	        	if (a1 + t1.getLength() <= a2) {
-	        		int dist = getDistanceInMinutes(m, other.getRooms());
-	        		return (dist > Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
-	        	}
-	        } else {
-	        	if (a1 + t1.getLength() == a2)
-	        		return getDistanceInMinutes(m, other.getRooms()) > 0;
-	        }
-		} else {
-	        if (m.doComputeDistanceConflictsBetweenNonBTBClasses()) {
-	        	if (a1 + t1.getLength() <= a2) {
-	        		int dist = getDistanceInMinutes(m, other.getRooms());
-	        		return (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
-	        	}
-	        } else {
-	        	if (a1 + t1.getLength() == a2)
-	        		return getDistanceInMinutes(m, other.getRooms()) > t1.getBreakTime();
-	        }
-		}
+        if (a1 + t1.getLength() <= a2) {
+            int dist = getDistanceInMinutes(m, other.getRooms());
+            return (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()));
+        } else if (a2 + t2.getLength() <= a1) {
+            int dist = getDistanceInMinutes(m, other.getRooms());
+            return (dist > t2.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a1 - a2 - t2.getLength()));
+        }
         return false;
-	}
+    }
+
 	
     /** Return true if overlaps are allowed, but the number of overlapping slots should be minimized. */
     public boolean isAllowOverlap() {
