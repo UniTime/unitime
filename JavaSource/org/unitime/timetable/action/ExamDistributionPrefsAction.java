@@ -137,7 +137,8 @@ public class ExamDistributionPrefsAction extends UniTimeAction<ExamDistributionP
 
 		// Set lookup tables lists
         LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamView); // Exam Types
-        request.setAttribute("examTypesAdd", ExamType.findAllUsedApplicable(sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit));
+        request.setAttribute("examTypesAdd", ExamType.findAllUsedApplicable(sessionContext.getUser(), 
+        		getSessionContext().getUser() != null && getSessionContext().getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) ? DepartmentStatusType.Status.ExamTimetable : DepartmentStatusType.Status.ExamEdit));
 
         // Add / Update distribution pref
         if (MSG.actionSaveNewDistributionPreference().equals(op) || MSG.actionUpdateDistributionPreference().equals(op)) {

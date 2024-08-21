@@ -67,7 +67,6 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -131,7 +130,8 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
         	if (request.getSession().getAttribute("Exam.Type")!=null)
             	form.setExamType((Long)request.getSession().getAttribute("Exam.Type"));
             if (form.getExamType() == null) {
-            	List<ExamType> types = ExamType.findAllUsedApplicable(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser(), DepartmentStatusType.Status.ExamEdit, DepartmentStatusType.Status.ExamTimetable);
+            	List<ExamType> types = ExamType.findAllUsedApplicable(getSessionContext().getUser(),
+            			getSessionContext().getUser() != null && getSessionContext().getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) ? DepartmentStatusType.Status.ExamTimetable : DepartmentStatusType.Status.ExamEdit);
             	if (!types.isEmpty()) form.setExamType(types.get(0).getUniqueId());
             }
 		}
@@ -282,7 +282,8 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
         
         setupInstructors(exam);
         
-        LookupTables.setupExamTypes(request, sessionContext.getUser(), DepartmentStatusType.Status.ExamTimetable, DepartmentStatusType.Status.ExamEdit);
+        LookupTables.setupExamTypes(request, sessionContext.getUser(), 
+        		getSessionContext().getUser() != null && getSessionContext().getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) ? DepartmentStatusType.Status.ExamTimetable : DepartmentStatusType.Status.ExamEdit);
         
         if (exam!=null) {
             LookupTables.setupRooms(request, exam);      // Room Prefs
