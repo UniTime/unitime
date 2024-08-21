@@ -647,14 +647,16 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
         			dp.setDistributionObjects(s);
         			oldOwner = (Department)dp.getOwner();
             	}
-            } else dp = new DistributionPref();
+            } else {
+            	dp = new DistributionPref();
+            }
             
             dp.setDistributionType(DistributionTypeDAO.getInstance().get( Long.valueOf(form.getDistType()), hibSession));
             dp.setStructure(form.getStructure());
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(form.getPrefLevel()) ));
-        
+        	
         	Department owningDept = null;
-        
+        	List<DistributionObject> distributionObjects = new ArrayList<DistributionObject>();
 	        // Create distribution objects
      	    for (int i=0; i<saList.size(); i++) {
         	    String su = suList.get(i).toString();
@@ -697,58 +699,22 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
             	}
             
             	dObj.setSequenceNumber(Integer.valueOf(i+1));
-            	dObj.setDistributionPref(dp);
-            	dObj.getPrefGroup().getDistributionObjects().add(dObj);
-            	
-            	dp.addToDistributionObjects(dObj);
-            	if (dp.getUniqueId() != null)
-            		hibSession.persist(dObj);
+            	distributionObjects.add(dObj);
         	}
         
      	    dp.setOwner(owningDept);
-     	    
-     	    /*
-     	   
-        	if (dp.getOwner()==null)
-        		throw new Exception("Creation of such constraint denied: no owner specified.");
-
-    		if (sessionContext.hasPermission(Right.) && !dp.getDistributionType().isApplicable(owningDept)) {
-    			throw new Exception("Creation of such constraint denied: distribution preference "+dp.getDistributionType().getLabel()+" not allowed for "+dp.getOwner()+".");
-    		}
-
-        		if (!sessionContext.hasPermission(dp.getOwner(), Right.DistributionPreferenceAdd))
-	        		throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
-
-	        	if (!sessionContext.getUser().getCurrentAuthority().hasQualifier((Department)dp.getOwner()) && !((Department)dp.getOwner()).effectiveStatusType().canOwnerEdit())
-        			throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
+        	if (dp.getUniqueId() == null) hibSession.persist(dp);
         	
-        		if (currentMgr.isExternalManager() && !sessionContext.getUser().getCurrentAuthority().hasQualifier((Department)dp.getOwner()))
-        			throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
-        	
-        		Department dept = (Department)dp.getOwner();
-        		if (dept.isExternalManager() && !dept.isAllowReqDistribution() && !sessionContext.getUser().getCurrentAuthority().hasQualifier((Department)dp.getOwner())) {
-        			if (dp.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) {
-        				if (dp.getDistributionType().getAllowedPref().indexOf(PreferenceLevel.sCharLevelStronglyPreferred)>=0)
-        					dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
-        				else
-        					throw new Exception("Creation of such constraint denied: unable to create "+dp.getPrefLevel().getPrefName()+" constraint owned by "+dp.getOwner()+".");
-        			}
-            		if (dp.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sProhibited)) {
-            			if (dp.getDistributionType().getAllowedPref().indexOf(PreferenceLevel.sCharLevelStronglyDiscouraged)>=0)
-            				dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
-            			else
-            				throw new Exception("Creation of such constraint denied: unable to create "+dp.getPrefLevel().getPrefName()+" constraint owned by "+dp.getOwner()+".");
-            		}
-        		}
-        	}*/
+        	for (DistributionObject dObj: distributionObjects) {
+            	dObj.setDistributionPref(dp);
+            	dp.addToDistributionObjects(dObj);
+            	hibSession.persist(dObj);
+        	}
      	    
      	    sessionContext.checkPermission(dp, Right.DistributionPreferenceEdit);
         
 	        // Save
-     	    if (dp.getUniqueId() == null)
-     	    	hibSession.persist(dp);
-     	    else
-     	    	hibSession.merge(dp);
+     	    hibSession.merge(dp);
     	    
     	    Permission<InstructionalOffering> permissionOfferingLockNeeded = getPermission("permissionOfferingLockNeeded");
             
