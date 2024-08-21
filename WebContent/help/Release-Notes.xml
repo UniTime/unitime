@@ -29,6 +29,15 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructional Offering Configuration</name>
+			<description>
+				<line>Delete: Fixed a possible &quot;deleted object would be re-saved by cascade&quot; exception when deleting a configuration that participates in a distribution preference.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Wait-Listing</name>

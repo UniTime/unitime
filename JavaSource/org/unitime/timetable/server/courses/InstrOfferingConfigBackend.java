@@ -762,6 +762,16 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
             Event.deleteFromEvents(hibSession, ioc);
             Exam.deleteFromExams(hibSession, ioc);
             
+            for (SchedulingSubpart s: ioc.getSchedulingSubparts()) {
+            	for (Class_ c: s.getClasses()) {
+            	    c.deleteTeachingRequests(hibSession);
+            	    c.deleteClassInstructors(hibSession);
+            	    c.deleteAssignments(hibSession);
+            		Exam.deleteFromExams(hibSession, c);
+            		Event.deleteFromEvents(hibSession, c);
+            	}
+            }
+            
             Set<DistributionPref> distPrefs = new HashSet<DistributionPref>();
             for (SchedulingSubpart s: ioc.getSchedulingSubparts()) {
             	for (Class_ c: s.getClasses()) {
@@ -771,11 +781,6 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
             			hibSession.remove(distObj);
             			distPrefs.add(dp);
             		}
-            	    c.deleteTeachingRequests(hibSession);
-            	    c.deleteClassInstructors(hibSession);
-            	    c.deleteAssignments(hibSession);
-            		Exam.deleteFromExams(hibSession, c);
-            		Event.deleteFromEvents(hibSession, c);
             	}
             	for (DistributionObject distObj: s.getDistributionObjects()) {
         			DistributionPref dp = distObj.getDistributionPref();
