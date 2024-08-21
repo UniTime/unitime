@@ -901,6 +901,9 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								if (section.getTime() != null && section.getTime().hasIntersection(cs.getSection().getTime())) {
 									overlap.add(MSG.teachingAssignment(MSG.clazz(cs.getCourse().getSubjectArea(), cs.getCourse().getCourseNumber(), cs.getSection().getSubpartName(), cs.getSection().getName(cs.getCourse().getCourseId()))));
 								}
+								if (section.isUnavailabilityDistanceConflict(student, cs.getSection(), m)) {
+									a.setDistanceConflict(true);
+								}
 							}
 						if (!overlap.isEmpty()) {
 							String note = null;

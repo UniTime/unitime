@@ -44,6 +44,13 @@
 				<line>Suggestions: Made the Drop and Wait-List buttons easier to get to.</line>
 			</description>
 		</item>
+		<item>
+			<name>Unavailabilities</name>
+			<description>
+				<line>Added unavailability distance conflicts (distance conflicts between sections and unavailabilities).</line>
+				<line>This is particularly useful when unavailabilities from other overlapping academic sessions are enabled.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
