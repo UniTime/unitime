@@ -3153,7 +3153,6 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-SuggestionsHintWidget {
-	zoom:50%;
 	display: inline-block;
 	-moz-transform: scale(0.5);
 	transform: scale(0.5);
