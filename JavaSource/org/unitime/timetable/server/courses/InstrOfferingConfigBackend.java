@@ -91,6 +91,8 @@ import org.unitime.timetable.security.permissions.Permission.PermissionDepartmen
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.duration.DurationModel;
 
+import jakarta.persistence.FlushModeType;
+
 /**
  * @author Tomas Muller
  */
@@ -287,7 +289,9 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 		org.hibernate.Session hibSession = InstrOfferingConfigDAO.getInstance().getSession();
 		Transaction tx = null;
 		try {
+			hibSession.setFlushMode(FlushModeType.COMMIT);
 	        tx = hibSession.beginTransaction();
+
 	        InstructionalOffering io = null;
 	        InstrOfferingConfig ioc = null;
 	        
@@ -755,6 +759,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 		org.hibernate.Session hibSession = InstrOfferingConfigDAO.getInstance().getSession();
 		Transaction tx = null;
 		try {
+			hibSession.setFlushMode(FlushModeType.COMMIT);
 	        tx = hibSession.beginTransaction();
 	        InstrOfferingConfig ioc = InstrOfferingConfigDAO.getInstance().get(form.getConfigId(), hibSession);
 	        InstructionalOffering io = ioc.getInstructionalOffering();

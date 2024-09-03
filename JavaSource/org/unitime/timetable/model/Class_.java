@@ -1204,7 +1204,6 @@ public class Class_ extends BaseClass_ {
 				InstructionalOffering offering = tr.getOffering();
 				offering.getTeachingRequests().remove(tr);
 				hibSession.remove(tr);
-				hibSession.merge(offering);
 			} else {
 				hibSession.merge(tr);
 			}

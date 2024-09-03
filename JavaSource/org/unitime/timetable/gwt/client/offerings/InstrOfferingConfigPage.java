@@ -224,36 +224,28 @@ public class InstrOfferingConfigPage extends Composite {
 						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 							@Override
 							public void execute() {
-								if (validate()) {
-									iData.setOperation(Operation.DELETE);
-									RPC.execute(iData, new AsyncCallback<InstrOfferingConfigInterface>() {
-										@Override
-										public void onSuccess(InstrOfferingConfigInterface result) {
-											ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + result.getOfferingId());
-										}
-										
-										@Override
-										public void onFailure(Throwable caught) {
-											LoadingWidget.getInstance().hide();
-											UniTimeNotifications.error(GWTMSG.failedDelete(MESSAGES.labelConfiguration(iData.getConfigName()), caught.getMessage()), caught);
-											ToolBox.checkAccess(caught);
-											iHeader.setEnabled("save", iData.getConfigId() == null && !iData.getSubpartLines().isEmpty());
-											iHeader.setEnabled("update", iData.getConfigId() != null && !iData.getSubpartLines().isEmpty());
-											iHeader.setEnabled("delete", iData.isCanDelete());
-											iHeader.setEnabled("back", true);
-											iError.clear();
-											P eh = new P("error-header"); eh.setText(GWTMSG.failedSave("")); iError.add(eh);
-											P em = new P("error-message"); em.setText(caught.getMessage()); iError.add(em);
-											iError.setVisible(true);									
-										}
-									});
-								} else {
-									LoadingWidget.getInstance().hide();
-									iHeader.setEnabled("save", iData.getConfigId() == null && !iData.getSubpartLines().isEmpty());
-									iHeader.setEnabled("update", iData.getConfigId() != null && !iData.getSubpartLines().isEmpty());
-									iHeader.setEnabled("delete", iData.isCanDelete());
-									iHeader.setEnabled("back", true);
-								}
+								iData.setOperation(Operation.DELETE);
+								RPC.execute(iData, new AsyncCallback<InstrOfferingConfigInterface>() {
+									@Override
+									public void onSuccess(InstrOfferingConfigInterface result) {
+										ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + result.getOfferingId());
+									}
+									
+									@Override
+									public void onFailure(Throwable caught) {
+										LoadingWidget.getInstance().hide();
+										UniTimeNotifications.error(GWTMSG.failedDelete(MESSAGES.labelConfiguration(iData.getConfigName()), caught.getMessage()), caught);
+										ToolBox.checkAccess(caught);
+										iHeader.setEnabled("save", iData.getConfigId() == null && !iData.getSubpartLines().isEmpty());
+										iHeader.setEnabled("update", iData.getConfigId() != null && !iData.getSubpartLines().isEmpty());
+										iHeader.setEnabled("delete", iData.isCanDelete());
+										iHeader.setEnabled("back", true);
+										iError.clear();
+										P eh = new P("error-header"); eh.setText(GWTMSG.failedSave("")); iError.add(eh);
+										P em = new P("error-message"); em.setText(caught.getMessage()); iError.add(em);
+										iError.setVisible(true);									
+									}
+								});
 							}
 						});
 					}
