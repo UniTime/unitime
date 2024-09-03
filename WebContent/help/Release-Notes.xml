@@ -36,6 +36,15 @@
 				<line>Delete: Fixed a possible &quot;deleted object would be re-saved by cascade&quot; exception when deleting a configuration that participates in a distribution preference.</line>
 			</description>
 		</item>
+		<item>
+			<name>Solution (Database) Save</name>
+			<description>
+				<line>A few changes to make the save faster:
+					<line>Faster computation of number of no-conflict placements in variable info.</line>
+					<line>When General.SaveConstraintInfos is false, do not compute no-conflict placements in variable infos at all.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>

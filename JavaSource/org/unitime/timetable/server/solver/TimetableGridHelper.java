@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridBack
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 
 /**
  * @author Tomas Muller
@@ -123,19 +122,6 @@ public class TimetableGridHelper {
         return "rgb(220,50,40)";
     }
     
-	public static String hardConflicts2pref(AssignmentPreferenceInfo assignmentInfo) {
-		if (assignmentInfo==null) return PreferenceLevel.sNeutral;
-		String pref = PreferenceLevel.sNeutral;
-		if (assignmentInfo.getNrRoomLocations()==1 && assignmentInfo.getNrTimeLocations()==1) pref = PreferenceLevel.sRequired;
-		else if (assignmentInfo.getNrSameTimePlacementsNoConf()>0) pref=PreferenceLevel.sStronglyPreferred;
-		else if (assignmentInfo.getNrTimeLocations()>1 && assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sProhibited;
-		else if (assignmentInfo.getNrTimeLocations()>1) pref=PreferenceLevel.sNeutral;
-		else if (assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sDiscouraged;
-		else if (assignmentInfo.getNrRoomLocations()>1) pref=PreferenceLevel.sStronglyDiscouraged;
-		else pref=PreferenceLevel.sRequired;
-		return pref;
-	}
-	
 	private static int gradient(int min, int v1, int max, int v2, int value) {
     	return (value <= min ? v1 : value >= max ? v2 : v1 + (v2 - v1) * (value - min) / (max - min));
     }

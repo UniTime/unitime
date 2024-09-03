@@ -582,7 +582,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     				assignmentInfo.setAssignment(assignment);
     				assignmentInfo.setDefinition(defAssignmentInfo);
     				assignmentInfo.setOpt(null);
-    				assignmentInfo.setInfo(new AssignmentPreferenceInfo(getSolver(),placement,true,true),getFileProxy());
+    				assignmentInfo.setInfo(new AssignmentPreferenceInfo(getSolver(),placement,iSaveConstraintInfos,true),getFileProxy());
     				hibSession.persist(assignmentInfo);
     				if (++batchIdx % BATCH_SIZE == 0) {
     					hibSession.flush(); hibSession.clear();

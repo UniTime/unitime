@@ -141,9 +141,11 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			int nrSameTimePlacementsNoConf = 0;
 			int nrPlacementsNoConf = 0;
 			for (Placement p: lecture.values(assignment)) {
+				if (nrPlacementsNoConf > 0 && p.getTimeLocation().equals(placement.getTimeLocation()) && nrSameTimePlacementsNoConf > 0) continue;
+				if (nrPlacementsNoConf > 0 && p.sameRooms(placement) && nrSameRoomPlacementsNoConf > 0) continue;
 				if (p.isHard(assignment)) continue;
 				if (p.equals(placement)) continue;
-				if (!lecture.getModel().conflictValues(assignment, p).isEmpty()) continue;
+				if (lecture.getModel().inConflict(assignment, p)) continue;
 				if (p.getTimeLocation().equals(placement.getTimeLocation())) {
 					nrSameTimePlacementsNoConf++;
 				}
@@ -154,6 +156,10 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 			setNrPlacementsNoConf(nrPlacementsNoConf);
 			setNrSameRoomPlacementsNoConf(nrSameRoomPlacementsNoConf);
 			setNrSameTimePlacementsNoConf(nrSameTimePlacementsNoConf);
+		} else {
+			setNrPlacementsNoConf(-1);
+			setNrSameRoomPlacementsNoConf(-1);
+			setNrSameTimePlacementsNoConf(-1);
 		}
 		int btbInstructorPref = 0;
        	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {

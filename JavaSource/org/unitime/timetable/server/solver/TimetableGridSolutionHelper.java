@@ -341,7 +341,6 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 				cell.setProperty(Property.InitialAssignment, assignmentInfo.getIsInitial() ? "-" : assignmentInfo.getInitialAssignment());
 				cell.setProperty(Property.PerturbationPenalty, sDF.format(assignmentInfo.getPerturbationPenalty()));
 			}
-			cell.setProperty(Property.NonConflictingPlacements, assignmentInfo.getNrPlacementsNoConf());
 			cell.setProperty(Property.DepartmentBalance, sDF.format(assignmentInfo.getDeptBalancPenalty()));
 		} else {
 			cell.setProperty(Property.Owner, assignment.getSolution().getOwner().getName());
@@ -1097,11 +1096,11 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 	}
 
 	public static String hardConflicts2pref(AssignmentPreferenceInfo assignmentInfo) {
-		if (assignmentInfo==null) return PreferenceLevel.sNeutral;
+		if (assignmentInfo==null || assignmentInfo.getNrPlacementsNoConf() < 0) return PreferenceLevel.sNeutral;
 		String pref = PreferenceLevel.sNeutral;
 		if (assignmentInfo.getNrRoomLocations()==1 && assignmentInfo.getNrTimeLocations()==1) pref = PreferenceLevel.sRequired;
 		else if (assignmentInfo.getNrSameTimePlacementsNoConf()>0) pref=PreferenceLevel.sStronglyPreferred;
-		else if (assignmentInfo.getNrTimeLocations()>1 && assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sProhibited;
+		else if (assignmentInfo.getNrTimeLocations()>1 && assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sPreferred;
 		else if (assignmentInfo.getNrTimeLocations()>1) pref=PreferenceLevel.sNeutral;
 		else if (assignmentInfo.getNrSameRoomPlacementsNoConf()>0) pref=PreferenceLevel.sDiscouraged;
 		else if (assignmentInfo.getNrRoomLocations()>1) pref=PreferenceLevel.sStronglyDiscouraged;
