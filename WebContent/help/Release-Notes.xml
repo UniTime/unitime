@@ -34,6 +34,8 @@
 			<name>Instructional Offering Configuration</name>
 			<description>
 				<line>Delete: Fixed a possible &quot;deleted object would be re-saved by cascade&quot; exception when deleting a configuration that participates in a distribution preference.</line>
+				<line>Delete: Fixed a possible &quot;deleted instance passed to merge&quot; exception when deleting a configuration that has teaching requests.</line>
+				<line>Delete: Skip validation for a configuration that is being deleted.</line>
 			</description>
 		</item>
 		<item>
