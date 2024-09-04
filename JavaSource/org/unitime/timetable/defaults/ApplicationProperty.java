@@ -3588,6 +3588,11 @@ public enum ApplicationProperty {
 			+ "Example: https://www.university.edu/inventory?location=:name")
 	@Since(4.8)
 	DefaultRoomUrlLoncation("unitime.rooms.url.location"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Edit Class/Scheduling Subpart: enable searcheable date pattern")
+	ClassEditSearcheableDatePattern("unitime.classEdit.searchableDatePattern"),
 	;
 
 	String iKey;
