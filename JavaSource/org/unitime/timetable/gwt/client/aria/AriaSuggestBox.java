@@ -123,11 +123,14 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 				} else {
 					iSuggestionMenu.clearItems();
 					SuggestOracle.Suggestion first = null;
+					int index = -1;
 					for (SuggestOracle.Suggestion suggestion: response.getSuggestions()) {
 						iSuggestionMenu.addItem(new SuggestionMenuItem(suggestion));
 						if (first == null) first = suggestion;
+						if (index < 0 && suggestion.getReplacementString().equals(iText.getValue()))
+							index = iSuggestionMenu.getNumItems() - 1;
 					}
-					iSuggestionMenu.selectItem(0);
+					iSuggestionMenu.selectItem(index < 0 ? 0 : index);
 					ToolBox.setMinWidth(iSuggestionMenu.getElement().getStyle(), (iText.getElement().getClientWidth() - 4) + "px");
 					iSuggestionPopup.showRelativeTo(iText);
 					iSuggestionMenu.scrollToView();
@@ -178,6 +181,7 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	          case KeyCodes.KEY_ENTER:
 	        	  if (isSuggestionListShowing())
 	        		  iSuggestionMenu.executeSelected();
+	        	  event.preventDefault();
 	        	  break;
 	          case KeyCodes.KEY_TAB:
 	        	  if (isSuggestionListShowing()) {
@@ -461,4 +465,6 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	public void setAriaLabel(String text) {
 		iText.setAriaLabel(text);
 	}
+	
+	public AriaTextBox getTextBox() { return iText; }
 }

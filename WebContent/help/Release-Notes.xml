@@ -47,6 +47,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Class/Scheduling Subpart</name>
+			<description>
+				<line>Added an ability to search the list of available date patterns.</line>
+				<line>Enable by setting unitime.classEdit.searchableDatePattern to true (defautls to false).</line>
+				<line>When enabled, the Date Pattern list box is replaced by a text field with suggestions.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
