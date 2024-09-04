@@ -3120,7 +3120,11 @@ public enum ApplicationProperty {
 	@Description("Assign Instructors: enable the ability to copy instructors to subparts of the same instructional type (e.g., from Lec 1 to Lec 1a and Lec 1b)")
 	@Since(4.7)
 	InstructorsCopyToSubSubparts("unitime.instructors.copyToSubSubparts"),
-
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Edit Class/Scheduling Subpart: enable searcheable date pattern")
+	ClassEditSearcheableDatePattern("unitime.classEdit.searchableDatePattern"),
 	;
 
 	String iKey;

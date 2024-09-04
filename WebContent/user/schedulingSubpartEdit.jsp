@@ -133,8 +133,15 @@
 				<s:hidden name="op2" value="" id="op2"/>
 				<s:hidden name="form.datePatternEditable"/>
 				<s:if test="form.datePatternEditable == true">
+					<tt:propertyEquals name="unitime.classEdit.searchableDatePattern" value="true">
+					<span id="UniTimeGWT:SearchableListBox">
+					<s:select name="form.datePattern" list="#request.datePatternList" listKey="id" listValue="value"
+						style="min-width:200px;" onchange="var op2Obj = $doc.getElementById('op2'); if (op2Obj!=null) { op2Obj.value='updateDatePattern'; $doc.forms[0].submit(); };"/>
+					</span>
+					</tt:propertyEquals><tt:propertyNotEquals name="unitime.classEdit.searchableDatePattern" value="true">
 					<s:select name="form.datePattern" list="#request.datePatternList" listKey="id" listValue="value"
 						style="min-width:200px;" onchange="datePatternChanged();"/>
+					</tt:propertyNotEquals>
 					<img style="cursor: pointer;" src="images/calendar.png" border="0" onclick="showGwtDialog('Preview of '+schedulingSubpartEdit_form_datePattern.options[schedulingSubpartEdit_form_datePattern.selectedIndex].text, 'dispDatePattern.action?id='+schedulingSubpartEdit_form_datePattern.value+'&subpartId='+schedulingSubpartEdit_form_schedulingSubpartId.value,'840','520');">
 				</s:if>
 				<s:else>

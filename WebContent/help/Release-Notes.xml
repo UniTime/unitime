@@ -29,6 +29,21 @@
 	<version>4.7.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Edit Class/Scheduling Subpart</name>
+			<description>
+				<line>Added an ability to search the list of available date patterns.</line>
+				<line>Enable by setting unitime.classEdit.searchableDatePattern to true (defaults to false).</line>
+				<line>When enabled, the Date Pattern list box is replaced by a text field with suggestions.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.7.${build.number}</version>
+	<release-date>${build.date}</release-date>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Batch Student Solver Reports: Export CSV</name>

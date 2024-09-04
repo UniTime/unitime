@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable;
 import org.unitime.timetable.gwt.client.sectioning.StudentScheduleTable;
 import org.unitime.timetable.gwt.client.solver.SolverAllocatedMemory;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
+import org.unitime.timetable.gwt.client.widgets.SearchableListBox;
 
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -83,6 +84,7 @@ public enum Components {
 	teachingAssignments("UniTimeGWT:TeachingAssignments", new ComponentFactory() { public void insert(RootPanel panel) { new TeachingAssignmentsWidget().insert(panel); } }),
 	dynamicMap("UniTimeGWT:Map", new ComponentFactory() { public void insert(RootPanel panel) { MapWidget.insert(panel); } }),
 	assignClassInstructors("UniTimeGWT:AssignInstructorsButton", true, new ComponentFactory() { public void insert(RootPanel panel) { new AssignInstructorsButton(true).insert(panel); } }),
+	searchableListBox("UniTimeGWT:SearchableListBox", true, new ComponentFactory() { public void insert(RootPanel panel) { new SearchableListBox().insert(panel); } }),
 	;
 	
 	private String iId;
