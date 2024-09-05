@@ -129,6 +129,12 @@
 				<line>External Manager Lookup: Only reset the email address (to the one from the LDAP directory) when it is left blank.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange API</name>
+			<description>
+				<line>Corrected XML import response.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
