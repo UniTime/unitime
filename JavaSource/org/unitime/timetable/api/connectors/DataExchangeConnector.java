@@ -20,14 +20,19 @@
 package org.unitime.timetable.api.connectors;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.text.StringEscapeUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.api.ApiConnector;
@@ -37,7 +42,6 @@ import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.queue.QueueMessage;
 
 /**
  * @author Tomas Muller
@@ -84,28 +88,38 @@ public class DataExchangeConnector extends ApiConnector {
 		final Element messages = output.addElement("html");
 		try {
 			DataExchangeHelper.importDocument(document, helper.getSessionContext().isAuthenticated() ? helper.getSessionContext().getUser().getExternalUserId() : null, new Log() {
-				protected void log(QueueMessage.Level level, Object message, Throwable t) {
-					messages.addElement("p").setText(new QueueMessage(level, messages, t).toHTML());
+				protected void printMessage(Element e, Object message, Throwable t) {
+					e.setText(message == null ? "null" : message.toString());
+					if (t != null) {
+						StringWriter writer = new StringWriter();
+						PrintWriter pw = new PrintWriter(writer);
+						t.printStackTrace(new PrintWriter(writer));
+						pw.flush(); pw.close();
+						e.addElement("pre")
+							.addAttribute(QName.get("space", Namespace.XML_NAMESPACE), "preserve")
+							.addAttribute("style", "color: red;")
+							.setText(StringEscapeUtils.escapeHtml4(writer.toString()));
+					}
 				}
 
 				@Override
 				public void warn(Object message, Throwable t) {
-					log(QueueMessage.Level.WARN, message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "color: orange;"), message, t);
 				}
 				
 				@Override
 				public void warn(Object message) {
-					log(QueueMessage.Level.WARN, message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "color: orange;"), message, null);
 				}
 				
 				@Override
 				public void trace(Object message, Throwable t) {
-					log(QueueMessage.Level.TRACE, message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "font-style: italic; color: gray;"), message, t);
 				}
 				
 				@Override
 				public void trace(Object message) {
-					log(QueueMessage.Level.TRACE, message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "font-style: italic; color: gray;"), message, null);
 				}
 				
 				@Override
@@ -140,42 +154,42 @@ public class DataExchangeConnector extends ApiConnector {
 				
 				@Override
 				public void info(Object message, Throwable t) {
-					log(QueueMessage.Level.INFO, message, t);
+					printMessage(messages.addElement("p"), message, t);
 				}
 				
 				@Override
 				public void info(Object message) {
-					log(QueueMessage.Level.INFO, message, null);
+					printMessage(messages.addElement("p"), message, null);
 				}
 				
 				@Override
 				public void fatal(Object message, Throwable t) {
-					log(QueueMessage.Level.FATAL, message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "font-weight: bold; color: red;"), message, t);
 				}
 				
 				@Override
 				public void fatal(Object message) {
-					log(QueueMessage.Level.FATAL, message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "font-weight: bold; color: red;"), message, null);
 				}
 				
 				@Override
 				public void error(Object message, Throwable t) {
-					log(QueueMessage.Level.ERROR, message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "color: red;"), message, t);
 				}
 				
 				@Override
 				public void error(Object message) {
-					log(QueueMessage.Level.ERROR, message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "color: red;"), message, null);
 				}
 				
 				@Override
 				public void debug(Object message, Throwable t) {
-					log(QueueMessage.Level.DEBUG, message, t);					
+					printMessage(messages.addElement("p").addAttribute("style", "color: gray;"), message, t);					
 				}
 				
 				@Override
 				public void debug(Object message) {
-					log(QueueMessage.Level.DEBUG, message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "color: gray;"), message, null);
 				}
 			});
 			helper.setResponse(output);
