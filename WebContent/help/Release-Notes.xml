@@ -55,6 +55,12 @@
 				<line>When enabled, the Date Pattern list box is replaced by a text field with suggestions.</line>
 			</description>
 		</item>
+		<item>
+			<name>Extended Student Conflicts Constraint</name>
+			<description>
+				<line>Fixed a concurrency issue.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
