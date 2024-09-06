@@ -105,6 +105,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	protected Log iLog = LogFactory.getLog(AbstractServer.class);
 	private DistanceMetric iDistanceMetric = null;
+	private DistanceMetric iUnavailabilityDistanceMetric = null;
 	private DataProperties iConfig = null;
 	protected XSchedulingRules iRules = null;
 	private OnlineSectioningActionFactory iActionFactory = null;
@@ -119,6 +120,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, context.getAcademicSessionId());
+		int unavailabilityMaxTravelTime = iConfig.getPropertyInteger("Distances.UnavailabilityMaxTravelTimeInMinutes", iDistanceMetric.getMaxTravelDistanceInMinutes());
+        if (unavailabilityMaxTravelTime != iDistanceMetric.getMaxTravelDistanceInMinutes()) {
+        	iUnavailabilityDistanceMetric = new DistanceMetric(iDistanceMetric);
+        	iUnavailabilityDistanceMetric.setMaxTravelDistanceInMinutes(unavailabilityMaxTravelTime);
+        }
 		try {
 			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).getDeclaredConstructor().newInstance());
 		} catch (Exception e) {
@@ -152,6 +158,11 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
 		TravelTime.populateTravelTimes(iDistanceMetric, session.getUniqueId());
+		int unavailabilityMaxTravelTime = iConfig.getPropertyInteger("Distances.UnavailabilityMaxTravelTimeInMinutes", iDistanceMetric.getMaxTravelDistanceInMinutes());
+        if (unavailabilityMaxTravelTime != iDistanceMetric.getMaxTravelDistanceInMinutes()) {
+        	iUnavailabilityDistanceMetric = new DistanceMetric(iDistanceMetric);
+        	iUnavailabilityDistanceMetric.setMaxTravelDistanceInMinutes(unavailabilityMaxTravelTime);
+        }
 		try {
 			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).getDeclaredConstructor().newInstance());
 		} catch (Exception e) {
@@ -327,6 +338,9 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public DistanceMetric getDistanceMetric() { return iDistanceMetric; }
+	
+	@Override
+	public DistanceMetric getUnavailabilityDistanceMetric() { return iUnavailabilityDistanceMetric == null ? iDistanceMetric : iUnavailabilityDistanceMetric; }
 	
 	@Override
 	public OverExpectedCriterion getOverExpectedCriterion() {

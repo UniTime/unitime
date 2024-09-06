@@ -57,6 +57,7 @@ public interface OnlineSectioningServer {
 	
 	public AcademicSessionInfo getAcademicSession();
 	public DistanceMetric getDistanceMetric();
+	public DistanceMetric getUnavailabilityDistanceMetric();
 	public DataProperties getConfig();
 	public OverExpectedCriterion getOverExpectedCriterion();
 	

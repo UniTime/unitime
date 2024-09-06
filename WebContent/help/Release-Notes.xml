@@ -83,6 +83,7 @@
 			<description>
 				<line>Added unavailability distance conflicts (distance conflicts between sections and unavailabilities).</line>
 				<line>This is particularly useful when unavailabilities from other overlapping academic sessions are enabled.</line>
+				<line>A different max travel time in minutes can be defined for unavailabilities using the new solver parameter Distances.MaxTravelDistanceInMinutes.</line>
 			</description>
 		</item>
 	</category>
