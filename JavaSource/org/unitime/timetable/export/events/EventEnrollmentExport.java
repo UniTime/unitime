@@ -328,6 +328,7 @@ public class EventEnrollmentExport implements Exporter {
 					enrollment.isImportant() ? MESSAGES.opSetImportant() :
 					enrollment.isVital() ? MESSAGES.opSetVital() :
 					enrollment.isLC() ? MESSAGES.opSetLC() :
+					enrollment.isVisitingLC() ? MESSAGES.opSetVisitingF2F() :
 					MESSAGES.opSetNotCritical());
 			if (hasRequestedDate)
 				line.add(enrollment.getRequestedDate() == null ? "" : sDF.format(enrollment.getRequestedDate()));

@@ -446,7 +446,7 @@ public class XCourseRequest extends XRequest {
     	return iCritical;
     }
     public boolean isCritical() {
-    	return iCritical > 0;
+    	return iCritical > 0 && iCritical != 5;
     }
         
     /**

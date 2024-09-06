@@ -73,6 +73,7 @@ import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
+import org.cpsolver.studentsct.model.Student.ModalityPreference;
 import org.cpsolver.studentsct.model.Student.StudentPriority;
 import org.cpsolver.studentsct.reservation.CourseReservation;
 import org.cpsolver.studentsct.reservation.CurriculumOverride;
@@ -236,6 +237,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private Query iProjectedStudentQuery = null;
 	private RequestPriority iLCRequestPriority = null;
 	private Map<Long, Set<Long>> iLCDemands = new HashMap<Long, Set<Long>>();
+	private org.cpsolver.ifs.util.Query iVisitingStudentsQuery = null;
+	private boolean iVisitingFaceToFaceCheckFirstChoiceOnly = false;
     
     private Progress iProgress = null;
     
@@ -315,6 +318,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
         
+        String visitingStudentsQuery = model.getProperties().getProperty("Load.VisitingStudentFilter", null);
+        if (visitingStudentsQuery != null && !visitingStudentsQuery.isEmpty()) {
+        	iVisitingStudentsQuery = new org.cpsolver.ifs.util.Query(visitingStudentsQuery);
+        }
+        iVisitingFaceToFaceCheckFirstChoiceOnly = model.getProperties().getPropertyBoolean("Load.VisitingFaceToFaceCheckFirstChoiceOnly", false);
+        		
         iCheckOverrideStatus = model.getProperties().getPropertyBoolean("Load.CheckOverrideStatus", iCheckOverrideStatus);
         iValidateOverrides = model.getProperties().getPropertyBoolean("Load.ValidateOverrides", iValidateOverrides);
         if ((iValidateOverrides || iCheckOverrideStatus) && ApplicationProperty.CustomizationCourseRequestsValidation.value() != null) {
@@ -2098,7 +2107,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						RequestPriority p1 = r1.getRequestPriority();
 						RequestPriority p2 = r2.getRequestPriority();
 						if (p1 != p2) {
-							return (p1 == null ? RequestPriority.Normal : p1).compareTo(p2 == null ? RequestPriority.Normal : p2);
+							return (p1 == null ? RequestPriority.Normal : p1).compareCriticalsTo(p2 == null ? RequestPriority.Normal : p2);
 						}
 					}
 					if (iMoveFreeTimesDown) {
@@ -2616,6 +2625,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 		return ret;
 	}
 	
+	protected boolean isFaceToFace(CourseRequest r) {
+		if (iVisitingFaceToFaceCheckFirstChoiceOnly) {
+			Course firstChoice = r.getCourses().get(0);
+			for (Enrollment e: r.values(getAssignment()))
+				for (Section s: e.getSections())
+					if (!s.isOnline() && e.getCourse().equals(firstChoice)) return true;
+		} else {
+			for (Enrollment e: r.values(getAssignment()))
+				for (Section s: e.getSections())
+					if (!s.isOnline()) return true;
+		}
+		return false;
+	}
+	
     public void load(Session session, org.hibernate.Session hibSession) {
     	iFreeTimePattern = getFreeTimeBitSet(session);
 		iDatePatternFirstDate = getDatePatternFirstDay(session);
@@ -3000,6 +3023,22 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         for (LinkedSections c: getModel().getLinkedSections())
         	c.createConstraints();
         
+        if (iVisitingStudentsQuery != null) {
+        	setPhase("Checking for face-to-face courses for visiting students...", getModel().getStudents().size());
+        	for (Student student: getModel().getStudents()) {
+            	incProgress();
+            	boolean visiting = iVisitingStudentsQuery != null && iVisitingStudentsQuery.match(new UniversalOverride.StudentMatcher(student));
+            	if (visiting) {
+            		for (Request r: student.getRequests()) {
+            			if (r instanceof CourseRequest && r.getRequestPriority() == RequestPriority.Normal && isFaceToFace((CourseRequest)r))
+            				getModel().setCourseRequestPriority((CourseRequest)r, RequestPriority.VisitingF2F);
+            		}
+            		if (student.getModalityPreference() == null || student.getModalityPreference() == ModalityPreference.NO_PREFERENCE)
+            			student.setModalityPreference(ModalityPreference.ONLINE_PREFERRED);
+            	}
+        	}
+        }
+        
         setPhase("Assigning students...", getModel().getStudents().size());
         for (Student student: getModel().getStudents()) {
         	incProgress();
@@ -3047,7 +3086,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	reorderStudentRequests(student);
             }
         }
-        
+                
         if (iStudentCourseDemands != null) {
         	iStudentCourseDemands.init(hibSession, iProgress, SessionDAO.getInstance().get(iSessionId, hibSession), offerings);
     		Hashtable<Long, Student> students = new Hashtable<Long, Student>();

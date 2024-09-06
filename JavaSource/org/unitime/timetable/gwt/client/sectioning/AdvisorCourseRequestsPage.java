@@ -1245,7 +1245,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	protected void fillInStudentRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false, hasWarn = false, hasWait = false;
-		boolean hasCrit = false, hasImp = false, hasVital = false, hasLC = false;
+		boolean hasCrit = false, hasImp = false, hasVital = false, hasLC = false, hasVisitF2F = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iDetails != null && iDetails.hasStudentRequest()) {
 			switch (iDetails.getStudentRequest().getWaitListMode()) {
@@ -1267,6 +1267,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (request.isImportant()) hasImp = true;
 				if (request.isVital()) hasVital = true;
 				if (request.isLC()) hasLC = true;
+				if (request.isVisitingF2F()) hasVisitF2F = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -1348,7 +1349,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
 									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") :
-									first && request.isLC() ? new WebTable.Cell(MESSAGES.opSetLC(), MESSAGES.descriptionRequestLC()) : new WebTable.Cell("")),
+									first && request.isLC() ? new WebTable.Cell(MESSAGES.opSetLC(), MESSAGES.descriptionRequestLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) : new WebTable.Cell("")),
 								(iDetails.getStudentRequest().getWaitListMode() == WaitListMode.WaitList
 									 ? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell(""))
 									 : (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
@@ -1394,6 +1396,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (request.isImportant()) hasImp = true;
 				if (request.isVital()) hasVital = true;
 				if (request.isLC()) hasLC = true;
+				if (request.isVisitingF2F()) hasVisitF2F = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -1475,7 +1478,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
 									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") :
-									first && request.isLC() ? new WebTable.Cell(MESSAGES.opSetLC(), MESSAGES.descriptionRequestLC()) : new WebTable.Cell("")),
+									first && request.isLC() ? new WebTable.Cell(MESSAGES.opSetLC(), MESSAGES.descriptionRequestLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sDF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -1600,12 +1604,12 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		iRequests.setData(rowArray);
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
-		iRequests.setColumnVisible(7, hasCrit || hasImp || hasVital || hasLC);
-		if (hasCrit && !hasImp && !hasVital && !hasLC)
+		iRequests.setColumnVisible(7, hasCrit || hasImp || hasVital || hasLC || hasVisitF2F);
+		if (hasCrit && !hasImp && !hasVital && !hasLC && !hasVisitF2F)
 			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetCritical());
-		else if (!hasCrit && hasImp && !hasVital && !hasLC)
+		else if (!hasCrit && hasImp && !hasVital && !hasLC && !hasVisitF2F)
 			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetImportant());
-		else if (!hasCrit && !hasImp && hasVital && !hasLC)
+		else if (!hasCrit && !hasImp && hasVital && !hasLC && !hasVisitF2F)
 			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetVital());
 		else
 			iRequests.getTable().setHTML(0, 7, MESSAGES.colCritical());

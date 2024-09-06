@@ -1456,6 +1456,8 @@ public class EnrollmentTable extends Composite {
 					i = new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), MESSAGES.opSetVital());
 				} else if (enrollment.isLC()) {
 					i = new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC());
+				} else if (enrollment.isVisitingLC()) {
+					i = new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F());
 				} else {
 					i = new WebTable.IconCell(RESOURCES.requestsNotCritical(), MESSAGES.descriptionRequestNotCritical(), MESSAGES.opSetNotCritical());
 				}

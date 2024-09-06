@@ -86,6 +86,17 @@
 				<line>A different max travel time in minutes can be defined for unavailabilities using the new solver parameter Distances.MaxTravelDistanceInMinutes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Scheduling: Visiting F2F Priority</name>
+			<description>
+				<line>Added a new course request priority Visiting F2F that can be used to lower priority of visiting students for getting in face-to-face courses.</line>
+				<line>Can be enabled by identifying visiting students with Load.VisitingStudentFilter (e.g., not campus:XX)</line>
+				<line>A course request is considered face-to-face, if there is at least one possible enrollment that has a face-to-face class.
+					<line>When Load.VisitingFaceToFaceCheckFirstChoiceOnly is set to true (defaults to false), only the first-choice course is checked for face-to-face classes.</line>
+					<line>Only course requests without a priority can have their priority lowered (set to Visiting F2F).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

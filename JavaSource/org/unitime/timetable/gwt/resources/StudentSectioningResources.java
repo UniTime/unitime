@@ -274,4 +274,7 @@ public interface StudentSectioningResources extends ClientBundle {
 	
 	@Source("org/unitime/timetable/gwt/resources/icons/cog.png")
 	ImageResource preferences();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/roadrunner16.png")
+	ImageResource requestsVisitingF2F();
 }

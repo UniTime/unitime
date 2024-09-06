@@ -427,7 +427,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			if (CONSTANTS.assignmentType().length > 18)
 				assignment.add(new Entity(18l, "Not Assigned LC", CONSTANTS.assignmentType()[18], "translated-value", CONSTANTS.assignmentType()[18]));
 			else
-				assignment.add(new Entity(18l, "Not Assigned LC", "Not Assigned Critical"));
+				assignment.add(new Entity(18l, "Not Assigned LC", "Not Assigned LC"));
 		} else if (crit2count.containsKey(CourseDemand.Critical.LC.ordinal())) {
 			if (CONSTANTS.assignmentType().length > 16)
 				assignment.add(new Entity(16l, "LC", CONSTANTS.assignmentType()[16], "translated-value", CONSTANTS.assignmentType()[16]));
@@ -441,7 +441,24 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			if (CONSTANTS.assignmentType().length > 18)
 				assignment.add(new Entity(18l, "Not Assigned LC", CONSTANTS.assignmentType()[18], "translated-value", CONSTANTS.assignmentType()[18]));
 			else
-				assignment.add(new Entity(18l, "Not Assigned LC", "Not Assigned Critical"));
+				assignment.add(new Entity(18l, "Not Assigned LC", "Not Assigned LC"));
+		}
+		if (server instanceof StudentSolver) {
+			String visitingStudentsFilter = server.getConfig().getProperty("Load.VisitingStudentFilter");
+			if (visitingStudentsFilter != null && !visitingStudentsFilter.isEmpty()) {
+				if (CONSTANTS.assignmentType().length > 19)
+					assignment.add(new Entity(19l, "Visiting F2F", CONSTANTS.assignmentType()[19], "translated-value", CONSTANTS.assignmentType()[19]));
+				else
+					assignment.add(new Entity(19l, "Visiting F2F", "Visiting F2F"));
+				if (CONSTANTS.assignmentType().length > 20)
+					assignment.add(new Entity(20l, "Assigned Visiting F2F", CONSTANTS.assignmentType()[20], "translated-value", CONSTANTS.assignmentType()[20]));
+				else
+					assignment.add(new Entity(20l, "Assigned Visiting F2F", "Assigned Visiting F2F"));
+				if (CONSTANTS.assignmentType().length > 21)
+					assignment.add(new Entity(21l, "Not Assigned Visiting F2F", CONSTANTS.assignmentType()[21], "translated-value", CONSTANTS.assignmentType()[21]));
+				else
+					assignment.add(new Entity(21l, "Not Assigned Visiting F2F", "Not Assigned Visiting F2F"));
+			}
 		}
 		if (!(server instanceof StudentSolver))
 			assignment.add(new Entity(3l, "Wait-Listed", CONSTANTS.assignmentType()[3], "translated-value", CONSTANTS.assignmentType()[3]));

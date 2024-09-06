@@ -2314,6 +2314,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course request has a matching LC reservation.")
 	String descriptionRequestLC();
 	
+	@DefaultMessage("Face-to-face course request for a visiting student.")
+	String descriptionRequestVisitingF2F();
+	
 	@DefaultMessage("Enrolled")
 	String reqStatusEnrolled();
 
@@ -2841,6 +2844,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Use Default")
 	String opSetCriticalNotSet();
+	
+	@DefaultMessage("Visiting F2F")
+	String opSetVisitingF2F();
 	
 	@DefaultMessage("Requested Overrides for {0}")
 	String dialogChangeRequestNote(String course);

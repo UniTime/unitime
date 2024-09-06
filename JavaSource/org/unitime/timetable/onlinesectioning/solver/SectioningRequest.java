@@ -127,6 +127,8 @@ public class SectioningRequest implements LastSectionProvider {
 				iRequestPriority = RequestPriority.Vital;
 			else if (request.getCritical() == CourseDemand.Critical.LC.ordinal())
 				iRequestPriority = RequestPriority.LC;
+			else if (request.getCritical() == CourseDemand.Critical.VISITING_F2F.ordinal())
+				iRequestPriority = RequestPriority.VisitingF2F;
 		}
 		if (action != null)
 			action.addOptionBuilder().setKey("Request Priority").setValue(iRequestPriority.name());

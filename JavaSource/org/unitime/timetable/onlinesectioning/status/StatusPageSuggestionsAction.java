@@ -857,6 +857,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && isAssigned();
 				} else if (eq("Not Assigned Important", term)) {
 					return request().getCritical() == CourseDemand.Critical.IMPORTANT.ordinal() && !isAssigned();
+				} else if (eq("Visiting F2F", term)) {
+					return request().getCritical() == CourseDemand.Critical.VISITING_F2F.ordinal();
+				} else if (eq("Assigned Visiting F2F", term)) {
+					return request().getCritical() == CourseDemand.Critical.VISITING_F2F.ordinal() && isAssigned();
+				} else if (eq("Not Assigned Visiting F2F", term)) {
+					return request().getCritical() == CourseDemand.Critical.VISITING_F2F.ordinal() && !isAssigned();
 				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
 					return request().isNoSub(iWaitListMode);
 				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {
