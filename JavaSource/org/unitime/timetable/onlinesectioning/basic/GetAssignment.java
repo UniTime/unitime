@@ -556,6 +556,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 	public ClassAssignmentInterface computeAssignment(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<XRequest> studentRequests, List<EnrollmentFailure> messages, Set<ErrorMessage> errors, boolean includeRequest, WaitListMode wlMode) {
 		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 		DistanceMetric m = server.getDistanceMetric();
+		DistanceMetric um = server.getUnavailabilityDistanceMetric();
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 		OnlineSectioningLog.Action.Builder action = helper.getAction();
 		action.setStudent(OnlineSectioningLog.Entity.newBuilder().setUniqueId(student.getStudentId()));
@@ -901,8 +902,12 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								if (section.getTime() != null && section.getTime().hasIntersection(cs.getSection().getTime())) {
 									overlap.add(MSG.teachingAssignment(MSG.clazz(cs.getCourse().getSubjectArea(), cs.getCourse().getCourseNumber(), cs.getSection().getSubpartName(), cs.getSection().getName(cs.getCourse().getCourseId()))));
 								}
-								if (section.isUnavailabilityDistanceConflict(student, cs.getSection(), m)) {
+								if (section.isUnavailabilityDistanceConflict(student, cs.getSection(), um)) {
 									a.setDistanceConflict(true);
+									from = "";
+                                                                        for (Iterator<XRoom> k = cs.getSection().getRooms().iterator(); k.hasNext();)
+                                                                                from += k.next().getName() + (k.hasNext() ? ", " : "");
+									dist = section.getDistanceInMinutes(um, cs.getSection().getRooms());
 								}
 							}
 						if (!overlap.isEmpty()) {

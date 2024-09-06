@@ -408,7 +408,7 @@ public class XSection implements Serializable, Comparable<XSection>, Externaliza
         return getSectionId().compareTo(section.getSectionId());
     }
     
-    private int getDistanceInMinutes(DistanceMetric m,  List<XRoom> other) {
+    public int getDistanceInMinutes(DistanceMetric m,  List<XRoom> other) {
         int dist = 0;
         for (XRoom r1 : getRooms())
             for (XRoom r2 : other) {

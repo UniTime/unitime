@@ -1601,4 +1601,11 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		Student student = getStudentExtCache().get(externalUniqueId);
 		return (student == null ? null : new XStudent(student, currentSolution().getAssignment()));
 	}
+
+	@Override
+	public DistanceMetric getUnavailabilityDistanceMetric() {
+		if (getModel().getStudentQuality() != null)
+			return getModel().getStudentQuality().getStudentQualityContext().getUnavailabilityDistanceMetric();
+		return getDistanceMetric();
+	}
 }
