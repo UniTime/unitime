@@ -675,7 +675,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 	protected void fillInRequests() {
 		ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 		boolean hasPref = false, hasWarn = false, hasWait = false;
-		boolean hasCrit = false, hasImp = false, hasVital = false, hasLC = false;
+		boolean hasCrit = false, hasImp = false, hasVital = false, hasLC = false, hasVisitF2F = false;
 		NumberFormat df = NumberFormat.getFormat("0.#");
 		if (iAssignment.hasRequest()) {
 			setWaitListMode(iAssignment.getRequest().getWaitListMode(), false, true);
@@ -694,6 +694,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (request.isImportant()) hasImp = true;
 				if (request.isVital()) hasVital = true;
 				if (request.isLC()) hasLC = true;
+				if (request.isVisitingF2F()) hasVisitF2F = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -776,7 +777,9 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical()) :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), MESSAGES.opSetImportant()) :
 									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), MESSAGES.opSetVital()) :
-									first && request.isLC() ? new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC()) : new WebTable.Cell("")),
+									first && request.isLC() ? new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) :
+									new WebTable.Cell("")),
 								(iAssignment.getRequest().getWaitListMode() == WaitListMode.WaitList
 									? (first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sWLF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell(""))
 									: (first && request.isNoSub() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestNoSubs(), "") : new WebTable.Cell(""))),
@@ -822,6 +825,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				if (request.isImportant()) hasImp = true;
 				if (request.isVital()) hasVital = true;
 				if (request.isLC()) hasLC = true;
+				if (request.isVisitingF2F()) hasVisitF2F = true;
 				for (RequestedCourse rc: request.getRequestedCourse()) {
 					if (rc.isCourse()) {
 						ImageResource icon = null; String iconText = null;
@@ -904,7 +908,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical()) :
 									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), MESSAGES.opSetImportant()) :
 									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), MESSAGES.opSetVital()) :
-									first && request.isLC() ? new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC()) : new WebTable.Cell("")),
+									first && request.isLC() ? new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) : new WebTable.Cell("")),
 								(first && request.isWaitList() ? new WebTable.IconCell(RESOURCES.requestsWaitList(), MESSAGES.descriptionRequestWaitListed(), (request.hasWaitListedTimeStamp() ? sWLF.format(request.getWaitListedTimeStamp()) : "")) : new WebTable.Cell("")),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : "")
 								);
@@ -1027,12 +1032,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		iRequests.setData(rowArray);
 		iRequests.setColumnVisible(4, hasPref);
 		iRequests.setColumnVisible(5, hasWarn);
-		iRequests.setColumnVisible(7, hasCrit || hasImp || hasVital || hasLC || iAssignment.isCanSetCriticalOverrides());
-		if (hasCrit && !hasImp && !hasVital && !hasLC)
+		iRequests.setColumnVisible(7, hasCrit || hasImp || hasVital || hasLC || hasVisitF2F || iAssignment.isCanSetCriticalOverrides());
+		if (hasCrit && !hasImp && !hasVital && !hasLC && !hasVisitF2F)
 			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetCritical());
-		else if (!hasCrit && hasImp && !hasVital && !hasLC)
+		else if (!hasCrit && hasImp && !hasVital && !hasLC && !hasVisitF2F)
 			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetImportant());
-		else if (!hasCrit && !hasImp && hasVital && !hasLC)
+		else if (!hasCrit && !hasImp && hasVital && !hasLC && !hasVisitF2F)
 			iRequests.getTable().setHTML(0, 7, MESSAGES.opSetVital());
 		else
 			iRequests.getTable().setHTML(0, 7, MESSAGES.colCritical());
@@ -1622,12 +1627,34 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 		
 		CriticalCell(Request request) {
 			super(
-				request.isCritical() ? RESOURCES.requestsCritical() : request.isImportant() ? RESOURCES.requestsImportant() : request.isVital() ? RESOURCES.requestsVital() : request.isLC() ? RESOURCES.requestsLC() : RESOURCES.requestsNotCritical(),
+				request.isCritical() ? RESOURCES.requestsCritical() :
+					request.isImportant() ? RESOURCES.requestsImportant() :
+					request.isVital() ? RESOURCES.requestsVital() :
+					request.isLC() ? RESOURCES.requestsLC() :
+					request.isVisitingF2F() ? RESOURCES.requestsVisitingF2F() :
+					RESOURCES.requestsNotCritical(),
 				null,
-				request.isCritical() ? MESSAGES.opSetCritical() : request.isImportant() ? MESSAGES.opSetImportant() : request.isVital() ? MESSAGES.opSetVital() : request.isLC() ? MESSAGES.opSetLC() : MESSAGES.opSetNotCritical()
+				request.isCritical() ? MESSAGES.opSetCritical() :
+					request.isImportant() ? MESSAGES.opSetImportant() :
+					request.isVital() ? MESSAGES.opSetVital() :
+					request.isLC() ? MESSAGES.opSetLC() :
+					request.isVisitingF2F() ? MESSAGES.opSetVisitingF2F() :
+					MESSAGES.opSetNotCritical()
 				);
-			getIcon().setAltText(request.isCritical() ? MESSAGES.descriptionRequestCritical() : request.isImportant() ? MESSAGES.descriptionRequestImportant() : request.isVital() ? MESSAGES.descriptionRequestVital() : request.isLC() ? MESSAGES.descriptionRequestLC() : MESSAGES.descriptionRequestNotCritical());
-			getIcon().setTitle(request.isCritical() ? MESSAGES.descriptionRequestCritical() : request.isImportant() ? MESSAGES.descriptionRequestImportant() : request.isVital() ? MESSAGES.descriptionRequestVital() : request.isLC() ? MESSAGES.descriptionRequestLC() : MESSAGES.descriptionRequestNotCritical());
+			getIcon().setAltText(
+					request.isCritical() ? MESSAGES.descriptionRequestCritical() :
+					request.isImportant() ? MESSAGES.descriptionRequestImportant() :
+					request.isVital() ? MESSAGES.descriptionRequestVital() :
+					request.isLC() ? MESSAGES.descriptionRequestLC() :
+					request.isVisitingF2F() ? MESSAGES.descriptionRequestLC() :
+					MESSAGES.descriptionRequestNotCritical());
+			getIcon().setTitle(
+					request.isCritical() ? MESSAGES.descriptionRequestCritical() :
+					request.isImportant() ? MESSAGES.descriptionRequestImportant() :
+					request.isVital() ? MESSAGES.descriptionRequestVital() :
+					request.isLC() ? MESSAGES.descriptionRequestLC() :
+					request.isVisitingF2F() ? MESSAGES.descriptionRequestLC() :
+					MESSAGES.descriptionRequestNotCritical());
 			iRequest = request;
 			getIcon().getElement().getStyle().setCursor(Cursor.POINTER);
 			ClickHandler ch = new ClickHandler() {

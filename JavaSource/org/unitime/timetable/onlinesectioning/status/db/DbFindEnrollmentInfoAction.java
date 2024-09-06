@@ -1161,6 +1161,30 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 						return true;
 					}
 					return false;
+				} else if (eq("LC", term)) {
+					return request().getCourseDemand().getEffectiveCritical() == Critical.LC;
+				} else if (eq("Assigned LC", term)) {
+					if (enrollment().isEmpty()) return false;
+					return request().getCourseDemand().getEffectiveCritical() == Critical.LC;
+				} else if (eq("Not Assigned LC", term)) {
+					if (enrollment().isEmpty() && request().getCourseDemand().getEffectiveCritical() == Critical.LC && !request().getCourseDemand().isAlternative()) {
+						for (StudentClassEnrollment e: student().getClassEnrollments())
+							if (e.getCourseRequest() != null && e.getCourseRequest().getCourseDemand().equals(request().getCourseDemand())) return false;
+						return true;
+					}
+					return false;
+				} else if (eq("Visiting F2F", term)) {
+					return request().getCourseDemand().getEffectiveCritical() == Critical.VISITING_F2F;
+				} else if (eq("Assigned Visiting F2F", term)) {
+					if (enrollment().isEmpty()) return false;
+					return request().getCourseDemand().getEffectiveCritical() == Critical.VISITING_F2F;
+				} else if (eq("Not Assigned Visiting F2F", term)) {
+					if (enrollment().isEmpty() && request().getCourseDemand().getEffectiveCritical() == Critical.VISITING_F2F && !request().getCourseDemand().isAlternative()) {
+						for (StudentClassEnrollment e: student().getClassEnrollments())
+							if (e.getCourseRequest() != null && e.getCourseRequest().getCourseDemand().equals(request().getCourseDemand())) return false;
+						return true;
+					}
+					return false;
 				} else if (eq("No-Subs", term) || eq("No-Substitutes", term)) {
 					return request().getCourseDemand().effectiveNoSub();
 				} else if (eq("Assigned No-Subs", term) || eq("Assigned  No-Substitutes", term)) {

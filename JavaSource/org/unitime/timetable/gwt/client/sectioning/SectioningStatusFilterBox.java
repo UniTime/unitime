@@ -153,6 +153,18 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 					translatedValue = (CONSTANTS.assignmentType().length > 14 ? CONSTANTS.assignmentType()[14] : null);
 				else if ("not assigned vital".equalsIgnoreCase(text))
 					translatedValue = (CONSTANTS.assignmentType().length > 15 ? CONSTANTS.assignmentType()[15] : null);
+				else if ("lc".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 16 ? CONSTANTS.assignmentType()[16] : null);
+				else if ("assigned lc".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 17 ? CONSTANTS.assignmentType()[17] : null);
+				else if ("not assigned lc".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 18 ? CONSTANTS.assignmentType()[18] : null);
+				else if ("visiting f2f".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 19 ? CONSTANTS.assignmentType()[19] : null);
+				else if ("assigned visiting f2f".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 20 ? CONSTANTS.assignmentType()[20] : null);
+				else if ("not assigned visiting f2f".equalsIgnoreCase(text))
+					translatedValue = (CONSTANTS.assignmentType().length > 21 ? CONSTANTS.assignmentType()[21] : null);
 				callback.onSuccess(new Chip(getCommand(), text).withTranslatedCommand(getLabel()).withTranslatedValue(translatedValue));
 			}
 		});
