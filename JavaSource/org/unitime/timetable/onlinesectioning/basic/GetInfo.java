@@ -459,7 +459,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 			if (unavailabilities != null) {
 				for (XClassEnrollment e: unavailabilities) {
 					if (e.getSection().isCancelled() || e.getSection().getTime() == null) continue;
-					new Unavailability(student,
+					Unavailability ua = new Unavailability(student,
 							new Section(
 									e.getSection().getSectionId(),
 									e.getSection().getLimit(),
@@ -467,6 +467,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 									null,
 									e.getSection().toPlacement(e.getShiftDays()), null),
 							e.getSection().isAllowOverlap());
+					ua.setTeachingAssignment(false);
+					ua.setCourseId(e.getCourseId().getCourseId());
 				}
 			}
 		}
@@ -487,7 +489,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 							server.getAcademicSession().getDatePatternFirstDate(),
 							AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession())
 							);
-					new Unavailability(student,
+					Unavailability ua = new Unavailability(student,
 							new Section(
 									enrollment.getClazz().getUniqueId(),
 									enrollment.getClazz().getMaxExpectedCapacity(),
@@ -495,6 +497,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 									null,
 									enrollment.getClazz().getCommittedAssignment().getPlacement(shiftDays), null),
 							enrollment.getClazz().getSchedulingSubpart().getStudentAllowOverlap());
+					ua.setTeachingAssignment(false);
+					ua.setCourseId(enrollment.getCourseOffering().getUniqueId());
 				}
 			}
 		}
@@ -518,7 +522,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 						server.getAcademicSession().getDatePatternFirstDate(),
 						AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession())
 						);
-				new Unavailability(student,
+				Unavailability ua = new Unavailability(student,
 						new Section(
 								enrollment.getClazz().getUniqueId(),
 								enrollment.getClazz().getMaxExpectedCapacity(),
@@ -526,6 +530,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 								null,
 								enrollment.getClazz().getCommittedAssignment().getPlacement(shiftDays), null),
 						enrollment.getClazz().getSchedulingSubpart().getStudentAllowOverlap());
+				ua.setTeachingAssignment(false);
+				ua.setCourseId(enrollment.getCourseOffering().getUniqueId());
 			}
 		}
 	}

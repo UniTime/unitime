@@ -2811,7 +2811,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         									if (tcr.getTeachingClass().equals(ci.getClassInstructing())) {
         										canOverlap = tcr.isCanOverlap(); break;
         									}
-        							new Unavailability(student, section, canOverlap);
+        							Unavailability ua = new Unavailability(student, section, canOverlap);
+        							ua.setTeachingAssignment(true);
         						}
         			        }
         			        for (TeachingClassRequest tcr: clazz.getTeachingRequests()) {
@@ -2819,8 +2820,10 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			            	for (DepartmentalInstructor di: tcr.getTeachingRequest().getAssignedInstructors()) {
         			            		if (di.getExternalUniqueId() == null || di.getExternalUniqueId().isEmpty()) continue;
         			            		Student student = ext2student.get(di.getExternalUniqueId());
-                						if (student != null)
-                							new Unavailability(student, section, tcr.isCanOverlap());
+                						if (student != null) {
+                							Unavailability ua = new Unavailability(student, section, tcr.isCanOverlap());
+                							ua.setTeachingAssignment(true);
+                						}
         			            	}
         			        	}
         			        }
@@ -2852,11 +2855,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		            if (offering != null) {
     		            	getModel().addOffering(offering);
         					section = classTable.get(enrollment.getClazz().getUniqueId());
-        					if (section != null && !section.isCancelled() && section.getTime() != null)
-        						new Unavailability(student, section, section.isAllowOverlap());        						
+        					if (section != null && !section.isCancelled() && section.getTime() != null) {
+        						Unavailability ua = new Unavailability(student, section, section.isAllowOverlap());
+        						ua.setTeachingAssignment(false);
+        						ua.setCourseId(enrollment.getCourseOffering().getUniqueId());
+        					}
     		            }
         			} else if (section != null && !section.isCancelled() && section.getTime() != null) {
-        				new Unavailability(student, section, section.isAllowOverlap());
+        				Unavailability ua = new Unavailability(student, section, section.isAllowOverlap());
+        				ua.setTeachingAssignment(false);
+						ua.setCourseId(enrollment.getCourseOffering().getUniqueId());
         			}
         		}
         	}

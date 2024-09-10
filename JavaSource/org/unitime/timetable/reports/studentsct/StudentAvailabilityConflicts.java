@@ -177,6 +177,7 @@ public class StudentAvailabilityConflicts extends AbstractStudentSectioningRepor
         		if (!matches(r, e)) continue;
         		for (Section s : e.getSections()) {
         			for (Unavailability u: student.getUnavailabilities()) {
+        				if (!u.isTeachingAssignment()) continue;
         				if (inConflict(s, u, ignoreBreakTimeConflicts)) {
         					if (!includeAllowedOverlaps && (e.isAllowOverlap() || u.isAllowOverlap() || !s.isOverlapping(u))) continue;
         					List<CSVFile.CSVField> line = new ArrayList<CSVFile.CSVField>();

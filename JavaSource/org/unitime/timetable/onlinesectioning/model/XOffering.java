@@ -947,9 +947,10 @@ public class XOffering implements Serializable, Externalizable {
 					if (section.getTime() != null && !section.isCancelled())
 						for (XInstructor instructor: section.getAllInstructors())
 							if (student.getExternalId().equals(instructor.getExternalId()) && sections.add(section.getSectionId())) {
-								new Unavailability(student,
+								Unavailability ua = new Unavailability(student,
 										new Section(section.getSectionId(), section.getLimit(), getName() + " " + subpart.getName() + " " + section.getName(), null, section.toPlacement(), null),
 										instructor.isAllowOverlap());
+								ua.setTeachingAssignment(true);
 							}
 				}
     }
