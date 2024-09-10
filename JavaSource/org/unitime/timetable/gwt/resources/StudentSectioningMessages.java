@@ -2268,7 +2268,7 @@ public interface StudentSectioningMessages extends Messages {
 	String reportTimeConflict();
 	
 	@DefaultMessage("Overlaps for {0} minutes")
-	String reportAllowedOverlap(int mins);
+	String reportAllowedOverlapForMins(int mins);
 	
 	@DefaultMessage("Distance conflict ({0} minutes break, {1} minutes travel)")
 	String reportDistanceConflict(int breakTime, int travelTimeInMins);

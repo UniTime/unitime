@@ -134,7 +134,7 @@ public class StudentUnavailabilityConflicts extends AbstractStudentSectioningRep
 	    		            line.add(new CSVFile.CSVField(uaTime.getDayHeader() + " " + uaTime.getStartTimeHeader(isUseAmPm()) + " - " + uaTime.getEndTimeHeader(isUseAmPm())));
 	    		            line.add(new CSVFile.CSVField(rooms(unavailability)));
 	    		            line.add(new CSVFile.CSVField(unavailability.isOverlapping(section) ?
-	    		            		MSG.reportAllowedOverlap( 5 * time.nrSharedDays(uaTime) * time.nrSharedHours(uaTime)) :
+	    		            		MSG.reportAllowedOverlapForMins( 5 * time.nrSharedDays(uaTime) * time.nrSharedHours(uaTime)) :
 	    		            		MSG.reportTimeConflict()));
 	    		            line.add(new CSVFile.CSVField(unavailability.isTeachingAssignment() ? GWT_MSG.exportTrue() : GWT_MSG.exportFalse()));
 	    		            line.add(new CSVFile.CSVField(section.isAllowOverlap() || unavailability.isAllowOverlap() ? GWT_MSG.exportTrue() : GWT_MSG.exportFalse()));
