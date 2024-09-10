@@ -2123,6 +2123,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Tableau Report (Simplified)")
 	String reportTableauSimpleReport();
 	
+	@DefaultMessage("Student Unavailability Conflicts")
+	String reportStudentUnavailabilityConflicts();
+	
 	@DefaultMessage("Requested")
 	String reportRequestedPriority();
 	
@@ -2215,6 +2218,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Teaching\nOverlap")
 	String reportTeachingOverlap();
+	
+	@DefaultMessage("Teaching\nAssignment")
+	String reportTeachingAssignment();
 
 	@DefaultMessage("1st Alt")
 	String report1stAlt();
@@ -2254,6 +2260,18 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Problem")
 	String reportProblem();
+	
+	@DefaultMessage("Unavailability\n{0}")
+	String reportUnavailability(String col);
+	
+	@DefaultMessage("Time conflict")
+	String reportTimeConflict();
+	
+	@DefaultMessage("Overlaps for {0} minutes")
+	String reportAllowedOverlap(int mins);
+	
+	@DefaultMessage("Distance conflict ({0} minutes break, {1} minutes travel)")
+	String reportDistanceConflict(int breakTime, int travelTimeInMins);
 	
 	@DefaultMessage("{0}")
 	String teachingAssignment(String className);

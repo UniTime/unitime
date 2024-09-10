@@ -78,6 +78,7 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		NOT_ALLOWED_TIME_OVERLAPS_BT("Not Allowed Time Overlaps (Exclude Break Times)", IndividualStudentTimeOverlaps.class.getName(), "ignoreBreakTimeConflicts", "true", "includeAllowedOverlaps", "false"),
 		TEACHING_CONFLICTS("Teaching Conflicts", StudentAvailabilityConflicts.class.getName()),
 		TEACHING_CONFLICTS_NA("Teaching Conflicts (Exclude Allowed)", StudentAvailabilityConflicts.class.getName(), "includeAllowedOverlaps", "false"),
+		UNAVAILABILITIES(SCT_MSG.reportStudentUnavailabilityConflicts(), StudentUnavailabilityConflicts.class.getName()),
 		NOT_ASSIGNED_COURSE_REQUESTS(SCT_MSG.reportUnassignedCourseRequests(), UnasignedCourseRequests.class.getName()),
 		NOT_ASSIGNED_COURSE_REQUESTS_LC(SCT_MSG.reportUnassignedLCCourseRequests(), UnasignedCourseRequests.class.getName(), "type", RequestPriority.LC.name()),
 		NOT_ASSIGNED_COURSE_REQUESTS_CRITICAL(SCT_MSG.reportUnassignedCriticalCourseRequests(), UnasignedCourseRequests.class.getName(), "type",
