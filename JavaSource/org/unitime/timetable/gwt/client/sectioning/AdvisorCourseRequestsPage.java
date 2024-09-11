@@ -148,6 +148,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private int iStudentRequestHeaderLine = 0;
 	private int iAdisorRequestsHeaderLine = 0;
+	private int iOtherSessionRecommendations = 0;
 	private int iPinLine = 0;
 	private int iStatusLine = 0;
 	
@@ -278,6 +279,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 							iWaitListHeader.addStyleName("waitlist-header");
 						}
 						fillInStudentRequests();
+						fillInOtherSessionRecommendations();
 						if (result != null && result.getStudentRequest() != null && result.getRequest().hasErrorMessage())
 							iStudentStatus.error(result.getRequest().getErrorMessaeg(), false);
 						if (result.isCanUpdate()) {
@@ -846,7 +848,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	private void clearRequests() {
-		int row = 11;
+		int row = iAdisorRequestsHeaderLine + 1;
 		for (AdvisorCourseRequestLine line: iCourses) {
 			line.clear();
 			line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
@@ -881,7 +883,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (next != null) {
 			line.setNext(next); next.setPrevious(line);
 		}
-		line.insert(this, insertRow(10 + iCourses.size()));
+		line.insert(this, insertRow(iAdisorRequestsHeaderLine + 2 + iCourses.size()));
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
@@ -900,7 +902,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		if (prev != null) {
 			line.setPrevious(prev); prev.setNext(line);
 		}
-		line.insert(this, insertRow(10 + iCourses.size() + 2 + iAlternatives.size()));
+		line.insert(this, insertRow(iAdisorRequestsHeaderLine + iCourses.size() + 4 + iAlternatives.size()));
 		line.addValueChangeHandler(new ValueChangeHandler<CourseRequestInterface.Request>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Request> event) {
@@ -942,6 +944,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			clearRequests();
 			clearPin();
 			clearStudentRequests();
+			clearOtherSessionRecommendations();
 			clearAdvisorRequests();
 			hideLastNotes();
 		} else {
@@ -953,6 +956,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 			clearPin();
 			iSession.selectSessionNoCheck();
 			clearStudentRequests();
+			clearOtherSessionRecommendations();
 			clearAdvisorRequests();
 			hideLastNotes();
 		}
@@ -1617,6 +1621,51 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		
 		getRowFormatter().setVisible(iStudentRequestHeaderLine, iDetails != null && iDetails.hasStudentRequest());
 		getRowFormatter().setVisible(iStudentRequestHeaderLine + 1, iDetails != null && iDetails.hasStudentRequest());
+	}
+	
+	public void clearOtherSessionRecommendations() {
+		for (int i = 0; i < iOtherSessionRecommendations; i++) {
+			iAdisorRequestsHeaderLine -= 2;
+			removeRow(iAdisorRequestsHeaderLine);
+			removeRow(iAdisorRequestsHeaderLine);
+		}
+		iOtherSessionRecommendations = 0;
+	}
+	
+	public void fillInOtherSessionRecommendations() {
+		clearOtherSessionRecommendations();
+		if (iDetails != null && iDetails.hasOtherSessionRecommendations()) {
+			TreeSet<String> campuses = new TreeSet<String>(iDetails.getOtherSessionRecommendations().keySet());
+			for (String campus: campuses) {
+				int hrow = insertRow(iAdisorRequestsHeaderLine);
+				getFlexCellFormatter().setColSpan(hrow, 0, getColSpan());
+				getFlexCellFormatter().setStyleName(hrow, 0, "unitime-MainTableHeader");
+				getRowFormatter().setStyleName(hrow, "unitime-MainTableHeaderRow");
+				UniTimeHeaderPanel header = new UniTimeHeaderPanel(MESSAGES.otherSessionRecommendations(campus));
+				setWidget(hrow, 0, header);
+				final int trow = insertRow(iAdisorRequestsHeaderLine + 1);
+				getFlexCellFormatter().setColSpan(trow, 0, getColSpan());
+				AdvisorCourseRequestsTable acr = new AdvisorCourseRequestsTable();
+				acr.setValue(iDetails.getOtherSessionRecommendations().get(campus));
+				ScrollPanel sp = new ScrollPanel(acr); sp.addStyleName("other-session-recommendations");
+				setWidget(trow, 0, sp);
+				if (SectioningStatusCookie.getInstance().isOtherSessionRecommendationsOpened()) {
+					header.setCollapsible(true);
+				} else {
+					header.setCollapsible(false);
+					getRowFormatter().setVisible(trow, false);
+				}
+				header.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> event) {
+						getRowFormatter().setVisible(trow, event.getValue());
+						SectioningStatusCookie.getInstance().setOtherSessionRecommendationsOpened(event.getValue());
+					}
+				});
+				iOtherSessionRecommendations ++;
+				iAdisorRequestsHeaderLine += 2;
+			}
+		}
 	}
 	
 	public boolean isSendEmailConformation() {
