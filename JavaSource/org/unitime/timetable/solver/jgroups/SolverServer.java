@@ -114,4 +114,6 @@ public interface SolverServer {
 	public QueueProcessor getQueueProcessor();
 	
 	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessions(AcademicSessionInfo session, String studentExternalId);
+	
+	public float[] getCreditRangeFromOtherSessions(AcademicSessionInfo session, String studentExternalId);
 }

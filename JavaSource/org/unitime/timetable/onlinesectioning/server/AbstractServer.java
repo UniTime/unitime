@@ -24,6 +24,7 @@ import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,6 +80,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XCredit;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
@@ -867,5 +869,58 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		XStudent student = getStudent(studentId);
 		if (student == null) return null;
 		return getSchedulingRule(student, mode, isAdvisor, isAdmin);
+	}
+	
+	@Override
+	public float[] getCredits(String studentExternalId) {
+		XStudent student = getStudentForExternalId(studentExternalId);
+		if (student == null) return null;
+		List<Float> mins = new ArrayList<Float>();
+		List<Float> maxs = new ArrayList<Float>();
+		int nrCourses = 0;
+		float tMin = 0f, tMax = 0f, tEnrl = 0f;
+		for (XRequest request: student.getRequests()) {
+			if (request instanceof XCourseRequest) {
+				XCourseRequest cr = (XCourseRequest)request;
+				XEnrollment e = cr.getEnrollment();
+				if (e != null) {
+					float cred = e.getCredit(this);
+					tMin += cred; tMax += cred;
+					tEnrl += cred;
+					if (cr.isAlternative())
+						nrCourses --;
+				} else {
+					Float min = null, max = null;
+					for (XCourseId course: cr.getCourseIds()) {
+						XOffering offering = getOffering(course.getOfferingId());
+						XCredit rc = (offering == null ? null : offering.getCourse(course.getCourseId()).getCreditInfo());
+						if (cr != null) {
+							if (min == null || min > rc.getMinCredit()) min = rc.getMinCredit();
+							if (max == null || max < rc.getMaxCredit()) max = rc.getMaxCredit();
+						}
+					}
+					if (cr.isAlternative()) {
+						if (min != null) {
+							mins.add(min); maxs.add(max);
+						}
+					} else {
+						if (min != null) {
+							if (cr.isNoSub()) {
+								tMin += min; tMax += max;
+							} else {
+								mins.add(min); maxs.add(max); nrCourses ++;
+							}
+						}
+					}
+				}
+			}
+		}
+		Collections.sort(mins);
+		Collections.sort(maxs);
+		for (int i = 0; i < nrCourses; i++) {
+			tMin += mins.get(i);
+			tMax += maxs.get(maxs.size() - i - 1);
+		}
+		return new float[] {tMin, tMax, tEnrl};
 	}
 }

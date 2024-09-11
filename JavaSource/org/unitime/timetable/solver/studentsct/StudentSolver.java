@@ -132,6 +132,7 @@ import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
+import org.unitime.timetable.onlinesectioning.model.XCredit;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -1607,5 +1608,51 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (getModel().getStudentQuality() != null)
 			return getModel().getStudentQuality().getStudentQualityContext().getUnavailabilityDistanceMetric();
 		return getDistanceMetric();
+	}
+
+	@Override
+	public float[] getCredits(String studentExternalId) {
+		Student student = getStudentExtCache().get(studentExternalId);
+		if (student == null) return null;
+		List<Float> mins = new ArrayList<Float>();
+		List<Float> maxs = new ArrayList<Float>();
+		int nrCourses = 0;
+		float tMin = 0f, tMax = 0f, tEnrl = 0f;
+		for (Request request: student.getRequests()) {
+			if (request instanceof CourseRequest) {
+				CourseRequest cr = (CourseRequest)request;
+				Enrollment e = currentSolution().getAssignment().getValue(cr);
+				if (e != null)
+					tEnrl += e.getCredit();
+				Float min = null, max = null;
+				for (Course course: cr.getCourses()) {
+					if (course.getCredit() != null) {
+						XCredit xc = new XCredit(course.getCredit());
+						if (min == null || min > xc.getMinCredit()) min = xc.getMinCredit();
+						if (max == null || max < xc.getMaxCredit()) max = xc.getMaxCredit();
+					}
+				}
+				if (cr.isAlternative()) {
+					if (min != null) {
+						mins.add(min); maxs.add(max);
+					}
+				} else {
+					if (min != null) {
+						if (cr.isWaitlist()) {
+							tMin += min; tMax += max;
+						} else {
+							mins.add(min); maxs.add(max); nrCourses ++;
+						}
+					}
+				}
+			}
+		}
+		Collections.sort(mins);
+		Collections.sort(maxs);
+		for (int i = 0; i < nrCourses; i++) {
+			tMin += mins.get(i);
+			tMax += maxs.get(maxs.size() - i - 1);
+		}
+		return new float[] {tMin, tMax, tEnrl};
 	}
 }

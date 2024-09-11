@@ -259,4 +259,9 @@ public class LocalSolverServer extends AbstractSolverServer {
 	public Collection<XClassEnrollment> getUnavailabilitiesFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
 		return iOnlineStudentSchedulingContainer.getUnavailabilitiesFromOtherSessions(session, studentExternalId);
 	}
+	
+	@Override
+	public float[] getCreditRangeFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
+		return iOnlineStudentSchedulingContainer.getCreditRangeFromOtherSessions(session, studentExternalId);
+	}
 }
