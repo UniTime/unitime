@@ -36,7 +36,9 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
@@ -270,6 +272,39 @@ public class OnlineStudentSchedulingContainer implements SolverContainer<OnlineS
 			}
 		}
 		return ret;
+	}
+	
+	public float[] getCreditRangeFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
+		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+		try {
+			Set<String> serverIds = getSolvers();
+			if (serverIds == null || serverIds.isEmpty()) return null;
+			float minCredit = 0f, maxCredit = 0f;
+			for (String serverId: serverIds) {
+				OnlineSectioningServer server = getSolver(serverId);
+				if (server != null && server.isReady()) {
+					AcademicSessionInfo other = server.getAcademicSession();
+					// Same year and term, but different campus
+					if (session.getYear().equals(other.getYear()) && session.getTerm().equals(other.getTerm()) && !session.getCampus().equals(other.getCampus())) {
+						float[] credits = server.getCredits(studentExternalId);
+						if (credits != null && credits[0] > 0f) {
+							Student student = Student.findByExternalId(hibSession, other.getUniqueId(), studentExternalId);
+							StudentSectioningStatus status = (student == null ? null : student.getEffectiveStatus());
+							if (status != null && status.hasOption(StudentSectioningStatus.Option.reqval)) {
+								// requested credits
+								minCredit += credits[0]; maxCredit += credits[1];
+							} else {
+								// enroll credits
+								minCredit += credits[2]; maxCredit += credits[2];
+							}
+						}
+					}
+				}
+			}
+			return new float[] { minCredit, maxCredit };
+		} finally {
+			hibSession.close();
+		}
 	}
 	
 	public void unloadAll() {

@@ -415,7 +415,29 @@ public class SolverServerImplementation extends AbstractSolverServer {
 			sLog.error("Failed to check for student unavailabilties from other academc sessions: " + e.getMessage(), e);
 			return null;
 		}
-	}	
+	}
+	
+	public float[] getCreditRangeFromOtherSessionsLocal(AcademicSessionInfo session, String studentExternalId) {
+		return iOnlineStudentSchedulingContainer.getCreditRangeFromOtherSessions(session, studentExternalId);
+	}
+	
+	@Override
+	public float[] getCreditRangeFromOtherSessions(AcademicSessionInfo session, String studentExternalId) {
+		try {
+			float[] credits = new float[] { 0, 0};
+			RspList<float[]> ret = iDispatcher.callRemoteMethods(null, "getCreditRangeFromOtherSessionsLocal", new Object[] { session,  studentExternalId}, new Class[] { AcademicSessionInfo.class, String.class }, sAllResponses);
+			for (Rsp<float[]> rsp : ret)
+				if (rsp != null && rsp.getValue() != null) {
+					float[] creds = rsp.getValue();
+					credits[0] += creds[0];
+					credits[1] += creds[1];
+				}
+			return credits;
+		} catch (Exception e) {
+			sLog.error("Failed to check for student credit from other academc sessions: " + e.getMessage(), e);
+			return null;
+		}
+	}
 	
 	public void unloadSolverLocal(Integer type, String id) {
 		switch (SolverType.values()[type]) {

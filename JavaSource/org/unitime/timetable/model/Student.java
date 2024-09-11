@@ -90,9 +90,12 @@ public class Student extends BaseStudent implements Comparable<Student>, NameInt
     }
     
     public static Student findByExternalId(Long sessionId, String externalId) {
-        return StudentDAO.getInstance().
-            getSession().
-            createQuery("select s from Student s where "+
+    	return findByExternalId(StudentDAO.getInstance().getSession(), sessionId, externalId);
+    }
+    
+    public static Student findByExternalId(org.hibernate.Session hibSession, Long sessionId, String externalId) {
+        return hibSession.createQuery(
+        			"select s from Student s where "+
                     "s.session.uniqueId=:sessionId and "+
                     "s.externalUniqueId=:externalId", Student.class).
             setParameter("sessionId", sessionId.longValue()).
