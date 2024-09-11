@@ -588,6 +588,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			iAdvisorWaitListedCourseIds = clone.iAdvisorWaitListedCourseIds;
 			iCriticalCheck = clone.iCriticalCheck;
 			iClassScheduleNotAvailable = clone.iClassScheduleNotAvailable;
+			iOtherSessionRecommendations = clone.iOtherSessionRecommendations; 
 		}
 		
 		public Long getStudentId() { return iStudentId; }
