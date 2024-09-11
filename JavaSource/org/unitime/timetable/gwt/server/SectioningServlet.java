@@ -3805,6 +3805,28 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			ret.setStudentRequest(getRequest(student));
 		}
 		
+		for (Student otherStudent: CourseTypeDAO.getInstance().getSession().createQuery(
+				"select s from Student s where " +
+				"s.externalUniqueId = :studentId and " +
+				"s.session.academicYear = :year and s.session.academicTerm = :term and s.session.academicInitiative != :campus and " +
+				"s.advisorCourseRequests is not empty",
+				Student.class
+				).setParameter("studentId", student.getExternalUniqueId())
+				.setParameter("year", student.getSession().getAcademicYear())
+				.setParameter("term", student.getSession().getAcademicTerm())
+				.setParameter("campus", student.getSession().getAcademicInitiative()).list()) {
+			OnlineSectioningServer otherServer = getServerInstance(otherStudent.getSession().getUniqueId(), true);
+			if (otherServer != null) {
+				CourseRequestInterface recommendations = otherServer.execute(
+						otherServer.createAction(AdvisorGetCourseRequests.class)
+						.forStudent(otherStudent.getUniqueId()).checkDemands(false).checkHolds(false),
+						currentUser());
+				if (recommendations != null && !recommendations.isEmpty())
+					ret.addOtherSessionRecommendations(otherStudent.getSession().getAcademicInitiative(), recommendations);
+			}
+		}
+				
+						
 		if (ret.hasStudentRequest()) {
 			StudentSectioningStatus status = student.getEffectiveStatus();
 			if (CustomStudentEnrollmentHolder.isAllowWaitListing() && (status == null || status.hasOption(Option.waitlist))) {

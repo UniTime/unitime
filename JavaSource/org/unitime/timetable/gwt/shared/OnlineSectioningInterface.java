@@ -564,6 +564,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		private Integer iCriticalCheck = null;
 		private Boolean iClassScheduleNotAvailable = null;
+		private Map<String, CourseRequestInterface> iOtherSessionRecommendations = null;
 		
 		public AdvisingStudentDetails() {}
 		public AdvisingStudentDetails(AdvisingStudentDetails clone) {
@@ -671,6 +672,14 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean isClassScheduleNotAvailable() { return iClassScheduleNotAvailable != null && iClassScheduleNotAvailable.booleanValue(); }
 		public void setClassScheduleNotAvailable(Boolean classScheduleNotAvailable) { iClassScheduleNotAvailable = classScheduleNotAvailable; }
+		
+		public boolean hasOtherSessionRecommendations() { return iOtherSessionRecommendations != null && !iOtherSessionRecommendations.isEmpty(); }
+		public Map<String, CourseRequestInterface> getOtherSessionRecommendations() { return iOtherSessionRecommendations; }
+		public void addOtherSessionRecommendations(String campus, CourseRequestInterface recommendations) {
+			if (iOtherSessionRecommendations == null)
+				iOtherSessionRecommendations = new HashMap<String, CourseRequestInterface>();
+			iOtherSessionRecommendations.put(campus, recommendations);
+		}
 	}
 	
 	public static class AdvisorCourseRequestSubmission implements IsSerializable, Serializable {

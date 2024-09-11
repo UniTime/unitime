@@ -3707,4 +3707,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Advisor:")
 	String propAdvisor();
+	
+	@DefaultMessage("{0} Recommendations")
+	String otherSessionRecommendations(String campus);
 }
