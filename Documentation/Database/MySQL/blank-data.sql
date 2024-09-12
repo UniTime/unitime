@@ -1771,7 +1771,7 @@ insert into `solver_parameter_def` values
 	(28,'TimetableSaver','org.unitime.timetable.solver.TimetableDatabaseSaver','Saver class','text',6,0,11),
 	(29,'Perturbations.DifferentPlacement','0.0','Different value than initial is assigned','double',0,1,4),
 	(30,'Perturbations.AffectedStudentWeight','0.1','Number of students which are enrolled in a class which is placed to a different location than initial','double',1,1,4),
-	(32,'Perturbations.AffectedInstructorWeight','0.0','Number of classes which are placed to a different room than initial','double',2,1,4),
+	(32,'Perturbations.AffectedInstructorWeight','0.0','Number of instructors which are assigned to classes which are placed to a different location than initial','double',2,1,4),
 	(34,'Perturbations.DifferentRoomWeight','0.0','Number of classes which are placed to a different room than initial','double',3,1,4),
 	(35,'Perturbations.DifferentBuildingWeight','0.0','Number of classes which are placed to a different building than initial','double',4,1,4),
 	(36,'Perturbations.DifferentTimeWeight','0.0','Number of classes which are placed in a different time than initial','double',5,1,4),
