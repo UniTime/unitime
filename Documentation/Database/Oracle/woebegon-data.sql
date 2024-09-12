@@ -25653,9 +25653,7 @@ values (29, 'Perturbations.DifferentPlacement', '0.0', 'Different value than ini
 insert into SOLVER_PARAMETER_DEF (uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id)
 values (30, 'Perturbations.AffectedStudentWeight', '0.1', 'Number of students which are enrolled in a class which is placed to a different location than initial', 'double', 1, 1, 4);
 insert into SOLVER_PARAMETER_DEF (uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id)
-values (32, 'Perturbations.AffectedInstructorWeight', '0.0', 'Number of classes which are placed to a different room than initial', 'double', 3, 1, 4);
-insert into SOLVER_PARAMETER_DEF (uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id)
-values (33, 'Perturbations.AffectedInstructorWeight', '0.0', 'Number of classes which are placed to a different room than initial', 'double', 4, 1, 4);
+values (32, 'Perturbations.AffectedInstructorWeight', '0.0', 'Number of instructors which are assigned to classes which are placed to a different location than initial', 'double', 3, 1, 4);
 insert into SOLVER_PARAMETER_DEF (uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id)
 values (34, 'Perturbations.DifferentRoomWeight', '0.0', 'Number of classes which are placed to a different room than initial', 'double', 5, 1, 4);
 insert into SOLVER_PARAMETER_DEF (uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id)
