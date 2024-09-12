@@ -147,12 +147,12 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     }
     
     public static boolean isCommitted(org.hibernate.Session hibSession, Set<Long> solverGroupIds) {
-		Number oc = DepartmentDAO.getInstance().getSession().createQuery(
+		Number oc = (hibSession == null ? DepartmentDAO.getInstance().getSession() : hibSession).createQuery(
 				"select count(oc) from OfferingCoordinator oc where oc.teachingRequest is not null and " +
 				"oc.instructor.department.solverGroup.uniqueId in :solverGroupId", Number.class).setParameterList("solverGroupId", solverGroupIds).
 				setCacheable(true).uniqueResult();
 		if (oc.intValue() > 0) return true;
-		Number ci = DepartmentDAO.getInstance().getSession().createQuery(
+		Number ci = (hibSession == null ? DepartmentDAO.getInstance().getSession() : hibSession).createQuery(
 				"select count(ci) from ClassInstructor ci where ci.teachingRequest is not null and " +
 				"ci.instructor.department.solverGroup.uniqueId in :solverGroupId", Number.class).setParameterList("solverGroupId", solverGroupIds).
 				setCacheable(true).uniqueResult();
