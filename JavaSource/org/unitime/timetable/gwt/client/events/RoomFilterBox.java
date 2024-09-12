@@ -472,7 +472,9 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
 				if (filter.getCommand().equals(type)) continue types;
 			}
-			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 5, new FilterBox.StaticSimpleFilter(type, null));
+			FilterBox.StaticSimpleFilter filter = new FilterBox.StaticSimpleFilter(type, null);
+			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 5, filter);
+			populateFilter(filter, result.getEntities(type));
 			added = true;
 		}
 		if (added) setValue(getValue(), false);

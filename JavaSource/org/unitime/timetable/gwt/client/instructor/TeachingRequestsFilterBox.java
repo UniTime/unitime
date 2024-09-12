@@ -351,7 +351,9 @@ public class TeachingRequestsFilterBox extends UniTimeFilterBox<TeachingRequests
 			for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
 				if (filter.getCommand().equals(type)) continue types;
 			}
-			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 1, new FilterBox.StaticSimpleFilter(type, null));
+			FilterBox.StaticSimpleFilter filter = new FilterBox.StaticSimpleFilter(type, null);
+			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 1, filter);
+			populateFilter(filter, result.getEntities(type));
 			added = true;
 		}
 		if (added) setValue(getValue(), false);
