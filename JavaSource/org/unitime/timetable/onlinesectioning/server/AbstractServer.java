@@ -126,6 +126,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
         if (unavailabilityMaxTravelTime != iDistanceMetric.getMaxTravelDistanceInMinutes()) {
         	iUnavailabilityDistanceMetric = new DistanceMetric(iDistanceMetric);
         	iUnavailabilityDistanceMetric.setMaxTravelDistanceInMinutes(unavailabilityMaxTravelTime);
+        	iUnavailabilityDistanceMetric.setComputeDistanceConflictsBetweenNonBTBClasses(true);
         }
 		try {
 			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).getDeclaredConstructor().newInstance());
@@ -164,6 +165,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
         if (unavailabilityMaxTravelTime != iDistanceMetric.getMaxTravelDistanceInMinutes()) {
         	iUnavailabilityDistanceMetric = new DistanceMetric(iDistanceMetric);
         	iUnavailabilityDistanceMetric.setMaxTravelDistanceInMinutes(unavailabilityMaxTravelTime);
+        	iUnavailabilityDistanceMetric.setComputeDistanceConflictsBetweenNonBTBClasses(true);
         }
 		try {
 			iActionFactory = ((OnlineSectioningActionFactory)Class.forName(ApplicationProperty.CustomizationOnlineSectioningActionFactory.value()).getDeclaredConstructor().newInstance());
