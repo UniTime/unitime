@@ -46,6 +46,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights;
 import org.cpsolver.studentsct.online.selection.ResectioningWeights.LastSectionProvider;
 import org.joda.time.Days;
@@ -56,6 +57,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GetInfo;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
@@ -66,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.model.XRequest;
 import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 
 /**
@@ -550,7 +553,24 @@ public class SectioningRequest implements LastSectionProvider {
 			ret = new CourseRequest(request.getRequestId(), request.getPriority(), request.isAlternative(), clonnedStudent, courses, request.isWaitListOrNoSub(wlMode), request.getTimeStamp() == null ? null : request.getTimeStamp().getTime());
 			request.fillChoicesIn(ret);
 		}
-		if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
+		if (server instanceof StudentSolver) {
+			List<CourseSection> unavailabilities = ((StudentSolver)server).getUnavailabilities(request.getStudentId());
+			if (unavailabilities != null)
+				for (CourseSection cs: unavailabilities) {
+					if (!cs.getSection().isCancelled() && cs.getSection().getTime() != null) {
+						Unavailability ua = new Unavailability(clonnedStudent,
+								new Section(
+										cs.getSection().getSectionId(),
+										cs.getSection().getLimit(),
+										cs.getCourse().getCourseName() + " " + cs.getSection().getSubpartName() + " " + cs.getSection().getName(cs.getCourse().getCourseId()),
+										null,
+										cs.getSection().toPlacement(0), null),
+								cs.isAllowOverlap());
+						ua.setTeachingAssignment(cs.isTeachingAssignment());
+						ua.setCourseId(cs.getCourse().getCourseId());
+					}
+				}
+		} else if (clonnedStudent.getExternalId() != null && !clonnedStudent.getExternalId().isEmpty()) {
 			Collection<Long> offerings = server.getInstructedOfferings(clonnedStudent.getExternalId());
 			if (offerings != null)
 				for (Long offeringId: offerings) {

@@ -96,7 +96,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseDeadlines;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
-import org.unitime.timetable.onlinesectioning.basic.GetInfo;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
 import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
@@ -190,6 +190,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
 		Set<IdPair> enrolled = null;
 		ClassAssignmentInterface unavailabilities = null;
+		List<CourseSection> providedUnavailabilities = null;
 		Lock readLock = server.readLock();
 		try {
 			boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
@@ -204,7 +205,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				unavailabilities = new ClassAssignmentInterface();
-				GetAssignment.fillUnavailabilitiesIn(unavailabilities, original, server, helper, null);
+				providedUnavailabilities = GetAssignment.fillUnavailabilitiesIn(unavailabilities, original, server, helper, null);
 				Collections.reverse(unavailabilities.getCourseAssignments());
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
@@ -272,6 +273,23 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 				}
 			}
+			if (providedUnavailabilities != null) {
+				for (CourseSection cs: providedUnavailabilities) {
+					if (!cs.getSection().isCancelled() && cs.getSection().getTime() != null) {
+						Unavailability ua = new Unavailability(student,
+								new Section(
+										cs.getSection().getSectionId(),
+										cs.getSection().getLimit(),
+										cs.getCourse().getCourseName() + " " + cs.getSection().getSubpartName() + " " + cs.getSection().getName(cs.getCourse().getCourseId()),
+										null,
+										cs.getSection().toPlacement(0), null),
+								cs.isAllowOverlap());
+						ua.setTeachingAssignment(cs.isTeachingAssignment());
+						ua.setCourseId(cs.getCourse().getCourseId());
+					}
+				}
+			}
+			/*
 			if (student.getExternalId() != null && !student.getExternalId().isEmpty()) {
 				Collection<Long> offeringIds = server.getInstructedOfferings(student.getExternalId());
 				if (offeringIds != null)
@@ -285,6 +303,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
 					GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(student, server, helper);
 			}
+			*/
 			if (getRequest().areTimeConflictsAllowed() || getRequest().areSpaceConflictsAllowed() || getRequest().areLinkedConflictsAllowed() || getSpecialRegistration() != null) {
 				// Experimental: provide student with a blank override that allows for overlaps as well as over-limit
 				for (Iterator<Request> e = student.getRequests().iterator(); e.hasNext();) {

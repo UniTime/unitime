@@ -56,6 +56,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
 import org.unitime.timetable.onlinesectioning.match.AbstractStudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
 import org.unitime.timetable.onlinesectioning.model.XAreaClassificationMajor;
@@ -157,6 +158,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 	@Override
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		Map<Long, StudentInfo> students = new HashMap<Long, StudentInfo>();
+		Map<Long, List<CourseSection>> student2unavailabilities = new HashMap<Long, List<CourseSection>>();
 		
 		int gEnrl = 0, gWait = 0, gRes = 0, gUnasg = 0, gNoSub = 0, gSwap = 0;
 		int gtEnrl = 0, gtWait = 0, gtRes = 0, gtUnasg = 0, gtNoSub = 0, gtSwap = 0;
@@ -189,6 +191,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 		WaitListMode defaultWL = null;
 		if (server instanceof StudentSolver) defaultWL = WaitListMode.NoSubs;
 		DistanceMetric dm = server.getDistanceMetric();
+		DistanceMetric um = server.getUnavailabilityDistanceMetric();
 		boolean solver = (server instanceof StudentSolver);
 		Set<Long> studentIds = null;
 		Map<Long, List<AdvisorCourseRequest>> acrs = null;
@@ -262,6 +265,11 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						for (XStudent.XAdvisor a: student.getAdvisors()) {
 							if (a.getName() != null) st.addAdvisor(a.getName());
 						}
+						List<CourseSection> unavailabilities = null;
+						if (server instanceof StudentSolver)
+							unavailabilities = ((StudentSolver)server).getUnavailabilities(request.getStudentId());
+						if (unavailabilities != null)
+							student2unavailabilities.put(request.getStudentId(), unavailabilities);
 
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0, tUnasg = 0, tOvrNeed = 0, ovrNeed = 0, tNoSub = 0, tSwap =0;
 						float tCred = 0f;
@@ -373,7 +381,21 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 														gtFre += section.getTime().share(ft.getTime());
 													}
 												}
-											}											
+											}
+											if (unavailabilities != null)
+												for (CourseSection cs: unavailabilities) {
+													if (section.getTime().hasIntersection(cs.getSection().getTime())) {
+														share += section.getTime().share(cs.getSection().getTime());
+														gtShr += section.getTime().share(cs.getSection().getTime());
+													}
+													if (section.isUnavailabilityDistanceConflict(student, cs.getSection(), um)) {
+														nrDisCnf ++; gtNrDC ++;
+														int d = section.getDistanceInMinutes(cs.getSection(), um);
+														if (d > maxDist) maxDist = d;
+														if (d > gtDist) gtDist = d;
+														
+													}
+												}
 										}
 								}
 							}
@@ -538,7 +560,21 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 												gFre += section.getTime().share(ft.getTime());
 											}
 										}
-									}											
+									}
+									List<CourseSection> unavailabilities = student2unavailabilities.get(request.getStudentId());
+									if (unavailabilities != null)
+										for (CourseSection cs: unavailabilities) {
+											if (section.getTime().hasIntersection(cs.getSection().getTime())) {
+												s.setOverlappingMinutes(s.getOverlappingMinutes() + section.getTime().share(cs.getSection().getTime()));
+												gShr += section.getTime().share(cs.getSection().getTime());
+											}
+											if (section.isUnavailabilityDistanceConflict(student, cs.getSection(), um)) {
+												s.setNrDistanceConflicts(s.getNrDistanceConflicts() + 1); gNrDC ++;
+												int d = section.getDistanceInMinutes(cs.getSection(), um);
+												if (d > s.getLongestDistanceMinutes()) s.setLongestDistanceMinutes(d);
+												if (d > gtDist) gtDist = d;
+											}
+										}
 								}
 						}
 					} else if (unassigned.add(m.request().getRequestId())) {
