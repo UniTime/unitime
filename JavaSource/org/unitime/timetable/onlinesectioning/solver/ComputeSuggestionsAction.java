@@ -47,6 +47,7 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.online.MaxOverExpectedConstraint;
 import org.cpsolver.studentsct.online.OnlineReservation;
 import org.cpsolver.studentsct.online.OnlineSectioningModel;
@@ -74,7 +75,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
-import org.unitime.timetable.onlinesectioning.basic.GetInfo;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -148,6 +149,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 		Set<IdPair> enrolled = null;
 
 		ClassAssignmentInterface unavailabilities = null;
+		List<CourseSection> providedUnavailabilities = null;
 		Lock readLock = server.readLock();
 		try {
 			boolean checkDeadlines = server.getConfig().getPropertyBoolean("FindAssignment.CheckDeadlines", false) && !getRequest().areDeadlineConflictsAllowed();
@@ -163,7 +165,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			XStudent original = (getRequest().getStudentId() == null ? null : server.getStudent(getRequest().getStudentId()));
 			if (original != null) {
 				unavailabilities = new ClassAssignmentInterface();
-				GetAssignment.fillUnavailabilitiesIn(unavailabilities, original, server, helper, null);
+				providedUnavailabilities = GetAssignment.fillUnavailabilitiesIn(unavailabilities, original, server, helper, null);
 				Collections.reverse(unavailabilities.getCourseAssignments());
 				student.setExternalId(original.getExternalId());
 				student.setName(original.getName());
@@ -231,7 +233,23 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					}
 				}
 			}
-			if (student.getExternalId() != null && !student.getExternalId().isEmpty()) {
+			if (providedUnavailabilities != null) {
+				for (CourseSection cs: providedUnavailabilities) {
+					if (!cs.getSection().isCancelled() && cs.getSection().getTime() != null) {
+						Unavailability ua = new Unavailability(student,
+								new Section(
+										cs.getSection().getSectionId(),
+										cs.getSection().getLimit(),
+										cs.getCourse().getCourseName() + " " + cs.getSection().getSubpartName() + " " + cs.getSection().getName(cs.getCourse().getCourseId()),
+										null,
+										cs.getSection().toPlacement(0), null),
+								cs.isAllowOverlap());
+						ua.setTeachingAssignment(cs.isTeachingAssignment());
+						ua.setCourseId(cs.getCourse().getCourseId());
+					}
+				}
+			}
+/*			if (student.getExternalId() != null && !student.getExternalId().isEmpty()) {
 				Collection<Long> offeringIds = server.getInstructedOfferings(student.getExternalId());
 				if (offeringIds != null)
 					for (Long offeringId: offeringIds) {
@@ -243,7 +261,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
 				else if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessionsUsingDatabase", false))
 					GetInfo.fillInUnavailabilitiesFromOtherSessionsUsingDatabase(student, server, helper);
-			}
+			}*/
 			model.addStudent(student);
 			model.setStudentQuality(new StudentQuality(server.getDistanceMetric(), model.getProperties()));
 			// model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));

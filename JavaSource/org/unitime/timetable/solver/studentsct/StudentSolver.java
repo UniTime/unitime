@@ -45,6 +45,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.logging.LogFactory;
+import org.cpsolver.coursett.model.RoomLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.ifs.model.Constraint;
@@ -99,6 +100,8 @@ import org.joda.time.DateTimeZone;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports.ReportTypeInterface;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.server.DayCode;
+import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -125,6 +128,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
+import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
@@ -1654,5 +1658,110 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			tMax += maxs.get(maxs.size() - i - 1);
 		}
 		return new float[] {tMin, tMax, tEnrl};
+	}
+	
+	public List<CourseSection> getUnavailabilities(Long studentId) {
+		Student student = getStudentCache().get(studentId);
+		if (student == null) return null;
+		List<CourseSection> sections = new ArrayList<CourseSection>();
+		XCourseId courseId = null;
+		for (Unavailability unavailability: student.getUnavailabilities()) {
+			if (unavailability.getSection().getSubpart() == null || unavailability.getCourseId() == null) continue;
+			if (courseId == null || !courseId.getCourseId().equals(unavailability.getCourseId())) {
+				courseId = null;
+				for (Course course: unavailability.getSection().getSubpart().getConfig().getOffering().getCourses()) {
+					if (unavailability.getCourseId().equals(course.getId())) {
+						courseId = new XCourseId(course);
+						break;
+					}
+				}
+				if (courseId == null) {
+					Course course = unavailability.getSection().getSubpart().getConfig().getOffering().getCourses().get(0);
+					courseId = new XCourseId(course);
+				}
+			}
+			sections.add(new CourseSection(
+					courseId,
+					new XSection(unavailability.getSection()),
+					unavailability.isAllowOverlap(),
+					unavailability.isTeachingAssignment()));
+		}
+		return sections;
+	}
+	
+	public List<CourseSection> fillUnavailabilitiesIn(ClassAssignmentInterface ret, Long studentId) {
+		Student student = getStudentCache().get(studentId);
+		if (student == null) return null;
+		List<CourseSection> sections = new ArrayList<CourseSection>();
+		XCourseId courseId = null;
+		String courseNote = null;
+		ClassAssignmentInterface.CourseAssignment ca = null;
+		for (Unavailability unavailability: student.getUnavailabilities()) {
+			if (unavailability.getSection().getSubpart() == null || unavailability.getCourseId() == null) continue;
+			if (courseId == null || !courseId.getCourseId().equals(unavailability.getCourseId())) {
+				ca = new ClassAssignmentInterface.CourseAssignment();
+				ca.setCanWaitList(false);
+				ca.setAssigned(true);
+				ca.setCourseId(unavailability.getCourseId());
+				courseId = null;
+				courseNote = null;
+				for (Course course: unavailability.getSection().getSubpart().getConfig().getOffering().getCourses()) {
+					if (unavailability.getCourseId().equals(course.getId())) {
+						courseId = new XCourseId(course);
+						courseNote = course.getNote();
+						break;
+					}
+				}
+				if (courseId == null) {
+					Course course = unavailability.getSection().getSubpart().getConfig().getOffering().getCourses().get(0);
+					courseId = new XCourseId(course);
+					courseNote = course.getNote();
+				}
+				ca.setSubject(courseId.getSubjectArea());
+				ca.setCourseNbr(courseId.getCourseNumber());
+				ca.setTitle(courseId.getTitle());
+				ca.setTeachingAssignment(true);
+				ca.setHasCrossList(unavailability.getSection().getSubpart().getConfig().getOffering().getCourses().size() > 0);
+				ret.add(ca);
+			}
+			ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
+			a.setAlternative(false);
+			a.setClassId(unavailability.getSection().getId());
+			a.setSubpart(unavailability.getSection().getSubpart().getName());
+			a.setClassNumber(unavailability.getSection().getName());
+			a.setSection(unavailability.getSection().getName(unavailability.getCourseId()));
+			a.setExternalId(unavailability.getSection().getName(unavailability.getCourseId()));
+			a.setCancelled(unavailability.getSection().isCancelled());
+			a.setLimit(new int[] { 0, unavailability.getSection().getLimit() });
+			if (unavailability.getSection().getTime() != null) {
+				for (DayCode d : DayCode.toDayCodes(unavailability.getSection().getTime().getDayCode()))
+					a.addDay(d.getIndex());
+				a.setStart(unavailability.getSection().getTime().getStartSlot());
+				a.setLength(unavailability.getSection().getTime().getLength());
+				a.setBreakTime(unavailability.getSection().getTime().getBreakTime());
+				a.setDatePattern(unavailability.getSection().getTime().getDatePatternName());
+			}
+			if (unavailability.getSection().getRooms() != null) {
+				for (RoomLocation room: unavailability.getSection().getRooms()) {
+					a.addRoom(room.getId(), room.getName());
+				}
+			}
+			for (Instructor instr: unavailability.getSection().getInstructors()) {
+				a.addInstructor(instr.getName());
+				a.addInstructoEmail(instr.getEmail() == null ? "" : instr.getEmail());
+			}
+			if (unavailability.getSection().getParent() != null)
+				a.setParentSection(unavailability.getSection().getParent().getName(unavailability.getCourseId()));
+			a.setSubpartId(unavailability.getSection().getSubpart().getId());
+			a.setHasAlternatives(false);
+			a.addNote(courseNote);
+			a.addNote(unavailability.getSection().getNote());
+			a.setCredit(unavailability.getSection().getSubpart().getCredit());
+			a.setCreditRange(unavailability.getSection().getSubpart().getCreditValue(), unavailability.getSection().getSubpart().getCreditValue());
+			a.setTeachingAssignment(true);
+			a.setInstructing(unavailability.isTeachingAssignment());
+			sections.add(new CourseSection(courseId, new XSection(unavailability.getSection()), unavailability.isAllowOverlap(), unavailability.isTeachingAssignment()));
+		}
+		return sections;
 	}
 }

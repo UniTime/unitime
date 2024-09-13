@@ -111,6 +111,7 @@ import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
+import org.unitime.timetable.solver.studentsct.StudentSolver;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
@@ -248,6 +249,9 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 	}
 	
 	public static List<CourseSection> fillUnavailabilitiesIn(ClassAssignmentInterface ret, XStudent student, OnlineSectioningServer server, OnlineSectioningHelper helper, OnlineSectioningLog.Enrollment.Builder eb) {
+		if (server instanceof StudentSolver) {
+			return ((StudentSolver)server).fillUnavailabilitiesIn(ret, student.getStudentId());
+		}
 		if (student.getExternalId() == null || student.getExternalId().isEmpty()) return null;
 		List<CourseSection> sections = new ArrayList<CourseSection>();
 		Collection<Long> offeringIds = server.getInstructedOfferings(student.getExternalId());
@@ -329,7 +333,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 										if (creditOverride != null) a.setCredit(FixedCreditUnitConfig.formatCredit(creditOverride));
 										a.setTeachingAssignment(true);
 										a.setInstructing(instructor.isInstructing());
-										sections.add(new CourseSection(course, section));
+										sections.add(new CourseSection(course, section, instructor.isAllowOverlap(), true));
 								}
 						}
 		    	ret.add(ca);
@@ -392,7 +396,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						a.setCredit(e.getCredit());
 						a.setTeachingAssignment(true);
 						a.setEnrolledDate(e.getTimeStamp());
-						sections.add(new CourseSection(e.getCourseId(), e.getShiftedSection()));
+						sections.add(new CourseSection(e.getCourseId(), e.getShiftedSection(), e.getSection().isAllowOverlap(), false));
 					}
 				}
 			}
@@ -545,7 +549,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 					XSection section = new XSection(enrollment.getClazz(), helper);
 					if (shiftDays != 0 && section.getTime() != null)
 						section.getTime().datePatternShiftDays(shiftDays);
-					sections.add(new CourseSection(xc, section));
+					sections.add(new CourseSection(xc, section, enrollment.getClazz().getSchedulingSubpart().isStudentAllowOverlap(), false));
 				}
 			}
 		}
@@ -1222,11 +1226,29 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 	public static class CourseSection {
 		XCourseId iCourse;
 		XSection iSection;
-		CourseSection(XCourseId course, XSection section) {
+	    private boolean iAllowOverlap = false;
+	    private boolean iTeachingAssignment = true;
+
+	    public CourseSection(XCourseId course, XSection section) {
 			iCourse = course; iSection = section;
 		}
+	    public CourseSection(XCourseId course, XSection section, boolean allowOverlap, boolean teachingAssignment) {
+	    	iCourse = course; iSection = section;
+	    	iAllowOverlap = allowOverlap;
+	    	iTeachingAssignment = teachingAssignment;
+	    }
 		public XCourseId getCourse() { return iCourse; }
 		public XSection getSection() { return iSection; }
+		
+		public boolean isAllowOverlap() { return iAllowOverlap; }
+		public void setAllowOverlap(boolean allowOverlap) { iAllowOverlap = allowOverlap; }
+		public boolean isTeachingAssignment() { return iTeachingAssignment; }
+		public void setTeachingAssignment(boolean teachingAssignment) { iTeachingAssignment = teachingAssignment; }
+		
+		@Override
+		public String toString() {
+			return getCourse().getCourseName() + " " + getSection().getSubpartName() + " " + getSection().getName(getCourse().getCourseId());
+		}
 	}
 	
 	public static boolean isFreeTimeOverlapping(FreeTimeRequest r, Enrollment e) {
