@@ -3593,6 +3593,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Edit Class/Scheduling Subpart: enable searcheable date pattern")
 	ClassEditSearcheableDatePattern("unitime.classEdit.searchableDatePattern"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Scheduling Dashboard: do not count advised students (faster load, especially on MySQL)")
+	StudentSchedulingFilterSkipAdvisedCounts("unitime.enrollment.studentFiler.skipAdvisedCounts"),
 	;
 
 	String iKey;
