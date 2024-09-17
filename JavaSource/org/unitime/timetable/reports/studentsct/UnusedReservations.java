@@ -145,6 +145,7 @@ public class UnusedReservations extends AbstractStudentSectioningReport {
 			types.add(type);
 		Map<Long, List<Reservation>> unused = new HashMap<Long, List<Reservation>>();
 		for (Offering offering: getModel().getOfferings()) {
+			if (offering.isDummy()) continue;
 			for (Reservation reservation: offering.getReservations()) {
 				if (!types.contains(type(reservation))) continue;
 				Set<Long> studentIds = null;

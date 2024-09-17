@@ -82,6 +82,7 @@ public class Reservations extends AbstractStudentSectioningReport {
 		List<ReservationInterface> reservations = new ArrayList<ReservationInterface>();
 		Map<Long, Set<Long>> studentTable = new HashMap<Long, Set<Long>>();
 		for (Offering offering: getModel().getOfferings()) {
+			if (offering.isDummy()) continue;
 			for (Reservation r: offering.getReservations()) {
 				// if (r.isExpired()) continue;
 				Set<Long> studentIds = new HashSet<Long>();

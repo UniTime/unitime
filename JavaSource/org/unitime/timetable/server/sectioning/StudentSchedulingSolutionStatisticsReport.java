@@ -639,6 +639,7 @@ public class StudentSchedulingSolutionStatisticsReport extends AbstractStudentSe
             	int disb10Sections = 0;
                 int totalSections = 0;
                 for (Offering offering: model.getOfferings()) {
+                	if (offering.isDummy()) continue;
                     for (Config config: offering.getConfigs()) {
                         double enrl = 0;
                         for (Enrollment e: config.getEnrollments(assignment)) {
@@ -1144,6 +1145,7 @@ public class StudentSchedulingSolutionStatisticsReport extends AbstractStudentSe
 		        int nbrOfferings = 0, nbrFullOfferings = 0, nbrOfferings98 = 0, nbrOfferings95 = 0, nbrOfferings90 = 0;
 		        int enrlOfferings = 0, enrlOfferingsFull = 0, enrlOfferings98 = 0, enrlOfferings95 = 0, enrlOfferings90 = 0;
 		        for (Offering offering: model.getOfferings()) {
+		        	if (offering.isDummy()) continue;
 		        	int crs = 0;
 	        		for (Course course: offering.getCourses()) {
 	        			for (CourseRequest cr: course.getRequests()) {

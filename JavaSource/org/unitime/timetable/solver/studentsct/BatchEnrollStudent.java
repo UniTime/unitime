@@ -388,7 +388,8 @@ public class BatchEnrollStudent extends EnrollStudent {
 	}
 	
 	protected Course getCourse(StudentSectioningModel model, Long courseId, String courseName){
-		for (Offering offering: model.getOfferings())
+		for (Offering offering: model.getOfferings()) {
+			if (offering.isDummy()) continue;
 			for (Course course: offering.getCourses()) {
 				if (courseId != null) {
 					if (courseId.equals(course.getId())) return course;
@@ -396,6 +397,7 @@ public class BatchEnrollStudent extends EnrollStudent {
 					if (course.getName().equalsIgnoreCase(courseName)) return course;
 				}
 			}
+		}
 		return null;
 	}
 }
