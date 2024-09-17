@@ -513,10 +513,12 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	private Map<Long, XCourse> getCourseInfoTable() {
 		if (iCourseInfoCache == null) {
 			iCourseInfoCache = new Hashtable<Long, XCourse>();
-			for (Offering offering: getModel().getOfferings())
+			for (Offering offering: getModel().getOfferings()) {
+				if (offering.isDummy()) continue;
 				for (Course course: offering.getCourses())
 					if (course != null)
 						iCourseInfoCache.put(course.getId(), new XCourse(course));
+			}
 		}
 		return iCourseInfoCache;
 	}
@@ -528,8 +530,10 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (iOfferingCache == null) {
 			iOfferingCache = new Hashtable<Long, XOffering>();
 			List<LinkedSections> links = getModel().getLinkedSections();
-			for (Offering offering: getModel().getOfferings())
-				iOfferingCache.put(offering.getId(), new XOffering(offering, links));
+			for (Offering offering: getModel().getOfferings()) {
+				if (!offering.isDummy())
+					iOfferingCache.put(offering.getId(), new XOffering(offering, links));
+			}
 		}
 		return iOfferingCache;
 	}
@@ -541,6 +545,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 		if (iInstructedOfferingsCache == null) {
 			iInstructedOfferingsCache = new Hashtable<String, Set<Long>>();
 			for (Offering offering: getModel().getOfferings()) {
+				if (offering.isDummy()) continue;
 				for (Config config: offering.getConfigs())
 					for (Subpart subpart: config.getSubparts())
 						for (Section section: subpart.getSections())
@@ -559,6 +564,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				if (student.isDummy() || student.getExternalId() == null) continue;
 				unavailbilities: for (Unavailability unavailability: student.getUnavailabilities())
 					for (Offering offering: getModel().getOfferings()) {
+						if (offering.isDummy()) continue;
 						for (Config config: offering.getConfigs())
 							for (Subpart subpart: config.getSubparts())
 								for (Section section: subpart.getSections())
@@ -660,9 +666,11 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	
 	@Override
 	public XCourse getCourse(String courseName) {
-		for (Offering offering: getModel().getOfferings())
+		for (Offering offering: getModel().getOfferings()) {
+			if (offering.isDummy()) continue;
 			for (Course course: offering.getCourses())
 				if (course.getName().equalsIgnoreCase(courseName)) return getCourse(course.getId());
+		}
 		return null;
 	}
 

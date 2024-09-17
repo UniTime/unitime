@@ -402,6 +402,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             setPhase("Saving expected/held space for online sectioning...", getModel().getOfferings().size());
             for (Iterator e=getModel().getOfferings().iterator();e.hasNext();) {
                 Offering offering = (Offering)e.next(); incProgress();
+                if (offering.isDummy()) continue;
                 for (Iterator f=offering.getConfigs().iterator();f.hasNext();) {
                     Config config = (Config)f.next();
                     for (Iterator g=config.getSubparts().iterator();g.hasNext();) {

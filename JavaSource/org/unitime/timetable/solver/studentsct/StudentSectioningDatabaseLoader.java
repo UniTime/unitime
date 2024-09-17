@@ -2853,6 +2853,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     							AcademicSessionInfo.getDatePatternFirstDay(enrollment.getCourseOffering().getInstructionalOffering().getSession()));
     					Offering offering = loadOffering(enrollment.getCourseOffering().getInstructionalOffering(), courseTable, classTable, shiftDays);
     		            if (offering != null) {
+    		            	offering.setDummy(true);
     		            	getModel().addOffering(offering);
         					section = classTable.get(enrollment.getClazz().getUniqueId());
         					if (section != null && !section.isCancelled() && section.getTime() != null) {
