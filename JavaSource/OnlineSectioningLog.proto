@@ -20,6 +20,7 @@
  *    protoc JavaSource/OnlineSectioningLog.proto --java_out=JavaSource
  */
 
+syntax = "proto2";
 option java_package = "org.unitime.timetable.onlinesectioning";
 
 message Entity {
