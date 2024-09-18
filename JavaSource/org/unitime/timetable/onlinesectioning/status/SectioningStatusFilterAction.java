@@ -553,10 +553,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					modes.add(notAdv);
 				}
 			}
-			if (!modes.isEmpty())
-				response.add("mode", modes);
 		}
-		
+		if (!modes.isEmpty())
+			response.add("mode", modes);		
 
 		List<Entity> preferences = new ArrayList<Entity>();
 		preferences.add(new Entity(0l, "Any Preference", MESSAGES.termAnyPreference(), "translated-value", MESSAGES.termAnyPreference()));
