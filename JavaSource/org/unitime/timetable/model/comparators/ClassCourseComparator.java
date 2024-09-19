@@ -36,6 +36,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 
 /**
@@ -98,6 +99,16 @@ public class ClassCourseComparator implements Comparator {
     	iClassAssignmentProxy = classAssignmentProxy;
     	iKeepSubpart = keepSubparts;
     }
+	
+	public ClassCourseComparator(SortBy sort) {
+		iSortyBy = sort;
+		iClassAssignmentProxy = new CommitedClassAssignmentProxy();
+		iKeepSubpart = true;
+	}
+	
+	public ClassCourseComparator() {
+		this(SortBy.NAME);
+	}
 
 	public boolean isParent(SchedulingSubpart s1, SchedulingSubpart s2) {
 		SchedulingSubpart p1 = s1.getParentSubpart();

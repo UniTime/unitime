@@ -152,6 +152,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.model.comparators.ClassComparator;
+import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -2835,14 +2836,23 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         
         if (iIncludeUnavailabilitiesFromOtherSessions) {
-        	List<StudentClassEnrollment> enrollments = hibSession.createQuery(
+            List<StudentClassEnrollment> enrollments = new ArrayList<StudentClassEnrollment>(hibSession.createQuery(
     				"select e2 " +
     				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
     				"where s1.externalUniqueId is not null and z1.uniqueId = :sessionId and s1.externalUniqueId = s2.externalUniqueId and " +
     				"e2.clazz.cancelled = false and e2.clazz.committedAssignment is not null and " +
     				"z1 != z2 and z1.sessionBeginDateTime <= z2.classesEndDateTime and z2.sessionBeginDateTime <= z1.classesEndDateTime",
-    				StudentClassEnrollment.class).setParameter("sessionId", session.getUniqueId()).list();
+    				StudentClassEnrollment.class).setParameter("sessionId", session.getUniqueId()).list());
         	setPhase("Loading unavailabilities from other academic sessions...", enrollments.size());
+        	Collections.sort(enrollments, new Comparator<StudentClassEnrollment>() {
+        		ClassCourseComparator ccc = new ClassCourseComparator();
+				@Override
+				public int compare(StudentClassEnrollment e1, StudentClassEnrollment e2) {
+					int cmp = e1.getStudent().compareTo(e2.getStudent());
+					if (cmp != 0) return cmp;
+					return ccc.compareClasses(e1.getCourseOffering(), e2.getCourseOffering(), e1.getClazz(), e2.getClazz());
+				}
+			});
         	for (StudentClassEnrollment enrollment: enrollments) {
         		Student student = ext2student.get(enrollment.getStudent().getExternalUniqueId());
         		if (student != null) {
