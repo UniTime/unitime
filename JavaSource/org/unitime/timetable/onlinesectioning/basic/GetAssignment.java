@@ -1223,7 +1223,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		return "get-assignment";
 	}
 	
-	public static class CourseSection {
+	public static class CourseSection implements Comparable<CourseSection>{
 		XCourseId iCourse;
 		XSection iSection;
 	    private boolean iAllowOverlap = false;
@@ -1248,6 +1248,24 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		@Override
 		public String toString() {
 			return getCourse().getCourseName() + " " + getSection().getSubpartName() + " " + getSection().getName(getCourse().getCourseId());
+		}
+
+		@Override
+		public int compareTo(CourseSection o) {
+			int cmp = getCourse().compareTo(o.getCourse());
+			if (cmp != 0) return cmp;
+			return getSection().compareTo(o.getSection());
+		}
+		
+		@Override
+		public int hashCode() {
+			return getCourse().hashCode() ^ getSection().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof CourseSection)) return false;
+			return getCourse().equals(((CourseSection)o).getCourse()) && getSection().equals(((CourseSection)o).getSection());
 		}
 	}
 	
