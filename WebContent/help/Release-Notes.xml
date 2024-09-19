@@ -84,7 +84,7 @@
 				<line>Added unavailability distance conflicts (distance conflicts between sections and unavailabilities).</line>
 				<line>This is particularly useful when unavailabilities from other overlapping academic sessions are enabled.</line>
 				<line>A different max travel time in minutes can be defined for unavailabilities using the new solver parameter Distances.MaxTravelDistanceInMinutes.</line>
-				<line>Added Student Unavailability Conflicts solver report.</line>
+				<line>Added Student Unavailability Conflicts solver report (listing both time and distance conflicts).</line>
 			</description>
 		</item>
 		<item>
@@ -96,6 +96,12 @@
 					<line>When Load.VisitingFaceToFaceCheckFirstChoiceOnly is set to true (defaults to false), only the first-choice course is checked for face-to-face classes.</line>
 					<line>Only course requests without a priority can have their priority lowered (set to Visiting F2F).</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Advisor Course Recommendations</name>
+			<description>
+				<line>Show recommendations from the other academic session(s) if a student is advised in two or more parallel sessions.</line>
 			</description>
 		</item>
 	</category>
