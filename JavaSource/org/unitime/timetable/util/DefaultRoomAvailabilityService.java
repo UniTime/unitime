@@ -94,7 +94,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                    (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType = " + examType.getUniqueId() + ")" :
+                    (examType != null ? " and m.event.uniqueId not in (select x.uniqueId from ExamEvent x where x.exam.examType.uniqueId = " + examType.getUniqueId() + ")" :
                     exclude != null ? " and type(e)!=" + exclude.getSimpleName() : ""), Meeting.class)
                     .setParameter("locPermId", location.getPermanentId())
                     .setParameter("startDate", time.getStartDate())
@@ -130,7 +130,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                             "m.approvalStatus = 1 and e.exam.session.uniqueId != :sessionId and "+
                             "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                             "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
-                            (examType != null ? " and e.exam.examType = " + examType.getUniqueId() : ""), Meeting.class)
+                            (examType != null ? " and e.exam.examType.uniqueId = " + examType.getUniqueId() : ""), Meeting.class)
                             .setParameter("locPermId", location.getPermanentId())
                             .setParameter("sessionId", location.getSession().getUniqueId())
                             .setParameter("startDate", time.getStartDate())
@@ -172,7 +172,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             int startMin = 60*start.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
             start.add(Calendar.MINUTE, -startMin);
             Calendar end = Calendar.getInstance(Locale.US); end.setTime(endTime);
-            int endMin = 60*end.get(Calendar.HOUR_OF_DAY) + start.get(Calendar.MINUTE);
+            int endMin = 60*end.get(Calendar.HOUR_OF_DAY) + end.get(Calendar.MINUTE);
             end.add(Calendar.MINUTE, -endMin);
             iStartSlot = (startMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
             iEndSlot = (endMin - Constants.FIRST_SLOT_TIME_MIN)/Constants.SLOT_LENGTH_MIN;
