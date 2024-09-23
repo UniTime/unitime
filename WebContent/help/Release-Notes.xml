@@ -115,6 +115,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Solver: Credit Limits</name>
+			<description>
+				<line>Added an ability to adjust the student's min/max credit limit by their enrollment in other parallel sessions.
+					<line>I.e., sessions with matching academic term and year, but different initiative.</line>
+				</line>
+				<line>Enable by setting the solver parameter Load.DecreaseCreditLimitsByOtherSessionEnrollments to true (defaults to false).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
