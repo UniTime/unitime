@@ -97,6 +97,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.ReservationInterface.OverrideType;
+import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface.HasGradableSubpart;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Advisor;
@@ -179,6 +180,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.Group;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.DefaultExternalClassNameHelper;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.duration.DurationModel;
@@ -217,6 +219,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iAllowDefaultCourseAlternatives = false;
 	private boolean iIncludeUnavailabilities = true;
 	private boolean iIncludeUnavailabilitiesFromOtherSessions = true;
+	private boolean iDecreaseCreditLimitsByOtherSessionEnrollments = false;
 	private String iShortDistanceAccomodationReference = null;
 	private boolean iCheckOverrideStatus = false, iValidateOverrides = false;
 	private CourseRequestsValidationProvider iValidationProvider = null;
@@ -303,6 +306,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iAllowDefaultCourseAlternatives = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
         iIncludeUnavailabilities = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilities", iIncludeUnavailabilities);
         iIncludeUnavailabilitiesFromOtherSessions = model.getProperties().getPropertyBoolean("Load.IncludeUnavailabilitiesFromOtherSessions", iIncludeUnavailabilitiesFromOtherSessions);
+        iDecreaseCreditLimitsByOtherSessionEnrollments = model.getProperties().getPropertyBoolean("Load.DecreaseCreditLimitsByOtherSessionEnrollments", iDecreaseCreditLimitsByOtherSessionEnrollments);
         iShortDistanceAccomodationReference = model.getProperties().getProperty("Distances.ShortDistanceAccommodationReference", "SD");
         for (StudentPriority priority: StudentPriority.values()) {
         	if (priority == StudentPriority.Normal) break;
@@ -2876,6 +2880,56 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         				Unavailability ua = new Unavailability(student, section, section.isAllowOverlap());
         				ua.setTeachingAssignment(false);
 						ua.setCourseId(enrollment.getCourseOffering().getUniqueId());
+        			}
+        		}
+        	}
+        }
+        
+        if (iDecreaseCreditLimitsByOtherSessionEnrollments) {
+        	List<StudentClassEnrollment> enrollments = new ArrayList<StudentClassEnrollment>(hibSession.createQuery(
+    				"select e2 " +
+    				"from Student s1 inner join s1.session z1, StudentClassEnrollment e2 inner join e2.student s2 inner join s2.session z2 " +
+    				"where s1.externalUniqueId is not null and z1.uniqueId = :sessionId and s1.externalUniqueId = s2.externalUniqueId and " +
+    				"e2.clazz.cancelled = false and " +
+    				"z1.academicTerm = z2.academicTerm and z1.academicYear = z2.academicYear and z2.academicInitiative != z1.academicInitiative",
+    				StudentClassEnrollment.class).setParameter("sessionId", session.getUniqueId()).list());
+        	setPhase("Loading credits from other academic sessions...", enrollments.size());
+        	Collections.sort(enrollments, new Comparator<StudentClassEnrollment>() {
+        		ClassCourseComparator ccc = new ClassCourseComparator();
+				@Override
+				public int compare(StudentClassEnrollment e1, StudentClassEnrollment e2) {
+					int cmp = e1.getStudent().compareTo(e2.getStudent());
+					if (cmp != 0) return cmp;
+					return ccc.compareClasses(e1.getCourseOffering(), e2.getCourseOffering(), e1.getClazz(), e2.getClazz());
+				}
+			});
+			HasGradableSubpart gs = null;
+			if (Class_.getExternalClassNameHelper() != null && Class_.getExternalClassNameHelper() instanceof HasGradableSubpart)
+				gs = (HasGradableSubpart) Class_.getExternalClassNameHelper();
+			else
+				gs = new DefaultExternalClassNameHelper();
+        	for (StudentClassEnrollment enrollment: enrollments) {
+        		Student student = ext2student.get(enrollment.getStudent().getExternalUniqueId());
+        		if (student != null && (student.hasMaxCredit() || student.hasMinCredit())) {
+        			Float creditOverride = enrollment.getClazz().getCredit(enrollment.getCourseOffering());
+        			if (creditOverride != null) {
+        				if (student.hasMaxCredit())
+        					student.setMaxCredit(Math.max(0, student.getMaxCredit() - creditOverride));
+        				if (student.hasMinCredit())
+        					student.setMinCredit(Math.max(0, student.getMinCredit() - creditOverride));
+        				iProgress.debug("Decreasing credits by " + creditOverride + " for " + student.getName() + " (" + student.getExternalId() + ") for " + enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()));
+        			} else {
+        				CourseCreditUnitConfig credit = enrollment.getClazz().getSchedulingSubpart().getCredit(); 
+        				if (credit == null && gs.isGradableSubpart(enrollment.getClazz().getSchedulingSubpart(), enrollment.getCourseOffering(), hibSession)) {
+        					credit = enrollment.getCourseOffering().getCredit();
+        				}
+        				if (credit != null) {
+        					if (student.hasMaxCredit())
+        						student.setMaxCredit(Math.max(0, student.getMaxCredit() - credit.getMinCredit()));
+        					if (student.hasMinCredit())
+        						student.setMinCredit(Math.max(0, student.getMinCredit() - credit.getMinCredit()));
+            				iProgress.debug("Decreasing credits by " + credit.getMinCredit() + " for " + student.getName() + " (" + student.getExternalId() + ") for " + enrollment.getClazz().getClassLabel(enrollment.getCourseOffering()));
+        				}
         			}
         		}
         	}
