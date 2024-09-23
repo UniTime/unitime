@@ -51,6 +51,8 @@ public interface AcademicSessionProvider {
 		private String iYear, iTerm, iCampus, iName;
 		private String iExternalTerm, iExternalCampus;
 		private Date iStartDate;
+		private Boolean iPrimary = null;
+		private Boolean iOnline = null;
 		
 		public AcademicSessionInfo() {}
 		
@@ -90,6 +92,18 @@ public interface AcademicSessionProvider {
 		public Date getStartDate() { return iStartDate; }
 		public void setStartDate(Date startDate) { iStartDate = startDate; }
 		
+		public boolean isPrimary() { return Boolean.TRUE.equals(iPrimary); }
+		public AcademicSessionInfo setPrimary(boolean primary) {
+			iPrimary = primary;
+			return this;
+		}
+		
+		public boolean isOnline() { return !Boolean.FALSE.equals(iOnline); }
+		public AcademicSessionInfo setOnline(boolean online) {
+			iOnline = online;
+			return this;
+		}
+		
 		@Override
 		public String toString() {
 			return getName();
@@ -103,8 +117,12 @@ public interface AcademicSessionProvider {
 
 		@Override
 		public int compareTo(AcademicSessionInfo s) {
+			if (isOnline() != s.isOnline())
+				return isOnline() ? -1 : 1;
 			int cmp = s.getStartDate().compareTo(getStartDate());
-			if (cmp != 0) return cmp;
+			if (cmp != 0) return (isOnline() ? cmp : -cmp);
+			if (isPrimary() != s.isPrimary())
+				return isPrimary() ? -1 : 1;
 			cmp = getName().compareTo(s.getName());
 			if (cmp != 0) return cmp;
 			return getSessionId().compareTo(s.getSessionId());

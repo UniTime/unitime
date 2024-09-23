@@ -104,6 +104,14 @@
 				<line>Show recommendations from the other academic session(s) if a student is advised in two or more parallel sessions.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant / Student Course Requests</name>
+			<description>
+				<line>Available Sessions: Prefer sessions with matching student campus (in the order they are displayed).
+					<line>If two or more academic sessions start on the same date, prefer the academic session whose initiative matches the student's campus.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
