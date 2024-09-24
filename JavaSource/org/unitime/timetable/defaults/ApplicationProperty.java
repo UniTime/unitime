@@ -3598,6 +3598,17 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Student Scheduling Dashboard: do not count advised students (faster load, especially on MySQL)")
 	StudentSchedulingFilterSkipAdvisedCounts("unitime.enrollment.studentFiler.skipAdvisedCounts"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Scheduling Available Sessions: prefer sessions with matching student campus (in the order they are displayed)")
+	@Since(4.8)
+	StudentSchedulingPreferStudentCampus("unitime.studentScheduling.preferSessionsWithMatchingCampus"),
+	
+	@Type(Boolean.class)
+	@Description("Student Scheduling Available Sessions: preferred student camus (defaults to academic session initiative); can contain a regular expression in which case student campus is matched to the provided value")
+	@Since(4.8)
+	StudentSchedulingPreferredCampus("unitime.studentScheduling.preferredStudentCampus"),
 	;
 
 	String iKey;
