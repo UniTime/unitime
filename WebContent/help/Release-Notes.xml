@@ -108,7 +108,10 @@
 			<name>Student Scheduling Assistant / Student Course Requests</name>
 			<description>
 				<line>Available Sessions: Prefer sessions with matching student campus (in the order they are displayed).
-					<line>If two or more academic sessions start on the same date, prefer the academic session whose initiative matches the student's campus.</line>
+					<line>If two or more academic sessions start on the same date, prefer the academic session whose initiative matches the student's campus.
+						<line>Property unitime.studentScheduling.preferredStudentCampus can be used to provide regular expression for preferred student campuses.</line>
+					</line>
+					<line>Enable by setting unitime.studentScheduling.preferSessionsWithMatchingCampus to true, defaults to false.</line>
 				</line>
 			</description>
 		</item>
