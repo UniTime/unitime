@@ -212,9 +212,9 @@ public class SpecialRegistrationInterface {
 	/** Registration error for which there needs to be an override */
 	public static class ChangeError {
 		/** Error code */
-		String code;
+		public String code;
 		/** error message (shown to the student) */
-		String message;
+		public String message;
 	}
 
 	/** Change note */
@@ -426,11 +426,11 @@ public class SpecialRegistrationInterface {
 	/** Registrationn error */
 	public static class Problem {
 		/** Error code */
-		String code;
+		public String code;
 		/** Error message */
-		String message;
+		public String message;
 		/** Section affected */
-		String crn;
+		public String crn;
 	}
 
 	/** Data returned from the schedule validation */
@@ -598,9 +598,9 @@ public class SpecialRegistrationInterface {
 		/** Banner campus (e.g., PWL) */
 		public String campus;
 		/** List of available grade modes */
-		List<SpecialRegistrationCurrentGradeMode> gradingModes;
+		public List<SpecialRegistrationCurrentGradeMode> gradingModes;
 		/** List of available variable credits changes */
-		List<SpecialRegistrationVariableCredit> varCredits;
+		public List<SpecialRegistrationVariableCredit> varCredits;
 		/** Student's current credit */
 		public Float currentCredit;
 		/** Student's max credit */
