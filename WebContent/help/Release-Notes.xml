@@ -29,6 +29,20 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Events</title>
+		<item>
+			<name>Lookup Classes/Examination: Bugfix</name>
+			<description>
+				<line>Populate the event filter even when it is not present.</line>
+				<line>This fixes an issue caused by a recent change, having the events and rooms parameters incorrectly interpreted.</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.159</version>
+	<release-date>Fri, 27 Sep 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offering Configuration</name>
