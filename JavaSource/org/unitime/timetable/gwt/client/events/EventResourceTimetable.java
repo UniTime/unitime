@@ -312,6 +312,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if ("true".equals(iHistoryToken.getParameter("showFilter", "true"))) {
 			iEvents = new EventFilterBox(iSession);
 			iFilter.addRow(MESSAGES.propEventFilter(), (Widget)iEvents);
+		} else if (!iHistoryToken.getParameter("events","").isEmpty()) {
+			iEvents = new EventFilterBox(iSession);
 		} else {
 			iEvents = new DummyFilter<EventInterface.EventFilterRpcRequest>() {
 				@Override
@@ -330,6 +332,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			if ("room".equals(iHistoryToken.getParameter("type", "room")))
 				iRooms.setValue(iHistoryToken.getParameter("rooms", "flag:Event"));
 			iFilter.addRow(MESSAGES.propRoomFilter(), (Widget)iRooms);
+		} else if (!iHistoryToken.getParameter("rooms","").isEmpty()) {
+			iRooms = new RoomFilterBox(iSession, false);
 		} else {
 			iRooms = new DummyFilter<EventInterface.RoomFilterRpcRequest>() {
 				@Override
