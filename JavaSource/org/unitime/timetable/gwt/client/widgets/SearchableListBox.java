@@ -51,6 +51,7 @@ public class SearchableListBox extends Composite {
 	
 	public SearchableListBox() {
 		iSuggestBox = new AriaSuggestBox(new SearchableListBoxOracle());
+		iSuggestBox.setEnterPreventDefault(true);
 		initWidget(iSuggestBox);
 		iSuggestBox.addSelectionHandler(new SelectionHandler<SuggestOracle.Suggestion>() {
 			@Override
