@@ -1338,6 +1338,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iStandardNotes.addItem(note.toString(), note.getNote());
 		
 		getEventAddMeetings().reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
+		getEventModifyMeetings(); // ensure the Modify Meetings dialog is initialized when it is called
 		
 		DomEvent.fireNativeEvent(Document.get().createChangeEvent(), iEventType.getWidget());
 		
