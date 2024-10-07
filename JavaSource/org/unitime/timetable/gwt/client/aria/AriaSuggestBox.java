@@ -78,6 +78,7 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	private SuggestOracle.Callback iOracleCallback;
 	
 	private String iCurrentText = null;
+	private boolean iEnterPreventDefault = false;
 	
 	public AriaSuggestBox(SuggestOracle oracle) {
 		this(new AriaTextBox(), oracle);
@@ -181,7 +182,8 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	          case KeyCodes.KEY_ENTER:
 	        	  if (isSuggestionListShowing())
 	        		  iSuggestionMenu.executeSelected();
-	        	  event.preventDefault();
+	        	  if (iEnterPreventDefault)
+	        		  event.preventDefault();
 	        	  break;
 	          case KeyCodes.KEY_TAB:
 	        	  if (isSuggestionListShowing()) {
@@ -465,6 +467,8 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	public void setAriaLabel(String text) {
 		iText.setAriaLabel(text);
 	}
+	
+	public void setEnterPreventDefault(boolean enterPreventDefault) { iEnterPreventDefault = enterPreventDefault; }
 	
 	public AriaTextBox getTextBox() { return iText; }
 }
