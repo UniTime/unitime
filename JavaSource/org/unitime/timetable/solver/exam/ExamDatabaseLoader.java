@@ -22,6 +22,7 @@ package org.unitime.timetable.solver.exam;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -202,6 +203,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
     protected void loadRooms() {
         iAllRooms = Location.findAllExamLocations(iSessionId,iExamTypeId);
         iProgress.setPhase("Loading rooms...", iAllRooms.size());
+        Map<Long, ExamRoom> rooms = new HashMap<Long, ExamRoom>();
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
             Location location = (Location)i.next();
@@ -227,7 +229,18 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                 else
                     room.setPenalty(period.getIndex(), pref2weight(pref));
             }
+            rooms.put(location.getUniqueId(), room);
         }
+        for (Iterator i=iAllRooms.iterator();i.hasNext();) {
+        	Location location = (Location)i.next();
+        	if (location.getPartitionParentId() != null) {
+        		ExamRoom room = rooms.get(location.getUniqueId());
+        		ExamRoom parent = rooms.get(location.getPartitionParentId());
+        		if (room != null && parent != null)
+        			parent.addPartition(room);
+        	}
+        }
+        
     }
     
     protected void loadExams() {
@@ -1115,7 +1128,7 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
             for (Exam second: getModel().variables()) {
                 if (first.getId()>=second.getId() || !sameOwners(first,second)) continue;
                 iProgress.debug("Posting same room constraint between "+first.getName()+" and "+second.getName());
-                ExamDistributionConstraint constraint = new ExamDistributionConstraint(--dc, ExamDistributionConstraint.sDistSameRoom, false, 4);
+                ExamDistributionConstraint constraint = new ExamDistributionConstraint(--dc, ExamDistributionConstraint.DistributionType.SameRoom, false, 4);
                 constraint.addVariable(first);
                 constraint.addVariable(second);
                 getModel().addConstraint(constraint);

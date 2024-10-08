@@ -38,6 +38,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Room Partitions</name>
+			<description>
+				<line>Added support for room partitions in the examination timetabling.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Events</title>
 		<item>
 			<name>Lookup Classes/Examination: Bugfix</name>
