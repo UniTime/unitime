@@ -1368,6 +1368,77 @@ public class ClassInfoModel implements Serializable {
                 		}
             		}
                 }
+                
+                if (room instanceof Room) {
+                	Room r = (Room)room;
+                	if (r.getParentRoom() != null && !r.getParentRoom().isIgnoreRoomCheck()) {
+                		if (room2events!=null) {
+                        	Set<Event> conflicts = room2events.get(r.getParentRoom().getPermanentId());
+                        	if (conflicts!=null && !conflicts.isEmpty()) {
+                    			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
+                				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
+                				continue rooms;
+                        	}
+                        } else if (RoomAvailability.getInstance()!=null) {
+                    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+                    				r.getParentRoom().getUniqueId(),
+                                    bounds[0], bounds[1], 
+                                    RoomAvailabilityInterface.sClassType);
+                    		if (times != null && !times.isEmpty()) {
+                        		Collection<TimeBlock> timesToCheck = null;
+                        		if (!changePast || ignorePast) {
+                        			timesToCheck = new Vector();
+                        			for (TimeBlock time: times) {
+                        				if (!time.getEndTime().before(today))
+                        					timesToCheck.add(time);
+                        			}
+                        		} else {
+                        			timesToCheck = times;
+                        		}
+                        		TimeBlock time = period.overlaps(timesToCheck);
+                        		if (time!=null) {
+                        			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                    				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                    				continue rooms;
+                        		}
+                    		}
+                        }
+                	}
+                	for (Room p: r.getPartitions()) {
+                		if (p.isIgnoreRoomCheck()) continue;
+                		if (room2events!=null) {
+                        	Set<Event> conflicts = room2events.get(p.getPermanentId());
+                        	if (conflicts!=null && !conflicts.isEmpty()) {
+                    			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
+                				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), conflicts.toString()));
+                				continue rooms;
+                        	}
+                        } else if (RoomAvailability.getInstance()!=null) {
+                    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+                    				p.getUniqueId(),
+                                    bounds[0], bounds[1], 
+                                    RoomAvailabilityInterface.sClassType);
+                    		if (times != null && !times.isEmpty()) {
+                        		Collection<TimeBlock> timesToCheck = null;
+                        		if (!changePast || ignorePast) {
+                        			timesToCheck = new Vector();
+                        			for (TimeBlock time: times) {
+                        				if (!time.getEndTime().before(today))
+                        					timesToCheck.add(time);
+                        			}
+                        		} else {
+                        			timesToCheck = times;
+                        		}
+                        		TimeBlock time = period.overlaps(timesToCheck);
+                        		if (time!=null) {
+                        			if (room.getLabel().equals(filter)) iForm.setMessage(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                    				sLog.info(MSG.messageRoomNotAvailable2(room.getLabel(), period.getLongName(), time.toString()));
+                    				continue rooms;
+                        		}
+                    		}
+                        }
+                	}
+                }
 
                 rooms.addElement(new ClassRoomInfo(room, prefInt, note));
  			}
