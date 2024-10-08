@@ -39,7 +39,6 @@ import org.cpsolver.exam.model.ExamPeriodPlacement;
 import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.exam.model.ExamRoom;
 import org.cpsolver.exam.model.ExamRoomPlacement;
-import org.cpsolver.exam.model.ExamRoomSharing;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.extension.ConflictStatistics;
 import org.cpsolver.ifs.extension.Extension;
@@ -800,8 +799,6 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
                 }
             }
             
-            ExamRoomSharing sharing = ((ExamModel)currentSolution().getModel()).getRoomSharing();
-            
             //compute rooms
             for (ExamRoomPlacement room: exam.getRoomPlacements()) {
                 
@@ -812,13 +809,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
                 if (!room.isAvailable(period.getPeriod())) continue;
                 
                 boolean conf = !exam.checkDistributionConstraints(currentSolution().getAssignment(), room);
-                if (sharing == null) {
-                	for (ExamPlacement p: room.getRoom().getPlacements(currentSolution().getAssignment(), period.getPeriod()))
-                		if (!p.variable().equals(exam)) conf = true;
-                } else {
-                	if (sharing.inConflict(exam, room.getRoom().getPlacements(currentSolution().getAssignment(), period.getPeriod()), room.getRoom()))
-                		conf = true;
-                }
+                if (!conf && room.getRoom().inConflict(currentSolution().getAssignment(), exam, period.getPeriod())) conf = true;
 
                 if (!allowConflicts && conf) continue;
                 

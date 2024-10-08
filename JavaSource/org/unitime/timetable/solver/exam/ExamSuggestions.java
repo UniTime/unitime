@@ -37,7 +37,6 @@ import org.cpsolver.exam.model.ExamModel;
 import org.cpsolver.exam.model.ExamPeriodPlacement;
 import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.exam.model.ExamRoomPlacement;
-import org.cpsolver.exam.model.ExamRoomSharing;
 import org.cpsolver.exam.model.ExamStudent;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -161,7 +160,6 @@ public class ExamSuggestions {
     
     public Set findBestAvailableRooms(Exam exam, ExamPeriodPlacement period, boolean checkConstraints) {
         if (exam.getMaxRooms()==0) return new HashSet();
-        ExamRoomSharing sharing = iModel.getRoomSharing();
         loop: for (int nrRooms=1;nrRooms<=exam.getMaxRooms();nrRooms++) {
             HashSet rooms = new HashSet(); int size = 0;
             while (rooms.size()<nrRooms && size<exam.getSize()) {
@@ -169,15 +167,7 @@ public class ExamSuggestions {
                 ExamRoomPlacement best = null; int bestSize = 0, bestPenalty = 0;
                 for (ExamRoomPlacement room: exam.getRoomPlacements()) {
                     if (!room.isAvailable(period.getPeriod())) continue;
-                    if (checkConstraints) {
-                        if (nrRooms == 1 && sharing != null) {
-                            if (sharing.inConflict(exam, room.getRoom().getPlacements(iAssignment, period.getPeriod()), room.getRoom()))
-                                continue;
-                        } else {
-                            if (!room.getRoom().getPlacements(iAssignment, period.getPeriod()).isEmpty())
-                                continue;
-                        }
-                    }
+                    if (checkConstraints &&  room.getRoom().inConflict(iAssignment, exam, period.getPeriod())) continue;
                     if (rooms.contains(room)) continue;
                     if (checkConstraints && !exam.checkDistributionConstraints(iAssignment, room)) continue;
                     int s = room.getSize(exam.hasAltSeating());
