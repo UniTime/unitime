@@ -61,6 +61,7 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.RoomAvailability;
@@ -130,7 +131,7 @@ public class ExamInfoModel implements Serializable {
             } else {
             	iChange.getConflicts().clear();
             }
-            for (ExamAssignment assignment : new Vector<ExamAssignment>(iChange.getAssignments())) {
+            assignment: for (ExamAssignment assignment : new Vector<ExamAssignment>(iChange.getAssignments())) {
                 if (assignment.getRooms() != null) {
                 	for (ExamRoomInfo room : assignment.getRooms()) {
                 		
@@ -149,7 +150,7 @@ public class ExamInfoModel implements Serializable {
                     				iChange.getAssignments().remove(assignment);
                     				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
                     			}
-                    			continue;
+                    			continue assignment;
                     		}
                 		}
                 		
@@ -164,6 +165,77 @@ public class ExamInfoModel implements Serializable {
                             		iChange.getConflicts().add(new ExamAssignment(x));
                             	}
                             }
+                        }
+                        
+                        if (room.getLocation() instanceof Room) {
+                        	Room r = RoomDAO.getInstance().get(room.getLocationId());
+    						if (r.getParentRoom() != null) {
+    							ExamRoomInfo parent = new ExamRoomInfo(r.getParentRoom(), 0);
+    							if (assignment.getRooms().contains(parent)) {
+    								iChange.getAssignments().remove(assignment);
+                    				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
+                    				continue assignment;
+    							}
+    							if (!r.getParentRoom().isIgnoreRoomCheck()) {
+        							if (!canShareRoom.isEmpty()) {
+        								TreeSet<ExamRoomInfo> parents = new TreeSet<ExamRoomInfo>(); parents.add(parent);
+        								for (ExamAssignment other: iChange.getAssignments()) {
+        	                    			if (!other.equals(assignment) && other.getPeriodId().equals(assignment.getPeriodId()) && parents.equals(other.getRooms()))
+        	                    				size += other.getNrStudents();
+        	                    		}
+        	                    		if (size > parent.getCapacity(assignment)) {
+        	                    			if (!getExam().equals(assignment)) {
+        	                    				iChange.getAssignments().remove(assignment);
+        	                    				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
+        	                    			}
+        	                    			continue assignment;
+        	                    		}
+        							}
+        							for (Exam x: r.getParentRoom().getExams(assignment.getPeriodId())) {
+        								if (iChange.getCurrent(x.getUniqueId()) == null && iChange.getConflict(x.getUniqueId()) == null) {
+        									if (canShareRoom.contains(x.getUniqueId())) {
+        	                            		if (size + x.getSize() <= parent.getCapacity(assignment))
+        	                            			size += x.getSize();
+        	                            		else
+        	                            			iChange.getConflicts().add(new ExamAssignment(x));
+        	                            	} else {
+        	                            		iChange.getConflicts().add(new ExamAssignment(x));
+        	                            	}
+        								}
+        							}
+    							}
+    						}
+    						for (Room p: r.getPartitions()) {
+    							if (!p.isIgnoreRoomCheck()) {
+    								if (!canShareRoom.isEmpty()) {
+    									ExamRoomInfo partition = new ExamRoomInfo(p, 0);
+        								TreeSet<ExamRoomInfo> partitions = new TreeSet<ExamRoomInfo>(); partitions.add(partition);
+    		                    		for (ExamAssignment other: iChange.getAssignments()) {
+    		                    			if (!other.equals(assignment) && other.getPeriodId().equals(assignment.getPeriodId()) && partitions.equals(other.getRooms()))
+    		                    				size += other.getNrStudents();
+    		                    		}
+    		                    		if (size > room.getCapacity(assignment)) {
+    		                    			if (!getExam().equals(assignment)) {
+    		                    				iChange.getAssignments().remove(assignment);
+    		                    				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
+    		                    			}
+    		                    			continue assignment;
+    		                    		}
+    		                		}
+    								for (Exam x: p.getExams(assignment.getPeriodId())) {
+    									if (iChange.getCurrent(x.getUniqueId()) == null && iChange.getConflict(x.getUniqueId()) == null) {
+    										if (canShareRoom.contains(x.getUniqueId())) {
+    		                            		if (size + x.getSize() <= room.getCapacity(assignment))
+    		                            			size += x.getSize();
+    		                            		else
+    		                            			iChange.getConflicts().add(new ExamAssignment(x));
+    		                            	} else {
+    		                            		iChange.getConflicts().add(new ExamAssignment(x));
+    		                            	}
+    									}
+    								}
+    							}
+    						}
                         }
                     }
                 }
@@ -749,6 +821,33 @@ public class ExamInfoModel implements Serializable {
             		}
             	}
             }
+            if (room instanceof Room) {
+            	Room r = (Room) room;
+            	if (r.getParentRoom() != null) {
+            		Set<Long> parentExams = locationTable.get(r.getParentRoom().getUniqueId());
+                    if (parentExams != null && !parentExams.isEmpty() && !r.getParentRoom().isIgnoreRoomCheck()) {
+                    	for (Long other: parentExams) {
+                    		if (!canShareRoom.contains(other)) {
+                    			roomConflict = true;
+                    			if (!allowConflicts) continue rooms;
+                        		if (iChange != null && iChange.getCurrent(other) != null) continue rooms;
+                    		}
+                    	}
+                    }
+            	}
+            	for (Room p: r.getPartitions()) {
+            		Set<Long> partitionExams = locationTable.get(p.getUniqueId());
+                    if (partitionExams != null && !partitionExams.isEmpty() && !p.isIgnoreRoomCheck()) {
+                    	for (Long other: partitionExams) {
+                    		if (!canShareRoom.contains(other)) {
+                    			roomConflict = true;
+                    			if (!allowConflicts) continue rooms;
+                        		if (iChange != null && iChange.getCurrent(other) != null) continue rooms;
+                    		}
+                    	}
+                    }
+            	}
+            }
             
             int cap = (getExam().getSeatingType()==Exam.sSeatingTypeExam?room.getExamCapacity():room.getCapacity());
             if (minRoomSize>=0 && cap<minRoomSize) continue;
@@ -769,6 +868,35 @@ public class ExamInfoModel implements Serializable {
                         continue rooms;
                     }
                 }
+            }
+            if (room instanceof Room && RoomAvailability.getInstance() != null) {
+            	Room r = (Room) room;
+            	if (r.getParentRoom() != null && !r.getParentRoom().isIgnoreRoomCheck()) {
+            		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+                            r.getParentRoom().getUniqueId(),
+                            period.getStartTime(), period.getEndTime(), 
+                            period.getExamType().getReference());
+                    if (times!=null) for (TimeBlock time : times) {
+                        if (period.overlap(time)) {
+                            sLog.info("Room "+room.getLabel()+" is not avaiable due to "+time);
+                            continue rooms;
+                        }
+                    }
+            	}
+            	for (Room p: r.getPartitions()) {
+            		if (!p.isIgnoreRoomCheck()) {
+            			Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
+                                p.getUniqueId(),
+                                period.getStartTime(), period.getEndTime(), 
+                                period.getExamType().getReference());
+                        if (times!=null) for (TimeBlock time : times) {
+                            if (period.overlap(time)) {
+                                sLog.info("Room "+room.getLabel()+" is not avaiable due to "+time);
+                                continue rooms;
+                            }
+                        }
+            		}
+            	}
             }
             
             rooms.add(new ExamRoomInfo(room, (roomConflict ? 1000 : 0) + pref.getPreferenceInt()));
