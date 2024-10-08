@@ -29,6 +29,15 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Class Assignment: Room Partitions</name>
+			<description>
+				<line>Consider room partitions when checking room availability (other non-class events).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Events</title>
 		<item>
 			<name>Lookup Classes/Examination: Bugfix</name>
