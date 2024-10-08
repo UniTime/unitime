@@ -1068,8 +1068,21 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
                     org.unitime.timetable.model.ExamPeriod period = (org.unitime.timetable.model.ExamPeriod)j.next();
                     ExamPeriod periodEx = iPeriods.get(period.getUniqueId());
                     if (periodEx!=null && period.overlap(time)) {
-                    	iProgress.debug(roomEx.getName() + " not available during " + period.getName() + " due to " + time);
-                    	roomEx.setAvailable(periodEx, false);
+                    	if (roomEx.isHard()) {
+                        	iProgress.debug(roomEx.getName() + " not available during " + period.getName() + " due to " + time);
+                    		roomEx.setAvailable(periodEx, false);
+                    	}
+                    	if (roomEx.getParentRoom() != null && roomEx.getParentRoom().isHard()) {
+                    		iProgress.debug(roomEx.getParentRoom().getName() + " not available during " + period.getName() + " due to " + time);
+                    		roomEx.getParentRoom().setAvailable(periodEx, false);
+                    	}
+                    	if (roomEx.getPartitions() != null) {
+                    		for (ExamRoom partition: roomEx.getPartitions())
+                    			if (partition.isHard()) {
+                    				iProgress.debug(partition.getName() + " not available during " + period.getName() + " due to " + time);
+                    				partition.setAvailable(periodEx, false);
+                    			}
+                    	}
                     }
                 }
             }
