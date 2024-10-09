@@ -176,65 +176,16 @@ public class ExamInfoModel implements Serializable {
                     				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
                     				continue assignment;
     							}
-    							if (!r.getParentRoom().isIgnoreRoomCheck()) {
-        							if (!canShareRoom.isEmpty()) {
-        								TreeSet<ExamRoomInfo> parents = new TreeSet<ExamRoomInfo>(); parents.add(parent);
-        								for (ExamAssignment other: iChange.getAssignments()) {
-        	                    			if (!other.equals(assignment) && other.getPeriodId().equals(assignment.getPeriodId()) && parents.equals(other.getRooms()))
-        	                    				size += other.getNrStudents();
-        	                    		}
-        	                    		if (size > parent.getCapacity(assignment)) {
-        	                    			if (!getExam().equals(assignment)) {
-        	                    				iChange.getAssignments().remove(assignment);
-        	                    				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
-        	                    			}
-        	                    			continue assignment;
-        	                    		}
-        							}
-        							for (Exam x: r.getParentRoom().getExams(assignment.getPeriodId())) {
-        								if (iChange.getCurrent(x.getUniqueId()) == null && iChange.getConflict(x.getUniqueId()) == null) {
-        									if (canShareRoom.contains(x.getUniqueId())) {
-        	                            		if (size + x.getSize() <= parent.getCapacity(assignment))
-        	                            			size += x.getSize();
-        	                            		else
-        	                            			iChange.getConflicts().add(new ExamAssignment(x));
-        	                            	} else {
-        	                            		iChange.getConflicts().add(new ExamAssignment(x));
-        	                            	}
-        								}
-        							}
-    							}
+    							if (!r.getParentRoom().isIgnoreRoomCheck())
+        							for (Exam x: r.getParentRoom().getExams(assignment.getPeriodId()))
+        								if (iChange.getCurrent(x.getUniqueId()) == null && iChange.getConflict(x.getUniqueId()) == null)
+        									iChange.getConflicts().add(new ExamAssignment(x));
     						}
     						for (Room p: r.getPartitions()) {
-    							if (!p.isIgnoreRoomCheck()) {
-    								if (!canShareRoom.isEmpty()) {
-    									ExamRoomInfo partition = new ExamRoomInfo(p, 0);
-        								TreeSet<ExamRoomInfo> partitions = new TreeSet<ExamRoomInfo>(); partitions.add(partition);
-    		                    		for (ExamAssignment other: iChange.getAssignments()) {
-    		                    			if (!other.equals(assignment) && other.getPeriodId().equals(assignment.getPeriodId()) && partitions.equals(other.getRooms()))
-    		                    				size += other.getNrStudents();
-    		                    		}
-    		                    		if (size > room.getCapacity(assignment)) {
-    		                    			if (!getExam().equals(assignment)) {
-    		                    				iChange.getAssignments().remove(assignment);
-    		                    				iChange.getConflicts().add(new ExamAssignment(assignment.getExam()));
-    		                    			}
-    		                    			continue assignment;
-    		                    		}
-    		                		}
-    								for (Exam x: p.getExams(assignment.getPeriodId())) {
-    									if (iChange.getCurrent(x.getUniqueId()) == null && iChange.getConflict(x.getUniqueId()) == null) {
-    										if (canShareRoom.contains(x.getUniqueId())) {
-    		                            		if (size + x.getSize() <= room.getCapacity(assignment))
-    		                            			size += x.getSize();
-    		                            		else
-    		                            			iChange.getConflicts().add(new ExamAssignment(x));
-    		                            	} else {
-    		                            		iChange.getConflicts().add(new ExamAssignment(x));
-    		                            	}
-    									}
-    								}
-    							}
+    							if (!p.isIgnoreRoomCheck())
+    								for (Exam x: p.getExams(assignment.getPeriodId()))
+    									if (iChange.getCurrent(x.getUniqueId()) == null && iChange.getConflict(x.getUniqueId()) == null)
+    		                            	iChange.getConflicts().add(new ExamAssignment(x));
     						}
                         }
                     }

@@ -716,15 +716,19 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
             }
             for (Exam exam : unassign) currentSolution().getAssignment().unassign(0, exam);
             for (ExamPlacement placement : assign) {
-                for (Iterator i=placement.variable().getModel().conflictValues(currentSolution().getAssignment(), placement).iterator();i.hasNext();) {
-                    ExamPlacement conflict = (ExamPlacement)i.next();
-                    Exam conflictingExam = (Exam)conflict.variable();
-                    if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
-                        undoAssign.put(conflictingExam,conflict);
-                    conflicts.add(conflict);
-                    currentSolution().getAssignment().unassign(0, conflict.variable());
-                }
-                currentSolution().getAssignment().assign(0, placement);
+            	Set<ExamPlacement> conflictsThisPlacement = placement.variable().getModel().conflictValues(currentSolution().getAssignment(), placement);
+            	if (conflictsThisPlacement.contains(placement)) {
+            		conflicts.add(placement);
+            	} else {
+            		for (ExamPlacement conflict: conflictsThisPlacement) {
+                        Exam conflictingExam = (Exam)conflict.variable();
+                        if (!undoAssign.containsKey(conflictingExam) && !undoUnassing.contains(conflictingExam)) 
+                            undoAssign.put(conflictingExam,conflict);
+                        conflicts.add(conflict);
+                        currentSolution().getAssignment().unassign(0, conflict.variable());
+                    }
+                	currentSolution().getAssignment().assign(0, placement);
+            	}
             }
             change.getAssignments().clear();
             if (assign.isEmpty()) {
