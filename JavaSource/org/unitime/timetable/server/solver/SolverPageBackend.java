@@ -674,6 +674,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					response.setCanExecute(SolverOperation.RESTORE_BEST);
 				switch (request.getType()) {
 				case COURSE:
+					response.setCanExecute(SolverOperation.CLEAR);
 					Long[] owners = solver.getProperties().getPropertyLongArry("General.SolverGroupId", null);
 					if (context.hasPermission(owners, "SolverGroup", Right.SolverSolutionExportCsv))
 						response.setCanExecute(SolverOperation.EXPORT_CSV);
