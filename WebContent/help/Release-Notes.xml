@@ -36,6 +36,16 @@
 				<line>Consider room partitions when checking room availability (other non-class events).</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling Solver: Optimization</name>
+			<description>
+				<line>In order for the solver to start optimization even when a complete solution cannot be found, added an ability to halt the initial search phase when a maximum number of non-improving iterations is reached.</line>
+				<line>This can be controlled by the Search.MaxIdleIterations parameter.
+					<line>It defaults to 1000.</line>
+					<line>Set to -1 to disable the ability to halt the initial search phase (previous behavior).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
