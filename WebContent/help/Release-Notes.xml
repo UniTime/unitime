@@ -38,6 +38,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Course Offering XML</name>
+			<description>
+				<line>Added an optional attribute class.roomRatio, defaults to 1.</line>
+				<line>Added an optional attribute class.splitAttendance for classes with two or more rooms, defaults to false.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.159</version>

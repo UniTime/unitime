@@ -106,6 +106,15 @@ public abstract class BaseImport extends DataExchangeHelper {
 		}
 	}
 	
+	protected Float getOptionalFloatAttribute(Element element, String attributeName) {
+		String attributeStr = getOptionalStringAttribute(element, attributeName);
+		if (attributeStr != null){
+			return(Float.parseFloat(attributeStr));
+		} else {
+			return(null);
+		}
+	}
+	
 	protected Long getRequiredLongAttribute(Element element, String attributeName, String elementName) throws Exception {
 		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
 		return(Long.parseLong(attributeStr));
