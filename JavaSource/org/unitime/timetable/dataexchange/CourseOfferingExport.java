@@ -84,6 +84,7 @@ import org.unitime.timetable.util.Formats;
  */
 public class CourseOfferingExport extends BaseExport {
     protected static Formats.Format<Number> sTwoNumbersDF = Formats.getNumberFormat("00");
+    protected static Formats.Format<Number> sRoomRatioDF = Formats.getNumberFormat("0.00");
     protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat("yyyy/M/d");
     protected static Formats.Format<Date> sTimeFormat = Formats.getDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
@@ -333,6 +334,10 @@ public class CourseOfferingExport extends BaseExport {
         classElement.addAttribute("cancelled", clazz.isCancelled() ? "true" : "false");
         if (clazz.getNbrRooms() != 1)
         	classElement.addAttribute("nbrRooms", clazz.getNbrRooms().toString());
+        if (clazz.getNbrRooms() > 1 && clazz.isRoomsSplitAttendance() != null)
+        	classElement.addAttribute("splitAttendance", clazz.isRoomsSplitAttendance() ? "true" : "false");
+        if (clazz.getRoomRatio() != 1f)
+        	classElement.addAttribute("roomRatio", sRoomRatioDF.format(clazz.getRoomRatio()));
         for (Class_ childClazz : clazz.getChildClasses()) {
             exportClass(classElement.addElement("class"), childClazz, session);
         }
