@@ -34,7 +34,7 @@ Jackson-annotations (jackson-annotations-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://github.com/FasterXML/jackson
 
-Jackson-core (jackson-core-2.17.1.jar)
+Jackson-core (jackson-core-2.18.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/FasterXML/jackson-core
 
@@ -62,7 +62,7 @@ error-prone annotations (error_prone_annotations-2.27.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://errorprone.info/error_prone_annotations
 
-Protocol Buffers [Core] (protobuf-java-4.27.3.jar)
+Protocol Buffers [Core] (protobuf-java-4.28.2.jar)
 	under BSD-3-Clause
 	https://developers.google.com/protocol-buffers/protobuf-java/
 
@@ -110,7 +110,7 @@ Commons BeanUtils (commons-beanutils-1.8.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/beanutils/
 
-Apache Commons Codec (commons-codec-1.16.0.jar)
+Apache Commons Codec (commons-codec-1.17.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-codec/
 
@@ -118,11 +118,11 @@ Apache Commons FileUpload (commons-fileupload-1.5.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-fileupload/
 
-Apache Commons IO (commons-io-2.16.1.jar)
+Apache Commons IO (commons-io-2.17.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-io/
 
-Apache Commons Logging (commons-logging-1.3.0.jar)
+Apache Commons Logging (commons-logging-1.3.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-logging/
 
@@ -130,11 +130,11 @@ Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.34.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/reactor/reactor-core
 
-RxJava (rxjava-3.1.8.jar)
+RxJava (rxjava-3.1.9.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/ReactiveX/RxJava
 
-Jandex: Core (jandex-3.1.2.jar)
+Jandex: Core (jandex-3.2.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://smallrye.io
 
@@ -162,14 +162,14 @@ Jakarta XML Binding API (jakarta.xml.bind-api-4.0.0.jar)
 	under Eclipse Distribution License - v 1.0
 	https://github.com/eclipse-ee4j/jaxb-api/jakarta.xml.bind-api
 
-Joda-Time (joda-time-2.12.7.jar)
+Joda-Time (joda-time-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.joda.org/joda-time/
 
 jstl (jstl-1.2.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 
-Byte Buddy (without dependencies) (byte-buddy-1.14.11.jar)
+Byte Buddy (without dependencies) (byte-buddy-1.14.18.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://bytebuddy.net/byte-buddy
 
@@ -201,7 +201,7 @@ Apache Commons Digester (commons-digester3-3.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/digester/
 
-Apache Commons Lang (commons-lang3-3.14.0.jar)
+Apache Commons Lang (commons-lang3-3.17.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-lang/
 
@@ -213,27 +213,27 @@ Apache Commons Text (commons-text-1.12.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-text
 
-Apache Log4j API (log4j-api-2.23.1.jar)
+Apache Log4j API (log4j-api-2.24.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-api/
 
-Apache Log4j Core (log4j-core-2.23.1.jar)
+Apache Log4j Core (log4j-core-2.24.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-core/
 
-Apache Log4j Commons Logging Bridge (log4j-jcl-2.23.1.jar)
+Apache Log4j Commons Logging Bridge (log4j-jcl-2.24.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-jcl/
 
-Apache Log4j SLF4J Binding (log4j-slf4j-impl-2.23.1.jar)
+SLF4J 1 Binding for Log4j API (log4j-slf4j-impl-2.24.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-slf4j-impl/
 
-Apache Log4j Web (log4j-web-2.23.1.jar)
+Apache Log4j Web (log4j-web-2.24.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-web/
 
-Apache POI - Common (poi-5.2.5.jar)
+Apache POI - Common (poi-5.3.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://poi.apache.org/
 
@@ -301,43 +301,43 @@ gwt-servlet (gwt-servlet-2.11.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
 
-Hibernate Commons Annotations (hibernate-commons-annotations-6.0.6.Final.jar)
-	under GNU Library General Public License v2.1 or later
+Hibernate Commons Annotations (hibernate-commons-annotations-7.0.1.Final.jar)
+	under Apache Software License (ASL), Version 2.0
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.4.10.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.1.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.4.10.Final.jar)
+Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.6.1.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.4.10.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.6.1.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Infinispan Commons Jakarta EE (infinispan-commons-jakarta-14.0.30.Final.jar)
+Infinispan Commons Jakarta EE (infinispan-commons-jakarta-14.0.32.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-commons-parent/infinispan-commons-jakarta
 
-Infinispan Core Jakarta EE (infinispan-core-jakarta-14.0.30.Final.jar)
+Infinispan Core Jakarta EE (infinispan-core-jakarta-14.0.32.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-core-jakarta
 
-Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-14.0.30.Final.jar)
+Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-14.0.32.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-commons
 
-Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-14.0.30.Final.jar)
+Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-14.0.32.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-spi
 
-Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-14.0.30.Final.jar)
+Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-14.0.32.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-v62
 
-Infinispan JBoss Marshalling (infinispan-jboss-marshalling-14.0.30.Final.jar)
+Infinispan JBoss Marshalling (infinispan-jboss-marshalling-14.0.32.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org/infinispan-jboss-marshalling
 
@@ -365,11 +365,11 @@ JBoss Logging 3 (jboss-logging-3.5.0.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org
 
-JBoss Marshalling API (jboss-marshalling-2.1.4.Final.jar)
+JBoss Marshalling API (jboss-marshalling-2.1.5.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling
 
-JBoss Marshalling River (jboss-marshalling-river-2.1.4.Final.jar)
+JBoss Marshalling River (jboss-marshalling-river-2.1.5.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling-river
 
@@ -377,7 +377,7 @@ JBoss Threads (jboss-threads-2.3.6.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jboss-threads
 
-JGroups (jgroups-5.3.10.Final.jar)
+JGroups (jgroups-5.3.13.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
@@ -417,47 +417,47 @@ SLF4J API Module (slf4j-api-1.7.36.jar)
 	under MIT License
 	http://www.slf4j.org
 
-Spring AOP (spring-aop-5.3.37.jar)
+Spring AOP (spring-aop-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Beans (spring-beans-5.3.37.jar)
+Spring Beans (spring-beans-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context (spring-context-5.3.37.jar)
+Spring Context (spring-context-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Context Support (spring-context-support-5.3.37.jar)
+Spring Context Support (spring-context-support-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Core (spring-core-5.3.37.jar)
+Spring Core (spring-core-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Expression Language (SpEL) (spring-expression-5.3.37.jar)
+Spring Expression Language (SpEL) (spring-expression-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Commons Logging Bridge (spring-jcl-5.3.37.jar)
+Spring Commons Logging Bridge (spring-jcl-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring JDBC (spring-jdbc-5.3.37.jar)
+Spring JDBC (spring-jdbc-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Messaging (spring-messaging-5.3.37.jar)
+Spring Messaging (spring-messaging-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Transaction (spring-tx-5.3.37.jar)
+Spring Transaction (spring-tx-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
-Spring Web (spring-web-5.3.37.jar)
+Spring Web (spring-web-5.3.39.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-framework
 
@@ -481,51 +481,51 @@ Spring Retry (spring-retry-1.3.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.springsource.org
 
-spring-security-acl (spring-security-acl-5.8.13.jar)
+spring-security-acl (spring-security-acl-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-aspects (spring-security-aspects-5.8.13.jar)
+spring-security-aspects (spring-security-aspects-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-cas (spring-security-cas-5.8.13.jar)
+spring-security-cas (spring-security-cas-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-config (spring-security-config-5.8.13.jar)
+spring-security-config (spring-security-config-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-core (spring-security-core-5.8.13.jar)
+spring-security-core (spring-security-core-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-crypto (spring-security-crypto-5.8.13.jar)
+spring-security-crypto (spring-security-crypto-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-ldap (spring-security-ldap-5.8.13.jar)
+spring-security-ldap (spring-security-ldap-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-oauth2-client (spring-security-oauth2-client-5.8.13.jar)
+spring-security-oauth2-client (spring-security-oauth2-client-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-oauth2-core (spring-security-oauth2-core-5.8.13.jar)
+spring-security-oauth2-core (spring-security-oauth2-core-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-oauth2-jose (spring-security-oauth2-jose-5.8.13.jar)
+spring-security-oauth2-jose (spring-security-oauth2-jose-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-taglibs (spring-security-taglibs-5.8.13.jar)
+spring-security-taglibs (spring-security-taglibs-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-web (spring-security-web-5.8.13.jar)
+spring-security-web (spring-security-web-5.8.14.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
