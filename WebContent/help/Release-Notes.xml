@@ -43,6 +43,15 @@
 				<line>This can be controlled by the Search.MaxIdleIterations parameter.
 					<line>It defaults to 1000.</line>
 					<line>Set to -1 to disable the ability to halt the initial search phase (previous behavior).</line>
+					<line>Set to 0 to disable the construction heuristics, going directly to optimization phases.</line>
+				</line>
+				<line>Improved the ability to assign an unassigned class during the optimization phase.
+					<line>To enable this, add ;org.cpsolver.coursett.neighbourhoods.Suggestion@0.1 to the following parameters:
+						<line>HillClimber.AdditionalNeighbours</line>
+						<line>GreatDeluge.AdditionalNeighbours</line>
+						<line>SimulatedAnnealing.AdditionalNeighbours</line>
+					</line>
+					<line>This is especially needed when the construction phase is disabled, or the solver struggles to find a complete solution when one exists.</line>
 				</line>
 			</description>
 		</item>
