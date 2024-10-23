@@ -57,11 +57,11 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.metamodel.mapping.BasicValuedMapping;
-import org.hibernate.metamodel.mapping.MappingModelExpressible;
 import org.hibernate.query.ReturnableType;
 import org.hibernate.query.sqm.function.NamedSqmFunctionDescriptor;
 import org.hibernate.query.sqm.produce.function.FunctionReturnTypeResolver;
 import org.hibernate.query.sqm.produce.function.StandardArgumentsValidators;
+import org.hibernate.query.sqm.sql.SqmToSqlAstConverter;
 import org.hibernate.query.sqm.tree.SqmTypedNode;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.ServiceBinding;
@@ -505,7 +505,7 @@ public class HibernateUtil {
     	public OracleWeekdayFunction() {
     		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, SqmToSqlAstConverter converter, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -531,7 +531,7 @@ public class HibernateUtil {
     	public OracleDaysFunction() {
     		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, SqmToSqlAstConverter converter, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -573,7 +573,7 @@ public class HibernateUtil {
     	public MySQLDaysFunction() {
     		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
     			@Override
-    			public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+    			public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, SqmToSqlAstConverter converter, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -599,7 +599,7 @@ public class HibernateUtil {
     	public PostgreSQLDaysFunction() {
     		super("days", false, StandardArgumentsValidators.exactly(2), new FunctionReturnTypeResolver() {
     			@Override
-    			public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+    			public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, SqmToSqlAstConverter converter, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -625,7 +625,7 @@ public class HibernateUtil {
     	public MySQLWeekdayFunction() {
     		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, SqmToSqlAstConverter converter, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
@@ -648,7 +648,7 @@ public class HibernateUtil {
     	public PostgreSQLWeekdayFunction() {
     		super("weekday", false, StandardArgumentsValidators.exactly(1), new FunctionReturnTypeResolver() {
     			@Override
-				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, Supplier<MappingModelExpressible<?>> inferredTypeSupplier, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
+				public ReturnableType<?> resolveFunctionReturnType(ReturnableType<?> impliedType, SqmToSqlAstConverter converter, List<? extends SqmTypedNode<?>> arguments, TypeConfiguration typeConfiguration) {
 					return typeConfiguration.getBasicTypeRegistry().resolve( StandardBasicTypes.INTEGER);
 				}
 				@Override
