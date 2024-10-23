@@ -99,7 +99,7 @@
     </target>
 
 	<target name="compile-java" depends="prepare">
-		<javac debug="${java.debug}" optimize="${java.optimize}" destdir="${build.dir}" includeantruntime="false" encoding="utf-8">
+		<javac debug="${java.debug}" optimize="${java.optimize}" destdir="${build.dir}" includeantruntime="false" encoding="utf-8" source="11" target="11">
 			<compilerarg value="-XDignore.symbol.file"/>
 			<src path="${build.dir}" />
 			<classpath refid="build.classpath" />
