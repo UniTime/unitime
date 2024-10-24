@@ -45,7 +45,7 @@ public class UniqueIdGenerator implements IdentifierGenerator {
     public static void configure(LoadedConfig config) {
         sGenClass = (String)config.getConfigurationValues().get("tmtbl.uniqueid.generator");
         if (sGenClass==null) sGenClass = "org.hibernate.id.enhanced.SequenceStyleGenerator";
-        sDefaultSchema = (String)config.getConfigurationValues().get("default_schema");
+        sDefaultSchema = (String)config.getConfigurationValues().get("hibernate.default_schema");
     }
     
     public IdentifierGenerator getGenerator() throws HibernateException {

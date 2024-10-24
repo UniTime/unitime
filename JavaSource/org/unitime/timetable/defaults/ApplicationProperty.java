@@ -89,7 +89,8 @@ public enum ApplicationProperty {
 	@Implements(Dialect.class)
 	@Description("Database: dialect (e.g., org.hibernate.dialect.Oracle10gDialect)")
 	@ReadOnly
-	DatabaseDialect("dialect"),
+	@Replaces({"dialect"})
+	DatabaseDialect("hibernate.dialect"),
 	
 	@Description("Database: connection url")
 	@ReadOnly
@@ -118,7 +119,8 @@ public enum ApplicationProperty {
 	@DefaultValue("timetable")
 	@Description("Database: schema (e.g., timetable)")
 	@ReadOnly
-	DatabaseSchema("default_schema"),
+	@Replaces({"default_schema"})
+	DatabaseSchema("hibernate.default_schema"),
 
 	@Type(Class.class)
 	@Implements(IdentifierGenerator.class)

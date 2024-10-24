@@ -18,7 +18,6 @@
 		</Root>
 		<Logger name="org.hibernate" level="INFO"/>
 		<Logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR"/>
-		<Logger name="org.unitime.commons.hibernate.connection.DBCPConnectionProvider" level="INFO"/>
 		<Logger name="org.jgroups.protocols" level="DEBUG"/>
 		<Logger name="org.jgroups.protocols.UNICAST3" level="INFO"/>
 	</Loggers>
