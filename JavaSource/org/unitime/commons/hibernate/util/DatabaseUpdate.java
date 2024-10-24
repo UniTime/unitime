@@ -93,7 +93,7 @@ public abstract class DatabaseUpdate {
     
     public void performUpdate() {
         sLog.info("Current " + updateName() + " database version: "+getVersion());
-        String dialect = HibernateUtil.getConfiguration().getProperty("dialect");
+        String dialect = HibernateUtil.getConfiguration().getProperty("hibernate.dialect");
         for (Iterator i=iRoot.elementIterator("dialect");i.hasNext();) {
             Element dialectElement = (Element)i.next();
             if (dialect.equals(dialectElement.getTextTrim())) iDialectSQL = dialectElement.attributeValue("type");
@@ -114,7 +114,7 @@ public abstract class DatabaseUpdate {
 	public boolean performUpdate(Element updateElement) {
         int version = Integer.parseInt(updateElement.attributeValue("version"));
         Session hibSession = new _RootDAO().getSession();
-        String schema = HibernateUtil.getConfiguration().getProperty("default_schema");
+        String schema = HibernateUtil.getConfiguration().getProperty("hibernate.default_schema");
         Transaction tx = null;
         Hashtable variables = new Hashtable();
         try {

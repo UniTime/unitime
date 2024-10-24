@@ -101,12 +101,12 @@ public class HibernateUtil {
     public static String getProperty(Properties properties, String name) {
         String value = properties.getProperty(name);
         if (value!=null) {
-            sLog.debug("   -- " + name + "=" + value);
+            sLog.debug("  -- " + name + "=" + value);
         	return value;
         }
-        sLog.debug("   -- using application properties for " + name);
+        sLog.debug("    -- using application properties for " + name);
         value = ApplicationProperties.getProperty(name);
-        sLog.debug("     -- " + name + "=" + value);
+        sLog.debug("  -- " + name + "=" + value);
         return value;
     }
     
@@ -153,7 +153,7 @@ public class HibernateUtil {
         else if ("org.hibernate.dialect.Oracle10gDialect".equals(dialect))
         	dialect = OracleDialect.class.getName();
         if (dialect!=null) {
-        	config.getConfigurationValues().put("dialect", dialect);
+        	sLog.debug("  -- dialect: " + dialect);
         	config.getConfigurationValues().put("hibernate.dialect", dialect);
         }
 
@@ -201,10 +201,13 @@ public class HibernateUtil {
             }
         }
         
-        String default_schema = getProperty(properties, "default_schema");
-        if (default_schema != null)
-        	config.getConfigurationValues().put("default_schema", default_schema);
-        else
+        String default_schema = getProperty(properties, "hibernate.default_schema");
+        if (default_schema == null)
+        	default_schema = getProperty(properties, "default_schema");
+        if (default_schema != null) {
+        	sLog.debug("  -- default_schema: " + default_schema);
+        	config.getConfigurationValues().put("hibernate.default_schema", default_schema);
+        } else
         	default_schema = "timetable";
         
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
@@ -232,7 +235,7 @@ public class HibernateUtil {
         }
 
         MetadataBuilder metaBuild = new MetadataSources(registry).getMetadataBuilder();
-        Class d = Class.forName((String)config.getConfigurationValues().get("dialect"));
+        Class d = Class.forName((String)config.getConfigurationValues().get("hibernate.dialect"));
         addOperations(metaBuild, d);
         
         Metadata meta = metaBuild.build();
@@ -276,7 +279,7 @@ public class HibernateUtil {
         else if ("org.hibernate.dialect.Oracle10gDialect".equals(dialect))
         	dialect = OracleDialect.class.getName();
         if (dialect!=null) {
-        	config.getConfigurationValues().put("dialect", dialect);
+        	sLog.debug("  -- dialect: " + dialect);
         	config.getConfigurationValues().put("hibernate.dialect", dialect);
         }
 
@@ -322,8 +325,10 @@ public class HibernateUtil {
         }
 
         String default_schema = ApplicationProperty.DatabaseSchema.value();
-        if (default_schema != null)
-        	config.getConfigurationValues().put("default_schema", default_schema);
+        if (default_schema != null) {
+        	sLog.debug("  -- default_schema: " + default_schema);
+        	config.getConfigurationValues().put("hibernate.default_schema", default_schema);
+        }
         
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Entity.class));
@@ -351,7 +356,7 @@ public class HibernateUtil {
 
         
         MetadataBuilder metaBuild = new MetadataSources(registry).getMetadataBuilder();
-        Class d = Class.forName((String)config.getConfigurationValues().get("dialect"));
+        Class d = Class.forName((String)config.getConfigurationValues().get("hibernate.dialect"));
         addOperations(metaBuild, d);
         
         Metadata meta = metaBuild.build();
@@ -378,7 +383,7 @@ public class HibernateUtil {
     }
 
     public static String getDatabaseName() {
-    	String schema = (String)getHibernateContext().getConfig().getConfigurationValues().get("default_schema");
+    	String schema = (String)getHibernateContext().getConfig().getConfigurationValues().get("hibernate.default_schema");
         String url = getConnectionUrl();
         if (url==null) return "N/A";
         if (url.startsWith("jdbc:oracle:")) {
@@ -425,7 +430,7 @@ public class HibernateUtil {
     
     public static Class<?> getDialect() {
     	try {
-    		return Class.forName((String)getHibernateContext().getConfig().getConfigurationValues().get("dialect"));
+    		return Class.forName((String)getHibernateContext().getConfig().getConfigurationValues().get("hibernate.dialect"));
     	} catch (ClassNotFoundException e) {
     		return null;
     	}

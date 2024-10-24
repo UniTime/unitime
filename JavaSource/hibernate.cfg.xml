@@ -32,7 +32,7 @@
 	<property name="connection.username">timetable</property>
 	<property name="connection.password">unitime</property>
 	<property name="connection.autocommit">true</property>
-	<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+	<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.enhanced.TableGenerator</property>
 	<property name="hibernate.connection.useUnicode">true</property>
 	<property name="hibernate.connection.characterEncoding">utf8</property>
@@ -44,7 +44,7 @@
 	<property name="connection.url">jdbc:oracle:thin:@localhost:1521:xe</property>
 	<property name="connection.username">timetable</property>
 	<property name="connection.password">unitime</property>
-	<property name="dialect">org.hibernate.dialect.OracleDialect</property>
+	<property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
 	<property name="tmtbl.uniqueid.generator">org.hibernate.id.SequenceGenerator</property>
 	-->
 	<!-- End of Oracle Configuration -->
@@ -69,7 +69,7 @@
 	<!-- If true, class LobCleanUpInterceptor will print some audit information -->
 	<property name="tmtbl.hibernate.audit">false</property>
 
-	<property name="default_schema">timetable</property>
+	<property name="hibernate.default_schema">timetable</property>
 
 	<!-- Generate comments inside the SQL, for easier debugging, defaults -->
 	<!-- 
