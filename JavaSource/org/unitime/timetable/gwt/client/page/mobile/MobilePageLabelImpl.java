@@ -109,7 +109,11 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	}
 	
 	public static native boolean hasParentWindow()/*-{
-		return ($wnd.parent && $wnd.parent.hasGwtDialog());
+		try {
+			return ($wnd.parent && $wnd.parent.hasGwtDialog && $wnd.parent.hasGwtDialog());
+		} catch (e) {
+			return false;
+		}
 	}-*/;
 
 	public static native boolean tellParentToCloseThisWindo()/*-{
