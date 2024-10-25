@@ -79,6 +79,8 @@ public abstract class EventsExporter implements Exporter {
     	if (type == null)
     		throw new IllegalArgumentException("Resource type not provided, please set the type parameter.");
     	request.setResourceType(ResourceType.valueOf(type.toUpperCase()));
+    	if (request.getResourceType() == ResourceType.PERSON && request.getResourceExternalId() == null)
+    		request.setResourceExternalId(helper.getSessionContext().getUser().getExternalUserId());
     	EventFilterRpcRequest eventFilter = new EventFilterRpcRequest();
     	eventFilter.setSessionId(sessionId);
     	request.setEventFilter(eventFilter);
