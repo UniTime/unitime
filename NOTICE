@@ -473,7 +473,7 @@ Spring Integration Mail Support (spring-integration-mail-5.5.20.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/spring-projects/spring-integration
 
-spring-ldap-core (spring-ldap-core-2.4.1.jar)
+spring-ldap-core (spring-ldap-core-2.4.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-ldap
 
@@ -481,51 +481,51 @@ Spring Retry (spring-retry-1.3.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://www.springsource.org
 
-spring-security-acl (spring-security-acl-5.8.14.jar)
+spring-security-acl (spring-security-acl-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-aspects (spring-security-aspects-5.8.14.jar)
+spring-security-aspects (spring-security-aspects-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-cas (spring-security-cas-5.8.14.jar)
+spring-security-cas (spring-security-cas-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-config (spring-security-config-5.8.14.jar)
+spring-security-config (spring-security-config-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-core (spring-security-core-5.8.14.jar)
+spring-security-core (spring-security-core-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-crypto (spring-security-crypto-5.8.14.jar)
+spring-security-crypto (spring-security-crypto-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-ldap (spring-security-ldap-5.8.14.jar)
+spring-security-ldap (spring-security-ldap-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-oauth2-client (spring-security-oauth2-client-5.8.14.jar)
+spring-security-oauth2-client (spring-security-oauth2-client-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-oauth2-core (spring-security-oauth2-core-5.8.14.jar)
+spring-security-oauth2-core (spring-security-oauth2-core-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-oauth2-jose (spring-security-oauth2-jose-5.8.14.jar)
+spring-security-oauth2-jose (spring-security-oauth2-jose-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-taglibs (spring-security-taglibs-5.8.14.jar)
+spring-security-taglibs (spring-security-taglibs-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-spring-security-web (spring-security-web-5.8.14.jar)
+spring-security-web (spring-security-web-5.8.15.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
