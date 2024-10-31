@@ -141,7 +141,7 @@
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar javax.servlet-api-3.1.0.jar javax.servlet.jsp-api-2.3.3.jar
 					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.3.13.Final.jar joda-time-2.13.0.jar log4j-api-2.24.1.jar
 					log4j-core-2.24.1.jar log4j-jcl-2.24.1.jar log4j-slf4j-impl-2.24.1.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.28.2.jar
-					slf4j-api-1.7.36.jar spring-beans-5.3.39.jar spring-context-5.3.39.jar spring-core-5.3.39.jar spring-security-core-5.8.14.jar spring-web-5.3.39.jar
+					slf4j-api-1.7.36.jar spring-beans-5.3.39.jar spring-context-5.3.39.jar spring-core-5.3.39.jar spring-security-core-5.8.15.jar spring-web-5.3.39.jar
 					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar"/>
 				<attribute name="Timetabling-Version" value="4.8_bld${build.number}"/>
 			</manifest>
@@ -312,7 +312,7 @@
 				<include name="protobuf-java-4.28.2.jar"/>
 				<include name="slf4j-api-1.7.36.jar"/>
 				<include name="log4j-slf4j-impl-2.24.1.jar"/>
-				<include name="spring-security-core-5.8.14.jar"/>
+				<include name="spring-security-core-5.8.15.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.4.jar"/>
 				<include name="gson-2.11.0.jar"/>
@@ -380,7 +380,7 @@
 				<include name="protobuf-java-4.28.2.jar"/>
 				<include name="slf4j-api-1.7.36.jar"/>
 				<include name="log4j-slf4j-impl-2.24.1.jar"/>
-				<include name="spring-security-core-5.8.14.jar"/>
+				<include name="spring-security-core-5.8.15.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.4.jar"/>
 				<include name="gson-2.11.0.jar"/>

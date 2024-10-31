@@ -729,7 +729,7 @@
 		<protobuf.version>4.28.2</protobuf.version>
 		<gwt.version>2.11.0</gwt.version>
 		<spring.version>5.3.39</spring.version>
-		<spring-security.version>5.8.14</spring-security.version>
+		<spring-security.version>5.8.15</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 		<servlet.version>3.1.0</servlet.version>
 		<jsp.version>2.3.3</jsp.version>
