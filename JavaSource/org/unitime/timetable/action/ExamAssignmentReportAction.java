@@ -54,11 +54,15 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
 import org.unitime.timetable.form.ExamAssignmentReportForm.ExamReport;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
@@ -203,22 +207,22 @@ public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentRepo
 	            exams.put(exam.getUniqueId(), exam);
 	        }
 	        ExamDAO.getInstance().getSession().createQuery(
-	                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId", Class .class)
+	                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId", Class_.class)
 	                .setParameter("sessionId", sessionId)
 	                .setParameter("examTypeId", examTypeId)
 	                .setParameter("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
 	        ExamDAO.getInstance().getSession().createQuery(
-	                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId", Class .class)
+	                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId", InstrOfferingConfig.class)
 	                .setParameter("sessionId", sessionId)
 	                .setParameter("examTypeId", examTypeId)
 	                .setParameter("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
 	        ExamDAO.getInstance().getSession().createQuery(
-	                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId", Class .class)
+	                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId", CourseOffering.class)
 	                .setParameter("sessionId", sessionId)
 	                .setParameter("examTypeId", examTypeId)
 	                .setParameter("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
 	        ExamDAO.getInstance().getSession().createQuery(
-	                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId", Class .class)
+	                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId", InstructionalOffering.class)
 	                .setParameter("sessionId", sessionId)
 	                .setParameter("examTypeId", examTypeId)
 	                .setParameter("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
