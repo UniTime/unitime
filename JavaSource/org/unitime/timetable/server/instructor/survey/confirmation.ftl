@@ -115,6 +115,7 @@
 						<td style="${style} width: ${max} px;">${cf.getName()}</td>
 					</#list>
 				<tr>
+				<#if survey.hasCourses()>
 				<#list survey.getCourses() as ci>
 					<#if ci.hasCustomFields()>
 						<tr>
@@ -130,6 +131,7 @@
 						</tr>
 					</#if>
 				</#list>
+				</#if>
 			</table></td></tr>
 		</table>
 		<!-- footer -->
