@@ -43,7 +43,11 @@
 				<line>This can be controlled by the Search.MaxIdleIterations parameter.
 					<line>It defaults to 1000.</line>
 					<line>Set to -1 to disable the ability to halt the initial search phase (previous behavior).</line>
-					<line>Set to 0 to disable the construction heuristics, going directly to optimization phases.</line>
+					<line>Set to 0 to disable the construction heuristics, going directly to the optimization phases.</line>
+				</line>
+				<line>Added an ability to disable the max-idle limitation during the first part of the search, effectively setting up a minimal construction time.
+					<line>Parameter Search.MinConstructionTime, which can be in seconds or in percentage of the total time (Termination.TimeOut).</line>
+					<line>Defaults to 10% of the total time limit. So, if max-idle is enabled, it will not stop construction or the IFS phase during the first 10% time of the solver run.</line>
 				</line>
 				<line>Improved the ability to assign an unassigned class during the optimization phase.
 					<line>To enable this, add ;org.cpsolver.coursett.neighbourhoods.Suggestion@0.1 to the following parameters:
@@ -53,6 +57,24 @@
 					</line>
 					<line>This is especially needed when the construction phase is disabled, or the solver struggles to find a complete solution when one exists.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling Solver: Random Student Swap Selection</name>
+			<description>
+				<line>Added a neighborhood selection that attempts to swap a student between alternative sections of a course.</line>
+				<line>To be used with the Hill Climber (HC), Great Deluge (GD), or Simulated Annealing (SA) algorithms.
+					<line>Enable by adding the RandomStudentSwap class to the AdditionalNeighbours properties.</line>
+				</line>
+				<line>The selection is only available/enabled when the solver is using a single thread as student class assignments are not included in the solution/</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Timetabling Solver: Simulated Annealing</name>
+			<description>
+				<line>Various improvements and changes in an attempt to make the SA algorithm more reliable.</line>
+				<line>Added minimal and maximal temperature.</line>
+				<line>Improved temperature training (when SimulatedAnnealing.InitialTemperature is set to -1)</line>
 			</description>
 		</item>
 	</category>
