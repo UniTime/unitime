@@ -37,6 +37,14 @@
 			</description>
 		</item>
 		<item>
+			<name>Multiple Class Setup: Room-related Columns</name>
+			<description>
+				<line>In order to be consistent with the Instructional Offering Configuration page, the order of the room-related columns changed to be: Nbr Rooms, Splt Attd, and Room Ratio.
+					<line>Instead of Room Ratio, Nbr Rooms, and Splt Attd.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Course Timetabling Solver: Optimization</name>
 			<description>
 				<line>In order for the solver to start optimization even when a complete solution cannot be found, added an ability to halt the initial search phase when a maximum number of non-improving iterations is reached.</line>
