@@ -709,6 +709,7 @@ public class DistributionPrefsAction extends UniTimeAction<DistributionPrefsForm
             	dObj.setDistributionPref(dp);
             	dp.addToDistributionObjects(dObj);
             	hibSession.persist(dObj);
+            	dObj.getPrefGroup().addToDistributionObjects(dObj);
         	}
      	    
      	    sessionContext.checkPermission(dp, Right.DistributionPreferenceEdit);
