@@ -253,23 +253,21 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		response.add("program", programs);
 		
-		if (!(server instanceof StudentSolver)) {
-			List<Entity> campuses = new ArrayList<Entity>();
-			boolean hasDefaultCampus = false;
-			for (Object[] o: (List<Object[]>)query.select("aac.campus.uniqueId, aac.campus.reference, aac.campus.label, count(distinct s)")
-					.order("aac.campus.reference, aac.campus.label").group("aac.campus.uniqueId, aac.campus.reference, aac.campus.label")
-					.exclude("campus").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
-				Entity c = new Entity(
-						(Long)o[0],
-						(String)o[1],
-						(String)o[2]);
-				c.setCount(((Number)o[3]).intValue());
-				if (server.getAcademicSession().getCampus().equals(o[1])) hasDefaultCampus = true;
-				campuses.add(c);
-			}
-			if (campuses.size() == 1 && hasDefaultCampus) campuses.clear();
-			response.add("campus", campuses);
+		List<Entity> campuses = new ArrayList<Entity>();
+		boolean hasDefaultCampus = false;
+		for (Object[] o: (List<Object[]>)query.select("aac.campus.uniqueId, aac.campus.reference, aac.campus.label, count(distinct s)")
+				.order("aac.campus.reference, aac.campus.label").group("aac.campus.uniqueId, aac.campus.reference, aac.campus.label")
+				.exclude("campus").exclude("course").exclude("lookup").exclude("prefer").exclude("require").exclude("im").exclude("credit").query(helper.getHibSession()).list()) {
+			Entity c = new Entity(
+					(Long)o[0],
+					(String)o[1],
+					(String)o[2]);
+			c.setCount(((Number)o[3]).intValue());
+			if (server.getAcademicSession().getCampus().equals(o[1])) hasDefaultCampus = true;
+			campuses.add(c);
 		}
+		if (campuses.size() == 1 && hasDefaultCampus) campuses.clear();
+		response.add("campus", campuses);
 		
 		List<Entity> groups = new ArrayList<Entity>();
 		for (Object[] o: (List<Object[]>)query.select("g.uniqueId, g.groupAbbreviation, g.groupName, count(distinct s)")
