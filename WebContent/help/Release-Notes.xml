@@ -96,6 +96,16 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Solver: Linked Classes</name>
+			<description>
+				<line>Allow one class to be present in multiple Linked Classes distributions between the same two courses.</line>
+				<line>This allows for the Linked Classes to overlap with each other, e.g., when most classes can be linked one-to-one, but there are exceptions (e.g., one course has an additional course that can be used with any class of the other course).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Events</title>
 		<item>
 			<name>Lookup Classes/Examination: Bugfix</name>
