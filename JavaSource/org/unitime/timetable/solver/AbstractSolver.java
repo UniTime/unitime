@@ -477,6 +477,13 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
                 inXmlFile.delete();
             }
             
+            if (iLoadedDate == null) {
+            	List<Progress.Message> log = Progress.getInstance(currentSolution().getModel()).getLog();
+                if (log!=null && !log.isEmpty()) {
+                    iLoadedDate = log.get(0).getDate();
+                }
+            }
+            
             return true;
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
