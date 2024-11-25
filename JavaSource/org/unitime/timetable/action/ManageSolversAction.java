@@ -586,7 +586,9 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
 				if (solver == null) continue;
 				DataProperties properties = solver.getProperties();
 				if (properties == null) continue;
-				Map<String,String> info = solver.statusSolutionInfo();
+				Map<String,String> info = solver.bestSolutionInfo();
+				if (info == null)
+					info = solver.currentSolutionInfo();
 				
 	            String bgColor = null;
 	        	if (selectedId != null && selectedId.equals(solver.getUser()))
