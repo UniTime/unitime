@@ -45,6 +45,13 @@
 			</description>
 		</item>
 		<item>
+			<name>Edit Scheduling Subpart: Subpart Credit</name>
+			<description>
+				<line>Max Units made editable when editing Variable Min/Max credit without the need to change the credit type first (when editing existing credit information).</line>
+				<line>Fixed an issue when no units or max units are provided (for a type that requires units/max units) or when the provided units are not a number.</line>
+			</description>
+		</item>
+		<item>
 			<name>Course Timetabling Solver: Optimization</name>
 			<description>
 				<line>In order for the solver to start optimization even when a complete solution cannot be found, added an ability to halt the initial search phase when a maximum number of non-improving iterations is reached.</line>
