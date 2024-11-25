@@ -38,6 +38,13 @@
 				<line>When enabled, the Date Pattern list box is replaced by a text field with suggestions.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Scheduling Subpart: Subpart Credit</name>
+			<description>
+				<line>Max Units made editable when editing Variable Min/Max credit without the need to change the credit type first (when editing existing credit information).</line>
+				<line>Fixed an issue when no units or max units are provided (for a type that requires units/max units) or when the provided units are not a number.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

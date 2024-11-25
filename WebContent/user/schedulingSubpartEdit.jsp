@@ -209,7 +209,7 @@
 				<td nowrap><loc:message name="propertyMaxUnits"/></td>
 				<td>
 				<s:textfield name="form.maxUnits" maxlength="4" size="4"
-					disabled="%{form.creditFormat != 'variableRange'}"/>
+					disabled="%{form.creditFormat != 'variableRange' && form.creditFormat != 'variableMinMax'}"/>
 				</td>
 				</tr>
 				<tr>
