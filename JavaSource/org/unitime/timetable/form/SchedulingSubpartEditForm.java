@@ -50,8 +50,8 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
     private String creditFormat;
     private Long creditType;
     private Long creditUnitType;
-    private Float units;
-    private Float maxUnits;
+    private String units;
+    private String maxUnits;
     private Boolean fractionalIncrementsAllowed;
     private String creditText;
     private Boolean sameItypeAsParent;
@@ -238,22 +238,22 @@ public class SchedulingSubpartEditForm extends PreferencesForm {
 		this.fractionalIncrementsAllowed = fractionalIncrementsAllowed;
 	}
 
-	public Float getMaxUnits() {
+	public String getMaxUnits() {
 		return maxUnits;
 	}
 
-	public void setMaxUnits(Float maxUnits) {
+	public void setMaxUnits(String maxUnits) {
 		this.maxUnits = maxUnits;
 	}
-
-	public Float getUnits() {
+	
+	public String getUnits() {
 		return units;
 	}
 
-	public void setUnits(Float units) {
+	public void setUnits(String units) {
 		this.units = units;
 	}
-
+	
 	public String getCreditText() {
 		return creditText;
 	}

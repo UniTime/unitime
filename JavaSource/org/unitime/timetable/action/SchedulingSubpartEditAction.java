@@ -340,10 +340,10 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
 	        	form.setCreditType(credit.getCreditType().getUniqueId());
 	        	form.setCreditUnitType(credit.getCreditUnitType().getUniqueId());
 	        	if (credit instanceof FixedCreditUnitConfig){
-	        		form.setUnits(((FixedCreditUnitConfig) credit).getFixedUnits());
+	        		form.setUnits(float2string(((FixedCreditUnitConfig) credit).getFixedUnits()));
 	        	} else if (credit instanceof VariableFixedCreditUnitConfig){
-	        		form.setUnits(((VariableFixedCreditUnitConfig) credit).getMinUnits());
-	        		form.setMaxUnits(((VariableFixedCreditUnitConfig) credit).getMaxUnits());
+	        		form.setUnits(float2string(((VariableFixedCreditUnitConfig) credit).getMinUnits()));
+	        		form.setMaxUnits(float2string(((VariableFixedCreditUnitConfig) credit).getMaxUnits()));
 	        		if (credit instanceof VariableRangeCreditUnitConfig){
 	        			form.setFractionalIncrementsAllowed(((VariableRangeCreditUnitConfig) credit).isFractionalIncrementsAllowed());
 	        		}
@@ -444,18 +444,27 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
         				CourseCreditUnitConfig origConfig = ss.getCredit();
             			ss.setCredit(null);
             			sdao.getSession().remove(origConfig);
-            			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
+            			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(
+            					form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(),
+            					string2float(form.getUnits()), string2float(form.getMaxUnits()),
+            					form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
             			ss.getCredit().setOwner(ss);
         			}
         		} else {
         			CourseCreditUnitConfig origConfig = ss.getCredit();
         			ss.setCredit(null);
         			sdao.getSession().remove(origConfig);
-        			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
+        			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(
+        					form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(),
+        					string2float(form.getUnits()), string2float(form.getMaxUnits()),
+        					form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
         			ss.getCredit().setOwner(ss);
         		}
         	} else {
-    			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(), form.getUnits(), form.getMaxUnits(), form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
+    			ss.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(
+    					form.getCreditFormat(), form.getCreditType(), form.getCreditUnitType(),
+    					string2float(form.getUnits()), string2float(form.getMaxUnits()),
+    					form.getFractionalIncrementsAllowed(), Boolean.valueOf(false)));
     			ss.getCredit().setOwner(ss);
         	}
         }
@@ -483,6 +492,19 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
                 ss.getInstrOfferingConfig().getControllingCourseOffering().getSubjectArea(),
                 ss.getManagingDept());
         sdao.getSession().flush();
+    }
+    
+    protected static Float string2float(String value) {
+    	try {
+    		return Float.valueOf(value);
+    	} catch (Exception e) {
+    		return 0f;
+    	}
+    }
+    
+    protected static String float2string(Float value) {
+    	if (value == null) return "";
+    	return value.toString();
     }
     
     protected void setupChildren(SchedulingSubpart ss) {
