@@ -295,6 +295,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		event.addCourseId(courseOffering.getUniqueId());
     		event.addCourseName(courseOffering.getCourseName());
     		event.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
+    		event.setDeptCode(courseOffering.getDepartment().getDeptCode());
     		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
     		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
     			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
@@ -1027,6 +1028,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		event.addCourseId(correctedOffering.getUniqueId());
 		event.addCourseName(correctedOffering.getCourseName());
 		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
+		event.setDeptCode(correctedOffering.getDepartment().getDeptCode());
 		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
 			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");

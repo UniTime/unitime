@@ -75,6 +75,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private int iSequence = 0;
 	private Set<EventServiceProviderInterface> iRequestedServices = null;
 	private Long iClassId = null, iSessionId = null;
+	private String iDeptCode = null;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("Room Timetable","room", true),
@@ -399,6 +400,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public Long getClassId() { return iClassId; }
 	public void setClassId(Long classId) { iClassId = classId; }
 	
+	public String getDeptCode() { return iDeptCode; }
+	public boolean hasDeptCode() { return iDeptCode != null && !iDeptCode.isEmpty(); }
+	public void setDeptCode(String deptCode) { iDeptCode = deptCode; }
+	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof EventInterface)) return false;
@@ -446,6 +451,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		conflict.setInstruction(event.getInstruction());
 		conflict.setInstructionType(event.getInstructionType());
 		conflict.setSectionNumber(event.getSectionNumber());
+		conflict.setDeptCode(event.getDeptCode());
 		if (event.hasCourseIds())
 			for (Long courseId: event.getCourseIds())
 				conflict.addCourseId(courseId);
