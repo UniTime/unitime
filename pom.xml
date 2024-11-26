@@ -439,13 +439,12 @@
 			<scope>runtime</scope>
 		</dependency>
 		-->
-		<!-- Uncomment to enable python scripting on Scripts page.
+		<!-- Uncomment to enable python scripting on Scripts page. -->
 		<dependency>
 			<groupId>org.python</groupId>
-			<artifactId>jython-slim</artifactId>
+			<artifactId>jython-standalone</artifactId>
 			<version>${jython.version}</version>
 		</dependency>
-		 -->
 		<dependency>
 			<groupId>net.sf.biweekly</groupId>
 			<artifactId>biweekly</artifactId>

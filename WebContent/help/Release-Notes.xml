@@ -455,6 +455,7 @@
 				<line>Nashorn is now included in the UniTime distribution.
 					<line>Starting with Java 15, ECMAScript has been removed from JDK.</line>
 				</line>
+				<line>Jython is now included in the UniTime distribution so that Python scripts do work out of the box.</line>
 			</description>
 		</item>
 	</category>
