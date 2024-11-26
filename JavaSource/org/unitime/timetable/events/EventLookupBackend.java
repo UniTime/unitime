@@ -1610,6 +1610,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    			}
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+				    		event.setDeptCode(correctedOffering.getDepartment().getDeptCode());
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 				    		boolean instructing = false;
 				    		if (request.getResourceType() == ResourceType.PERSON && request.getResourceExternalId() != null) {
@@ -2755,6 +2756,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									}
 								}
 					    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+					    		event.setClassId(clazz.getUniqueId());
+					    		event.setSessionId(clazz.getSessionId());
+					    		event.setDeptCode(correctedOffering.getDepartment().getDeptCode());
 					    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 					    		switch (request.getResourceType()) {
 					    		case CURRICULUM:
