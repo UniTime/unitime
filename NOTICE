@@ -401,6 +401,10 @@ asm-util (asm-util-9.7.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
+Jython (jython-standalone-2.7.4.jar)
+	under Jython Software License
+	https://www.jython.org/
+
 reactive-streams (reactive-streams-1.0.4.jar)
 	under MIT-0
 	http://www.reactive-streams.org/
