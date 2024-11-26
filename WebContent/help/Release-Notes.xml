@@ -131,6 +131,14 @@
 				<line>Added an optional attribute class.splitAttendance for classes with two or more rooms, defaults to false.</line>
 			</description>
 		</item>
+		<item>
+			<name>Scripts: ECMAScript</name>
+			<description>
+				<line>Nashorn is now included in the UniTime distribution.
+					<line>Starting with Java 15, ECMAScript has been removed from JDK.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

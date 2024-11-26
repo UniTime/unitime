@@ -437,7 +437,7 @@
 		<!-- Uncomment to enable python scripting on Scripts page.
 		<dependency>
 			<groupId>org.python</groupId>
-			<artifactId>jython-standalone</artifactId>
+			<artifactId>jython-slim</artifactId>
 			<version>${jython.version}</version>
 		</dependency>
 		 -->
@@ -465,6 +465,28 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${lang3.version}</version>
+		</dependency>
+		<!-- ECMAScript JSR233 Scripting Engine -->
+		<dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+			<artifactId>nashorn-core</artifactId>
+			<version>${nashorn.version}</version>
+		</dependency>
+		<!-- Ensure that all ASM dependencies are of the same version -->
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-tree</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-util</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-commons</artifactId>
+			<version>${asm.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -743,7 +765,7 @@
 		<jstl.version>1.2</jstl.version>
 		<freemarker.version>2.3.33</freemarker.version>
 		<oracle.version>23.2.0.0</oracle.version>
-		<jython.version>2.7.3</jython.version>
+		<jython.version>2.7.4</jython.version>
 		<jgroups.version>5.3.10.Final</jgroups.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
 		<joda.version>2.12.7</joda.version>
@@ -756,6 +778,7 @@
 		<lang3.version>3.14.0</lang3.version>
 		<asm.version>9.7</asm.version>
 		<infinispan-hibernate.version>14.0.30.Final</infinispan-hibernate.version>
+		<nashorn.version>15.4</nashorn.version>
 	</properties>
 
 	<distributionManagement>
