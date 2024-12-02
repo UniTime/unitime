@@ -15471,5 +15471,229 @@
 		<pgsql onFail="next">create index IDX_TRAVEL_TIME_SESSION on %SCHEMA%.TRAVEL_TIME USING btree (SESSION_ID)</pgsql>
 		<pgsql onFail="next">create index IDX_XCONFLICT_INSTRUCTOR_INSTRUCTOR on %SCHEMA%.XCONFLICT_INSTRUCTOR USING btree (INSTRUCTOR_ID)</pgsql>
 		<pgsql onFail="next">create index IDX_XCONFLICT_STUDENT_STUDENT on %SCHEMA%.XCONFLICT_STUDENT USING btree (STUDENT_ID)</pgsql>
-	</update>	
+	</update>
+	<update version="271" date="02-Dec-2024" comment="Solver Improvements">
+		<sql>update %SCHEMA%.solver_parameter_def set
+			description = 'Number of instructors which are teaching a class which is placed to a different location than initial'
+			where name = 'Perturbations.AffectedInstructorWeight'
+		</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			default_value = '-1'
+			where name = 'SimulatedAnnealing.InitialTemperature' and default_value = '1.5'
+		</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			default_value = '100.0'
+			where name = 'Placement.NrConflictsWeight1' and default_value = '1.0'
+		</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			default_value = '200.0'
+			where name = 'Placement.WeightedConflictsWeight1' and default_value = '2.0'
+		</sql>
+		<sql>update %SCHEMA%.solver_parameter_def set
+			type = 'boolean'
+			where name = 'Precedence.ConsiderDatePatterns' and type = 'text'
+		</sql>
+		<mysql into="GGEN">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</mysql>
+		<mysql into="OGEN">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GGEN%</mysql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID% +  0, 'Search.MaxIdleIterations', '1000', 'Maximum number of non-improving iterations after which the construction phase is halted (-1 to never halt)', 'integer', %OGEN% + 1, 1, %GGEN%),
+			(%ID% +  1, 'Search.MinConstructionTime', '10%', 'Minimum construction time when a complete solution cannot be reached', 'text', %OGEN% + 2, 1, %GGEN%),
+			(%ID% +  2, 'Parallel.NrSolvers', '1', 'Number of parallel solver threads', 'integer', %OGEN% + 3, 1, %GGEN%),
+			(%ID% +  3, 'ForwardCheck.MaxDepth', '2', 'Forward Checking: Max Depth', 'integer', %OGEN% + 4, 1, %GGEN%),
+			(%ID% +  4, 'ForwardCheck.MaxDomainSize', '1000', 'Forward Checking: Max Domain Size', 'integer', %OGEN% + 5, 1, %GGEN%),
+			(%ID% +  5, 'General.AutomaticInstructorConstraints', '', 'Automatic instructor constraints (separated by comma)', 'text', %OGEN% + 6, 1, %GGEN%),
+			(%ID% +  6, 'General.LoadCommittedReservations', 'false', 'Load: Consider Reservations for Committed Classes', 'boolean', %OGEN% + 7, 1, %GGEN%),
+			(%ID% +  7, 'General.ApplyInstructorDistributionsAcrossAllDepartments', 'false', 'Load: Apply Instructor Distributions Across All Departments', 'boolean', %OGEN% + 8, 1, %GGEN%),
+			(%ID% +  8, 'General.StudentGroupCourseDemands', 'false', 'Create additional student demands based on student group reservations', 'boolean', %OGEN% + 9, 1, %GGEN%),
+			(%ID% +  9, 'General.MPP.FixedTimes', 'false', 'MPP: Fix All Assigned Times', 'boolean', %OGEN% + 10, 1, %GGEN%),
+			(%ID% + 10, 'General.WeakenDistributions','false', 'Weaken Hard Distributions (useful for fixed-time MPP)', 'boolean', %OGEN% + 11, 1, %GGEN%),
+			(%ID% + 11, 'General.SoftInstructorConstraints', 'false', 'Soft Instructor Constraints (useful for fixed-time MPP)', 'boolean', %OGEN% + 12, 1, %GGEN%),
+			(%ID% + 12, 'General.AllowProhibitedRooms', 'false', 'Allow Prohibited Rooms (useful for fixed-time MPP)', 'boolean', %OGEN% + 13, 1, %GGEN%)
+		</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Search.MaxIdleIterations' as name,
+				'1000' as default_value,
+				'Maximum number of non-improving iterations after which the construction phase is halted (-1 to never halt)' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Search.MinConstructionTime' as name,
+				'10%' as default_value,
+				'Minimum construction time when a complete solution cannot be reached' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'Parallel.NrSolvers' as name,
+				'1' as default_value,
+				'Number of parallel solver threads' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'ForwardCheck.MaxDepth' as name,
+				'2' as default_value,
+				'Forward Checking: Max Depth' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'ForwardCheck.MaxDomainSize' as name,
+				'1000' as default_value,
+				'Forward Checking: Max Domain Size' as description,
+				'integer' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.AutomaticInstructorConstraints' as name,
+				'' as default_value,
+				'Automatic instructor constraints (separated by comma)' as description,
+				'text' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.LoadCommittedReservations' as name,
+				'false' as default_value,
+				'Load: Consider Reservations for Committed Classes' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.ApplyInstructorDistributionsAcrossAllDepartments' as name,
+				'false' as default_value,
+				'Load: Apply Instructor Distributions Across All Departments' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.StudentGroupCourseDemands' as name,
+				'false' as default_value,
+				'Create additional student demands based on student group reservations' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.MPP.FixedTimes' as name,
+				'false' as default_value,
+				'MPP: Fix All Assigned Times' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.WeakenDistributions' as name,
+				'false' as default_value,
+				'Weaken Hard Distributions (useful for fixed-time MPP)' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.SoftInstructorConstraints' as name,
+				'' as default_value,
+				'Soft Instructor Constraints (useful for fixed-time MPP)' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<plsql>
+			insert into %SCHEMA%.solver_parameter_def (select
+				%SCHEMA%.solver_parameter_def_seq.nextval as uniqueid,
+				'General.AllowProhibitedRooms' as name,
+				'' as default_value,
+				'Allow Prohibited Rooms (useful for fixed-time MPP)' as description,
+				'boolean' as type,
+				(select count(*) from %SCHEMA%.solver_parameter_def d, %SCHEMA%.solver_parameter_group g where d.solver_param_group_id = g.uniqueid and g.name = 'General') as ord,
+				1 as visible,
+				uniqueid as solver_param_group_id from %SCHEMA%.solver_parameter_group where name = 'General')
+		</plsql>
+		<pgsql into="GGEN">select uniqueid from %SCHEMA%.solver_parameter_group where name='General'</pgsql>
+		<pgsql into="OGEN">select max(ord) from %SCHEMA%.solver_parameter_def where solver_param_group_id=%GGEN%</pgsql>
+		<pgsql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</pgsql>
+		<pgsql>
+			insert into %SCHEMA%.solver_parameter_def
+			(uniqueid, name, default_value, description, type, ord, visible, solver_param_group_id) values
+			(%ID% +  0, 'Search.MaxIdleIterations', '1000', 'Maximum number of non-improving iterations after which the construction phase is halted (-1 to never halt)', 'integer', %OGEN% + 1, true, %GGEN%),
+			(%ID% +  1, 'Search.MinConstructionTime', '10%', 'Minimum construction time when a complete solution cannot be reached', 'text', %OGEN% + 2, true, %GGEN%),
+			(%ID% +  2, 'Parallel.NrSolvers', '1', 'Number of parallel solver threads', 'integer', %OGEN% + 3, true, %GGEN%),
+			(%ID% +  3, 'ForwardCheck.MaxDepth', '2', 'Forward Checking: Max Depth', 'integer', %OGEN% + 4, true, %GGEN%),
+			(%ID% +  4, 'ForwardCheck.MaxDomainSize', '1000', 'Forward Checking: Max Domain Size', 'integer', %OGEN% + 5, true, %GGEN%),
+			(%ID% +  5, 'General.AutomaticInstructorConstraints', '', 'Automatic instructor constraints (separated by comma)', 'text', %OGEN% + 6, true, %GGEN%),
+			(%ID% +  6, 'General.LoadCommittedReservations', 'false', 'Load: Consider Reservations for Committed Classes', 'boolean', %OGEN% + 7, true, %GGEN%),
+			(%ID% +  7, 'General.ApplyInstructorDistributionsAcrossAllDepartments', 'false', 'Load: Apply Instructor Distributions Across All Departments', 'boolean', %OGEN% + 8, true, %GGEN%),
+			(%ID% +  8, 'General.StudentGroupCourseDemands', 'false', 'Create additional student demands based on student group reservations', 'boolean', %OGEN% + 9, true, %GGEN%),
+			(%ID% +  9, 'General.MPP.FixedTimes', 'false', 'MPP: Fix All Assigned Times', 'boolean', %OGEN% + 10, true, %GGEN%),
+			(%ID% + 10, 'General.WeakenDistributions','false', 'Weaken Hard Distributions (useful for fixed-time MPP)', 'boolean', %OGEN% + 11, true, %GGEN%),
+			(%ID% + 11, 'General.SoftInstructorConstraints', 'false', 'Soft Instructor Constraints (useful for fixed-time MPP)', 'boolean', %OGEN% + 12, true, %GGEN%),
+			(%ID% + 12, 'General.AllowProhibitedRooms', 'false', 'Allow Prohibited Rooms (useful for fixed-time MPP)', 'boolean', %OGEN% + 13, true, %GGEN%)
+		</pgsql>
+		<pgsql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</pgsql>
+		<mysql><![CDATA[delete d1 from
+    		%SCHEMA%.solver_parameter_def d1 inner join %SCHEMA%.solver_parameter_group g1 on d1.solver_param_group_id = g1.uniqueid,
+    		%SCHEMA%.solver_parameter_def d2 inner join %SCHEMA%.solver_parameter_group g2 on d2.solver_param_group_id = g2.uniqueid
+    		where d2.uniqueid < d1.uniqueid and d1.name = d2.name and g1.param_type = g2.param_type
+    	]]></mysql>
+    	<plsql><![CDATA[
+			delete from %SCHEMA%.solver_parameter_def where uniqueid in(select d1.uniqueid from
+			%SCHEMA%.solver_parameter_def d1 inner join %SCHEMA%.solver_parameter_group g1 on d1.solver_param_group_id = g1.uniqueid,
+			%SCHEMA%.solver_parameter_def d2 inner join %SCHEMA%.solver_parameter_group g2 on d2.solver_param_group_id = g2.uniqueid
+			where d2.uniqueid < d1.uniqueid and d1.name = d2.name and g1.param_type = g2.param_type)    	
+    	]]></plsql>
+    	<pgsql><![CDATA[
+			delete from %SCHEMA%.solver_parameter_def where uniqueid in(select d1.uniqueid from
+			%SCHEMA%.solver_parameter_def d1 inner join %SCHEMA%.solver_parameter_group g1 on d1.solver_param_group_id = g1.uniqueid,
+			%SCHEMA%.solver_parameter_def d2 inner join %SCHEMA%.solver_parameter_group g2 on d2.solver_param_group_id = g2.uniqueid
+			where d2.uniqueid < d1.uniqueid and d1.name = d2.name and g1.param_type = g2.param_type)    	
+    	]]></pgsql>
+	</update>		
 </dbupdate>
