@@ -37,6 +37,8 @@ import org.cpsolver.coursett.criteria.additional.RoomSizePenalty;
 import org.cpsolver.coursett.custom.DeterministicStudentSectioning;
 import org.cpsolver.coursett.heuristics.FixCompleteSolutionNeighbourSelection;
 import org.cpsolver.coursett.model.DefaultStudentSectioning;
+import org.cpsolver.coursett.neighbourhoods.Suggestion;
+import org.cpsolver.coursett.sectioning.RandomStudentSwap;
 import org.cpsolver.coursett.sectioning.SctSectioning;
 import org.cpsolver.coursett.sectioning.StudentSwapSectioning;
 import org.cpsolver.ifs.algorithms.SimpleSearch;
@@ -270,6 +272,17 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         }
         if (properties.getPropertyBoolean("OnFlySectioning.Enabled", false)) {
         	properties.setProperty("Parallel.NrSolvers", "1");
+        	if (SimpleSearch.class.getName().equals(properties.getProperty("Neighbour.Class"))) {
+        	    properties.setProperty("OnFlySectioning.Enabled", "false");
+        	    properties.setProperty("HillClimber.AdditionalNeighbours", properties.getProperty("HillClimber.AdditionalNeighbours") + ";" + RandomStudentSwap.class.getName());
+        	    properties.setProperty("GreatDeluge.AdditionalNeighbours", properties.getProperty("GreatDeluge.AdditionalNeighbours") + ";" + RandomStudentSwap.class.getName());
+        	    properties.setProperty("SimulatedAnnealing.AdditionalNeighbours", properties.getProperty("SimulatedAnnealing.AdditionalNeighbours") + ";" + RandomStudentSwap.class.getName());
+        	}
+        }
+        if (properties.getPropertyInt("Search.MaxIdleIterations", 1000) > 0) {
+            properties.setProperty("HillClimber.AdditionalNeighbours", properties.getProperty("HillClimber.AdditionalNeighbours") + ";" + Suggestion.class.getName() + "@0.01");
+            properties.setProperty("GreatDeluge.AdditionalNeighbours", properties.getProperty("GreatDeluge.AdditionalNeighbours") + ";" + Suggestion.class.getName() + "@0.01");
+            properties.setProperty("SimulatedAnnealing.AdditionalNeighbours", properties.getProperty("SimulatedAnnealing.AdditionalNeighbours") + ";" + Suggestion.class.getName() + "@0.01");
         }
         
         properties.setProperty("General.UseAmPm", CONSTANTS.useAmPm() ? "true" : "false");
