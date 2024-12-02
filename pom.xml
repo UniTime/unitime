@@ -782,7 +782,7 @@
 		<text.version>1.12.0</text.version>
 		<lang3.version>3.17.0</lang3.version>
 		<asm.version>9.7.1</asm.version>
-		<infinispan-hibernate.version>14.0.32.Final</infinispan-hibernate.version>
+		<infinispan-hibernate.version>15.0.11.Final</infinispan-hibernate.version>
 		<nashorn.version>15.4</nashorn.version>
 	</properties>
 
