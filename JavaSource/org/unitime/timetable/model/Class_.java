@@ -1765,10 +1765,10 @@ public class Class_ extends BaseClass_ {
 				(types == null || types.length == 0 ? "" : " and o1.distributionPref.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t"),
 				DistributionPref.class);
 		Query<DistributionPref> q2 = Class_DAO.getInstance().getSession().createQuery(
-				"select p from ClassInstructor c1 inner join c1.instructor.preferences p, ClassInstructor c2 where " +
-				"c1.classInstructing.uniqueId = :c1 and c2.classInstructing.uniqueId = :c2 and c1.instructor = c2.instructor and type(p) = DistributionPref" +
-				(preferences == null || preferences.length == 0 ? "" : " and p.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
-				(types == null || types.length == 0 ? "" : " and p.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t"),
+				"select dp from DistributionPref dp, ClassInstructor c1 inner join c1.instructor.preferences p, ClassInstructor c2 where " +
+				"c1.classInstructing.uniqueId = :c1 and c2.classInstructing.uniqueId = :c2 and c1.instructor = c2.instructor and p = dp" +
+				(preferences == null || preferences.length == 0 ? "" : " and dp.prefLevel.prefProlog " + (preferences.length == 1 ? "=" : "in" ) + " :p") +
+				(types == null || types.length == 0 ? "" : " and dp.distributionType.reference " + (types.length == 1 ? "=" : "in") + " :t"),
 				DistributionPref.class);
 		q1.setParameter("c1", getUniqueId()).setParameter("s1", getSchedulingSubpart().getUniqueId()).setParameter("c2", classId);
 		q2.setParameter("c1", getUniqueId()).setParameter("c2", classId);
