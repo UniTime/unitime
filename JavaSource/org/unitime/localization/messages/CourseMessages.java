@@ -5991,4 +5991,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Cap")
 	String columnAssignedRoomCap();
+	
+	@DefaultMessage("Are you sure you want to change the default date pattern?")
+	String confirmDefaultDatePatternChange();
 }

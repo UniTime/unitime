@@ -1695,6 +1695,11 @@ public enum ApplicationProperty {
 			" always ... always use first date - last date format instead of the date pattern name"
 			)
 	DatePatternFormatUseDates("unitime.pattern.format.useDates"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Add/Edit Date Pattern: show the Make Default button (if disabled, default date pattern can be only set on the Edit Academic Session page)")
+	DatePatternShowMakeDefault("unitime.pattern.showMakeDefault"),
 
 	@Type(Integer.class)
 	@DefaultValue("1000")

@@ -49,6 +49,7 @@ import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.DatePatternEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -981,6 +982,10 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
 	    }
 	    Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
 		
-    }	
+    }
+    
+    public boolean isShowMakeDefault() {
+    	return ApplicationProperty.DatePatternShowMakeDefault.isTrue();
+    }
 }
 
