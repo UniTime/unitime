@@ -98,6 +98,7 @@ public class XDistribution implements Serializable, Externalizable {
     }
     
     public boolean isViolated(XStudent student, OnlineSectioningServer server) {
+    	if (student == null) return false;
     	int nrMatch = 0, nrMismatch = 0;
     	for (Long offeringId: getOfferingIds()) {
     		XOffering offering = server.getOffering(offeringId);
