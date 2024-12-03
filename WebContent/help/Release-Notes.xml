@@ -132,6 +132,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Add/Edit Date Pattern: Make Default</name>
+			<description>
+				<line>Added a confirmation dialog when Make Default button is clicked.</line>
+				<line>Added an option to hide Make Default button on this page by setting unitime.pattern.showMakeDefault to false.
+					<line>If Make Default button is disabled, the default date pattern can still be set on the Edit Academic Session page.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Scripts: ECMAScript</name>
 			<description>
 				<line>Nashorn is now included in the UniTime distribution.

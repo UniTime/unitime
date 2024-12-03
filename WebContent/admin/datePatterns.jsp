@@ -23,6 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDatePattern"/></tt:confirm>
+<tt:confirm name="confirmMakeDefault"><loc:message name="confirmDefaultDatePatternChange"/></tt:confirm>
 <s:form action="datePatternEdit">
 <s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
 <s:if test="form.op != 'List'">
@@ -51,8 +52,8 @@
 					<s:if test="form.op == #msg.actionUpdateDatePattern() && form.isUsed == false && form.isDefault == false">
 						<s:submit name='op' value='%{#msg.actionDeleteDatePattern()}' onclick="return confirmDelete();"/>
 					</s:if>
-					<s:if test="form.isDefault == false && form.typeInt <= 2">
-						<s:submit name='op' value='%{#msg.actionMakeDatePatternDefaulf()}'/>
+					<s:if test="form.isDefault == false && form.typeInt <= 2 && showMakeDefault == true">
+						<s:submit name='op' value='%{#msg.actionMakeDatePatternDefaulf()}' onclick="return confirmMakeDefault();"/>
 					</s:if>
 					<s:submit name='op' value='%{#msg.actionBackToDatePatterns()}'/>
 				</tt:section-header>
@@ -205,8 +206,8 @@
 				<s:if test="form.op == #msg.actionUpdateDatePattern() && form.isUsed == false && form.isDefault == false">
 					<s:submit name='op' value='%{#msg.actionDeleteDatePattern()}' onclick="return confirmDelete();"/>
 				</s:if>
-				<s:if test="form.isDefault == false && form.typeInt <= 2">
-					<s:submit name='op' value='%{#msg.actionMakeDatePatternDefaulf()}'/>
+				<s:if test="form.isDefault == false && form.typeInt <= 2 && showMakeDefault == true">
+					<s:submit name='op' value='%{#msg.actionMakeDatePatternDefaulf()}' onclick="return confirmMakeDefault();"/>
 				</s:if>
 				<s:submit name='op' value='%{#msg.actionBackToDatePatterns()}'/>
 			</TD>
