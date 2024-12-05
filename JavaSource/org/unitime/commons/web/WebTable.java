@@ -86,6 +86,7 @@ public class WebTable {
     protected boolean iBlankWhenSame = false;
     
     protected WebTableTweakStyle iWebTableTweakStyle = null;
+    protected WebTableCellStyle iWebTableCellStyle = null;
     
     /** creates a WebTable instance */
     public WebTable(int columns, String name, String[] headers, String[] align, boolean[] asc) {
@@ -114,9 +115,18 @@ public class WebTable {
     	iWebTableTweakStyle = style;
     }
     
+    public void setCellStyle(WebTableCellStyle style) {
+    	iWebTableCellStyle = style;
+    }
+    
     public String getStyle(WebTableLine line, WebTableLine next, int order) {
     	String style = (iRowStyle==null?"":iRowStyle+";")+(iWebTableTweakStyle==null?"":iWebTableTweakStyle.getStyleHtml(line, next, order));
     	return (style==null || style.length()==0? "" : "style=\""+style+"\"");
+    }
+    
+    public String getCellStyle(WebTableLine line, int column, String defaultStyle) {
+    	String style = (iWebTableCellStyle == null ? null : iWebTableCellStyle.getCellStyleHtml(line, column));
+    	return (style == null ? defaultStyle : "style=\""+style+"\"");
     }
     
     /** sets row (cell) style */
@@ -369,7 +379,7 @@ public class WebTable {
                         blank=false;
                     if (!blank && line[i] != null) {
                         sb.append("<td "
-                                + style
+                                + getCellStyle(wtline, i, style)
                                 + " align=\""
                                 + (iAlign != null ? align(iAlign[i], rtl) : (rtl ? "right" : "left"))
                                 + "\""
@@ -382,7 +392,7 @@ public class WebTable {
                                 + "</td>");
                     } else {
                         sb.append("<td "
-                                + style
+                        		+ getCellStyle(wtline, i, style)
                                 + " "
                                 + (i == line.length - 1
                                         ? " colspan=" + last + " "
@@ -660,6 +670,10 @@ public class WebTable {
     
     public static interface WebTableTweakStyle {
     	public String getStyleHtml(WebTableLine currentLine, WebTableLine nextLine, int orderBy);
+    }
+    
+    public static interface WebTableCellStyle {
+    	public String getCellStyleHtml(WebTableLine currentLine, int column);
     }
     
 	protected CSVField csvField(String text) {
