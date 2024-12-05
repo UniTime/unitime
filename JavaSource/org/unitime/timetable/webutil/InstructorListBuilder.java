@@ -123,6 +123,7 @@ public class InstructorListBuilder {
 			                              fixedHeaders2.length + (hasInstructorSurvey ? 1 : 0)];
 			String[] aligns = new String[headers.length];
 			boolean[] asc = new boolean[headers.length];
+			final String[] cs = new String[headers.length];
 			int idx = 0;
 			for (String h: fixedHeaders1) {
 				headers[idx] = h;
@@ -130,6 +131,10 @@ public class InstructorListBuilder {
 				asc[idx] = true;
 				idx++;
 			}
+			// position -- can be wrapped
+			cs[2] = "border-bottom: 1px dashed #9CB0CE;";
+			// note -- can be wrapped, set max width
+			cs[3] = "white-space: pre-wrap; max-width: 300px; border-bottom: 1px dashed #9CB0CE;";
 			if (hasCoursePrefs) {
 				headers[idx] = "<BR>" + MSG.columnCoursePref();
 				aligns[idx] = "left";
@@ -140,6 +145,7 @@ public class InstructorListBuilder {
 				headers[idx] = MSG.columnTeachingPreference();
 				aligns[idx] = "left";
 				asc[idx] = true;
+				cs[idx] = "border-bottom: 1px dashed #9CB0CE;";
 				idx++;
 			}
 			if (hasUnavailableDates) {
@@ -177,6 +183,12 @@ public class InstructorListBuilder {
 			WebTable webTable = new WebTable(headers.length, "", "instructorSearch.action?order=%%&deptId=" + deptId, headers, aligns, asc);
 			webTable.setRowStyle("white-space:nowrap;");
 			webTable.enableHR("#9CB0CE");
+			webTable.setCellStyle(new WebTable.WebTableCellStyle() {
+				@Override
+				public String getCellStyleHtml(WebTableLine currentLine, int column) {
+					return cs[column];
+				}
+			});
 
 			
 			String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
