@@ -121,6 +121,12 @@
 				<line>This fixes an issue caused by a recent change, having the events and rooms parameters incorrectly interpreted.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Event: Meeting Contacts</name>
+			<description>
+				<line>Record which meetings have their contacts changed in the Notes.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
