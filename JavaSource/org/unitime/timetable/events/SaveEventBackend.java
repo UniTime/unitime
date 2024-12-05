@@ -375,18 +375,20 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (updateMeetingContacts) {
 					if (meeting.getMeetingContacts() == null) meeting.setMeetingContacts(new HashSet<EventContact>());
 					Set<EventContact> existingContacts = new HashSet<EventContact>(meeting.getMeetingContacts());
-					meeting.getMeetingContacts().clear();
+					boolean contactsChanged = false;
 					if (m.hasMeetingContacts()) {
-						for (ContactInterface c: m.getMeetingContacts()) {
+						c: for (ContactInterface c: m.getMeetingContacts()) {
 							if (c.getExternalId() == null) continue;
-							EventContact contact = null;
-							for (EventContact x: existingContacts)
-								if (c.getExternalId().equals(x.getExternalUniqueId())) {  contact = x; break; }
-							if (contact == null) {
-								contact = (EventContact)hibSession.createQuery(
-										"from EventContact where externalUniqueId = :externalId")
-										.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
+							for (Iterator<EventContact> i = existingContacts.iterator(); i.hasNext(); ) {
+								EventContact x = i.next();
+								if (c.getExternalId().equals(x.getExternalUniqueId())) {
+									i.remove();
+									continue c;
+								}
 							}
+							EventContact contact =  (EventContact)hibSession.createQuery(
+									"from EventContact where externalUniqueId = :externalId")
+									.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
 							if (contact == null) {
 								contact = new EventContact();
 								contact.setExternalUniqueId(c.getExternalId());
@@ -399,7 +401,19 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 								hibSession.save(contact);
 							}
 							meeting.getMeetingContacts().add(contact);
+							contactsChanged = true;
 						}
+						if (!existingContacts.isEmpty()) {
+							meeting.getMeetingContacts().removeAll(existingContacts);
+							contactsChanged = true;
+						}
+					} else if (!meeting.getMeetingContacts().isEmpty()) {
+						meeting.getMeetingContacts().clear();
+						contactsChanged = true;
+					}
+					if (contactsChanged) {
+						response.addUpdatedMeeting(m);
+						updatedMeetings.add(meeting);
 					}
 				}
 			}
