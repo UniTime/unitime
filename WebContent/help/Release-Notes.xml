@@ -29,6 +29,26 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Technology Upgrade</name>
+			<description>
+				<line>Hibernate upgraded to version 6.6.</line>
+				<line>Infinispan upgraded to version 15.0.
+					<line>This fixes the issue with Java 23 or later (ISPN-14375 issue), however, this change also bumps the minimal version to Java 17.</line>
+				</line>
+				<line>Apache Struts upgraded to version 6.7.</line>
+				<line>JGroups upgraded to version 6.5</line>
+				<line>GWT upgraded to version 2.12.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.8.170</version>
+	<release-date>Fri, 6 Dec 2024</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Suggestions, Instructor Survey: Maximize</name>
