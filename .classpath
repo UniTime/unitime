@@ -14,6 +14,6 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.11.0.jar"/>
+	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.12.1.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
