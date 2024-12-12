@@ -271,6 +271,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.allowClosedWhenAvailable", "false"));
 	}
 	
+	protected boolean isAllowClosedOverridesDuringExtendedPeriod() {
+		return "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.allowClosedDuringExtended", "false"));
+	}
+	
 	protected String getBannerTerm(AcademicSessionInfo session) {
 		return iExternalTermProvider.getExternalTerm(session);
 	}
@@ -811,6 +815,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (course == null) continue;
 					// special handing of CLOS errors
 					if (ext.contains(error.getSection())) {
+						// allow normal CLOS overrides during extended (no space checking for courses allowing for CLOS)
+						if (isAllowClosedOverridesDuringExtendedPeriod() && course.isOverrideEnabled(error.getCode())) continue;
 						// is extended add: check availability
 						XEnrollments enrollments = server.getEnrollments(course.getOfferingId());
 						boolean available = true;
