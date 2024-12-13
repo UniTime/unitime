@@ -29,6 +29,15 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructional Offering Detail: Instructor Requirements</name>
+			<description>
+				<line>Better formatting of the Instructor Requirements table, especially when there is a column with a lot of text.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Upgrade</name>
@@ -44,7 +53,6 @@
 		</item>
 	</category>
 </release>
-
 <release>
 	<version>4.8.170</version>
 	<release-date>Fri, 6 Dec 2024</release-date>

@@ -174,7 +174,7 @@ public class InstructorRequirementsTable extends UniTimeTable<CourseRequirement>
 			Label custom = new Label();
 			if (course != null && course.hasCustomField(cf))
 				custom.setText(course.getCustomField(cf));
-			custom.getElement().getStyle().setWidth(6.77 * cf.getLength(), Unit.PX);
+			custom.getElement().getStyle().setProperty("max-width", 6.77 * cf.getLength(), Unit.PX);
 			custom.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 			return custom;
 		default:
