@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:file="http://www.springframework.org/schema/integration/file"
+	xmlns:mail="http://www.springframework.org/schema/integration/mail"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration
+		http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
+		http://www.springframework.org/schema/integration/file
+		http://www.springframework.org/schema/integration/file/spring-integration-file-5.2.xsd
+		http://www.springframework.org/schema/integration/mail
+        http://www.springframework.org/schema/integration/mail/spring-integration-mail-5.2.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+		
+		<beans:bean id="delayedTrigger" class="org.springframework.scheduling.support.PeriodicTrigger">
+			<beans:constructor-arg value="60"/>
+			<beans:constructor-arg value="SECONDS"/>
+			<beans:property name="initialDelay" value="300"/>
+		</beans:bean>
+		
+        <file:inbound-channel-adapter
+        	directory="file:${unitime.data.dir}/import"
+        	filename-pattern="*.xml"
+        	auto-create-directory="true"
+        	channel="data-import-file"
+        	>
+        	<poller trigger="delayedTrigger"/>
+        </file:inbound-channel-adapter>
+        
+        <channel id="data-import-file" datatype="java.io.File"/>
+        
+        <header-enricher input-channel="data-import-file" output-channel="data-import-file-enriched">
+        	<header name="file_originalFile" expression="payload"/>
+        	<error-channel ref="data-import-failure"/>
+        </header-enricher>
+        
+        <channel id="data-import-file-enriched" datatype="java.io.File"/>
+        
+        <channel id="data-import-failure" datatype="org.springframework.messaging.MessagingException"/>
+        
+        <transformer ref="dataExchangeHelper" method="file2document" input-channel="data-import-file-enriched" output-channel="data-import-xml"/>
+        
+        <channel id="data-import-xml" datatype="org.dom4j.Document"/>
+        
+        <service-activator ref="dataExchangeHelper" method="importDocument" input-channel="data-import-xml" output-channel="data-import-log"/>
+        
+        <channel id="data-import-log" datatype="java.lang.String"/>
+
+        <file:outbound-channel-adapter
+        	directory="file:${unitime.data.dir}/import"
+        	delete-source-files="true"
+        	charset="UTF-8"
+        	channel="data-import-log"
+        	filename-generator-expression="headers.file_originalFile.name + '.html'"
+        	>
+        </file:outbound-channel-adapter>
+        
+        <header-enricher input-channel="data-import-failure" output-channel="data-import-failure-enriched">
+        	<header name="file_originalFile" expression="payload.failedMessage.headers.file_originalFile"/>
+        </header-enricher>
+        
+        <channel id="data-import-failure-enriched" datatype="org.springframework.messaging.MessagingException"/>
+        
+        <transformer ref="dataExchangeHelper" method="exception2message" input-channel="data-import-failure-enriched" output-channel="data-import-failure-log"/>
+        
+        <channel id="data-import-failure-log" datatype="java.lang.String"/>
+        
+        <file:outbound-channel-adapter
+        	directory="file:${unitime.data.dir}/import"
+        	charset="UTF-8"
+        	channel="data-import-failure-log"
+        	delete-source-files="true"
+        	filename-generator-expression="headers.file_originalFile.name + '.error'"
+        	>
+        </file:outbound-channel-adapter>
+</beans:beans>
