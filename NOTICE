@@ -305,6 +305,10 @@ Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.3.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
+Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.6.3.Final.jar)
+	under GNU Library General Public License v2.1 or later
+	https://hibernate.org/orm
+
 Hibernate ORM - hibernate-core (hibernate-core-6.6.3.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
