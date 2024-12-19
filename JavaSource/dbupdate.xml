@@ -28,6 +28,7 @@
 	<dialect type="plsql">org.hibernate.dialect.OracleDialect</dialect>
 	<dialect type="plsql">org.hibernate.dialect.Oracle12cDialect</dialect>
 	<dialect type="plsql">org.hibernate.dialect.Oracle10gDialect</dialect>
+	<dialect type="plsql">org.hibernate.community.dialect.OracleLegacyDialect</dialect>
 	<dialect type="plsql">org.unitime.commons.hibernate.util.OracleDialectLegacyLimitQueries</dialect>
 	<dialect type="pgsql">org.hibernate.dialect.PostgreSQLDialect</dialect>
 	<dialect type="pgsql">org.hibernate.dialect.PostgreSQL10Dialect</dialect>
