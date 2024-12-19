@@ -309,6 +309,10 @@ Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.4.10.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
+Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.4.10.Final.jar)
+	under GNU Library General Public License v2.1 or later
+	https://hibernate.org/orm
+
 Hibernate ORM - hibernate-core (hibernate-core-6.4.10.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
@@ -381,23 +385,23 @@ OpenJDK Nashorn (nashorn-core-15.4.jar)
 	under GPL v2 with the Classpath exception
 	https://github.com/openjdk/nashorn
 
-asm (asm-9.7.jar)
+asm (asm-9.7.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
-asm-analysis (asm-analysis-9.7.jar)
+asm-analysis (asm-analysis-9.7.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
-asm-commons (asm-commons-9.7.jar)
+asm-commons (asm-commons-9.7.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
-asm-tree (asm-tree-9.7.jar)
+asm-tree (asm-tree-9.7.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 
-asm-util (asm-util-9.7.jar)
+asm-util (asm-util-9.7.1.jar)
 	under BSD-3-Clause
 	http://asm.ow2.io/
 

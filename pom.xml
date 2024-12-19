@@ -105,6 +105,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-community-dialects</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-c3p0</artifactId>
 			<version>${hibernate.version}</version>
 		</dependency>
@@ -776,7 +781,7 @@
 		<jackson.version>2.17.1</jackson.version>
 		<text.version>1.12.0</text.version>
 		<lang3.version>3.14.0</lang3.version>
-		<asm.version>9.7</asm.version>
+		<asm.version>9.7.1</asm.version>
 		<infinispan-hibernate.version>14.0.30.Final</infinispan-hibernate.version>
 		<nashorn.version>15.4</nashorn.version>
 	</properties>

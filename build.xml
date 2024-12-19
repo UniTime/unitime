@@ -142,7 +142,7 @@
 					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.3.10.Final.jar joda-time-2.12.7.jar log4j-api-2.23.1.jar
 					log4j-core-2.23.1.jar log4j-jcl-2.23.1.jar log4j-slf4j-impl-2.23.1.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.27.3.jar
 					slf4j-api-1.7.36.jar spring-beans-5.3.37.jar spring-context-5.3.37.jar spring-core-5.3.37.jar spring-security-core-5.8.13.jar spring-web-5.3.37.jar
-					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar"/>
+					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar hibernate-community-dialects-6.4.10.Final.jar"/>
 				<attribute name="Timetabling-Version" value="4.8_bld${build.number}"/>
 			</manifest>
 		</jar>
@@ -333,6 +333,7 @@
 				<include name="hibernate-c3p0-6.4.10.Final.jar"/>
 				<include name="hibernate-commons-annotations-6.0.6.Final.jar"/>
 				<include name="hibernate-core-6.4.10.Final.jar"/>
+				<include name="hibernate-community-dialects-6.4.10.Final.jar"/>
 				<include name="istack-commons-runtime-4.1.1.jar"/>
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
@@ -401,6 +402,7 @@
 				<include name="hibernate-c3p0-6.4.10.Final.jar"/>
 				<include name="hibernate-commons-annotations-6.0.6.Final.jar"/>
 				<include name="hibernate-core-6.4.10.Final.jar"/>
+				<include name="hibernate-community-dialects-6.4.10.Final.jar"/>
 				<include name="istack-commons-runtime-4.1.1.jar"/>
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>

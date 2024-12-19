@@ -80,6 +80,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Hibernate Community Dialects</name>
+			<description>
+				<line>Added hibernate-community-dialects dependency to include additional dialects.
+					<line>Namely the org.hibernate.community.dialect.OracleLegacyDialect allowing for older Oracle Database versions.</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.170</version>
