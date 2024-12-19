@@ -46,6 +46,7 @@ import org.hibernate.boot.cfgxml.spi.MappingReference;
 import org.hibernate.boot.cfgxml.spi.MappingReference.Type;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.registry.internal.StandardServiceRegistryImpl;
+import org.hibernate.community.dialect.OracleLegacyDialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.OracleDialect;
 import org.hibernate.dialect.PostgreSQLDialect;
@@ -441,7 +442,7 @@ public class HibernateUtil {
     }
     
     public static boolean isOracle() {
-    	return OracleDialect.class.isAssignableFrom(getDialect());
+    	return OracleDialect.class.isAssignableFrom(getDialect()) || OracleLegacyDialect.class.isAssignableFrom(getDialect());
     }
     
     public static boolean isPostgress() {
@@ -472,7 +473,8 @@ public class HibernateUtil {
     		builder.applySqlFunction("adddate", PostgreSQLAddDateFunction.INSTANCE);
     		builder.applySqlFunction("days", PostgreSQLDaysFunction.INSTANCE);
     		builder.applySqlFunction("weekday", PostgreSQLWeekdayFunction.INSTANCE);
-        } else if (OracleDialect.class.isAssignableFrom(dialect)) {
+        } else if (OracleDialect.class.isAssignableFrom(dialect) ||
+        		OracleLegacyDialect.class.isAssignableFrom(dialect)) {
         	builder.applySqlFunction("weekday", OracleWeekdayFunction.INSTANCE);
         	builder.applySqlFunction("days", OracleDaysFunction.INSTANCE);
         	builder.applySqlFunction("adddate", OracleAddDateFunction.INSTANCE);
