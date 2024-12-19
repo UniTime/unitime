@@ -42,6 +42,14 @@
 				<line>GWT upgraded to version 2.12.</line>
 			</description>
 		</item>
+		<item>
+			<name>Hibernate Community Dialects</name>
+			<description>
+				<line>Added hibernate-community-dialects dependency to include additional dialects.
+					<line>Namely the org.hibernate.community.dialect.OracleLegacyDialect allowing for older Oracle Database versions.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
