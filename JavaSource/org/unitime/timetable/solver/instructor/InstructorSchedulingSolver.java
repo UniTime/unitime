@@ -37,6 +37,7 @@ import org.cpsolver.ifs.util.ProblemLoader;
 import org.cpsolver.ifs.util.ProblemSaver;
 import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.instructor.constraints.GroupConstraint.Distribution;
 import org.cpsolver.instructor.model.Attribute;
 import org.cpsolver.instructor.model.Course;
 import org.cpsolver.instructor.model.EnrolledClass;
@@ -247,6 +248,8 @@ public class InstructorSchedulingSolver extends AbstractSolver<TeachingRequest.V
 			info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorSameDays(), Constants.preferenceLevel2preference(instructor.getSameDaysPreference())));
 		if (instructor.getSameRoomPreference() != 0)
 			info.addDistributionPreference(new PreferenceInfo(1l, CONSTANTS.instructorSameRoom(), Constants.preferenceLevel2preference(instructor.getSameRoomPreference())));
+		for (Distribution d: instructor.getDistributions())
+			info.addDistributionPreference(new PreferenceInfo(1l, d.getType().getName(), d.getPreference()));
 		return info;
 	}
 	

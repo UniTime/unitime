@@ -65,12 +65,15 @@ import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TeachingClassRequest;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.NameFormat;
 
 /**
@@ -137,6 +140,20 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
     		}
     	}
     	
+    	Session session = SessionDAO.getInstance().get(iSessionId, hibSession);
+    	if (session != null) {
+    		getModel().getProperties().setProperty("DatePattern.DayOfWeekOffset",
+    				String.valueOf(org.unitime.timetable.util.Constants.getDayOfWeek(
+    						DateUtils.getDate(1, session.getPatternStartMonth(), session.getSessionStartYear()))));
+    		if (session.getDefaultDatePattern() != null) {
+    			BitSet pattern = session.getDefaultDatePattern().getPatternBitSet();
+    			String patternStr = "";
+    			for (int i = 0; i < pattern.length(); i++)
+    				patternStr += (pattern.get(i) ? "1" : "0");
+    			getModel().getProperties().setProperty("DatePattern.Default", patternStr);
+    		}
+    	}
+    	
     	loadInstructors(hibSession);
     	
     	loadRequests(hibSession);
@@ -183,6 +200,9 @@ public class InstructorSchedulingDatabaseLoader extends ProblemLoader<TeachingRe
 			instructor.setSameDaysPreference(Constants.preference2preferenceLevel(dp.getPrefLevel().getPrefProlog()));
 		} else if ("SAME_ROOM".equals(dp.getDistributionType().getReference())) {
 			instructor.setSameRoomPreference(Constants.preference2preferenceLevel(dp.getPrefLevel().getPrefProlog()));
+		} else {
+			if (instructor.addDistribution(dp.getDistributionType().getReference(), dp.getPrefLevel().getPrefProlog(), dp.getLabel()) == null)
+				iProgress.warn("Distribution " + dp.getDistributionType().getLabel() + " is not supported by the instructor scheduling solver.");
 		}
     }
     

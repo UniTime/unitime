@@ -36,6 +36,49 @@
 				<line>Better formatting of the Instructor Requirements table, especially when there is a column with a lot of text.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Preferences</name>
+			<description>
+				<line>Added two new group constraints (distribution types).</line>
+				<line>SAME_STUD_NODST: Same Students w/o Distance
+					<line>Same as the Same Students distribution, except there is no distance conflict checking and no work-day limit.</line>
+					<line>Also, the distribution gets ignored when there is Ignore Student Conflicts distribution between the two classes.</line>
+					<line>To replace DIFF_TIME in General.AutoSameStudentsConstraint
+						<line>Same as different time, but does not ignore cases when there is Ignore Student Conflicts between two classes in parent-child.</line>
+					</line>
+				</line>
+				<line>DIFF_TIME_IGN_STUDS: Different Time + Ignore Student Conflicts
+					<line>Combination of two constraints, Different Time and Ignore Student Conflicts.</line>
+					<line>Given classes cannot overlap in time, replacing any student conflicts between these classes.</line>
+					<line>When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time.
+						<line>Still, student conflicts are ignored.</line>
+					</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Instructor Scheduling</title>
+		<item>
+			<name>Instructor Distribution Preferences</name>
+			<description>
+				<line>Many course timetabling distributions (group constraint and flexible constraints) have been included in the instructor scheduling problem, namely
+					<line>At Most N Hours A Day</line>
+					<line>Same Weeks</line>
+					<line>N Hour Workday</line>
+					<line>Mininal Gap Between Classes</line>
+					<line>Max Block</line>
+					<line>Max Breaks</line>
+					<line>Max Days</line>
+					<line>Break</line>
+					<line>Max Weeks</line>
+					<line>Max Holes</line>
+					<line>Max Half-Days</line>
+					<line>Max Consecutive Days</line>
+				</line>
+				<line>See https://help.unitime.org/additional-distribution-constraints for more details about the additional distribution constraint types.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
