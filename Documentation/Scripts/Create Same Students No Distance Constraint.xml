@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Same Students No Distance Constraint" permission="Distribution Preferences" engine="ECMAScript" created="Thu Dec 19 15:05:10 CET 2024">
+  <description><![CDATA[This script creates the Same Students No Distance Constraint.<br>
+This distribution is the same as the Same Students distribution, except there is no distance conflict checking and no work-day limit.<br>
+Also, the distribution gets ignored when there is the Ignore Student Conflicts distribution between the two classes.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'SAME_STUD_NODST').uniqueResult();
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('SAME_STUD_NODST');
+  type.setLabel('Same Students No Distance');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('210R');
+  type.setDescr('This distribution is the same as the Same Students distribution, except there is no distance conflict checking and no work-day limit.<br>' +
+    'Also, the distribution gets ignored when there is the Ignore Student Conflicts distribution between the two classes.<br>' +
+    'This constraint can be used as the Same Student Constraint in the solver configuration, e.g., in the interactive mode, ' +
+    'replacing the Different Time constraint which does not ignore cases when there is the Ignore Student Conflicts between two classes in a parent-child relation.'
+  );
+  type.setAbbreviation('Same Studs No Dist');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  type.setVisible(true);
+  hibSession.saveOrUpdate(type);
+  log.info('Same Students No Distance distribution type created.');
+} else {
+  log.warn('Same Students No Distance distribution type already exists.');
+}
+
+log.info('All done.');]]></body>
+</script>

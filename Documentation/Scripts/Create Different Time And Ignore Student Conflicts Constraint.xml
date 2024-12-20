@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Different Time + Ignore Student Conflicts Constraint" permission="Distribution Preferences" engine="ECMAScript" created="Thu Dec 19 15:12:22 CET 2024">
+  <description><![CDATA[This script creates the Different Time + Ignore Student Conflicts Constraint.<br>
+Combination of two constraints, Different Time and Ignore Student Conflicts.<br>
+Given classes cannot overlap in time, replacing any student conflicts between these classes.<br>
+When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time. Still, student conflicts are ignored.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'DIFF_TIME_IGN_STUDS').uniqueResult();
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('DIFF_TIME_IGN_STUDS');
+  type.setLabel('Different Time + Ignore Student Conflicts');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('P43210R');
+  type.setDescr('Combination of two constraints, Different Time and Ignore Student Conflicts.<br>' +
+    'Given classes cannot overlap in time, replacing any student conflicts between these classes.<br>' +
+    'When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time. Still, student conflicts are ignored.'
+  );
+  type.setAbbreviation('Diff Time No Stds');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  type.setVisible(true);
+  hibSession.saveOrUpdate(type);
+  log.info('Different Time + Ignore Student Conflicts distribution type created.');
+} else {
+  log.warn('Different Time + Ignore Student Conflicts distribution type already exists.');
+}
+
+log.info('All done.');]]></body>
+</script>

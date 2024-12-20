@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<script name="Distribution Types: Create Following Dates Constraint" permission="Distribution Preferences" engine="ECMAScript" created="Thu Dec 19 14:53:46 CET 2024">
+  <description><![CDATA[This script creates the Following Dates Constraint.<br>
+Given classes must be taught on back-to-back dates and in the given order.<br>
+When prohibited or (strongly) discouraged: given classes must be taught on dates in the given order, with at least one day between the following classes.<br>
+Note: The primary use for this constraint is for classes that meet only once. The constraint cannot be satisfied when one of the meetings falls on a holiday, and the other does not.]]></description>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', 'FOLLOWING_DATES').uniqueResult();
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference('FOLLOWING_DATES');
+  type.setLabel('Following Dates');
+  type.setSequencingRequired(false);
+  type.setRequirementId(++reqId);
+  type.setAllowedPref('P43210R');
+  type.setDescr('Given classes must be taught on back-to-back dates and in the given order.<br>' +
+    'When prohibited or (strongly) discouraged: given classes must be taught on dates in the given order, with at least one day between the following classes.<br>' +
+    'Note: The primary use for this constraint is for classes that meet only once. The constraint cannot be satisfied when one of the meetings falls on a holiday, and the other does not.'
+  );
+  type.setAbbreviation('Following Dates');
+  type.setInstructorPref(true);
+  type.setExamPref(false);
+  type.setVisible(true);
+  hibSession.saveOrUpdate(type);
+  log.info('Following Dates distribution type created.');
+} else {
+  log.warn('Following Dates distribution type already exists.');
+}
+
+log.info('All done.');]]></body>
+</script>

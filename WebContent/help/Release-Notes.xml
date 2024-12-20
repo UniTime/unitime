@@ -39,20 +39,26 @@
 		<item>
 			<name>Distribution Preferences</name>
 			<description>
-				<line>Added two new group constraints (distribution types).</line>
-				<line>SAME_STUD_NODST: Same Students w/o Distance
-					<line>Same as the Same Students distribution, except there is no distance conflict checking and no work-day limit.</line>
-					<line>Also, the distribution gets ignored when there is Ignore Student Conflicts distribution between the two classes.</line>
+				<line>Added three new group constraints (distribution types).</line>
+				<line>SAME_STUD_NODST: Students No Distance Constraint
+					<line>This distribution is the same as the Same Students distribution, except there is no distance conflict checking and no work-day limit.</line>
+					<line>Also, the distribution gets ignored when there is the Ignore Student Conflicts distribution between the two classes.</line>
 					<line>To replace DIFF_TIME in General.AutoSameStudentsConstraint
-						<line>Same as different time, but does not ignore cases when there is Ignore Student Conflicts between two classes in parent-child.</line>
+						<line>This constraint can be used as the Same Student Constraint in the solver configuration, e.g., in the interactive mode,
+							replacing the Different Time constraint which does not ignore cases when there is the Ignore Student Conflicts between two classes in a parent-child relation.
+						</line>
 					</line>
 				</line>
 				<line>DIFF_TIME_IGN_STUDS: Different Time + Ignore Student Conflicts
 					<line>Combination of two constraints, Different Time and Ignore Student Conflicts.</line>
 					<line>Given classes cannot overlap in time, replacing any student conflicts between these classes.</line>
-					<line>When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time.
-						<line>Still, student conflicts are ignored.</line>
-					</line>
+					<line>When prohibited or (strongly) discouraged: every pair of classes in the constraint must overlap in time. Still, student conflicts are ignored.</line>
+				</line>
+				<line>FOLLOWING_DATES: Following Dates
+					<line>Given classes must be taught on back-to-back dates and in the given order.</line>
+					<line>When prohibited or (strongly) discouraged: given classes must be taught on dates in the given order, with at least one day between the following classes.</line>
+					<line>Note: The primary use for this constraint is for classes that meet only once.
+					The constraint cannot be satisfied when one of the meetings falls on a holiday, and the other does not.</line>
 				</line>
 			</description>
 		</item>
@@ -63,18 +69,18 @@
 			<name>Instructor Distribution Preferences</name>
 			<description>
 				<line>Many course timetabling distributions (group constraint and flexible constraints) have been included in the instructor scheduling problem, namely
-					<line>At Most N Hours A Day</line>
-					<line>Same Weeks</line>
-					<line>N Hour Workday</line>
-					<line>Mininal Gap Between Classes</line>
-					<line>Max Block</line>
-					<line>Max Breaks</line>
-					<line>Max Days</line>
-					<line>Break</line>
-					<line>Max Weeks</line>
-					<line>Max Holes</line>
-					<line>Max Half-Days</line>
-					<line>Max Consecutive Days</line>
+					<line>At Most N Hours A Day: Classes are to be placed in a way that there is no more than given number of hours in any day.</line>
+					<line>Same Weeks: Given classes must be taught during the same weeks (i.e., must have the same date pattern).</line>
+					<line>N Hour Workday: Classes are to be placed in a way that there is no more than given number of hours between the start of the first class and the end of the class one on any day.</line>
+					<line>Mininal Gap Between Classes: Classes need to be placed in a way that there is at least the given number of minutes between any two of them.</line>
+					<line>Max Block: Given classes must be taught in a way there is a break between two blocks of classes.</line>
+					<line>Max Breaks: Limit number of breaks between adjacent classes on a day.</line>
+					<line>Max Days: Limit number of days of a week.</line>
+					<line>Break: There must be a break of a given length in a given time interval.</line>
+					<line>Max Weeks: Limit number of weeks on which an a class can take place.</line>
+					<line>Max Holes: Minimize free time of an instructor during a day (between the first and the last class).</line>
+					<line>Max Half-Days: Limit number of half-days of a week.</line>
+					<line>Max Consecutive Days: Limit number of consecutive days of a week.</line>
 				</line>
 				<line>See https://help.unitime.org/additional-distribution-constraints for more details about the additional distribution constraint types.</line>
 			</description>
