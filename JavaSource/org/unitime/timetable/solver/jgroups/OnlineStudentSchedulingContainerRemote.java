@@ -33,6 +33,7 @@ import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.fork.ForkChannel;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
 import org.unitime.timetable.solver.SolverProxy;
@@ -85,13 +86,14 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	}
 
 	@Override
-	public Object invoke(String method, String sessionId, Class[] types, Object[] args) throws Exception {
+	public Object invoke(String method, String sessionId, String locale, Class[] types, Object[] args) throws Exception {
 		try {
 			OnlineSectioningServer solver = iInstances.get(Long.valueOf(sessionId));
 			if ("exists".equals(method) && types.length == 0)
 				return solver != null;
 			if (solver == null)
 				throw new Exception("Server " + sessionId + " does not exist.");
+			if (locale != null) Localization.setLocale(locale);
 			return solver.getClass().getMethod(method, types).invoke(solver, args);
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
@@ -106,7 +108,10 @@ public class OnlineStudentSchedulingContainerRemote extends OnlineStudentSchedul
 	@Override
 	public Object dispatch(Address address, String sessionId, Method method, Object[] args) throws Exception {
 		try {
-			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), sessionId, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
+			return iDispatcher.callRemoteMethod(address, "invoke",
+					new Object[] { method.getName(), sessionId, Localization.getLocale(), method.getParameterTypes(), args },
+					new Class[] { String.class, String.class, String.class, Class[].class, Object[].class },
+					SolverServerImplementation.sFirstResponse);
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() != null && e.getTargetException() instanceof Exception)
 				throw (Exception)e.getTargetException();
