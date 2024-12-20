@@ -37,7 +37,10 @@ public interface RemoteSolverContainer<T> extends SolverContainer<T> {
 	
 	public Object dispatch(Address address, String user, Method method, Object[] args) throws Exception;
 	
-	public Object invoke(String method, String user, Class[] types, Object[] args) throws Exception;
+	public Object invoke(String method, String user, String locale, Class[] types, Object[] args) throws Exception;
+	default Object invoke(String method, String user, Class[] types, Object[] args) throws Exception {
+		return invoke(method, user, null, types, args);
+	}
 	
 	public T createProxy(Address address, String user);
 	
