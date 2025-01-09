@@ -53,6 +53,7 @@ import org.hibernate.LazyInitializationException;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.form.ClassInfoForm.RoomBase;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -995,6 +996,69 @@ public class ClassInfoModel implements Serializable {
                     	times.add(new ClassAssignment(clazz, loc, date, null));
                 }
             }
+        }
+        
+        Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+        boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+        boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+        Calendar cal = Calendar.getInstance(Locale.US);
+		cal.setTime(new Date());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		Date today = cal.getTime();
+		String nameFormat = (getSessionContext() == null ? "last-initial" : UserProperty.NameFormat.get(getSessionContext().getUser()));
+        if (RoomAvailability.getInstance()!=null) {
+        	for (ClassInstructor ci: clazz.getClassInstructors()) {
+        		if (!ci.getLead()) continue;
+        		Collection<TimeBlock> blocks = RoomAvailability.getInstance().getInstructorAvailability(ci.getInstructor().getUniqueId(), 
+        				bounds[0], bounds[1], 
+        				RoomAvailabilityInterface.sClassType);
+        		if (blocks != null && !blocks.isEmpty()) {
+        			Collection<TimeBlock> timesToCheck = null;
+            		if (!changePast || ignorePast) {
+            			timesToCheck = new Vector();
+            			for (TimeBlock time: blocks) {
+            				if (!time.getEndTime().before(today))
+            					timesToCheck.add(time);
+            			}
+            		} else {
+            			timesToCheck = blocks;
+            		}
+            		for (Iterator<ClassAssignment> i = times.iterator(); i.hasNext(); ) {
+            			ClassAssignment ca = i.next();
+            			TimeBlock time = ca.getTime().overlaps(timesToCheck);
+                		if (time!=null) {
+            				sLog.info(MSG.messageInstructroNotAvailable(ci.getInstructor().getName(nameFormat), ca.getTime().getLongName(), time.toString()));
+            				i.remove();
+            			}
+            		}
+        		}
+        	}
+        }
+        for (ClassInstructor ci: clazz.getClassInstructors()) {
+    		if (!ci.getLead() || !ci.getInstructor().hasUnavailabilities()) continue;
+    		Collection<TimeBlock> blocks = ci.getInstructor().listUnavailableDays();
+    		if (blocks != null && !blocks.isEmpty()) {
+    			Collection<TimeBlock> timesToCheck = null;
+        		if (!changePast || ignorePast) {
+        			timesToCheck = new Vector();
+        			for (TimeBlock time: blocks) {
+        				if (!time.getEndTime().before(today))
+        					timesToCheck.add(time);
+        			}
+        		} else {
+        			timesToCheck = blocks;
+        		}
+        		for (Iterator<ClassAssignment> i = times.iterator(); i.hasNext(); ) {
+        			ClassAssignment ca = i.next();
+        			TimeBlock time = ca.getTime().overlaps(timesToCheck);
+            		if (time!=null) {
+        				sLog.info(MSG.messageInstructroNotAvailable(ci.getInstructor().getName(nameFormat), ca.getTime().getLongName(), time.toString()));
+        				i.remove();
+        			}
+        		}
+    		}
         }
         return times;
     }
