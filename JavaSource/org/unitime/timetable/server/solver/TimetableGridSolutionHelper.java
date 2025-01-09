@@ -749,6 +749,11 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 					RoomAvailability.getInstance().getInstructorAvailability(instructor.getUniqueId(), context.getSessionStartDate(), context.getSessionEndDate(), RoomAvailabilityInterface.sClassType),
 					null);
 		}
+		if (context.isShowEvents() && instructor.hasUnavailabilities()) {
+			createMeetingCells(model, instructor.getDepartment().getSession(), context,
+					instructor.listUnavailableDays(),
+					null);
+		}
         if (instructor.getPositionType()!=null)
             model.setType(Long.valueOf(instructor.getPositionType().getSortOrder()));
     	

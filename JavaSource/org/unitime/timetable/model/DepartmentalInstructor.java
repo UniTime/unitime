@@ -24,7 +24,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
@@ -62,6 +61,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
@@ -890,16 +890,21 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		private static final long serialVersionUID = 1L;
 		private Date iStartTime, iEndTime;
 		private Long iEventId;
+		private String iDeptCode;
 		private UnavailableDay(DepartmentalInstructor instructor, Date startTime, Date endTime) {
 			iEventId = - instructor.getUniqueId();
 			iStartTime = startTime; iEndTime = endTime;
+			iDeptCode = instructor.getDepartment().getDeptCode();
 		}
 		@Override
 	@Transient
 		public Long getEventId() { return iEventId; }
 		@Override
 	@Transient
-		public String getEventName() { return MSG.instructorNotAvailableName(); }
+		public String getEventName() {
+			Format<Date> df = Formats.getDateFormat(CONS.meetingDateFormat());
+			return MSG.instructorNotAvailableName(df.format(getStartTime()), iDeptCode);
+		}
 		@Override
 	@Transient
 		public String getEventType() { return MSG.instructorNotAvailableType(); }
@@ -919,7 +924,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
         }
 		@Override
 		public String toString() {
-            SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy");
+			Format<Date> df = Formats.getDateFormat(CONS.eventDateFormatLong());
             return getEventName()+" ("+getEventType()+") "+df.format(getStartTime());
         }
 	}

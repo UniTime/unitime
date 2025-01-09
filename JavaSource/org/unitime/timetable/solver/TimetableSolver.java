@@ -1605,6 +1605,8 @@ public class TimetableSolver extends AbstractSolver<Lecture, Placement, Timetabl
 			if (!ic.isAvailable(lecture, placement)) {
 				if (!ic.isAvailable(lecture, placement.getTimeLocation())) {
 					for (Placement c : ic.getUnavailabilities()) {
+			            if (c.variable().getId() < 0 && lecture.getDepartment() != null && c.variable().getDepartment() != null
+			                    && !c.variable().getDepartment().equals(lecture.getDepartment())) continue; 
 						if (c.getTimeLocation().hasIntersection(placement.getTimeLocation())
 								&& !lecture.canShareRoom(c.variable()))
 							return MSG.reasonInstructorNotAvailableEvent(ic.getName(), placement.getTimeLocation().getLongName(useAmPm), c.variable().getName());

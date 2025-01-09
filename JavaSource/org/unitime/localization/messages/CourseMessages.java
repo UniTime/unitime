@@ -2995,6 +2995,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Room {0} is not available for {1} due to {2}.")
 	String messageRoomNotAvailable2(String room, String time, String conflicts);
 	
+	@DefaultMessage("Instructor {0} is not available for {1} due to {2}.")
+	String messageInstructroNotAvailable(String room, String time, String conflicts);
+	
 	@DefaultMessage("Date Change")
 	String columnDateChange();
 	
@@ -3053,8 +3056,8 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Unavailable\nDates")
 	String columnUnavailableDatesPDF();
 	
-	@DefaultMessage("Instructor Not Available")
-	String instructorNotAvailableName();
+	@DefaultMessage("Instructor Not Available {0} ({1})")
+	String instructorNotAvailableName(String date, String deptCode);
 	
 	@DefaultMessage("Availability")
 	String instructorNotAvailableType();
