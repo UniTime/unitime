@@ -202,18 +202,19 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 			        	}
 			        }
 				}
+
+		boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+		boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+    	Date[] bounds = DatePattern.getBounds(offering.getSessionId());
+		Calendar cal = Calendar.getInstance(Locale.US);
+		cal.setTime(new Date());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
 		
 		if (RoomAvailability.getInstance() != null) {
- 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
- 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
-        	Date[] bounds = DatePattern.getBounds(offering.getSessionId());
- 			Calendar cal = Calendar.getInstance(Locale.US);
-    		cal.setTime(new Date());
-    		cal.set(Calendar.HOUR_OF_DAY, 0);
-    		cal.set(Calendar.MINUTE, 0);
-    		cal.set(Calendar.SECOND, 0);
-    		cal.set(Calendar.MILLISECOND, 0);
-    		Date today = cal.getTime();
 			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
 				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
 					for (Class_ clazz: subpart.getClasses()) {
@@ -244,6 +245,54 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 						}
 					}
 		}
+		
+		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+			for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+				for (Class_ clazz: subpart.getClasses()) {
+					if (clazz.isCancelled() || !clazz.hasLeadInstructor()) continue;
+					if (!clazz.hasLeadInstructorWithUnavailabilities() && !ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue()) continue;
+					Assignment assignment = getAssignment(clazz);
+					if (assignment == null) continue;
+		    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+					for (ClassInstructor ci: clazz.getClassInstructors()) {
+						if (!ci.getLead()) continue;
+						if (RoomAvailability.getInstance() != null) {
+							Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(
+									ci.getInstructor().getUniqueId(),
+									bounds[0], bounds[1], 
+				                    RoomAvailabilityInterface.sClassType);
+							if (times != null && !times.isEmpty()) {
+				    			Collection<TimeBlock> timesToCheck = null;
+				    			if (!changePast || ignorePast) {
+				        			timesToCheck = new Vector();
+				        			for (TimeBlock time: times) {
+				        				if (!time.getEndTime().before(today))
+				        					timesToCheck.add(time);
+				        			}
+				        		} else {
+				        			timesToCheck = times;
+				        		}
+				    			if (period.overlaps(timesToCheck) != null) return true;
+				    		}
+						}
+						if (ci.getInstructor().hasUnavailabilities()) {
+							Collection<TimeBlock> times = ci.getInstructor().listUnavailableDays();
+				    		if (times != null && !times.isEmpty()) {
+				    			Collection<TimeBlock> timesToCheck = null;
+				    			if (!changePast || ignorePast) {
+				        			timesToCheck = new Vector();
+				        			for (TimeBlock time: times) {
+				        				if (!time.getEndTime().before(today))
+				        					timesToCheck.add(time);
+				        			}
+				        		} else {
+				        			timesToCheck = times;
+				        		}
+				        		if (period.overlaps(timesToCheck) != null) return true;
+				    		}
+						}
+					}
+				}
 		
 		return false;
 	}
@@ -382,6 +431,63 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
 				}
     		}
         }
+		
+		if (assignment != null && clazz.hasLeadInstructor() &&
+				(clazz.hasLeadInstructorWithUnavailabilities() || ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue())) {
+        	Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+ 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+ 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+ 			Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.setTime(new Date());
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		cal.set(Calendar.MILLISECOND, 0);
+    		Date today = cal.getTime();
+    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+			for (ClassInstructor ci: clazz.getClassInstructors()) {
+				if (!ci.getLead()) continue;
+				if (RoomAvailability.getInstance() != null) {
+					Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(
+							ci.getInstructor().getUniqueId(),
+							bounds[0], bounds[1], 
+		                    RoomAvailabilityInterface.sClassType);
+					if (times != null && !times.isEmpty()) {
+		    			Collection<TimeBlock> timesToCheck = null;
+		    			if (!changePast || ignorePast) {
+		        			timesToCheck = new Vector();
+		        			for (TimeBlock time: times) {
+		        				if (!time.getEndTime().before(today))
+		        					timesToCheck.add(time);
+		        			}
+		        		} else {
+		        			timesToCheck = times;
+		        		}
+		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
+		        		if (overlaps != null)
+		    				conflicts.addAll(overlaps);
+		    		}
+				}
+				if (ci.getInstructor().hasUnavailabilities()) {
+					Collection<TimeBlock> times = ci.getInstructor().listUnavailableDays();
+		    		if (times != null && !times.isEmpty()) {
+		    			Collection<TimeBlock> timesToCheck = null;
+		    			if (!changePast || ignorePast) {
+		        			timesToCheck = new Vector();
+		        			for (TimeBlock time: times) {
+		        				if (!time.getEndTime().before(today))
+		        					timesToCheck.add(time);
+		        			}
+		        		} else {
+		        			timesToCheck = times;
+		        		}
+		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
+		        		if (overlaps != null)
+		    				conflicts.addAll(overlaps);
+		    		}
+				}
+			}
+		}
 		
 		return conflicts;
 	}

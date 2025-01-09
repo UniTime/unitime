@@ -71,12 +71,16 @@
 		<item>
 			<name>Instructor Unavailable Dates</name>
 			<description>
-				<line>Course Timetabling Solver: consider instructor's department when checking for the unavailable dates.
+				<line>Course Timetabling Solver: Consider instructor's department when checking for the unavailable dates.
 					<line>This is to allow for an instructor to have different unavailable dates on each of the departments they are teaching.</line>
 				</line>
 				<line>Class Assignment page: Do not list class times during which the instructor is not available.
 					<line>Either because they have Instructor Unavailable Dates set.</line>
 					<line>Or because instructor event availability is enabled (unitime.events.instructorUnavailability=true).</line>
+				</line>
+				<line>Instructional Offering Detail, Class Detail, Instructor Detail: Include instructor availability in the conflict checking.
+					<line>That is, show a class conflicting warning when the class is placed at a time during which the instructor is not available
+					due to an event, or unavailable dates.</line>
 				</line>
 			</description>
 		</item>
