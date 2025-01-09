@@ -62,6 +62,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructor Unavailable Dates</name>
+			<description>
+				<line>Course Timetabling Solver: consider instructor's department when checking for the unavailable dates.
+					<line>This is to allow for an instructor to have different unavailable dates on each of the departments they are teaching.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Instructor Scheduling</title>

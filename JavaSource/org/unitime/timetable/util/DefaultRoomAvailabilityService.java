@@ -50,7 +50,6 @@ import org.unitime.timetable.model.dao.LocationDAO;
  */
 public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface {
     private Vector<CacheElement> iCache = new Vector<CacheElement>();
-    private boolean iInstructorAvailabilityEnabled = false;
     
     public String getTimeStamp(Date startTime, Date endTime, String excludeType) {
         TimeFrame time = new TimeFrame(startTime, endTime);
@@ -148,7 +147,6 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         }
     }
     public void activate(Long sessionId, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
-        iInstructorAvailabilityEnabled = ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue();
         TimeFrame time = new TimeFrame(startTime, endTime);
         EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(sessionId) : null);
         synchronized(iCache) {
@@ -157,7 +155,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                 cache = new CacheElement(time, excludeType);
                 iCache.insertElementAt(cache, 0);
             }
-            cache.update(class2eventDateMap, sessionId, iInstructorAvailabilityEnabled);
+            cache.update(class2eventDateMap, sessionId, ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue());
         }
     }
     
@@ -485,24 +483,15 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
 	@Override
 	public Collection<TimeBlock> getInstructorAvailability(Long instructorId, Date startTime, Date endTime, String excludeType) {
         DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(instructorId);
-        if (!iInstructorAvailabilityEnabled || instructor == null || instructor.getExternalUniqueId() == null) {
-        	if (instructor != null) return instructor.listUnavailableDays();
+        if (!ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue() || instructor == null || instructor.getExternalUniqueId() == null) {
         	return null;
         }
         EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(instructor.getDepartment().getSession().getUniqueId()) : null);
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
-            if (cache!=null) {
-            	Collection<TimeBlock> cached = cache.get(instructor.getExternalUniqueId(), excludeType);
-            	if (instructor.hasUnavailabilities()) {
-            		Collection<TimeBlock> ret = instructor.listUnavailableDays();
-            		if (cached != null) ret.addAll(cached);
-            		return ret;
-            	} else {
-            		return cached;
-            	}
-            }
+            if (cache!=null)
+            	return cache.get(instructor.getExternalUniqueId(), excludeType);
             TreeSet<TimeBlock> ret = new TreeSet<TimeBlock>();
             Class<? extends Event> exclude = null;
             ExamType examType = null;
@@ -576,8 +565,6 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     }
             	}
             }
-            if (instructor.hasUnavailabilities())
-            	ret.addAll(instructor.listUnavailableDays());
             return ret;
         }
 	}

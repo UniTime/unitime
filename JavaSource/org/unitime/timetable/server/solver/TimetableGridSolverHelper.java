@@ -198,7 +198,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 					if (placements!=null && !placements.isEmpty()) {
 				        for (Placement p: placements) {
 				        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p) && (week == null || p.getTimeLocation().shareWeeks(week)))
-				        		createCells(model, solver, p, context, true);
+				        		createCells(model, solver, p, context, true, false);
 				        }
 				    }
 				}
@@ -213,7 +213,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 						if (placements!=null && !placements.isEmpty()) {
 					        for (Placement p: placements) {
 					        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p) && (week == null || p.getTimeLocation().shareWeeks(week)))
-					        		createCells(model, solver, p, context, true);
+					        		createCells(model, solver, p, context, true, false);
 					        }
 					    }
 					}
@@ -228,7 +228,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 								if (placements!=null && !placements.isEmpty()) {
 							        for (Placement p: placements) {
 							        	if ((context.isShowEvents() || p.getAssignmentId() != null) && done.add(p) && (week == null || p.getTimeLocation().shareWeeks(week)))
-							        		createCells(model, solver, p, context, true);
+							        		createCells(model, solver, p, context, true, false);
 							        }
 							    }
 							}
@@ -272,7 +272,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 		if (instructor.getUnavailabilities() != null) {
 			for (Placement p: instructor.getUnavailabilities()) {
 				if ((context.isShowEvents() || p.getAssignmentId() != null) && (week == null || p.getTimeLocation().shareWeeks(week)))
-					createCells(model, solver, p, context, true);
+					createCells(model, solver, p, context, true, false);
 			}
 		}
 		for (Student student: ((TimetableModel)solver.currentSolution().getModel()).getAllStudents()) {
@@ -280,7 +280,7 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				for (Lecture lecture: student.getLectures()) {
 					Placement placement = assignment.getValue(lecture);
 					if (placement != null && !instructor.variables().contains(lecture) && (week == null || placement.getTimeLocation().shareWeeks(week))) {
-						for (TimetableGridCell cell: createCells(model, solver, placement, context, false)) {
+						for (TimetableGridCell cell: createCells(model, solver, placement, context, false, false)) {
 							cell.setItalics(true);
 						}
 					}
@@ -450,9 +450,13 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 	}
 	
 	protected static List<TimetableGridCell> createCells(TimetableGridModel model, TimetableSolver solver, Placement placement, TimetableGridContext context, boolean notAvailable) {
+		return createCells(model, solver, placement, context, notAvailable, true);
+	}
+	
+	protected static List<TimetableGridCell> createCells(TimetableGridModel model, TimetableSolver solver, Placement placement, TimetableGridContext context, boolean notAvailable, boolean checkForMatch) {
 		List<TimetableGridCell> cells = new ArrayList<TimetableGridCell>();
 		
-		if (!match(context, placement, model)) return cells;
+		if (checkForMatch && !match(context, placement, model)) return cells;
 		
 		TimetableGridCell cell = null;
 		

@@ -2155,6 +2155,25 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	for (Iterator<DepartmentalInstructor> i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor instructor = i.next();
     		loadInstructorGroupConstraints(instructor, checkedDistPrefIds);
+    		if (instructor.hasUnavailabilities()) {
+    			InstructorConstraint ic = null;
+    	    	if (instructor.getExternalUniqueId() != null && instructor.getExternalUniqueId().length() > 0) {
+    	    		ic = iInstructors.get(instructor.getExternalUniqueId());
+    	    	} else {
+    	    		ic = iInstructors.get(instructor.getUniqueId());
+    	    	}
+    	    	if (ic != null) {
+    	    		for (TimeBlock time: instructor.listUnavailableDays()) {
+                		iProgress.debug(ic.getName() + " not available due to " + time + " (" + department.getDeptCode() + ")");
+                        Placement p = timeBlock2Placement(time);
+                        if (p != null) {
+                        	ic.setNotAvailable(p);
+                        	getModel().addVariable(p.variable());
+                        	p.variable().setDepartment(department.getUniqueId());
+                        }
+    	    		}
+    	    	}
+    		}
     		incProgress();
     	}
     }
@@ -4099,76 +4118,84 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         return ret;
     }
     
-    public void loadInstructorAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
-        setPhase(MSG.phaseLoadingInstructorAvailability(), getModel().getInstructorConstraints().size());
+    private Placement timeBlock2Placement(TimeBlock time) {
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
         Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
         int sessionYear = iSession.getSessionStartYear();
+
+        int dayCode = 0;
+        c.setTime(time.getStartTime());
+        int m = c.get(Calendar.MONTH);
+        int d = c.get(Calendar.DAY_OF_MONTH);
+        if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
+        if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
+        BitSet weekCode = new BitSet(size);
+        int offset = iSession.getDayOfYear(d,m) - firstDOY;
+        if (offset < 0 || offset >= size) return null;
+        weekCode.set(offset);
+        switch (c.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
+            case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
+            case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
+            case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
+            case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
+            case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
+            case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+        }
+        int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+        c.setTime(time.getEndTime());
+        int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
+        if (endSlot == 0 && c.get(Calendar.DAY_OF_MONTH) != d) endSlot = 288; // next day midnight
+        int length = endSlot - startSlot;
+        if (length<=0) return null;
+        TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
+        List<TimeLocation> timeLocations = new ArrayList<TimeLocation>(1); timeLocations.add(timeLocation);
+        Placement placement = null;
+        List<RoomLocation> roomLocations = new ArrayList<RoomLocation>(1);
+        if (time instanceof HasRoom && ((HasRoom)time).getLocationId() != null) {
+        	HasRoom r = (HasRoom) time;
+        	RoomConstraint room = iRooms.get(r.getLocationId());
+        	if (room == null && r.getPermanentId() != null)
+        		room = iRoomsByPermId.get(r.getPermanentId());
+        	RoomLocation roomLocation = null;
+        	if (room != null) {
+        		roomLocation = new RoomLocation(room.getResourceId(), room.getName(), room.getBuildingId(), 0, room.getCapacity(), room.getPosX(), room.getPosY(),
+                        room.getIgnoreTooFar(), room);
+        	} else {
+        		roomLocation = new RoomLocation(r.getLocationId(), r.getLabel(), null, 0, 0, r.getCoordinateX(), r.getCoordinateY(), r.isIgnoreTooFar(), null);
+        	}
+        	roomLocations.add(roomLocation);
+        	placement = new Placement(null,timeLocation, roomLocation);
+        } else {
+        	placement = new Placement(null,timeLocation,(RoomLocation)null);
+        }
+        Lecture lecture = new Lecture(
+                Long.valueOf(--iFakeLectureId), null, null, time.getEventName(), 
+                timeLocations, roomLocations, placement.getNrRooms(), 
+                placement, 0, 0, 1.0);
+        lecture.setNote(time.getEventType());
+        Placement p = (Placement)lecture.getInitialAssignment();
+        lecture.setBestAssignment(p, 0);
+        lecture.setCommitted(true);
+        return p;
+    }
+    
+    public void loadInstructorAvailability(RoomAvailabilityInterface availability, Date[] startEnd) {
+        setPhase(MSG.phaseLoadingInstructorAvailability(), getModel().getInstructorConstraints().size());
         for (InstructorConstraint instructor: getModel().getInstructorConstraints()) {
             incProgress();
             Collection<TimeBlock> times = getInstructorAvailability(availability, instructor, startEnd[0], startEnd[1]);
             if (times==null) continue;
             for (TimeBlock time : times) {
                 iProgress.debug(instructor.getName() + " not available due to " + time);
-                int dayCode = 0;
-                c.setTime(time.getStartTime());
-                int m = c.get(Calendar.MONTH);
-                int d = c.get(Calendar.DAY_OF_MONTH);
-                if (c.get(Calendar.YEAR)<sessionYear) m-=(12 * (sessionYear - c.get(Calendar.YEAR)));
-                if (c.get(Calendar.YEAR)>sessionYear) m+=(12 * (c.get(Calendar.YEAR) - sessionYear));
-                BitSet weekCode = new BitSet(size);
-                int offset = iSession.getDayOfYear(d,m) - firstDOY;
-                if (offset < 0 || offset >= size) continue;
-                weekCode.set(offset);
-                switch (c.get(Calendar.DAY_OF_WEEK)) {
-                    case Calendar.MONDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_MON]; break;
-                    case Calendar.TUESDAY   : dayCode = Constants.DAY_CODES[Constants.DAY_TUE]; break;
-                    case Calendar.WEDNESDAY : dayCode = Constants.DAY_CODES[Constants.DAY_WED]; break;
-                    case Calendar.THURSDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_THU]; break;
-                    case Calendar.FRIDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_FRI]; break;
-                    case Calendar.SATURDAY  : dayCode = Constants.DAY_CODES[Constants.DAY_SAT]; break;
-                    case Calendar.SUNDAY    : dayCode = Constants.DAY_CODES[Constants.DAY_SUN]; break;
+                Placement p = timeBlock2Placement(time);
+                if (p != null) {
+                	instructor.setNotAvailable(p);
+                	getModel().addVariable(p.variable());
                 }
-                int startSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
-                c.setTime(time.getEndTime());
-                int endSlot = (c.get(Calendar.HOUR_OF_DAY)*60 + c.get(Calendar.MINUTE) - Constants.FIRST_SLOT_TIME_MIN) / Constants.SLOT_LENGTH_MIN;
-                if (endSlot == 0 && c.get(Calendar.DAY_OF_MONTH) != d) endSlot = 288; // next day midnight
-                int length = endSlot - startSlot;
-                if (length<=0) continue;
-                TimeLocation timeLocation = new TimeLocation(dayCode, startSlot, length, 0, 0, null, df.format(time.getStartTime()), weekCode, 0);
-                List<TimeLocation> timeLocations = new ArrayList<TimeLocation>(1); timeLocations.add(timeLocation);
-                Placement placement = null;
-                List<RoomLocation> roomLocations = new ArrayList<RoomLocation>(1);
-                if (time instanceof HasRoom && ((HasRoom)time).getLocationId() != null) {
-                	HasRoom r = (HasRoom) time;
-                	RoomConstraint room = iRooms.get(r.getLocationId());
-                	if (room == null && r.getPermanentId() != null)
-                		room = iRoomsByPermId.get(r.getPermanentId());
-                	RoomLocation roomLocation = null;
-                	if (room != null) {
-                		roomLocation = new RoomLocation(room.getResourceId(), room.getName(), room.getBuildingId(), 0, room.getCapacity(), room.getPosX(), room.getPosY(),
-                                room.getIgnoreTooFar(), room);
-                	} else {
-                		roomLocation = new RoomLocation(r.getLocationId(), r.getLabel(), null, 0, 0, r.getCoordinateX(), r.getCoordinateY(), r.isIgnoreTooFar(), null);
-                	}
-                	roomLocations.add(roomLocation);
-                	placement = new Placement(null,timeLocation, roomLocation);
-                } else {
-                	placement = new Placement(null,timeLocation,(RoomLocation)null);
-                }
-                Lecture lecture = new Lecture(
-                        Long.valueOf(--iFakeLectureId), null, null, time.getEventName(), 
-                        timeLocations, roomLocations, placement.getNrRooms(), 
-                        placement, 0, 0, 1.0);
-                lecture.setNote(time.getEventType());
-                Placement p = (Placement)lecture.getInitialAssignment();
-                lecture.setBestAssignment(p, 0);
-                lecture.setCommitted(true);
-                instructor.setNotAvailable(p);
-                getModel().addVariable(p.variable());
             }
         }
     }
