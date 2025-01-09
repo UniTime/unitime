@@ -185,16 +185,19 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 			        }
 				}
 		
+    	Date[] bounds = DatePattern.getBounds(offering.getSessionId());
+    	boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+    	boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+    	Calendar cal = Calendar.getInstance(Locale.US);
+		cal.setTime(new Date());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
+		
 		if (RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
- 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
- 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
  			if (!changePast || ignorePast) {
-				Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
- 				cal.set(Calendar.HOUR_OF_DAY, 0);
- 				cal.set(Calendar.MINUTE, 0);
- 				cal.set(Calendar.SECOND, 0);
- 				cal.set(Calendar.MILLISECOND, 0);
- 				Date today = cal.getTime();
  				return MeetingDAO.getInstance().getSession().createQuery(
 						"select count(mx) from ClassEvent e inner join e.meetings m, Meeting mx inner join mx.event ex " +
 						"where e.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId and type(ex) != ClassEvent and m.approvalStatus = 1 and mx.approvalStatus = 1 and " +
@@ -210,16 +213,6 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 						).setParameter("offeringId", offeringId).setCacheable(true).uniqueResult().intValue() > 0;
 			}
 		} else if (RoomAvailability.getInstance() != null) {
-        	Date[] bounds = DatePattern.getBounds(offering.getSessionId());
- 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
- 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
- 			Calendar cal = Calendar.getInstance(Locale.US);
-    		cal.setTime(new Date());
-    		cal.set(Calendar.HOUR_OF_DAY, 0);
-    		cal.set(Calendar.MINUTE, 0);
-    		cal.set(Calendar.SECOND, 0);
-    		cal.set(Calendar.MILLISECOND, 0);
-    		Date today = cal.getTime();
 			for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
 				for (SchedulingSubpart subpart: config.getSchedulingSubparts())
 					for (Class_ clazz: subpart.getClasses()) {
@@ -251,6 +244,54 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 						}
 					}
 		}
+		
+		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+			for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+				for (Class_ clazz: subpart.getClasses()) {
+					if (clazz.isCancelled() || !clazz.hasLeadInstructor()) continue;
+					if (!clazz.hasLeadInstructorWithUnavailabilities() && !ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue()) continue;
+					Assignment assignment = getAssignment(clazz);
+					if (assignment == null) continue;
+		    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+					for (ClassInstructor ci: clazz.getClassInstructors()) {
+						if (!ci.getLead()) continue;
+						if (RoomAvailability.getInstance() != null) {
+							Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(
+									ci.getInstructor().getUniqueId(),
+									bounds[0], bounds[1], 
+				                    RoomAvailabilityInterface.sClassType);
+							if (times != null && !times.isEmpty()) {
+				    			Collection<TimeBlock> timesToCheck = null;
+				    			if (!changePast || ignorePast) {
+				        			timesToCheck = new Vector();
+				        			for (TimeBlock time: times) {
+				        				if (!time.getEndTime().before(today))
+				        					timesToCheck.add(time);
+				        			}
+				        		} else {
+				        			timesToCheck = times;
+				        		}
+				    			if (period.overlaps(timesToCheck) != null) return true;
+				    		}
+						}
+						if (ci.getInstructor().hasUnavailabilities()) {
+							Collection<TimeBlock> times = ci.getInstructor().listUnavailableDays();
+				    		if (times != null && !times.isEmpty()) {
+				    			Collection<TimeBlock> timesToCheck = null;
+				    			if (!changePast || ignorePast) {
+				        			timesToCheck = new Vector();
+				        			for (TimeBlock time: times) {
+				        				if (!time.getEndTime().before(today))
+				        					timesToCheck.add(time);
+				        			}
+				        		} else {
+				        			timesToCheck = times;
+				        		}
+				        		if (period.overlaps(timesToCheck) != null) return true;
+				    		}
+						}
+					}
+				}
 		
 		return false;
 	}
@@ -348,6 +389,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 		Class_ clazz = Class_DAO.getInstance().get(classId);
 		if (clazz == null || clazz.isCancelled()) return null;
 		Set<TimeBlock> conflicts = new TreeSet<TimeBlock>(new TimeBlockComparator());
+		boolean defaultRoomAvailability = (RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService);
 		
 		Assignment assignment = getAssignment(clazz);
 		Set<Long> ignorePermIds = new HashSet<Long>();
@@ -367,6 +409,7 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
 			for (Location room : assignment.getRooms()) {
 				if (room.isIgnoreRoomCheck()) {
 					ignorePermIds.add(room.getPermanentId());
+				} else if (defaultRoomAvailability) {
 				} else {
 		    		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
 		                    room.getUniqueId(),
@@ -391,7 +434,64 @@ public class CommitedClassAssignmentProxy implements ClassAssignmentProxy {
     		}
         }
 		
-		if (RoomAvailability.getInstance() != null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
+		if (assignment != null && clazz.hasLeadInstructor() &&
+				(clazz.hasLeadInstructorWithUnavailabilities() || ApplicationProperty.RoomAvailabilityIncludeInstructors.isTrue())) {
+        	Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
+ 			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
+ 			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();
+ 			Calendar cal = Calendar.getInstance(Locale.US);
+    		cal.setTime(new Date());
+    		cal.set(Calendar.HOUR_OF_DAY, 0);
+    		cal.set(Calendar.MINUTE, 0);
+    		cal.set(Calendar.SECOND, 0);
+    		cal.set(Calendar.MILLISECOND, 0);
+    		Date today = cal.getTime();
+    		ClassTimeInfo period = new ClassTimeInfo(assignment);
+			for (ClassInstructor ci: clazz.getClassInstructors()) {
+				if (!ci.getLead()) continue;
+				if (RoomAvailability.getInstance() != null) {
+					Collection<TimeBlock> times = RoomAvailability.getInstance().getInstructorAvailability(
+							ci.getInstructor().getUniqueId(),
+							bounds[0], bounds[1], 
+		                    RoomAvailabilityInterface.sClassType);
+					if (times != null && !times.isEmpty()) {
+		    			Collection<TimeBlock> timesToCheck = null;
+		    			if (!changePast || ignorePast) {
+		        			timesToCheck = new Vector();
+		        			for (TimeBlock time: times) {
+		        				if (!time.getEndTime().before(today))
+		        					timesToCheck.add(time);
+		        			}
+		        		} else {
+		        			timesToCheck = times;
+		        		}
+		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
+		        		if (overlaps != null)
+		    				conflicts.addAll(overlaps);
+		    		}
+				}
+				if (ci.getInstructor().hasUnavailabilities()) {
+					Collection<TimeBlock> times = ci.getInstructor().listUnavailableDays();
+		    		if (times != null && !times.isEmpty()) {
+		    			Collection<TimeBlock> timesToCheck = null;
+		    			if (!changePast || ignorePast) {
+		        			timesToCheck = new Vector();
+		        			for (TimeBlock time: times) {
+		        				if (!time.getEndTime().before(today))
+		        					timesToCheck.add(time);
+		        			}
+		        		} else {
+		        			timesToCheck = times;
+		        		}
+		        		List<TimeBlock> overlaps = period.allOverlaps(timesToCheck);
+		        		if (overlaps != null)
+		    				conflicts.addAll(overlaps);
+		    		}
+				}
+			}
+		}
+		
+		if (defaultRoomAvailability) {
 			EventDateMapping.Class2EventDateMap class2eventDateMap = EventDateMapping.getMapping(clazz.getManagingDept().getSessionId());
  			boolean changePast = ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue();
  			boolean ignorePast = ApplicationProperty.ClassAssignmentIgnorePastMeetings.isTrue();

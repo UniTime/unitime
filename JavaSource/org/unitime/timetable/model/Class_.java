@@ -1984,5 +1984,17 @@ public class Class_ extends BaseClass_ {
 			if (p.getRoomIndex() != null && p.getRoomIndex() < getNbrRooms()) return true;
 		return false;
 	}
+	
+	public boolean hasLeadInstructor() {
+		for (ClassInstructor ci: getClassInstructors())
+			if (ci.isLead()) return true;
+		return false;
+	}
+	
+	public boolean hasLeadInstructorWithUnavailabilities() {
+		for (ClassInstructor ci: getClassInstructors())
+			if (ci.isLead() && ci.getInstructor().hasUnavailabilities()) return true;
+		return false;
+	}
 
 }
