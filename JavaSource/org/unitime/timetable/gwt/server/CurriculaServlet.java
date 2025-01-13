@@ -3921,7 +3921,6 @@ public class CurriculaServlet implements CurriculaService {
 	
 	private Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> loadClasfMajorCourse2ll(org.hibernate.Session hibSession, Curriculum c) {
 		String select = "f.code, m.code, co.uniqueId, sum(a.weight)";
-		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String[] checks = new String[] {
 			"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
 			"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.courseNbr=x.courseNbr",
@@ -3931,6 +3930,7 @@ public class CurriculaServlet implements CurriculaService {
 		String group = "f.code, m.code, co.uniqueId";
 		Hashtable<String, Hashtable<String, Hashtable<Long, Integer>>> clasfMajor2course2ll = new Hashtable<String, Hashtable<String, Hashtable<Long,Integer>>>();
 		for (String where: checks) {
+			String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 			List<Object[]> lines = null;
 			if (c.getMajors().isEmpty()) {
 				// students with no major
@@ -3998,7 +3998,6 @@ public class CurriculaServlet implements CurriculaService {
 	
 	private Hashtable<String, Hashtable<CourseInterface, HashMap<String, Map<Long, Double>>>> loadClasfCourseMajor2ll(org.hibernate.Session hibSession, String acadAreaAbbv, Collection<PosMajor> majors, boolean multipleMajors) {
 		String select = "f.code, co.uniqueId, co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr, m.code, s.uniqueId, a.weight";
-		String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 		String[] checks = new String[] {
 				"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is not null and co.permId=x.coursePermId",
 				"x.subjectArea.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv and co.subjectArea.uniqueId = x.subjectArea.uniqueId and x.coursePermId is null and co.courseNbr=x.courseNbr",
@@ -4007,6 +4006,7 @@ public class CurriculaServlet implements CurriculaService {
 		};
 		Hashtable<String, Hashtable<CourseInterface, HashMap<String, Map<Long, Double>>>> clasf2course2ll = new Hashtable<String, Hashtable<CourseInterface,HashMap<String,Map<Long, Double>>>>();
 		for (String where: checks) {
+			String from = "CourseOffering co, LastLikeCourseDemand x inner join x.student s inner join s.areaClasfMajors a inner join a.academicClassification f inner join a.major m";
 			List<Object[]> lines = new ArrayList<Object[]>();
 			if (majors.isEmpty()) {
 				// students with no major
