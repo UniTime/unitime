@@ -62,6 +62,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Curricula</name>
+			<description>
+				<line>Multiple Majors: Fixed a Hibernate issue when setting up a curriculum with multiple majors.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Instructor Scheduling</title>
@@ -72,7 +78,7 @@
 					<line>At Most N Hours A Day: Classes are to be placed in a way that there is no more than given number of hours in any day.</line>
 					<line>Same Weeks: Given classes must be taught during the same weeks (i.e., must have the same date pattern).</line>
 					<line>N Hour Workday: Classes are to be placed in a way that there is no more than given number of hours between the start of the first class and the end of the class one on any day.</line>
-					<line>Mininal Gap Between Classes: Classes need to be placed in a way that there is at least the given number of minutes between any two of them.</line>
+					<line>Minimal Gap Between Classes: Classes need to be placed in a way that there is at least the given number of minutes between any two of them.</line>
 					<line>Max Block: Given classes must be taught in a way there is a break between two blocks of classes.</line>
 					<line>Max Breaks: Limit number of breaks between adjacent classes on a day.</line>
 					<line>Max Days: Limit number of days of a week.</line>
