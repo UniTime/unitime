@@ -2163,15 +2163,21 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	    		ic = iInstructors.get(instructor.getUniqueId());
     	    	}
     	    	if (ic != null) {
-    	    		for (TimeBlock time: instructor.listUnavailableDays()) {
-                		iProgress.debug(ic.getName() + " not available due to " + time + " (" + department.getDeptCode() + ")");
-                        Placement p = timeBlock2Placement(time);
-                        if (p != null) {
-                        	ic.setNotAvailable(p);
-                        	getModel().addVariable(p.variable());
-                        	p.variable().setDepartment(department.getUniqueId());
-                        }
+    	    		boolean skipDuplicateLoad = false;
+    	    		if (department.isExternalManager()) {
+    	    		    for (SolverGroup g: iSolverGroup)
+    	    		        if (g.getDepartments().contains(instructor.getDepartment())) { skipDuplicateLoad = true; break; }
     	    		}
+    	    		if (!skipDuplicateLoad)
+    	    			for (TimeBlock time: instructor.listUnavailableDays()) {
+                    		iProgress.debug(ic.getName() + " not available due to " + time + " (" + department.getDeptCode() + ")");
+                            Placement p = timeBlock2Placement(time);
+                            if (p != null) {
+                            	ic.setNotAvailable(p);
+                            	getModel().addVariable(p.variable());
+                            	p.variable().setDepartment(department.getUniqueId());
+                            }
+        	    		}
     	    	}
     		}
     		incProgress();
