@@ -29,6 +29,21 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Solver: Hard Distance Conflicts</name>
+			<description>
+				<line>Added an ability to make some distance conflicts hard (not allowed).</line>
+				<line>To enable, set the solver parameter Sectioning.HardDistanceConflict to true (defaults to false).</line>
+				<line>A distance conflict is considered hard when:
+					<line>The distance between the two classes (or a class and an unavailability) is HardDistanceConflict.DistanceHardLimitInMinutes or more (defaults to 60).</line>
+					<line>The travel time exceeds the time for travel (break time + gap) by more than HardDistanceConflict.AllowedDistanceInMinutes (defaults to 30).</line>
+				</line>
+				<line>So, in other words, a distance conflict with a travel time of 60 or more minutes will be considered hard if the student has less than 30 minutes to travel between the two classes.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offering Detail: Instructor Requirements</name>
