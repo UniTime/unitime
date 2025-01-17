@@ -463,7 +463,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 											new WebTable.Cell(compare(dates(old), dates(clazz), CmpMode.BOTH_OLD, selected, clazz == null)),
 											new WebTable.Cell(compare(dates(old), dates(clazz), CmpMode.BOTH_NEW, selected, clazz == null)),
 											(clazz != null && clazz.hasDistanceConflict() ? 
-													new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()),
+													new WebTable.IconCell(clazz.hasLongDistanceConflict() ? RESOURCES.longDistantConflict() : RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()),
 															compare(room(old), room(clazz), CmpMode.BOTH_OLD, selected, clazz == null)) : 
 													new WebTable.Cell(compare(room(old), room(clazz), CmpMode.BOTH_OLD, selected, clazz == null))),
 											new WebTable.Cell(compare(room(old), room(clazz), CmpMode.BOTH_NEW, selected, clazz == null)),
@@ -511,7 +511,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 											new WebTable.Cell(compare(dates(old), dates(clazz), CmpMode.BOTH_OLD, false, clazz == null)),
 											new WebTable.Cell(compare(dates(old), dates(clazz), CmpMode.BOTH_NEW, false, clazz == null)),
 											(old != null && old.hasDistanceConflict() ? 
-													new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
+													new WebTable.IconCell(old.hasLongDistanceConflict() ? RESOURCES.longDistantConflict() : RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
 															compare(room(old), room(clazz), CmpMode.BOTH_OLD, false, clazz == null)) : 
 													new WebTable.Cell(compare(room(old), room(clazz), CmpMode.BOTH_OLD, false, clazz == null))),
 											new WebTable.Cell(compare(room(old), room(clazz), CmpMode.BOTH_NEW, false, clazz == null)),
@@ -561,7 +561,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 									new WebTable.Cell(compare(dates(old), dates(clazz), CmpMode.BOTH_OLD, false, clazz == null)),
 									new WebTable.Cell(compare(dates(old), dates(clazz), CmpMode.BOTH_NEW, false, clazz == null)),
 									(old != null && old.hasDistanceConflict() ? 
-											new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
+											new WebTable.IconCell(old.hasLongDistanceConflict() ? RESOURCES.longDistantConflict() : RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
 													compare(room(old), room(clazz), CmpMode.BOTH_OLD, false, clazz == null)) : 
 											new WebTable.Cell(compare(room(old), room(clazz), CmpMode.BOTH_OLD, false, clazz == null))),
 									new WebTable.Cell(compare(room(old), room(clazz), CmpMode.BOTH_NEW, false, clazz == null)),

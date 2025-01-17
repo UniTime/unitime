@@ -33,7 +33,9 @@ import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
+import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -45,6 +47,8 @@ import org.cpsolver.studentsct.model.SctAssignment;
 import org.cpsolver.studentsct.model.Section;
 import org.cpsolver.studentsct.model.Student;
 import org.cpsolver.studentsct.model.StudentGroup;
+import org.cpsolver.studentsct.model.Subpart;
+import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -151,6 +155,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 						return o1.getRequest().compareTo(o2.getRequest());
 					}
 				});
+				TreeSet<String> other = new TreeSet<String>();
 				Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 				List<Enrollment> av = courseRequest.getAvaiableEnrollmentsSkipSameTime(assignment);
 				RequestPriority conflictPriority = null;
@@ -172,7 +177,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 					        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 					        	SctAssignment a = i.next();
-								if (a.isOverlapping(enrl.getAssignments())) {
+								if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(getModel().getStudentQuality(), a, enrl)) {
 									overlaps.add(x);
 									if (x.getRequest() instanceof CourseRequest) {
 										CourseRequest cr = (CourseRequest)x.getRequest();
@@ -183,9 +188,28 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 								}
 					        }
 						}
+						unavailabilities: for (Unavailability unavailability: student.getUnavailabilities()) {
+							for (SctAssignment section: enrl.getAssignments()) {
+								if (HardDistanceConflicts.inConflict(getModel().getStudentQuality(), (Section)section, unavailability)) {
+									other.add(unavailability.getCourseName() + " " + unavailability.getSectionName());
+									continue unavailabilities;
+								}
+							}
+						}
 					}
-					if (!overlaps.isEmpty()) {
-						TreeSet<String> ts = new TreeSet<String>();
+					unavailabilities: for (Unavailability unavailability: student.getUnavailabilities()) {
+						for (Course course: courseRequest.getCourses())
+							for (Config config: course.getOffering().getConfigs())
+								for (Subpart subpart: config.getSubparts())
+									for (Section section: subpart.getSections()) {
+										if (section.getLimit() > 0 && unavailability.isOverlapping(section)) {
+											other.add(unavailability.getCourseName() + " " + unavailability.getSectionName());
+											continue unavailabilities;
+										}
+									}
+					}
+					if (!overlaps.isEmpty() || !other.isEmpty()) {
+						TreeSet<String> ts = new TreeSet<String>(other);
 						for (Enrollment q: overlaps) {
 							if (q.getRequest() instanceof FreeTimeRequest) {
 								ts.add(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));

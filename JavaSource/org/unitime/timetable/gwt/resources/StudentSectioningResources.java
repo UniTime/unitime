@@ -65,6 +65,9 @@ public interface StudentSectioningResources extends ClientBundle {
 	@Source("org/unitime/timetable/gwt/resources/icons/roadrunner16.png")
 	ImageResource distantConflict();
 	
+	@Source("org/unitime/timetable/gwt/resources/icons/car-13.png")
+	ImageResource longDistantConflict();
+	
 	@Source("org/unitime/timetable/gwt/resources/icons/tick.png")
 	ImageResource saved();
 	

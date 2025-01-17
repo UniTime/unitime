@@ -38,6 +38,8 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -579,6 +581,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		CustomClassAttendanceProvider provider = Customization.CustomClassAttendanceProvider.getProvider();
 		StudentClassAttendance attendance = (provider == null ? null : provider.getCustomClassAttendanceForStudent(StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession()), helper, null));
 		Map<Long, Set<String>> wlOverlaps = null;
+		StudentQuality sq = new StudentQuality(server.getDistanceMetric(), server.getConfig()); 
 		
 		float credit = 0f;
 		if (student.getMaxCredit() != null)
@@ -640,6 +643,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									return o1.getRequest().compareTo(o2.getRequest());
 								}
 							});
+							TreeSet<String> other = new TreeSet<String>();
 							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 							Enrollment noConfEnrl = null;
 							int nbrEnrl = 0;
@@ -659,7 +663,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
 										for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 								        	SctAssignment a = i.next();
-											if (a.isOverlapping(enrl.getAssignments())) {
+											if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(sq, a, enrl)) {
 												overlaps = true;
 												overlap.add(x);
 												if (x.getRequest() instanceof CourseRequest) {
@@ -672,12 +676,22 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								        }
 									}
 								}
+								unavailabilities: for (Unavailability unavailability: courseRequest.getStudent().getUnavailabilities()) {
+									for (SctAssignment section: enrl.getAssignments()) {
+										if (HardDistanceConflicts.inConflict(sq, (Section)section, unavailability)) {
+											overlaps = true;
+											String ov = MSG.teachingAssignment(unavailability.getSection().getName());
+											other.add(ov);
+											continue unavailabilities;
+										}
+									}
+								}
 								if (!overlaps && noConfEnrl == null)
 									noConfEnrl = enrl;
 							}
 							if (noConfEnrl == null) {
 								if (wlOverlaps == null) wlOverlaps = new HashMap<Long, Set<String>>();
-								Set<String> overlaps = new TreeSet<String>();
+								Set<String> overlaps = new TreeSet<String>(other);
 								wlOverlaps.put(c.getId(), overlaps);
 								for (Enrollment q: overlap) {
 									if (q.getRequest() instanceof FreeTimeRequest) {
@@ -747,7 +761,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 						        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 						        	SctAssignment a = i.next();
-									if (a.isOverlapping(enrl.getAssignments())) {
+									if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(sq, a, enrl)) {
 										overlap.add(x);
 										if (x.getRequest() instanceof CourseRequest) {
 											CourseRequest cr = (CourseRequest)x.getRequest();
@@ -757,6 +771,15 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 										}
 									}
 						        }
+							}
+							unavailabilities: for (Unavailability unavailability: crq.getStudent().getUnavailabilities()) {
+								for (SctAssignment section: enrl.getAssignments()) {
+									if (HardDistanceConflicts.inConflict(sq, (Section)section, unavailability)) {
+										String ov = MSG.teachingAssignment(unavailability.getSection().getName());
+										ca.addOverlap(ov);
+										continue unavailabilities;
+									}
+								}
 							}
 						}
 						for (Enrollment q: overlap) {
@@ -774,6 +797,16 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									}
 								ca.addOverlap(ov);
 							}
+						}
+						unavailabilities: for (Unavailability unavailability: crq.getStudent().getUnavailabilities()) {
+							for (Config config: crq.getCourse(course.getCourseId()).getOffering().getConfigs())
+								for (Subpart subpart: config.getSubparts())
+									for (Section section: subpart.getSections()) {
+										if (section.getLimit() > 0 && unavailability.isOverlapping(section)) {
+											ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
+											continue unavailabilities;
+										}
+									}
 						}
 						if (avEnrls.isEmpty()) {
 							ca.setNotAvailable(true);
@@ -891,8 +924,10 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 										for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
 											from += k.next().getName() + (k.hasNext() ? ", " : "");
 									}
-									if (otherSection.isDistanceConflict(student, section, m))
+									if (otherSection.isDistanceConflict(student, section, m)) {
 										a.setDistanceConflict(true);
+										a.setLongDistanceConflict(otherSection.isLongDistanceConflict(student, otherSection, m));
+									}
 									if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
 										XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
 										XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
@@ -908,9 +943,10 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 								}
 								if (section.isUnavailabilityDistanceConflict(student, cs.getSection(), um)) {
 									a.setDistanceConflict(true);
+									a.setLongDistanceConflict(section.isUnavailabilityLongDistanceConflict(student, cs.getSection(), um));
 									from = "";
-                                                                        for (Iterator<XRoom> k = cs.getSection().getRooms().iterator(); k.hasNext();)
-                                                                                from += k.next().getName() + (k.hasNext() ? ", " : "");
+									for (Iterator<XRoom> k = cs.getSection().getRooms().iterator(); k.hasNext();)
+										from += k.next().getName() + (k.hasNext() ? ", " : "");
 									dist = section.getDistanceInMinutes(um, cs.getSection().getRooms());
 								}
 							}

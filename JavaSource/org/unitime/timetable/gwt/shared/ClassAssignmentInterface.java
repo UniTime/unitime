@@ -426,6 +426,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private GradeMode iGradeMode = null;
 		private Float iCreditHour = null, iCreditMin = null, iCreditMax = null;
 		private Boolean iCanWaitList = null;
+		private boolean iLongDistanceConflict = false;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -662,6 +663,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean hasDistanceConflict() { return iDistanceConflict; }
 		public void setDistanceConflict(boolean distanceConflict) { iDistanceConflict = distanceConflict; }
+		
+		public boolean hasLongDistanceConflict() { return iLongDistanceConflict; }
+		public void setLongDistanceConflict(boolean longDistanceConflict) { iLongDistanceConflict = longDistanceConflict; }
 		
 		public int getBackToBackDistance() { return iBackToBackDistance; }
 		public void setBackToBackDistance(int backToBackDistance) { iBackToBackDistance = backToBackDistance; }

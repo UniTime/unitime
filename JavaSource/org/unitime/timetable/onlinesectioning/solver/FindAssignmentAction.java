@@ -44,6 +44,7 @@ import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import org.cpsolver.studentsct.model.Choice;
@@ -422,7 +423,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (a.isPinned() || (getSpecialRegistration() == null && a.isSaved()) || getRequest().isNoChange()) {
 								if (!conflict) {
 									for (Section s: requiredOrSavedSections)
-										if (s.isOverlapping(section)) { conflict = true; break; }
+										if (s.isOverlapping(section) || HardDistanceConflicts.inConflict(model.getStudentQuality(), s, section)) { conflict = true; break; }
 									boolean allowOverlap = false;
 									for (Reservation rx: cr.getReservations(cr.getCourse(a.getCourseId()))) {
 										if (rx.isAllowOverlap()) { allowOverlap = true; break; }
@@ -433,7 +434,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 										for (Map.Entry<CourseRequest, Set<Section>> x: requiredOrSavedSectionsForCourse.entrySet()) {
 											if (!allowOverlaps.contains(x.getKey()))
 												for (Section s: x.getValue())
-													if (s.isOverlapping(section)) { conflict = true; break; }
+													if (s.isOverlapping(section) || HardDistanceConflicts.inConflict(model.getStudentQuality(), s, section)) { conflict = true; break; }
 												if (conflict) break;
 										}
 									}
@@ -465,7 +466,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								if (section.getLimit() == 0 && !getRequest().areSpaceConflictsAllowed())
 									conflict = true;
 								for (Section s: requiredOrSavedSections)
-									if (s.isOverlapping(section)) { conflict = true; break; }
+									if (s.isOverlapping(section) || HardDistanceConflicts.inConflict(model.getStudentQuality(), s, section)) { conflict = true; break; }
 								boolean allowOverlap = false;
 								for (Reservation rx: cr.getReservations(cr.getCourse(a.getCourseId()))) {
 									if (rx.isAllowOverlap()) { allowOverlap = true; break; }
@@ -476,7 +477,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									for (Map.Entry<CourseRequest, Set<Section>> x: requiredOrSavedSectionsForCourse.entrySet()) {
 										if (!allowOverlaps.contains(x.getKey()))
 											for (Section s: x.getValue())
-												if (s.isOverlapping(section)) { conflict = true; break; }
+												if (s.isOverlapping(section) || HardDistanceConflicts.inConflict(model.getStudentQuality(), s, section)) { conflict = true; break; }
 											if (conflict) break;
 									}
 								}
@@ -1059,6 +1060,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									return e1.getRequest().compareTo(e2.getRequest());
 								}
 							});
+							TreeSet<String> other = new TreeSet<String>();
 							Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 							Collection<Enrollment> enrls = r.getEnrollmentsSkipSameTime(assignment);
 							Enrollment noConfEnrl = null;
@@ -1078,7 +1080,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 
 							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 							        	SctAssignment a = i.next();
-										if (a.isOverlapping(enrl.getAssignments())) {
+										if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(sq, a, enrl)) {
 											overlaps = true;
 											overlap.add(x);
 											if (x.getRequest() instanceof CourseRequest) {
@@ -1089,6 +1091,16 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											}
 										}
 							        }
+								}
+								unavailabilities: for (Unavailability unavailability: r.getStudent().getUnavailabilities()) {
+									for (SctAssignment section: enrl.getAssignments()) {
+										if (HardDistanceConflicts.inConflict(sq, (Section)section, unavailability)) {
+											overlaps = true;
+											String ov = MSG.teachingAssignment(unavailability.getSection().getName());
+											other.add(ov);
+											continue unavailabilities;
+										}
+									}
 								}
 						        if (!overlaps && noConfEnrl == null)
 									noConfEnrl = enrl;
@@ -1110,6 +1122,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 										ca.addOverlap(ov);
 									}
 								}
+								for (String q: other) ca.addOverlap(q);
 								if (nbrEnrl == 0) {
 									unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
 										for (Config config: course.getOffering().getConfigs())
@@ -1163,7 +1176,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									if (x == enrollment) continue;
 							        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 							        	SctAssignment a = i.next();
-										if (a.isOverlapping(enrl.getAssignments())) {
+										if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(sq, a, enrl)) {
 											overlap.add(x);
 											if (x.getRequest() instanceof CourseRequest) {
 												CourseRequest cr = (CourseRequest)x.getRequest();
@@ -1173,6 +1186,14 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 											}
 										}
 							        }
+								}
+								unavailabilities: for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities()) {
+									for (SctAssignment section: enrl.getAssignments()) {
+										if (HardDistanceConflicts.inConflict(sq, (Section)section, unavailability)) {
+											ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
+											continue unavailabilities;
+										}
+									}
 								}
 							}
 							for (Enrollment q: overlap) {
@@ -1195,7 +1216,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								for (Config config: course.getOffering().getConfigs())
 									for (Subpart subpart: config.getSubparts())
 										for (Section section: subpart.getSections()) {
-											if (unavailability.isOverlapping(section)) {
+											if (section.getLimit() > 0 && unavailability.isOverlapping(section)) {
 												ca.addOverlap(MSG.teachingAssignment(unavailability.getSection().getName()));
 												continue unavailabilities;
 											}
@@ -1380,8 +1401,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
 							}
 							
-							if (sq.hasDistanceConflict(enrollment.getStudent(), s, section) && s.getTime().getStartSlot() < section.getTime().getStartSlot())
+							if (sq.hasDistanceConflict(enrollment.getStudent(), s, section) && s.getTime().getStartSlot() < section.getTime().getStartSlot()) {
 								a.setDistanceConflict(true);
+								a.setLongDistanceConflict(sq.getStudentQualityContext().getDistanceInMinutes(s.getPlacement(), section.getPlacement()) >= sq.getStudentQualityContext().getDistanceMetric().getDistanceLongLimitInMinutes());
+							}
 							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 								overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
 							}
@@ -1390,8 +1413,17 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					for (Unavailability unavailability: enrollment.getStudent().getUnavailabilities())
 						if (section.getTime() != null && unavailability.getTime() != null && section.getTime().hasIntersection(unavailability.getTime()))
 							overlap.add(unavailability.getSection().getName());
-						else if (StudentQuality.Type.UnavailabilityDistance.inConflict(sq.getStudentQualityContext(), section, unavailability))
+						else if (StudentQuality.Type.UnavailabilityDistance.inConflict(sq.getStudentQualityContext(), section, unavailability)) {
 							a.setDistanceConflict(true);
+							int d = sq.getStudentQualityContext().getUnavailabilityDistanceInMinutes(section.getPlacement(), unavailability);
+							a.setLongDistanceConflict(d >= sq.getStudentQualityContext().getUnavailabilityDistanceMetric().getDistanceLongLimitInMinutes());
+							if (d > dist) {
+								dist = d;
+								from = "";
+								for (Iterator<RoomLocation> k = unavailability.getRooms().iterator(); k.hasNext();)
+									from += k.next().getName() + (k.hasNext() ? ", " : "");
+							}
+						}
 					
 					if (!overlap.isEmpty()) {
 						String note = null;
