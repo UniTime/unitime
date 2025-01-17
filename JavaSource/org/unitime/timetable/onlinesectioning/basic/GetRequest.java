@@ -29,6 +29,9 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.Enrollment;
@@ -201,6 +204,8 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 			if (setInactive && server instanceof StudentSolver)
 				setInactive = false;
 			boolean showWaitListPosition = ApplicationProperty.OnlineSchedulingShowWaitListPosition.isTrue();
+			DistanceMetric m = server.getDistanceMetric();
+			StudentQuality sq = new StudentQuality(m, server.getConfig());
 			
 			for (XRequest cd: student.getRequests()) {
 				CourseRequestInterface.Request r = null;
@@ -315,6 +320,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 									return o1.getRequest().compareTo(o2.getRequest());
 								}
 							});
+							TreeSet<String> other = new TreeSet<String>();
 							Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>>();
 							Enrollment noConfEnrl = null;
 							int nbrEnrl = 0;
@@ -334,7 +340,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 									} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
 										for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 								        	SctAssignment a = i.next();
-											if (a.isOverlapping(enrl.getAssignments())) {
+											if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(sq, a, enrl)) {
 												overlaps = true;
 												overlap.add(x);
 												if (x.getRequest() instanceof org.cpsolver.studentsct.model.CourseRequest) {
@@ -345,6 +351,16 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 												}
 											}
 								        }
+									}
+								}
+								unavailabilities: for (Unavailability unavailability: courseRequest.getStudent().getUnavailabilities()) {
+									for (SctAssignment section: enrl.getAssignments()) {
+										if (HardDistanceConflicts.inConflict(sq, (Section)section, unavailability)) {
+											overlaps = true;
+											String ov = MSG.teachingAssignment(unavailability.getSection().getName());
+											other.add(ov);
+											continue unavailabilities;
+										}
 									}
 								}
 								if (!overlaps && noConfEnrl == null)

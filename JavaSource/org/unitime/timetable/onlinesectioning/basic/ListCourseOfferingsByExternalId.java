@@ -55,7 +55,7 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 		if (iQuery != null && iQuery.length() >= 3) {
 			try {
 				for (Object[] courseClassId: helper.getHibSession().createQuery(
-						"select distinct c.uniqueId, z.uniqueId " +
+						"select c.uniqueId, z.uniqueId " +
 						"from Class_ z inner join z.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings c " +
 						"where c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true " +
 						"and ((lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' ' || z.classSuffix) like :q || '%' and :q like lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' %')) or lower(z.classSuffix) like :q || '%') " +

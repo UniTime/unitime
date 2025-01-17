@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import org.cpsolver.studentsct.model.Config;
@@ -504,6 +505,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			CourseRequest request = (CourseRequest)selectedRequest;
 			Course course = request.getCourses().get(0);
 			Collection<Enrollment> avEnrls = request.getAvaiableEnrollmentsSkipSameTime(assignment);
+			TreeSet<String> overlapMessages = new TreeSet<String>();
 			for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 				Enrollment enrl = e.next();
 				for (Request q: enrl.getStudent().getRequests()) {
@@ -512,7 +514,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 			        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 			        	SctAssignment a = i.next();
-						if (a.isOverlapping(enrl.getAssignments())) {
+						if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(model.getStudentQuality(), a, enrl)) {
 							overlap.add(x);
 							if (x.getRequest() instanceof CourseRequest) {
 								CourseRequest cr = (CourseRequest)x.getRequest();
@@ -523,8 +525,25 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 						}
 			        }
 				}
+				unavailabilities: for (Unavailability unavailability: student.getUnavailabilities()) {
+					for (SctAssignment section: enrl.getAssignments()) {
+						if (HardDistanceConflicts.inConflict(model.getStudentQuality(), (Section)section, unavailability)) {
+							overlapMessages.add(unavailability.getCourseName() + " " + unavailability.getSectionName());
+							continue unavailabilities;
+						}
+					}
+				}
 			}
-			TreeSet<String> overlapMessages = new TreeSet<String>();
+			unavailabilities: for (Unavailability unavailability: student.getUnavailabilities()) {
+				for (Config config: course.getOffering().getConfigs())
+					for (Subpart subpart: config.getSubparts())
+						for (Section section: subpart.getSections()) {
+							if (section.getLimit() > 0 && unavailability.isOverlapping(section)) {
+								overlapMessages.add(unavailability.getCourseName() + " " + unavailability.getSectionName());
+								continue unavailabilities;
+							}
+						}
+			}
 			for (Iterator<Enrollment> i = overlap.iterator(); i.hasNext();) {
 				Enrollment q = i.next();
 				String ov = null;

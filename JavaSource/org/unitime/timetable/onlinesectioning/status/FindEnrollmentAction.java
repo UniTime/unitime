@@ -33,6 +33,8 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
+import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -151,6 +153,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 		if (offering == null) return ret;
 		XEnrollments enrollments = server.getEnrollments(course.getOfferingId());
 		DistanceMetric m = server.getDistanceMetric();
+		StudentQuality sq = new StudentQuality(m, server.getConfig());
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
 		OverExpectedCriterion overExp = server.getOverExpectedCriterion();
 		AcademicSessionInfo session = server.getAcademicSession();
@@ -314,6 +317,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 							return o1.getRequest().compareTo(o2.getRequest());
 						}
 					});
+					TreeSet<String> other = new TreeSet<String>();
 					Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<org.cpsolver.studentsct.model.CourseRequest, TreeSet<Section>>();
 					Enrollment noConfEnrl = null;
 					int nbrEnrl = 0;
@@ -333,7 +337,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 							} else if (x != null && x.getAssignments() != null && !x.getAssignments().isEmpty()) {
 								for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 						        	SctAssignment a = i.next();
-									if (a.isOverlapping(enrl.getAssignments())) {
+									if (a.isOverlapping(enrl.getAssignments()) || HardDistanceConflicts.inConflict(sq, a, enrl)) {
 										overlaps = true;
 										overlap.add(x);
 										if (x.getRequest() instanceof org.cpsolver.studentsct.model.CourseRequest) {
@@ -346,11 +350,21 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 						        }
 							}
 						}
+						unavailabilities: for (Unavailability unavailability: courseRequest.getStudent().getUnavailabilities()) {
+							for (SctAssignment section: enrl.getAssignments()) {
+								if (HardDistanceConflicts.inConflict(sq, (Section)section, unavailability)) {
+									overlaps = true;
+									String ov = MSG.teachingAssignment(unavailability.getSection().getName());
+									other.add(ov);
+									continue unavailabilities;
+								}
+							}
+						}
 						if (!overlaps && noConfEnrl == null)
 							noConfEnrl = enrl;
 					}
 					if (noConfEnrl == null) {
-						Set<String> overlaps = new TreeSet<String>();
+						Set<String> overlaps = new TreeSet<String>(other);
 						for (Enrollment q: overlap) {
 							if (q.getRequest() instanceof FreeTimeRequest) {
 								overlaps.add(OnlineSectioningHelper.toString((FreeTimeRequest)q.getRequest()));
@@ -502,9 +516,16 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 									for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
 										from += k.next().getName() + (k.hasNext() ? ", " : "");
 								}
-								if (otherSection.isDistanceConflict(student, section, m))
+								if (otherSection.isDistanceConflict(student, section, m)) {
 									a.setDistanceConflict(true);
+									a.setLongDistanceConflict(otherSection.isLongDistanceConflict(student, section, m));
+								}
 								if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
+									XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
+									XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
+									overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));
+								}
+								if (otherSection.isHardDistanceConflict(student, section, m)) {
 									XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
 									XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
 									overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));

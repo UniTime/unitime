@@ -461,7 +461,7 @@ public class TimeGrid extends Composite {
 			for (Meeting m: meetings) m.setPinned(true);
 		if (row.hasDistanceConflict()) {
 			for (Meeting m: meetings) {
-				Widget dist = new Image(RESOURCES.distantConflict());
+				Widget dist = new Image(row.hasLongDistanceConflict() ? RESOURCES.longDistantConflict() : RESOURCES.distantConflict());
 				if (iPrint) { 
 					dist = new Label(MESSAGES.distanceConflict(row.getBackToBackDistance()));
 					dist.setStyleName("label");

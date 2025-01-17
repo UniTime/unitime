@@ -42,6 +42,18 @@
 				<line>So, in other words, a distance conflict with a travel time of 60 or more minutes will be considered hard if the student has less than 30 minutes to travel between the two classes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Scheduling Assistant, Dashboards: Hard/Long Distance Conflicts</name>
+			<description>
+				<line>Long Distance Conflicts: A distance conflict is considered long, when the travel time is HardDistanceConflict.DistanceLongLimitInMinutes (default to 60) minutes.
+					<line>Long distance conflicts show a different icon in the user interface (a red racing car instead of a road runner).</line>
+				</line>
+				<line>When a student cannot be enrolled in a course due to a hard distance conflict, show a Conflicts with X warning message.
+					<line>Just like when the course is conflicting with some other course X due to time overlaps.</line>
+				</line>
+				<line>Allow for hard distance conflicts when student checks the &quot;Include conflicting suggestions&quot; toggle.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

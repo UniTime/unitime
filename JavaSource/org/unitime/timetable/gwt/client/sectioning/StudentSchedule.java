@@ -1063,7 +1063,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getDatePattern()),
-							(clazz.hasDistanceConflict() ? new WebTable.RoomCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
+							(clazz.hasDistanceConflict() ? new WebTable.RoomCell(clazz.hasLongDistanceConflict() ? RESOURCES.longDistantConflict() : RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(), ", ") : new WebTable.RoomCell(clazz.getRooms(), ", ")),
 							new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
 							new WebTable.Cell(clazz.getParentSection()),
 							clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),

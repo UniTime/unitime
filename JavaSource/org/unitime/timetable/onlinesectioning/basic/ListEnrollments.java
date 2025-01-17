@@ -436,9 +436,16 @@ public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<Class
 											for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
 												from += k.next().getName() + (k.hasNext() ? ", " : "");
 										}
-										if (otherSection.isDistanceConflict(student, section, m))
+										if (otherSection.isDistanceConflict(student, section, m)) {
 											a.setDistanceConflict(true);
+											a.setLongDistanceConflict(otherSection.isLongDistanceConflict(student, section, m));
+										}
 										if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
+											XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
+											XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
+											overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));
+										}
+										if (otherSection.isHardDistanceConflict(student, section, m)) {
 											XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
 											XSubpart otherSubpart = otherOffering.getSubpart(otherSection.getSubpartId());
 											overlap.add(MSG.clazz(otherCourse.getSubjectArea(), otherCourse.getCourseNumber(), otherSubpart.getName(), otherSection.getName(otherCourse.getCourseId())));
