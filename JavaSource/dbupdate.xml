@@ -15696,5 +15696,18 @@
 			%SCHEMA%.solver_parameter_def d2 inner join %SCHEMA%.solver_parameter_group g2 on d2.solver_param_group_id = g2.uniqueid
 			where d2.uniqueid < d1.uniqueid and d1.name = d2.name and g1.param_type = g2.param_type)    	
     	]]></pgsql>
-	</update>		
+	</update>
+	<update version="272" date="21-Jan-2025" comment="Create Missing Primary Keys">
+		<mysql onFail="next">alter table %SCHEMA%.solver_parameter add primary key (uniqueid)</mysql>
+		<mysql onFail="next">alter table %SCHEMA%.room_join_room_feature add primary key (room_id, feature_id)</mysql>
+		<mysql onFail="next">alter table %SCHEMA%.event_join_event_contact add primary key (event_id, event_contact_id)</mysql>
+		<plsql onFail="next">alter table %SCHEMA%.solver_parameter add constraint pk_solver_parameter primary key (uniqueid)</plsql>
+		<plsql onFail="next">alter table %SCHEMA%.room_join_room_feature drop constraint uk_room_join_room_feat_rm_feat</plsql>
+		<plsql onFail="next">alter table %SCHEMA%.room_join_room_feature add constraint pk_room_join_room_feature primary key (room_id, feature_id)</plsql>
+		<plsql onFail="next">alter table %SCHEMA%.event_join_event_contact add constraint pk_event_join_event_contact  primary key (event_id, event_contact_id)</plsql>
+		<plsql onFail="next">alter table %SCHEMA%.student_note add constraint pk_student_note primary key (uniqueid)</plsql>
+		<pgsql onFail="next">alter table %SCHEMA%.solver_parameter add primary key (uniqueid)</pgsql>
+		<pgsql onFail="next">alter table %SCHEMA%.room_join_room_feature add primary key (room_id, feature_id)</pgsql>
+		<pgsql onFail="next">alter table %SCHEMA%.event_join_event_contact add primary key (event_id, event_contact_id)</pgsql>
+	</update>
 </dbupdate>
