@@ -515,6 +515,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 									from = "";
 									for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
 										from += k.next().getName() + (k.hasNext() ? ", " : "");
+									from += " (" + otherEnrollment.getCourseName() + " " + otherSection.getSubpartName() + " " + otherSection.getName(otherEnrollment.getCourseId()) + ")";
 								}
 								if (otherSection.isDistanceConflict(student, section, m)) {
 									a.setDistanceConflict(true);

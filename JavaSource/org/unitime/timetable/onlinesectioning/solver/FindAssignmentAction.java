@@ -1399,6 +1399,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								from = "";
 								for (Iterator<RoomLocation> k = s.getRooms().iterator(); k.hasNext();)
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
+								from += " (" + x.getCourse().getName() + " " + s.getSubpart().getName() + " " + s.getName(x.getCourse().getId()) + ")";
 							}
 							
 							if (sq.hasDistanceConflict(enrollment.getStudent(), s, section) && s.getTime().getStartSlot() < section.getTime().getStartSlot()) {
@@ -1422,6 +1423,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								from = "";
 								for (Iterator<RoomLocation> k = unavailability.getRooms().iterator(); k.hasNext();)
 									from += k.next().getName() + (k.hasNext() ? ", " : "");
+								from += " (" + unavailability.getCourseName() + " " + unavailability.getSectionName() + ")";
 							}
 						}
 					
