@@ -76,6 +76,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 			SHOW_SCHEDULING_PREFS,
 			SR_NOTE_PER_COURSE,
 			CLASS_SCHEDULE_NOT_AVAILABLE,
+			CONFIRM_LONG_TRAVEL,
 			;
 			
 			public long flag() { return 1l << ordinal(); }

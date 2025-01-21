@@ -3616,6 +3616,12 @@ public enum ApplicationProperty {
 	@Description("Student Scheduling Available Sessions: preferred student camus (defaults to academic session initiative); can contain a regular expression in which case student campus is matched to the provided value")
 	@Since(4.8)
 	StudentSchedulingPreferredCampus("unitime.studentScheduling.preferredStudentCampus"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Online Student Scheduling: confirm long travel")
+	@Since(4.8)
+	OnlineSchedulingConfirmLongTravel("unitime.enrollment.confirmLongTravel"),
 	;
 
 	String iKey;

@@ -3204,7 +3204,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	protected Command confirmEnrollment(final Command callback) {
-		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(confirmSectionSwapNoPref(callback)))));
+		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(confirmSectionSwapNoPref(confirmLongTravel(callback))))));
 	}
 
 	protected Command confirmEnrollmentDrop(final Command callback) {
@@ -4170,4 +4170,46 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		return callback;
 	}
+	
+	public Set<String> getCoursesWithLongTravel() {
+		if (iLastAssignment != null) {
+			Set<String> ret = new TreeSet<String>();
+			for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+					if (ca.hasLongDistanceConflict()) {
+						boolean hadBefore = false;
+						if (iSavedAssignment != null)
+							x: for (ClassAssignmentInterface.CourseAssignment x: iSavedAssignment.getCourseAssignments())
+								if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+									for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
+										if (ca.getClassId().equals(y.getClassId()) && ca.hasLongDistanceConflict()) {
+											hadBefore = true; break x;
+										}
+						if (!hadBefore)
+							ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+					}
+				}
+			}
+			return ret;
+		}
+		return null;
+	}
+	
+	protected Command confirmLongTravel(final Command callback) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_LONG_TRAVEL)) {
+			final Set<String> travels = getCoursesWithLongTravel();
+			if (travels != null && !travels.isEmpty()) {
+				return new Command() {
+					@Override
+					public void execute() {
+						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmLongTravel(ToolBox.toString(travels)), callback);
+					}
+				};
+			}
+		}
+		return callback;
+	}
+				
+				
 }
