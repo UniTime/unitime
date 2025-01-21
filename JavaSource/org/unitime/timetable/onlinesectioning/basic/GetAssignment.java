@@ -923,6 +923,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 										from = "";
 										for (Iterator<XRoom> k = otherSection.getRooms().iterator(); k.hasNext();)
 											from += k.next().getName() + (k.hasNext() ? ", " : "");
+										from += " (" + otherEnrollment.getCourseName() + " " + otherSection.getSubpartName() + " " + otherSection.getName(otherEnrollment.getCourseId()) + ")";
 									}
 									if (otherSection.isDistanceConflict(student, section, m)) {
 										a.setDistanceConflict(true);
@@ -947,6 +948,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									from = "";
 									for (Iterator<XRoom> k = cs.getSection().getRooms().iterator(); k.hasNext();)
 										from += k.next().getName() + (k.hasNext() ? ", " : "");
+									from += " (" + cs.getCourse().getCourseName() + " " + cs.getSection().getSubpartName() + " " + cs.getSection().getName(cs.getCourse().getCourseId()) + ")";
 									dist = section.getDistanceInMinutes(um, cs.getSection().getRooms());
 								}
 							}
