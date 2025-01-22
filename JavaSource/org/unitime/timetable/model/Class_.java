@@ -1803,7 +1803,7 @@ public class Class_ extends BaseClass_ {
 		if (other == null) return false;
 		return !getSharedPreferences(other.getUniqueId(), other.getSchedulingSubpart().getUniqueId(),
 				new String[] { PreferenceLevel.sRequired },
-				new String[] { "CAN_SHARE_ROOM", "MEET_WITH"}
+				new String[] { "CAN_SHARE_ROOM", "MEET_WITH", "MEET_WITH_WEEKS"}
 				).isEmpty();
 	}
 	
@@ -1811,7 +1811,7 @@ public class Class_ extends BaseClass_ {
 		if (other == null) return false;
 		return !getSharedPreferences(other.getUniqueId(), other.getSchedulingSubpart().getUniqueId(),
 				new String[] { PreferenceLevel.sRequired },
-				new String[] { "MEET_WITH"}
+				new String[] { "MEET_WITH", "MEET_WITH_WEEKS"}
 				).isEmpty();
 	}
 	
@@ -1819,7 +1819,7 @@ public class Class_ extends BaseClass_ {
 		if (other == null) return false;
 		return !getSharedPreferences(other, null,
 				new String[] { PreferenceLevel.sRequired },
-				new String[] { "CAN_SHARE_ROOM", "MEET_WITH"}
+				new String[] { "CAN_SHARE_ROOM", "MEET_WITH", "MEET_WITH_WEEKS"}
 				).isEmpty();
 	}
 	
@@ -1827,7 +1827,7 @@ public class Class_ extends BaseClass_ {
 		if (other == null) return false;
 		return !getSharedPreferences(other, null,
 				new String[] { PreferenceLevel.sRequired },
-				new String[] { "MEET_WITH"}
+				new String[] { "MEET_WITH", "MEET_WITH_WEEKS"}
 				).isEmpty();
 	}
 	

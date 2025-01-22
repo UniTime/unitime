@@ -209,7 +209,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             DistributionObject distObj = (DistributionObject)i.next();
             DistributionPref dp = distObj.getDistributionPref();
             String ref = dp.getDistributionType().getReference();
-            if (!"MEET_WITH".equals(ref) && !"CAN_SHARE_ROOM".equals(ref)) continue;
+            if (!"MEET_WITH".equals(ref) && !"MEET_WITH_WEEKS".equals(ref) && !"CAN_SHARE_ROOM".equals(ref)) continue;
             if (!PreferenceLevel.sRequired.equals(dp.getPrefLevel().getPrefProlog())) continue;
             for (Iterator j=dp.getDistributionObjects().iterator();j.hasNext();) {
                 DistributionObject distObj2 = (DistributionObject)j.next();
@@ -221,7 +221,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             DistributionObject distObj = (DistributionObject)i.next();
             DistributionPref dp = distObj.getDistributionPref();
             String ref = dp.getDistributionType().getReference();
-            if (!"MEET_WITH".equals(ref) && !"CAN_SHARE_ROOM".equals(ref)) continue;
+            if (!"MEET_WITH".equals(ref) && !"MEET_WITH_WEEKS".equals(ref) && !"CAN_SHARE_ROOM".equals(ref)) continue;
             if (!PreferenceLevel.sRequired.equals(dp.getPrefLevel().getPrefProlog())) continue;
             for (Iterator j=dp.getDistributionObjects().iterator();j.hasNext();) {
                 DistributionObject distObj2 = (DistributionObject)j.next();
@@ -234,7 +234,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             for (Iterator j=instr.getDistributionPreferences().iterator();j.hasNext();) {
                 DistributionPref dp = (DistributionPref)j.next();
                 String ref = dp.getDistributionType().getReference();
-                if (!"MEET_WITH".equals(ref) && !"CAN_SHARE_ROOM".equals(ref)) continue;
+                if (!"MEET_WITH".equals(ref) && !"MEET_WITH_WEEKS".equals(ref) && !"CAN_SHARE_ROOM".equals(ref)) continue;
                 if (!PreferenceLevel.sRequired.equals(dp.getPrefLevel().getPrefProlog())) continue;
                 for (Iterator k=DepartmentalInstructor.getAllForInstructor(instr, instr.getDepartment().getSession().getUniqueId()).iterator();k.hasNext();) {
                     DepartmentalInstructor inst2 = (DepartmentalInstructor)k.next();
