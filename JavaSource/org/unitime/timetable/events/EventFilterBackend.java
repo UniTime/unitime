@@ -362,6 +362,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					date = Formats.getDateFormat(Formats.Pattern.FILTER_DATE).parse(request.getOption("from"));
 				} catch (ParseException p) {}
 			}
+			if ("today".equalsIgnoreCase(request.getOption("from"))) date = today;
 			if (date != null) {
 				query.addParameter("from", "Xfrom", date);
 				query.addWhere("from", "m.meetingDate >= :Xfrom");
@@ -378,6 +379,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				} catch (ParseException p) {}
 				
 			}
+			if ("today".equalsIgnoreCase(request.getOption("to"))) last = today;
 			if (last != null) {
 				query.addParameter("to", "Xto", last);
 				query.addWhere("to", "m.meetingDate <= :Xto");
@@ -637,6 +639,10 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					iWhere += " and (" + where + ")";
 				return this;
 			}
+			public EventInstance where(boolean condition, String where) {
+				if (condition) where(where);
+				return this;
+			}
 			public EventInstance type(String type) { iType = type; return this; }
 			public EventInstance order(String orderBy) { iOrderBy = orderBy; return this; }
 			public EventInstance group(String groupBy) { iGroupBy = groupBy; return this; }
@@ -660,7 +666,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					(iCheckSession ? "" : ", Session z") +
 					" where " +
 					(iCheckSession ?
-						"s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate" : 
+						"s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate" :
 						"z.uniqueId = :sessionId and s.academicInitiative = z.academicInitiative" ) +
 					(iJoinWithLocation ? " and m.locationPermanentId = l.permanentId" : "") +
 					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +

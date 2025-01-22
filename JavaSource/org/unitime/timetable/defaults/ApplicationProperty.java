@@ -3622,6 +3622,12 @@ public enum ApplicationProperty {
 	@Description("Online Student Scheduling: confirm long travel")
 	@Since(4.8)
 	OnlineSchedulingConfirmLongTravel("unitime.enrollment.confirmLongTravel"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events Personal Schedule: when All Sessions flag is used, consider all academic initiatives (avoid same initiative restriction on classes, exams, and course-related events)")
+	@Since(4.8)
+	EventsPersonalScheduleSkipSessionRestriction("unitime.events.personal.allSessions.skipSessionCheck"),
 	;
 
 	String iKey;

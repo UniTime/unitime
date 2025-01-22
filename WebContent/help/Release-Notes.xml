@@ -136,6 +136,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Events Personal Schedule: All Sessions</name>
+			<description>
+				<line>When All Sessions flag is used on personal schedule, added an ability to lookup classes, exams, and course-related events from all academic sessions.</line>
+				<line>By default, only (previous and past) academic sessions with the same academic initiative are considered.</line>
+				<line>Enable by setting unitime.events.personal.allSessions.skipSessionCheck to true (defaults false).</line>
+			</description>
+		</item>
+	</category>	
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Upgrade</name>
