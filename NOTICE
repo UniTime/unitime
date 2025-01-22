@@ -62,7 +62,7 @@ error-prone annotations (error_prone_annotations-2.27.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://errorprone.info/error_prone_annotations
 
-Protocol Buffers [Core] (protobuf-java-4.29.1.jar)
+Protocol Buffers [Core] (protobuf-java-4.29.3.jar)
 	under BSD-3-Clause
 	https://developers.google.com/protocol-buffers/protobuf-java/
 
@@ -106,7 +106,7 @@ Commons BeanUtils (commons-beanutils-1.8.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/beanutils/
 
-Apache Commons Codec (commons-codec-1.17.0.jar)
+Apache Commons Codec (commons-codec-1.17.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-codec/
 
@@ -126,7 +126,7 @@ Non-Blocking Reactive Foundation for the JVM (reactor-core-3.4.34.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/reactor/reactor-core
 
-RxJava (rxjava-3.1.8.jar)
+RxJava (rxjava-3.1.10.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/ReactiveX/RxJava
 
@@ -165,7 +165,7 @@ Joda-Time (joda-time-2.13.0.jar)
 jstl (jstl-1.2.jar)
 	under Common Development and Distribution License (CDDL), Version 1.0
 
-Byte Buddy (without dependencies) (byte-buddy-1.14.18.jar)
+Byte Buddy (without dependencies) (byte-buddy-1.15.11.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://bytebuddy.net/byte-buddy
 
@@ -205,31 +205,31 @@ Apache Commons Math (commons-math3-3.6.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/proper/commons-math/
 
-Apache Commons Text (commons-text-1.12.0.jar)
+Apache Commons Text (commons-text-1.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-text
 
-Apache Log4j API (log4j-api-2.24.1.jar)
+Apache Log4j API (log4j-api-2.24.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-api/
 
-Apache Log4j Core (log4j-core-2.24.1.jar)
+Apache Log4j Core (log4j-core-2.24.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-core/
 
-Apache Log4j Commons Logging Bridge (log4j-jcl-2.24.1.jar)
+Apache Log4j Commons Logging Bridge (log4j-jcl-2.24.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-jcl/
 
-SLF4J 1 Binding for Log4j API (log4j-slf4j-impl-2.24.1.jar)
+SLF4J 1 Binding for Log4j API (log4j-slf4j-impl-2.24.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-slf4j-impl/
 
-Apache Log4j Web (log4j-web-2.24.1.jar)
+Apache Log4j Web (log4j-web-2.24.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/log4j/log4j-web/
 
-Apache POI - Common (poi-5.3.0.jar)
+Apache POI - Common (poi-5.4.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://poi.apache.org/
 
@@ -277,7 +277,7 @@ Angus Mail default provider (jakarta.mail-2.0.3.jar)
 	under EDL 1.0
 	http://eclipse-ee4j.github.io/angus-mail/jakarta.mail
 
-Apache FreeMarker (freemarker-2.3.33.jar)
+Apache FreeMarker (freemarker-2.3.34.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://freemarker.apache.org/
 
@@ -301,51 +301,51 @@ Hibernate Commons Annotations (hibernate-commons-annotations-7.0.3.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.3.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.5.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.6.3.Final.jar)
+Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.6.5.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.6.3.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.6.5.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Infinispan Commons (infinispan-commons-15.0.11.Final.jar)
+Infinispan Commons (infinispan-commons-15.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org
 
-Infinispan Core (infinispan-core-15.0.11.Final.jar)
+Infinispan Core (infinispan-core-15.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org
 
-Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-15.0.11.Final.jar)
+Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-15.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org
 
-Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-15.0.11.Final.jar)
+Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-15.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org
 
-Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-15.0.11.Final.jar)
+Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-15.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org
 
-Infinispan JBoss Marshalling (infinispan-jboss-marshalling-15.0.11.Final.jar)
+Infinispan JBoss Marshalling (infinispan-jboss-marshalling-15.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.infinispan.org
 
-ProtoStream - core (protostream-5.0.10.Final.jar)
+ProtoStream - core (protostream-5.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/infinispan/protostream
 
-ProtoStream - annotation processor (protostream-processor-5.0.10.Final.jar)
+ProtoStream - annotation processor (protostream-processor-5.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/infinispan/protostream
 
-ProtoStream - builtin types (protostream-types-5.0.10.Final.jar)
+ProtoStream - builtin types (protostream-types-5.0.12.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://infinispan.org
 
@@ -365,11 +365,11 @@ JBoss Logging 3 (jboss-logging-3.5.0.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org
 
-JBoss Marshalling API (jboss-marshalling-2.1.4.Final.jar)
+JBoss Marshalling API (jboss-marshalling-2.1.6.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling
 
-JBoss Marshalling River (jboss-marshalling-river-2.1.4.Final.jar)
+JBoss Marshalling River (jboss-marshalling-river-2.1.6.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling-river
 
@@ -377,11 +377,11 @@ JBoss Threads (jboss-threads-3.6.1.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org
 
-JGroups (jgroups-5.4.0.Final.jar)
+JGroups (jgroups-5.4.1.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
-OpenJDK Nashorn (nashorn-core-15.4.jar)
+OpenJDK Nashorn (nashorn-core-15.6.jar)
 	under GPL v2 with the Classpath exception
 	https://github.com/openjdk/nashorn
 
