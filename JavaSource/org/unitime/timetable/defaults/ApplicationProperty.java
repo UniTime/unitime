@@ -3616,6 +3616,12 @@ public enum ApplicationProperty {
 	@Description("Student Scheduling Available Sessions: preferred student camus (defaults to academic session initiative); can contain a regular expression in which case student campus is matched to the provided value")
 	@Since(4.8)
 	StudentSchedulingPreferredCampus("unitime.studentScheduling.preferredStudentCampus"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events Personal Schedule: when All Sessions flag is used, consider all academic initiatives (avoid same initiative restriction on classes, exams, and course-related events)")
+	@Since(4.8)
+	EventsPersonalScheduleSkipSessionRestriction("unitime.events.personal.allSessions.skipSessionCheck"),
 	;
 
 	String iKey;
