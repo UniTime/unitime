@@ -181,7 +181,8 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         });
         for (Iterator i=clazz.getDistributionObjects().iterator();i.hasNext();) {
             DistributionObject dObj = (DistributionObject)i.next();
-            if (!"MEET_WITH".equals(dObj.getDistributionPref().getDistributionType().getReference())) continue;
+            if (!"MEET_WITH".equals(dObj.getDistributionPref().getDistributionType().getReference()) &&
+            	!"MEET_WITH_WEEKS".equals(dObj.getDistributionPref().getDistributionType().getReference())) continue;
             for (Iterator j=dObj.getDistributionPref().getDistributionObjects().iterator();j.hasNext();) {
                 DistributionObject xObj = (DistributionObject)j.next();
                 if (exclude!=null && exclude.contains(xObj.getPrefGroup())) continue;
