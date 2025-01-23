@@ -436,6 +436,12 @@ public class XTime implements Serializable, Externalizable {
     	int fm = getFirstMeeting(session.getDayOfWeekOffset());
     	return fm >= 0 && fm < currentDateIdnex;
     }
+    
+    public boolean isActive(int currentDateIdnex) {
+    	if (currentDateIdnex <= 0) return true; // today is before classes started
+    	int ld = getWeeks().length() - 1; // last day in the date pattern
+    	return currentDateIdnex <= ld; // today is not AFTER the last day in the date pattern
+    }
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
