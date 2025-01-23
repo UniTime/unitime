@@ -21,11 +21,14 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,6 +38,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.restlet.Client;
 import org.restlet.Context;
 import org.restlet.data.ChallengeScheme;
@@ -274,6 +279,21 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return ApplicationProperties.getProperty("banner.xe.resetGradeModes", "H|Q|R");
 	}
 	
+	protected boolean isCheckDropLastActiveClass(OnlineSectioningHelper helper) {
+		if (isBannerAdmin(helper)) {
+			return "true".equalsIgnoreCase(
+					ApplicationProperties.getProperty("banner.xe.dropLastActiveClassAdminCheck",
+					ApplicationProperties.getProperty("banner.xe.dropLastActiveClassCheck", "false")));
+		} else {
+			return "true".equalsIgnoreCase(
+					ApplicationProperties.getProperty("banner.xe.dropLastActiveClassCheck", "false"));
+		}
+	}
+	
+	protected String getDropLastActiveClassMessage() {
+		return ApplicationProperties.getProperty("banner.xe.dropLastActiveClassMessage", "Dropping last active class is not allowed.");
+	}
+	
 	protected Gson getGson(OnlineSectioningHelper helper) {
 		GsonBuilder builder = new GsonBuilder()
 		.registerTypeAdapter(DateTime.class, new JsonSerializer<DateTime>() {
@@ -493,6 +513,109 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 	
 	@Override
 	public List<EnrollmentFailure> enroll(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student, List<EnrollmentRequest> enrollments, Set<Long> lockedCourses, GradeModes gradeModes, boolean hasWaitListedCourses) throws SectioningException {
+		if (isCheckDropLastActiveClass(helper)) { // drop last active class is enabled
+			int currentDateIndex = Days.daysBetween(new LocalDate(server.getAcademicSession().getDatePatternFirstDate()), new LocalDate()).getDays();
+			if (currentDateIndex >= 0) { // skip checking when before all the date pattern can even start
+				
+				// check if the new schedule has an active class
+				boolean hasActiveClass = false;
+				boolean dropEverything = true;
+				if (enrollments != null) {
+					e: for (EnrollmentRequest e: enrollments) {
+						XCourse course = e.getCourse();
+						if (course != null && e.getSections() != null)
+							for (XSection section: e.getSections()) {
+								dropEverything = false;
+								if (section.getTime().isActive(currentDateIndex)) {
+									hasActiveClass = true; break e;
+								}
+							}
+					}
+				}
+				
+				if (!hasActiveClass) {
+					// no active class after the change, how about before:
+					boolean hadActiveClass = false;
+					request: for (XRequest request: student.getRequests()) {
+						if (request instanceof XCourseRequest && ((XCourseRequest)request).getEnrollment() != null) {
+							XEnrollment enrollment = ((XCourseRequest)request).getEnrollment();
+							for (XSection section: server.getOffering(enrollment.getOfferingId()).getSections(enrollment)) {
+								if (section.getTime().isActive(currentDateIndex)) {
+									hadActiveClass = true;
+									break request;
+								}
+							}
+						}
+					}
+					if (hadActiveClass) {
+						// had active class before, but not any more >> potential problem
+						
+						// need to check other sessions -- may have an active class there
+						Calendar cal = Calendar.getInstance(Locale.US);
+						cal.set(Calendar.HOUR_OF_DAY, 0);
+						cal.set(Calendar.MINUTE, 0);
+						cal.set(Calendar.SECOND, 0);
+						cal.set(Calendar.MILLISECOND, 0);
+						Date today = cal.getTime();
+						if (dropEverything) { // if dropping everything, check other sessions for some classes
+							Long otherEnrolled = helper.getHibSession().createQuery(
+									"select count(e) from " +
+									"  StudentClassEnrollment e inner join e.student st inner join st.session s, " +
+									"  Session z " +
+									"where " +
+									"  st.externalUniqueId = :studentId and " +
+									"  z.uniqueId = :sessionId and s != z and s.academicTerm = z.academicTerm and s.academicYear = z.academicYear ",
+									Long.class)
+							.setParameter("sessionId", server.getAcademicSession().getUniqueId())
+							.setParameter("studentId", student.getExternalId())
+							.uniqueResult();
+							if (otherEnrolled > 0) dropEverything = false;
+						}
+						if (!dropEverything) {
+							Long otherActive = helper.getHibSession().createQuery(
+									"select count(c) from " +
+									"  StudentClassEnrollment e inner join e.student st inner join st.session s " +
+									"  inner join e.clazz c inner join c.schedulingSubpart ss, " +
+									"  DatePattern dp, Session z " +
+									"where " +
+									"  (c.datePattern = dp or (c.datePattern is null and ss.datePattern = dp) or (c.datePattern is null and ss.datePattern is null and dp = s.defaultDatePattern)) and " +
+									"  adddate(dp.session.sessionBeginDateTime, -dp.offset + length(dp.pattern) - 1) >= :today and " +
+									"  st.externalUniqueId = :studentId and " +
+									"  z.uniqueId = :sessionId and s != z and s.academicTerm = z.academicTerm and s.academicYear = z.academicYear ",
+									Long.class)
+							.setParameter("sessionId", server.getAcademicSession().getUniqueId())
+							.setParameter("today", today)
+							.setParameter("studentId", student.getExternalId())
+							.uniqueResult();
+							if (otherActive > 0) hasActiveClass = true;
+						}
+						
+						/* // alternative way using other online solver servers
+						SolverServer solverServer = SolverServerImplementation.getInstance();
+						if (solverServer != null) {
+							Collection<XClassEnrollment> unavailabilities = solverServer.getUnavailabilitiesFromOtherSessions(server.getAcademicSession(), student.getExternalId());
+							if (unavailabilities != null) {
+								e: for (XClassEnrollment e: unavailabilities) {
+									dropEverything = false;
+									if (e.getShiftedSection().getTime().isActive(currentDateIndex)) {
+										hasActiveClass = true;
+										break e;
+									}
+								}
+							}
+						}
+						*/
+						
+						// had an active class before (in this session) but not any more (anywhere) >> throw an error
+						// exclude the case when the student is trying to drop everything >> left on Banner to check
+						if (!hasActiveClass && hadActiveClass && !dropEverything) {
+							throw new SectioningException(getDropLastActiveClassMessage());
+						}
+					}
+				}
+			}
+		}
+		
 		ClientResource resource = null;
 		try {
 			String pin = helper.getPin();
