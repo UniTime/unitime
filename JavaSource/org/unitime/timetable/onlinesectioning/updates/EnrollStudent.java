@@ -784,6 +784,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 				helper.getHibSession().merge(student);
 				
 				if (wlMode == WaitListMode.WaitList) {
+					helper.getHibSession().flush();
 					student.resetWaitLists(
 							WaitList.WaitListType.SCHEDULING_ASSISTANT,
 							helper.getUser().getExternalId(),
