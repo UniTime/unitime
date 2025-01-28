@@ -547,6 +547,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 	public static class EventQuery {
 		private Long iSessionId;
 		private boolean iCheckSession = true;
+		private boolean iSameInitiative = true;
 		private Map<String, String> iFrom = new HashMap<String, String>();
 		private Map<String, String> iWhere = new HashMap<String, String>();
 		private Map<String, Map<String, Object>> iParams = new HashMap<String, Map<String,Object>>();
@@ -556,6 +557,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		}
 		
 		public void checkSession(boolean check) { iCheckSession = check; }
+		public void sameInitiative(boolean check) { iSameInitiative = check; }
 		
 		public void addFrom(String option, String from) { iFrom.put(option, from); }
 		public void addWhere(String option, String where) { iWhere.put(option, where); }
@@ -667,7 +669,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					" where " +
 					(iCheckSession ?
 						"s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate" :
-						"z.uniqueId = :sessionId and s.academicInitiative = z.academicInitiative" ) +
+						"z.uniqueId = :sessionId" + (iSameInitiative ? " and s.academicInitiative = z.academicInitiative" : "")) +
 					(iJoinWithLocation ? " and m.locationPermanentId = l.permanentId" : "") +
 					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
 					(iGroupBy == null ? "" : " group by " + iGroupBy) +
