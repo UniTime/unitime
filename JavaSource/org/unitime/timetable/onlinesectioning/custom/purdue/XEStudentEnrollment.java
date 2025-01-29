@@ -526,7 +526,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						if (course != null && e.getSections() != null)
 							for (XSection section: e.getSections()) {
 								dropEverything = false;
-								if (section.getTime().isActive(currentDateIndex)) {
+								if (section.getTime().isActive(currentDateIndex) && !section.isCancelled()) {
 									hasActiveClass = true; break e;
 								}
 							}
@@ -540,7 +540,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 						if (request instanceof XCourseRequest && ((XCourseRequest)request).getEnrollment() != null) {
 							XEnrollment enrollment = ((XCourseRequest)request).getEnrollment();
 							for (XSection section: server.getOffering(enrollment.getOfferingId()).getSections(enrollment)) {
-								if (section.getTime().isActive(currentDateIndex)) {
+								if (section.getTime().isActive(currentDateIndex) && !section.isCancelled()) {
 									hadActiveClass = true;
 									break request;
 								}
@@ -563,7 +563,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 									"  StudentClassEnrollment e inner join e.student st inner join st.session s, " +
 									"  Session z " +
 									"where " +
-									"  st.externalUniqueId = :studentId and " +
+									"  st.externalUniqueId = :studentId and e.clazz.cancelled = false and " +
 									"  z.uniqueId = :sessionId and s != z and s.academicTerm = z.academicTerm and s.academicYear = z.academicYear ",
 									Long.class)
 							.setParameter("sessionId", server.getAcademicSession().getUniqueId())
@@ -580,7 +580,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 									"where " +
 									"  (c.datePattern = dp or (c.datePattern is null and ss.datePattern = dp) or (c.datePattern is null and ss.datePattern is null and dp = s.defaultDatePattern)) and " +
 									"  adddate(dp.session.sessionBeginDateTime, -dp.offset + length(dp.pattern) - 1) >= :today and " +
-									"  st.externalUniqueId = :studentId and " +
+									"  st.externalUniqueId = :studentId and c.cancelled = false and " +
 									"  z.uniqueId = :sessionId and s != z and s.academicTerm = z.academicTerm and s.academicYear = z.academicYear ",
 									Long.class)
 							.setParameter("sessionId", server.getAcademicSession().getUniqueId())
