@@ -31,6 +31,7 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.assignment.DefaultSingleAssignment;
 import org.cpsolver.ifs.util.ToolBox;
+import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
@@ -248,6 +249,25 @@ public class SectioningRequest implements LastSectionProvider {
 		enrollments: for (Enrollment e: request.getAvaiableEnrollments(assignment)) {
 			// only consider enrollments of the offering that is being checked
 			if (e.getOffering().getId() != getOffering().getOfferingId()) continue;
+			
+			// check for hard distance conflicts
+			if (sq != null && sq.getDistanceMetric().isHardDistanceConflictsEnabled()) {
+				for (Section s: e.getSections()) {
+					for (Request other: request.getStudent().getRequests()) {
+						if (other.equals(request)) continue;
+						Enrollment x = assignment.getValue(other);
+						if (x != null && x.getCourse() != null && HardDistanceConflicts.inConflict(sq, s, x))
+							continue enrollments;
+					}
+				}
+			}
+			if (sq != null && sq.getStudentQualityContext().getUnavailabilityDistanceMetric().isHardDistanceConflictsEnabled() && !e.getStudent().getUnavailabilities().isEmpty()) {
+				for (Section s: e.getSections()) {
+					for (Unavailability u: e.getStudent().getUnavailabilities())
+						if (HardDistanceConflicts.inConflict(sq, s, u))
+							continue enrollments;
+				}
+			}
 
 			// avoid past sections
 			if (currentDateIndex != null)
