@@ -296,6 +296,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		event.addCourseName(courseOffering.getCourseName());
     		event.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
     		event.setDeptCode(courseOffering.getDepartment().getDeptCode());
+    		event.setSession(EventLookupBackend.toSessionInterface(courseOffering.getInstructionalOffering().getSession()));
     		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
     		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
     			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
@@ -321,6 +322,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		ExamEvent xe = (e instanceof ExamEvent ? (ExamEvent)e : ExamEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		event.setEnrollment(xe.getExam().countStudents());
     		event.setMaxCapacity(xe.getExam().getSize());
+    		event.setSession(EventLookupBackend.toSessionInterface(xe.getExam().getSession()));
     		Set<Long> addedInstructorIds = new HashSet<Long>();
     		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 				ContactInterface instructor = new ContactInterface();
@@ -607,6 +609,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						event.addCoordinator(coordinator);
 		    		}
 				}
+	    		if (event.getSession() == null)
+	    			event.setSession(EventLookupBackend.toSessionInterface(owner.getCourse().getInstructionalOffering().getSession()));
 			}
 			event.setEnrollment(enrl);
 			event.setMaxCapacity(limit);
@@ -725,6 +729,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						meeting.addConflict(conflict);
 					}
 				}
+	    		if (event.getSession() == null)
+	    			event.setSession(EventLookupBackend.toSessionInterface(m.getLocation().getSession()));
 			}
 			Set<Meeting> overlapsThisMeeting = overlaps.get(m.getUniqueId());
 			if (overlapsThisMeeting != null && m.getLocation() != null && !m.getLocation().isIgnoreRoomCheck()) {
@@ -1029,6 +1035,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		event.addCourseName(correctedOffering.getCourseName());
 		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 		event.setDeptCode(correctedOffering.getDepartment().getDeptCode());
+		event.setSession(EventLookupBackend.toSessionInterface(correctedOffering.getInstructionalOffering().getSession()));
 		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 		if (clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod() != null)
 			event.setInstruction(event.getInstruction() + " (" + clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalMethod().getLabel() + ")");
