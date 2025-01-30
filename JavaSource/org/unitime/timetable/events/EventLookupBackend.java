@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
@@ -1613,6 +1614,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		event.setDeptCode(correctedOffering.getDepartment().getDeptCode());
+				    		event.setSession(toSessionInterface(correctedOffering.getInstructionalOffering().getSession()));
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 				    		boolean instructing = false;
 				    		if (request.getResourceType() == ResourceType.PERSON && request.getResourceExternalId() != null) {
@@ -1708,6 +1710,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		event.setEnrollment(xe.getExam().countStudents());
 				    		event.setMaxCapacity(xe.getExam().getSize());
+				    		event.setSession(toSessionInterface(xe.getExam().getSession()));
 				    		if (groupEnrollments) {
 								int enrl = 0;
 								Set<Long> studentIds = xe.getExam().getStudentIds();
@@ -1863,7 +1866,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    					break;
 				    				}
 			    				}
-			    			}
+								if (event.getSession() == null)
+									event.setSession(toSessionInterface(owner.getCourse().getInstructionalOffering().getSession()));		    			}
 							event.setEnrollment(enrl);
 							event.setMaxCapacity(cap);
 				    	}
@@ -1932,6 +1936,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						location.setPartitionParentId(m.getLocation().getPartitionParentId());
 						location.setEventEmail(m.getLocation().getEventEmail());
 						meeting.setLocation(location);
+						if (event.getSession() == null)
+							event.setSession(toSessionInterface(m.getLocation().getSession()));
 					}
 					if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
 						if (m.getLocation() != null && m.getLocation().getEventAvailability() != null && m.getLocation().getEventAvailability().length() == Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) {
@@ -2761,6 +2767,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		event.setClassId(clazz.getUniqueId());
 					    		event.setSessionId(clazz.getSessionId());
 					    		event.setDeptCode(correctedOffering.getDepartment().getDeptCode());
+					    		event.setSession(toSessionInterface(correctedOffering.getInstructionalOffering().getSession()));
 					    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 					    		switch (request.getResourceType()) {
 					    		case CURRICULUM:
@@ -2983,6 +2990,15 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
         		} while (!calendar.getTime().after(location.getSession().getEventEndDate()));
         		startTime = endTime;
         	}
+		return ret;
+	}
+	
+	protected static SessionInterface toSessionInterface(Session session) {
+		SessionInterface ret = new SessionInterface();
+		ret.setId(session.getUniqueId());
+		ret.setTerm(session.getAcademicTerm());
+		ret.setYear(session.getAcademicYear());
+		ret.setInitiative(session.getAcademicInitiative());
 		return ret;
 	}
 

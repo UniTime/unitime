@@ -76,6 +76,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private Set<EventServiceProviderInterface> iRequestedServices = null;
 	private Long iClassId = null, iSessionId = null;
 	private String iDeptCode = null;
+	private SessionInterface iSession = null;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("Room Timetable","room", true),
@@ -397,6 +398,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	public SessionInterface getSession() { return iSession; }
+	public void setSession(SessionInterface session) { iSession = session; }
 	public Long getClassId() { return iClassId; }
 	public void setClassId(Long classId) { iClassId = classId; }
 	
@@ -452,6 +455,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		conflict.setInstructionType(event.getInstructionType());
 		conflict.setSectionNumber(event.getSectionNumber());
 		conflict.setDeptCode(event.getDeptCode());
+		conflict.setSession(event.getSession());
 		if (event.hasCourseIds())
 			for (Long courseId: event.getCourseIds())
 				conflict.addCourseId(courseId);
@@ -2843,5 +2847,29 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public Set<Long> getStudentIds() { return iStudentIds; }
 		public void setStudentIds(Set<Long> studentIds) { iStudentIds = studentIds; }
+	}
+	
+	public static class SessionInterface implements IsSerializable {
+    	private Long iSessionId = null;
+    	private String iTerm;
+    	private String iYear;
+    	private String iInitiative;
+    	
+    	public SessionInterface() {}
+    	public SessionInterface(Long id, String term, String year, String initiative) {
+    		iSessionId = id;
+    		iTerm = term;
+    		iYear = year;
+    		iInitiative = initiative;
+    	}
+    	
+    	public Long getId() { return iSessionId; }
+    	public void setId(Long id) { iSessionId = id; }
+    	public String getTerm() { return iTerm; }
+    	public void setTerm(String term) { iTerm = term; }
+    	public String getYear() { return iYear; }
+    	public void setYear(String year) { iYear = year; }
+    	public String getInitiative() { return iInitiative; }
+    	public void setInitiative(String initiative) { iInitiative = initiative; }
 	}
 }
