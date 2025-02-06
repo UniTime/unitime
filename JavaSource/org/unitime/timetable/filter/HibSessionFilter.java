@@ -21,12 +21,12 @@ package org.unitime.timetable.filter;
 
 import java.io.IOException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import org.cpsolver.ifs.util.JProf;
 import org.unitime.commons.Debug;
@@ -45,7 +45,7 @@ public class HibSessionFilter implements Filter {
 	private FilterConfig filterConfig = null;
 	
 	/**
-	 * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
+	 * @see jakarta.servlet.Filter#init(jakarta.servlet.FilterConfig)
 	 */
 	public void init(FilterConfig arg0) throws ServletException {
 		filterConfig = arg0;
@@ -53,7 +53,7 @@ public class HibSessionFilter implements Filter {
 	}
 
 	/**
-	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+	 * @see jakarta.servlet.Filter#doFilter(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
 	 */
 	public void doFilter(
 	        ServletRequest request, 
@@ -84,7 +84,7 @@ public class HibSessionFilter implements Filter {
 	}
 
 	/**
-	 * @see javax.servlet.Filter#destroy()
+	 * @see jakarta.servlet.Filter#destroy()
 	 */
 	public void destroy() {
 	    this.filterConfig = null;

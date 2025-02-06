@@ -15,5 +15,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.12.1.jar"/>
+	<classpathentry kind="lib" path="3rd_party/jakarta.servlet.jsp-api-3.1.1.jar"/>
+	<classpathentry kind="lib" path="3rd_party/jakarta.servlet-api-6.0.0.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>

@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.events;
 
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcResponse;

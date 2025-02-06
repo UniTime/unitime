@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import javax.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.JspWriter;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.htmlgen.TableCell;

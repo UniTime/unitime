@@ -34,7 +34,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;

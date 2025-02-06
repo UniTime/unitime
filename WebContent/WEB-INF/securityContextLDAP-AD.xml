@@ -25,7 +25,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/security
-		http://www.springframework.org/schema/security/spring-security-5.8.xsd">
+		http://www.springframework.org/schema/security/spring-security-6.4.xsd">
 	
 	<http use-expressions="true">
 		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
@@ -41,7 +41,6 @@
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
 		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="/login.action"/>
-		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>

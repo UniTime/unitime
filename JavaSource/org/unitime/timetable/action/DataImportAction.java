@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,11 +33,13 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
+import org.apache.struts2.action.UploadedFilesAware;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.InterceptorRef;
 import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.dispatcher.multipart.UploadedFile;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.cpsolver.ifs.util.Progress;
@@ -74,14 +77,14 @@ import org.unitime.timetable.util.queue.QueueItem;
 		@Result(name="display", type = "tiles", location="dataImport.tiles"),
 		@Result(name="input", type = "tiles", location="dataImport.tiles"),
 	}, interceptorRefs = {
-		@InterceptorRef(value = "fileUpload"),
+		@InterceptorRef(value = "actionFileUpload"),
 		@InterceptorRef(value = "defaultStack")
 	})
 @TilesDefinition(name = "dataImport.tiles", extend = "baseLayout", putAttributes = {
 		@TilesPutAttribute(name = "title", value = "Data Exchange"),
 		@TilesPutAttribute(name = "body", value = "/admin/dataImport.jsp")
 	})
-public class DataImportAction extends UniTimeAction<DataImportForm> {
+public class DataImportAction extends UniTimeAction<DataImportForm> implements UploadedFilesAware {
 	private static final long serialVersionUID = 3163553928537551939L;
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private String log;
@@ -97,9 +100,22 @@ public class DataImportAction extends UniTimeAction<DataImportForm> {
 	public String getOrd() { return ord; }
 	public void setOrd(String ord) { this.ord = ord; }
 	
+	@Override
+	public void withUploadedFiles(List<UploadedFile> uploadedFiles) {
+		if (form == null)
+			form = new DataImportForm();
+		if (!uploadedFiles.isEmpty()) {
+			form.setFile(new File(uploadedFiles.get(0).getAbsolutePath()));
+			form.setFileFileName(uploadedFiles.get(0).getOriginalName());
+			form.setFileContentType(uploadedFiles.get(0).getContentType());
+		}
+	}
+	
 	public String execute() throws Exception {
 		if (form == null) {
 			form = new DataImportForm();
+			form.setAddress(sessionContext.getUser().getEmail());
+		} else if (form.getAddress() == null) {
 			form.setAddress(sessionContext.getUser().getEmail());
 		}
 		

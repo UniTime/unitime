@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;

@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.form;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.unitime.timetable.action.UniTimeAction;
 

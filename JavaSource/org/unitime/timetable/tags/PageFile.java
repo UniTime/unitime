@@ -21,8 +21,8 @@ package org.unitime.timetable.tags;
 
 import java.io.IOException;
 
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.BodyTagSupport;
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtMessages;

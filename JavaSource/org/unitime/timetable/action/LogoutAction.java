@@ -21,7 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.Enumeration;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;

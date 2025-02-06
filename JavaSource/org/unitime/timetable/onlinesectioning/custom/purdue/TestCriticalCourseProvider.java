@@ -21,7 +21,7 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.server.Query;

@@ -21,7 +21,7 @@ package org.unitime.timetable.util;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;

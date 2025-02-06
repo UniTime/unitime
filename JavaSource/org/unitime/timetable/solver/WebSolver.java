@@ -21,7 +21,7 @@ package org.unitime.timetable.solver;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -42,7 +42,7 @@ public class WebSolver {
 		return (SolverService<SolverProxy>)applicationContext.getBean("courseTimetablingSolverService");
 	}
 
-    public static SolverProxy getSolver(javax.servlet.http.HttpSession session) {
+    public static SolverProxy getSolver(jakarta.servlet.http.HttpSession session) {
     	return getCourseTimetablingSolverService(session).getSolver();
     }
     
@@ -51,7 +51,7 @@ public class WebSolver {
 		return (SolverService<ExamSolverProxy>)applicationContext.getBean("examinationSolverService");
 	}
 
-    public static ExamSolverProxy getExamSolver(javax.servlet.http.HttpSession session) {
+    public static ExamSolverProxy getExamSolver(jakarta.servlet.http.HttpSession session) {
     	return getExaminationSolverService(session).getSolver();
     }
     
@@ -60,7 +60,7 @@ public class WebSolver {
 		return (SolverService<StudentSolverProxy>)applicationContext.getBean("studentSectioningSolverService");
 	}
 
-    public static StudentSolverProxy getStudentSolver(javax.servlet.http.HttpSession session) {
+    public static StudentSolverProxy getStudentSolver(jakarta.servlet.http.HttpSession session) {
     	return getStudentSectioningSolverService(session).getSolver();
     }
     

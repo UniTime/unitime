@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.tags;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.jsp.tagext.TagSupport;
 
 import org.unitime.timetable.webutil.BackTracker;
 

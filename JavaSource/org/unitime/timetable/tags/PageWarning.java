@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.tags;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.jsp.tagext.TagSupport;
 
 import org.apache.struts2.ServletActionContext;
 import org.unitime.commons.Debug;
@@ -71,7 +71,7 @@ public class PageWarning extends TagSupport {
 				String warning = ApplicationProperties.getProperty(getPrefix() + page);
 				if (warning != null && !warning.isEmpty()) return warning;
 			}
-			if (ServletActionContext.getContext() != null) {
+			if (ServletActionContext.getActionContext() != null) {
 				String action = ServletActionContext.getActionMapping().getName();
 				String warning = ApplicationProperties.getProperty(getPrefix() + action);
 				if (warning != null && !warning.isEmpty()) return warning;

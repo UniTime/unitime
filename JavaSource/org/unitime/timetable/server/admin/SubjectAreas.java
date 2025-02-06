@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -416,7 +417,7 @@ public class SubjectAreas implements AdminTable {
 	
 	@Override
 	@PreAuthorize("checkPermission(#record.uniqueId, 'SubjectAreaEdit')")
-	public void update(Record record, SessionContext context, Session hibSession) {
+	public void update(@P("record") Record record, SessionContext context, Session hibSession) {
 		update(SubjectAreaDAO.getInstance().get(record.getUniqueId(), hibSession), record, context, hibSession);
 	}
 
@@ -463,7 +464,7 @@ public class SubjectAreas implements AdminTable {
 	
 	@Override
 	@PreAuthorize("checkPermission(#record.uniqueId, 'SubjectAreaDelete')")
-	public void delete(Record record, SessionContext context, Session hibSession) {
+	public void delete(@P("record") Record record, SessionContext context, Session hibSession) {
 		delete(SubjectAreaDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
 	}
 }

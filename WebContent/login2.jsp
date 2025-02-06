@@ -24,7 +24,7 @@
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <loc:bundle name="CourseMessages">
 <html>
 <head>

@@ -650,7 +650,7 @@ public class WebTable {
      * @param code table code
      * @param order new order (index of ordered column, negative if desc.)
      */
-    public static void setOrder(javax.servlet.http.HttpSession session, String code, String order) {
+    public static void setOrder(jakarta.servlet.http.HttpSession session, String code, String order) {
         if (order==null) return;
         Hashtable orderInfo = (Hashtable)session.getAttribute("OrderInfo");
         if (orderInfo==null) {

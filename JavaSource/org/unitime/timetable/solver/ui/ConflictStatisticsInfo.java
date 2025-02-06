@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.JspWriter;
 
 import org.cpsolver.coursett.constraint.ClassLimitConstraint;
 import org.cpsolver.coursett.constraint.DepartmentSpreadConstraint;

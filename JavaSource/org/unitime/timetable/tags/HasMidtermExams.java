@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.tags;
 
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.jsp.tagext.TagSupport;
 
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.security.SessionContext;

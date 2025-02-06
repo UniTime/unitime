@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -856,7 +857,7 @@ public class ReservationServlet implements ReservationService {
 
 	@Override
 	@PreAuthorize("checkPermission(#reservationId, 'Reservation', 'ReservationEdit')")
-	public ReservationInterface getReservation(Long reservationId) throws ReservationException, PageAccessException {
+	public ReservationInterface getReservation(@P("reservationId") Long reservationId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			ReservationInterface r;
@@ -887,7 +888,7 @@ public class ReservationServlet implements ReservationService {
 	
 	@Override
 	@PreAuthorize("(#reservation.id != null and checkPermission(#reservation.id, 'Reservation', 'ReservationEdit')) or (#reservation.id == null and checkPermission(#reservation.offering.id, 'InstructionalOffering', 'ReservationOffering') and checkPermission('ReservationAdd'))")
-	public Long save(ReservationInterface reservation) throws ReservationException, PageAccessException {
+	public Long save(@P("reservation") ReservationInterface reservation) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			UserContext user = getSessionContext().getUser();
@@ -1065,7 +1066,7 @@ public class ReservationServlet implements ReservationService {
 	
 	@Override
 	@PreAuthorize("checkPermission(#reservationId, 'Reservation', 'ReservationDelete')")
-	public Boolean delete(Long reservationId) throws ReservationException, PageAccessException {
+	public Boolean delete(@P("reservationId") Long reservationId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			UserContext user = getSessionContext().getUser();

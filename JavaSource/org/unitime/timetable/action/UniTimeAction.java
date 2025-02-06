@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.action;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.PageContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.jsp.PageContext;
 
 import org.apache.struts2.StrutsStatics;
 import org.apache.struts2.action.ServletRequestAware;
@@ -43,8 +43,8 @@ import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
-import com.opensymphony.xwork2.ActionContext;
-import com.opensymphony.xwork2.ActionSupport;
+import org.apache.struts2.ActionContext;
+import org.apache.struts2.ActionSupport;
 
 /**
  * Base action for Struts2 actions

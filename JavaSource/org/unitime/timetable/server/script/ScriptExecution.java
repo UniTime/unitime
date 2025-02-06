@@ -32,7 +32,7 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.commons.Email;
 import org.unitime.timetable.defaults.ApplicationProperty;

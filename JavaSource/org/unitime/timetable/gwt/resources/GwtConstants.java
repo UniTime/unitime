@@ -24,7 +24,7 @@ package org.unitime.timetable.gwt.resources;
  */
 public interface GwtConstants extends Constants {
 	
-	@DefaultStringValue("4.8")
+	@DefaultStringValue("4.9")
 	@DoNotTranslate
 	String version();
 

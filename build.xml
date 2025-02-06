@@ -99,7 +99,7 @@
     </target>
 
 	<target name="compile-java" depends="prepare">
-		<javac debug="${java.debug}" optimize="${java.optimize}" destdir="${build.dir}" includeantruntime="false" encoding="utf-8" source="11" target="11">
+		<javac debug="${java.debug}" optimize="${java.optimize}" destdir="${build.dir}" includeantruntime="false" encoding="utf-8" source="17" target="17">
 			<compilerarg value="-XDignore.symbol.file"/>
 			<src path="${build.dir}" />
 			<classpath refid="build.classpath" />
@@ -136,14 +136,14 @@
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
 				<attribute name="Class-Path" value="angus-activation-2.0.2.jar antlr4-runtime-4.13.0.jar biweekly-0.6.8.jar byte-buddy-1.15.11.jar c3p0-0.9.5.5.jar classmate-1.5.1.jar
 					commons-lang3-3.17.0.jar commons-logging-1.3.4.jar commons-text-1.13.0.jar cpsolver-1.4-SNAPSHOT.jar dom4j-2.1.4.jar freemarker-2.3.34.jar gson-2.11.0.jar
-					gwt-servlet-2.12.1.jar hibernate-c3p0-6.6.5.Final.jar hibernate-commons-annotations-7.0.3.Final.jar hibernate-core-6.6.5.Final.jar istack-commons-runtime-4.1.1.jar
+					gwt-servlet-jakarta-2.12.1.jar hibernate-c3p0-6.6.5.Final.jar hibernate-commons-annotations-7.0.3.Final.jar hibernate-core-6.6.5.Final.jar istack-commons-runtime-4.1.1.jar
 					itext-2.1.7.jar jackson-core-2.18.2.jar jakarta.activation-api-2.1.3.jar jakarta.mail-2.0.3.jar jakarta.mail-api-2.1.3.jar jakarta.persistence-api-3.1.0.jar
-					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar javax.servlet-api-3.1.0.jar javax.servlet.jsp-api-2.3.3.jar
+					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar jakarta.servlet-api-6.0.0.jar jakarta.servlet.jsp-api-3.1.1.jar
 					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.4.1.Final.jar joda-time-2.13.0.jar log4j-api-2.24.3.jar
 					log4j-core-2.24.3.jar log4j-jcl-2.24.3.jar log4j-slf4j-impl-2.24.3.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.29.3.jar
-					slf4j-api-1.7.36.jar spring-beans-5.3.39.jar spring-context-5.3.39.jar spring-core-5.3.39.jar spring-security-core-5.8.16.jar spring-web-5.3.39.jar
+					slf4j-api-1.7.36.jar spring-beans-6.2.2.jar spring-context-6.2.2.jar spring-core-6.2.2.jar spring-security-core-6.4.2.jar spring-web-6.2.2.jar
 					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar hibernate-community-dialects-6.6.5.Final.jar"/>
-				<attribute name="Timetabling-Version" value="4.8_bld${build.number}"/>
+				<attribute name="Timetabling-Version" value="4.9_bld${build.number}"/>
 			</manifest>
 		</jar>
 	</target>
@@ -217,17 +217,11 @@
 				<include name="**/*.*" />
 			</fileset>
 			<manifest>
-				<attribute name="Timetabling-Version" value="4.8_bld${build.number}"/>
+				<attribute name="Timetabling-Version" value="4.9_bld${build.number}"/>
 			</manifest>
 		</jar>
 	</target>
 	
-	<target name="tomcat-10" depends="load-properties">
-		<mkdir dir="${dist.dir}/tomcat10"/>
-		<taskdef name="javax2jakarta" classname="org.apache.tomcat.jakartaee.MigrationTask" classpath="${3rd_party.dir}/jakartaee-migration/jakartaee-migration-1.0.0.jar"/>
-		<javax2jakarta src="${dist.dir}/UniTime.war" dest="${dist.dir}/tomcat10/UniTime.war" profile="tomcat"/>
-	</target>
-
 	<target name="done">
 		<delete dir="${temp.dir}" />
 		<delete file="build.date" failonerror="false" />
@@ -242,7 +236,7 @@
     <target name="doc" depends="load-properties">
         <delete dir="${dist.dir}/doc" failonerror="false"/>
         <mkdir dir="${dist.dir}/doc"/>
-    	<javadoc destdir="${dist.dir}/doc" author="true" version="true" use="true" windowtitle="UniTime API Documentation" source="11" linksource="false" breakiterator="true" useexternalfile="yes">
+    	<javadoc destdir="${dist.dir}/doc" author="true" version="true" use="true" windowtitle="UniTime API Documentation" source="17" linksource="false" breakiterator="true" useexternalfile="yes">
     		<doctitle><![CDATA[
     		<table border='0' style='font-size: 11pt;font-weight: normal;'><tr><td align='left'>
     			Licensed to The Apereo Foundation under one or more contributor license<br>
@@ -283,8 +277,8 @@
 		</replace>
     </target>
 
-	<target name="build-dist" depends="compile-war,tomcat-10">
-		<tar destfile="${dist.dir}/unitime-4.8_bld${build.number}.tar">
+	<target name="build-dist" depends="compile-war">
+		<tar destfile="${dist.dir}/unitime-4.9_bld${build.number}.tar">
 			<tarfileset dir="${basedir}" includes="LICENSE" fullpath="doc/license.txt"/>
 			<tarfileset dir="${basedir}" includes="NOTICE" fullpath="doc/notice.txt"/>
 			<tarfileset dir="${basedir}" includes="README.md" fullpath="doc/readme.txt"/>
@@ -294,13 +288,12 @@
 			<tarfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<tarfileset dir="${basedir}/Documentation/Docker" includes="*.*" prefix="docker"/>
 			<tarfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
-			<tarfileset dir="${dist.dir}/tomcat10" includes="*.war" prefix="web-tomcat10"/>
 			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<tarfileset dir="${lib.dir}" prefix="solver">
 				<include name="commons-logging-1.3.4.jar"/>
 				<include name="cpsolver-1.4-SNAPSHOT.jar"/>
 				<include name="dom4j-2.1.4.jar"/>
-				<include name="gwt-servlet-2.12.1.jar"/>
+				<include name="gwt-servlet-jakarta-2.12.1.jar"/>
 				<include name="javassist-3.30.2-GA.jar"/>
 				<include name="jboss-logging-3.5.0.Final.jar"/>
 				<include name="jgroups-5.4.1.Final.jar"/>
@@ -312,13 +305,13 @@
 				<include name="protobuf-java-4.29.3.jar"/>
 				<include name="slf4j-api-1.7.36.jar"/>
 				<include name="log4j-slf4j-impl-2.24.3.jar"/>
-				<include name="spring-security-core-5.8.16.jar"/>
+				<include name="spring-security-core-6.4.2.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.4.jar"/>
 				<include name="gson-2.11.0.jar"/>
 				<include name="joda-time-2.13.0.jar"/>
-				<include name="spring-core-5.3.39.jar"/>
-				<include name="spring-web-5.3.39.jar"/>
+				<include name="spring-core-6.2.2.jar"/>
+				<include name="spring-web-6.2.2.jar"/>
 				<include name="freemarker-2.3.34.jar"/>
 				<include name="biweekly-0.6.8.jar"/>
 				<include name="vinnie-2.0.2.jar"/>
@@ -338,8 +331,8 @@
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
 				<include name="mchange-commons-java-0.2.19.jar"/>
-				<include name="spring-context-5.3.39.jar"/>
-				<include name="spring-beans-5.3.39.jar"/>
+				<include name="spring-context-6.2.2.jar"/>
+				<include name="spring-beans-6.2.2.jar"/>
 				<include name="jakarta.activation-api-2.1.3.jar"/>
 				<include name="jakarta.persistence-api-3.1.0.jar"/>
 				<include name="jakarta.transaction-api-2.0.1.jar"/>
@@ -347,13 +340,13 @@
 				<include name="antlr4-runtime-4.13.0.jar"/>
 			</tarfileset>
 			<tarfileset dir="${3rd_party.dir}" prefix="solver">
-				<include name="javax.servlet.jsp-api-2.3.3.jar"/>
-				<include name="javax.servlet-api-3.1.0.jar"/>
+				<include name="jakarta.servlet.jsp-api-3.1.1.jar"/>
+				<include name="jakarta.servlet-api-6.0.0.jar"/>
 			</tarfileset>
 		</tar>
-		<gzip zipfile="${dist.dir}/unitime-4.8_bld${build.number}.tar.gz" src="${dist.dir}/unitime-4.8_bld${build.number}.tar"/>
-		<delete file="${dist.dir}/unitime-4.8_bld${build.number}.tar"/>
-		<zip destfile="${dist.dir}/unitime-4.8_bld${build.number}.zip">
+		<gzip zipfile="${dist.dir}/unitime-4.9_bld${build.number}.tar.gz" src="${dist.dir}/unitime-4.9_bld${build.number}.tar"/>
+		<delete file="${dist.dir}/unitime-4.9_bld${build.number}.tar"/>
+		<zip destfile="${dist.dir}/unitime-4.9_bld${build.number}.zip">
 			<tarfileset dir="${basedir}" includes="LICENSE" fullpath="doc/license.txt"/>
 			<tarfileset dir="${basedir}" includes="NOTICE" fullpath="doc/notice.txt"/>
 			<tarfileset dir="${basedir}" includes="README.md" fullpath="doc/readme.txt"/>
@@ -363,13 +356,12 @@
 			<zipfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<zipfileset dir="${basedir}/Documentation/Docker" includes="*.*" prefix="docker"/>
 			<zipfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
-			<zipfileset dir="${dist.dir}/tomcat10" includes="*.war" prefix="web-tomcat10"/>
 			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<zipfileset dir="${lib.dir}" prefix="solver">
 				<include name="commons-logging-1.3.4.jar"/>
 				<include name="cpsolver-1.4-SNAPSHOT.jar"/>
 				<include name="dom4j-2.1.4.jar"/>
-				<include name="gwt-servlet-2.12.1.jar"/>
+				<include name="gwt-servlet-jakarta-2.12.1.jar"/>
 				<include name="javassist-3.30.2-GA.jar"/>
 				<include name="jboss-logging-3.5.0.Final.jar"/>
 				<include name="jgroups-5.4.1.Final.jar"/>
@@ -381,13 +373,13 @@
 				<include name="protobuf-java-4.29.3.jar"/>
 				<include name="slf4j-api-1.7.36.jar"/>
 				<include name="log4j-slf4j-impl-2.24.3.jar"/>
-				<include name="spring-security-core-5.8.16.jar"/>
+				<include name="spring-security-core-6.4.2.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.4.jar"/>
 				<include name="gson-2.11.0.jar"/>
 				<include name="joda-time-2.13.0.jar"/>
-				<include name="spring-core-5.3.39.jar"/>
-				<include name="spring-web-5.3.39.jar"/>
+				<include name="spring-core-6.2.2.jar"/>
+				<include name="spring-web-6.2.2.jar"/>
 				<include name="freemarker-2.3.34.jar"/>
 				<include name="biweekly-0.6.8.jar"/>
 				<include name="vinnie-2.0.2.jar"/>
@@ -407,8 +399,8 @@
 				<include name="jaxb-core-4.0.2.jar"/>
 				<include name="jaxb-runtime-4.0.2.jar"/>
 				<include name="mchange-commons-java-0.2.19.jar"/>
-				<include name="spring-context-5.3.39.jar"/>
-				<include name="spring-beans-5.3.39.jar"/>
+				<include name="spring-context-6.2.2.jar"/>
+				<include name="spring-beans-6.2.2.jar"/>
 				<include name="jakarta.activation-api-2.1.3.jar"/>
 				<include name="jakarta.persistence-api-3.1.0.jar"/>
 				<include name="jakarta.transaction-api-2.0.1.jar"/>
@@ -416,8 +408,8 @@
 				<include name="antlr4-runtime-4.13.0.jar"/>
 			</zipfileset>
 			<zipfileset dir="${3rd_party.dir}" prefix="solver">
-				<include name="javax.servlet.jsp-api-2.3.3.jar"/>
-				<include name="javax.servlet-api-3.1.0.jar"/>
+				<include name="jakarta.servlet.jsp-api-3.1.1.jar"/>
+				<include name="jakarta.servlet-api-6.0.0.jar"/>
 			</zipfileset>
 		</zip>
 	</target>

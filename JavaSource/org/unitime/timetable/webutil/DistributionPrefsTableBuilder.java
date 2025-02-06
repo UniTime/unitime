@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.unitime.commons.web.WebTable;

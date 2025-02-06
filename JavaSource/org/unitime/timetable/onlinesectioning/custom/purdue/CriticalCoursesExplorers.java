@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.shared.DegreePlanInterface;

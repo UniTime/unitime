@@ -22,9 +22,9 @@ package org.unitime.timetable.webutil;
 import java.io.IOException;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
@@ -52,10 +52,10 @@ public class BackTracker {
 			Vector backList = getBackList(request.getSession());
 			if (clear) backList.clear();
 			if (back) {
-				if (uri==null && request.getAttribute("javax.servlet.forward.request_uri")==null) return;
+				if (uri==null && request.getAttribute("jakarta.servlet.forward.request_uri")==null) return;
 				Object titleObj = (title==null?request.getAttribute("title"):title);
-				String requestURI = (String)request.getAttribute("javax.servlet.forward.request_uri");
-				String queryString = (String)request.getAttribute("javax.servlet.forward.query_string");
+				String requestURI = (String)request.getAttribute("jakarta.servlet.forward.request_uri");
+				String queryString = (String)request.getAttribute("jakarta.servlet.forward.query_string");
 				if (queryString!=null && queryString.length()>0)
 					requestURI += "?"+queryString;
 				if (uri!=null)

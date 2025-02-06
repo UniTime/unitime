@@ -41,6 +41,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -337,7 +338,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	@PreAuthorize("checkPermission(#curriculumId, 'Curriculum', 'CurriculumDetail')")
-	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
+	public CurriculumInterface loadCurriculum(@P("curriculumId") Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
@@ -793,7 +794,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	@PreAuthorize("(#curriculum.id != null and checkPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit')) or (#curriculum.id == null and checkPermission(#curriculum.department.id, 'Department', 'CurriculumAdd'))")
-	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
+	public Long saveCurriculum(@P("curriculum") CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveCurriculum(curriculum=" + curriculum.getId() + ")");
 			Long s0 = System.currentTimeMillis();
@@ -1037,7 +1038,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	@PreAuthorize("checkPermission(#curricula, 'Curriculum', 'CurriculumEdit')")
-	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException {
+	public Boolean saveClassifications(@P("curricula") List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveClassifications()");
 			Long s0 = System.currentTimeMillis();
@@ -1116,7 +1117,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	@PreAuthorize("checkPermission(#curriculumId, 'Curriculum', 'CurriculumDelete')")
-	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
+	public Boolean deleteCurriculum(@P("curriculumId") Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
@@ -1165,7 +1166,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	@PreAuthorize("checkPermission(#curriculumIds, 'Curriculum', 'CurriculumDelete')")
-	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
+	public Boolean deleteCurricula(@P("curriculumIds") Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
@@ -1217,7 +1218,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 
 	@PreAuthorize("checkPermission(#curriculumIds, 'Curriculum', 'CurriculumMerge')")
-	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
+	public Boolean mergeCurricula(@P("curriculumIds") Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("mergeCurricula(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
@@ -3307,7 +3308,7 @@ public class CurriculaServlet implements CurriculaService {
 	}
 	
 	@PreAuthorize("checkPermission(#offeringId, 'InstructionalOffering', 'InstructionalOfferingDetail') or checkPermission('CurriculumAdmin')")
-	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException, PageAccessException {
+	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, @P("offeringId") Long offeringId) throws CurriculaException, PageAccessException {
 		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
 		long s0 = System.currentTimeMillis();
 		try {

@@ -32,7 +32,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.JspWriter;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;

@@ -20,6 +20,7 @@
 package org.unitime.timetable.server.hql;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
@@ -40,7 +41,7 @@ public class HQLDeleteBackend implements GwtRpcImplementation<HQLDeleteRpcReques
 	
 	@Override
 	@PreAuthorize("checkPermission(#request.id, 'SavedHQL', 'HQLReportDelete')")
-	public GwtRpcResponseBoolean execute(HQLDeleteRpcRequest request, SessionContext context) {
+	public GwtRpcResponseBoolean execute(@P("request") HQLDeleteRpcRequest request, SessionContext context) {
 		if (request.getId() == null) throw new GwtRpcException(MESSAGES.errorNoReportProvided());
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 		SavedHQL hql = SavedHQLDAO.getInstance().get(request.getId(), hibSession);

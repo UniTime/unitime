@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.LocationPicture;

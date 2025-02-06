@@ -89,7 +89,7 @@ public class EventImport extends EventRelatedImports {
 	        if (!rootElement.getName().equalsIgnoreCase(rootElementName)) {
 	        	throw new Exception("Given XML file is not a Events load file.");
 	        }
-	        academicInitiative = getRequiredStringAttribute(rootElement, "academicInitiative", rootElementName);
+	        academicInitiative = getRequiredStringAttribute(rootElement, "campus", rootElementName);
 	        dateFormat = getOptionalStringAttribute(rootElement, "dateFormat");
 	        timeFormat = getOptionalStringAttribute(rootElement, "timeFormat");
 	        String created = getOptionalStringAttribute(rootElement, "created");

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.cpsolver.ifs.util.CSVFile;
 import org.unitime.commons.Debug;

@@ -20,23 +20,25 @@
 package org.unitime.timetable.api.connectors;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import jakarta.activation.DataSource;
 import jakarta.activation.FileTypeMap;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemHeaders;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileItemHeaders;
+import org.apache.commons.fileupload2.core.FileItemHeadersProvider;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -211,38 +213,38 @@ public class ScriptConnector extends ApiConnector {
 		BinaryFile iFile;
 		public BinaryFileItem(BinaryFile file) { iFile = file; }
 		@Override
-		public void setHeaders(FileItemHeaders headers) {}
-		@Override
 		public FileItemHeaders getHeaders() { return null; }
 		@Override
-		public void write(File file) throws Exception {}
+		public FileItemHeadersProvider setHeaders(FileItemHeaders headers) { return null; }
 		@Override
-		public void setFormField(boolean state) {}
+		public FileItem delete() throws IOException { return null; }
 		@Override
-		public void setFieldName(String name) {}
-		@Override
-		public boolean isInMemory() { return true; }
-		@Override
-		public boolean isFormField() { return false; }
-		@Override
-		public String getString(String encoding) throws UnsupportedEncodingException { return new String(iFile.getBytes(), encoding); }
-		@Override
-		public String getString() { return new String(iFile.getBytes()); }
-		@Override
-		public long getSize() { return iFile.getBytes().length; }
-		@Override
-		public OutputStream getOutputStream() throws IOException { return null; }
-		@Override
-		public String getName() { return iFile.getFileName(); }
-		@Override
-		public InputStream getInputStream() throws IOException { return new ByteArrayInputStream(iFile.getBytes()); }
-		@Override
-		public String getFieldName() { return null; }
+		public byte[] get() throws UncheckedIOException { return iFile.getBytes(); }
 		@Override
 		public String getContentType() { return iFile.getContentType(); }
 		@Override
-		public byte[] get() { return iFile.getBytes(); }
+		public String getFieldName() { return null; }
 		@Override
-		public void delete() {}
+		public InputStream getInputStream() throws IOException { return new ByteArrayInputStream(iFile.getBytes()); }
+		@Override
+		public String getName() { return iFile.getFileName(); }
+		@Override
+		public OutputStream getOutputStream() throws IOException { return null; }
+		@Override
+		public long getSize() { return iFile.getBytes().length; }
+		@Override
+		public String getString() { return new String(iFile.getBytes()); }
+		@Override
+		public String getString(Charset toCharset) throws IOException { return new String(iFile.getBytes(), toCharset); }
+		@Override
+		public boolean isFormField() { return false; }
+		@Override
+		public boolean isInMemory() { return true; }
+		@Override
+		public FileItem setFieldName(String name) { return this; }
+		@Override
+		public FileItem setFormField(boolean state) { return this; }
+		@Override
+		public FileItem write(Path file) throws IOException { return this; }
 	}
 }

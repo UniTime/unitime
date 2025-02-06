@@ -21,7 +21,7 @@
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:alert name="alertReqPrefsWillBeRemoved"><loc:message name="alertReqPrefsWillBeRemoved"/></tt:alert>
 <tt:alert name="alertNotReqPrefsWillBeRemoved"><loc:message name="alertNotReqPrefsWillBeRemoved"/></tt:alert>

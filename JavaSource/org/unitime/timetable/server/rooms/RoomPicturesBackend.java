@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.SessionAttribute;

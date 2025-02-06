@@ -33,6 +33,8 @@
     <constant name="struts.multipart.maxSize" value="10737418240"/>
     <constant name="struts.el.throwExceptionOnFailure" value="true"/>
     <constant name="struts.ui.checkbox.submitUnchecked" value="true"/>
+    <constant name="struts.allowlist.enable" value="false"/>
+    <constant name="struts.parameters.requireAnnotations" value="false"/>
     <package name="unitime" extends="convention-default">
     	<result-types>
 	        <result-type name="tiles" class="org.apache.struts2.views.tiles.TilesResult" />

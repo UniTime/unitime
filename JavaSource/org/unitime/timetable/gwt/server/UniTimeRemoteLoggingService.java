@@ -22,8 +22,8 @@ package org.unitime.timetable.gwt.server;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.google.gwt.core.server.StackTraceDeobfuscator;
 import com.google.gwt.logging.shared.RemoteLoggingService;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.gwt.user.server.rpc.jakarta.RemoteServiceServlet;
 
 /**
  * @author Tomas Muller

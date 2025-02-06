@@ -25,7 +25,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 		http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/security
-		http://www.springframework.org/schema/security/spring-security-5.8.xsd">
+		http://www.springframework.org/schema/security/spring-security-6.4.xsd">
 	
 	<http use-expressions="true" entry-point-ref="casEntryPoint">
 		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
@@ -42,7 +42,6 @@
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
 		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="${unitime.cas.logout:/main.action?op=cas-logout}"/>
-		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
@@ -83,7 +82,7 @@
 		<beans:property name="authenticationUserDetailsService" ref="unitimeAuthenticationUserDetailsService"/>
     	<beans:property name="serviceProperties" ref="casServiceProperties"/>
     	<beans:property name="ticketValidator">
-			<beans:bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+			<beans:bean class="org.apereo.cas.client.validation.Cas20ServiceTicketValidator">
 				<beans:constructor-arg index="0" value="${unitime.cas.url}" />
 			</beans:bean>
     	</beans:property>
@@ -100,7 +99,7 @@
 		<beans:property name="serviceProperties" ref="casServiceProperties"/>
 	</beans:bean>
 	
-	<beans:bean id="casSingleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter"/>
+	<beans:bean id="casSingleLogoutFilter" class="org.apereo.cas.client.session.SingleSignOutFilter"/>
 	
 	<beans:bean id="casRequestSingleLogoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
 		<beans:constructor-arg value="${unitime.cas.url}/logout?url=${unitime.url}"/>

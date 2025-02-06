@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseLong;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -47,7 +48,7 @@ public class HQLStoreBackend implements GwtRpcImplementation<HQLStoreRpcRequest,
 
 	@Override
 	@PreAuthorize("(#query.id != null and checkPermission(#query.id, 'SavedHQL', 'HQLReportEdit')) or (#query.id == null and checkPermission('HQLReportAdd'))")
-	public GwtRpcResponseLong execute(HQLStoreRpcRequest query, SessionContext context) {
+	public GwtRpcResponseLong execute(@P("query") HQLStoreRpcRequest query, SessionContext context) {
 		if (SavedHQL.Flag.ADMIN_ONLY.isSet(query.getFlags()))
 			sessionContext.checkPermission(Right.HQLReportsAdminOnly);
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();

@@ -19,8 +19,8 @@
 */
 package org.unitime.localization.impl;
 
-import javax.servlet.jsp.JspTagException;
-import javax.servlet.jsp.tagext.BodyTagSupport;
+import jakarta.servlet.jsp.JspTagException;
+import jakarta.servlet.jsp.tagext.BodyTagSupport;
 
 import org.unitime.localization.messages.Messages;
 

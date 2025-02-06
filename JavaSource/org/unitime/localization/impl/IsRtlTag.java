@@ -19,7 +19,7 @@
 */
 package org.unitime.localization.impl;
 
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.jsp.tagext.TagSupport;
 
 /**
  * @author Tomas Muller

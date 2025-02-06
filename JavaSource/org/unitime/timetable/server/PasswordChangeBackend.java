@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Email;

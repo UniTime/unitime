@@ -27,8 +27,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.hibernate.CacheMode;
 import org.unitime.timetable.security.SessionContext;

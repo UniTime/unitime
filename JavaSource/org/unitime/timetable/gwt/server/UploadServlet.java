@@ -25,15 +25,15 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
@@ -109,7 +109,8 @@ public class UploadServlet extends HttpServlet {
 			String maxSizeProperty = ApplicationProperty.MaxUploadSize.value();
 			int maxSize = (maxSizeProperty == null ? DEFAULT_MAX_SIZE : Integer.parseInt(maxSizeProperty));
 			
-			ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(maxSize, ApplicationProperties.getTempFolder()));
+			DiskFileItemFactory diskFileItemFactory = DiskFileItemFactory.builder().setBufferSize(maxSize).setPath(ApplicationProperties.getTempFolder().toPath()).get();
+			JakartaServletFileUpload upload = new JakartaServletFileUpload(diskFileItemFactory);
 			upload.setSizeMax(maxSize);
 			
 			List<FileItem> files = (List<FileItem>)upload.parseRequest(request);

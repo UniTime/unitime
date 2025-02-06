@@ -25,7 +25,7 @@
 
 <taglib>
 	<tlib-version>1.0</tlib-version>
-	<jsp-version>1.2</jsp-version>
+	<jsp-version>3.1</jsp-version>
 	<short-name>Localization Tags</short-name>
 	<uri>http://www.unitime.org/tags-localization</uri>
   	<tag>
