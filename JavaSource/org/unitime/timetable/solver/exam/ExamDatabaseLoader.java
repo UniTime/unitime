@@ -326,8 +326,11 @@ public class ExamDatabaseLoader extends ProblemLoader<Exam, ExamPlacement, ExamM
             getModel().addVariable(x);
 
             
-            for (Iterator j=exam.getInstructors().iterator();j.hasNext();)
-                loadInstructor((DepartmentalInstructor)j.next()).addVariable(x);
+            for (Iterator j=exam.getInstructors().iterator();j.hasNext();) {
+            	ExamInstructor instructor = loadInstructor((DepartmentalInstructor)j.next());
+            	if (!instructor.variables().contains(x))
+            		instructor.addVariable(x);
+            }
 
             if (exam.getAssignedPeriod()!=null) {
                 boolean fail = false;
