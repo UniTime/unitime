@@ -1056,7 +1056,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                             	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
                             	continue;
                             }
-                            timeLocations.add(loc);
+                            boolean validTime = true;
+                            for (Enumeration<Integer> e = loc.getDays(); e.hasMoreElements(); ) {
+                            	int dayCode = Constants.DAY_CODES[e.nextElement()];
+                            	if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), child, timePref.getTimePattern(), dayCode)) {
+                            		iProgress.debug("time " + loc.getLongName(iUseAmPm) + " is not valid :-(");
+                            		validTime = false;
+                            	}
+                            }
+                            if (validTime)
+                            	timeLocations.add(loc);
                     	}
                     } else {
                 		int minsPerMeeting = dm.getExactTimeMinutesPerMeeting(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, pattern.getExactDays());
@@ -1068,7 +1077,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         	iProgress.message(msglevel("timeOverMidnight", Progress.MSGLEVEL_ERROR), MSG.warnExactTimeOverMidnight(getClassLabel(clazz), loc.getName(iUseAmPm)));
                         	continue;
                         }
-                        timeLocations.add(loc);
+                        boolean validTime = true;
+                        for (Enumeration<Integer> e = loc.getDays(); e.hasMoreElements(); ) {
+                        	int dayCode = Constants.DAY_CODES[e.nextElement()];
+                        	if (!dm.isValidSelection(clazz.getSchedulingSubpart().getMinutesPerWk(), datePattern, timePref.getTimePattern(), dayCode)) {
+                        		iProgress.debug("time " + loc.getLongName(iUseAmPm) + " is not valid :-(");
+                        		validTime = false;
+                        	}
+                        }
+                        if (validTime)
+                        	timeLocations.add(loc);
                     }
             		
                     continue;

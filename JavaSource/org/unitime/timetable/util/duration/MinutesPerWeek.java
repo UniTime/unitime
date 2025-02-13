@@ -45,6 +45,7 @@ public class MinutesPerWeek implements DurationModel {
 	@Override
 	public boolean isValidCombination(int minsPerWeek, DatePattern datePattern, TimePattern timePattern) {
 		if (datePattern == null) return false;
+		if (timePattern.isExactTime()) return true;
 		return minsPerWeek == timePattern.getNrMeetings() * timePattern.getMinPerMtg();
 	}
 	

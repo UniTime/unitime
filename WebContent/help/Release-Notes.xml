@@ -29,6 +29,28 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Course Timetabling Solver: Exact Times</name>
+			<description>
+				<line>Do not allow for a date pattern &amp; exact time combination that has no meetings.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Solver: Duplicate Instructor Fix</name>
+			<description>
+				<line>Avoid Null exceptions when the same instructor is listed two times on the same exam (under different departments).</line>
+			</description>
+		</item>
+	</category>
+</release>
+<release>
+	<version>4.8.182</version>
+	<release-date>Thu, 30 Jan 2025</release-date>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Student Scheduling Solver: Hard Distance Conflicts</name>
