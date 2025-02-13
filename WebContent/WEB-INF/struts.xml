@@ -34,6 +34,7 @@
     <constant name="struts.el.throwExceptionOnFailure" value="true"/>
     <constant name="struts.ui.checkbox.submitUnchecked" value="true"/>
     <constant name="struts.allowlist.enable" value="false"/>
+    <constant name="struts.disallowProxyObjectAccess" value="false"/>
     <constant name="struts.parameters.requireAnnotations" value="false"/>
     <package name="unitime" extends="convention-default">
     	<result-types>
