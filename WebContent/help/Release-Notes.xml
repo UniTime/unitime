@@ -36,6 +36,12 @@
 				<line>Do not allow for a date pattern &amp; exact time combination that has no meetings.</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms: Availability</name>
+			<description>
+				<line>Fixed an array index out of bounds when generating the room availability thumbnail icons in some instances.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

@@ -326,6 +326,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 		return iModes.get(idx).getName();
 	}
 	public int[] getSelectionLimits(int idx) {
+		if (idx < 0 || idx >= iModes.size()) idx = 0;
 		RoomInterface.RoomSharingDisplayMode mode = iModes.get(idx);
 		return new int[] {mode.getFirstSlot(), mode.getLastSlot() - 1, mode.getFirstDay(), mode.getLastDay(), mode.getStep()};
 	}
@@ -338,9 +339,12 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 		for (int i=0;i<getNrSelections();i++) {
 			if (selection.equals(iModes.get(i).toHex()) || selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x").replaceAll("×", "x"))) {
 				iDefaultSelection = i;
-				break;
+				return;
 			}
 		}
+		try {
+			iDefaultSelection = Integer.parseInt(selection);
+		} catch (NumberFormatException e) {}
 	}
 	public int getDefaultSelection() {
 		return iDefaultSelection;
