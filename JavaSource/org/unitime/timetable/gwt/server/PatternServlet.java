@@ -119,11 +119,7 @@ public class PatternServlet extends HttpServlet {
 					tp = ApplicationProperty.InstructorSurveyTimePreferences.value();
 				((TimePatternModel)rtt.getModel()).setMode("|" + tp);
 			} else if (request.getParameter("s") != null) {
-				try {
-					rtt.getModel().setDefaultSelection(Integer.parseInt(request.getParameter("s")));
-				} catch (NumberFormatException e) {
-					rtt.getModel().setDefaultSelection(request.getParameter("s"));
-				}
+				rtt.getModel().setDefaultSelection(request.getParameter("s"));
 			} else {
 				String defaultGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
 				if (defaultGridSize != null)
