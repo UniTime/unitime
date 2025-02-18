@@ -45,6 +45,12 @@
 				<line>Fixed an issue when no units or max units are provided (for a type that requires units/max units) or when the provided units are not a number.</line>
 			</description>
 		</item>
+		<item>
+			<name>Rooms: Availability</name>
+			<description>
+				<line>Fixed an array index out of bounds when generating the room availability thumbnail icons in some instances.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
