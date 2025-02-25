@@ -39,6 +39,13 @@
 			<item name="Instructional Offerings" page="instructionalOfferingSearch.action">
 				<condition>
 					<hasPermission name="InstructionalOfferings"/>
+					<propertyEquals name="unitime.legacy.course.offerings" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Instructional Offerings" page="offerings" type="gwt">
+				<condition>
+					<hasPermission name="InstructionalOfferings"/>
+					<propertyEquals name="unitime.legacy.course.offerings" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Classes" page="classSearch.action">

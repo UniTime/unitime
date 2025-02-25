@@ -38,9 +38,16 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
-						<A title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
-							accesskey="${MSG.accessBackToIOList()}" class="l8"
-							href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"><s:property value="form.instrOfferingName"/></A>
+						<tt:propertyEquals name="unitime.legacy.course.offerings" value="true">
+							<A title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
+								accesskey="${MSG.accessBackToIOList()}" class="l8"
+								href="instructionalOfferingSearch.action?doit=Search&loadInstrFilter=1&subjectAreaIds=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"><s:property value="form.instrOfferingName"/></A>
+						</tt:propertyEquals>
+						<tt:propertyNotEquals name="unitime.legacy.course.offerings" value="true">
+							<A title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
+								accesskey="${MSG.accessBackToIOList()}" class="l8"
+								href="gwt.jsp?page=offerings&subjectArea=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"><s:property value="form.instrOfferingName"/></A>
+						</tt:propertyNotEquals>
 					</tt:section-title>						
 					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
 						<s:submit name='op' value='%{#msg.actionLockIO()}'

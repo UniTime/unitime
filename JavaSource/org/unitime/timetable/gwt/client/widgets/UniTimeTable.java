@@ -132,6 +132,9 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				colspan = ((HasColSpan)widget).getColSpan();
 				getFlexCellFormatter().setColSpan(row, col, colspan);
 			}
+			if (widget instanceof HasRowSpan) {
+				getFlexCellFormatter().setRowSpan(row, col, ((HasRowSpan)widget).getRowSpan());
+			}
 			if (widget instanceof HasStyleName && ((HasStyleName)widget).getStyleName() != null)
 				getFlexCellFormatter().setStyleName(row, col, ((HasStyleName)widget).getStyleName());
 			if (widget instanceof HasAdditionalStyleNames) {
@@ -944,6 +947,10 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	
 	public static interface HasColSpan {
 		public int getColSpan();
+	}
+	
+	public static interface HasRowSpan {
+		public int getRowSpan();
 	}
 	
 	public static interface HasCellAlignment {

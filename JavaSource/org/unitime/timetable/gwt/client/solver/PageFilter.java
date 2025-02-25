@@ -22,11 +22,17 @@ package org.unitime.timetable.gwt.client.solver;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.rooms.RoomFilterBox;
+import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -40,6 +46,7 @@ import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface
 import org.unitime.timetable.gwt.shared.FilterInterface.ListItem;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -64,6 +71,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class PageFilter extends SimpleForm implements HasValue<FilterInterface> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static final CourseMessages MSG = GWT.create(CourseMessages.class);
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private FilterInterface iFilter;
 	private int iFilterHeaderRow = -1, iFilterLastRow = -1;
@@ -102,6 +110,8 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				else if (param.isDefaultItem(item))
 					list.setSelectedIndex(list.getItemCount() - 1);
 			}
+			if (list.isMultipleSelect())
+				list.getElement().setAttribute("size", String.valueOf(Math.min(7, param.getOptions().size())));
 			list.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -254,6 +264,25 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			});
 			return text;
 		}
+		if ("courseNumber".equalsIgnoreCase(param.getType())) {
+			AriaTextBox text = new AriaTextBox();
+			text.getElement().setAttribute("autocomplete", "off");
+			text.setTitle(MSG.tooltipCourseNumber());
+			if (param.hasDefaultValue())
+				text.setText(param.getDefaultValue());
+			AriaSuggestBox box = new AriaSuggestBox(text, new CourseNumbersSuggestBox(param.getConfig()));
+			text.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					if (event.getValue() == null)
+						param.setValue(null);
+					else
+						param.setValue(event.getValue());
+					ValueChangeEvent.fire(PageFilter.this, iFilter);
+				}
+			});
+			return box;
+		}
 		TextBox text = new TextBox();
 		text.setStyleName("unitime-TextBox");
 		text.setWidth("400px");
@@ -285,6 +314,10 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 	
+	public Widget getFilterWidget(String name) {
+		return iWidgets.get(name);
+	}
+	
 	@Override
 	public void setValue(FilterInterface filter, boolean fireEvents) {
 		iFilter = filter;
@@ -292,20 +325,38 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		for (int row = getRowCount() - 1; row > iFilterHeaderRow; row--)
 			removeRow(row);
 		iCollapsibleRows.clear();
+		Set<String> parents = new HashSet<String>();
+		String lastLabel = null;
 		for (final FilterParameterInterface param: filter.getParameters()) {
 			String value = Location.getParameter(param.getName());
 			if (value != null) param.setDefaultValue(value);
 			Widget w = getWidget(param);
+			w.getElement().setId(param.getName());
 			iWidgets.put(param.getName(), w);
 			int row;
-			if (param.hasSuffix()) {
-				P panel = new P("panel");
-				panel.add(w);
-				Label suffix = new Label(param.getSuffix()); suffix.addStyleName("suffix");
-				panel.add(suffix);
-				row = addRow(param.getLabel(), panel);
+			String label = param.getLabel();
+			if (label.equals(lastLabel)) {
+				label = "";
 			} else {
-				row = addRow(param.getLabel(), w);
+				lastLabel = label;
+			}
+			if (param.hasSuffix()) {
+				if (w instanceof CheckBox) {
+					((CheckBox)w).setText(param.getSuffix());
+					row = addRow(label, w);
+				} else {
+					P panel = new P("panel");
+					panel.add(w);
+					Label suffix = new Label(param.getSuffix()); suffix.addStyleName("suffix");
+					panel.add(suffix);
+					row = addRow(label, panel);
+				}
+			} else {
+				row = addRow(label, w);
+			}
+			if (param.getParent() != null) {
+				getWidget(row, 1).getElement().getStyle().setPaddingLeft(20, Unit.PX);
+				parents.add(param.getParent());
 			}
 			if (param.isCollapsible()) iCollapsibleRows.add(row);
 			iFilterLastRow = row;
@@ -317,6 +368,20 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		else if (iHeader.isCollapsible() == null)
 			iHeader.setCollapsible(false);
 		addBottomRow(iFooter);
+		for (final String parent: parents) {
+			Widget w = iWidgets.get(parent);
+			if (w != null && w instanceof CheckBox) {
+				((CheckBox)w).addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<Boolean> e) {
+						for (FilterParameterInterface p: iFilter.getParameters()) {
+							if (parent.equals(p.getParent()))
+								setValue(p.getName(), e.getValue() ? "1" : "0");
+						}
+					}
+				}); 
+			}
+		}
 		if (fireEvents)
 			ValueChangeEvent.fire(this, iFilter);
 	}
@@ -325,6 +390,17 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		String query = "";
 		for (FilterParameterInterface param: iFilter.getParameters()) {
 			String value = param.getValue();
+			if (value != null)
+				query += "&" + param.getName() + "=" + URL.encodeQueryString(value);
+		}
+		return query;
+	}
+	
+	public String getFullQuery() {
+		String query = "";
+		for (FilterParameterInterface param: iFilter.getParameters()) {
+			String value = param.getValue();
+			if (value == null) value = param.getDefaultValue();
 			if (value != null)
 				query += "&" + param.getName() + "=" + URL.encodeQueryString(value);
 		}

@@ -46,6 +46,7 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor.AnchorType;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -238,6 +239,7 @@ public class XLSPrinter implements Printer {
 	
 	public void printLine(A... fields) {
 		int cellIdx = 0;
+		int y = iRowNum;
 		Row row = iSheet.createRow(iRowNum++);
 		int nrLines = 1;
 		for (int idx = 0; idx < fields.length; idx++) {
@@ -277,21 +279,33 @@ public class XLSPrinter implements Printer {
 					cell.setCellValue(f.getText());
 					nrLines = Math.max(nrLines, f.getText().split("\n").length);
 				}
-			} else if (f.hasChunks()) {
+			}
+			if (f.hasChunks()) {
 				StringBuffer text = new StringBuffer();
-				List<Integer[]> font = new ArrayList<Integer[]>(); 
+				List<Integer[]> font = new ArrayList<Integer[]>();
+				if (f.hasText()) {
+					font.add(new Integer[] {text.length(), getFont(f.has(F.BOLD), f.has(F.ITALIC), f.has(F.UNDERLINE), f.getColorValue()).getIndex()});
+					text.append(f.getText());
+				}
 				for (A g: f.getChunks()) {
+					if (text.length() > 0) text.append(f.has(F.INLINE) ? "" : "\n");
 					if (g.hasText()) {
-						if (text.length() > 0) text.append(f.has(F.INLINE) ? " " : "\n");
-						font.add(new Integer[] {text.length(), getFont(g.has(F.BOLD), g.has(F.ITALIC), g.has(F.UNDERLINE), g.getColor()).getIndex()});
+						font.add(new Integer[] {text.length(), getFont(g.has(F.BOLD), g.has(F.ITALIC), g.has(F.UNDERLINE), g.getColorValue()).getIndex()});
 						text.append(g.getText());
 					}
 					if (g.hasChunks()) {
 						for (A h: g.getChunks()) {
 							if (h.hasText()) {
-								if (text.length() > 0) text.append(" ");
-								font.add(new Integer[] {text.length(), getFont(h.has(F.BOLD), h.has(F.ITALIC), h.has(F.UNDERLINE), h.getColor()).getIndex()});
+								if (text.length() > 0) text.append(g.has(F.INLINE) ? "" : "\n");
+								font.add(new Integer[] {text.length(), getFont(h.has(F.BOLD), h.has(F.ITALIC), h.has(F.UNDERLINE), h.getColorValue()).getIndex()});
 								text.append(h.getText());
+							}
+							if (h.hasChunks()) {
+								for (A x: h.getChunks()) {
+									if (text.length() > 0) text.append(h.has(F.INLINE) ? "" : "\n");
+									font.add(new Integer[] {text.length(), getFont(x.has(F.BOLD), x.has(F.ITALIC), x.has(F.UNDERLINE), x.getColorValue()).getIndex()});
+									text.append(x.getText());
+								}
 							}
 						}
 					}
@@ -302,6 +316,14 @@ public class XLSPrinter implements Printer {
 				for (int i = 0; i < font.size() - 1; i++)
 					value.applyFont((Integer)font.get(i)[0], (Integer)font.get(1 + i)[0], font.get(i)[1].shortValue());
 				cell.setCellValue(value);
+			}
+			if (f.getColSpan() > 1 || f.getRowSpan() > 1) {
+				try  {
+					iSheet.addMergedRegion(new CellRangeAddress(y, y + f.getRowSpan() - 1, cellIdx - 1, cellIdx + f.getColSpan() - 2));
+					cellIdx += f.getColSpan() - 1;
+				} catch (IllegalStateException e) {
+					System.err.println(e.getMessage());
+				}
 			}
 		}
 		if (nrLines > 1)
@@ -343,7 +365,7 @@ public class XLSPrinter implements Printer {
 		String styleId = (dashed ? "D" : "")
 				+ (f.has(F.BOLD) ? "b" : "") + (f.has(F.ITALIC) ? "i" : "") + (f.has(F.UNDERLINE) ? "u" : "")
 				+ (f.has(F.RIGHT) ? "R" : f.has(F.CENTER) ? "C" : "L")
-				+ (f.hasColor() ? "#" + Integer.toHexString(f.getColor().getRGB()) : "")
+				+ (f.hasColor() ? "#" + Integer.toHexString(f.getColorValue().getRGB()) : "")
 				+ (f.hasBackground() ? "@" + Integer.toHexString(f.getBackground().getRGB()) : "")
 				+ (format == null ? "" : "|" + format);
 		CellStyle style = iStyles.get(styleId);
@@ -355,7 +377,7 @@ public class XLSPrinter implements Printer {
 			}
 			style.setAlignment(f.has(F.RIGHT) ? HorizontalAlignment.RIGHT : f.has(F.CENTER) ? HorizontalAlignment.CENTER : HorizontalAlignment.LEFT);
 			style.setVerticalAlignment(VerticalAlignment.TOP);
-			style.setFont(getFont(f.has(F.BOLD), f.has(F.ITALIC), f.has(F.UNDERLINE), f.getColor()));
+			style.setFont(getFont(f.has(F.BOLD), f.has(F.ITALIC), f.has(F.UNDERLINE), f.getColorValue()));
 			if (f.hasBackground())
 				style.setFillBackgroundColor(colorToShort(f.getBackground()));
         	style.setWrapText(true);

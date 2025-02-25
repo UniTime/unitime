@@ -98,12 +98,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return effectivePreferences(TimePref.class);
     }
     
-    public Set effectiveTimePatterns() {
-    	Set timePrefs = getEffectiveTimePreferences();
+    public Set<TimePattern> effectiveTimePatterns() {
+    	Set<TimePref> timePrefs = getEffectiveTimePreferences();
     	if (timePrefs==null) return null;
-    	TreeSet ret = new TreeSet();
-    	for (Iterator i=timePrefs.iterator();i.hasNext();) {
-    		TimePref tp = (TimePref)i.next();
+    	TreeSet<TimePattern> ret = new TreeSet<TimePattern>();
+    	for (TimePref tp: timePrefs) {
     		if (tp.getTimePattern()!=null)
     			ret.add(tp.getTimePattern());
     	}

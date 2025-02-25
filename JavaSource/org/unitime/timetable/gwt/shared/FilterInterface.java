@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -30,7 +31,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 /**
  * @author Tomas Muller
  */
-public class FilterInterface implements GwtRpcResponse, Serializable {
+public class FilterInterface implements GwtRpcResponse, Serializable, TableInterface.FilterInterface {
 	private static final long serialVersionUID = 0l;
 	private List<FilterParameterInterface> iParameters;
 	
@@ -48,11 +49,18 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		return null;
 	}
 	
+	@Override
+	public boolean hasParameter(String name) {
+		return getParameter(name) != null;
+	}
+	
+	@Override
 	public String getParameterValue(String name) {
 		FilterParameterInterface param = getParameter(name);
 		return (param == null ? null : param.getValue() == null ? param.getDefaultValue() : param.getValue());
 	}
-	
+
+	@Override
 	public String getParameterValue(String name, String defaultValue) {
 		String value = getParameterValue(name);
 		return value == null ? defaultValue : value;
@@ -64,6 +72,8 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		private boolean iMultiSelect = false;
 		private boolean iCollapsible = true;
 		private Long iSessionId;
+		private String iParent = null;
+		private String iConfig = null;
 		
 		public FilterParameterInterface() {}
 		
@@ -149,6 +159,12 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 		
 		public Long getSessionId() { return iSessionId; }
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public String getParent() { return iParent; }
+		public void setParent(String parent) { iParent = parent; }
+		
+		public String getConfig() { return iConfig; }
+		public void setConfig(String config) { iConfig = config; }
 	}
 	
 	public static class ListItem implements IsSerializable, Comparable<ListItem> {
@@ -172,4 +188,13 @@ public class FilterInterface implements GwtRpcResponse, Serializable {
 			return getValue() + ": " + getText();
 		}
 	}	
+	
+	@Override
+	public String toString() {
+		String ret = "";
+		if (iParameters != null)
+			for (FilterParameterInterface p: iParameters)
+				ret += (ret.isEmpty() ? "": "\n") + p;
+		return ret;
+	}
 }

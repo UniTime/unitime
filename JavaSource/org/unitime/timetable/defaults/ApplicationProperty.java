@@ -3628,6 +3628,11 @@ public enum ApplicationProperty {
 	@Description("Events Personal Schedule: when All Sessions flag is used, consider all academic initiatives (avoid same initiative restriction on classes, exams, and course-related events)")
 	@Since(4.8)
 	EventsPersonalScheduleSkipSessionRestriction("unitime.events.personal.allSessions.skipSessionCheck"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offerings: switch the user interface back to the old (Struts-based) instructional offerings page")
+	LegacyInstructionalOfferings("unitime.legacy.course.offerings"),
 	;
 
 	String iKey;

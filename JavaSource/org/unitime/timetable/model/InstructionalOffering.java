@@ -144,18 +144,14 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	    return (this.findSortCourseOfferingForSubjectArea(subjectArea.getUniqueId()));
 	}
 
-	public TreeSet courseOfferingsMinusSortCourseOfferingForSubjectArea(Long subjectAreaUID){
+	public TreeSet<CourseOffering> courseOfferingsMinusSortCourseOfferingForSubjectArea(Long subjectAreaUID){
 	    CourseOffering co = this.findSortCourseOfferingForSubjectArea(subjectAreaUID);
-	    TreeSet crsOffrs = new TreeSet(new CourseOfferingComparator());
-	    Iterator it = this.getCourseOfferings().iterator();
-	    CourseOffering tmpCo = null;
-	    while (it.hasNext()){
-	        tmpCo = (CourseOffering) it.next();
-	        if(!tmpCo.getUniqueId().equals(co.getUniqueId())){
-	            crsOffrs.add(tmpCo);
-	        }
+	    TreeSet<CourseOffering> crsOffrs = new TreeSet(new CourseOfferingComparator());
+	    for (CourseOffering tmpCo: getCourseOfferings()) {
+	    	if (!tmpCo.getUniqueId().equals(co.getUniqueId()))
+	    		crsOffrs.add(tmpCo);
 	    }
-	    return(crsOffrs);
+	    return crsOffrs;
 	}
 
 	public TreeSet courseOfferingsMinusSortCourseOfferingForSubjectArea(SubjectArea subjectArea){

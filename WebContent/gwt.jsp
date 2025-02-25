@@ -37,6 +37,7 @@
 	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
     <![endif]-->
     <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
+	<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
     	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
     </tt:hasProperty>

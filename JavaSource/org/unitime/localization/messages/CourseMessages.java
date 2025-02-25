@@ -930,6 +930,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Export CSV")
 	String actionExportCsv();
+	
+	@DefaultMessage("Export XLS")
+	String actionExportXls();
 
 	@DefaultMessage("Worksheet PDF")
 	String actionWorksheetPdf();
@@ -1252,6 +1255,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("P")
 	String accessExportPdf();
 	
+	@DefaultMessage("X")
+	String accessExportXls();
+	
 	@DefaultMessage("C")
 	String accessExportCsv();
 
@@ -1518,6 +1524,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Export CSV (Alt+{0})")
 	String titleExportCsv(String accessKey);
+	
+	@DefaultMessage("Export XLS (Alt+{0})")
+	String titleExportXls(String accessKey);
 
 	@DefaultMessage("Export Worksheet PDF (Alt+{0})")
 	String titleWorksheetPdf(String accessKey);

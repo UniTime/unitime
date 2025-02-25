@@ -5544,6 +5544,10 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 }
 
+.unitime-HeaderPanel .right a {
+	font-size: small;
+}
+
 .unitime-FlowForm {
 	padding: 2px;
 }
@@ -6217,6 +6221,14 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-PageFilter .panel .suffix {
 	padding-left: 3px;
 	vertical-align: bottom;
+}
+
+.unitime-PageFilter .label-td {
+	width: 1%;
+}
+
+.unitime-PageFilter .label-cell {
+	white-space: nowrap;
 }
 
 .unitime-ListSolutionsPage .load-panel {
@@ -7874,4 +7886,8 @@ unitime-RoomSharingWidget .legend .blank {
 	font-size: inherit;
 	font-family: inherit;
 	font-weight: inherit;
+}
+
+.unitime-InstructionalOfferingsPage .unitime-PageFilter .unitime-HeaderPanel {
+	max-width: calc(99vw - 220px);
 }
