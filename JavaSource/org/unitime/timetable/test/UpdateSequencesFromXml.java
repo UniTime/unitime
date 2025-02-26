@@ -20,6 +20,7 @@
 package org.unitime.timetable.test;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -79,14 +80,25 @@ public class UpdateSequencesFromXml {
 	public void load() throws IOException, DocumentException {
 		info("Config: " + (iSource == null ? getClass().getClassLoader().getResource(iConfig) : iSource + File.separator + iConfig));
 		info("Reading hibernate.cfg.xml ...");
-		Document document = read(iConfig);
-		Element root = document.getRootElement();
-		Element sessionFactoryElement = root.element("session-factory");
-		for (Iterator<Element> i = sessionFactoryElement.elementIterator("mapping"); i.hasNext(); ) {
-			Element m = i.next();
-			String resource = m.attributeValue("resource");
-			if (resource == null) continue;
-			info("Processing " + resource + " ...");
+		
+		File workDir = null;
+		if (iSource == null) {
+			workDir = new File(getClass().getClassLoader().getResource(iConfig).getFile());
+			while (workDir.getParentFile() != null && !"WebContent".equals(workDir.getName()))
+				workDir = workDir.getParentFile();
+			workDir = new File(workDir.getParentFile(), "JavaSource");
+			workDir.mkdirs();
+		} else {
+			workDir = new File(iSource);
+		}
+		info("Reading *.hbm.xml ...");
+		for (String resource: workDir.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".hbm.xml");
+			}
+		})) {
+			info("Pre-processing " + resource + " ...");
 			Document resDoc = read(resource);
 			Element resRoot = resDoc.getRootElement();
 			for (Iterator<Element> j = resRoot.elementIterator("class");j.hasNext(); ) {
@@ -101,7 +113,7 @@ public class UpdateSequencesFromXml {
 		for (String sequence: new TreeSet<String>(iSequences.keySet())) {
 			if (!ret.isEmpty())
 				ret += "\nunion all ";
-			ret += "select 'DROP SEQUENCE " + sequence.toUpperCase() + "; CREATE SEQUENCE " + sequence.toUpperCase() + " MINVALUE 1 MAXVALUE 99999999999999999999 INCREMENT BY 1 START WITH ' ||";
+			ret += "select 'DROP SEQUENCE IF EXISTS " + sequence.toUpperCase() + "; CREATE SEQUENCE " + sequence.toUpperCase() + " MINVALUE 1 MAXVALUE 99999999999999999999 INCREMENT BY 1 START WITH ' ||";
 			TreeSet<String> tables = iSequences.get(sequence);
 			if (tables.size() == 1) {
 				String table = tables.first(); String idColumn = iIdColumns.get(table);
