@@ -210,6 +210,7 @@ public class PDFPrinter implements Printer {
 			}
 		}
 		
+		if (f.hasWidth()) return f.getWidth();
 		return width;
 	}
 	
@@ -330,21 +331,56 @@ public class PDFPrinter implements Printer {
 	public void flush() {
 		iLastLine = null;
 	}
+	
+	private Document iDocument;
+	private PdfWriter iWriter;
+	
+	public void flushTable(String tableName) throws IOException {
+		try {
+			float width = 0;
+			float[] w = new float[iMaxWidth.length - iHiddenColumns.size()]; int wi = 0;
+			for (int i = 0; i < iMaxWidth.length; i++) {
+				float mw = iMaxWidth[i];
+				if (!iHiddenColumns.contains(i)) { width += 15f + mw; w[wi++] = mw; }
+			}
+			if (iDocument == null) {
+				iDocument = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
+				iWriter = PdfWriter.getInstance(iDocument, iOutput);
+				iWriter.setPageEvent(new PdfEventHandler());
+				iDocument.open();
+			} else {
+				iDocument.newPage();
+				iDocument.setPageSize(new Rectangle(60f + width, 60f + width * 0.75f));
+			}
+			iTable.setWidths(w);
+			iDocument.add(new Paragraph(tableName, PdfFont.getBigFont(true)));
+			iDocument.add(iTable);
+			iTable = null;
+		} catch (DocumentException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 
 	@Override
 	public void close() throws IOException {
 		try {
-			float width = 0;
-			float[] w = new float[iMaxWidth.length - iHiddenColumns.size()]; int wi = 0;
-			for (int i = 0; i < iMaxWidth.length; i++)
-				if (!iHiddenColumns.contains(i)) { width += 15f + iMaxWidth[i]; w[wi++] = iMaxWidth[i]; }
-			Document document = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
-			PdfWriter writer = PdfWriter.getInstance(document, iOutput);
-			writer.setPageEvent(new PdfEventHandler());
-			document.open();
-			iTable.setWidths(w);
-			document.add(iTable);
-			document.close();
+			if (iDocument != null) {
+				iDocument.close();
+			} else if (iTable != null) {
+				float width = 0;
+				float[] w = new float[iMaxWidth.length - iHiddenColumns.size()]; int wi = 0;
+				for (int i = 0; i < iMaxWidth.length; i++) {
+					float mw = iMaxWidth[i];
+					if (!iHiddenColumns.contains(i)) { width += 15f + mw; w[wi++] = mw; }
+				}
+				Document document = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
+				PdfWriter writer = PdfWriter.getInstance(document, iOutput);
+				writer.setPageEvent(new PdfEventHandler());
+				document.open();
+				iTable.setWidths(w);
+				document.add(iTable);
+				document.close();				
+			}
 		} catch (DocumentException e) {
 			throw new IOException(e.getMessage(), e);
 		}
@@ -363,6 +399,7 @@ public class PDFPrinter implements Printer {
 		private Format<?> iFormat = null;
 		private String iBackground = null;
 		private int iRowSpan = 1, iColSpan = 1;
+		private Integer iWidth = null;
 		
 		public A() {}
 		
@@ -462,6 +499,11 @@ public class PDFPrinter implements Printer {
 		
 		public boolean hasImage() { return iImage != null; }
 		public Image getImage() { return iImage; }
+		
+		public Integer getWidth() { return iWidth; }
+		public void setWidth(Integer width) { iWidth = width; }
+		public boolean hasWidth() { return iWidth != null; }
+
 		
 		public boolean hasBufferedImage() { return iBufferedImage != null; }
 		public BufferedImage getBufferedImage() { return iBufferedImage; }

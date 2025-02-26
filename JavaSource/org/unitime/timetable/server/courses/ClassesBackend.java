@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsRequest;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesRequest;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -42,8 +42,8 @@ import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.webutil.BackTracker;
 
-@GwtRpcImplements(OfferingsRequest.class)
-public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, GwtRpcResponseList<TableInterface>> {
+@GwtRpcImplements(ClassesRequest.class)
+public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtRpcResponseList<TableInterface>> {
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -51,15 +51,15 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 	
 
 	@Override
-	public GwtRpcResponseList<TableInterface> execute(OfferingsRequest request, SessionContext context) {
-		context.checkPermission(Right.InstructionalOfferings);
+	public GwtRpcResponseList<TableInterface> execute(ClassesRequest request, SessionContext context) {
+		context.checkPermission(Right.Classes);
 		
 		String subjectArea = request.getFilter().getParameterValue("subjectArea");
 		if (subjectArea == null || subjectArea.isEmpty())
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
 		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
-		InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
+		ClassesTableBuilder builder = new ClassesTableBuilder();
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
 			if ("subjectArea".equals(p.getName())) {
@@ -67,7 +67,7 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 			} else if ("courseNbr".equals(p.getName())) {
 				context.setAttribute(SessionAttribute.OfferingsCourseNumber, p.getValue() != null ? p.getValue() : p.getDefaultValue());
 			} else if (p.getValue() != null) {
-				context.getUser().setProperty("InstructionalOfferingList." + p.getName(), p.getValue());
+				context.getUser().setProperty("ClassList." + p.getName(), p.getValue());
 			}
 		}
 		
@@ -78,7 +78,7 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 			for (String id: subjectArea.split(",")) {
 				SubjectArea sa = SubjectAreaDAO.getInstance().get(Long.valueOf(id));
 				if (sa != null) {
-					context.checkPermission(sa.getDepartment(), Right.InstructionalOfferings);
+					context.checkPermission(sa.getDepartment(), Right.Classes);
 					count++;
 					if (count == 1)
 						subjects += sa.getSubjectAreaAbbreviation();
@@ -90,15 +90,15 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 			}
 			BackTracker.markForBack(
 					context, 
-					"gwt.jsp?page=offerings&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
+					"gwt.jsp?page=classSearch&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
 						"&courseNbr=" + (courseNbr == null ? "" : URLEncoder.encode(courseNbr, "utf-8")),
-					MESSAGES.labelInstructionalOfferings() + " (" + subjects + (courseNbr == null || courseNbr.isEmpty() ? "" : " " + courseNbr) + ")", 
+					MESSAGES.labelClasses() + " (" + subjects + (courseNbr == null || courseNbr.isEmpty() ? "" : " " + courseNbr) + ")", 
 					true, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		builder.generateTableForInstructionalOfferings(
+		builder.generateTableForClasses(
 				context,
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
@@ -108,6 +108,10 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 		        response,
 		        request.getBackType(),
 		        request.getBackId());
+		
+		if (response.isEmpty())
+			throw new GwtRpcException(MESSAGES.errorNoRecords());
+		
 		return response;
 	}
 

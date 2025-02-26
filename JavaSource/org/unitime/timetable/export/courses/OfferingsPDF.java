@@ -75,21 +75,9 @@ public class OfferingsPDF extends OfferingsXLS {
     	PDFPrinter printer = new PDFPrinter(helper.getOutputStream(), false);
 		helper.setup(printer.getContentType(), reference(), false);
 		
-		boolean first = true;
 		for (TableInterface table: response) {
-			if (first && table.getHeader() != null) {
-				for (int i = 0; i < table.getHeader().size(); i++)
-					printer.printHeader(i, table.getHeader().size(), toA(table.getHeader().get(0), true));
-				first = false;
-			}
-			if (table.hasName()) {
-				printer.flush();
-				A a = new A();
-				a.bold();
-				a.setText(table.getName());
-				a.setColSpan(table.getMaxColumns());
-				printer.printLine(a);
-			}
+			for (int i = 0; i < table.getHeader().size(); i++)
+				printer.printHeader(i, table.getHeader().size(), toA(table.getHeader().get(0), true));
 			if (table.hasErrorMessage()) {
 				A a = new A();
 				a.italic(); a.center(); a.setColor("red");
@@ -102,9 +90,10 @@ public class OfferingsPDF extends OfferingsXLS {
 					printer.printLine(toA(line, false));
 				}
 			}
+			printer.flushTable(table.getName());
 		}
         
-    	printer.flush(); printer.close();		
+    	printer.flush(); printer.close();
 	}
 	
 	@Override

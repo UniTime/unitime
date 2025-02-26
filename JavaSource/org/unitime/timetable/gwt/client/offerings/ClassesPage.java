@@ -21,9 +21,9 @@ package org.unitime.timetable.gwt.client.offerings;
 
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsFilterRequest;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsFilterResponse;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsRequest;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterRequest;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterResponse;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesRequest;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.solver.PageFilter;
 import org.unitime.timetable.gwt.client.solver.SolverCookie;
@@ -38,7 +38,6 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -51,7 +50,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -61,7 +59,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 
-public class InstructionalOfferingsPage extends Composite {
+public class ClassesPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -69,9 +67,9 @@ public class InstructionalOfferingsPage extends Composite {
 	private SimpleForm iPanel;
 	private PageFilter iFilter;
 	
-	private OfferingsFilterResponse iConfig;
+	private ClassesFilterResponse iConfig;
 
-	public InstructionalOfferingsPage() {
+	public ClassesPage() {
 		iFilter = new PageFilter();
 		iFilter.getHeader().setCollapsible(SolverCookie.getInstance().isAssignedClassesFilter());
 		iFilter.getHeader().addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
@@ -85,7 +83,7 @@ public class InstructionalOfferingsPage extends Composite {
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		iPanel.addRow(iFilter);
 		
-		iFilter.getFooter().addButton("search", COURSE.actionSearchInstructionalOfferings(), new ClickHandler() {
+		iFilter.getFooter().addButton("search", COURSE.actionSearchClasses(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				String token = iFilter.getQuery();
@@ -95,8 +93,8 @@ public class InstructionalOfferingsPage extends Composite {
 			}
 		});
 		iFilter.getFooter().setEnabled("search", false);
-		iFilter.getFooter().getButton("search").setAccessKey(COURSE.accessSearchInstructionalOfferings().charAt(0));
-		iFilter.getFooter().getButton("search").setTitle(COURSE.titleSearchInstructionalOfferings(COURSE.accessSearchInstructionalOfferings()));
+		iFilter.getFooter().getButton("search").setAccessKey(COURSE.accessSearchClasses().charAt(0));
+		iFilter.getFooter().getButton("search").setTitle(COURSE.titleSearchClasses(COURSE.accessSearchClasses()));
 		iFilter.setSubmitCommand(new Command() {
 			@Override
 			public void execute() {
@@ -108,7 +106,7 @@ public class InstructionalOfferingsPage extends Composite {
 		iFilter.getFooter().addButton("exportCsv", COURSE.actionExportCsv(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				export("offerings.csv");
+				export("classes.csv");
 			}
 		});
 		
@@ -119,7 +117,7 @@ public class InstructionalOfferingsPage extends Composite {
 		iFilter.getFooter().addButton("exportXls", COURSE.actionExportXls(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				export("offerings.xls");
+				export("classes.xls");
 			}
 		});
 		iFilter.getFooter().getButton("exportXls").setAccessKey(COURSE.accessExportXls().charAt(0));
@@ -129,39 +127,13 @@ public class InstructionalOfferingsPage extends Composite {
 		iFilter.getFooter().addButton("exportPdf", COURSE.actionExportPdf(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				export("offerings.pdf");
+				export("classes.pdf");
 			}
 		});
 		iFilter.getFooter().getButton("exportPdf").setAccessKey(COURSE.accessExportPdf().charAt(0));
 		iFilter.getFooter().getButton("exportPdf").setTitle(COURSE.titleExportPdf(COURSE.accessExportPdf()));
 		iFilter.getFooter().setEnabled("exportPdf", false);
 	
-		iFilter.getFooter().addButton("worksheetPdf", COURSE.actionWorksheetPdf(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				export("worksheet.pdf");
-			}
-		});
-		iFilter.getFooter().getButton("worksheetPdf").setAccessKey(COURSE.accessWorksheetPdf().charAt(0));
-		iFilter.getFooter().getButton("worksheetPdf").setTitle(COURSE.titleWorksheetPdf(COURSE.accessWorksheetPdf()));
-		iFilter.getFooter().setEnabled("worksheetPdf", false);
-		
-		iFilter.getFooter().addButton("add", COURSE.actionAddNewInstructionalOffering(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				FilterInterface filter = iFilter.getValue();
-				LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
-				String subjectId = filter.getParameterValue("subjectArea", "");
-				if (subjectId.indexOf(',') > 0)
-					subjectId = subjectId.substring(0, subjectId.indexOf(','));
-				ToolBox.open("gwt.jsp?page=courseOffering&subjArea=" + subjectId +
-						"&courseNbr=" + URL.encodeQueryString(filter.getParameterValue("courseNbr", "")) + "&op=addCourseOffering");
-			}
-		});
-		iFilter.getFooter().getButton("add").setAccessKey(COURSE.accessAddNewInstructionalOffering().charAt(0));
-		iFilter.getFooter().getButton("add").setTitle(COURSE.titleAddNewInstructionalOffering(COURSE.accessAddNewInstructionalOffering()));
-		iFilter.getFooter().setEnabled("add", false);
-		
 		iRootPanel = new SimplePanel(iPanel);
 		iRootPanel.addStyleName("unitime-InstructionalOfferingsPage");
 		initWidget(iRootPanel);
@@ -181,7 +153,7 @@ public class InstructionalOfferingsPage extends Composite {
 	}
 	
 	protected void init() {
-		RPC.execute(new OfferingsFilterRequest(), new AsyncCallback<OfferingsFilterResponse>() {
+		RPC.execute(new ClassesFilterRequest(), new AsyncCallback<ClassesFilterResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iFilter.getFooter().setErrorMessage(MESSAGES.failedToInitialize(caught.getMessage()));
@@ -190,7 +162,7 @@ public class InstructionalOfferingsPage extends Composite {
 			}
 
 			@Override
-			public void onSuccess(OfferingsFilterResponse result) {
+			public void onSuccess(ClassesFilterResponse result) {
 				iConfig = result;
 				for (FilterParameterInterface p: result.getParameters()) {
 					String v = Window.Location.getParameter(p.getName());
@@ -202,11 +174,9 @@ public class InstructionalOfferingsPage extends Composite {
 				if (token != null && !(token.startsWith("A") || token.equals("back")))
 					iFilter.setQuery(token, true);	
 				iFilter.getFooter().setEnabled("search", true);
-				iFilter.getFooter().setEnabled("add", iConfig.isCanAdd());
 				iFilter.getFooter().setEnabled("exportCsv", iConfig.isCanExport());
 				iFilter.getFooter().setEnabled("exportXls", iConfig.isCanExport());
 				iFilter.getFooter().setEnabled("exportPdf", iConfig.isCanExport());
-				iFilter.getFooter().setEnabled("worksheetPdf", iConfig.isCanWorksheet());
 				boolean autoSearch = false;
 				if (!iFilter.getValue().getParameterValue("subjectArea", "").isEmpty()) {
 					autoSearch = true;
@@ -226,7 +196,7 @@ public class InstructionalOfferingsPage extends Composite {
 	}
 	
 	protected void search(final AsyncCallback<Boolean> callback) {
-		final OfferingsRequest request = new OfferingsRequest();
+		final ClassesRequest request = new ClassesRequest();
 		request.setBackId(Window.Location.getParameter("backId"));
 		request.setBackType(Window.Location.getParameter("backType"));
 		request.setFilter(iFilter.getValue());
@@ -235,11 +205,9 @@ public class InstructionalOfferingsPage extends Composite {
 			iPanel.removeRow(row);
 		iFilter.getFooter().showLoading();
 		iFilter.getFooter().setEnabled("search", false);
-		iFilter.getFooter().setEnabled("add", false);
 		iFilter.getFooter().setEnabled("exportCsv", false);
 		iFilter.getFooter().setEnabled("exportXls", false);
 		iFilter.getFooter().setEnabled("exportPdf", false);
-		iFilter.getFooter().setEnabled("worksheetPdf", false);
 		LoadingWidget.showLoading(MESSAGES.waitLoadingData());
 		RPC.execute(request, new AsyncCallback<GwtRpcResponseList<TableInterface>>() {
 			@Override
@@ -291,11 +259,9 @@ public class InstructionalOfferingsPage extends Composite {
 					iPanel.addRow(p);
 				}
 				iFilter.getFooter().setEnabled("search", true);
-				iFilter.getFooter().setEnabled("add", iConfig.isCanAdd());
 				iFilter.getFooter().setEnabled("exportCsv", iConfig.isCanExport());
 				iFilter.getFooter().setEnabled("exportXls", iConfig.isCanExport());
 				iFilter.getFooter().setEnabled("exportPdf", iConfig.isCanExport());
-				iFilter.getFooter().setEnabled("worksheetPdf", iConfig.isCanWorksheet());
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					@Override
 					public void execute() {

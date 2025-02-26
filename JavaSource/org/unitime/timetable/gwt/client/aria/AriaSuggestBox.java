@@ -36,10 +36,16 @@ import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HandlesAllKeyEvents;
 import com.google.gwt.event.dom.client.HasBlurHandlers;
 import com.google.gwt.event.dom.client.HasFocusHandlers;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.HasKeyPressHandlers;
+import com.google.gwt.event.dom.client.HasKeyUpHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -66,7 +72,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 /**
  * @author Tomas Muller
  */
-public class AriaSuggestBox extends Composite implements HasText, HasValue<String>, HasSelectionHandlers<Suggestion>, Focusable, HasEnabled, HasAriaLabel {
+public class AriaSuggestBox extends Composite implements HasText, HasValue<String>, HasSelectionHandlers<Suggestion>, Focusable, HasEnabled, HasAriaLabel, HasKeyPressHandlers, HasKeyDownHandlers, HasKeyUpHandlers {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private AriaTextBox iText;
 	private SuggestOracle iOracle;
@@ -471,4 +477,19 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 	public void setEnterPreventDefault(boolean enterPreventDefault) { iEnterPreventDefault = enterPreventDefault; }
 	
 	public AriaTextBox getTextBox() { return iText; }
+
+	@Override
+	public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
+		return iText.addKeyPressHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
+		return iText.addKeyUpHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+		return iText.addKeyDownHandler(handler);
+	}
 }

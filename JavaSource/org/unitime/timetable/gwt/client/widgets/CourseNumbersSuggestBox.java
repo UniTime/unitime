@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.shared.FilterInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -52,9 +53,15 @@ public class CourseNumbersSuggestBox extends SuggestOracle {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private String iConfiguration = null;
 	private RegExp iRegExp = RegExp.compile("\\$\\{([a-zA-Z_0-9]+)\\}");
+	private FilterInterface iFilter;
 	
 	public CourseNumbersSuggestBox(String configuration) {
 		iConfiguration = configuration;
+	}
+	
+	public CourseNumbersSuggestBox withFilter(FilterInterface filter) {
+		iFilter = filter;
+		return this;
 	}
 	
 	public static AriaSuggestBox insert(RootPanel panel) {
@@ -77,24 +84,29 @@ public class CourseNumbersSuggestBox extends SuggestOracle {
 	private String getConfiguration() {
 		String conf = iConfiguration;
 		for (MatchResult matcher = iRegExp.exec(conf); matcher != null; matcher = iRegExp.exec(conf)) {
-			Element element = DOM.getElementById(matcher.getGroup(1));
-			String value = "";
-			if (element == null) {
-				// do nothing
-			} else if ("select".equalsIgnoreCase(element.getTagName())) {
-				ListBox list = ListBox.wrap(element);
-				for (int i = 0; i < list.getItemCount(); i++) {
-					if (list.isItemSelected(i))
-						value += (value.isEmpty() ? "" : ",") + list.getValue(i);
-				}
-			} else if ("input".equalsIgnoreCase(element.getTagName())) {
-				TextBox text = TextBox.wrap(element);
-				value = text.getText();
+			if (iFilter != null) {
+				String value = iFilter.getParameterValue(matcher.getGroup(1), "");
+				conf = conf.replace("${" + matcher.getGroup(1) + "}", value);
 			} else {
-				Hidden hidden = Hidden.wrap(element);
-				value = hidden.getValue();
+				Element element = DOM.getElementById(matcher.getGroup(1));
+				String value = "";
+				if (element == null) {
+					// do nothing
+				} else if ("select".equalsIgnoreCase(element.getTagName())) {
+					ListBox list = ListBox.wrap(element);
+					for (int i = 0; i < list.getItemCount(); i++) {
+						if (list.isItemSelected(i))
+							value += (value.isEmpty() ? "" : ",") + list.getValue(i);
+					}
+				} else if ("input".equalsIgnoreCase(element.getTagName())) {
+					TextBox text = TextBox.wrap(element);
+					value = text.getText();
+				} else {
+					Hidden hidden = Hidden.wrap(element);
+					value = hidden.getValue();
+				}
+				conf = conf.replace("${" + matcher.getGroup(1) + "}", value);
 			}
-			conf = conf.replace("${" + matcher.getGroup(1) + "}", value);
 		}
 		return conf;
 	}

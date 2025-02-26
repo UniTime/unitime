@@ -382,80 +382,80 @@ public class InstructionalOfferingTableBuilder {
     	LineInterface row2 = new LineInterface();
     	CellInterface cell = null;
     	if (isSimple()) {
-        	if (isShowLabel()) row.addCell(headerCell(null));
-        	if (isShowDivSec()) row.addCell(headerCell(MSG.columnExternalId()));
+        	if (isShowLabel()) row.addCell(headerCell(null).setWidth(175));
+        	if (isShowDivSec()) row.addCell(headerCell(MSG.columnExternalId()).setWidth(80));
         	if (isShowDemand()) {
         		if (sessionHasEnrollments(sessionId))
-        			row.addCell(headerCell(MSG.columnDemand()).setTextAlignment(Alignment.RIGHT));
+        			row.addCell(headerCell(MSG.columnDemand()).setTextAlignment(Alignment.RIGHT).setWidth(60));
         		else
-        			row.addCell(headerCell(MSG.columnLastDemand()).setTextAlignment(Alignment.RIGHT));
+        			row.addCell(headerCell(MSG.columnLastDemand()).setTextAlignment(Alignment.RIGHT).setWidth(60));
         	}
         	if (isShowProjectedDemand())
-        		row.addCell(headerCell(MSG.columnProjectedDemand()).setTextAlignment(Alignment.RIGHT));
+        		row.addCell(headerCell(MSG.columnProjectedDemand()).setTextAlignment(Alignment.RIGHT).setWidth(65));
         	if (isShowLimit())
-        		row.addCell(headerCell(MSG.columnLimit()).setTextAlignment(Alignment.RIGHT));
+        		row.addCell(headerCell(MSG.columnLimit()).setTextAlignment(Alignment.RIGHT).setWidth(50));
         	if (isShowSnapshotLimit())
-        		row.addCell(headerCell(MSG.columnSnapshotLimit()).setTextAlignment(Alignment.RIGHT));
+        		row.addCell(headerCell(MSG.columnSnapshotLimit()).setTextAlignment(Alignment.RIGHT).setWidth(50));
         	if (isShowRoomRatio())
-        		row.addCell(headerCell(MSG.columnRoomRatio()).setTextAlignment(Alignment.RIGHT));
+        		row.addCell(headerCell(MSG.columnRoomRatio()).setTextAlignment(Alignment.RIGHT).setWidth(50));
         	if (isShowManager()){
-        		cell = this.headerCell(MSG.columnManager(), 1, 1);
+        		cell = this.headerCell(MSG.columnManager(), 1, 1).setWidth(75);
         		row.addCell(cell);
         	}
         	if (isShowFundingDepartment())
-        		row.addCell(headerCell(MSG.columnFundingDepartment()));
+        		row.addCell(headerCell(MSG.columnFundingDepartment()).setWidth(75));
         	if (isShowDatePattern())
-        		row.addCell(headerCell(MSG.columnDatePattern()));
+        		row.addCell(headerCell(MSG.columnDatePattern()).setWidth(100));
         	if (isShowMinPerWk())
-        		row.addCell(headerCell(durationColName).setTextAlignment(Alignment.RIGHT));
+        		row.addCell(headerCell(durationColName).setTextAlignment(Alignment.RIGHT).setWidth(60));
         	if (isShowTimePattern())
-        		row.addCell(headerCell(MSG.columnTimePattern()));
+        		row.addCell(headerCell(MSG.columnTimePattern()).setWidth(80));
         	if (isShowPreferences()) {
-        		row.addCell(headerCell(MSG.columnTimePref()));
-        		row.addCell(headerCell(MSG.columnAllRoomPref()));
+        		row.addCell(headerCell(MSG.columnTimePref()).setWidth(getGridAsText()?200:100));
+        		row.addCell(headerCell(MSG.columnAllRoomPref()).setWidth(150));
         		if (getDisplayDistributionPrefs())
-        			row.addCell(headerCell(MSG.columnDistributionPref()));
+        			row.addCell(headerCell(MSG.columnDistributionPref()).setWidth(200));
         		if (getDisplayInstructorPrefs()) {
-            		row.addCell(headerCell(MSG.columnInstructorAttributePref()));
-            		row.addCell(headerCell(MSG.columnInstructorPref()));
+            		row.addCell(headerCell(MSG.columnInstructorAttributePref()).setWidth(150));
+            		row.addCell(headerCell(MSG.columnInstructorPref()).setWidth(150));
         		}
         	} else if (getDisplayInstructorPrefs()) {
-        		row.addCell(headerCell(MSG.columnInstructorAttributePref()));
-        		row.addCell(headerCell(MSG.columnInstructorPref()));
+        		row.addCell(headerCell(MSG.columnInstructorAttributePref()).setWidth(150));
+        		row.addCell(headerCell(MSG.columnInstructorPref()).setWidth(150));
         	}
         	if (isShowInstructorAssignment()) 
-        		row.addCell(headerCell(MSG.columnTeachingLoad()));
+        		row.addCell(headerCell(MSG.columnTeachingLoad()).setWidth(100));
         	if (isShowInstructor())
-        		row.addCell(headerCell(MSG.columnInstructor()));
+        		row.addCell(headerCell(MSG.columnInstructor()).setWidth(200));
         	if (getDisplayTimetable() && isShowTimetable()){
-        		row.addCell(headerCell(MSG.columnAssignedTime()));
-        		row.addCell(headerCell(MSG.columnAssignedRoom()));
-        		row.addCell(headerCell(MSG.columnAssignedRoomCapacity()).setTextAlignment(Alignment.RIGHT));
+        		row.addCell(headerCell(MSG.columnAssignedTime()).setWidth(130));
+        		row.addCell(headerCell(MSG.columnAssignedRoom()).setWidth(100));
+        		row.addCell(headerCell(MSG.columnAssignedRoomCapacity()).setTextAlignment(Alignment.RIGHT).setWidth(70));
         	}
         	if (isShowTitle())
-        		row.addCell(headerCell(MSG.columnTitle()));
+        		row.addCell(headerCell(MSG.columnTitle()).setWidth(200));
         	if (isShowCredit())
-        		row.addCell(headerCell(MSG.columnOfferingCredit()));
+        		row.addCell(headerCell(MSG.columnOfferingCredit()).setWidth(100));
         	if (isShowSubpartCredit())
-        		row.addCell(headerCell(MSG.columnSubpartCredit()));
+        		row.addCell(headerCell(MSG.columnSubpartCredit()).setWidth(100));
         	if (isShowConsent())
-        		row.addCell(headerCell(MSG.columnConsent()));
+        		row.addCell(headerCell(MSG.columnConsent()).setWidth(100));
         	if (isShowSchedulePrintNote())
-        		row.addCell(headerCell(getSchedulePrintNoteLabel()));
+        		row.addCell(headerCell(getSchedulePrintNoteLabel()).setWidth(150));
         	if (isShowNote())
-        		row.addCell(headerCell(MSG.columnNote()));
+        		row.addCell(headerCell(MSG.columnNote()).setWidth(300));
         	if (isShowExam()) {
                 if (isShowExamName())
-                	row.addCell(headerCell(MSG.columnExam()));	
+                	row.addCell(headerCell(MSG.columnExam()).setWidth(120));
                 if (isShowExamTimetable()) {
-                	row.addCell(headerCell(MSG.columnExamPeriod()));
-                	row.addCell(headerCell(MSG.columnExamRoom()));
+                	row.addCell(headerCell(MSG.columnExamPeriod()).setWidth(120));
+                	row.addCell(headerCell(MSG.columnExamRoom()).setWidth(80));
                 }
         	}
         	if (isShowLms())
-        		row.addCell(headerCell(MSG.columnLms()));
+        		row.addCell(headerCell(MSG.columnLms()).setWidth(100));
         	if (isShowWaitlistMode())
-        		row.addCell(headerCell(MSG.columnWaitlistMode()));
+        		row.addCell(headerCell(MSG.columnWaitlistMode()).setWidth(75));
     	} else {
         	if (isShowLabel()){
         		cell = this.headerCell(null, 2, 1);
@@ -773,12 +773,18 @@ public class InstructionalOfferingTableBuilder {
 			hint = HtmlUtils.htmlEscape(p.getPrefLevel().getPrefName() + " " + dp.getLabel() + owner);
 			if (dp.getDistributionObjects()!=null && !dp.getDistributionObjects().isEmpty()) {
 				hint += "<ul><li>";
+				String aria = p.getPrefLevel().getPrefAbbv() + " " + p.preferenceAbbv(getInstructorNameFormat()) + " (";
 				for (Iterator<DistributionObject> it = dp.getOrderedSetOfDistributionObjects().iterator(); it.hasNext();) {
 					DistributionObject distObj = it.next();
 					hint += HtmlUtils.htmlEscape(distObj.preferenceText());
-					if (it.hasNext())
+					aria += distObj.preferenceText();
+					if (it.hasNext()) {
 						hint += "<li>";
+						aria += ", ";
+					}
 				}
+				aria += ")";
+				cell.setAria(aria);
 				hint += "</ul>";
 			} else if (dp.getOwner() instanceof DepartmentalInstructor) {
 				hint += "<ul><li>";
@@ -943,7 +949,7 @@ public class InstructionalOfferingTableBuilder {
     		CellInterface cell = initNormalCell("", isEditable); cell.setInline(false);
     		for (Object pref: prefGroup.effectivePreferences(prefType))
     			cell.addItem(preferenceCell((Preference)pref));
-    		cell.setNoWrap(true);
+    		if (!isSimple()) cell.setNoWrap(true);
     		return(cell);
     	}
     	

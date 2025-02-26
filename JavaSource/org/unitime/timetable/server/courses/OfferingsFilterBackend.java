@@ -53,7 +53,7 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 		filter.addParameter(createToggle(context, "demand", MESSAGES.columnDemand(), true, "enrollmentInformation"));
 		filter.addParameter(createToggle(context, "projectedDemand", MESSAGES.columnProjectedDemand(), true, "enrollmentInformation"));
 		filter.addParameter(createToggle(context, "limit", MESSAGES.columnLimit(), true, "enrollmentInformation"));
-		filter.addParameter(createToggle(context, "snapshotLimit", MESSAGES.columnSnapshotLimit(), true, "enrollmentInformation"));
+		filter.addParameter(createToggle(context, "snapshotLimit", MESSAGES.columnSnapshotLimit(), false, "enrollmentInformation"));
 		filter.addParameter(createToggle(context, "roomLimit", MESSAGES.columnRoomRatio(), true, "enrollmentInformation"));
 		setParentDefault(filter, "enrollmentInformation");
 		
@@ -126,6 +126,7 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
 			subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
 		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));
+		subjectArea.setEnterToSubmit(true);
 		filter.addParameter(subjectArea);
 		
 		FilterParameterInterface courseNbr = new FilterParameterInterface();
@@ -135,6 +136,7 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 		courseNbr.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsCourseNumber));
 		courseNbr.setCollapsible(false);
 		courseNbr.setConfig("subjectId=${subjectArea};notOffered=include;waitlist=${waitlist}");
+		courseNbr.setEnterToSubmit(true);
 		filter.addParameter(courseNbr);
 		
 		filter.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));

@@ -33,9 +33,11 @@ import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.rooms.RoomFilterBox;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
+import org.unitime.timetable.gwt.client.widgets.DayCodeSelector;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -46,14 +48,21 @@ import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface
 import org.unitime.timetable.gwt.shared.FilterInterface.ListItem;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.HasKeyUpHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -77,6 +86,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	private int iFilterHeaderRow = -1, iFilterLastRow = -1;
 	private List<Integer> iCollapsibleRows = new ArrayList<Integer>();
 	private Map<String, Widget> iWidgets = new HashMap<String, Widget>();
+	private Command iSubmitCommand;
 	
 	public PageFilter() {
 		addStyleName("unitime-PageFilter");
@@ -98,6 +108,9 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	public UniTimeHeaderPanel getHeader() { return iHeader; }
 	public UniTimeHeaderPanel getFooter() { return iFooter; }
 	
+	public Command getSubmitCommand() { return iSubmitCommand; }
+	public void setSubmitCommand(Command command) { iSubmitCommand = command; }
+	
 	protected Widget getWidget(final FilterParameterInterface param) {
 		if (param.hasOptions()) {
 			final ListBox list = new ListBox();
@@ -111,7 +124,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 					list.setSelectedIndex(list.getItemCount() - 1);
 			}
 			if (list.isMultipleSelect())
-				list.getElement().setAttribute("size", String.valueOf(Math.min(7, param.getOptions().size())));
+				list.getElement().setAttribute("size", String.valueOf(Math.min(param.getMaxLinesToShow(), param.getOptions().size())));
 			list.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {
@@ -264,13 +277,46 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			});
 			return text;
 		}
+		if ("time".equalsIgnoreCase(param.getType())) {
+			TimeSelector text = new TimeSelector((TimeSelector)iWidgets.get("startTime"));
+			if (param.hasDefaultValue())
+				text.setText(param.getDefaultValue());
+			text.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Integer> event) {
+					if (event.getValue() == null)
+						param.setValue("");
+					else
+						param.setValue(event.getValue().toString());
+					ValueChangeEvent.fire(PageFilter.this, iFilter);
+				}
+			});
+			return text;
+		}
+		if ("dayCode".equalsIgnoreCase(param.getType())) {
+			DayCodeSelector text = new DayCodeSelector();
+			if (param.hasDefaultValue())
+				text.setText(param.getDefaultValue());
+			text.addValueChangeHandler(new ValueChangeHandler<Integer>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Integer> event) {
+					if (event.getValue() == null)
+						param.setValue(null);
+					else
+						param.setValue(event.getValue().toString());
+					ValueChangeEvent.fire(PageFilter.this, iFilter);
+				}
+			});
+			return text;
+		}
 		if ("courseNumber".equalsIgnoreCase(param.getType())) {
 			AriaTextBox text = new AriaTextBox();
+			text.setWidth("200px");
 			text.getElement().setAttribute("autocomplete", "off");
 			text.setTitle(MSG.tooltipCourseNumber());
 			if (param.hasDefaultValue())
 				text.setText(param.getDefaultValue());
-			AriaSuggestBox box = new AriaSuggestBox(text, new CourseNumbersSuggestBox(param.getConfig()));
+			AriaSuggestBox box = new AriaSuggestBox(text, new CourseNumbersSuggestBox(param.getConfig()).withFilter(iFilter));
 			text.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
@@ -327,10 +373,26 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		iCollapsibleRows.clear();
 		Set<String> parents = new HashSet<String>();
 		String lastLabel = null;
+		FilterParameterInterface previous = null;
 		for (final FilterParameterInterface param: filter.getParameters()) {
 			String value = Location.getParameter(param.getName());
 			if (value != null) param.setDefaultValue(value);
 			Widget w = getWidget(param);
+			if (param.isEnterToSubmit() && w instanceof HasKeyUpHandlers)
+				((HasKeyUpHandlers)w).addKeyUpHandler(new KeyUpHandler() {
+					@Override
+					public void onKeyUp(KeyUpEvent event) {
+						if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER && iSubmitCommand != null) {
+							Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+								@Override
+								public void execute() {
+									iSubmitCommand.execute();
+								}
+							});
+						}
+					}
+				});
+						
 			w.getElement().setId(param.getName());
 			iWidgets.put(param.getName(), w);
 			int row;
@@ -340,26 +402,47 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			} else {
 				lastLabel = label;
 			}
+			P panel = new P("panel");
+			if (param.hasSuffix() || param.hasPrefix()) {
+				if (param.hasPrefix()) {
+					Label prefix = new Label(param.getPrefix()); prefix.addStyleName("prefix");
+					panel.add(prefix);
+				}
+			}
+			panel.add(w);
 			if (param.hasSuffix()) {
 				if (w instanceof CheckBox) {
 					((CheckBox)w).setText(param.getSuffix());
-					row = addRow(label, w);
 				} else {
-					P panel = new P("panel");
-					panel.add(w);
 					Label suffix = new Label(param.getSuffix()); suffix.addStyleName("suffix");
 					panel.add(suffix);
-					row = addRow(label, panel);
 				}
-			} else {
-				row = addRow(label, w);
 			}
+			if (label.isEmpty() && param.isComposite() && previous != null && previous.isComposite()) {
+				row = iFilterLastRow;
+				Widget widget = getWidget(row, 1);
+				P prev = null;
+				if (widget instanceof P && ((P)widget).getStyleName().contains("panel")) {
+					prev = (P) widget;
+				} else {
+					prev = new P("panel");
+					prev.add(widget);
+				}
+				P composite = new P("composite");
+				composite.add(prev);
+				composite.add(panel);
+				setWidget(row, 1, composite);
+			} else if (panel.getWidgetCount() == 1)
+				row = addRow(label, w);
+			else
+				row = addRow(label, panel);
 			if (param.getParent() != null) {
 				getWidget(row, 1).getElement().getStyle().setPaddingLeft(20, Unit.PX);
 				parents.add(param.getParent());
 			}
 			if (param.isCollapsible()) iCollapsibleRows.add(row);
 			iFilterLastRow = row;
+			previous = param;
 			if (iHeader.isCollapsible() != null && !iHeader.isCollapsible() && param.isCollapsible())
 				getRowFormatter().setVisible(iFilterLastRow, false);
 		}

@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.server;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -97,7 +99,7 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
             			"select co from CourseOffering co " + 
             			"where co.subjectArea.session.uniqueId = :sessionId and co.subjectArea.subjectAreaAbbreviation = :subjectAbbv " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
-            			("exclude".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
+            			("exclude".equals(params.get("crossListed")) || "0".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
             			wlFilter + 
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
@@ -111,21 +113,23 @@ public class CourseNumbersSuggestionsBackend implements GwtRpcImplementation<Sug
         }
         
         if (params.containsKey("subjectId")) {
-        	Long subjectId = null;
-        	try {
-        		subjectId = Long.parseLong(params.get("subjectId"));
-        	} catch (NumberFormatException e) {}
-        	if (subjectId != null) {
+        	List<Long> subjectIds = new ArrayList<Long>();
+        	for (String subjectId: params.get("subjectId").split(",")) {
+        		try {
+        			subjectIds.add(Long.parseLong(subjectId));
+            	} catch (NumberFormatException e) {}
+        	}
+        	if (!subjectIds.isEmpty()) {
             	for (CourseOffering co: hibSession.createQuery(
             			"select co from CourseOffering co " + 
-            			"where co.subjectArea.uniqueId = :subjectId " +
+            			"where co.subjectArea.uniqueId in :subjectIds " +
             			("include".equals(params.get("notOffered")) ? "" : "and co.instructionalOffering.notOffered = false ") +
-            			("exclude".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
+            			("exclude".equals(params.get("crossListed")) || "0".equals(params.get("crossListed")) ? "and co.isControl = true " : "") +
             			wlFilter + 
             			(ApplicationProperty.CourseOfferingTitleSearch.isTrue() && request.getQuery().length() > 2
             			? "and (co.courseNbr like :q or lower(co.title) like lower('%' || :q))"
             			: "and co.courseNbr like :q") + " order by co.courseNbr", CourseOffering.class)
-            			.setParameter("subjectId", subjectId)
+            			.setParameter("subjectIds", subjectIds)
             			.setParameter("q", request.getQuery() + "%")
             			.setCacheable(true).setMaxResults(request.getLimit()).list()) {
             		result.add(new SuggestionInterface(co.getCourseNumberWithTitle(), co.getCourseNbr()));

@@ -30,30 +30,34 @@ import org.unitime.timetable.gwt.shared.FilterInterface;
 
 public class OfferingsInterface {
 	
-	public static class OfferingsFilterRequest implements GwtRpcRequest<OfferingsFilterResponse> {
+	public static class OfferingsFilterRequest implements GwtRpcRequest<OfferingsFilterResponse> {}
+	
+	public static class OfferingsFilterResponse extends ClassesFilterResponse {
+		private static final long serialVersionUID = 1L;
+		private boolean iCanAdd = false;
+		private boolean iCanWorksheet = false;
 		
+		public boolean isCanAdd() { return iCanAdd; }
+		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
+
+		public boolean isCanWorksheet() { return iCanWorksheet; }
+		public void setCanWorksheet(boolean canWorksheet) { iCanWorksheet = canWorksheet; }
 	}
 	
-	public static class OfferingsFilterResponse extends FilterInterface {
+	public static class ClassesFilterRequest implements GwtRpcRequest<ClassesFilterResponse> {}
+	
+	public static class ClassesFilterResponse extends FilterInterface {
 		private static final long serialVersionUID = 1L;
 		private boolean iSticky = false;
-		private boolean iCanAdd = false;
 		private boolean iCanExport = false;
-		private boolean iCanWorksheet = false;
 		private Integer iMaxSubjectsToSearchAutomatically = null;
 		private Long iSessionId = null;
 		
 		public boolean isSticky() { return iSticky; }
 		public void setSticky(boolean sticky) { iSticky = sticky; }
 		
-		public boolean isCanAdd() { return iCanAdd; }
-		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
-
 		public boolean isCanExport() { return iCanExport; }
 		public void setCanExport(boolean canExport) { iCanExport = canExport; }
-
-		public boolean isCanWorksheet() { return iCanWorksheet; }
-		public void setCanWorksheet(boolean canWorksheet) { iCanWorksheet = canWorksheet; }
 
 		public Integer getMaxSubjectsToSearchAutomatically() { return iMaxSubjectsToSearchAutomatically; }
 		public void setMaxSubjectsToSearchAutomatically(Integer max) { iMaxSubjectsToSearchAutomatically = max; }
@@ -63,6 +67,19 @@ public class OfferingsInterface {
 	}
 	
 	public static class OfferingsRequest implements GwtRpcRequest<GwtRpcResponseList<TableInterface>> {
+		private FilterInterface iFilter;
+		private String iBackId, iBackType;
+		
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+		
+		public String getBackId() { return iBackId; }
+		public void setBackId(String backId) { iBackId = backId; }
+		public String getBackType() { return iBackType; }
+		public void setBackType(String backType) { iBackType = backType; }
+	}
+	
+	public static class ClassesRequest implements GwtRpcRequest<GwtRpcResponseList<TableInterface>> {
 		private FilterInterface iFilter;
 		private String iBackId, iBackType;
 		

@@ -179,6 +179,7 @@ public class TableInterface implements IsSerializable {
 		private Integer iIndent;
 		private String iMouseOver, iMouseOut;
 		private ImageInterface iImage;
+		private Integer iWidth;
 		
 		public CellInterface() {}
 		
@@ -213,6 +214,10 @@ public class TableInterface implements IsSerializable {
 		public String getColor() { return iColor; }
 		public CellInterface setColor(String color) { iColor = color; return this; }
 		public boolean hasColor() { return iColor != null && !iColor.isEmpty(); }
+		
+		public Integer getWidth() { return iWidth; }
+		public CellInterface setWidth(Integer width) { iWidth = width; return this; }
+		public boolean hasWidth() { return iWidth != null; }
 		
 		public List<CellInterface> getItems() { return iItems; }
 		public CellInterface addItem(CellInterface item) {

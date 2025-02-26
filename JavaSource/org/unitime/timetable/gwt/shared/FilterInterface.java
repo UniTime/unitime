@@ -67,13 +67,16 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 	}
 	
 	public static class FilterParameterInterface implements IsSerializable, Comparable<FilterParameterInterface> {
-		private String iName, iLabel, iType, iValue, iDefault, iSuffix;
+		private String iName, iLabel, iType, iValue, iDefault, iPrefix, iSuffix;
 		private List<ListItem> iOptions = null;
 		private boolean iMultiSelect = false;
 		private boolean iCollapsible = true;
+		private boolean iComposite = false;
+		private boolean iEnterToSubmit = false;
 		private Long iSessionId;
 		private String iParent = null;
 		private String iConfig = null;
+		private Integer iMaxLinesToShow = null;
 		
 		public FilterParameterInterface() {}
 		
@@ -86,6 +89,10 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 		public boolean hasSuffix() { return iSuffix != null && !iSuffix.isEmpty(); }
 		public String getSuffix() { return iSuffix; }
 		public void setSuffix(String suffix) { iSuffix = suffix; }
+		
+		public boolean hasPrefix() { return iPrefix != null && !iPrefix.isEmpty(); }
+		public String getPrefix() { return iPrefix; }
+		public void setPrefix(String prefix) { iPrefix = prefix; }
 		
 		public String getType() { return iType; }
 		public void setType(String type) { iType = type; }
@@ -145,6 +152,12 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 		public boolean isCollapsible() { return iCollapsible; }
 		public void setCollapsible(boolean collapsible) { iCollapsible = collapsible; }
 		
+		public boolean isComposite() { return iComposite; }
+		public void setComposite(boolean composite) { iComposite = composite; }
+		
+		public boolean isEnterToSubmit() { return iEnterToSubmit; }
+		public void setEnterToSubmit(boolean enterToSubmit) { iEnterToSubmit = enterToSubmit; }
+		
 		@Override
 		public String toString() {
 			return getName() + "=" + (getValue() == null ? getDefaultValue() : getValue());
@@ -165,6 +178,9 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 		
 		public String getConfig() { return iConfig; }
 		public void setConfig(String config) { iConfig = config; }
+		
+		public int getMaxLinesToShow() { return iMaxLinesToShow == null ? 7 : iMaxLinesToShow.intValue(); }
+		public void setMaxLinesToShow(int maxLinesToShow) { iMaxLinesToShow = maxLinesToShow; }
 	}
 	
 	public static class ListItem implements IsSerializable, Comparable<ListItem> {

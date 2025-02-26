@@ -51,6 +51,13 @@
 			<item name="Classes" page="classSearch.action">
 				<condition>
 					<hasPermission name="Classes"/>
+					<propertyEquals name="unitime.legacy.course.classes" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Classes" page="classSearch" type="gwt">
+				<condition>
+					<hasPermission name="Classes"/>
+					<propertyEquals name="unitime.legacy.course.classes" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<separator/>

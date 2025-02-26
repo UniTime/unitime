@@ -1942,6 +1942,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructional Offerings")
 	String labelInstructionalOfferings();
 	
+	@DefaultMessage("Classes")
+	String labelClasses();
+	
 	@DefaultMessage("Unable to create PDF file: {0}.")
 	String errorUnableToCreatePdf(String reason);
 	
@@ -6006,4 +6009,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Are you sure you want to change the default date pattern?")
 	String confirmDefaultDatePatternChange();
+	
+	@DefaultMessage(" - Do Not Display In Schedule Book.")
+	String titleSuffixDoNotDisplay();
 }

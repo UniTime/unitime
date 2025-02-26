@@ -6223,6 +6223,16 @@ unitime-RoomSharingWidget .legend .blank {
 	vertical-align: bottom;
 }
 
+
+.unitime-PageFilter .panel .prefix {
+	padding-right: 3px;
+}
+
+.unitime-PageFilter .composite .panel {
+	display: inline-block;
+	padding-right: 10px;
+}
+
 .unitime-PageFilter .label-td {
 	width: 1%;
 }
@@ -7890,4 +7900,8 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-InstructionalOfferingsPage .unitime-PageFilter .unitime-HeaderPanel {
 	max-width: calc(99vw - 220px);
+}
+
+.unitime-DayCodeSector .bit {
+	padding-right: 5px;
 }

@@ -23,33 +23,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
-import org.unitime.timetable.export.Exporter;
+import org.unitime.timetable.export.PDFPrinter;
+import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
-import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
-import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.server.courses.InstructionalOfferingTableBuilder;
-import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.service.AssignmentService;
-import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.server.courses.ClassesTableBuilder;
 
-@Service("org.unitime.timetable.export.Exporter:offerings.csv")
-public class OfferingsCSV implements Exporter {
-
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+@Service("org.unitime.timetable.export.Exporter:classes.pdf")
+public class ClassesPDF extends OfferingsPDF {
 
 	@Override
 	public String reference() {
-		return "offerings.csv";
+		return "classes.pdf";
 	}
 
 	@Override
@@ -61,79 +51,47 @@ public class OfferingsCSV implements Exporter {
     		SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
     		if (subjectArea != null) {
     			subjectAreas.add(subjectArea);
-    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), Right.InstructionalOfferingsExportPDF);
+    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), Right.ClassesExportPDF);
     		}
     	}
     	
     	List<TableInterface> response = new ArrayList<TableInterface>();
     	
-    	InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
+    	ClassesTableBuilder builder = new ClassesTableBuilder();
     	builder.setSimple(true);
     	
-    	builder.generateTableForInstructionalOfferings(
+    	builder.generateTableForClasses(
 				helper.getSessionContext(),
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
-		        new Filter(helper), 
+		        new OfferingsCSV.Filter(helper), 
 		        helper.getParameter("subjectArea").split(","), 
 		        true, 
 		        response,
 		        helper.getParameter("backType"),
 		        helper.getParameter("backId"));
     	
-    	Printer printer = new CSVPrinter(helper, false);
+    	PDFPrinter printer = new PDFPrinter(helper.getOutputStream(), false);
 		helper.setup(printer.getContentType(), reference(), false);
 		
 		for (TableInterface table: response) {
-			if (table.hasName())
-				printer.printLine(table.getName());
-			if (table.hasErrorMessage())
-				printer.printLine(table.getErrorMessage());
-			if (table.getHeader() != null) {
-				for (LineInterface line: table.getHeader()) {
-					printer.printHeader(toLine(line));
-				}
+			for (int i = 0; i < table.getHeader().size(); i++)
+				printer.printHeader(i, table.getHeader().size(), toA(table.getHeader().get(0), true));
+			if (table.hasErrorMessage()) {
+				A a = new A();
+				a.italic(); a.center(); a.setColor("red");
+				a.setText(table.getErrorMessage());
+				a.setColSpan(table.getMaxColumns());
+				printer.printLine(a);
 			}
 			if (table.getLines() != null) {
 				for (LineInterface line: table.getLines()) {
-					printer.printLine(toLine(line));
+					printer.printLine(toA(line, false));
 				}
 			}
+			printer.flushTable(table.getName());
 		}
         
     	printer.flush(); printer.close();		
-	}
-	
-	protected String[] toLine(LineInterface line) {
-		List<String> row = new ArrayList<String>();
-		if (line.hasCells()) {
-			for (CellInterface cell: line.getCells()) {
-				row.add(cell.toString());
-				for (int i = 1; i < cell.getColSpan(); i++) row.add("");
-			}
-		}
-		return row.toArray(new String[0]);
-	}
-
-	public static class Filter implements FilterInterface {
-		ExportHelper iHelper;
-		
-		Filter(ExportHelper helper) { iHelper = helper; }
-
-		@Override
-		public boolean hasParameter(String name) {
-			return iHelper.getParameter(name) != null;
-		}
-
-		@Override
-		public String getParameterValue(String name) {
-			return iHelper.getParameter(name);
-		}
-
-		@Override
-		public String getParameterValue(String name, String defaultValue) {
-			String value = iHelper.getParameter(name);
-			return (value == null ? defaultValue : value);
-		}
 	}
 }

@@ -141,7 +141,11 @@ public class ClassCourseComparator implements Comparator {
         }
         
         int cmp = s1.getItype().getItype().compareTo(s2.getItype().getItype());
-        if (cmp!=0) return cmp;
+        if (cmp != 0) return cmp;
+        
+        if (!s1.getInstrOfferingConfig().equals(s2.getInstrOfferingConfig())) {
+        	return new InstrOfferingConfigComparator(null).compare(s1.getInstrOfferingConfig(), s2.getInstrOfferingConfig());
+        }
         
         return s1.getUniqueId().compareTo(s2.getUniqueId());		
 	}

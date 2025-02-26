@@ -141,6 +141,7 @@ public class OfferingsXLS extends OfferingsCSV {
 	
 	protected A toA(CellInterface cell, LineInterface line, A parent, int index) {
 		A a = createCell(cell);
+		if (cell.hasWidth()) a.setWidth(cell.getWidth());
 		a.inline();
 		if (parent != null && !cell.isInline() && index > 0)
 			parent.clear(F.INLINE);
