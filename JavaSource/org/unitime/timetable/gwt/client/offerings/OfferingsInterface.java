@@ -66,6 +66,16 @@ public class OfferingsInterface {
 		public Long getSessionId() { return iSessionId; }
 	}
 	
+	public static class ClassAssignmentsFilterRequest implements GwtRpcRequest<ClassAssignmentsFilterResponse> {}
+	
+	public static class ClassAssignmentsFilterResponse extends ClassesFilterResponse {
+		private static final long serialVersionUID = 1L;
+		private boolean iCanExportPdf = false;
+
+		public boolean isCanExportPdf() { return iCanExportPdf; }
+		public void setCanExportPdf(boolean canExport) { iCanExportPdf = canExport; }
+	}
+	
 	public static class OfferingsRequest implements GwtRpcRequest<GwtRpcResponseList<TableInterface>> {
 		private FilterInterface iFilter;
 		private String iBackId, iBackType;
@@ -79,18 +89,9 @@ public class OfferingsInterface {
 		public void setBackType(String backType) { iBackType = backType; }
 	}
 	
-	public static class ClassesRequest implements GwtRpcRequest<GwtRpcResponseList<TableInterface>> {
-		private FilterInterface iFilter;
-		private String iBackId, iBackType;
-		
-		public FilterInterface getFilter() { return iFilter; }
-		public void setFilter(FilterInterface filter) { iFilter = filter; }
-		
-		public String getBackId() { return iBackId; }
-		public void setBackId(String backId) { iBackId = backId; }
-		public String getBackType() { return iBackType; }
-		public void setBackType(String backType) { iBackType = backType; }
-	}
+	public static class ClassesRequest extends OfferingsRequest {}
+	
+	public static class ClassAssignmentsRequest extends OfferingsRequest {}
 	
 	public static class OfferingDetailsRequest implements GwtRpcRequest<OfferingDetailsResponse> {
 		private Long iOfferingId;

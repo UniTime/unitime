@@ -136,6 +136,13 @@
 			<item name="Class Assignments" page="classAssignmentsReportSearch.action">
 				<condition>
 					<hasPermission name="ClassAssignments"/>
+					<propertyEquals name="unitime.legacy.course.assignments" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Class Assignments" page="classAssignments" type="gwt">
+				<condition>
+					<hasPermission name="ClassAssignments"/>
+					<propertyEquals name="unitime.legacy.course.assignments" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>

@@ -20,7 +20,6 @@
 package org.unitime.timetable.export.courses;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -30,10 +29,7 @@ import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
-import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.server.courses.InstructionalOfferingTableBuilder;
 
 @Service("org.unitime.timetable.export.Exporter:offerings.pdf")
 public class OfferingsPDF extends OfferingsXLS {
@@ -42,36 +38,14 @@ public class OfferingsPDF extends OfferingsXLS {
 	public String reference() {
 		return "offerings.pdf";
 	}
-
+	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		
-		List<SubjectArea> subjectAreas = new ArrayList<SubjectArea>();
-    	for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
-    		if (subjectAreaId.isEmpty()) continue;
-    		SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
-    		if (subjectArea != null) {
-    			subjectAreas.add(subjectArea);
-    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), Right.InstructionalOfferingsExportPDF);
-    		}
-    	}
-    	
-    	List<TableInterface> response = new ArrayList<TableInterface>();
-    	
-    	InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
-    	builder.setSimple(true);
-    	
-    	builder.generateTableForInstructionalOfferings(
-				helper.getSessionContext(),
-				classAssignmentService.getAssignment(),
-				examinationSolverService.getSolver(),
-		        new OfferingsCSV.Filter(helper), 
-		        helper.getParameter("subjectArea").split(","), 
-		        true, 
-		        response,
-		        helper.getParameter("backType"),
-		        helper.getParameter("backId"));
-    	
+		checkPermission(helper, Right.InstructionalOfferingsExportPDF);
+		exportDataPdf(getOfferings(helper), helper);
+	}
+	
+	protected void exportDataPdf(List<TableInterface> response, ExportHelper helper) throws IOException {
     	PDFPrinter printer = new PDFPrinter(helper.getOutputStream(), false);
 		helper.setup(printer.getContentType(), reference(), false);
 		

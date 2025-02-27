@@ -139,6 +139,11 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 		courseNbr.setEnterToSubmit(true);
 		filter.addParameter(courseNbr);
 		
+		if (subjectArea.getDefaultValue() == null && courseNbr.getDefaultValue() == null) {
+			subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassesSubjectAreas));
+			courseNbr.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassesCourseNumber));
+		}
+		
 		filter.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		filter.setMaxSubjectsToSearchAutomatically(ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue());
 		filter.setCanAdd(context.hasPermission(Right.AddCourseOffering));
@@ -161,7 +166,7 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 		toggle.setLabel(MESSAGES.filterOptionalColumns());
 		toggle.setType("boolean");
 		toggle.setSuffix(label);
-		toggle.setDefaultValue(context.getUser().getProperty("InstructionalOfferingList." + name, defaultValue == null ? null : defaultValue ? "0" : "1"));
+		toggle.setDefaultValue(context.getUser().getProperty("InstructionalOfferingList." + name, defaultValue == null ? null : defaultValue ? "1" : "0"));
 		if (parent != null)
 			toggle.setParent(parent);
 		return toggle;

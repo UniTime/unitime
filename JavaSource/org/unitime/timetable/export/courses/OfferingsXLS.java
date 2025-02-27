@@ -32,11 +32,8 @@ import org.unitime.timetable.export.PDFPrinter.F;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
-import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
-import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.server.courses.InstructionalOfferingTableBuilder;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
@@ -55,33 +52,11 @@ public class OfferingsXLS extends OfferingsCSV {
 
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		
-		List<SubjectArea> subjectAreas = new ArrayList<SubjectArea>();
-    	for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
-    		if (subjectAreaId.isEmpty()) continue;
-    		SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
-    		if (subjectArea != null) {
-    			subjectAreas.add(subjectArea);
-    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), Right.InstructionalOfferingsExportPDF);
-    		}
-    	}
-    	
-    	List<TableInterface> response = new ArrayList<TableInterface>();
-    	
-    	InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
-    	builder.setSimple(true);
-    	
-    	builder.generateTableForInstructionalOfferings(
-				helper.getSessionContext(),
-				classAssignmentService.getAssignment(),
-				examinationSolverService.getSolver(),
-		        new OfferingsCSV.Filter(helper), 
-		        helper.getParameter("subjectArea").split(","), 
-		        true, 
-		        response,
-		        helper.getParameter("backType"),
-		        helper.getParameter("backId"));
-    	
+		checkPermission(helper, Right.InstructionalOfferingsExportPDF);
+		exportDataXls(getOfferings(helper), helper);
+	}
+	
+	protected void exportDataXls(List<TableInterface> response, ExportHelper helper) throws IOException {
     	XLSPrinter printer = new XLSPrinter(helper.getOutputStream(), false);
 		helper.setup(printer.getContentType(), reference(), false);
 		
@@ -127,8 +102,8 @@ public class OfferingsXLS extends OfferingsCSV {
 			if ("font-weight".equalsIgnoreCase(key) && "bold".equalsIgnoreCase(value))
 				a.bold();
 			else if ("font-style".equalsIgnoreCase(key) && "italic".equalsIgnoreCase(value))
-				a.bold();
-			else if ("color".equalsIgnoreCase(key))
+				a.italic();
+			else if ("color".equalsIgnoreCase(key) && !"inherit".equals(value))
 				a.setColor(value);
 			else if ("background".equalsIgnoreCase(key))
 				a.setBackground(value);

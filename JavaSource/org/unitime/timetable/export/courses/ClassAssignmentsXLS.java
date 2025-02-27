@@ -23,20 +23,19 @@ import java.io.IOException;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
-
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.export.Exporter:classes.csv")
-public class ClassesCSV extends OfferingsCSV {
+@Service("org.unitime.timetable.export.Exporter:class-assignments.xls")
+public class ClassAssignmentsXLS extends ClassesXLS {
 
 	@Override
 	public String reference() {
-		return "classes.csv";
+		return "class-assignments.xls";
 	}
 	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		checkPermission(helper, Right.ClassesExportPDF);
-		exportDataCsv(getClasses(helper), helper);
+		helper.getSessionContext().checkPermissionAnySession(helper.getAcademicSessionId(), Right.ClassAssignmentsExportCsv);
+		exportDataXls(getClassAssignments(helper), helper);
 	}
 }

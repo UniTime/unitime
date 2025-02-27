@@ -25,60 +25,30 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterRequest;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterResponse;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassAssignmentsFilterRequest;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassAssignmentsFilterResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.BackTracker;
 
-@GwtRpcImplements(ClassesFilterRequest.class)
-public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterRequest, ClassesFilterResponse>{
+@GwtRpcImplements(ClassAssignmentsFilterRequest.class)
+public class ClassAssignmentsFilterBackend implements GwtRpcImplementation<ClassAssignmentsFilterRequest, ClassAssignmentsFilterResponse>{
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
 	protected static GwtMessages GWT = Localization.create(GwtMessages.class);
 
 	@Override
-	public ClassesFilterResponse execute(ClassesFilterRequest request, SessionContext context) {
-		context.checkPermission(Right.Classes);
-		ClassesFilterResponse filter = new ClassesFilterResponse();
-		
-		filter.addParameter(createToggle(context, "divSec", MESSAGES.columnExternalId(), false));
-		
-		filter.addParameter(createToggle(context, "demand", MESSAGES.columnDemand(), true));
-		filter.addParameter(createToggle(context, "limit", MESSAGES.columnLimit(), true));
-		filter.addParameter(createToggle(context, "snapshotLimit", MESSAGES.columnSnapshotLimit(), false));
-		filter.addParameter(createToggle(context, "roomLimit", MESSAGES.columnRoomRatio(), true));
-		
-		filter.addParameter(createToggle(context, "manager", MESSAGES.columnManager(), true));
-		if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue())
-			filter.addParameter(createToggle(context, "fundingDepartment", MESSAGES.columnFundingDepartment(), false));
-		
-		filter.addParameter(createToggle(context, "datePattern", MESSAGES.columnDatePattern(), true));
-		filter.addParameter(createToggle(context, "timePattern", MESSAGES.columnTimePattern(), true));
-		
-		filter.addParameter(createToggle(context, "preferences", MESSAGES.columnPreferences(), true));
-		filter.addParameter(createToggle(context, "instructorAssignment", MESSAGES.includeInstructorScheduling(), false));
-		filter.addParameter(createToggle(context, "instructor", MESSAGES.columnInstructor(), true));
-		filter.addParameter(createToggle(context, "timetable", MESSAGES.columnTimetable(), true));
-		
-		filter.addParameter(createToggle(context, "schedulePrintNote", MESSAGES.columnSchedulePrintNote(), true));
-		
-		if (LearningManagementSystemInfo.isLmsInfoDefinedForSession(context.getUser().getCurrentAcademicSessionId()))
-			filter.addParameter(createToggle(context, "lms", MESSAGES.columnLms(), false));
-		
-		filter.addParameter(createToggle(context, "note", MESSAGES.columnNote(), false));
-		
-		if (context.hasPermission(Right.Examinations))
-			filter.addParameter(createToggle(context, "exams", MESSAGES.columnExams(), false));
-		
+	public ClassAssignmentsFilterResponse execute(ClassAssignmentsFilterRequest request, SessionContext context) {
+		context.checkPermission(Right.ClassAssignments);
+		ClassAssignmentsFilterResponse filter = new ClassAssignmentsFilterResponse();
+
 		FilterParameterInterface manager = new FilterParameterInterface();
 		manager.setName("filterManager");
 		manager.setLabel(MESSAGES.filterManager());
@@ -87,7 +57,7 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		manager.addOption("-2", MESSAGES.dropDeptDepartment());
 		for (Department d: Department.findAllExternal(context.getUser().getCurrentAcademicSessionId()))
 			manager.addOption(d.getUniqueId().toString(), d.getExternalMgrAbbv() + " - " + d.getExternalMgrLabel());
-		manager.setDefaultValue(context.getUser().getProperty("ClassList.filterManager"));
+		manager.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterManager"));
 		manager.setMaxLinesToShow(3);
 		filter.addParameter(manager);
 		
@@ -97,28 +67,28 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		itype.addOption("", MESSAGES.dropITypeAll());
 		for (ItypeDesc t: ItypeDesc.findAll(true))
 			itype.addOption(t.getItype().toString(), t.getDesc());
-		itype.setDefaultValue(context.getUser().getProperty("ClassList.filterIType", ""));
+		itype.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterIType", ""));
 		filter.addParameter(itype);
 		
 		FilterParameterInterface instructor = new FilterParameterInterface();
 		instructor.setName("filterInstructor");
 		instructor.setLabel(MESSAGES.filterInstructor());
 		instructor.setType("text");
-		instructor.setDefaultValue(context.getUser().getProperty("ClassList.filterInstructor", ""));
+		instructor.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterInstructor", ""));
 		filter.addParameter(instructor);
 		
 		FilterParameterInterface days = new FilterParameterInterface();
 		days.setName("filterDayCode");
 		days.setLabel(MESSAGES.filterAssignedTime());
 		days.setType("dayCode");
-		days.setDefaultValue(context.getUser().getProperty("ClassList.filterDayCode", ""));
+		days.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterDayCode", ""));
 		filter.addParameter(days);
 		
 		FilterParameterInterface startTime = new FilterParameterInterface();
 		startTime.setName("filterStartTime");
 		startTime.setLabel(MESSAGES.filterAssignedTime());
 		startTime.setType("time");
-		startTime.setDefaultValue(context.getUser().getProperty("ClassList.filterStartTime", ""));
+		startTime.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterStartTime", ""));
 		startTime.setPrefix(GWT.propFrom());
 		startTime.setComposite(true);
 		filter.addParameter(startTime);
@@ -127,7 +97,7 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		endTime.setName("filterEndTime");
 		endTime.setLabel(MESSAGES.filterAssignedTime());
 		endTime.setType("time");
-		endTime.setDefaultValue(context.getUser().getProperty("ClassList.filterEndTime", ""));
+		endTime.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterEndTime", ""));
 		endTime.setPrefix(GWT.propTo());
 		endTime.setComposite(true);
 		filter.addParameter(endTime);
@@ -136,7 +106,7 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		room.setName("filterAssignedRoom");
 		room.setLabel(MESSAGES.filterAssignedRoom());
 		room.setType("text");
-		room.setDefaultValue(context.getUser().getProperty("ClassList.filterAssignedRoom", ""));
+		room.setDefaultValue(context.getUser().getProperty("ClassAssignments.filterAssignedRoom", ""));
 		filter.addParameter(room);
 
 		FilterParameterInterface sortBy = new FilterParameterInterface();
@@ -145,7 +115,7 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		sortBy.setType("list");
 		for (String name: ClassCourseComparator.getNames())
 			sortBy.addOption(name, name);
-		sortBy.setDefaultValue(context.getUser().getProperty("ClassList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
+		sortBy.setDefaultValue(context.getUser().getProperty("ClassAssignments.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
 		filter.addParameter(sortBy);
 		FilterParameterInterface sortByKeepSubparts = createToggle(context, "sortByKeepSubparts", MESSAGES.checkSortWithinSubparts(), true);
 		sortByKeepSubparts.setLabel(MESSAGES.filterSortBy());
@@ -154,12 +124,9 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		FilterParameterInterface crossList = createToggle(context, "showCrossListedClasses", MESSAGES.showCrossListedClasses(), false);
 		crossList.setLabel(MESSAGES.filterCrossList());
 		filter.addParameter(crossList);
-		FilterParameterInterface includeCancelledClasses = createToggle(context, "includeCancelledClasses", MESSAGES.showCancelledClasses(), true);
+		FilterParameterInterface includeCancelledClasses = createToggle(context, "includeCancelledClasses", MESSAGES.showCancelledClasses(), false);
 		includeCancelledClasses.setLabel(MESSAGES.filterCancelledClasses());
 		filter.addParameter(includeCancelledClasses);
-		FilterParameterInterface filterNeedInstructor = createToggle(context, "filterNeedInstructor", MESSAGES.showNeedInstructorClasses(), false);
-		filterNeedInstructor.setLabel(MESSAGES.filterNeedInstructorAssignment());
-		filter.addParameter(filterNeedInstructor);
 		
 		FilterParameterInterface subjectArea = new FilterParameterInterface();
 		subjectArea.setName("subjectArea");
@@ -167,30 +134,18 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
 		subjectArea.setLabel(MESSAGES.filterSubject());
-		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
+		for (SubjectArea subject: SubjectArea.getAllSubjectAreas(context.getUser().getCurrentAcademicSessionId()))
 			subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
-		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassesSubjectAreas));
+		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassAssignmentsSubjectAreas));
+		if (subjectArea.getDefaultValue() == null)
+			subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));
 		subjectArea.setEnterToSubmit(true);
 		filter.addParameter(subjectArea);
 		
-		FilterParameterInterface courseNbr = new FilterParameterInterface();
-		courseNbr.setName("courseNbr");
-		courseNbr.setLabel(MESSAGES.filterCourseNumber());
-		courseNbr.setType("courseNumber");
-		courseNbr.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassesCourseNumber));
-		courseNbr.setCollapsible(false);
-		courseNbr.setConfig("subjectId=${subjectArea};notOffered=false;crossListed=${showCrossListedClasses}");
-		courseNbr.setEnterToSubmit(true);
-		filter.addParameter(courseNbr);
-		
-		if (subjectArea.getDefaultValue() == null && courseNbr.getDefaultValue() == null) {
-			subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));
-			courseNbr.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsCourseNumber));
-		}
-		
 		filter.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		filter.setMaxSubjectsToSearchAutomatically(ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue());
-		filter.setCanExport(context.hasPermission(Right.ClassesExportPDF));
+		filter.setCanExport(context.hasPermission(Right.ClassAssignmentsExportCsv));
+		filter.setCanExportPdf(context.hasPermission(Right.ClassAssignmentsExportPdf));
 		filter.setSessionId(context.getUser().getCurrentAcademicSessionId());
 		
 		BackTracker.markForBack(context, null, null, false, true); //clear back list
@@ -204,7 +159,7 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		toggle.setLabel(MESSAGES.filterOptionalColumns());
 		toggle.setType("boolean");
 		toggle.setSuffix(label);
-		toggle.setDefaultValue(context.getUser().getProperty("ClassList." + name, defaultValue == null ? null : defaultValue ? "1" : "0"));
+		toggle.setDefaultValue(context.getUser().getProperty("ClassAssignments." + name, defaultValue == null ? null : defaultValue ? "1" : "0"));
 		return toggle;
 	}
 }

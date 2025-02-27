@@ -1942,9 +1942,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructional Offerings")
 	String labelInstructionalOfferings();
 	
-	@DefaultMessage("Classes")
-	String labelClasses();
-	
 	@DefaultMessage("Unable to create PDF file: {0}.")
 	String errorUnableToCreatePdf(String reason);
 	

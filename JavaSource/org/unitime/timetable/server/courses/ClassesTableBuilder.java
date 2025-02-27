@@ -223,13 +223,14 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 			boolean doFilterIType = !filter.getParameterValue("filterIType","").isEmpty();
 			String filterIType = (doFilterIType ? filter.getParameterValue("filterIType","") : null);
 			
-			boolean doFilterAssignedTime = !"0".equals(filter.getParameterValue("filterDateCode","0")) ||
+			String filterDayCode = filter.getParameterValue("filterDayCode","0");
+			boolean doFilterAssignedTime = !(filterDayCode.isEmpty() || "0".equals(filterDayCode)) ||
 					!filter.getParameterValue("filterStartTime","").isEmpty() ||
 					!filter.getParameterValue("filterEndTime","").isEmpty();
 					;
 			TimeLocation filterAssignedTime = null;
 			if (doFilterAssignedTime) {
-				int dayCode = Integer.parseInt(filter.getParameterValue("filterDateCode","255"));
+				int dayCode = filterDayCode.isEmpty() ? 255 : Integer.parseInt(filter.getParameterValue("filterDayCode","255"));
 				String filterStartTime = filter.getParameterValue("filterStartTime","");
 				int startTime = filterStartTime.isEmpty() ? 0 : Integer.parseInt(filterStartTime);
 				String filterEndTime = filter.getParameterValue("filterEndTime","");

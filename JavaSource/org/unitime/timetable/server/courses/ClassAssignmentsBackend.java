@@ -19,13 +19,11 @@
 */
 package org.unitime.timetable.server.courses;
 
-import java.net.URLEncoder;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesRequest;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassAssignmentsRequest;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -42,8 +40,8 @@ import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.webutil.BackTracker;
 
-@GwtRpcImplements(ClassesRequest.class)
-public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtRpcResponseList<TableInterface>> {
+@GwtRpcImplements(ClassAssignmentsRequest.class)
+public class ClassAssignmentsBackend implements GwtRpcImplementation<ClassAssignmentsRequest, GwtRpcResponseList<TableInterface>> {
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -51,34 +49,30 @@ public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtR
 	
 
 	@Override
-	public GwtRpcResponseList<TableInterface> execute(ClassesRequest request, SessionContext context) {
-		context.checkPermission(Right.Classes);
+	public GwtRpcResponseList<TableInterface> execute(ClassAssignmentsRequest request, SessionContext context) {
+		context.checkPermission(Right.ClassAssignments);
 		
 		String subjectArea = request.getFilter().getParameterValue("subjectArea");
 		if (subjectArea == null || subjectArea.isEmpty())
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
 		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
-		ClassesTableBuilder builder = new ClassesTableBuilder();
+		ClassAssignmentsTableBuilder builder = new ClassAssignmentsTableBuilder();
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
 			if ("subjectArea".equals(p.getName())) {
-				context.setAttribute(SessionAttribute.ClassesSubjectAreas, p.getValue() != null ? p.getValue() : p.getDefaultValue());
-			} else if ("courseNbr".equals(p.getName())) {
-				context.setAttribute(SessionAttribute.ClassesCourseNumber, p.getValue() != null ? p.getValue() : p.getDefaultValue());
+				context.setAttribute(SessionAttribute.ClassAssignmentsSubjectAreas, p.getValue() != null ? p.getValue() : p.getDefaultValue());
 			} else if (p.getValue() != null) {
-				context.getUser().setProperty("ClassList." + p.getName(), p.getValue());
+				context.getUser().setProperty("ClassAssignments." + p.getName(), p.getValue());
 			}
 		}
 		
-		String courseNbr = request.getFilter().getParameterValue("courseNbr");
 		try {
 			String subjects = "";
 			int count = 0;
 			for (String id: subjectArea.split(",")) {
 				SubjectArea sa = SubjectAreaDAO.getInstance().get(Long.valueOf(id));
 				if (sa != null) {
-					context.checkPermission(sa.getDepartment(), Right.Classes);
 					count++;
 					if (count == 1)
 						subjects += sa.getSubjectAreaAbbreviation();
@@ -90,15 +84,14 @@ public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtR
 			}
 			BackTracker.markForBack(
 					context, 
-					"gwt.jsp?page=classSearch&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
-						"&courseNbr=" + (courseNbr == null ? "" : URLEncoder.encode(courseNbr, "utf-8")),
-					MESSAGES.backClasses(subjects + (courseNbr == null || courseNbr.isEmpty() ? "" : " " + courseNbr)), 
+					"gwt.jsp?page=classAssignments&subjectArea=" + request.getFilter().getParameterValue("subjectArea"),
+					MESSAGES.backClassAssignments(subjects), 
 					true, true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		builder.generateTableForClasses(
+		builder.generateTableForClassAssignments(
 				context,
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),

@@ -20,18 +20,10 @@
 package org.unitime.timetable.export.courses;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
-import org.unitime.timetable.export.XLSPrinter;
-import org.unitime.timetable.gwt.client.tables.TableInterface;
-import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
-import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.server.courses.ClassesTableBuilder;
 
 @Service("org.unitime.timetable.export.Exporter:classes.xls")
 public class ClassesXLS extends OfferingsXLS {
@@ -43,52 +35,7 @@ public class ClassesXLS extends OfferingsXLS {
 
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		
-		List<SubjectArea> subjectAreas = new ArrayList<SubjectArea>();
-    	for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
-    		if (subjectAreaId.isEmpty()) continue;
-    		SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
-    		if (subjectArea != null) {
-    			subjectAreas.add(subjectArea);
-    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), Right.ClassesExportPDF);
-    		}
-    	}
-    	
-    	List<TableInterface> response = new ArrayList<TableInterface>();
-    	
-    	ClassesTableBuilder builder = new ClassesTableBuilder();
-    	builder.setSimple(true);
-    	
-    	builder.generateTableForClasses(
-				helper.getSessionContext(),
-				classAssignmentService.getAssignment(),
-				examinationSolverService.getSolver(),
-		        new OfferingsCSV.Filter(helper), 
-		        helper.getParameter("subjectArea").split(","), 
-		        true, 
-		        response,
-		        helper.getParameter("backType"),
-		        helper.getParameter("backId"));
-    	
-    	XLSPrinter printer = new XLSPrinter(helper.getOutputStream(), false);
-		helper.setup(printer.getContentType(), reference(), false);
-		
-		boolean first = true;
-		for (TableInterface table: response) {
-			if (!first)
-				printer.newSheet();
-			printer.getWorkbook().setSheetName(printer.getSheetIndex(), table.getName());
-			first = false;
-			if (table.getHeader() != null)
-				for (LineInterface line: table.getHeader())
-					printer.printHeader(toLine(line));
-			if (table.getLines() != null) {
-				for (LineInterface line: table.getLines()) {
-					printer.printLine(toA(line, false));
-				}
-			}
-		}
-        
-    	printer.flush(); printer.close();		
+		checkPermission(helper, Right.ClassesExportPDF);
+		exportDataXls(getClasses(helper), helper);	
 	}
 }

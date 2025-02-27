@@ -3939,6 +3939,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageClassSearch();
 	
+	@DefaultMessage("Class Assignments")
+	@DoNotTranslate
+	String pageClassAssignments();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

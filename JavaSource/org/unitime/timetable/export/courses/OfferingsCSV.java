@@ -35,6 +35,8 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.courses.ClassAssignmentsTableBuilder;
+import org.unitime.timetable.server.courses.ClassesTableBuilder;
 import org.unitime.timetable.server.courses.InstructionalOfferingTableBuilder;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -51,20 +53,26 @@ public class OfferingsCSV implements Exporter {
 	public String reference() {
 		return "offerings.csv";
 	}
-
+	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		
+		checkPermission(helper, Right.InstructionalOfferingsExportPDF);
+		exportDataCsv(getOfferings(helper), helper);
+	}
+	
+	protected void checkPermission(ExportHelper helper, Right right) {
 		List<SubjectArea> subjectAreas = new ArrayList<SubjectArea>();
     	for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
     		if (subjectAreaId.isEmpty()) continue;
     		SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
     		if (subjectArea != null) {
     			subjectAreas.add(subjectArea);
-    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), Right.InstructionalOfferingsExportPDF);
+    			helper.getSessionContext().checkPermissionAnySession(subjectArea.getDepartment(), right);
     		}
     	}
-    	
+	}
+	
+	protected List<TableInterface> getOfferings(ExportHelper helper) {
     	List<TableInterface> response = new ArrayList<TableInterface>();
     	
     	InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
@@ -80,7 +88,51 @@ public class OfferingsCSV implements Exporter {
 		        response,
 		        helper.getParameter("backType"),
 		        helper.getParameter("backId"));
+
+    	return response;
+	}
+	
+	protected List<TableInterface> getClasses(ExportHelper helper) {
+    	List<TableInterface> response = new ArrayList<TableInterface>();
     	
+    	ClassesTableBuilder builder = new ClassesTableBuilder();
+    	builder.setSimple(true);
+    	
+    	builder.generateTableForClasses(
+				helper.getSessionContext(),
+				classAssignmentService.getAssignment(),
+				examinationSolverService.getSolver(),
+		        new Filter(helper), 
+		        helper.getParameter("subjectArea").split(","), 
+		        true, 
+		        response,
+		        helper.getParameter("backType"),
+		        helper.getParameter("backId"));
+
+    	return response;
+	}
+	
+	protected List<TableInterface> getClassAssignments(ExportHelper helper) {
+    	List<TableInterface> response = new ArrayList<TableInterface>();
+    	
+    	ClassAssignmentsTableBuilder builder = new ClassAssignmentsTableBuilder();
+    	builder.setSimple(true);
+    	
+    	builder.generateTableForClassAssignments(
+				helper.getSessionContext(),
+				classAssignmentService.getAssignment(),
+				examinationSolverService.getSolver(),
+		        new Filter(helper), 
+		        helper.getParameter("subjectArea").split(","), 
+		        true, 
+		        response,
+		        helper.getParameter("backType"),
+		        helper.getParameter("backId"));
+
+    	return response;
+	}
+	
+	protected void exportDataCsv(List<TableInterface> response, ExportHelper helper) throws IOException {
     	Printer printer = new CSVPrinter(helper, false);
 		helper.setup(printer.getContentType(), reference(), false);
 		
@@ -101,7 +153,7 @@ public class OfferingsCSV implements Exporter {
 			}
 		}
         
-    	printer.flush(); printer.close();		
+    	printer.flush(); printer.close();
 	}
 	
 	protected String[] toLine(LineInterface line) {
