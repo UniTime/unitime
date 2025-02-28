@@ -24,6 +24,8 @@ import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameRpcRequest;
 import org.unitime.timetable.security.SessionContext;
@@ -32,6 +34,7 @@ import org.unitime.timetable.security.SessionContext;
  * @author Tomas Muller
  */
 @GwtRpcImplements(PageNameRpcRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 public class PageNameBackend implements GwtRpcImplementation<PageNameRpcRequest, PageNameInterface> {
 	private static PageNames sPageNames = Localization.create(PageNames.class);
 	

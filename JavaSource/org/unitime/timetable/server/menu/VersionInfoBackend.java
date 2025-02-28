@@ -21,6 +21,8 @@ package org.unitime.timetable.server.menu;
 
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.shared.MenuInterface.VersionInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.VersionInfoRpcRequest;
 import org.unitime.timetable.security.SessionContext;
@@ -30,6 +32,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 @GwtRpcImplements(VersionInfoRpcRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 public class VersionInfoBackend implements GwtRpcImplementation<VersionInfoRpcRequest, VersionInfoInterface> {
 	@Override
 	public VersionInfoInterface execute(VersionInfoRpcRequest request, SessionContext context) {

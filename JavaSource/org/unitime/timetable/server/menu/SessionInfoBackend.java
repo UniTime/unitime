@@ -24,6 +24,8 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface.SessionInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SessionInfoRpcRequest;
@@ -37,6 +39,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @GwtRpcImplements(SessionInfoRpcRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 public class SessionInfoBackend implements GwtRpcImplementation<SessionInfoRpcRequest, SessionInfoInterface> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 

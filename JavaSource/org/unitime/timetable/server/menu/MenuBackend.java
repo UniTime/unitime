@@ -48,6 +48,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.MenuRpcRequest;
 import org.unitime.timetable.model.PointInTimeData;
@@ -69,6 +71,7 @@ import org.xml.sax.InputSource;
  * @author Tomas Muller
  */
 @GwtRpcImplements(MenuRpcRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 @DependsOn({"startupService"})
 public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcResponseList<MenuInterface>>, InitializingBean {
 	private static Log sLog = LogFactory.getLog(MenuBackend.class);

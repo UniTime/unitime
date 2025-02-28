@@ -29,6 +29,8 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SolverInterface.ProgressLogLevel;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolutionLog;
@@ -52,6 +54,7 @@ import org.unitime.timetable.webutil.BackTracker;
  * @author Tomas Muller
  */
 @GwtRpcImplements(SolverLogPageRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 public class SolverLogPageBackend implements GwtRpcImplementation<SolverLogPageRequest, SolverLogPageResponse> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	

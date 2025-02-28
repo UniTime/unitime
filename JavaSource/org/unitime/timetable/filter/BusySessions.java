@@ -39,6 +39,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseBoolean;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.shared.MenuInterface.IsSessionBusyRpcRequest;
 import org.unitime.timetable.security.SessionContext;
 
@@ -151,6 +153,7 @@ public class BusySessions {
 	}
 
 	@GwtRpcImplements(IsSessionBusyRpcRequest.class)
+	@GwtRpcLogging(Level.ON_EXCEPTION)
 	public static class Backend implements GwtRpcImplementation<IsSessionBusyRpcRequest, GwtRpcResponseBoolean> {
 		private @Autowired Tracker unitimeBusySessions;
 		
