@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.shared.ScriptInterface.GetQueueTableRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
@@ -37,6 +39,7 @@ import org.unitime.timetable.util.queue.QueueItem;
  * @author Tomas Muller
  */
 @GwtRpcImplements(GetQueueTableRpcRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableRpcRequest, GwtRpcResponseList<QueueItemInterface>>{
 	
 	@Autowired SolverServerService solverServerService;

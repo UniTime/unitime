@@ -233,7 +233,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				case DISABLED:
 					return;
 				case ON_EXCEPTION:
-					if (exception != null) return;
+					if (exception == null) return;
 				}
 			}
 			QueryLog q = new QueryLog();

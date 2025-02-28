@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface.UserInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.UserInfoRpcRequest;
@@ -37,6 +39,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @GwtRpcImplements(UserInfoRpcRequest.class)
+@GwtRpcLogging(Level.ON_EXCEPTION)
 public class UserInfoBackend implements GwtRpcImplementation<UserInfoRpcRequest, UserInfoInterface> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
