@@ -9,11 +9,6 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="3rd_party/ant-1.10.13.jar"/>
-	<classpathentry kind="src" path="target/generated-sources/annotations">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.12.1.jar"/>
 	<classpathentry kind="lib" path="3rd_party/jakarta.servlet.jsp-api-3.1.1.jar"/>
 	<classpathentry kind="lib" path="3rd_party/jakarta.servlet-api-6.0.0.jar"/>
