@@ -80,6 +80,10 @@ public class StudentExport extends BaseExport {
     		studentEl.addAttribute("lastName", student.getLastName());
     	if (student.getEmail() != null)
     		studentEl.addAttribute("email", student.getEmail());
+    	if (student.getPin() != null && !student.getPin().isEmpty())
+    		studentEl.addAttribute("pin", student.getPin());
+    	if (student.getPinReleased() != null)
+    		studentEl.addAttribute("pinReleased", student.getPinReleased() ? "true" : "false");
     	
     	if (!student.getAreaClasfMajors().isEmpty() || !student.getGroups().isEmpty()) {
     		Element e = studentEl.addElement("studentAcadAreaClass");

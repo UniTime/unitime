@@ -82,6 +82,16 @@ public class StudentSectioningExport extends BaseExport {
 	        		nameEl.addAttribute("middle", student.getMiddleName());
 	        	if (student.getLastName() != null)
 	        		nameEl.addAttribute("last", student.getLastName());
+	        	if (student.getEmail() != null) {
+	        		Element emailEl = demographicsEl.addElement("email");
+	        		emailEl.addAttribute("value", student.getEmail());
+	        	}
+	        	if (student.getPin() != null && !student.getPin().isEmpty()) {
+	        		Element pinEl = demographicsEl.addElement("pin");
+	        		pinEl.addAttribute("value", student.getPin());
+	        		if (student.getPinReleased() != null)
+	        			pinEl.addAttribute("released", student.getPinReleased() ? "true" : "false");	
+	        	}
 	        	for (StudentAreaClassificationMajor acm: student.getAreaClasfMajors()) {
 	        		Element acadAreaEl = demographicsEl.addElement("acadArea");
 	        		acadAreaEl.addAttribute("abbv", acm.getAcademicArea().getAcademicAreaAbbreviation());

@@ -85,6 +85,10 @@
 <!ELEMENT email EMPTY >
 <!ATTLIST email value CDATA #REQUIRED >
 
+<!ELEMENT pin EMPTY >
+<!ATTLIST pin value CDATA #IMPLIED >
+<!ATTLIST pin required ( true | false ) #IMPLIED >
+
 <!ELEMENT freeTime EMPTY >
 <!ATTLIST freeTime days CDATA #REQUIRED >
 <!ATTLIST freeTime endTime CDATA #REQUIRED >
@@ -149,7 +153,7 @@
 
 <!ELEMENT dropCourseRequests ( courseOffering | freeTime )* >
 
-<!ELEMENT updateDemographics ( name, email?, acadArea+, major*, minor*, disability*, groupAffiliation* ) >
+<!ELEMENT updateDemographics ( name, email?, pin?, acadArea+, major*, minor*, disability*, groupAffiliation*) >
 <!ATTLIST updateDemographics minCredit NMTOKEN #IMPLIED >
 <!ATTLIST updateDemographics maxCredit NMTOKEN #IMPLIED >
 
