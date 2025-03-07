@@ -1254,6 +1254,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				if (eq("Not Advised", term)) {
 					return student().getAdvisorCourseRequests().isEmpty();
 				}
+				if (eq("PIN Released", term)) {
+					return Boolean.TRUE.equals(student().getPinReleased());
+				}
+				if (eq("PIN Suppressed", term)) {
+					return !Boolean.TRUE.equals(student().getPinReleased());
+				}
+				if (eq("My PIN Released", term)) {
+					return iMyStudent && Boolean.TRUE.equals(student().getPinReleased());
+				}
+				if (eq("My PIN Suppressed", term)) {
+					return iMyStudent &&  !Boolean.TRUE.equals(student().getPinReleased());
+				}
 				return true;
 			}
 			
@@ -2157,6 +2169,18 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				}
 				if (eq("Not Advised", term)) {
 					return student().getAdvisorCourseRequests().isEmpty();
+				}
+				if (eq("PIN Released", term)) {
+					return Boolean.TRUE.equals(student().getPinReleased());
+				}
+				if (eq("PIN Suppressed", term)) {
+					return !Boolean.TRUE.equals(student().getPinReleased());
+				}
+				if (eq("My PIN Released", term)) {
+					return iMyStudent && Boolean.TRUE.equals(student().getPinReleased());
+				}
+				if (eq("My PIN Suppressed", term)) {
+					return iMyStudent &&  !Boolean.TRUE.equals(student().getPinReleased());
 				}
 				return true;
 			} else if ("btb".equals(attr)) {

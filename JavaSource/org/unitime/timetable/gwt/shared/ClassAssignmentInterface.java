@@ -1584,6 +1584,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Boolean iMyStudent;
 		private AdvisedInfoInterface iAdvised;
 		private String iPreference;
+		private String iPin;
+		private Boolean iPinReleased;
 		
 		public StudentInfo() {}
 		
@@ -1814,6 +1816,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public boolean hasPreference() { return iPreference != null && !iPreference.isEmpty(); }
 		public void setPreference(String pref) { iPreference = pref; }
 		public String getPreference() { return iPreference; }
+		
+		public boolean hasPin() { return iPin != null && !iPin.isEmpty(); }
+		public void setPin(String pin) { iPin = pin; }
+		public String getPin() { return iPin; }
+		
+		public void setPinReleased(Boolean released) { iPinReleased = released; }
+		public boolean hasPinReleased() { return hasPin() && Boolean.TRUE.equals(iPinReleased); }
 	}
 
 	public static class SectioningAction implements IsSerializable, Serializable, Comparable<SectioningAction> {

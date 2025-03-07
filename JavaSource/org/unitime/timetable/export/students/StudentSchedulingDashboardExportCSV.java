@@ -257,7 +257,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasReqCredit = false, hasCredit = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasAdvisor = false,
-				hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasPref = false;
+				hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasPref = false, hasPin = false;
 		Set<String> groupTypes = new TreeSet<String>();
 		if (students != null)
 			for (ClassAssignmentInterface.StudentInfo e: students) {
@@ -292,6 +292,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 				if (e.getStudent().hasProgram()) hasProg = true;
 				if (e.getStudent().hasCampus()) hasCamp = true;
 				if (e.hasPreference()) hasPref = true;
+				if (e.hasPinReleased()) hasPin = true;
 			}
 		
 		List<String> header = new ArrayList<String>();
@@ -299,6 +300,7 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 			header.add(MESSAGES.colStudentExternalId());
 		
 		header.add(MESSAGES.colStudent());
+		
 		if (hasCamp)
 			header.add(MESSAGES.colCampus());
 		
@@ -332,6 +334,9 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 		
 		header.add(MESSAGES.colStatus());
 		
+		if (hasPin)
+			header.add(MESSAGES.colStudentPin());
+
 		if (hasEnrollment)
 			header.add(MESSAGES.colEnrollment());
 		
@@ -428,6 +433,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					if (hasAcmd)
 						line.add(info.getStudent().getAccommodation("\n"));
 					line.add(info.getStatus());
+					if (hasPin)
+						line.add(info.hasPinReleased() ? info.getPin() : "");
 					if (hasEnrollment)
 						line.add(enrollment(info));
 					if (hasWaitList)
@@ -525,6 +532,8 @@ public class StudentSchedulingDashboardExportCSV implements Exporter {
 					for (@SuppressWarnings("unused") String g: groupTypes)
 						line.add("");
 					if (hasAcmd)
+						line.add("");
+					if (hasPin)
 						line.add("");
 					if (hasEnrollment)
 						line.add(enrollment(info));

@@ -932,6 +932,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				if (eq("Not Advised", term)) {
 					return !student().hasAdvisorRequests();
 				}
+				if (eq("PIN Released", term)) {
+					return student().isPinReleased();
+				}
+				if (eq("PIN Suppressed", term)) {
+					return !student().isPinReleased();
+				}
+				if (eq("My PIN Released", term)) {
+					return iMyStudent && student().isPinReleased();
+				}
+				if (eq("My PIN Suppressed", term)) {
+					return iMyStudent && !student().isPinReleased();
+				}
 				return true;
 			}
 			
@@ -1904,6 +1916,18 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				}
 				if (eq("Not Advised", term)) {
 					return !student().hasAdvisorRequests();
+				}
+				if (eq("PIN Released", term)) {
+					return student().isPinReleased();
+				}
+				if (eq("PIN Suppressed", term)) {
+					return !student().isPinReleased();
+				}
+				if (eq("My PIN Released", term)) {
+					return iMyStudent && student().isPinReleased();
+				}
+				if (eq("My PIN Suppressed", term)) {
+					return iMyStudent && !student().isPinReleased();
 				}
 				return true;
 			} else if ("btb".equals(attr)) {

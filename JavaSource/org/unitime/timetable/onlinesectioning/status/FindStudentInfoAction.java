@@ -456,6 +456,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 						s.setMyStudent(isMyStudent(student));
 		    			s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 		    			s.setPreference(getStudentSchedulingPreference(student, server, helper));
+						s.setPin(student.getPin());
+						s.setPinReleased(student.isPinReleased());
+
 					}
 					if (m.enrollment() != null) {
 						if (assigned.add(m.request().getRequestId())) {
@@ -694,6 +697,9 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 					s.setPreference(getStudentSchedulingPreference(student, server, helper));
+					s.setPin(student.getPin());
+					s.setPinReleased(student.isPinReleased());
+
 					ret.add(s);
 				}
 			} else {
@@ -747,6 +753,8 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 					s.setPreference(getStudentSchedulingPreference(student, server, helper));
+					s.setPin(student.getPin());
+					s.setPinReleased(student.isPinReleased());
 					ret.add(s);
 				}
 			}

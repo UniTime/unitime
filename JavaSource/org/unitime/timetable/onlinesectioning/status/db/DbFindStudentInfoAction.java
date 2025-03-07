@@ -401,6 +401,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 					s.setMyStudent(isMyStudent(student));
 					s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 					s.setPreference(getStudentSchedulingPreference(student, server, helper));
+					s.setPin(student.getPin());
+					s.setPinReleased(student.getPinReleased());
 				}
 				DbCourseRequestMatcher crm = new DbCourseRequestMatcher(session, request, isConsentToDoCourse, isMyStudent(student), helper.getStudentNameFormat(), lookup);
 				if (!crm.enrollment().isEmpty()) {
@@ -638,7 +640,9 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				s.setMyStudent(isMyStudent(student));
 				s.setAdvisedInfo(getAdvisedInfo(student, server, helper));
 				s.setPreference(getStudentSchedulingPreference(student, server, helper));
-				
+				s.setPin(student.getPin());
+				s.setPinReleased(student.isPinReleased());
+
 				ret.add(s);
 			}
 		}

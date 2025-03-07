@@ -485,4 +485,7 @@ public class StudentSchedulingPermissions {
 	
 	@PermissionForRight(Right.StudentSchedulingCanLookupAllCourses)
 	public static class StudentSchedulingCanLookupAllCourses extends StudentSchedulingAdvisor {}
+	
+	@PermissionForRight(Right.StudentSchedulingCanReleasePin)
+	public static class StudentSchedulingCanReleasePin extends StudentScheduling {}
 }

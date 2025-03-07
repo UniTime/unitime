@@ -76,6 +76,7 @@ import org.unitime.timetable.onlinesectioning.custom.SpecialRegistrationProvider
 import org.unitime.timetable.onlinesectioning.custom.StudentEmailProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentPinsProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
 import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
@@ -3628,6 +3629,12 @@ public enum ApplicationProperty {
 	@Description("Events Personal Schedule: when All Sessions flag is used, consider all academic initiatives (avoid same initiative restriction on classes, exams, and course-related events)")
 	@Since(4.8)
 	EventsPersonalScheduleSkipSessionRestriction("unitime.events.personal.allSessions.skipSessionCheck"),
+	
+	@Type(Class.class)
+	@Implements(StudentPinsProvider.class)
+	@Description("Customization: student PIN provider (interface StudentPinsProvider)")
+	@Since(4.8)
+	CustomizationStudentPinsProvider("unitime.custom.StudentPinsProvider"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

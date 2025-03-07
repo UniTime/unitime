@@ -144,4 +144,6 @@ public interface SectioningService extends RemoteService {
 	
 	StudentSchedulingPreferencesInterface getStudentSchedulingPreferences(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	Boolean setStudentSchedulingPreferences(StudentSectioningContext cx, StudentSchedulingPreferencesInterface preferences) throws SectioningException, PageAccessException;
+	
+	Map<Long, String> releasePins(List<Long> studentIds, boolean release) throws SectioningException, PageAccessException;
 }
