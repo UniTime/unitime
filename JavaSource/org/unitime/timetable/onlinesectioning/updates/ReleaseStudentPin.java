@@ -74,25 +74,23 @@ public class ReleaseStudentPin implements OnlineSectioningAction<Map<Long, Strin
 				try {
 					Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					if (student != null && dbStudent != null) {
-						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
+						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession(), true);
 						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(student.getStudentId())
 							.setExternalId(student.getExternalId())
 							.setName(student.getName()));
 						if (isRelease()) {
 							action.addOptionBuilder().setKey("Mode").setValue("RELEASE");
-							if (dbStudent.getPin() == null || dbStudent.getPin().isEmpty()) {
-								if (provider != null) {
-									try {
-										String pin = provider.retriveStudentPin(server, helper, student);
-										dbStudent.setPin(pin);
-										student.setPin(pin);
-									} catch (SectioningException e) {
-										if (action.getApiException() == null)
-											action.setApiException("Failed to retrieve PIN: " + e.getMessage());
-										action.setResult(ResultType.FAILURE);
-										continue;
-									}
+							if ((dbStudent.getPin() == null || dbStudent.getPin().isEmpty()) && provider != null) {
+								try {
+									String pin = provider.retriveStudentPin(server, helper, student);
+									dbStudent.setPin(pin);
+									student.setPin(pin);
+								} catch (SectioningException e) {
+									if (action.getApiException() == null)
+										action.setApiException("Failed to retrieve PIN: " + e.getMessage());
+									action.setResult(ResultType.FAILURE);
+									continue;
 								}
 							}
 							if (dbStudent.getPin() != null && !dbStudent.getPin().isEmpty()) {
