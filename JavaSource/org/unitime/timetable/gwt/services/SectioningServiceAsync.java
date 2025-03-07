@@ -143,4 +143,6 @@ public interface SectioningServiceAsync {
 	
 	void getStudentSchedulingPreferences(StudentSectioningContext cx, AsyncCallback<StudentSchedulingPreferencesInterface> callback) throws SectioningException, PageAccessException;
 	void setStudentSchedulingPreferences(StudentSectioningContext cx, StudentSchedulingPreferencesInterface preferences, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	
+	void releasePins(List<Long> studentIds, boolean release, AsyncCallback<Map<Long, String>> callback) throws SectioningException, PageAccessException;
 }

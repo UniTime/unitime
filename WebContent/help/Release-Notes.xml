@@ -52,6 +52,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Online Student Scheduling Dashboard: Student PIN</name>
+			<description>
+				<line>On the Students tab, show student PINs for students that have their PIN released.</line>
+				<line>Allow admins and/or advisors to release/suppress student PINs (Student Scheduling Can Release Pin permission needed).</line>
+				<line>For students that do not have PIN filled in, added a custom interface for populating student PINs (unitime.custom.StudentPinsProvider property).</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.182</version>

@@ -198,6 +198,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Set<StudentGroupInfo> iEditableGroups = null;
 		private String iEmailOptionalToggleCaption = null;
 		private boolean iEmailOptionalToggleDefault = false;
+		private boolean iReleasePins = false, iRetrievePins = false;
 		
 		public SectioningProperties() {
 		}
@@ -260,6 +261,12 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		
 		public boolean getEmailOptionalToggleDefault() { return iEmailOptionalToggleDefault; }
 		public void setEmailOptionalToggleDefault(boolean defaultValue) { iEmailOptionalToggleDefault = defaultValue; }
+		
+		public void setReleasePins(boolean canReleasePins) { iReleasePins = canReleasePins; }
+		public boolean isReleasePins() { return iReleasePins; }
+		
+		public void setRetrievePins(boolean canRetrievePins) { iRetrievePins = canRetrievePins; }
+		public boolean isRetrievePins() { return iRetrievePins; }
 	}
 	
 	public static class StudentGroupInfo implements IsSerializable, Serializable, Comparable<StudentGroupInfo> {

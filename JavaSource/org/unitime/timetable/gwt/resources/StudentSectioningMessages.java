@@ -3713,4 +3713,32 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} Recommendations")
 	String otherSessionRecommendations(String campus);
+	
+	@DefaultMessage("PIN")
+	String colStudentPin();
+	
+	@DefaultMessage("Release PIN")
+	String releaseStudentPin();
+	
+	@DefaultMessage("Suppress PIN")
+	String suppressStudentPin();
+	
+	@DefaultMessage("Releasing student PINs...")
+	String releasingStudentPins();
+	
+	@DefaultMessage("Suppressing student PINs...")
+	String supressingStudentPins();
+	
+	@DefaultMessage("PIN Released")
+	String modePinReleased();
+	
+	@DefaultMessage("PIN Suppressed")
+	String modePinSuppressed();
+	
+	@DefaultMessage("My PIN Released")
+	String modeMyPinReleased();
+	
+	@DefaultMessage("My PIN Suppressed")
+	String modeMyPinSuppressed();
+
 }

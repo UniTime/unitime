@@ -240,6 +240,7 @@ import org.unitime.timetable.onlinesectioning.updates.ChangeStudentStatus;
 import org.unitime.timetable.onlinesectioning.updates.EnrollStudent;
 import org.unitime.timetable.onlinesectioning.updates.MassCancelAction;
 import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
+import org.unitime.timetable.onlinesectioning.updates.ReleaseStudentPin;
 import org.unitime.timetable.onlinesectioning.updates.ReloadStudent;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
@@ -3309,6 +3310,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			properties.setRecheckCriticalCourses(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingRecheckCriticalCourses));
 			properties.setAdvisorCourseRequests(getSessionContext().hasPermission(sessionId, Right.AdvisorCourseRequests) && session != null && 
 					(session.getStatusType().canPreRegisterStudents() || session.getStatusType().canOnlineSectionStudents()));
+			properties.setReleasePins(getSessionContext().hasPermission(sessionId, Right.StudentSchedulingCanReleasePin));
+			properties.setRetrievePins(Customization.StudentPinsProvider.hasProvider());
 			if (properties.isEmail() && Customization.StudentEmailProvider.hasProvider()) {
 				StudentEmailProvider email = Customization.StudentEmailProvider.getProvider();
 				properties.setEmailOptionalToggleCaption(email.getToggleCaptionIfOptional());
@@ -4467,5 +4470,43 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		Date first = pattern.getStartDate();
 		Date last = pattern.getEndDate();
 		return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
+	}
+
+	@Override
+	public Map<Long, String> releasePins(List<Long> studentIds, boolean release) throws SectioningException, PageAccessException {
+		try {
+			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
+			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
+			getSessionContext().checkPermission(server.getAcademicSession(), Right.StudentSchedulingCanReleasePin);
+			if (!getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin) &&
+				getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor) &&
+				!getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents)) {
+				getSessionContext().checkPermission(Right.StudentSchedulingAdvisorCanModifyMyStudents);
+				Set<Long> myStudentIds = getMyStudents(getStatusPageSessionId());
+				for (Long studentId: studentIds) {
+					if (!myStudentIds.contains(studentId)) {
+						Student student = StudentDAO.getInstance().get(studentId);
+						throw new PageAccessException(SEC_MSG.permissionCheckFailed(Right.StudentSchedulingChangeStudentStatus.toString(),
+								(student == null ? studentId.toString() : student.getName(NameFormat.LAST_FIRST_MIDDLE.reference()))));
+					}
+				}
+			}
+			Map<Long, String> ret = server.execute(server.createAction(ReleaseStudentPin.class).forStudents(studentIds).setRelease(release), currentUser());
+			try {
+		        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
+		        for (Long studentId: studentIds)
+		        	hibSessionFactory.getCache().evictEntityData(Student.class, studentId);
+	        } catch (Exception e) {
+	        	sLog.warn("Failed to evict cache: " + e.getMessage());
+	        }
+			return ret;
+		} catch (PageAccessException e) {
+			throw e;
+		} catch (SectioningException e) {
+			throw e;
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
 	}	
 }

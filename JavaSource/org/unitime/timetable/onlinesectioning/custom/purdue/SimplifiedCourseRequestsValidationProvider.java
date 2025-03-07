@@ -90,6 +90,7 @@ import org.unitime.timetable.onlinesectioning.custom.AdvisorCourseRequestsValida
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
+import org.unitime.timetable.onlinesectioning.custom.StudentPinsProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckEligibilityResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
@@ -128,7 +129,7 @@ import com.google.gson.JsonSerializer;
 /**
  * @author Tomas Muller
  */
-public class SimplifiedCourseRequestsValidationProvider implements CourseRequestsValidationProvider, StudentHoldsCheckProvider, AdvisorCourseRequestsValidationProvider {
+public class SimplifiedCourseRequestsValidationProvider implements CourseRequestsValidationProvider, StudentHoldsCheckProvider, AdvisorCourseRequestsValidationProvider, StudentPinsProvider {
 	private static Log sLog = LogFactory.getLog(SimplifiedCourseRequestsValidationProvider.class);
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
@@ -2041,6 +2042,62 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				ApplicationProperties.getProperty("purdue.specreg.confirm.acr.unitimeNoButton", "Cancel Submit"),
 				(ApplicationProperties.getProperty("purdue.specreg.confirm.acr.unitimeYesButtonTitle", "Accept the above warning(s) and submit the Advisor Course Recommendations")),
 				ApplicationProperties.getProperty("purdue.specreg.confirm.acr.unitimeNoButtonTitle", "Go back to editing your Advisor Course Recommendations"));
+		}
+	}
+
+	@Override
+	public String retriveStudentPin(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudentId student) throws SectioningException {
+		ClientResource resource = null;
+		try {
+			resource = new ClientResource(getSpecialRegistrationApiSiteCheckEligibility());
+			resource.setNext(iClient);
+			
+			AcademicSessionInfo session = server.getAcademicSession();
+			String term = getBannerTerm(session);
+			String campus = getBannerCampus(session);
+			resource.addQueryParameter("term", term);
+			resource.addQueryParameter("campus", campus);
+			resource.addQueryParameter("studentId", getBannerId(student));
+			resource.addQueryParameter("mode", getSpecialRegistrationApiMode().name());
+			helper.getAction().addOptionBuilder().setKey("term").setValue(term);
+			helper.getAction().addOptionBuilder().setKey("campus").setValue(campus);
+			helper.getAction().addOptionBuilder().setKey("studentId").setValue(getBannerId(student));
+			resource.addQueryParameter("apiKey", getSpecialRegistrationApiKey());
+			
+			long t0 = System.currentTimeMillis();
+			
+			resource.get(MediaType.APPLICATION_JSON);
+			
+			if (!helper.getAction().hasApiGetTime())
+				helper.getAction().setApiGetTime(System.currentTimeMillis() - t0);
+			
+			CheckEligibilityResponse eligibility = (CheckEligibilityResponse)new GsonRepresentation<CheckEligibilityResponse>(resource.getResponseEntity(), CheckEligibilityResponse.class).getObject();
+			Gson gson = getGson(helper);
+			
+			if (helper.isDebugEnabled())
+				helper.debug("Eligibility: " + gson.toJson(eligibility));
+			helper.getAction().addOptionBuilder().setKey("holds-response").setValue(gson.toJson(eligibility));
+			
+			if (ResponseStatus.success != eligibility.status)
+				throw new SectioningException(eligibility.message == null || eligibility.message.isEmpty() ? "Failed to check student eligibility (" + eligibility.status + ")." : eligibility.message);
+			
+			if (eligibility.data != null && eligibility.data.PIN != null && !eligibility.data.PIN.isEmpty() && !"NA".equals(eligibility.data.PIN)) {
+				return eligibility.data.PIN;
+			}
+
+			return null;
+		} catch (SectioningException e) {
+			helper.getAction().setApiException(e.getMessage());
+			throw (SectioningException)e;
+		} catch (Exception e) {
+			helper.getAction().setApiException(e.getMessage() == null ? "Null" : e.getMessage());
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(e.getMessage());
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
 		}
 	}
 }

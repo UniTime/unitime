@@ -201,7 +201,7 @@ public class SectioningStatusPage extends Composite {
 	private SectioningStatusFilterRpcRequest iCourseFilterRequest = null;
 	private Set<StudentStatusInfo> iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
-	private int iStatusColumn = 0, iNoteColumn = 0, iGroupColumn = 0;
+	private int iStatusColumn = 0, iNoteColumn = 0, iGroupColumn = 0, iPinColumn = -1;
 	private Map<String, Integer> iGroupsColumn = new HashMap<String, Integer>();
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
 	private Set<Long> iSelectedCourseIds = new HashSet<Long>();
@@ -1840,6 +1840,126 @@ public class SectioningStatusPage extends Composite {
 					});
 				}
 			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.releaseStudentPin();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					if (iSelectedStudentIds.isEmpty() || iProperties == null || !iProperties.isReleasePins()) return false;
+					if (iStudentInfos != null)
+						for (StudentInfo info: iStudentInfos) {
+							if (info == null || info.getStudent() == null) continue;
+							if (iSelectedStudentIds.contains(info.getStudent().getId())) {
+								if (!info.hasPinReleased() && (info.hasPin() || iProperties.isRetrievePins()))
+									return true;
+							}
+						}
+					return false;
+				}
+				@Override
+				public void execute() {
+					LoadingWidget.getInstance().show(MESSAGES.releasingStudentPins());
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					iSectioningService.releasePins(studentIds, true, new AsyncCallback<Map<Long,String>>() {
+						
+						@Override
+						public void onSuccess(Map<Long, String> result) {
+							if (iStudentInfos != null)
+								for (StudentInfo info: iStudentInfos) {
+									if (info == null || info.getStudent() == null) continue;
+									String pin = result.get(info.getStudent().getId());
+									if (pin != null) {
+										info.setPin(pin);
+										info.setPinReleased(true);
+									}
+								}
+							if (iPinColumn >= 0)
+								for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+									StudentInfo i = iStudentTable.getData(row);
+									if (i != null && i.getStudent() != null) {
+										String pin = result.get(i.getStudent().getId());
+										if (pin != null)
+											((Label)iStudentTable.getWidget(row, iPinColumn)).setText(pin);
+									}
+								}
+							LoadingWidget.getInstance().hide();
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+							
+						}
+					});
+				}
+			});
+			hSelect.addOperation(new Operation() {
+				@Override
+				public String getName() {
+					return MESSAGES.suppressStudentPin();
+				}
+				@Override
+				public boolean hasSeparator() {
+					return true;
+				}
+				@Override
+				public boolean isApplicable() {
+					if (iSelectedStudentIds.isEmpty() || iProperties == null || !iProperties.isReleasePins()) return false;
+					if (iStudentInfos != null)
+						for (StudentInfo info: iStudentInfos) {
+							if (info == null || info.getStudent() == null) continue;
+							if (iSelectedStudentIds.contains(info.getStudent().getId())) {
+								if (info.hasPinReleased())
+									return true;
+							}
+						}
+					return false;
+				}
+				@Override
+				public void execute() {
+					LoadingWidget.getInstance().show(MESSAGES.supressingStudentPins());
+					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
+					iSectioningService.releasePins(studentIds, false, new AsyncCallback<Map<Long,String>>() {
+						
+						@Override
+						public void onSuccess(Map<Long, String> result) {
+							if (iStudentInfos != null)
+								for (StudentInfo info: iStudentInfos) {
+									if (info == null || info.getStudent() == null) continue;
+									String pin = result.get(info.getStudent().getId());
+									if (pin != null) {
+										info.setPin(pin);
+										info.setPinReleased(false);
+									}
+								}
+							if (iPinColumn >= 0)
+								for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+									StudentInfo i = iStudentTable.getData(row);
+									if (i != null && i.getStudent() != null) {
+										String pin = result.get(i.getStudent().getId());
+										if (pin != null)
+											((Label)iStudentTable.getWidget(row, iPinColumn)).setText("");
+									}
+								}
+							LoadingWidget.getInstance().hide();
+						}
+						
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(caught);
+							
+						}
+					});
+				}
+			});
 			hSelect.addOperation(new MenuOperation() {
 				@Override
 				public String getName() {
@@ -2123,6 +2243,16 @@ public class SectioningStatusPage extends Composite {
 		header.add(hStatus);
 		addSortOperation(hStatus, StudentComparator.SortBy.STATUS, MESSAGES.colStatus());
 		
+		UniTimeTableHeader hPin = null;
+		if (iStudentInfoVisibleColumns.hasPin) {
+			iPinColumn = header.size() - 1;
+			hPin = new UniTimeTableHeader(MESSAGES.colStudentPin());
+			header.add(hPin);
+			addSortOperation(hPin, StudentComparator.SortBy.PIN, MESSAGES.colStudentPin());
+		} else {
+			iPinColumn = -1;
+		}
+		
 		UniTimeTableHeader hEnrollment = null;
 		if (iStudentInfoVisibleColumns.hasEnrollment) {
 			hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
@@ -2327,6 +2457,7 @@ public class SectioningStatusPage extends Composite {
 			case PROGRAM: h = hProgram; break;
 			case CAMPUS: h = hCampus; break;
 			case PREF: h = hPref; break;
+			case PIN: h = hPin; break;
 			}
 			if (h != null) {
 				Collections.sort(result, new StudentComparator(sort, asc, g));
@@ -2433,6 +2564,8 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasAcmd)
 				line.add(new ACM(info.getStudent().getAccommodations()));
 			line.add(new HTML(info.getStatus(), false));
+			if (iStudentInfoVisibleColumns.hasPin)
+				line.add(new Label(info.hasPinReleased() ? info.getPin() : "", false));
 		} else {
 			if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) line.add(new HTML("&nbsp;", false));
 			if (iStudentInfoVisibleColumns.hasExtId)
@@ -2463,6 +2596,8 @@ public class SectioningStatusPage extends Composite {
 			if (iStudentInfoVisibleColumns.hasAcmd)
 				line.add(new HTML("&nbsp;", false));
 			line.add(new HTML("&nbsp;", false));
+			if (iStudentInfoVisibleColumns.hasPin)
+				line.add(new HTML("&nbsp;", false));
 		}
 		if (iStudentInfoVisibleColumns.hasEnrollment)
 			line.add(new EnrollmentCell(info));
@@ -3511,6 +3646,7 @@ public class SectioningStatusPage extends Composite {
 			PROGRAM,
 			CAMPUS,
 			PREF,
+			PIN,
 			;
 		}
 		
@@ -3662,6 +3798,8 @@ public class SectioningStatusPage extends Composite {
 				return Integer.compare(e1.getAdvisedInfo() == null ? 0 : e1.getAdvisedInfo().getNotAssignedPrimary(), e2.getAdvisedInfo() == null ? 0 : e2.getAdvisedInfo().getNotAssignedPrimary());
 			case PREF:
 				return (e1.hasPreference() ? e1.getPreference() : "").compareTo(e2.hasPreference() ? e2.getPreference() : "");
+			case PIN:
+				return (e1.hasPinReleased() ? e1.getPin() : "").compareTo(e2.hasPinReleased() ? e2.getPin() : "");
 			default:
 				return 0;
 			}
@@ -3913,7 +4051,7 @@ public class SectioningStatusPage extends Composite {
 		boolean hasEnrollment = false, hasWaitList = false,  hasArea = false, hasMajor = false, hasGroup = false, hasAcmd = false, hasReservation = false,
 				hasRequestedDate = false, hasEnrolledDate = false, hasConsent = false, hasCredit = false, hasReqCred = false, hasDistances = false, hasOverlaps = false,
 				hasFreeTimeOverlaps = false, hasPrefIMConfs = false, hasPrefSecConfs = false, hasNote = false, hasEmailed = false, hasOverride = false, hasExtId = false,
-				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasPref = false;
+				hasAdvisor = false, hasAdvisedInfo = false, hasMinor = false, hasConc = false, hasDeg = false, hasProg = false, hasCamp = false, hasPref = false, hasPin = false;
 		int selectableStudents = 0;
 		Set<String> groupTypes = new TreeSet<String>();
 		
@@ -3953,6 +4091,7 @@ public class SectioningStatusPage extends Composite {
 				if (e.getStudent().hasProgram()) hasProg = true;
 				if (e.getStudent().hasCampus()) hasCamp = true;
 				if (e.hasPreference()) hasPref = true;
+				if (e.hasPinReleased()) hasPin = true;
 			}
 		}
 	}

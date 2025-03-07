@@ -93,7 +93,9 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 				context.checkPermission(server.getAcademicSession().getUniqueId(), "Session", Right.SchedulingDashboard);
 				request.setSessionId(server.getAcademicSession().getUniqueId());
 				
-				return server.execute(server.createAction(SectioningStatusFilterAction.class).forRequest(request), currentUser(context));
+				return server.execute(server.createAction(SectioningStatusFilterAction.class).forRequest(request)
+						.withPinOps(online && context.hasPermission(sessionId, Right.StudentSchedulingCanReleasePin)),
+						currentUser(context));
 			} else {
 				OnlineSectioningServer server = studentSectioningSolverService.getSolver();
 				if (server == null) 

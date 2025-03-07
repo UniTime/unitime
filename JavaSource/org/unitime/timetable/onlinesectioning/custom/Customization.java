@@ -49,6 +49,7 @@ public enum Customization {
 	WaitListValidationProvider(WaitListValidationProvider.class, ApplicationProperty.CustomizationWaitListValidationProvider),
 	WaitListComparatorProvider(WaitListComparatorProvider.class, ApplicationProperty.CustomizationWaitListComparatorProvider),
 	RoomUrlProvider(RoomUrlProvider.class, ApplicationProperty.CustomRoomUrlProvider),
+	StudentPinsProvider(StudentPinsProvider.class, ApplicationProperty.CustomizationStudentPinsProvider),
 	;
 	
 	private Holder<?> iHolder;

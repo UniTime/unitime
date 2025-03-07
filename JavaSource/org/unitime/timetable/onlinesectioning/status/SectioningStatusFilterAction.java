@@ -63,6 +63,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CustomCourseLookupHolder;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
@@ -79,9 +80,15 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 	private static StudentSectioningMessages MESSAGES = Localization.create(StudentSectioningMessages.class);
 	
 	private FilterRpcRequest iRequest = null;
+	private boolean iPinOps = false;
 	
 	public SectioningStatusFilterAction forRequest(FilterRpcRequest request) {
 		iRequest = request;
+		return this;
+	}
+	
+	public SectioningStatusFilterAction withPinOps(boolean canReleasePin) {
+		iPinOps = canReleasePin;
 		return this;
 	}
 
@@ -512,6 +519,10 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				if (ApplicationProperty.StudentSchedulingFilterSkipAdvisedCounts.isTrue()) {
 					modes.add(new Entity(-1l, "My Advised", MESSAGES.modeMyStudentsAdvised(), "translated-value", MESSAGES.modeMyStudentsAdvised()));
 					modes.add(new Entity(-1l, "My Not Advised", MESSAGES.modeMyStudentsNotAdvised(), "translated-value", MESSAGES.modeMyStudentsNotAdvised()));
+					if (iPinOps) {
+						modes.add(new Entity(-1l, "My PIN Released", MESSAGES.modeMyPinReleased(), "translated-value", MESSAGES.modeMyPinReleased()));
+						modes.add(new Entity(-1l, "My PIN Suppressed", MESSAGES.modeMyPinSuppressed(), "translated-value", MESSAGES.modeMyPinSuppressed()));
+					}
 				} else {
 					int myAdvised = ((Number)query.select("count(distinct s)")
 							.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) and s.advisorCourseRequests is not empty")
@@ -527,6 +538,26 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 						myA.setCount(myStudents - myAdvised);
 						modes.add(myA);
 					}
+					if (iPinOps) {
+						int pinReleased = ((Number)query.select("count(distinct s)")
+								.where("s.pinReleased = true")
+								.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)")
+								.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
+						if (pinReleased > 0) {
+							Entity pr = new Entity(-1l, "My PIN Released", MESSAGES.modeMyPinReleased(), "translated-value", MESSAGES.modeMyPinReleased());
+							pr.setCount(pinReleased);
+							modes.add(pr);
+						}
+						int pinSuppressed = ((Number)query.select("count(distinct s)")
+								.where("(s.pinReleased is null or s.pinReleased = false)" + (Customization.StudentPinsProvider.hasProvider() ? "" : " and s.pin is not null"))
+								.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)")
+								.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
+						if (pinSuppressed > 0) {
+							Entity ps = new Entity(-1l, "My PIN Suppressed", MESSAGES.modeMyPinSuppressed(), "translated-value", MESSAGES.modeMyPinSuppressed());
+							ps.setCount(pinSuppressed);
+							modes.add(ps);
+						}
+					}
 				}
 			}
 		}
@@ -534,6 +565,9 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		if (ApplicationProperty.StudentSchedulingFilterSkipAdvisedCounts.isTrue()) {
 			modes.add(new Entity(-1l, "Advised", MESSAGES.modeAdvised(), "translated-value", MESSAGES.modeAdvised()));
 			modes.add(new Entity(-1l, "Not Advised", MESSAGES.modeNotAdvised(), "translated-value", MESSAGES.modeNotAdvised()));
+			if (iPinOps)
+				modes.add(new Entity(-1l, "PIN Released", MESSAGES.modePinReleased(), "translated-value", MESSAGES.modePinReleased()));
+				modes.add(new Entity(-1l, "PIN Suppressed", MESSAGES.modePinSuppressed(), "translated-value", MESSAGES.modePinSuppressed()));
 		} else {
 			int advised = ((Number)query.select("count(distinct s)")
 					.where("s.advisorCourseRequests is not empty")
@@ -551,7 +585,26 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					modes.add(notAdv);
 				}
 			}
+			if (iPinOps) {
+				int pinReleased = ((Number)query.select("count(distinct s)")
+						.where("s.pinReleased = true")
+						.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
+				if (pinReleased > 0) {
+					Entity pr = new Entity(-1l, "PIN Released", MESSAGES.modePinReleased(), "translated-value", MESSAGES.modePinReleased());
+					pr.setCount(pinReleased);
+					modes.add(pr);
+				}
+				int pinSuppressed = ((Number)query.select("count(distinct s)")
+						.where("(s.pinReleased is null or s.pinReleased = false)" + (Customization.StudentPinsProvider.hasProvider() ? "" : " and s.pin is not null"))
+						.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
+				if (pinSuppressed > 0) {
+					Entity ps = new Entity(-1l, "PIN Suppressed", MESSAGES.modePinSuppressed(), "translated-value", MESSAGES.modePinSuppressed());
+					ps.setCount(pinSuppressed);
+					modes.add(ps);
+				}				
+			}
 		}
+
 		if (!modes.isEmpty())
 			response.add("mode", modes);		
 
@@ -1325,6 +1378,24 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		}
 		if (request.hasOption("mode") && "Not Advised".equals(request.getOption("mode"))) {
 			query.addWhere("mode", "s.advisorCourseRequests is empty");
+		}
+		if (request.hasOption("mode") && "PIN Released".equals(request.getOption("mode"))) {
+			query.addWhere("mode", "s.pinReleased = true");
+		}
+		if (request.hasOption("mode") && "PIN Suppressed".equals(request.getOption("mode"))) {
+			query.addWhere("mode", "(s.pinReleased is null or s.pinReleased = false)" + (Customization.StudentPinsProvider.hasProvider() ? "" : " and s.pin is not null"));
+		}
+		if (request.hasOption("mode") && "My PIN Released".equals(request.getOption("mode")) && request.hasOption("role")) {
+			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) " +
+					"and s.pinReleased = true");
+			query.addParameter("mode", "Xuser", request.getOption("user"));
+			query.addParameter("mode", "Xrole", request.getOption("role"));
+		}
+		if (request.hasOption("mode") && "My PIN Suppressed".equals(request.getOption("mode")) && request.hasOption("role")) {
+			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId) " +
+					"and (s.pinReleased is null or s.pinReleased = false)" + (Customization.StudentPinsProvider.hasProvider() ? "" : " and s.pin is not null"));
+			query.addParameter("mode", "Xuser", request.getOption("user"));
+			query.addParameter("mode", "Xrole", request.getOption("role"));
 		}
 		
 		if (request.hasOptions("override")) {
