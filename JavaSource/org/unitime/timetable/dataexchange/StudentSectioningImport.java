@@ -351,6 +351,15 @@ public class StudentSectioningImport extends BaseImport {
 		            Element email = demographicsElement.element("email");
 		            if (email != null)
 		                student.setEmail(email.attributeValue("value"));
+		            Element pin = demographicsElement.element("pin");
+		            if (pin != null) {
+		            	student.setPin(pin.attributeValue("value"));
+		            	String pinReleased = pin.attributeValue("released");
+		            	if ("true".equalsIgnoreCase(pinReleased))
+		                	student.setPinReleased(true);
+		                else if ("false".equalsIgnoreCase(pinReleased))
+		                	student.setPinReleased(false);
+		            }
 		            student.setAreaClasfMajors(new HashSet<StudentAreaClassificationMajor>());
 		            student.setAreaClasfMinors(new HashSet<StudentAreaClassificationMinor>());
 		            student.setGroups(new HashSet<StudentGroup>());
@@ -394,6 +403,23 @@ public class StudentSectioningImport extends BaseImport {
 		        		student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
 		        		updatedStudents.add(student.getUniqueId());
 		        	}
+		        	Element pin = demographicsElement.element("pin");
+		            if (pin != null) {
+		            	if (!eq(pin.attributeValue("value"), student.getPin())) {
+		            		student.setPin(pin.attributeValue("value"));
+		            		updatedStudents.add(student.getUniqueId());
+		            	}
+		            	String pinReleased = pin.attributeValue("released");
+		            	if (!eq(pinReleased, student.getPinReleased() == null ? null : Boolean.TRUE.equals(student.getPinReleased()) ? "true" : "false")) {
+		            		if ("true".equalsIgnoreCase(pinReleased))
+		                    	student.setPinReleased(true);
+		                    else if ("false".equalsIgnoreCase(pinReleased))
+		                    	student.setPinReleased(false);
+		                    else
+		                    	student.setPinReleased(null);
+		            		updatedStudents.add(student.getUniqueId());
+		            	}
+		            }
             	}
             	if (demographicsElement != null) {
                 	Map<String, StudentAreaClassificationMajor> sMajors = new Hashtable<String, StudentAreaClassificationMajor>();

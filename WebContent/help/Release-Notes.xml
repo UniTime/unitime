@@ -63,6 +63,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Student PIN</name>
+			<description>
+				<line>Added student PIN and PIN released flags in the student and course requests XML imports and exports.</line>
+				<line>Student XML: added pin and pinReleased attributes to the student element.</line>
+				<line>Requests XML: added pin element under updateDemographics with value and released attributes.</line>
+			</description>
+		</item>
+	</category>
 </release>
 <release>
 	<version>4.8.182</version>

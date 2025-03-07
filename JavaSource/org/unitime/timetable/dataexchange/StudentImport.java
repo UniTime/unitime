@@ -224,6 +224,8 @@ public class StudentImport extends BaseImport {
     	String email = element.attributeValue("email");
     	String maxCred = element.attributeValue("maxCredit");
     	String minCred = element.attributeValue("minCredit");
+    	String pin = element.attributeValue("pin");
+    	String pinReleased = element.attributeValue("pinReleased");
 
     	Student student = students.remove(externalId);
     	if (student == null) {
@@ -244,6 +246,11 @@ public class StudentImport extends BaseImport {
             student.setAccomodations(new HashSet<StudentAccomodation>());
             student.setMinCredit(minCred == null ? null : Float.valueOf(minCred));
             student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
+            student.setPin(pin);
+            if ("true".equalsIgnoreCase(pinReleased))
+            	student.setPinReleased(true);
+            else if ("false".equalsIgnoreCase(pinReleased))
+            	student.setPinReleased(false);
             getHibSession().persist(student);
     	} else {
         	if (!eq(fName, student.getFirstName())) {
@@ -268,6 +275,19 @@ public class StudentImport extends BaseImport {
         	}
         	if (!eq(maxCred == null ? null : Float.valueOf(maxCred), student.getMaxCredit())) {
         		student.setMaxCredit(maxCred == null ? null : Float.valueOf(maxCred));
+        		updatedStudents.add(student.getUniqueId());
+        	}
+        	if (!eq(pin, student.getPin())) {
+        		student.setPin(pin);
+        		updatedStudents.add(student.getUniqueId());
+        	}
+        	if (!eq(pinReleased, student.getPinReleased() == null ? null : Boolean.TRUE.equals(student.getPinReleased()) ? "true" : "false")) {
+        		if ("true".equalsIgnoreCase(pinReleased))
+                	student.setPinReleased(true);
+                else if ("false".equalsIgnoreCase(pinReleased))
+                	student.setPinReleased(false);
+                else
+                	student.setPinReleased(null);
         		updatedStudents.add(student.getUniqueId());
         	}
     	}
