@@ -1840,7 +1840,7 @@ public class SectioningStatusPage extends Composite {
 					});
 				}
 			});
-			hSelect.addOperation(new Operation() {
+			final Operation releaseStudentPin = new Operation() {
 				@Override
 				public String getName() {
 					return MESSAGES.releaseStudentPin();
@@ -1899,14 +1899,16 @@ public class SectioningStatusPage extends Composite {
 						}
 					});
 				}
-			});
-			hSelect.addOperation(new Operation() {
+			};
+			hSelect.addOperation(releaseStudentPin);
+			final Operation suppressStudentPin = new Operation() {
 				@Override
 				public String getName() {
 					return MESSAGES.suppressStudentPin();
 				}
 				@Override
 				public boolean hasSeparator() {
+					if (releaseStudentPin.isApplicable()) return false;
 					return true;
 				}
 				@Override
@@ -1959,7 +1961,8 @@ public class SectioningStatusPage extends Composite {
 						}
 					});
 				}
-			});
+			};
+			hSelect.addOperation(suppressStudentPin);
 			hSelect.addOperation(new MenuOperation() {
 				@Override
 				public String getName() {
