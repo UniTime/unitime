@@ -35,9 +35,9 @@ public class MD5StudentPinProvider implements StudentPinsProvider {
 		try {
 			if (student.getExternalId() == null || student.getExternalId().isEmpty()) return null;
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
-		    String hash = new BigInteger(md5.digest(student.getExternalId().getBytes())).toString(36).toUpperCase();
-		    if (hash.length() > 7)
-		    	return hash.substring(0, 7);
+		    String hash = new BigInteger(1, md5.digest(student.getExternalId().getBytes())).toString(10).toUpperCase();
+		    if (hash.length() > 6)
+		    	return hash.substring(0, 6);
 		    else
 		    	return hash;
 		} catch (Exception e) {
