@@ -57,6 +57,7 @@ import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
@@ -332,6 +333,21 @@ public class EventsConnector extends ApiConnector {
 			for (ContactInterface c: event.getAdditionalContacts())
 				fixContact(sessionId, c);
 		
+		if (event.hasSponsor() && event.getSponsor().getUniqueId() == null) {
+			if (event.getSponsor().hasName()) {
+				SponsoringOrganization org = (SponsoringOrganization) helper.getHibSession().createQuery(
+						"from SponsoringOrganization where name = :name"
+						).setString("name", event.getSponsor().getName()).setMaxResults(1).uniqueResult();
+				if (org != null)
+					event.getSponsor().setUniqueId(org.getUniqueId());
+			} else if (event.getSponsor().hasEmail()) {
+				SponsoringOrganization org = (SponsoringOrganization) helper.getHibSession().createQuery(
+						"from SponsoringOrganization where email = :email"
+						).setString("email", event.getSponsor().getEmail()).setMaxResults(1).uniqueResult();
+				if (org != null)
+					event.getSponsor().setUniqueId(org.getUniqueId());
+			}
+		}		
 		String op = helper.getParameter("operation");
 		SaveOrApproveEventRpcRequest.Operation operation = null;
 		if (op != null)
