@@ -96,6 +96,14 @@ public class TeachingRequestsWidget extends SimpleForm {
 		panel.setVisible(true);
 	}
 	
+	public TeachingRequestsWidget forOfferingId(Long offeringId) {
+		iOfferingId = offeringId;
+		if (InstructorCookie.getInstance().isShowTeachingRequests()) {
+			refresh();
+		}
+		return this;
+	}
+	
 	protected void refresh() {
 		iHeader.showLoading();
 		if (iTable == null)

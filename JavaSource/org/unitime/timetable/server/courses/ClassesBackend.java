@@ -59,7 +59,7 @@ public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtR
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
 		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
-		ClassesTableBuilder builder = new ClassesTableBuilder();
+		ClassesTableBuilder builder = new ClassesTableBuilder(context, request.getBackType(), request.getBackId());
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
 			if ("subjectArea".equals(p.getName())) {
@@ -99,15 +99,11 @@ public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtR
 		}
 		
 		builder.generateTableForClasses(
-				context,
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
 		        request.getFilter(), 
 		        subjectArea.split(","), 
-		        true, 
-		        response,
-		        request.getBackType(),
-		        request.getBackId());
+		        response);
 		
 		if (response.isEmpty())
 			throw new GwtRpcException(MESSAGES.errorNoRecords());

@@ -1829,6 +1829,20 @@ public class EnrollmentTable extends Composite {
 		panel.setVisible(true);
 	}
 	
+	public EnrollmentTable forOfferingId(Long offeringId) {
+		iOfferingId = offeringId;
+		if (iOfferingId >= 0 && iShowFilter)
+			iHeader.setHeaderTitle(MESSAGES.studentsTable());
+		if (SectioningCookie.getInstance().getEnrollmentCoursesDetails()) {
+			refresh();
+		} else {
+			clear();
+			iHeader.clearMessage();
+			iHeader.setCollapsible(false);
+		}
+		return this;
+	}
+	
 	public void setId(Long id) { iOfferingId = id; }
 	
 	public Long getId() { return iOfferingId; }

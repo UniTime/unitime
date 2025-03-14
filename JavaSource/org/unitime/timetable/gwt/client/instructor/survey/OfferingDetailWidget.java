@@ -103,4 +103,11 @@ public class OfferingDetailWidget extends Composite {
 		if (iHeader.isCollapsible())
 			open();
 	}
+	
+	public OfferingDetailWidget forOfferingId(Long offeringId) {
+		iOfferingId = offeringId;
+		if (iHeader.isCollapsible())
+			open();
+		return this;
+	}
 }

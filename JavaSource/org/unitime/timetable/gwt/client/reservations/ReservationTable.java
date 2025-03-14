@@ -587,6 +587,25 @@ public class ReservationTable extends Composite {
 			}
 		});
 	}
+	
+	public ReservationTable forOfferingId(Long offeringId) {
+		initCallbacks();
+		iOfferingId = offeringId;
+		if (ReservationCookie.getInstance().getReservationCoursesDetails()) {
+			refresh();
+		} else {
+			clear(false);
+			iHeader.clearMessage();
+			iHeader.setCollapsible(false);
+		}
+		addReservationClickHandler(new ReservationClickHandler() {
+			@Override
+			public void onClick(ReservationClickedEvent evt) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=reservation&id=" + evt.getReservation().getId() + "&reservations=" + getReservationIds());
+			}
+		});
+		return this;
+	}
 
 	public void scrollIntoView(Long reservationId) {
 		for (int r = 1; r < iReservations.getRowCount(); r++) {

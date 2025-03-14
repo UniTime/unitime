@@ -1137,6 +1137,19 @@ public class CourseCurriculaTable extends Composite {
 		panel.setVisible(true);
 	}
 	
+	public CourseCurriculaTable forOfferingId(Long offeringId) {
+		initCallbacks();
+		iOfferingId = offeringId;
+		iCourseName = null;
+		if (CurriculumCookie.getInstance().getCurriculaCoursesDetails()) {
+			refresh();
+		} else {
+			iHeader.clearMessage();
+			iHeader.setCollapsible(false);
+		}
+		return this;
+	}
+	
 	public void setCourseName(String courseName) {
 		initCallbacks();
 		iOfferingId = null;

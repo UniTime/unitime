@@ -233,6 +233,13 @@ public class InstructorSurveyWidget extends Composite {
 			open();
 	}
 	
+	public InstructorSurveyWidget forInstructorId(Long instructorId) {
+		iInstructorId = instructorId;
+		if (iHeader.isCollapsible())
+			open();
+		return this;
+	}
+	
 	protected void open() {
 		iHeader.showLoading();
 		RPC.execute(new InstructorSurveyInterface.InstructorSurveyRequest(iInstructorId), new AsyncCallback<InstructorSurveyInterface.InstructorSurveyData>() {

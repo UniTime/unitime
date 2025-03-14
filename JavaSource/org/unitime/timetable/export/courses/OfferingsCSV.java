@@ -75,19 +75,19 @@ public class OfferingsCSV implements Exporter {
 	protected List<TableInterface> getOfferings(ExportHelper helper) {
     	List<TableInterface> response = new ArrayList<TableInterface>();
     	
-    	InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
+    	InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder(
+    			helper.getSessionContext(),
+    			helper.getParameter("backType"),
+		        helper.getParameter("backId")
+		        );
     	builder.setSimple(true);
     	
     	builder.generateTableForInstructionalOfferings(
-				helper.getSessionContext(),
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
 		        new Filter(helper), 
 		        helper.getParameter("subjectArea").split(","), 
-		        true, 
-		        response,
-		        helper.getParameter("backType"),
-		        helper.getParameter("backId"));
+		        response);
 
     	return response;
 	}
@@ -95,19 +95,19 @@ public class OfferingsCSV implements Exporter {
 	protected List<TableInterface> getClasses(ExportHelper helper) {
     	List<TableInterface> response = new ArrayList<TableInterface>();
     	
-    	ClassesTableBuilder builder = new ClassesTableBuilder();
+    	ClassesTableBuilder builder = new ClassesTableBuilder(
+    			helper.getSessionContext(),
+    			helper.getParameter("backType"),
+		        helper.getParameter("backId")
+    			);
     	builder.setSimple(true);
     	
     	builder.generateTableForClasses(
-				helper.getSessionContext(),
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
 		        new Filter(helper), 
 		        helper.getParameter("subjectArea").split(","), 
-		        true, 
-		        response,
-		        helper.getParameter("backType"),
-		        helper.getParameter("backId"));
+		        response);
 
     	return response;
 	}
@@ -115,19 +115,18 @@ public class OfferingsCSV implements Exporter {
 	protected List<TableInterface> getClassAssignments(ExportHelper helper) {
     	List<TableInterface> response = new ArrayList<TableInterface>();
     	
-    	ClassAssignmentsTableBuilder builder = new ClassAssignmentsTableBuilder();
+    	ClassAssignmentsTableBuilder builder = new ClassAssignmentsTableBuilder(
+    			helper.getSessionContext(),
+    			helper.getParameter("backType"),
+		        helper.getParameter("backId"));
     	builder.setSimple(true);
     	
     	builder.generateTableForClassAssignments(
-				helper.getSessionContext(),
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
 		        new Filter(helper), 
 		        helper.getParameter("subjectArea").split(","), 
-		        true, 
-		        response,
-		        helper.getParameter("backType"),
-		        helper.getParameter("backId"));
+		        response);
 
     	return response;
 	}

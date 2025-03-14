@@ -59,7 +59,7 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
 		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
-		InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder();
+		InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder(context, request.getBackType(), request.getBackId());
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
 			if ("subjectArea".equals(p.getName())) {
@@ -90,7 +90,7 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 			}
 			BackTracker.markForBack(
 					context, 
-					"gwt.jsp?page=offerings&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
+					"gwt.action?page=offerings&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
 						"&courseNbr=" + (courseNbr == null ? "" : URLEncoder.encode(courseNbr, "utf-8")),
 					MESSAGES.labelInstructionalOfferings() + " (" + subjects + (courseNbr == null || courseNbr.isEmpty() ? "" : " " + courseNbr) + ")", 
 					true, true);
@@ -99,15 +99,11 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 		}
 		
 		builder.generateTableForInstructionalOfferings(
-				context,
 				classAssignmentService.getAssignment(),
 				examinationSolverService.getSolver(),
 		        request.getFilter(), 
 		        subjectArea.split(","), 
-		        true, 
-		        response,
-		        request.getBackType(),
-		        request.getBackId());
+		        response);
 		return response;
 	}
 

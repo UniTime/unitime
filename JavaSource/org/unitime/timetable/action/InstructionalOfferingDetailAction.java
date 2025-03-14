@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -131,6 +133,16 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
      * Method execute
      */
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyOfferingDetail.isFalse()) {
+    		String url = "gwt.action?page=offering";
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += "&" + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
+    	
     	if (form == null) form = new InstructionalOfferingDetailForm();
     	
     	setCrsNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));

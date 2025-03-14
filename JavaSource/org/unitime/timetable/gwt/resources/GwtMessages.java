@@ -3943,6 +3943,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageClassAssignments();
 	
+	@DefaultMessage("Instructional Offering Detail")
+	@DoNotTranslate
+	String pageInstructionalOfferingDetail();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

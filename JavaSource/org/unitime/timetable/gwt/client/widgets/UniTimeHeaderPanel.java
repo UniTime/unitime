@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
@@ -352,7 +353,8 @@ public class UniTimeHeaderPanel extends P {
 			clonedButton.addKeyDownHandler(iKeyDownHandler);
 			if (!button.isVisible())
 				clone.setEnabled(op, false);
-			
+			if (button.getTitle() != null)
+				clone.setTitle(button.getTitle());
 		}
 		return clone;
 	}
@@ -392,4 +394,6 @@ public class UniTimeHeaderPanel extends P {
 		else
 			iRight.add(widget);
 	}
+	
+	public Set<String> getOperations() { return iOperations.keySet(); }
 }

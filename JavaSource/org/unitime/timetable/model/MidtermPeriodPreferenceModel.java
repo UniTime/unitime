@@ -32,6 +32,8 @@ import java.util.TreeSet;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
@@ -43,6 +45,7 @@ import org.unitime.timetable.util.Formats;
  */
 public class MidtermPeriodPreferenceModel {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 	protected TreeSet<Integer> iDates = new TreeSet<Integer>();
     protected TreeSet<Integer> iStarts = new TreeSet<Integer>();
     protected Hashtable<Integer,Hashtable<Integer,String>> iPreferences = new Hashtable<Integer,Hashtable<Integer,String>>();
@@ -472,5 +475,77 @@ public class MidtermPeriodPreferenceModel {
             }
         }
         return ret;
+    }
+    
+    private void addToCell(CellInterface ret, int fDate, int lDate, Hashtable<Integer,String> prefs) {
+    	Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
+        String dates = df.format(getDate(fDate))+(fDate==lDate?"":" - "+df.format(getDate(lDate)));
+        String lastPref = null; int fStart = -1, lStart = -1;
+        for (int start: iStarts) {
+            String pref = prefs.get(start);
+            if (pref==null) continue;
+            if (lastPref==null) {
+                lastPref = pref; fStart = start;
+            } else if (!pref.equals(lastPref)) {
+                if (iLocation && PreferenceLevel.sNeutral.equals(lastPref)) {
+                    //
+                } else if (!iLocation && PreferenceLevel.sProhibited.equals(lastPref)) {
+                    //
+                } else {
+                    String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN);
+                    String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
+                    if (ret.hasItems()) ret.add(", ");
+                    ret.add(dates+" "+(iStarts.size()==2?fStart==iStarts.first()?MSG.eveningExamsEarly():MSG.eveningExamsLate():startTime)+(fStart==lStart?"":" - "+endTime))
+                    	.setColor(PreferenceLevel.prolog2color(lastPref))
+                    	.setTitle(PreferenceLevel.prolog2string(lastPref)+" "+dates+" "+startTime+" - "+endTime)
+                    	.setNoWrap(true);
+                }
+                lastPref = pref; fStart = start;
+            }
+            lStart = start;
+        }
+        if (lastPref!=null) {
+            if (iLocation && PreferenceLevel.sNeutral.equals(lastPref)) {
+                //
+            } else if (!iLocation && PreferenceLevel.sProhibited.equals(lastPref)) {
+                //
+            } else {
+                String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN);
+                String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
+                if (ret.hasItems()) ret.add(", ");
+                if (fStart==iStarts.first()) {
+                    ret.add(dates)
+                    	.setColor(PreferenceLevel.prolog2color(lastPref))
+                		.setTitle(PreferenceLevel.prolog2string(lastPref)+" "+dates+" "+startTime+" - "+endTime)
+                		.setNoWrap(true);
+                } else {
+                    ret.add(dates+" "+(iStarts.size()==2?fStart==iStarts.first()?MSG.eveningExamsEarly():MSG.eveningExamsLate():startTime)+(fStart==lStart?"":" - "+endTime))
+                    	.setColor(PreferenceLevel.prolog2color(lastPref))
+            			.setTitle(PreferenceLevel.prolog2string(lastPref)+" "+dates+" "+startTime+" - "+endTime)
+            			.setNoWrap(true);
+                }
+            }
+        }
+    }
+    
+    public CellInterface toCellInterface() {
+    	CellInterface ret = new CellInterface();
+    	if (iStarts.isEmpty()) return ret;
+        Hashtable<Integer,String> fPref = null; 
+        int fDate = -1, lDate = -1;
+        for (Integer date: iDates) {
+        	Hashtable<Integer,String> pref = iPreferences.get(date);
+        	if (fPref==null) {
+        	    fPref = pref; fDate = date;
+        	} else if (!fPref.equals(pref)) {
+        		addToCell(ret, fDate, lDate, fPref);
+        	    fPref = pref; fDate = date;
+        	}
+        	lDate = date;
+        }
+        if (fPref!=null)
+        	addToCell(ret, fDate, lDate, fPref);
+        return ret;
+    	
     }
 }

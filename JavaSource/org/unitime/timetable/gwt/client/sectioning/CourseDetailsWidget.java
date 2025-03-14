@@ -98,6 +98,11 @@ public class CourseDetailsWidget extends Composite {
 		initWidget(iPanel);
 	}
 	
+	public CourseDetailsWidget forCourseId(Long courseId) {
+		reload(new CourseDetailsRpcRequest(courseId));
+		return this;
+	}
+	
 	public void insert(final RootPanel panel) {
 		String command = panel.getElement().getInnerText().trim();
 		panel.getElement().setInnerText(null);

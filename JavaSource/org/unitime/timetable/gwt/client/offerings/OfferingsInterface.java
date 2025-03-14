@@ -20,9 +20,13 @@
 package org.unitime.timetable.gwt.client.offerings;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -93,29 +97,131 @@ public class OfferingsInterface {
 	
 	public static class ClassAssignmentsRequest extends OfferingsRequest {}
 	
-	public static class OfferingDetailsRequest implements GwtRpcRequest<OfferingDetailsResponse> {
+	public static class OfferingDetailRequest implements GwtRpcRequest<OfferingDetailResponse> {
 		private Long iOfferingId;
+		private String iBackId, iBackType, iExamId;
+		private Action iAction;
+
+		public static enum Action {
+			Lock, Unlock, MakeOffered, MakeNotOffered, Delete,
+		}
 		
-		public OfferingDetailsRequest() {}
+		public OfferingDetailRequest() {}
 		
 		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
 		public Long getOfferingId() { return iOfferingId; }
+		
+		public String getBackId() { return iBackId; }
+		public void setBackId(String backId) { iBackId = backId; }
+		public String getBackType() { return iBackType; }
+		public void setBackType(String backType) { iBackType = backType; }
+		public String getExamId() { return iExamId; }
+		public void setExamId(String examId) { iExamId = examId; }
+		public Action getAction() { return iAction; }
+		public void setAction(Action action) { iAction = action; }
 	}
 	
-	public static class OfferingDetailsResponse implements GwtRpcResponse {
-		private List<InstrOfferingConfigurationInterface> iConfigurations;
+	public static class OfferingDetailResponse implements GwtRpcResponse {
+		private Long iOfferingId, iPreviousId, iNextId;
+		private Long iSubjectAreaId, iCourseId;
+		private String iCourseNumber;
+		private String iName;
+		private TableInterface iCourses;
+		private TableInterface iProperties;
+		private List<OfferingConfigInterface> iConfigurations;
+		private Set<String> iOperations;
+		private TableInterface iExaminations;
+		private TableInterface iDistributions;
+		private TableInterface iLastChanges;
+		private boolean iOffered;
+		private boolean iConfirms;
+		private String iUrl;
+		private String iBackUrl, iBackTitle;
 		
-		public OfferingDetailsResponse() {}
+		public OfferingDetailResponse() {}
+
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+		public Long getOfferingId() { return iOfferingId; }
+		public void setPreviousId(Long id) { iPreviousId = id; }
+		public Long getPreviousId() { return iPreviousId; }
+		public void setNextId(Long id) { iNextId = id; }
+		public Long getNextId() { return iNextId; }
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		public boolean isOffered() { return iOffered; }
+		public void setOffered(boolean offered) { iOffered = offered; }
+		public boolean isConfirms() { return iConfirms; }
+		public void setConfirms(boolean confirms) { iConfirms = confirms; }
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public void setUrl(String url) { iUrl = url; }
+		public String getUrl() { return iUrl; }
+		public Long getSubjectAreaId() { return iSubjectAreaId; }
+		public void setSubjectAreaId(Long subjectAreaId) { iSubjectAreaId = subjectAreaId; }
+		public String getCoruseNumber() { return iCourseNumber; }
+		public void setCourseNumber(String courseNumber) { iCourseNumber = courseNumber; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public boolean hasBackUrl() { return iBackUrl != null && !iBackUrl.isEmpty(); }
+		public void setBackUrl(String backUrl) { iBackUrl = backUrl; }
+		public String getBackUrl() { return iBackUrl; }
+		public boolean hasBackTitle() { return iBackTitle != null && !iBackTitle.isEmpty(); }
+		public void setBackTitle(String backTitle) { iBackTitle = backTitle; }
+		public String getBackTitle() { return iBackTitle; }
 		
-		public List<InstrOfferingConfigurationInterface> getConfigurations() { return iConfigurations; }
-		public void addConfiguration(InstrOfferingConfigurationInterface configuration) {
-			if (iConfigurations == null) iConfigurations = new ArrayList<InstrOfferingConfigurationInterface>();
+		public boolean hasOperation(String operation) { return iOperations != null && iOperations.contains(operation); }
+		public void addOperation(String operation) {
+			if (iOperations == null) iOperations = new HashSet<String>();
+			iOperations.add(operation);
+		}
+		
+		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
+		public void addProperty(PropertyInterface property) {
+			if (iProperties == null) iProperties = new TableInterface();
+			iProperties.addProperty(property);
+		}
+		public TableInterface getProperties() { return iProperties; }
+		public CellInterface addProperty(String text) {
+			PropertyInterface p = new PropertyInterface();
+			p.setName(text);
+			p.setCell(new CellInterface());
+			addProperty(p);
+			return p.getCell();
+		}
+		
+		public boolean hasConfigs() { return iConfigurations != null && !iConfigurations.isEmpty(); }
+		public List<OfferingConfigInterface> getConfigs() { return iConfigurations; }
+		public void addConfig(OfferingConfigInterface configuration) {
+			if (iConfigurations == null) iConfigurations = new ArrayList<OfferingConfigInterface>();
 			iConfigurations.add(configuration);
 		}
+		
+		public TableInterface getCourses() { return iCourses; }
+		public void setCourses(TableInterface courses) { iCourses = courses; }
+
+		public boolean hasExaminations() { return iExaminations != null; }
+		public TableInterface getExaminations() { return iExaminations; }
+		public void setExaminations(TableInterface examinations) { iExaminations = examinations; }
+
+		public boolean hasDistributions() { return iDistributions != null; }
+		public TableInterface getDistributions() { return iDistributions; }
+		public void setDistributions(TableInterface distributions) { iDistributions = distributions; }
+
+		public boolean hasLastChanges() { return iLastChanges != null; }
+		public TableInterface getLastChanges() { return iLastChanges; }
+		public void setLastChanges(TableInterface lastChanges) { iLastChanges = lastChanges; }
 	}
 	
-	public static class InstrOfferingConfigurationInterface extends TableInterface {
+	public static class OfferingConfigInterface extends TableInterface {
+		private Set<String> iOperations;
+		private Long iConfigId;
 		
+		public Long getConfigId() { return iConfigId; }
+		public void setConfigId(Long configId) { iConfigId = configId; }
+		
+		public boolean hasOperation(String operation) { return iOperations != null && iOperations.contains(operation); }
+		public void addOperation(String operation) {
+			if (iOperations == null) iOperations = new HashSet<String>();
+			iOperations.add(operation);
+		}
 	}
-
 }

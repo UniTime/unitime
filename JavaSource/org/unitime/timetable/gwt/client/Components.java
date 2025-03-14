@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupButton;
 import org.unitime.timetable.gwt.client.page.UniTimeBack;
 import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.page.UniTimeMobileMenu;
+import org.unitime.timetable.gwt.client.page.UniTimeNavigation;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeSideBar;
@@ -93,6 +94,7 @@ public enum Components {
 	multipleClassSetup("UniTimeGWT:MultipleClassSetupButton", true, new ComponentFactory() { public void insert(RootPanel panel) { new MultipleClassSetupButton(true).insert(panel); } }),
 	instrOfferingConfig("UniTimeGWT:InstrOfferingConfigButton", true, new ComponentFactory() { public void insert(RootPanel panel) { new InstrOfferingConfigButton(true).insert(panel); } }),
 	searchableListBox("UniTimeGWT:SearchableListBox", true, new ComponentFactory() { public void insert(RootPanel panel) { new SearchableListBox().insert(panel); } }),
+	titlePanel("UniTimeGWT:TitlePanel", new ComponentFactory() { public void insert(RootPanel panel) { UniTimeNavigation.getInstance().insert(panel); } }), 
 	;
 	
 	private String iId;

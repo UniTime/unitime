@@ -23,8 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
@@ -36,6 +39,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -50,6 +54,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 public class TableWidget extends UniTimeTable<LineInterface> {
@@ -63,7 +68,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			public void onMouseClick(TableEvent<LineInterface> event) {
 				if (event.getData().hasURL()) {
 					LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
-					ToolBox.open(event.getData().getURL());
+					ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getURL());
 				}
 			}
 		});
@@ -113,19 +118,10 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		if (table.getLines() != null)
 			for (final LineInterface line: table.getLines()) {
 				if (line.hasCells()) {
+					if (line.hasWarning()) line.getCells().get(0).setWarning(line.getWarning());
 					List<CellWidget> cells = new ArrayList<CellWidget>();
-					for (CellInterface cell: line.getCells())
+					for (CellInterface cell: line.getCells()) {
 						cells.add(new CellWidget(cell));
-					if (line.hasWarning() && !cells.isEmpty()) {
-						Image warning = new Image(RESOURCES.warning());
-						warning.setTitle(line.getWarning());
-						warning.addClickHandler(new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent e) {
-								UniTimeConfirmationDialog.alert(line.getWarning());
-							}
-						});
-						cells.get(0).insert(warning, 0);
 					}
 					int row = addRow(line, cells);
 					if (line.hasBgColor())
@@ -136,6 +132,19 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						applyStyle(getRowFormatter().getElement(row).getStyle(), line.getStyle());
 				}
 			}
+		if (table.hasProperties()) {
+			for (PropertyInterface property: table.getProperties()) {
+				List<Widget> cells = new ArrayList<Widget>();
+				Label label = new Label(property.getName(), false); label.addStyleName("property-name");
+				cells.add(label);
+				CellWidget cell = new CellWidget(property.getCell()); cell.addStyleName("property-value");
+				cells.add(cell);
+				LineInterface line = new LineInterface();
+				line.addCell(property.getName());
+				line.getCells().add(property.getCell());
+				addRow(line, cells);
+			}
+		}
 	}
 	
 	public static class ErrorWidget extends P implements HasColSpan {
@@ -158,15 +167,38 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	public static class CellWidget extends P implements HasColSpan, HasRowSpan, HasCellAlignment, HasVerticalCellAlignment, HasStyleName {
 		private CellInterface iCell;
 		
-		CellWidget(CellInterface cell) {
+		public CellWidget(final CellInterface cell) {
 			super(cell.isInline() ? DOM.createSpan() : DOM.createDiv());
 			iCell = cell;
+			if (cell.hasWarning()) {
+				Image warning = new Image(RESOURCES.warning());
+				warning.setTitle(cell.getWarning());
+				warning.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent e) {
+						UniTimeConfirmationDialog.alert(cell.getWarning());
+						e.preventDefault(); e.getNativeEvent().stopPropagation();
+					}
+				});
+				warning.getElement().getStyle().setPaddingRight(2, Unit.PX);
+				warning.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
+				add(warning);
+			}
 			if (cell.hasText()) {
-				if (cell.isHtml())
-					setHTML(cell.getText());
-				else
-					setText(cell.getText());
-			} else if (!cell.hasItems())
+				if (cell.isHtml()) {
+					if (cell.hasWarning()) {
+						P p = new P(DOM.createSpan()); p.setHTML(cell.getText()); add(p);
+					} else {
+						setHTML(cell.getText());
+					}
+				} else {
+					if (cell.hasWarning()) {
+						P p = new P(DOM.createSpan()); p.setText(cell.getText()); add(p);
+					} else {
+						setText(cell.getText());
+					}
+				}
+			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null)
 				setText("\u202F");
 			if (cell.hasTitle())
 				setTitle(cell.getTitle());
@@ -185,6 +217,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					img.setAltText(cell.getImage().getAlt());
 				if (cell.getImage().hasTitle())
 					img.setTitle(cell.getImage().getTitle());
+				img.getElement().getStyle().setPaddingRight(2, Unit.PX);
+				img.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
 				add(img);
 			}
 			if (cell.hasColor())
@@ -213,6 +247,34 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			if (cell.hasItems())
 				for (CellInterface item: cell.getItems())
 					add(new CellWidget(item));
+			if (cell.getTable() != null) {
+				TableWidget tw = new TableWidget(cell.getTable());
+				tw.setStyleName("unitime-InnerTable");
+				add(tw);
+			}
+			if (cell.hasUrl()) {
+				addStyleName("clickable-cell");
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent evt) {
+						ToolBox.open(GWT.getHostPageBaseURL() + cell.getUrl());
+					}
+				});
+			}
+			if (cell.hasButton()) {
+				AriaButton button = new AriaButton(cell.getButton().getText());
+				if (cell.getButton().hasTitle()) button.setTitle(cell.getButton().getTitle());
+				add(button);
+				button.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent evt) {
+						ToolBox.open(GWT.getHostPageBaseURL() + cell.getButton().getUrl());
+					}
+				});
+			}
+			if (cell.hasCourseLink()) {
+				add(new CourseDetailsWidget(cell.getCourseLink().isAnchor()).forCourseId(cell.getCourseLink().getCourseId()));
+			}
 		}
 
 		@Override

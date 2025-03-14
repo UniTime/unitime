@@ -129,7 +129,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 		InstrOfferingConfig ioc = (request.getConfigId() == null ? null : InstrOfferingConfigDAO.getInstance().get(request.getConfigId()));
 		InstructionalOffering io = (ioc != null ? ioc.getInstructionalOffering() : InstructionalOfferingDAO.getInstance().get(request.getOfferingId()));
 		
-		if (MSG.actionMakeOffered().equals(request.getOp())) {
+		if (MSG.actionMakeOffered().equals(request.getOp()) || "make-offered".equals(request.getOp())) {
     	    if (!io.getInstrOfferingConfigs().isEmpty())
     	    	ioc = io.getInstrOfferingConfigs().iterator().next();
 		}

@@ -20,6 +20,10 @@
 package org.unitime.timetable.webutil;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,12 +40,23 @@ public class BackTracker {
 	public static int MAX_BACK_STEPS = 10;
 	public static String BACK_LIST = SessionAttribute.Back.key();
 	
-	public static Vector getBackList(HttpSession session) {
+	public static List<BackItem> getBackList(HttpSession session) {
 		synchronized (session) {
-			Vector back = (Vector)session.getAttribute(BACK_LIST);
+			List<BackItem> back = (List<BackItem>)session.getAttribute(SessionAttribute.Back.key());
 			if (back==null) {
-				back = new Vector();
-				session.setAttribute(BACK_LIST, back);
+				back = Collections.synchronizedList(new ArrayList<BackItem>());
+				session.setAttribute(SessionAttribute.Back.key(), back);
+			}
+			return back;
+		}
+	}
+	
+	public static List<BackItem> getBackList(SessionContext context) {
+		synchronized (context) {
+			List<BackItem> back = (List<BackItem>)context.getAttribute(SessionAttribute.Back);
+			if (back==null) {
+				back = Collections.synchronizedList(new ArrayList<BackItem>());
+				context.setAttribute(SessionAttribute.Back.key(), back);
 			}
 			return back;
 		}
@@ -49,7 +64,7 @@ public class BackTracker {
 	
 	public static void markForBack(HttpServletRequest request, String uri, String title, boolean back, boolean clear) {
 		synchronized (request.getSession()) {
-			Vector backList = getBackList(request.getSession());
+			List<BackItem> backList = getBackList(request.getSession());
 			if (clear) backList.clear();
 			if (back) {
 				if (uri==null && request.getAttribute("jakarta.servlet.forward.request_uri")==null) return;
@@ -63,40 +78,37 @@ public class BackTracker {
 				if (!backList.isEmpty()) {
 					int found = -1;
 					for (int idx = 0; idx<backList.size(); idx++) {
-						String[] lastBack = (String[])backList.elementAt(idx);
-						if (lastBack[0].equals(requestURI)) {
+						BackItem lastBack = backList.get(idx);
+						if (lastBack.getUrl().equals(requestURI)) {
 							found = idx; break;
 						}
 					}
 					while (found>=0 && backList.size()>found)
-						backList.removeElementAt(backList.size()-1);
+						backList.remove(backList.size()-1);
 				}
-				backList.addElement(new String[]{requestURI,(titleObj==null?null:titleObj.toString())});
-				//System.out.println("ADD BACK:"+requestURI+" ("+titleObj+")");
+				backList.add(new BackItem(requestURI, (titleObj==null?null:titleObj.toString())));
 			}
 		}
 	}
 	
 	public static void markForBack(SessionContext context, String uri, String title, boolean back, boolean clear) {
-		Vector backList = (Vector)context.getAttribute(SessionAttribute.Back);
-		if (backList==null) {
-			backList = new Vector();
-			context.setAttribute(SessionAttribute.Back, backList);
-		}
-		if (clear) backList.clear();
-		if (back) {
-			if (!backList.isEmpty()) {
-				int found = -1;
-				for (int idx = 0; idx<backList.size(); idx++) {
-					String[] lastBack = (String[])backList.elementAt(idx);
-					if (lastBack[0].equals(uri)) {
-						found = idx; break;
+		synchronized (context) {
+			List<BackItem> backList = getBackList(context);
+			if (clear) backList.clear();
+			if (back) {
+				if (!backList.isEmpty()) {
+					int found = -1;
+					for (int idx = 0; idx<backList.size(); idx++) {
+						BackItem lastBack = backList.get(idx);
+						if (lastBack.getUrl().equals(uri)) {
+							found = idx; break;
+						}
 					}
+					while (found>=0 && backList.size()>found)
+						backList.remove(backList.size()-1);
 				}
-				while (found>=0 && backList.size()>found)
-					backList.removeElementAt(backList.size()-1);
+				backList.add(new BackItem(uri, title));
 			}
-			backList.addElement(new String[]{uri,title});
 		}
 	}
 	
@@ -132,12 +144,12 @@ public class BackTracker {
 	
 	public static String getBackButton(HttpServletRequest request, int nrBackSteps, String name, String title, String accessKey, String style, String clazz, String backType, String backId) {
 		synchronized (request.getSession()) {
-			Vector backList = getBackList(request.getSession());
+			List<BackItem> backList = getBackList(request.getSession());
 			if (backList.size()<nrBackSteps) return "";
-			String[] backItem = (String[])backList.elementAt(backList.size()-nrBackSteps);
-			if (backItem[1]!=null)
-				title = title.replaceAll("%%", backItem[1]);
-			String backUrl = backItem[0];
+			BackItem backItem = (BackItem)backList.get(backList.size()-nrBackSteps);
+			if (backItem.getTitle() != null)
+				title = title.replaceAll("%%", backItem.getTitle());
+			String backUrl = backItem.getUrl();
 			if (backId!=null && backType!=null) {
 				if (backUrl.indexOf('?')>0)
 					backUrl += "&backType="+backType+"&backId="+backId+"#back";
@@ -159,30 +171,43 @@ public class BackTracker {
 	
 	public static String getGwtBack(HttpServletRequest request, int nrBackSteps) {
 		synchronized (request.getSession()) {
-			Vector back = getBackList(request.getSession());
+			List<BackItem> back = getBackList(request.getSession());
 			if (back.size()<=1) return "";
 			StringBuffer ret = new StringBuffer("");
 			for (int i=Math.max(0,back.size()-MAX_BACK_STEPS); i<back.size(); i++) {
-				String[] backItem = (String[])back.elementAt(i);
+				BackItem backItem = (BackItem)back.get(i);
 				if (ret.length() > 0) ret.append("&");
-				ret.append(encodeURL(backItem[0])+"|"+backItem[1]);
+				ret.append(encodeURL(backItem.getUrl())+"|"+backItem.getTitle());
 			}
 			return "<span id='UniTimeGWT:Back' style='display:none;'>"+ret.toString()+"</span>";
 		}
 	}
 	
+	public static BackItem getBackItem(SessionContext context, int nrBackSteps) {
+		synchronized (context) {
+			List<BackItem> back = getBackList(context);
+			if (back.isEmpty()) return null;
+			return back.get(Math.max(0, back.size() - nrBackSteps));
+		}
+	}
+	
 	public static boolean hasBack(HttpServletRequest request, int nrBackSteps) {
 		synchronized (request.getSession()) {
-			Vector backList = getBackList(request.getSession());
+			List<BackItem> backList = getBackList(request.getSession());
 			if (backList.size()<nrBackSteps) return false;
 			return true;
 		}
 	}
-	
+
+	public static boolean hasBack(SessionContext context, int nrBackSteps) {
+		Vector backList = (Vector)context.getAttribute(SessionAttribute.Back);
+		return backList != null && backList.size() >= nrBackSteps;
+	}
+
 	public static boolean doBack(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		synchronized (request.getSession()) {
 			String uri = request.getParameter("uri");
-			Vector back = getBackList(request.getSession());
+			List<BackItem> back = getBackList(request.getSession());
 			if (back.isEmpty()) {
 				if (uri != null) {
 					response.sendRedirect(response.encodeURL(uri));
@@ -191,13 +216,13 @@ public class BackTracker {
 				return false;
 			}
 			if (uri==null) {
-				uri = ((String[])back.lastElement())[0];
-				back.remove(back.size()-1);
+				uri = back.get(back.size() - 1).getUrl();
+				back.remove(back.size() - 1);
 			} else {
 				String uriNoBack = uri;
 				if (uriNoBack.indexOf("backType=")>=0)
 					uriNoBack = uriNoBack.substring(0, uriNoBack.indexOf("backType=")-1);
-				while (!back.isEmpty() && !uriNoBack.equals(((String[])back.lastElement())[0]))
+				while (!back.isEmpty() && !uriNoBack.equals(back.get(back.size() - 1).getUrl()))
 					back.remove(back.size()-1);
 				if (!back.isEmpty())
 					back.remove(back.size()-1);
@@ -216,17 +241,38 @@ public class BackTracker {
 	
 	public static String getBackTree(HttpServletRequest request) {
 		synchronized (request.getSession()) {
-			Vector back = getBackList(request.getSession());
+			List<BackItem> back = getBackList(request.getSession());
 			if (back.size()<=1) return "";
 			StringBuffer ret = new StringBuffer();
 			for (int i=Math.max(0,back.size()-MAX_BACK_STEPS); i<back.size(); i++) {
-				String[] backItem = (String[])back.elementAt(i);
-				//if (!e.hasMoreElements()) continue;
+				BackItem backItem = back.get(i);
 				if (ret.length()>0) ret.append(" &rarr; ");
-				ret.append("<span class='item'><A href='back.action?uri="+encodeURL(backItem[0])+"'>"+backItem[1]+"</A></span>");
+				ret.append("<span class='item'><A href='back.action?uri="+encodeURL(backItem.getUrl())+"'>"+backItem.getTitle()+"</A></span>");
 			}
 			return "&nbsp;"+ret.toString();
 		}
 	}
 
+	public static class BackItem implements Serializable {
+		private static final long serialVersionUID = -1723774866087870562L;
+		String iUrl; String iTitle;
+		public BackItem() {}
+		public BackItem(String url, String title) {
+			iUrl = url; iTitle = title;
+		}
+		public String getUrl() { return iUrl; }
+		public void setUrl(String url) { iUrl = url; }
+		public String getTitle() { return iTitle; }
+		public void setTitle(String title) { iTitle = title; }
+		
+		@Override
+		public String toString() { return getTitle() + " (" + getUrl() + ")"; }
+		@Override
+		public int hashCode() { return getUrl().hashCode(); }
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof BackItem)) return false;
+			return getUrl().equals(((BackItem)o).getUrl());
+		}
+	}
 }

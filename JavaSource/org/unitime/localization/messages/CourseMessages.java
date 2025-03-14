@@ -6009,4 +6009,22 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage(" - Do Not Display In Schedule Book.")
 	String titleSuffixDoNotDisplay();
+	
+	@DefaultMessage("Offering id not provided.")
+	String errorNoOfferingId();
+	
+	@DefaultMessage("Early")
+	String eveningExamsEarly();
+	
+	@DefaultMessage("Late")
+	String eveningExamsLate();
+	
+	@DefaultMessage("Unknown")
+	String ownerUnknown();
+	
+	@DefaultMessage("Return to {0}")
+	String navigationBackTitle(String title);
+	
+	@DefaultMessage("[&larr;]")
+	String navigationBackButton();
 }

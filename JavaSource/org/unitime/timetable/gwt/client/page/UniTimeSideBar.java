@@ -102,7 +102,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		iPanel.addStyleName("unitime-NoPrint");
 		
 		final HorizontalPanel header = new HorizontalPanel();
-		final Label menuLabel = new Label("Navigation", false);
+		final Label menuLabel = new Label(MESSAGES.navigation(), false);
 		menuLabel.setVisible(false);
 		menuLabel.setStyleName("unitime-MenuHeaderLabel");
 		header.add(menuLabel);

@@ -60,21 +60,20 @@ import org.unitime.timetable.webutil.Navigation;
 
 public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 	
+    public ClassesTableBuilder(SessionContext context, String backType, String backId) {
+    	super(context, backType, backId);
+    }
+	
 	protected String additionalNote() {
 		return "";
 	}
 	
-	public void generateTableForClasses(SessionContext context,
+	public void generateTableForClasses(
             ClassAssignmentProxy classAssignment, 
             ExamAssignmentProxy examAssignment,
             FilterInterface filter, 
             String[] subjectAreaIds, 
-            boolean displayHeader,
-            List<TableInterface> tables,
-            String backType,
-            String backId){
-    	
-    	setBackType(backType); setBackId(backId);
+            List<TableInterface> tables){
     	
     	this.setVisibleColumns(filter);
 		setShowProjectedDemand(false);
@@ -85,11 +84,11 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 		setShowTitle(false);
     	
 		TreeSet classes = getClasses(filter, subjectAreaIds, classAssignment);
-		Navigation.set(context, Navigation.sClassLevel, classes);
+		Navigation.set(getSessionContext(), Navigation.sClassLevel, classes);
 
     	if (isShowTimetable()) {
     		boolean hasTimetable = false;
-    		if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
+    		if (getSessionContext().hasPermission(Right.ClassAssignments) && classAssignment != null) {
     			try {
                 	if (classAssignment instanceof CachedClassAssignmentProxy) {
                 		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
@@ -104,10 +103,9 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
     		}
     		setDisplayTimetable(hasTimetable);
     	}
-        setUserSettings(context.getUser());
         
         if (isShowExam())
-            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId()));
+            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable(getCurrentAcademicSessionId()));
         
         TableInterface table = null;
         SubjectArea subjectArea = null;
@@ -118,14 +116,14 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
         	CourseOffering co = (CourseOffering)((Object[])o)[1];
             if (subjectArea == null || !subjectArea.getUniqueId().equals(co.getSubjectArea().getUniqueId())){
             	subjectArea = co.getSubjectArea();
-		        table = initTable(context.getUser().getCurrentAcademicSessionId());
+		        table = initTable(getCurrentAcademicSessionId());
 		        table.setName(subjectArea.getSubjectAreaAbbreviation() +
 		        		(filter.getParameterValue("courseNbr", "").isEmpty() ? "" : " " + filter.getParameterValue("courseNbr", ""))
 		        		+ " - " + subjectArea.getSession().getLabel() + additionalNote());
 		        tables.add(table);
 		        ct = 0;
 		    }		        
-            buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, 0, context, prevLabel);
+            buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, 0, prevLabel);
             prevLabel = c.getClassLabel(co);        	
         }
     }

@@ -33,6 +33,7 @@ public class TableInterface implements IsSerializable {
 	private List<LineInterface> iLines;
 	private String iAnchor;
 	private List<LinkInteface> iLinks;
+	private List<PropertyInterface> iProperties;
 	
 	public TableInterface() {}
 	
@@ -41,11 +42,21 @@ public class TableInterface implements IsSerializable {
 		if (iHeader == null) iHeader = new ArrayList<LineInterface>();
 		iHeader.add(header);
 	}
+	public LineInterface addHeader() {
+		LineInterface line = new LineInterface();
+		addHeader(line);
+		return line;
+	}
 	
 	public List<LineInterface> getLines() { return iLines; }
 	public void addLine(LineInterface line) {
 		if (iLines == null) iLines = new ArrayList<LineInterface>();
 		iLines.add(line);
+	}
+	public LineInterface addLine() {
+		LineInterface line = new LineInterface();
+		addLine(line);
+		return line;
 	}
 
 	public List<LinkInteface> getLinks() { return iLinks; }
@@ -89,6 +100,32 @@ public class TableInterface implements IsSerializable {
 	public void setErrorMessage(String error) { iErrorMessage = error; }
 	public boolean hasErrorMessage() { return iErrorMessage != null && !iErrorMessage.isEmpty(); }
 	
+	public boolean hasProperties() { return iProperties != null && !iProperties.isEmpty(); }
+	public void addProperty(PropertyInterface property) {
+		if (iProperties == null) iProperties = new ArrayList<PropertyInterface>();
+		iProperties.add(property);
+	}
+	public List<PropertyInterface> getProperties() { return iProperties; }
+	public CellInterface addProperty(String text) {
+		PropertyInterface p = new PropertyInterface();
+		p.setName(text);
+		p.setCell(new CellInterface());
+		addProperty(p);
+		return p.getCell();
+	}
+	
+	public static class PropertyInterface implements IsSerializable {
+		private String iName;
+		private CellInterface iCell;
+		
+		public PropertyInterface() {}
+		
+		public String getName() { return iName; }
+		public PropertyInterface setName(String name) { iName = name; return this; }
+		public CellInterface getCell() { return iCell; }
+		public PropertyInterface setCell(CellInterface cell) { iCell = cell; return this; }
+	}
+	
 	public static class LineInterface implements IsSerializable {
 		private ArrayList<CellInterface> iCells;
 		private String iStyle;
@@ -107,6 +144,14 @@ public class TableInterface implements IsSerializable {
 			iCells.add(cell);
 		}
 		public boolean hasCells() { return iCells != null && !iCells.isEmpty(); }
+		public CellInterface addCell() {
+			CellInterface cell = new CellInterface();
+			addCell(cell);
+			return cell;
+		}
+		public CellInterface addCell(String text) {
+			return addCell().setText(text);
+		}
 		
 		public String getStyle() { return iStyle; }
 		public void setStyle(String style) { iStyle = style; }
@@ -179,12 +224,18 @@ public class TableInterface implements IsSerializable {
 		private Integer iIndent;
 		private String iMouseOver, iMouseOut;
 		private ImageInterface iImage;
+		private ButtonInterface iButton;
 		private Integer iWidth;
+		private String iUrl;
+		private TableInterface iTable;
+		private String iWarning;
+		private CourseLinkInterface iCourseLink;
 		
 		public CellInterface() {}
 		
 		public String getText() { return iText; }
 		public CellInterface setText(String text) { iText = text; return this; }
+		public CellInterface setText(Integer text) { iText = (text == null ? "0" : text.toString()); return this; }
 		public CellInterface setHtml(String text) { iText = text; iHtml = true; return this; }
 		public boolean hasText() { return iText != null && !iText.isEmpty(); }
 		@Deprecated
@@ -282,9 +333,44 @@ public class TableInterface implements IsSerializable {
 		}
 		
 		public CellInterface setImage(ImageInterface image) { iImage = image; return this; }
+		public ImageInterface setImage() { iImage = new ImageInterface(); return iImage; }
 		public ImageInterface getImage() { return iImage; }
 		public boolean hasImage() { return iImage != null && iImage.hasSource(); }
+		public ImageInterface addImage() { 
+			ImageInterface image = new ImageInterface();
+			CellInterface cell = new CellInterface();
+			cell.setImage(image);
+			addItem(cell);
+			return image;
+		}
+
+		public CellInterface setButton(ButtonInterface botton) { iButton = botton; return this; }
+		public ButtonInterface setButton() { iButton = new ButtonInterface(); return iButton; }
+		public ButtonInterface addButton() { 
+			ButtonInterface button = new ButtonInterface();
+			CellInterface cell = new CellInterface();
+			cell.setButton(button);
+			addItem(cell);
+			return button;
+		}
+		public boolean hasButton() { return iButton != null && iButton.hasUrl(); }
+		public ButtonInterface getButton() { return iButton; }
 		
+		public CellInterface setUrl(String url) { iUrl = url; return this; }
+		public String getUrl() { return iUrl; }
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		
+		public TableInterface getTable() { return iTable; }
+		public void setTable(TableInterface table) { iTable = table; }
+		
+		public String getWarning() { return iWarning; }
+		public void setWarning(String warning) { iWarning = warning; }
+		public boolean hasWarning() { return iWarning != null && !iWarning.isEmpty(); }
+		
+		public boolean hasCourseLink() { return iCourseLink != null; }
+		public CourseLinkInterface addCourseLink() { iCourseLink = new CourseLinkInterface(); return iCourseLink; }
+		public CourseLinkInterface getCourseLink() { return iCourseLink; }
+
 		@Override
 		public String toString() {
 			return toString(null, 0);
@@ -337,6 +423,36 @@ public class TableInterface implements IsSerializable {
 		
 		public ImageGenerator getGenerator() { return iGenerator; }
 		public ImageInterface setGenerator(ImageGenerator generator) { iGenerator = generator; return this; }
+	}
+	
+	public static class ButtonInterface implements IsSerializable {
+		private String iUrl;
+		private String iTitle;
+		private String iText;
+		
+		public ButtonInterface() {}
+		
+		public ButtonInterface setUrl(String url) { iUrl = url; return this; }
+		public String getUrl() { return iUrl; }
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public String getTitle() { return iTitle; }
+		public ButtonInterface setTitle(String title) { iTitle = title; return this; }
+		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		public String getText() { return iText; }
+		public ButtonInterface setText(String text) { iText = text; return this; }
+		public boolean hasText() { return iText != null && !iText.isEmpty(); }
+	}
+	
+	public static class CourseLinkInterface implements IsSerializable {
+		private Long iCourseId;
+		private Boolean iAnchor = true;
+		
+		public CourseLinkInterface() {}
+		
+		public CourseLinkInterface setCourseId(Long courseId) { iCourseId = courseId; return this; }
+		public Long getCourseId() { return iCourseId; }
+		public CourseLinkInterface setAnchor(boolean anchor) { iAnchor = anchor; return this; }
+		public boolean isAnchor() { return iAnchor == null || iAnchor.booleanValue(); }
 	}
 	
 	public static interface FilterInterface {
