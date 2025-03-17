@@ -81,7 +81,7 @@ public abstract class AccessControlClient {
 	}
 	
 	public AccessControlClient() {
-		this(Window.Location.getParameter("page"));
+		this(ToolBox.getPage());
 	}
 	
 	protected String getPageName() {

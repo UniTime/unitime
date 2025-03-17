@@ -239,6 +239,16 @@ public class ToolBox {
     	printf(html);
     }
     
+    public static String getPage() {
+    	String page = Window.Location.getPath();
+    	if (page.indexOf('/') >= 0) page = page.substring(page.lastIndexOf('/') + 1);
+    	if (page.endsWith(".p")) page = page.substring(0, page.length() - 2);
+    	if (page.endsWith(".page")) page = page.substring(0, page.length() - 5);
+    	if ("gwt.jsp".equals(page) || "gwt.action".equals(page))
+    		return Window.Location.getParameter("page");
+    	return page;
+    }
+    
     public static void print(Page... pages) {
     	List<Page> list = new ArrayList<Page>();
     	for (Page page: pages) list.add(page);

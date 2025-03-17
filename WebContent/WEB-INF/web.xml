@@ -111,6 +111,11 @@
     	<servlet-class>org.unitime.timetable.server.rooms.StaticMapServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>GWT</servlet-name>
+    	<jsp-file>/gwt.jsp</jsp-file>
+    </servlet>
+        
     <servlet-mapping>
         <servlet-name>gwt-dispatcher</servlet-name>
         <url-pattern>*.gwt</url-pattern>
@@ -171,6 +176,72 @@
 		<servlet-name>remoteLogging</servlet-name>
 		<url-pattern>/unitime/remote_logging</url-pattern>
 	</servlet-mapping>
+	
+	<servlet-mapping>
+    	<servlet-name>GWT</servlet-name>
+    	<url-pattern>*.p</url-pattern>
+    	<url-pattern>*.page</url-pattern>
+    	<url-pattern>/curricula</url-pattern>
+    	<url-pattern>/curprojrules</url-pattern>
+    	<url-pattern>/sectioning</url-pattern>
+    	<url-pattern>/requests</url-pattern>
+    	<url-pattern>/admin</url-pattern>
+    	<url-pattern>/events</url-pattern>
+    	<url-pattern>/timetable</url-pattern>
+    	<url-pattern>/roomtable</url-pattern>
+    	<url-pattern>/reservation</url-pattern>
+    	<url-pattern>/courseOffering</url-pattern>
+    	<url-pattern>/reservations</url-pattern>
+    	<url-pattern>/sectioningtest</url-pattern>
+    	<url-pattern>/hql</url-pattern>
+    	<url-pattern>/onlinesctdash</url-pattern>
+    	<url-pattern>/batchsctdash</url-pattern>
+    	<url-pattern>/traveltimes</url-pattern>
+    	<url-pattern>/classes</url-pattern>
+    	<url-pattern>/exams</url-pattern>
+    	<url-pattern>/personal</url-pattern>
+    	<url-pattern>/roomavailability</url-pattern>
+    	<url-pattern>/scripts</url-pattern>
+    	<url-pattern>/availability</url-pattern>
+    	<url-pattern>/password</url-pattern>
+    	<url-pattern>/sctreport</url-pattern>
+    	<url-pattern>/onlinereport</url-pattern>
+    	<url-pattern>/roompictures</url-pattern>
+    	<url-pattern>/rooms</url-pattern>
+    	<url-pattern>/roomgroups</url-pattern>
+    	<url-pattern>/roomfeatures</url-pattern>
+    	<url-pattern>/instructorattributes</url-pattern>
+    	<url-pattern>/solver</url-pattern>
+    	<url-pattern>/solverlog</url-pattern>
+    	<url-pattern>/teachingRequests</url-pattern>
+    	<url-pattern>/teachingAssignments</url-pattern>
+    	<url-pattern>/teachingAssignmentChanges</url-pattern>
+    	<url-pattern>/setupTeachingRequests</url-pattern>
+    	<url-pattern>/timetableGrid</url-pattern>
+    	<url-pattern>/pointInTimeDataReports</url-pattern>
+    	<url-pattern>/assignedClasses</url-pattern>
+    	<url-pattern>/notAssignedClasses</url-pattern>
+    	<url-pattern>/limitAndProjectionSnapshot</url-pattern>
+    	<url-pattern>/suggestions</url-pattern>
+    	<url-pattern>/cbs</url-pattern>
+    	<url-pattern>/solutionChanges</url-pattern>
+    	<url-pattern>/assignmentHistory</url-pattern>
+    	<url-pattern>/listSolutions</url-pattern>
+    	<url-pattern>/solutionReports</url-pattern>
+    	<url-pattern>/tasks</url-pattern>
+    	<url-pattern>/publishedSolutions</url-pattern>
+    	<url-pattern>/acrf</url-pattern>
+    	<url-pattern>/buildings</url-pattern>
+    	<url-pattern>/departments</url-pattern>
+    	<url-pattern>/assignClassInstructors</url-pattern>
+    	<url-pattern>/instructorSurvey</url-pattern>
+    	<url-pattern>/multipleClassSetup</url-pattern>
+    	<url-pattern>/instrOfferingConfig</url-pattern>
+    	<url-pattern>/offerings</url-pattern>
+    	<url-pattern>/classSearch</url-pattern>
+    	<url-pattern>/classAssignments</url-pattern>
+    	<url-pattern>/offering</url-pattern>
+    </servlet-mapping>
 	
 	<filter>
         <filter-name>log4jServletFilter</filter-name>
@@ -272,7 +343,7 @@
     	<filter-name>Do-Action Redirect</filter-name>
     	<filter-class>org.unitime.timetable.filter.DoToActionRedirectFilter</filter-class>
     </filter>
-
+    
 	<!-- Filter Mappings -->
 	<filter-mapping>
         <filter-name>log4jServletFilter</filter-name>
@@ -341,27 +412,7 @@
 	
 	<filter-mapping>
 		<filter-name>Locale Filter</filter-name>
-		<url-pattern>*.jsp</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>Locale Filter</filter-name>
-		<url-pattern>*.gwt</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>Locale Filter</filter-name>
-		<url-pattern>*.rpc</url-pattern>
-	</filter-mapping>
-	
-	<filter-mapping>
-		<filter-name>Locale Filter</filter-name>
-		<url-pattern>*.action</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>Locale Filter</filter-name>
-		<url-pattern>/export</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
 	<filter-mapping>
@@ -383,7 +434,7 @@
     	<filter-name>Apache Struts 2</filter-name>
     	<url-pattern>*.action</url-pattern>
     </filter-mapping>
-	
+
 
 	<jsp-config>
 		<jsp-property-group>

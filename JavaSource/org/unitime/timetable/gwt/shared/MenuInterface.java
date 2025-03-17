@@ -99,7 +99,7 @@ public class MenuInterface implements IsSerializable {
 	
 	public String getURL(ValueEncoder encoder) {
 		if (isGWT())
-			return "gwt.jsp?page=" + getPage() + (hasParameters() ? "&" + getParameters(encoder) : "") + (hasHash() ? "#" + getHash() : "");
+			return getPage() + (hasParameters() ? "?" + getParameters(encoder) : "") + (hasHash() ? "#" + getHash() : "");
 		else
 			return getPage() + (hasParameters() ? "?" + getParameters(encoder) : "") + (hasHash() ? "#" + getHash() : "");
 	}

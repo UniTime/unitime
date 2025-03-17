@@ -134,10 +134,12 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
      */
     public String execute() throws Exception {
     	if (ApplicationProperty.LegacyOfferingDetail.isFalse()) {
-    		String url = "gwt.action?page=offering";
+    		String url = "offering";
+    		boolean first = true;
     		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
     			String param = e.nextElement();
-    			url += "&" + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
     		}
     		response.sendRedirect(url);
 			return null;

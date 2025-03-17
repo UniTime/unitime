@@ -97,7 +97,7 @@ public class Client implements EntryPoint {
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
-					initPageAsync(Window.Location.getParameter("page"));
+					initPageAsync(ToolBox.getPage());
 				}
 			});
 		}
