@@ -21,11 +21,13 @@ package org.unitime.timetable.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.base.BaseTimePatternDays;
 import org.unitime.timetable.util.Constants;
 
@@ -36,6 +38,7 @@ import org.unitime.timetable.util.Constants;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "time_pattern_days")
 public class TimePatternDays extends BaseTimePatternDays implements Comparable {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -71,6 +74,25 @@ public class TimePatternDays extends BaseTimePatternDays implements Comparable {
 			}
 			return 0;
 		}
+	}
+
+	@Transient
+	public String getLabel() {
+		int nrDays = 0;
+		for (int d = 0; d < Constants.DAY_CODES.length; d++)
+			if ((Constants.DAY_CODES[d] & getDayCode()) != 0) nrDays ++;
+		String ret = "";
+		Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+		for (int i=0;i<Constants.DAY_CODES.length;i++) {
+			int j = (firstDayOfWeek == null ? i : (i + firstDayOfWeek) % 7);
+			if ((Constants.DAY_CODES[j]&getDayCode())==0) continue;
+			if (nrDays <= 1)
+				ret += CONSTANTS.days()[j];
+			else {
+				ret += CONSTANTS.shortDays()[j];
+			}
+		}
+		return ret;
 	}
 
 	public int hashCode() {

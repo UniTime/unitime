@@ -36,6 +36,8 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
@@ -66,7 +68,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		addMouseClickListener(new MouseClickListener<LineInterface>() {
 			@Override
 			public void onMouseClick(TableEvent<LineInterface> event) {
-				if (event.getData().hasURL()) {
+				if (event.getData() != null && event.getData().hasURL()) {
 					LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
 					ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getURL());
 				}
@@ -77,6 +79,11 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	public TableWidget(TableInterface table) {
 		this();
 		setData(table);
+	}
+	
+	@Override
+	protected boolean showHower(int row, LineInterface data) {
+		return data != null && data.hasURL();
 	}
 	
 	protected static void applyStyle(Style style, String text) {
@@ -100,7 +107,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				if (line.hasCells()) {
 					List<CellWidget> cells = new ArrayList<CellWidget>();
 					for (CellInterface cell: line.getCells())
-						cells.add(new CellWidget(cell));
+						cells.add(new CellWidget(cell, false));
 					int row = addRow(line, cells);
 					if (line.hasBgColor())
 						getRowFormatter().getElement(row).getStyle().setBackgroundColor(line.getBgColor());
@@ -121,7 +128,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					if (line.hasWarning()) line.getCells().get(0).setWarning(line.getWarning());
 					List<CellWidget> cells = new ArrayList<CellWidget>();
 					for (CellInterface cell: line.getCells()) {
-						cells.add(new CellWidget(cell));
+						cells.add(new CellWidget(cell, false));
 					}
 					int row = addRow(line, cells);
 					if (line.hasBgColor())
@@ -135,14 +142,28 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		if (table.hasProperties()) {
 			for (PropertyInterface property: table.getProperties()) {
 				List<Widget> cells = new ArrayList<Widget>();
-				Label label = new Label(property.getName(), false); label.addStyleName("property-name");
-				cells.add(label);
-				CellWidget cell = new CellWidget(property.getCell()); cell.addStyleName("property-value");
+				if (property.getName() == null) {
+					property.getCell().setColSpan(2);
+				} else {
+					Label label = new Label(property.getName(), false);
+					cells.add(label);
+				}
+				CellWidget cell = new CellWidget(property.getCell());
 				cells.add(cell);
 				LineInterface line = new LineInterface();
 				line.addCell(property.getName());
 				line.getCells().add(property.getCell());
-				addRow(line, cells);
+				int row = addRow(line, cells);
+				if (property.getName() != null) {
+					getCellFormatter().getElement(row, 0).addClassName("label-td");
+					getCellFormatter().getElement(row, 1).addClassName("widget-td");
+					if (property.hasStyle())
+						applyStyle(getCellFormatter().getElement(row, 1).getStyle(), property.getStyle());
+				} else {
+					getCellFormatter().getElement(row, 0).addClassName("widget-td");
+					if (property.hasStyle())
+						applyStyle(getCellFormatter().getElement(row, 0).getStyle(), property.getStyle());
+				}
 			}
 		}
 	}
@@ -168,6 +189,10 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		private CellInterface iCell;
 		
 		public CellWidget(final CellInterface cell) {
+			this(cell, false);
+		}
+		
+		public CellWidget(final CellInterface cell, boolean applyClass) {
 			super(cell.isInline() ? DOM.createSpan() : DOM.createDiv());
 			iCell = cell;
 			if (cell.hasWarning()) {
@@ -198,7 +223,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						setText(cell.getText());
 					}
 				}
-			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null)
+			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null && !cell.hasScript())
 				setText("\u202F");
 			if (cell.hasTitle())
 				setTitle(cell.getTitle());
@@ -211,14 +236,20 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				}
 			if (cell.hasStyle())
 				applyStyle(getElement().getStyle(), cell.getStyle());
+			if (applyClass && cell.hasClassName())
+				addStyleName(cell.getClassName());
 			if (cell.hasImage()) {
 				Image img = new Image(cell.getImage().getSource());
 				if (cell.getImage().hasAlt())
 					img.setAltText(cell.getImage().getAlt());
 				if (cell.getImage().hasTitle())
 					img.setTitle(cell.getImage().getTitle());
-				img.getElement().getStyle().setPaddingRight(2, Unit.PX);
-				img.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
+				if (cell.getImage().hasStyle()) {
+					applyStyle(img.getElement().getStyle(), cell.getImage().getStyle());
+				} else {
+					img.getElement().getStyle().setPaddingRight(2, Unit.PX);
+					img.getElement().getStyle().setVerticalAlign(VerticalAlign.TOP);
+				}
 				add(img);
 			}
 			if (cell.hasColor())
@@ -242,11 +273,20 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						ToolBox.eval(iCell.getMouseOut());
 					}
 				});
+			if (cell.hasMouseClick()) {
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent e) {
+						setLastMouseOverElement(getElement());
+						ToolBox.eval(iCell.getMouseClick());
+					}
+				});
+			}
 			if (cell.hasIndent())
 				getElement().getStyle().setPaddingLeft(cell.getIndent() * 10.0, Unit.PX);
 			if (cell.hasItems())
 				for (CellInterface item: cell.getItems())
-					add(new CellWidget(item));
+					add(new CellWidget(item, true));
 			if (cell.getTable() != null) {
 				TableWidget tw = new TableWidget(cell.getTable());
 				tw.setStyleName("unitime-InnerTable");
@@ -275,7 +315,26 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			if (cell.hasCourseLink()) {
 				add(new CourseDetailsWidget(cell.getCourseLink().isAnchor()).forCourseId(cell.getCourseLink().getCourseId()));
 			}
+			if (cell.hasScript()) {
+				final Element element = getElement();
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						executeScript(element, cell.getScript());
+					}
+				});
+			}
 		}
+		
+		public static native void populate()/*-{
+			
+		$wnd.showGwtHint = function(source, content) {
+			@org.unitime.timetable.gwt.client.GwtHint::_showHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(source, content);
+		};
+		$wnd.hideGwtHint = function() {
+			@org.unitime.timetable.gwt.client.GwtHint::hideHint()();
+		};
+		}-*/;
 
 		@Override
 		public int getColSpan() {
@@ -316,5 +375,9 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	public native static void setLastMouseOverElement(Element element)/*-{
 		$wnd.lastMouseOverElement = element;
 	}-*/;
-	
+
+	public native static void executeScript(Element element, String script)/*-{
+		element.innerHTML = eval(script);
+	}-*/;
+
 }

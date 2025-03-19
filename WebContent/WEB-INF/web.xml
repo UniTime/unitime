@@ -241,6 +241,7 @@
     	<url-pattern>/classSearch</url-pattern>
     	<url-pattern>/classAssignments</url-pattern>
     	<url-pattern>/offering</url-pattern>
+    	<url-pattern>/subpart</url-pattern>
     </servlet-mapping>
 	
 	<filter>

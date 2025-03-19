@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
@@ -32,6 +33,8 @@ import org.cpsolver.coursett.model.TimeLocation;
 import org.hibernate.query.Query;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
@@ -44,6 +47,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
@@ -126,6 +130,95 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
             buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, 0, prevLabel);
             prevLabel = c.getClassLabel(co);        	
         }
+    }
+	
+	public TableInterface generateTableForSubpart(
+            ClassAssignmentProxy classAssignment, 
+            SchedulingSubpart subpart){
+		
+    	if (CommonValues.Yes.eq(getUser().getProperty(UserProperty.ClassesKeepSort))) {
+    		setClassComparator(
+    			new ClassCourseComparator(
+    					getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
+    					classAssignment,
+    					false
+    			)
+    		);
+    	}
+    	
+    	setDisplayDistributionPrefs(false);
+		setShowLabel(true);
+		setShowDemand(sessionHasEnrollments(getCurrentAcademicSessionId()));
+		setShowProjectedDemand(false);
+		setShowMinPerWk(true);
+		setShowLimit(true);
+		setShowSnapshotLimit(subpart.getInstrOfferingConfig().getInstructionalOffering().getSession().getCurrentSnapshotDate() != null);
+		setShowRoomRatio(true);
+		setShowFundingDepartment(false);
+		if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+			for (Class_ c: subpart.getClasses())
+				if (c.getFundingDept() != null) { setShowFundingDepartment(true); break; }
+    	}
+		setShowManager(true);
+		setShowDatePattern(true);
+		setShowTimePattern(true);
+		setShowPreferences(true);
+		setShowInstructor(true);
+		setShowTimetable(true);
+		setShowCredit(false);
+		setShowNote(false);
+		setShowConsent(false);
+		setShowTitle(false);
+		setShowExam(false);
+		setShowLms(LearningManagementSystemInfo.isLmsInfoDefinedForSession(getCurrentAcademicSessionId()));
+		setShowWaitlistMode(false);
+		setDisplayConflicts(true);
+
+    	if (isShowTimetable()) {
+        	boolean hasTimetable = false;
+        	if (getSessionContext().hasPermission(Right.ClassAssignments) && classAssignment != null) {
+        		try {
+                	if (classAssignment instanceof CachedClassAssignmentProxy) {
+                		Vector allClasses = new Vector();
+        				for (Iterator l=subpart.getClasses().iterator();l.hasNext();) {
+        					Class_ clazz = (Class_)l.next();
+        					allClasses.add(clazz);
+        				}
+                		((CachedClassAssignmentProxy)classAssignment).setCache(allClasses);
+                		hasTimetable = !classAssignment.getAssignmentTable(allClasses).isEmpty();
+                	} else {
+        				for (Iterator l=subpart.getClasses().iterator();l.hasNext();) {
+        					Class_ clazz = (Class_)l.next();
+        					if (classAssignment.getAssignment(clazz)!=null) {
+        						hasTimetable = true; break;
+        					}
+        				}
+                	}
+        		} catch (Exception e) {}
+        	}
+        	setDisplayTimetable(hasTimetable);
+        }
+        setShowDivSec(false);
+        setShowInstructorAssignment(false);
+        setShowSchedulePrintNote(false);
+		setShowSubpartCredit(false);
+    	
+
+		Set<Class_> classes = new TreeSet<Class_>(getClassComparator());
+		classes.addAll(subpart.getClasses());
+		Navigation.set(getSessionContext(), Navigation.sClassLevel, classes);
+
+		TableInterface table = initTable(getCurrentAcademicSessionId());
+		
+        String prevLabel = null;
+        int ct = 0;
+        CourseOffering co = subpart.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+        for (Class_ c: classes) {
+            buildClassRow(classAssignment, null, ++ct, table, co, c, 0, prevLabel);
+            prevLabel = c.getClassLabel(co);
+        }
+        
+        return table;
     }
 	
     public static TreeSet getClasses(FilterInterface filter, String[] subjectIds, ClassAssignmentProxy classAssignmentProxy) {

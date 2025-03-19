@@ -104,7 +104,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 			if (request.getAction() == null) {
 				BackTracker.markForBack(
 						context,
-						"gwt.action?page=offering&io="+request.getOfferingId(),
+						"offering?io="+request.getOfferingId(),
 						MSG.backInstructionalOffering(io.getCourseName()),
 						true, false);
 			    // Set Session Variables
@@ -128,7 +128,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 					context.checkPermission(io, Right.OfferingMakeNotOffered);
 					makeNotOffered(io, context);
 			    	if (ApplicationProperty.MakeNotOfferedStaysOnDetail.isFalse()) {
-						response.setUrl("gwt.action?page=offerings#A" + io.getUniqueId());
+						response.setUrl("offerings#A" + io.getUniqueId());
 						return response;
 			    	}				
 					break;
@@ -136,7 +136,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 					context.checkPermission(io, Right.OfferingDelete);
 					deleteOffering(io, context);
 					context.removeAttribute(SessionAttribute.OfferingsCourseNumber);
-					response.setUrl("gwt.action?page=offerings");
+					response.setUrl("offerings");
 					return response;
 				}
 			}

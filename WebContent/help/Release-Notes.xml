@@ -29,6 +29,21 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Technology Update / GWT</name>
+			<description>
+				<line>The following pages have been rewritten to GWT:
+					<line>Instructional Offerings</line>
+					<line>Classes</line>
+					<line>Class Assignments</line>
+					<line>Instructional Offering Detail</line>
+					<line>Scheduling Subpart Detail</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Update</name>

@@ -533,6 +533,10 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		return false;
 	}
 	
+	protected boolean showHower(int row, T data) {
+		return data != null;
+	}
+	
 	public void onBrowserEvent(final Event event) {
 		Element td = getEventTargetCell(event);
 		if (td==null) return;
@@ -543,7 +547,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	    
 	    Widget widget = getWidget(row, col);
 	    SmartTableRow<T> r = getSmartRow(row);
-	    boolean hasData = (r != null && r.getData() != null);
+	    boolean hasData = showHower(row, r == null ? null : r.getData());
 	    
 	    TableEvent<T> tableEvent = new TableEvent<T>(event, row, col, tr, td, hasData ? r.getData() : null);
 

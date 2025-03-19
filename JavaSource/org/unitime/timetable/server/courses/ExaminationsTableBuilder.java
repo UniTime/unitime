@@ -345,6 +345,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
         	for (CellInterface cell: header.getCells()) {
         		cell.setClassName("WebTableHeader");
         		cell.setText(cell.getText().replace("<br>", "\n"));
+        		cell.addStyle("white-space: pre-wrap;");
         	}
         	
         return ret;

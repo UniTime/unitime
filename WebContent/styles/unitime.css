@@ -7905,3 +7905,11 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-DayCodeSector .bit {
 	padding-right: 5px;
 }
+
+.unitime-MainTable .link {
+	cursor: pointer;
+}
+
+.unitime-MainTable .link:hover {
+	text-decoration: underline;	
+}

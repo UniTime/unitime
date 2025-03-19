@@ -112,9 +112,9 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 			cp.add(mp);
 			P m = new P("message");
 			if (html)
-				m.setHTML(message);
+				m.setHTML(message.replace("\\n", "\n"));
 			else
-				m.setText(message);
+				m.setText(message.replace("\\n", "\n"));
 			mp.add(m);
 		}
 		

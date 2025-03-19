@@ -51,7 +51,7 @@ public class RoomFeaturePref extends BaseRoomFeaturePref {
 /*[CONSTRUCTOR MARKER END]*/
 
     public String preferenceText() {
-    	String ret = getRoomFeature().getLabel();
+    	String ret = getRoomFeature().getLabelWithType();
         if (getRoomIndex() != null)
         	ret += " (" + MSG.itemOnlyRoom(1 + getRoomIndex()) + ")";
     	return ret;

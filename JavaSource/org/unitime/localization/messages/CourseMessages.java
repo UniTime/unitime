@@ -6027,4 +6027,11 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("[&larr;]")
 	String navigationBackButton();
+	
+	@DefaultMessage("Scheduling subpart id not provided.")
+	String errorNoSubpartId();
+	
+	@DefaultMessage(" (Department)")
+	String departmentalRoomGroupSuffix();
+	
 }

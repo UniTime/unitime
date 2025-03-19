@@ -3655,6 +3655,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Instructional Offering Detail: switch the user interface back to the old (Struts-based) instructional offering detail page")
 	LegacyOfferingDetail("unitime.legacy.offeringDetail"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Scheduling Subpart Detail: switch the user interface back to the old (Struts-based) scheduling subpart detail page")
+	LegacySubpartDetail("unitime.legacy.subpartDetail"),
 	;
 
 	String iKey;

@@ -1598,7 +1598,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	LineInterface row = this.initRow(isOffered);
 
         if (isEditable && isOffered)
-        	row.setURL("schedulingSubpartDetail.action?ssuid="+ss.getUniqueId());
+        	row.setURL("subpart?id="+ss.getUniqueId());
         
         this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, ss, indentSpaces, isEditable, null);
         if (isSimple() && isOffered) row.setBgColor("#E1E1E1");

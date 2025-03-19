@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.hibernate.HibernateException;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.base.BaseRoomGroup;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 
@@ -44,6 +46,7 @@ import org.unitime.timetable.model.dao.RoomGroupDAO;
 @Table(name = "room_group")
 public class RoomGroup extends BaseRoomGroup implements Comparable {
 	private static final long serialVersionUID = 1L;
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
 	public RoomGroup () {
@@ -147,7 +150,7 @@ public class RoomGroup extends BaseRoomGroup implements Comparable {
 	
 	@Transient
 	public String getNameWithTitle() {
-		return getName()+(isGlobal()!=null && isGlobal().booleanValue()?"":" (Department)");
+		return getName()+(isGlobal()!=null && isGlobal().booleanValue()?"":MSG.departmentalRoomGroupSuffix());
 	}
     
     public String toString() {

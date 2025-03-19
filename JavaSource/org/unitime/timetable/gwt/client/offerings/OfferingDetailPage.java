@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -49,6 +50,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
@@ -128,7 +130,16 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("make-offered", COURSE.actionMakeOffered(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeOffered);
+				if (iResponse.isConfirms()) {
+					UniTimeConfirmationDialog.confirm(COURSE.confirmMakeOffered(), new Command() {
+						@Override
+						public void execute() {
+							load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeOffered);
+						}
+					});
+				} else {
+					load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeOffered);
+				}
 			}
 		});
 		iHeader.setEnabled("make-offered", false);
@@ -138,7 +149,16 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("make-not-offered", COURSE.actionMakeNotOffered(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeNotOffered);
+				if (iResponse.isConfirms()) {
+					UniTimeConfirmationDialog.confirm(COURSE.confirmMakeNotOffered(), new Command() {
+						@Override
+						public void execute() {
+							load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeNotOffered);
+						}
+					});
+				} else {
+					load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeNotOffered);
+				}
 			}
 		});
 		iHeader.setEnabled("make-not-offered", false);
@@ -148,7 +168,16 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("delete", COURSE.actionDeleteIO(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				load(iResponse.getOfferingId(), OfferingDetailRequest.Action.MakeOffered);
+				if (iResponse.isConfirms()) {
+					UniTimeConfirmationDialog.confirm(COURSE.confirmDeleteIO(), new Command() {
+						@Override
+						public void execute() {
+							load(iResponse.getOfferingId(), OfferingDetailRequest.Action.Delete);
+						}
+					});
+				} else {
+					load(iResponse.getOfferingId(), OfferingDetailRequest.Action.Delete);
+				}
 			}
 		});
 		iHeader.setEnabled("delete", false);
@@ -158,7 +187,7 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("previous", COURSE.actionPreviousIO(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.action?page=offering&io=" + iResponse.getPreviousId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "offering?io=" + iResponse.getPreviousId());
 			}
 		});
 		iHeader.setEnabled("previous", false);
@@ -168,7 +197,7 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("next", COURSE.actionNextIO(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.action?page=offering&io=" + iResponse.getNextId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "offering?io=" + iResponse.getNextId());
 			}
 		});
 		iHeader.setEnabled("next", false);
@@ -219,7 +248,7 @@ public class OfferingDetailPage extends Composite {
 				
 				iHeader.getHeaderTitlePanel().clear();
 				Anchor anchor = new Anchor(response.getName());
-				anchor.setHref("gwt.action?page=offerings&subjectArea=" + response.getSubjectAreaId() + "&courseNbr=" + response.getCoruseNumber() + "#A" + response.getOfferingId());
+				anchor.setHref("offerings?subjectArea=" + response.getSubjectAreaId() + "&courseNbr=" + response.getCoruseNumber() + "#A" + response.getOfferingId());
 				anchor.setAccessKey(COURSE.accessBackToIOList().charAt(0));
 				anchor.setTitle(COURSE.titleBackToIOList(COURSE.accessBackToIOList()));
 				anchor.setStyleName("l8");
@@ -230,7 +259,7 @@ public class OfferingDetailPage extends Composite {
 				coursesTable.getElement().getStyle().setWidth(100.0, Unit.PCT);
 				iPanel.addRow(COURSE.propertyCourseOfferings(), coursesTable);
 				for (PropertyInterface property: response.getProperties().getProperties())
-					iPanel.addRow(property.getName(), new TableWidget.CellWidget(property.getCell()));
+					iPanel.addRow(property.getName(), new TableWidget.CellWidget(property.getCell(), true));
 				if (response.hasOperation("instructor-survey"))
 					iTeachingRequestsRow = iPanel.addRow(new OfferingDetailWidget().forOfferingId(response.getOfferingId()));
 				if (response.hasOperation("curricula"))
@@ -289,13 +318,16 @@ public class OfferingDetailPage extends Composite {
 					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(response.getExaminations().getName());
 					iPanel.addHeaderRow(hp);
 					iPanel.addRow(new TableWidget(response.getExaminations()));
-					if (response.hasOperation("add-exam"))
+					if (response.hasOperation("add-exam")) {
 						hp.addButton("add-exam", COURSE.actionAddExamination(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
 								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?firstType=InstructionalOffering&firstId=" + response.getOfferingId());
 							}
 						});
+						hp.getButton("add-exam").setAccessKey(COURSE.accessAddExamination().charAt(0));
+						hp.getButton("add-exam").setTitle(COURSE.titleAddExamination(COURSE.accessAddExamination()));					
+					}
 				}
 				
 				if (response.hasLastChanges()) {

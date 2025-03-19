@@ -3947,6 +3947,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageInstructionalOfferingDetail();
 	
+	@DefaultMessage("Scheduling Subpart Detail")
+	@DoNotTranslate
+	String pageSchedulingSubpartDetail();
+
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

@@ -90,7 +90,7 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 			}
 			BackTracker.markForBack(
 					context, 
-					"gwt.action?page=offerings&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
+					"offerings?subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
 						"&courseNbr=" + (courseNbr == null ? "" : URLEncoder.encode(courseNbr, "utf-8")),
 					MESSAGES.labelInstructionalOfferings() + " (" + subjects + (courseNbr == null || courseNbr.isEmpty() ? "" : " " + courseNbr) + ")", 
 					true, true);

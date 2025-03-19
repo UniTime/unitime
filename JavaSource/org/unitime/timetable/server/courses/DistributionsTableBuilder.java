@@ -71,6 +71,23 @@ public class DistributionsTableBuilder extends TableBuilder {
 		return createTableForDistributions(prefs); 
 	}
 	
+	public TableInterface getDistPrefsTableForSchedulingSupart(SchedulingSubpart subpart) {
+
+		Set<DepartmentalInstructor> leadInstructors = new HashSet<DepartmentalInstructor>();
+		Set<DistributionPref> prefs = new TreeSet<DistributionPref>();
+		prefs.addAll(subpart.getDistributionPreferences());
+		for (Class_ clazz: subpart.getClasses()) {
+			prefs.addAll(clazz.getDistributionPreferences());
+			leadInstructors.addAll(clazz.getLeadInstructors());
+		}
+
+		for (DepartmentalInstructor instructor: leadInstructors) {
+			prefs.addAll(instructor.getDistributionPreferences());
+		}
+		
+		return createTableForDistributions(prefs); 
+	}
+	
     public TableInterface createTableForDistributions(Collection<DistributionPref> distPrefs) {
     	TableInterface table = new TableInterface();
     	table.setName(MSG.sectionTitleDistributionPreferences());
@@ -83,6 +100,7 @@ public class DistributionsTableBuilder extends TableBuilder {
     	for (CellInterface cell: header.getCells()) {
     		cell.setClassName("WebTableHeader");
     		cell.setText(cell.getText().replace("<br>", "\n"));
+    		cell.addStyle("white-space: pre-wrap;");
     	}
 
 
