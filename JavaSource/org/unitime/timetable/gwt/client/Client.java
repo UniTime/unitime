@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.unitime.timetable.gwt.client.page.SolverWarnings;
 import org.unitime.timetable.gwt.client.page.UniTimeMenu;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
@@ -187,6 +188,10 @@ public class Client implements EntryPoint {
 					UniTimePageLabel.getInstance().setPageName(p.name(MESSAGES));
 					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + p.name(MESSAGES));
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
+					
+					if (p.getSolverWarningType() != null) {
+						new SolverWarnings(RootPanel.get("UniTimeGWT:SolverWarnings"), p.getSolverWarningType());
+					}
 					return;
 				}
 			}

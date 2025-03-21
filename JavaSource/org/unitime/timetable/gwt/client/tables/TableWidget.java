@@ -79,6 +79,10 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	public TableWidget(TableInterface table) {
 		this();
 		setData(table);
+		if (table.hasStyle())
+			applyStyle(getElement().getStyle(), table.getStyle());
+		if (table.hasClassName())
+			addStyleName(table.getClassName());
 	}
 	
 	@Override
@@ -211,13 +215,13 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			}
 			if (cell.hasText()) {
 				if (cell.isHtml()) {
-					if (cell.hasWarning()) {
+					if (cell.hasWarning() || cell.isDots()) {
 						P p = new P(DOM.createSpan()); p.setHTML(cell.getText()); add(p);
 					} else {
 						setHTML(cell.getText());
 					}
 				} else {
-					if (cell.hasWarning()) {
+					if (cell.hasWarning() || cell.isDots()) {
 						P p = new P(DOM.createSpan()); p.setText(cell.getText()); add(p);
 					} else {
 						setText(cell.getText());
@@ -323,6 +327,18 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						executeScript(element, cell.getScript());
 					}
 				});
+			}
+			if (cell.isDots()) {
+				for (int i = 0; i < getWidgetCount(); i++)
+					getWidget(i).setVisible(i == 0);
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent arg0) {
+						for (int i = 0; i < getWidgetCount(); i++)
+							getWidget(i).setVisible(i != 0);		
+					}
+				});
+				getWidget(0).addStyleName("link");
 			}
 		}
 		

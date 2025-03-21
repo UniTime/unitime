@@ -321,4 +321,113 @@ public class OfferingsInterface {
 		public TableInterface getDistributions() { return iDistributions; }
 		public void setDistributions(TableInterface distributions) { iDistributions = distributions; }
 	}
+	
+	public static class ClassDetailRequest implements GwtRpcRequest<ClassDetailReponse> {
+		private Long iClassId;
+		private Action iAction;
+
+		public static enum Action {
+		}
+		
+		public ClassDetailRequest() {}
+		
+		public void setClassId(Long classId) { iClassId = classId; }
+		public Long getClassId() { return iClassId; }
+		public Action getAction() { return iAction; }
+		public void setAction(Action action) { iAction = action; }
+	}
+	
+	public static class ClassDetailReponse implements GwtRpcResponse {
+		private Long iOfferingId, iSubpartId, iClassId, iPreviousId, iNextId;
+		private String iCourseName, iSubpartName, iClassName;
+		private String iBackUrl, iBackTitle;
+		private String iUrl;
+		private boolean iConfirms;
+		private Set<String> iOperations;
+		
+		private TableInterface iProperties;
+		private TableInterface iTimetable;
+		private TableInterface iConflicts;
+		private TableInterface iEventConflicts;
+		private TableInterface iPreferences;
+		private TableInterface iExaminations;
+		private TableInterface iDistributions;
+		
+		public ClassDetailReponse() {}
+		
+		public void setClassId(Long classId) { iClassId = classId; }
+		public Long getClassId() { return iClassId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
+		public Long getSubpartgId() { return iSubpartId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+		public Long getOfferingId() { return iOfferingId; }
+		public void setPreviousId(Long id) { iPreviousId = id; }
+		public Long getPreviousId() { return iPreviousId; }
+		public void setNextId(Long id) { iNextId = id; }
+		public Long getNextId() { return iNextId; }
+		public String getCourseName() { return iCourseName; }
+		public void setCourseName(String name) { iCourseName = name; }
+		public String getSubparName() { return iSubpartName; }
+		public void setSubparName(String name) { iSubpartName = name; }
+		public String getClassName() { return iClassName; }
+		public void setClassName(String name) { iClassName = name; }
+		
+		public boolean hasBackUrl() { return iBackUrl != null && !iBackUrl.isEmpty(); }
+		public void setBackUrl(String backUrl) { iBackUrl = backUrl; }
+		public String getBackUrl() { return iBackUrl; }
+		public boolean hasBackTitle() { return iBackTitle != null && !iBackTitle.isEmpty(); }
+		public void setBackTitle(String backTitle) { iBackTitle = backTitle; }
+		public String getBackTitle() { return iBackTitle; }
+
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public void setUrl(String url) { iUrl = url; }
+		public String getUrl() { return iUrl; }
+
+		public boolean isConfirms() { return iConfirms; }
+		public void setConfirms(boolean confirms) { iConfirms = confirms; }
+		
+		public boolean hasOperation(String operation) { return iOperations != null && iOperations.contains(operation); }
+		public void addOperation(String operation) {
+			if (iOperations == null) iOperations = new HashSet<String>();
+			iOperations.add(operation);
+		}
+		
+		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
+		public void addProperty(PropertyInterface property) {
+			if (iProperties == null) iProperties = new TableInterface();
+			iProperties.addProperty(property);
+		}
+		public TableInterface getProperties() { return iProperties; }
+		public CellInterface addProperty(String text) {
+			PropertyInterface p = new PropertyInterface();
+			p.setName(text);
+			p.setCell(new CellInterface());
+			addProperty(p);
+			return p.getCell();
+		}
+		
+		public boolean hasTimetable() { return iTimetable != null; }
+		public TableInterface getTimetable() { return iTimetable; }
+		public void setTimetable(TableInterface timetable) { iTimetable = timetable; }
+
+		public boolean hasConclicts() { return iConflicts != null; }
+		public TableInterface getConflicts() { return iConflicts; }
+		public void setConflicts(TableInterface conflicts) { iConflicts = conflicts; }
+
+		public boolean hasEventConclicts() { return iEventConflicts != null; }
+		public TableInterface getEventConflicts() { return iEventConflicts; }
+		public void setEventConflicts(TableInterface conflicts) { iEventConflicts = conflicts; }
+
+		public boolean hasPreferences() { return iPreferences != null; }
+		public TableInterface getPreferences() { return iPreferences; }
+		public void setPreferences(TableInterface preferences) { iPreferences = preferences; }
+
+		public boolean hasExaminations() { return iExaminations != null; }
+		public TableInterface getExaminations() { return iExaminations; }
+		public void setExaminations(TableInterface examinations) { iExaminations = examinations; }
+
+		public boolean hasDistributions() { return iDistributions != null; }
+		public TableInterface getDistributions() { return iDistributions; }
+		public void setDistributions(TableInterface distributions) { iDistributions = distributions; }
+	}
 }

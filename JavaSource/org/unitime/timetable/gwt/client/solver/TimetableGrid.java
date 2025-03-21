@@ -58,6 +58,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 /**
  * @author Tomas Muller
@@ -831,7 +832,7 @@ public class TimetableGrid extends Composite {
     
     @SuppressWarnings("deprecation")
 	protected static Date getDate(Date firstDate, int date) {
-    	Date ret = new Date(firstDate.getTime());
+    	Date ret = new Date(ServerDateTimeFormat.toLocalDate(firstDate).getTime());
     	ret.setDate(ret.getDate() + date);
     	return ret;
     }

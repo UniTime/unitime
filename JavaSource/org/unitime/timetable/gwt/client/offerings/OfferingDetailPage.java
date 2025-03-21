@@ -80,11 +80,14 @@ public class OfferingDetailPage extends Composite {
 		iHeader = new UniTimeHeaderPanel();
 		iPanel.addHeaderRow(iHeader);
 		
-		if (Window.Location.getParameter("io") == null) {
+		String id = Window.Location.getParameter("id");
+		if (id == null)
+			id = Window.Location.getParameter("io");
+		if (id == null || id.isEmpty()) {	
 			LoadingWidget.getInstance().hide();
 			iHeader.setErrorMessage(COURSE.errorNoOfferingId());
 		} else {
-			load(Long.valueOf(Window.Location.getParameter("io")), null);
+			load(Long.valueOf(id), null);	
 		}
 		
 		iHeader.addButton("lock", COURSE.actionLockIO(), new ClickHandler() {

@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyPage;
 import org.unitime.timetable.gwt.client.limitandprojectionsnapshot.LimitAndProjectionSnapshotPage;
 import org.unitime.timetable.gwt.client.offerings.AssignClassInstructorsPage;
 import org.unitime.timetable.gwt.client.offerings.ClassAssignmentsPage;
+import org.unitime.timetable.gwt.client.offerings.ClassDetailPage;
 import org.unitime.timetable.gwt.client.offerings.ClassesPage;
 import org.unitime.timetable.gwt.client.offerings.CourseOfferingEdit;
 import org.unitime.timetable.gwt.client.offerings.InstrOfferingConfigPage;
@@ -45,6 +46,7 @@ import org.unitime.timetable.gwt.client.offerings.InstructionalOfferingsPage;
 import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupPage;
 import org.unitime.timetable.gwt.client.offerings.OfferingDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartDetailPage;
+import org.unitime.timetable.gwt.client.page.SolverWarnings;
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
@@ -309,31 +311,38 @@ public enum Pages {
 	offerings(new PageFactory() {
 		public Widget create() { return new InstructionalOfferingsPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructionalOfferings(); }
-		}),
+		}, SolverWarnings.Type.assignments),
 	classSearch(new PageFactory() {
 		public Widget create() { return new ClassesPage(); }
 		public String name(GwtMessages messages) { return messages.pageClassSearch(); }
-		}),
+		}, SolverWarnings.Type.assignments),
 	classAssignments(new PageFactory() {
 		public Widget create() { return new ClassAssignmentsPage(); }
 		public String name(GwtMessages messages) { return messages.pageClassAssignments(); }
-		}),
+		}, SolverWarnings.Type.assignments),
 	offering(new PageFactory() {
 		public Widget create() { return new OfferingDetailPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructionalOfferingDetail(); }
-		}),
+		}, SolverWarnings.Type.assignments),
 	subpart(new PageFactory() {
 		public Widget create() { return new SubpartDetailPage(); }
 		public String name(GwtMessages messages) { return messages.pageSchedulingSubpartDetail(); }
-		}),
+		}, SolverWarnings.Type.assignments),
+	clazz(new PageFactory() {
+		public Widget create() { return new ClassDetailPage(); }
+		public String name(GwtMessages messages) { return messages.pageClassDetail(); }
+		}, SolverWarnings.Type.assignments),
 	;
 	
 	private PageFactory iFactory;
+	private SolverWarnings.Type iType;
 	
 	Pages(String oldTitle, PageFactory factory) { iFactory = factory; }
 	Pages(PageFactory factory) { iFactory = factory; }
+	Pages(PageFactory factory, SolverWarnings.Type type) { iFactory = factory; iType = type; }
 	public String name(GwtMessages messages) { return iFactory.name(messages); }
 	public Widget widget() { return iFactory.create(); }
+	public SolverWarnings.Type getSolverWarningType() { return iType; }
 	
 	public interface PageFactory {
 		Widget create();

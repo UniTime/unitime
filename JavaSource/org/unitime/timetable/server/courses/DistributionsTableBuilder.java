@@ -88,6 +88,21 @@ public class DistributionsTableBuilder extends TableBuilder {
 		return createTableForDistributions(prefs); 
 	}
 	
+	public TableInterface getDistPrefsTableForClass(Class_ clazz) {
+
+		Set<DepartmentalInstructor> leadInstructors = new HashSet<DepartmentalInstructor>();
+		Set<DistributionPref> prefs = new TreeSet<DistributionPref>();
+		prefs.addAll(clazz.getSchedulingSubpart().getDistributionPreferences());
+		prefs.addAll(clazz.getDistributionPreferences());
+		leadInstructors.addAll(clazz.getLeadInstructors());
+
+		for (DepartmentalInstructor instructor: leadInstructors) {
+			prefs.addAll(instructor.getDistributionPreferences());
+		}
+		
+		return createTableForDistributions(prefs); 
+	}
+	
     public TableInterface createTableForDistributions(Collection<DistributionPref> distPrefs) {
     	TableInterface table = new TableInterface();
     	table.setName(MSG.sectionTitleDistributionPreferences());

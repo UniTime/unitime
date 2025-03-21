@@ -74,6 +74,7 @@
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage"/>
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError"/>
 	<span id='UniTimeGWT:CustomPageMessages'></span>
+	<span id='UniTimeGWT:SolverWarnings'></span>
 	<tt:offering-locks/>
   	
 	<span class="unitime-Page"><span class='row'>

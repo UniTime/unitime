@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -109,6 +111,18 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
 	public void setOp2(String op2) { this.op2 = op2; }	
 	
 	public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyClassDetail.isFalse()) {
+    		String url = "clazz";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
+
 		if (form == null) form = new ClassEditForm();
 		
 		super.execute();

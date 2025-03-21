@@ -1108,7 +1108,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	if (ea.getPeriodPref() != null && !PreferenceLevel.sNeutral.equals(ea.getPeriodPref()))
     		cell.setColor(PreferenceLevel.prolog2color(ea.getPeriodPref()));
     	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-			cell.setMouseOver("$wnd.showGwtTimeHint(this, '" + ea.getExamId() + "," + ea.getPeriodId() + "');");
+			cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + ea.getExamId() + "," + ea.getPeriodId() + "');");
 		} else {
 			cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement,'" + ea.getExamId() + "','" + ea.getPeriodId() + "');");
 		}
@@ -1630,7 +1630,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	LineInterface row = this.initRow(isHeaderRow);
        
         if (isEditable)
-        	row.setURL("classDetail.action?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString());
+        	row.setURL("clazz?id=" + aClass.getUniqueId().toString());
 
         if (aClass.isCancelled()) {
         	row.setStyle("color: gray; font-style: italic;");

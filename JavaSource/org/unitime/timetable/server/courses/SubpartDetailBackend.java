@@ -121,6 +121,11 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		
 		response.setSubpartId(ss.getUniqueId());
 		String label = ss.getItype().getAbbv();
+		SchedulingSubpart parent = ss.getParentSubpart();
+		while (parent != null) {
+			label = parent.getItype().getAbbv() + " - " + label;
+			parent = parent.getParentSubpart();
+		}
         if (io.hasMultipleConfigurations())
         	label += " [" + ioc.getName() + "]";
 		response.setSubparName(label);
@@ -189,7 +194,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
     	if (back != null) {
     		response.addOperation("back");
     		response.setBackTitle(back.getTitle());
-    		response.setBackUrl(back.getUrl());
+    		response.setBackUrl(back.getUrl() +
+    				(back.getUrl().indexOf('?') >= 0 ? "&" : "?") +
+    				"backId=" + ss.getUniqueId() + "&backType=PreferenceGroup");
     	}
     	if (response.getPreviousId() != null && context.hasPermission(response.getPreviousId(), "SchedulingSubpart", Right.SchedulingSubpartDetail))
     		response.addOperation("previous");
@@ -197,7 +204,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
     		response.addOperation("next");
     	if (context.hasPermission(Right.ExaminationAdd))
     		response.addOperation("add-exam");
-    	if (context.hasPermission(ss.getManagingDept(), Right.DistributionPreferenceAdd))
+    	if (context.hasPermission(ss.getManagingDept(), Right.DistributionPreferenceAdd) && context.hasPermission(ss, Right.DistributionPreferenceSubpart))
     		response.addOperation("add-distribution");
     	if (context.hasPermission(ss, Right.SchedulingSubpartEdit))
     		response.addOperation("edit");
@@ -223,7 +230,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		return ret;
 	}
 	
-	public TableInterface getPreferenceTable(SessionContext context, PreferenceGroup pg, Preference.Type... types) {
+	public static TableInterface getPreferenceTable(SessionContext context, PreferenceGroup pg, Preference.Type... types) {
 		TableInterface table = new TableInterface();
 		boolean hasNotAvailable = false;
 		boolean multipleRooms = false;
@@ -360,6 +367,8 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 				break;
 			}
 		}
+		
+		if (!table.hasProperties()) return null;
 		
 		PropertyInterface legend = new PropertyInterface();
 		CellInterface cell = new CellInterface(); legend.setCell(cell);

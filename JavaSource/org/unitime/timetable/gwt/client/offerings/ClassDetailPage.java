@@ -21,16 +21,17 @@ package org.unitime.timetable.gwt.client.offerings;
 
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.SubpartDetailReponse;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.SubpartDetailRequest;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassDetailReponse;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassDetailRequest;
 import org.unitime.timetable.gwt.client.page.UniTimeNavigation;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
-import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -40,7 +41,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -48,7 +48,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 
-public class SubpartDetailPage extends Composite {
+public class ClassDetailPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -56,15 +56,15 @@ public class SubpartDetailPage extends Composite {
 	private SimplePanel iRootPanel;
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeader, iFooter;
-	private SubpartDetailReponse iResponse;
+	private ClassDetailReponse iResponse;
 	
-	public SubpartDetailPage() {
+	public ClassDetailPage() {
 		iPanel = new SimpleForm(2);
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		
 		iRootPanel = new SimplePanel(iPanel);
-		iRootPanel.addStyleName("unitime-SubpartDetailPage");
+		iRootPanel.addStyleName("unitime-ClassDetailPage");
 		initWidget(iRootPanel);
 		
 		iHeader = new UniTimeHeaderPanel();
@@ -72,63 +72,75 @@ public class SubpartDetailPage extends Composite {
 		
 		String id = Window.Location.getParameter("id");
 		if (id == null)
-			id = Window.Location.getParameter("ssuid");
+			id = Window.Location.getParameter("cid");
 		if (id == null || id.isEmpty()) {	
 			LoadingWidget.getInstance().hide();
-			iHeader.setErrorMessage(COURSE.errorNoSubpartId());
+			iHeader.setErrorMessage(COURSE.errorNoClassId());
 		} else {
-			load(Long.valueOf(id), null);	
+			load(Long.valueOf(id), null);
 		}
 		
-		iHeader.addButton("edit", COURSE.actionEditSubpart(), new ClickHandler() {
+		iHeader.addButton("edit", COURSE.actionEditClass(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartEdit.action?ssuid=" + iResponse.getSubpartgId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "classEdit.action?cid=" + iResponse.getClassId());
 			}
 		});
 		iHeader.setEnabled("edit", false);
-		iHeader.getButton("edit").setAccessKey(COURSE.accessEditSubpart().charAt(0));
-		iHeader.getButton("edit").setTitle(COURSE.titleEditSubpart(COURSE.accessEditSubpart()));
+		iHeader.getButton("edit").setAccessKey(COURSE.accessEditClass().charAt(0));
+		iHeader.getButton("edit").setTitle(COURSE.titleEditClass(COURSE.accessEditClass()));
 		
-		iHeader.addButton("previous", COURSE.actionPreviousSubpart(), new ClickHandler() {
+		iHeader.addButton("assign", COURSE.actionOpenClassAssignmentDialog(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "subpart?id=" + iResponse.getPreviousId());
+				UniTimeFrameDialog.openDialog(COURSE.dialogClassAssignment(),
+						"classInfo.action?classId=" + iResponse.getClassId(),
+						"900", "90%");
+			}
+		});
+		iHeader.setEnabled("assign", false);
+		iHeader.getButton("assign").setAccessKey(COURSE.accessOpenClassAssignmentDialog().charAt(0));
+		iHeader.getButton("assign").setTitle(COURSE.titleOpenClassAssignmentDialog(COURSE.accessOpenClassAssignmentDialog()));
+		
+		iHeader.addButton("previous", COURSE.actionPreviousClass(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent evt) {
+				ToolBox.open(GWT.getHostPageBaseURL() + "clazz?id=" + iResponse.getPreviousId());
 			}
 		});
 		iHeader.setEnabled("previous", false);
-		iHeader.getButton("previous").setAccessKey(COURSE.accessPreviousSubpart().charAt(0));
-		iHeader.getButton("previous").setTitle(COURSE.titlePreviousSubpart(COURSE.accessPreviousSubpart()));
+		iHeader.getButton("previous").setAccessKey(COURSE.accessPreviousClass().charAt(0));
+		iHeader.getButton("previous").setTitle(COURSE.titlePreviousClass(COURSE.accessPreviousClass()));
 		
-		iHeader.addButton("next", COURSE.actionNextSubpart(), new ClickHandler() {
+		iHeader.addButton("next", COURSE.actionNextClass(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "subpart?id=" + iResponse.getNextId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "clazz?id=" + iResponse.getNextId());
 			}
 		});
 		iHeader.setEnabled("next", false);
-		iHeader.getButton("next").setAccessKey(COURSE.accessNextSubpart().charAt(0));
-		iHeader.getButton("next").setTitle(COURSE.titleNextSubpart(COURSE.accessNextSubpart()));
+		iHeader.getButton("next").setAccessKey(COURSE.accessNextClass().charAt(0));
+		iHeader.getButton("next").setTitle(COURSE.titleNextClass(COURSE.accessNextClass()));
 		
-		iHeader.addButton("back", COURSE.actionBackSubpartDetail(), new ClickHandler() {
+		iHeader.addButton("back", COURSE.actionBackClassDetail(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
 				ToolBox.open(GWT.getHostPageBaseURL() + "back.action?uri=" + URL.encodeQueryString(iResponse.getBackUrl()) +
-						"&backId=" + iResponse.getSubpartgId() + "&backType=PreferenceGroup");
+						"&backId=" + iResponse.getClassId() + "&backType=PreferenceGroup");
 			}
 		});
 		iHeader.setEnabled("back", false);
-		iHeader.getButton("back").setAccessKey(COURSE.accessBackSubpartDetail().charAt(0));
+		iHeader.getButton("back").setAccessKey(COURSE.accessBackClassDetail().charAt(0));
 
 		iFooter = iHeader.clonePanel();
 	}
 	
-	protected void load(Long subpartId, SubpartDetailRequest.Action action) {
+	protected void load(Long classId, ClassDetailRequest.Action action) {
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
-		SubpartDetailRequest req = new SubpartDetailRequest();
-		req.setSubpartId(subpartId);
+		ClassDetailRequest req = new ClassDetailRequest();
+		req.setClassId(classId);
 		req.setAction(action);
-		RPC.execute(req, new AsyncCallback<SubpartDetailReponse>() {
+		RPC.execute(req, new AsyncCallback<ClassDetailReponse>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -139,7 +151,7 @@ public class SubpartDetailPage extends Composite {
 			}
 
 			@Override
-			public void onSuccess(final SubpartDetailReponse response) {
+			public void onSuccess(final ClassDetailReponse response) {
 				iResponse = response;
 				if (response.hasUrl()) {
 					ToolBox.open(GWT.getHostPageBaseURL() + response.getUrl());
@@ -156,11 +168,38 @@ public class SubpartDetailPage extends Composite {
 				anchor.setTitle(COURSE.titleInstructionalOfferingDetail(COURSE.accessInstructionalOfferingDetail()));
 				anchor.setStyleName("l8");
 				iHeader.getHeaderTitlePanel().add(anchor);
-				P suffix = new P(DOM.createSpan()); suffix.setText(" : " + response.getSubparName());
+				P colon = new P(DOM.createSpan()); colon.setText(": ");
+				iHeader.getHeaderTitlePanel().add(colon);
+				anchor = new Anchor(response.getSubparName());
+				anchor.setHref("subpart?id=" + response.getSubpartgId());
+				anchor.setAccessKey(COURSE.accessSchedulingSubpartDetail().charAt(0));
+				anchor.setTitle(COURSE.titleSchedulingSubpartDetail(COURSE.accessSchedulingSubpartDetail()));
+				anchor.setStyleName("l8");
+				iHeader.getHeaderTitlePanel().add(anchor);
+				P suffix = new P(DOM.createSpan()); suffix.setText(response.getClassName());
 				iHeader.getHeaderTitlePanel().add(suffix);
 				
 				for (PropertyInterface property: response.getProperties().getProperties())
 					iPanel.addRow(property.getName(), new TableWidget.CellWidget(property.getCell(), true));
+				
+				if (response.hasTimetable()) {
+					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(response.getTimetable().getName());
+					iPanel.addHeaderRow(hp);
+					iPanel.addRow(new TableWidget(response.getTimetable()));
+				}
+
+				if (response.hasConclicts()) {
+					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(response.getConflicts().getName());
+					iPanel.addHeaderRow(hp);
+					iPanel.addRow(new TableWidget(response.getConflicts()));
+				}
+
+				
+				if (response.hasEventConclicts()) {
+					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(response.getEventConflicts().getName());
+					iPanel.addHeaderRow(hp);
+					iPanel.addRow(new TableWidget(response.getEventConflicts()));
+				}
 
 				if (response.hasPreferences()) {
 					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(COURSE.sectionTitlePreferences());
@@ -177,38 +216,12 @@ public class SubpartDetailPage extends Composite {
 							@Override
 							public void onClick(ClickEvent evt) {
 								ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
-										URL.encodeQueryString(COURSE.actionAddDistributionPreference()) + "&subpartId=" + iResponse.getSubpartgId()
+										URL.encodeQueryString(COURSE.actionAddDistributionPreference()) + "&classId=" + iResponse.getClassId()
 										);
 							}
 						});
 						hp.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
 						hp.getButton("add-distribution").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
-					}
-				}
-				
-				if (response.hasClasses()) {
-					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(COURSE.sectionTitleClasses());
-					iPanel.addHeaderRow(hp);
-					iPanel.addRow(new TableWidget(response.getClasses()));
-					if (response.hasOperation("clear-prefs")) {
-						hp.addButton("clear", COURSE.actionClearClassPreferences(), new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent evt) {
-								if (iResponse.isConfirms()) {
-									UniTimeConfirmationDialog.confirm(COURSE.confirmClearAllClassPreferences(), 
-											new Command() {
-												@Override
-												public void execute() {
-													load(iResponse.getSubpartgId(), SubpartDetailRequest.Action.ClearPrefs);
-												}
-											});
-								} else {
-									load(iResponse.getSubpartgId(), SubpartDetailRequest.Action.ClearPrefs);
-								}
-							}
-						});
-						hp.getButton("clear").setAccessKey(COURSE.accessClearClassPreferences().charAt(0));
-						hp.getButton("clear").setTitle(COURSE.titleClearClassPreferences(COURSE.accessClearClassPreferences()));
 					}
 				}
 				
@@ -220,13 +233,15 @@ public class SubpartDetailPage extends Composite {
 						hp.addButton("add-exam", COURSE.actionAddExamination(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?firstType=InstructionalOffering&firstId=" + response.getOfferingId());
+								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?firstType=Class_&firstId=" + response.getClassId());
 							}
 						});
 						hp.getButton("add-exam").setAccessKey(COURSE.accessAddExamination().charAt(0));
 						hp.getButton("add-exam").setTitle(COURSE.titleAddExamination(COURSE.accessAddExamination()));					
 					}
 				}
+				
+				iPanel.addRow(new EnrollmentTable(true, true, true).forClassId(response.getClassId()));
 				
 				iPanel.addBottomRow(iFooter);
 				

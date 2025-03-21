@@ -87,6 +87,10 @@ public class TableInterface implements IsSerializable {
 	public String getStyle() { return iStyle; }
 	public void setStyle(String style) { iStyle = style; }
 	public boolean hasStyle() { return iStyle != null && !iStyle.isEmpty(); }
+	public void addStyle(String style) {
+		if (iStyle == null) iStyle = style;
+		else iStyle += style;
+	}
 	
 	public String getClassName() { return iClassName; }
 	public void setClassName(String className) { iClassName = className; }
@@ -246,6 +250,7 @@ public class TableInterface implements IsSerializable {
 		private String iWarning;
 		private CourseLinkInterface iCourseLink;
 		private String iScript;
+		private Boolean iDots;
 		
 		public CellInterface() {}
 		
@@ -306,6 +311,10 @@ public class TableInterface implements IsSerializable {
 			return add("").setInline(false);
 		}
 		
+		public CellInterface addDots() {
+			return add(null).setDots(true);
+		}
+		
 		public List<String> getAnchors() { return iAnchors; }
 		public CellInterface addAnchor(String anchor) {
 			if (iAnchors == null) iAnchors = new ArrayList();
@@ -338,6 +347,8 @@ public class TableInterface implements IsSerializable {
 		public CellInterface setHorizontalAlignment(Alignment alignment) { iHorizontalAlignment = alignment; return this; }
 		public boolean isNoWrap() { return iNoWrap != null && iNoWrap.booleanValue(); }
 		public boolean isWrap() { return iNoWrap != null && !iNoWrap.booleanValue(); }
+		public boolean isDots() { return iDots != null && iDots.booleanValue(); }
+		public CellInterface setDots(boolean dots) { iDots = dots; return this; }
 		public CellInterface setNoWrap(boolean noWrap) { iNoWrap = noWrap; return this; }
 		public boolean isInline() { return iInline == null || iInline.booleanValue(); }
 		public CellInterface setInline(boolean inline) { iInline = inline; return this; }
@@ -380,7 +391,7 @@ public class TableInterface implements IsSerializable {
 		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
 		
 		public TableInterface getTable() { return iTable; }
-		public void setTable(TableInterface table) { iTable = table; }
+		public CellInterface setTable(TableInterface table) { iTable = table; return this; }
 		
 		public String getWarning() { return iWarning; }
 		public void setWarning(String warning) { iWarning = warning; }
@@ -408,6 +419,7 @@ public class TableInterface implements IsSerializable {
 			if (hasAria()) {
 				ret += getAria();
 				return ret;
+			} else if (isDots()) {
 			} else if (hasText() && !isHtml()) {
 				ret += getText();
 			} else if (hasTitle()) {

@@ -242,6 +242,7 @@
     	<url-pattern>/classAssignments</url-pattern>
     	<url-pattern>/offering</url-pattern>
     	<url-pattern>/subpart</url-pattern>
+    	<url-pattern>/clazz</url-pattern>
     </servlet-mapping>
 	
 	<filter>

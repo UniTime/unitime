@@ -6031,6 +6031,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Scheduling subpart id not provided.")
 	String errorNoSubpartId();
 	
+	@DefaultMessage("Class id not provided.")
+	String errorNoClassId();
+	
 	@DefaultMessage(" (Department)")
 	String departmentalRoomGroupSuffix();
 	
