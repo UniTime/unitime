@@ -1433,6 +1433,11 @@ public enum ApplicationProperty {
 	EventExpectedAttendanceRequired("unitime.events.expectedAttendanceRequired"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Events: sponsoring organization must be set when creating a new special event")
+	EventSponsoringOrgRequired("unitime.events.sponsoringOrgRequired"),
+
+	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Events Personal Schedule: check for events with matching additional email")
 	EventPersonalConsiderAdditionalEmails("unitime.events.personal.considerAdditionalEmails"),

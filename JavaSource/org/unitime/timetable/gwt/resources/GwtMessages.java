@@ -4135,6 +4135,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("One or more meetings is overlapping with an existing event.")
 	String reqNoOverlaps();
 	
+	@DefaultMessage("Sponsoring organization is required.")
+	String reqSponsoringOrg();
+	
 	@DefaultMessage("No courses / clases were defined.")
 	String reqCoursesOrClasses();
 	
