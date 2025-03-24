@@ -64,6 +64,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Sponsoring Organizations</name>
+			<description>
+				<line>Added an option to make sponsoring organization a mandatory field for special events.</line>
+				<line>Enabled by setting unitime.events.sponsoringOrgRequired to true (defaults to false).</line>
+				<line>When set to true, sponsoring organization must be set when creating a new special event.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Student PIN</name>

@@ -2110,6 +2110,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iCourseEventDefaultStudentAttendance = false;
 		private boolean iExpectedAttendanceRequired = false;
 		private boolean iCanEmailStudents = false;
+		private boolean iSponsoringOrgRequired = false;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -2211,6 +2212,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public void setExpectedAttendanceRequired(boolean expectedAttendanceRequired) { iExpectedAttendanceRequired = expectedAttendanceRequired; }
 		public boolean getExpectedAttendanceRequired() { return iExpectedAttendanceRequired; }
+		
+		public void setSponsoringOrganizationRequired(boolean sponsoringOrgRequired) { iSponsoringOrgRequired = sponsoringOrgRequired; }
+		public boolean getSponsoringOrganizationRequired() { return iSponsoringOrgRequired; }
 		
 		public void setCanEmailStudents(boolean canEmailStudents) { iCanEmailStudents = canEmailStudents; }
 		public boolean getCanEmailStudents() { return iCanEmailStudents; }

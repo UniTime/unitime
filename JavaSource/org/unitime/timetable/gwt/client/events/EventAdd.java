@@ -1771,6 +1771,14 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		} else {
 			iName.clearHint();
 		}
+		if (getProperties() != null && getProperties().getSponsoringOrganizationRequired() && getEventType() == EventType.Special) {
+			if (iSponsors.getSelectedIndex() <= 0) {
+				UniTimeNotifications.error(MESSAGES.reqSponsoringOrg());
+				if (valid)
+					iHeader.setErrorMessage(MESSAGES.reqSponsoringOrg());
+				valid = false;
+			}
+		}
 		if (getProperties() != null && getProperties().getExpectedAttendanceRequired() && getEventType() == EventType.Special) {
 			if (iLimit.toInteger() == null) {
 				UniTimeNotifications.error(MESSAGES.reqAttendance());

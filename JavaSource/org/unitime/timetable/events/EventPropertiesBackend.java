@@ -115,6 +115,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setFirstDayOfWeek(ApplicationProperty.EventGridStartDay.intValue());
 		response.setCourseEventDefaultStudentAttendance(ApplicationProperty.EventCourseEventsDefaultStudentAttendance.isTrue());
 		response.setExpectedAttendanceRequired(ApplicationProperty.EventExpectedAttendanceRequired.isTrue());
+		response.setSponsoringOrganizationRequired(ApplicationProperty.EventSponsoringOrgRequired.isTrue() && response.hasSponsoringOrganizations());
 		response.setCanEmailStudents(context.hasPermission(Right.EventDetailEmailStudents));
 		
 		return response;
