@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseTimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -180,16 +181,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     
 	@Transient
 	public String getShortName() {
-        StringBuffer sb = new StringBuffer();
-        if (getFirstName()!=null && getFirstName().length()>0) {
-            sb.append(getFirstName().substring(0,1).toUpperCase());
-            sb.append(". ");
-        }
-        if (getLastName()!=null && getLastName().length()>0) {
-            sb.append(getLastName().substring(0,1).toUpperCase());
-            sb.append(getLastName().substring(1,Math.min(10,getLastName().length())).toLowerCase().trim());
-        }
-        return sb.toString();
+		return NameFormat.fromReference(ApplicationProperty.ManagerShortNameFormat.value()).format(this);
 	}
 	
 	public int compareTo(Object o) {

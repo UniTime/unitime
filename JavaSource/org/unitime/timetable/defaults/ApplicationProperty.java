@@ -3641,6 +3641,10 @@ public enum ApplicationProperty {
 	@Since(4.8)
 	CustomizationStudentPinsProvider("unitime.custom.StudentPinsProvider"),
 	
+	@DefaultValue("initial-last")
+	@Description("Timetable Managers: short name format (e.g., used in the Last Changed messages)")
+	ManagerShortNameFormat("unitime.managers.shortNameFormat"),
+
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Instructional Offerings: switch the user interface back to the old (Struts-based) instructional offerings page")
