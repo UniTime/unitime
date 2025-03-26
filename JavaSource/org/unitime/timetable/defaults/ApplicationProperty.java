@@ -3640,6 +3640,10 @@ public enum ApplicationProperty {
 	@Description("Customization: student PIN provider (interface StudentPinsProvider)")
 	@Since(4.8)
 	CustomizationStudentPinsProvider("unitime.custom.StudentPinsProvider"),
+	
+	@DefaultValue("initial-last")
+	@Description("Timetable Managers: short name format (e.g., used in the Last Changed messages)")
+	ManagerShortNameFormat("unitime.managers.shortNameFormat"),
 	;
 
 	String iKey;

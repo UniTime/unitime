@@ -84,6 +84,13 @@
 				<line>Requests XML: added pin element under updateDemographics with value and released attributes.</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetabling Managers: Short Name</name>
+			<description>
+				<line>Added an ability to customize the short name format which is used, e.g., in the Last Changes component.</line>
+				<line>Can be changed using the unitime.managers.shortNameFormat property, defaults to initial-last.</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>
