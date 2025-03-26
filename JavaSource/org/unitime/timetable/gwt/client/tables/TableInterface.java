@@ -22,9 +22,13 @@ package org.unitime.timetable.gwt.client.tables;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class TableInterface implements IsSerializable {
+	private String iId;
 	private String iName;
 	private String iStyle;
 	private String iErrorMessage;
@@ -34,6 +38,7 @@ public class TableInterface implements IsSerializable {
 	private String iAnchor;
 	private List<LinkInteface> iLinks;
 	private List<PropertyInterface> iProperties;
+	private Integer iNavigationLevel;
 	
 	public TableInterface() {}
 	
@@ -48,6 +53,7 @@ public class TableInterface implements IsSerializable {
 		return line;
 	}
 	
+	public boolean hasLines() { return iLines != null && !iLines.isEmpty(); }
 	public List<LineInterface> getLines() { return iLines; }
 	public void addLine(LineInterface line) {
 		if (iLines == null) iLines = new ArrayList<LineInterface>();
@@ -80,9 +86,16 @@ public class TableInterface implements IsSerializable {
 		return ret;
 	}
 	
+	public void setId(String id) { iId = id; }
+	public String getId() { return iId; }
+	public boolean hasId() { return iId != null && !iId.isEmpty(); }
+
 	public void setName(String name) { iName = name; }
 	public String getName() { return iName; }
 	public boolean hasName() { return iName != null && !iName.isEmpty(); }
+	
+	public void setNavigationLevel(int level) { iNavigationLevel = level; }
+	public Integer getNavigationLevel() { return iNavigationLevel; }
 	
 	public String getStyle() { return iStyle; }
 	public void setStyle(String style) { iStyle = style; }
@@ -149,6 +162,7 @@ public class TableInterface implements IsSerializable {
 		private String iTitle;
 		private String iWarning;
 		private String iAnchor;
+		private Long iId;
 		
 		public LineInterface() {}
 		
@@ -200,12 +214,26 @@ public class TableInterface implements IsSerializable {
 		public void setAnchor(String anchor) { iAnchor = anchor; }
 		public boolean hasAnchor() { return iAnchor != null && !iAnchor.isEmpty(); }
 		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
 		public int getMaxColumns() {
 			if (iCells == null) return 0;
 			int ret = 0;
 			for (CellInterface cell: iCells)
 				ret += cell.getColSpan();
 			return ret;
+		}
+		
+		public String[] toCsvLine() {
+			List<String> row = new ArrayList<String>();
+			if (hasCells()) {
+				for (CellInterface cell: getCells()) {
+					row.add(cell.toString());
+					for (int i = 1; i < cell.getColSpan(); i++) row.add("");
+				}
+			}
+			return row.toArray(new String[0]);
 		}
 	}
 	
@@ -251,6 +279,8 @@ public class TableInterface implements IsSerializable {
 		private CourseLinkInterface iCourseLink;
 		private String iScript;
 		private Boolean iDots;
+		private Comparable<?> iComparable;
+		private Boolean iSortable; 
 		
 		public CellInterface() {}
 		
@@ -282,6 +312,11 @@ public class TableInterface implements IsSerializable {
 		public String getTitle() { return iTitle; }
 		public CellInterface setTitle(String title) { iTitle = title; return this; }
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
+		
+		public Comparable<?> getComparable() { return (iComparable != null ? iComparable : toString()); }
+		public CellInterface setComparable(Comparable<?> comparable) { iComparable = comparable; return this; }
+		public CellInterface setSortable(boolean sortable) { iSortable = sortable; return this; }
+		public boolean isSortable() { return iSortable != null && iSortable.booleanValue(); }
 		
 		public String getColor() { return iColor; }
 		public CellInterface setColor(String color) { iColor = color; return this; }
@@ -634,5 +669,20 @@ public class TableInterface implements IsSerializable {
 		public String getStartTime() { return iStartTime; }
 		public void setEndTime(String endTime) { iEndTime = endTime; }
 		public String getEndTime() { return iEndTime; }
+	}
+	
+	public static class NavigationUpdateRequest implements GwtRpcRequest<GwtRpcResponseNull> {
+		private Integer iNavigationLevel;
+		private List<Long> iIds;
+		
+		public NavigationUpdateRequest() {}
+		public NavigationUpdateRequest(Integer level, List<Long> ids) {
+			iNavigationLevel = level; iIds = ids;
+		}
+		
+		public Integer getNavigationLevel() { return iNavigationLevel; }
+		public void setNavigationLevel(Integer level) { iNavigationLevel = level; }
+		public List<Long> getIds() { return iIds; }
+		public void setIds(List<Long> ids) { iIds = ids; }
 	}
 }

@@ -3674,6 +3674,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Class Detail: switch the user interface back to the old (Struts-based) class detail page")
 	LegacyClassDetail("unitime.legacy.classDetail"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructors: switch the user interface back to the old (Struts-based) instructors page")
+	LegacyInstructors("unitime.legacy.instructors"),
 	;
 
 	String iKey;

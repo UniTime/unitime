@@ -7913,3 +7913,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-MainTable .link:hover {
 	text-decoration: underline;	
 }
+
+.unitime-InstructorsPage .unitime-MainTable .instructor-line td {
+	border-bottom: 1px dashed #9CB0CE;
+}

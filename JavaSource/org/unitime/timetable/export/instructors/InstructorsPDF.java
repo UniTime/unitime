@@ -17,10 +17,9 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.export.courses;
+package org.unitime.timetable.export.instructors;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
@@ -28,44 +27,41 @@ import org.unitime.timetable.export.PDFPrinter;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
-import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.export.Exporter:offerings.pdf")
-public class OfferingsPDF extends OfferingsXLS {
+@Service("org.unitime.timetable.export.Exporter:instructors.pdf")
+public class InstructorsPDF extends InstructorsCSV {
 
 	@Override
 	public String reference() {
-		return "offerings.pdf";
+		return "instructors.pdf";
 	}
 	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		checkPermission(helper, Right.InstructionalOfferingsExportPDF);
-		exportDataPdf(getOfferings(helper), helper);
+		exportDataPdf(getInstructors(helper), helper);
 	}
 	
-	protected void exportDataPdf(List<TableInterface> response, ExportHelper helper) throws IOException {
+	protected void exportDataPdf(TableInterface table, ExportHelper helper) throws IOException {
     	PDFPrinter printer = new PDFPrinter(helper.getOutputStream(), false);
-		helper.setup(printer.getContentType(), reference(), false);
-		
-		for (TableInterface table: response) {
-			for (int i = 0; i < table.getHeader().size(); i++)
-				printer.printHeader(i, table.getHeader().size(), printer.toA(table.getHeader().get(0), true));
-			if (table.hasErrorMessage()) {
-				A a = new A();
-				a.italic(); a.center(); a.setColor("red");
-				a.setText(table.getErrorMessage());
-				a.setColSpan(table.getMaxColumns());
-				printer.printLine(a);
-			}
-			if (table.getLines() != null) {
-				for (LineInterface line: table.getLines()) {
-					printer.printLine(printer.toA(line, false));
-				}
-			}
-			printer.flushTable(table.getName());
+		helper.setup(printer.getContentType(), table.getId() + "-" + reference(), false);
+
+		for (int i = 0; i < table.getHeader().size(); i++)
+			printer.printHeader(i, table.getHeader().size(), printer.toA(table.getHeader().get(0), true));
+		if (table.hasErrorMessage()) {
+			A a = new A();
+			a.italic(); a.center(); a.setColor("red");
+			a.setText(table.getErrorMessage());
+			a.setColSpan(table.getMaxColumns());
+			printer.printLine(a);
 		}
-        
-    	printer.flush(); printer.close();
+		if (table.getLines() != null) {
+			for (LineInterface line: table.getLines()) {
+				printer.printLine(printer.toA(line, false));
+			}
+		}
+		
+		printer.flushTable(table.getName());
+
+		printer.flush(); printer.close();
 	}
 }

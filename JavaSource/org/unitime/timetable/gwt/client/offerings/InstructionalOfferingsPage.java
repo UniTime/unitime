@@ -26,7 +26,6 @@ import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsFi
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsRequest;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.solver.PageFilter;
-import org.unitime.timetable.gwt.client.solver.SolverCookie;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LinkInteface;
@@ -73,11 +72,11 @@ public class InstructionalOfferingsPage extends Composite {
 
 	public InstructionalOfferingsPage() {
 		iFilter = new PageFilter();
-		iFilter.getHeader().setCollapsible(SolverCookie.getInstance().isAssignedClassesFilter());
+		iFilter.getHeader().setCollapsible(!"0".equals(ToolBox.getSessionCookie("Offerings.Filter")));
 		iFilter.getHeader().addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				SolverCookie.getInstance().setAssignedClassesFilter(event.getValue());
+				ToolBox.setSessionCookie("Offerings.Filter", event.getValue() ? "1" : "0");
 			}
 		});
 		
@@ -154,7 +153,7 @@ public class InstructionalOfferingsPage extends Composite {
 				String subjectId = filter.getParameterValue("subjectArea", "");
 				if (subjectId.indexOf(',') > 0)
 					subjectId = subjectId.substring(0, subjectId.indexOf(','));
-				ToolBox.open("gwt.jsp?page=courseOffering&subjArea=" + subjectId +
+				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=courseOffering&subjArea=" + subjectId +
 						"&courseNbr=" + URL.encodeQueryString(filter.getParameterValue("courseNbr", "")) + "&op=addCourseOffering");
 			}
 		});

@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.tables;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -27,19 +28,25 @@ import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.NavigationUpdateRequest;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.dom.client.Style.WhiteSpace;
@@ -50,6 +57,7 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -62,6 +70,11 @@ import com.google.gwt.user.client.ui.Widget;
 public class TableWidget extends UniTimeTable<LineInterface> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	
+	private int iSortColumn = -1;
+	private boolean iSortAsc = true;
+	private Integer iNavigationLevel = null;
 
 	public TableWidget() {
 		super();
@@ -106,19 +119,49 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	
 	public void setData(TableInterface table) {
 		clearTable();
+		iNavigationLevel = table.getNavigationLevel();
+		String sortCookie = ToolBox.getSessionCookie(table.getId() + ".Sort");
 		if (table.getHeader() != null)
 			for (LineInterface line: table.getHeader()) {
 				if (line.hasCells()) {
 					List<CellWidget> cells = new ArrayList<CellWidget>();
-					for (CellInterface cell: line.getCells())
-						cells.add(new CellWidget(cell, false));
-					int row = addRow(line, cells);
+					for (final CellInterface cell: line.getCells()) {
+						final CellWidget cw = new CellWidget(cell, false); 
+						cells.add(cw);
+						if (cell.isSortable()) {
+							final int column = cells.size() - 1;
+							cw.getElement().getStyle().setCursor(Cursor.POINTER);
+							if (cell.hasText() && cell.getText().equals(sortCookie)) {
+								iSortColumn = column;
+								iSortAsc = true;
+							} else if (cell.hasText() && ("!" + cell.getText()).equals(sortCookie)) {
+								iSortColumn = column;
+								iSortAsc = false;
+							}
+							cw.addClickHandler(new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent e) {
+									if (iSortColumn == column) {
+										iSortAsc = !iSortAsc;
+									} else {
+										iSortColumn = column;
+										iSortAsc = true;
+									}
+									sort();
+									ToolBox.setSessionCookie(table.getId() + ".Sort", iSortAsc ? cell.getText() : "!" + cell.getText());
+								}
+							});
+						}
+					}
+					int row = addRow(null, cells);
 					if (line.hasBgColor())
 						getRowFormatter().getElement(row).getStyle().setBackgroundColor(line.getBgColor());
 					if (line.hasTitle())
 						getRowFormatter().getElement(row).setTitle(line.getTitle());
 					if (line.hasStyle())
 						applyStyle(getRowFormatter().getElement(row).getStyle(), line.getStyle());
+					if (line.hasClassName())
+						getRowFormatter().getElement(row).addClassName(line.getClassName());
 				}
 			}
 		if (table.hasErrorMessage()) {
@@ -139,6 +182,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						getRowFormatter().getElement(row).getStyle().setBackgroundColor(line.getBgColor());
 					if (line.hasTitle())
 						getRowFormatter().getElement(row).setTitle(line.getTitle());
+					if (line.hasClassName())
+						getRowFormatter().getElement(row).addClassName(line.getClassName());
 					if (line.hasStyle())
 						applyStyle(getRowFormatter().getElement(row).getStyle(), line.getStyle());
 				}
@@ -170,6 +215,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				}
 			}
 		}
+		sort();
 	}
 	
 	public static class ErrorWidget extends P implements HasColSpan {
@@ -188,6 +234,55 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		}
 	}
 	
+	
+	public void sort() {
+		if (iSortColumn < 0) return;
+		for (int col = 0; col < getCellCount(0); col++) {
+			CellWidget cw = (CellWidget)getWidget(0, col);
+			if (cw.getElement().getInnerHTML() != null) {
+				String old = cw.getElement().getInnerHTML();
+				if (old.startsWith("\u2193") || old.startsWith("\u2191")) {
+					old = old.substring(1);
+					cw.getElement().setInnerHTML(old);
+				}
+			}
+		}
+		sort(null, new Comparator<LineInterface>() {
+			@Override
+			@SuppressWarnings({ "rawtypes", "unchecked" })
+			public int compare(LineInterface l1, LineInterface l2) {
+				CellInterface c1 = l1.getCells().get(iSortColumn);
+				CellInterface c2 = l2.getCells().get(iSortColumn);
+				Comparable o1 = c1.getComparable();
+				Comparable o2 = c2.getComparable();
+				if (o1 instanceof String)
+					return NaturalOrderComparator.compare(o1.toString(), o2.toString());
+				else
+					return o1.compareTo(o2);
+			}
+		}, iSortAsc);
+		CellWidget cw = (CellWidget)getWidget(0, iSortColumn);
+		if (cw.getElement().getInnerHTML() != null) {
+			String old = cw.getElement().getInnerHTML();
+			cw.getElement().setInnerHTML((iSortAsc ? "\u2191" : "\u2193") + old);
+		}
+		if (iNavigationLevel != null) {
+			List<Long> ids = new ArrayList<Long>();
+			for (int row = 0; row < getRowCount(); row++) {
+				LineInterface line = getData(row);
+				if (line != null && line.getId() != null)
+					ids.add(line.getId());
+			}
+			if (!ids.isEmpty()) {
+				RPC.execute(new NavigationUpdateRequest(iNavigationLevel, ids), new AsyncCallback<GwtRpcResponseNull>() {
+					@Override
+					public void onFailure(Throwable e) {}
+					@Override
+					public void onSuccess(GwtRpcResponseNull r) {}
+				});
+			}
+		}
+	}
 	
 	public static class CellWidget extends P implements HasColSpan, HasRowSpan, HasCellAlignment, HasVerticalCellAlignment, HasStyleName {
 		private CellInterface iCell;

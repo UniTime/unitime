@@ -23,15 +23,14 @@ import java.util.Comparator;
 
 import org.unitime.timetable.model.ClassInstructor;
 
-public class ClassInstructorComparator implements Comparator {
+public class ClassInstructorComparator implements Comparator<ClassInstructor> {
 	private ClassComparator iCC = null;
 	public ClassInstructorComparator(ClassComparator cc) {
 		iCC = cc;
 	}
 	
-	public int compare(Object o1, Object o2) {
-		ClassInstructor ci1 = (ClassInstructor)o1;
-		ClassInstructor ci2 = (ClassInstructor)o2;
+	@Override
+	public int compare(ClassInstructor ci1, ClassInstructor ci2) {
 		return iCC.compare(ci1.getClassInstructing(),ci2.getClassInstructing());
 	}
 }

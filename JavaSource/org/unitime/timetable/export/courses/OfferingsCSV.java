@@ -169,7 +169,7 @@ public class OfferingsCSV implements Exporter {
 	public static class Filter implements FilterInterface {
 		ExportHelper iHelper;
 		
-		Filter(ExportHelper helper) { iHelper = helper; }
+		public Filter(ExportHelper helper) { iHelper = helper; }
 
 		@Override
 		public boolean hasParameter(String name) {

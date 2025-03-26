@@ -40,6 +40,7 @@ import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.export.PDFPrinter.F;
 import org.unitime.timetable.export.XLSPrinter;
+import org.unitime.timetable.export.courses.OfferingsCSV.Filter;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -64,6 +65,7 @@ import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.instructor.InstructorsTableBuilder;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.service.AssignmentService;
@@ -91,6 +93,8 @@ public class InstructorSurveysXLS implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		String dept = helper.getParameter("department");
+		if (dept == null)
+			dept = helper.getParameter("deptId");
 		if (dept == null)
 			throw new IllegalArgumentException("Department not provided or not found.");
 		Department department = null;
@@ -140,8 +144,11 @@ public class InstructorSurveysXLS implements Exporter {
 			}
 		});
 		Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
+		InstructorsTableBuilder builder = new InstructorsTableBuilder(helper.getSessionContext(), null, null);
+		Filter filter = new Filter(helper);
 		for (DepartmentalInstructor instructor: instructors) {
 			if (instructor.getExternalUniqueId() == null) continue;
+			if (!builder.matches(instructor, filter)) continue;
 			InstructorSurvey survey = surveys.get(instructor.getExternalUniqueId());
 			if (survey == null) continue;
 			A extId = new A(instructor.getExternalUniqueId());
@@ -223,6 +230,7 @@ public class InstructorSurveysXLS implements Exporter {
 		ClassAssignmentProxy classAssignment = getClassAssignmentService().getAssignment();
 		for (DepartmentalInstructor instructor: instructors) {
 			if (instructor.getExternalUniqueId() == null) continue;
+			if (!builder.matches(instructor, filter)) continue;
 			InstructorSurvey survey = surveys.get(instructor.getExternalUniqueId());
 			if (survey == null) continue;
 			List<InstructorCourseRequirement> reqs = new ArrayList<InstructorCourseRequirement>(survey.getCourseRequirements());

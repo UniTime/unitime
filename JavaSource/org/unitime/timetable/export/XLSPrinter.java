@@ -59,6 +59,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.unitime.timetable.export.Exporter.Printer;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.export.PDFPrinter.F;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
@@ -609,5 +612,84 @@ public class XLSPrinter implements Printer {
 					iSheet.autoSizeColumn(col);
 		iWorkbook.write(iOutput);
 		iWorkbook.close();
+	}
+	
+	public A[] toA(LineInterface line, boolean header) {
+		List<A> ret = new ArrayList<A>();
+		if (line.hasCells())
+			for (CellInterface cell: line.getCells()) {
+				A a = toA(cell, line, null, 0);
+				if (!a.hasChunks() && (a.getText() == null || a.getText().isEmpty()))
+					a.setText(" ");
+				if (header) {
+					a.bold();
+				}
+				ret.add(a);
+			}
+		return ret.toArray(new A[0]);
+	}
+	
+	protected void applyStyle(A a, String styles) {
+		for (String style: styles.split(";")) {
+			if (style.indexOf(':') < 0) continue;
+			String key = style.substring(0, style.indexOf(':')).trim();
+			String value = style.substring(style.indexOf(':') + 1).trim();
+			if ("font-weight".equalsIgnoreCase(key) && "bold".equalsIgnoreCase(value))
+				a.bold();
+			else if ("font-style".equalsIgnoreCase(key) && "italic".equalsIgnoreCase(value))
+				a.italic();
+			else if ("color".equalsIgnoreCase(key) && !"inherit".equals(value))
+				a.setColor(value);
+			else if ("background".equalsIgnoreCase(key))
+				a.setBackground(value);
+		}
+	}
+	
+	protected A createCell(CellInterface cell) {
+		return new A();
+	}
+	
+	protected A toA(CellInterface cell, LineInterface line, A parent, int index) {
+		A a = createCell(cell);
+		if (cell.hasWidth()) a.setWidth(cell.getWidth());
+		a.inline();
+		if (parent != null && !cell.isInline() && index > 0)
+			parent.clear(F.INLINE);
+		if (parent != null && parent.has(F.BOLD)) a.bold();
+		if (parent != null && parent.has(F.ITALIC)) a.italic();
+		if (parent != null && parent.getColorValue() != null) a.setColor(parent.getColor());
+		if (parent == null && !cell.hasNoWrap()) a.wrap();
+		a.setColSpan(cell.getColSpan()); a.setRowSpan(cell.getRowSpan());
+		if (cell.hasColor()) a.color(cell.getColor());
+		if (parent == null) {
+			if (line.hasBgColor()) a.setBackground(line.getBgColor());
+			if (line.hasStyle()) applyStyle(a, line.getStyle());
+		}
+		if (cell.hasStyle()) applyStyle(a, cell.getStyle());
+		if (cell.getTextAlignment() == Alignment.CENTER)
+			a.center();
+		else if (cell.getTextAlignment() == Alignment.RIGHT)
+			a.right();
+		if (a.getImage() != null) {
+		} else if (cell.hasAria()) {
+			a.setText(cell.getAria());
+		} else if (cell.hasText() && !cell.isHtml()) {
+			a.setText(cell.getText());
+		} else if (cell.hasTitle()) {
+			a.setText(cell.getTitle());
+		} else if (cell.hasImage()) {
+			if (cell.getImage().hasTitle())
+				a.setText(cell.getImage().getTitle());
+		}
+		if (cell.hasIndent())
+			for (int i = 0; i < cell.getIndent(); i++)
+				a.setText("  " + (a.getText() == null ? "" : a.getText()));
+		if (cell.hasItems() && a.getImage() == null && !cell.hasAria()) { 
+			int i = 0;
+			for (CellInterface c: cell.getItems()) {
+				a.add(toA(c, line, a, i++));
+			}
+		}
+		return a;
 	}
 }

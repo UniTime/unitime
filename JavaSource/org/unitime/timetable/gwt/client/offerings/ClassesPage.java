@@ -26,7 +26,6 @@ import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilt
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesRequest;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.solver.PageFilter;
-import org.unitime.timetable.gwt.client.solver.SolverCookie;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LinkInteface;
@@ -71,11 +70,11 @@ public class ClassesPage extends Composite {
 
 	public ClassesPage() {
 		iFilter = new PageFilter();
-		iFilter.getHeader().setCollapsible(SolverCookie.getInstance().isAssignedClassesFilter());
+		iFilter.getHeader().setCollapsible(!"0".equals(ToolBox.getSessionCookie("ClassSearch.Filter")));
 		iFilter.getHeader().addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				SolverCookie.getInstance().setAssignedClassesFilter(event.getValue());
+				ToolBox.setSessionCookie("ClassSearch.Filter", event.getValue() ? "1" : "0");
 			}
 		});
 		

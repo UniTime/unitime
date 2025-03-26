@@ -75,6 +75,13 @@
 			<item name="Instructors" page="instructorSearch.action">
 				<condition>
 					<hasPermission name="Instructors"/>
+					<propertyEquals name="unitime.legacy.instructors" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Instructors" page="instructors" type="gwt">
+				<condition>
+					<hasPermission name="Instructors"/>
+					<propertyEquals name="unitime.legacy.instructors" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Instructor Attributes" page="instructorattributes" type="gwt">

@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.shared;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -1413,5 +1415,52 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public TeachingRequestsFilterRpcRequest() {}
 	}
-
+	
+	public static class InstructorsFilterRequest implements GwtRpcRequest<InstructorsFilterResponse>{
+		
+	}
+	
+	public static class InstructorsFilterResponse extends FilterInterface {
+		private static final long serialVersionUID = 3259617004926996393L;
+		private boolean iSticky = false;
+		private Long iSessionId = null;
+		
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
+	}
+	
+	public static class InstructorsRequest implements GwtRpcRequest<InstructorsResponse> {
+		private FilterInterface iFilter;
+		private String iBackId, iBackType;
+		
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+		
+		public String getBackId() { return iBackId; }
+		public void setBackId(String backId) { iBackId = backId; }
+		public String getBackType() { return iBackType; }
+		public void setBackType(String backType) { iBackType = backType; }
+	}
+	
+	public static class InstructorsResponse implements GwtRpcResponse {
+		private Long iDepartmentId;
+		private Set<String> iOperations;
+		private TableInterface iTable;
+		
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
+		
+		public TableInterface getTable() { return iTable; }
+		public void setTable(TableInterface table) { iTable = table; }
+		
+		public boolean hasOperation(String operation) { return iOperations != null && iOperations.contains(operation); }
+		public void addOperation(String operation) {
+			if (iOperations == null) iOperations = new HashSet<String>();
+			iOperations.add(operation);
+		}
+	}
 }

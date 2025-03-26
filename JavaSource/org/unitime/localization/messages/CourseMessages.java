@@ -2389,6 +2389,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructors")
 	String sectionTitleInstructors();
 	
+	@DefaultMessage("{0} Instructors")
+	String sectionDepartmentalInstructors(String department);
+	
 	@DefaultMessage("Requests / Notes to Schedule Manager")
 	String sectionTitleNotesToScheduleManager();
 	

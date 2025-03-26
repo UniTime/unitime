@@ -243,6 +243,7 @@
     	<url-pattern>/offering</url-pattern>
     	<url-pattern>/subpart</url-pattern>
     	<url-pattern>/clazz</url-pattern>
+    	<url-pattern>/instructors</url-pattern>
     </servlet-mapping>
 	
 	<filter>
