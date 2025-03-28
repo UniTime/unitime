@@ -97,7 +97,6 @@ public class InstructorSurveyWidget extends Composite {
 		
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectInstructorSurvey());
 		iHeader.setCollapsible(InstructorCookie.getInstance().isShowSurveyDetails());
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {

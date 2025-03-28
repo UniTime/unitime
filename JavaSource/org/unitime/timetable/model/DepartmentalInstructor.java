@@ -382,7 +382,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return(null);
 	}
 
-	public DepartmentalInstructor getNextDepartmentalInstructor(SessionContext context, Right right) throws Exception {
+	public DepartmentalInstructor getNextDepartmentalInstructor(SessionContext context, Right right) {
     	List instructors = DepartmentalInstructor.findInstructorsForDepartment(getDepartment().getUniqueId());
     	DepartmentalInstructor next = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
@@ -395,7 +395,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return next;
     }
 	
-    public DepartmentalInstructor getPreviousDepartmentalInstructor(SessionContext context, Right right) throws Exception {
+    public DepartmentalInstructor getPreviousDepartmentalInstructor(SessionContext context, Right right) {
     	List instructors = DepartmentalInstructor.findInstructorsForDepartment(getDepartment().getUniqueId());
     	DepartmentalInstructor prev = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
@@ -681,6 +681,21 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 			sb.append("]");
 		}
 		sb.append("]");
+		return sb.toString();
+	}
+	
+	@Transient
+	public String getUnavailablePattern() {
+		StringBuffer sb = new StringBuffer();
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
+		int year = getSession().getSessionStartYear();
+		for (int m=startMonth;m<=endMonth;m++) {
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+			for (int d=1;d<=daysOfMonth;d++) {
+				sb.append(isUnavailable(d,m)?"1":"0");
+			}
+		}
 		return sb.toString();
 	}
 	

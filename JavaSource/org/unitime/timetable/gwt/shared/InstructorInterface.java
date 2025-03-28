@@ -31,11 +31,15 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
+import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -1462,5 +1466,120 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 			if (iOperations == null) iOperations = new HashSet<String>();
 			iOperations.add(operation);
 		}
+	}
+	
+	public static class InstructorDetailRequest implements GwtRpcRequest<InstructorDetailResponse> {
+		private Long iInstructorId;
+		private Action iAction;
+		private String iBackId, iBackType;
+
+		public static enum Action {
+		}
+		
+		public InstructorDetailRequest() {}
+		
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+		public Long getInstructorId() { return iInstructorId; }
+		public Action getAction() { return iAction; }
+		public void setAction(Action action) { iAction = action; }
+		public String getBackId() { return iBackId; }
+		public void setBackId(String backId) { iBackId = backId; }
+		public String getBackType() { return iBackType; }
+		public void setBackType(String backType) { iBackType = backType; }		
+	}
+	
+	public static class InstructorDetailResponse implements GwtRpcResponse {
+		private Long iInstructorId, iDepartmentId, iPreviousId, iNextId;
+		private String iInstrucorName, iExternalId;
+		private FilterParameterInterface iDepartmentFilter;
+		private String iBackUrl, iBackTitle;
+		private String iUrl;
+		private boolean iConfirms;
+		private Set<String> iOperations;
+		
+		private TableInterface iProperties;
+		private TableInterface iClasses;
+		private TableInterface iExaminations;
+		private TableInterface iEvents;
+		private TableInterface iPreferences;
+		private TableInterface iLastChanges;
+		
+		public InstructorDetailResponse() {}
+		
+		public void setInstructorId(Long classId) { iInstructorId = classId; }
+		public Long getInstructorId() { return iInstructorId; }
+		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setPreviousId(Long id) { iPreviousId = id; }
+		public Long getPreviousId() { return iPreviousId; }
+		public void setNextId(Long id) { iNextId = id; }
+		public Long getNextId() { return iNextId; }
+		
+		public String getInstructorName() { return iInstrucorName; }
+		public void setInstructorName(String name) { iInstrucorName = name; }
+		public boolean hasExternalId() { return iExternalId != null && !iExternalId.isEmpty(); }
+		public String getExternalId() { return iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		public boolean hasBackUrl() { return iBackUrl != null && !iBackUrl.isEmpty(); }
+		public void setBackUrl(String backUrl) { iBackUrl = backUrl; }
+		public String getBackUrl() { return iBackUrl; }
+		public boolean hasBackTitle() { return iBackTitle != null && !iBackTitle.isEmpty(); }
+		public void setBackTitle(String backTitle) { iBackTitle = backTitle; }
+		public String getBackTitle() { return iBackTitle; }
+
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public void setUrl(String url) { iUrl = url; }
+		public String getUrl() { return iUrl; }
+
+		public boolean isConfirms() { return iConfirms; }
+		public void setConfirms(boolean confirms) { iConfirms = confirms; }
+		
+		public boolean hasOperation(String operation) { return iOperations != null && iOperations.contains(operation); }
+		public void addOperation(String operation) {
+			if (iOperations == null) iOperations = new HashSet<String>();
+			iOperations.add(operation);
+		}
+		
+		public boolean hasDepartmentFilter() { return iDepartmentFilter != null; }
+		public void setDepartmentFilter(FilterParameterInterface filter) { iDepartmentFilter = filter; }
+		public FilterParameterInterface getDepartmentFilter() { return iDepartmentFilter; }
+
+		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
+		public void addProperty(PropertyInterface property) {
+			if (iProperties == null) iProperties = new TableInterface();
+			iProperties.addProperty(property);
+		}
+		public TableInterface getProperties() { return iProperties; }
+		public CellInterface addProperty(String text) {
+			PropertyInterface p = new PropertyInterface();
+			p.setName(text);
+			p.setCell(new CellInterface());
+			addProperty(p);
+			return p.getCell();
+		}
+		
+		public boolean hasClasses() { return iClasses != null; }
+		public TableInterface getClasses() { return iClasses; }
+		public void setClasses(TableInterface classes) { iClasses = classes; }
+
+		public boolean hasPreferences() { return iPreferences != null; }
+		public TableInterface getPreferences() { return iPreferences; }
+		public void setPreferences(TableInterface preferences) { iPreferences = preferences; }
+		
+		public boolean hasEvents() { return iEvents != null && iEvents.hasLines(); }
+		public TableInterface getEvents() { return iEvents; }
+		public void setEvents(TableInterface events) { iEvents = events; }
+
+		public boolean hasExaminations() { return iExaminations != null; }
+		public TableInterface getExaminations() { return iExaminations; }
+		public void setExaminations(TableInterface examinations) { iExaminations = examinations; }
+		
+		public boolean hasLastChanges() { return iLastChanges != null; }
+		public TableInterface getLastChanges() { return iLastChanges; }
+		public void setLastChanges(TableInterface lastChanges) { iLastChanges = lastChanges; }
+	}
+	
+	public static class PatternDatesRequest implements GwtRpcRequest<GwtRpcResponseList<SessionMonth>> {
 	}
 }

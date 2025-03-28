@@ -54,6 +54,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -582,6 +583,13 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			cmp = Double.compare(getMin(),t.getMin());
 			return cmp;
 		}
+		public CellInterface toCell() {
+			return new CellInterface()
+				.setText(getDaysName() + " " + getStartTime() + " - " + getEndTime())
+				.setColor(PreferenceLevel.int2color(getPref()))
+				.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + getClazz().getClassId() + "," + getDays() + "," + getStartSlot() + "');")
+				.setMouseOut("$wnd.hideGwtTimeHint();");
+		}
 	}
 
 	public class RoomInfo implements Serializable, Comparable {
@@ -647,6 +655,15 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			//if (cmp!=0) return cmp;
 			return getName().compareTo(((RoomInfo)o).getName());
 		}
+	    public CellInterface toCell() {
+	    	CellInterface c = new CellInterface();
+	    	c.add(getName())
+				.setColor(PreferenceLevel.int2color(getPref()))
+				.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + getId() + "', '" + PreferenceLevel.int2string(getPref()) + "');")
+				.setMouseOut("$wnd.hideGwtRoomHint();");
+	    	if (isStriked()) c.addStyle("text-decoration: line-through;");
+	    	return c;
+	    }
 	}
 
 	public class InstructorInfo implements Serializable {

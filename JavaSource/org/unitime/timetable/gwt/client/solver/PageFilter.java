@@ -111,7 +111,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	public Command getSubmitCommand() { return iSubmitCommand; }
 	public void setSubmitCommand(Command command) { iSubmitCommand = command; }
 	
-	protected Widget getWidget(final FilterParameterInterface param) {
+	public Widget getWidget(final FilterParameterInterface param) {
 		if (param.hasOptions()) {
 			final ListBox list = new ListBox();
 			list.setMultipleSelect(param.isMultiSelect());

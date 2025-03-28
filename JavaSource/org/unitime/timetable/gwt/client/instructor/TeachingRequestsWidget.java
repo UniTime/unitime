@@ -72,7 +72,6 @@ public class TeachingRequestsWidget extends SimpleForm {
 			}
 		});
 		iHeader.setCollapsible(InstructorCookie.getInstance().isShowTeachingRequests());
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		removeStyleName("unitime-NotPrintableBottomLine");
 		
 		addHeaderRow(iHeader);

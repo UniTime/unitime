@@ -78,7 +78,6 @@ public class RoomNoteChanges extends Composite implements HasMobileScroll {
 		
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectRoomNoteHistory());
 		iHeader.setCollapsible(LastChangesCookie.getInstance().getShowLastChanges());
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {

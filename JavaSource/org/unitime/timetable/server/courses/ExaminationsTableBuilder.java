@@ -183,15 +183,15 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
                     Object object = e.nextElement();
                     if (object instanceof Class_)
-                    	objects.add(((Class_)object).getClassLabel());
+                    	objects.add(((Class_)object).getClassLabel()).setInline(false);
                     else if (object instanceof InstrOfferingConfig)
-                    	objects.add(((InstrOfferingConfig)object).toString());
+                    	objects.add(((InstrOfferingConfig)object).toString()).setInline(false);
                     else if (object instanceof InstructionalOffering)
-                    	objects.add(((InstructionalOffering)object).getCourseName());
+                    	objects.add(((InstructionalOffering)object).getCourseName()).setInline(false);
                     else if (object instanceof CourseOffering)
-                    	objects.add(((CourseOffering)object).getCourseName());
+                    	objects.add(((CourseOffering)object).getCourseName()).setInline(false);
                     else
-                    	objects.add(object.toString());
+                    	objects.add(object.toString()).setInline(false);
                 }
                 
                 if (!hasSolution || assignment==null || assignment.getPeriodId()==null) {
@@ -257,7 +257,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 }
                 
                 for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(exam.getInstructors()))
-                    instructors.add(instructor.getName(getInstructorNameFormat()));
+                    instructors.add(instructor.getName(getInstructorNameFormat())).setInline(false);
                 
                 int nrStudents = exam.getSize();
                 
@@ -304,15 +304,15 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
                     Object object = e.nextElement();
                     if (object instanceof Class_)
-                    	objects.add(((Class_)object).getClassLabel());
+                    	objects.add(((Class_)object).getClassLabel()).setInline(false);
                     else if (object instanceof InstrOfferingConfig)
-                    	objects.add(((InstrOfferingConfig)object).toString());
+                    	objects.add(((InstrOfferingConfig)object).toString()).setInline(false);
                     else if (object instanceof InstructionalOffering)
-                    	objects.add(((InstructionalOffering)object).getCourseName());
+                    	objects.add(((InstructionalOffering)object).getCourseName()).setInline(false);
                     else if (object instanceof CourseOffering)
-                    	objects.add(((CourseOffering)object).getCourseName());
+                    	objects.add(((CourseOffering)object).getCourseName()).setInline(false);
                     else
-                    	objects.add(object.toString());
+                    	objects.add(object.toString()).setInline(false);
                 }
                 
                 if (assignment==null || assignment.getPeriodId()==null) continue;
@@ -323,7 +323,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
             			roomPref.add(room.getName());
                 
                 for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(exam.getInstructors()))
-                    instructors.add(instructor.getName(getInstructorNameFormat()));
+                    instructors.add(instructor.getName(getInstructorNameFormat())).setInline(false);
                 
                 if (exam.getUniqueId().toString().equals(getBackId())) {
                 	hasBack = true;

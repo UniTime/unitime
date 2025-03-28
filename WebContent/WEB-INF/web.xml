@@ -244,6 +244,7 @@
     	<url-pattern>/subpart</url-pattern>
     	<url-pattern>/clazz</url-pattern>
     	<url-pattern>/instructors</url-pattern>
+    	<url-pattern>/instructor</url-pattern>
     </servlet-mapping>
 	
 	<filter>

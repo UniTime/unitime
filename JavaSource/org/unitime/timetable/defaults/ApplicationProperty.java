@@ -2631,6 +2631,10 @@ public enum ApplicationProperty {
 	@Since(4.1)
 	ReservationsShowClassSufix("unitime.reservations.showClassSuffixes"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructor: show class suffix (external id) next to the class section number")
+	InstructorShowClassSufix("unitime.instructor.showClassSuffixes"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("true")

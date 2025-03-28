@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionC
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
+import org.unitime.timetable.gwt.shared.InstructorInterface.PatternDatesRequest;
 
 import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
@@ -110,6 +111,38 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		init(months);
 	}
 	
+	public SessionDatesSelector() {
+		iPanel = new UniTimeWidget<DatesPanel>(new DatesPanel());
+		initWidget(iPanel);
+	}
+	
+	public SessionDatesSelector forPattern(final String pattern) {
+		RPC.execute(new PatternDatesRequest(), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
+			@Override
+			public void onFailure(Throwable err) {
+			}
+
+			@Override
+			public void onSuccess(GwtRpcResponseList<SessionMonth> months) {
+				init(months, MESSAGES.legendNotAvailable(), MESSAGES.legendAvailable());
+				int index = 0;
+				for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+					Widget w = iPanel.getWidget().getWidget(i);
+					if (w instanceof SingleMonth) {
+						SingleMonth s = (SingleMonth)w;
+						for (D d: s.getDays()) {
+							char c = pattern.charAt(index ++);
+							d.setValue(c == '1');
+							d.setEnabled(false);
+							d.removeStyleName("disabled");
+						}
+					}
+				}
+			}
+		});
+		return this;
+	}
+	
 	public boolean isCanSelectPast() { return iCanSelectPast; }
 	public void setCanSelectPast(boolean canSelectPast) { iCanSelectPast = canSelectPast; }
 	
@@ -135,6 +168,10 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public void init(List<SessionMonth> months) {
+		init(months, MESSAGES.legendSelected(), MESSAGES.legendNotSelected());
+	}
+	
+	public void init(List<SessionMonth> months, String selected, String notSelected) {
 		iPanel.getWidget().clear();
 		int firstOutside = -1, start = -1, end = -1, finals = -1, midterms = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1;
 		int idx = 0;
@@ -159,7 +196,8 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
-		iPanel.getWidget().add(new Legend(firstOutside, start, finals, midterms, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate));
+		iPanel.getWidget().add(new Legend(firstOutside, start, finals, midterms, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate,
+				selected, notSelected));
 		iPanel.getWidget().setCursor(new Date());
 	}
 	
@@ -561,18 +599,24 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public class Legend extends AbsolutePanel {
 		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate) {
+			this(firstOutside, start, finals, midterms, firstHoliday, firstBreak, firstPast, today, firstClassDate, firstEventDate,
+					MESSAGES.legendSelected(),
+					MESSAGES.legendNotSelected());
+		}
+		
+		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate, String selected, String notSelected) {
 			addStyleName("legend");
 			P box = new P(null, "box");
 			add(box);
 			
 			P line = new P(null, "row");
 			line.add(new P(null, "cell", "selected", "first"));
-			line.add(new P(MESSAGES.legendSelected(), "title"));
+			line.add(new P(selected, "title"));
 			box.add(line);
 
 			line = new P(null, "row");
 			line.add(new P(null, "cell"));
-			line.add(new P(MESSAGES.legendNotSelected(), "title"));
+			line.add(new P(notSelected, "title"));
 			box.add(line);
 			
 			if (firstOutside >= 0) {
@@ -1082,13 +1126,13 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (up) {
 				if (previous != null) {
 					iMonth = previous[0]; iWeek = previous[1]; iDow = previous[2];
-				} else {
+				} else if (last != null) {
 					iMonth = last[0]; iWeek = last[1]; iDow = last[2];
 				}
 			} else {
 				if (next != null) {
 					iMonth = next[0]; iWeek = next[1]; iDow = next[2];
-				} else {
+				} else if (first != null) {
 					iMonth = first[0]; iWeek = first[1]; iDow = first[2];
 				}
 			}
@@ -1143,13 +1187,13 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (left) {
 				if (previous != null) {
 					iMonth = previous[0]; iWeek = previous[1]; iDow = previous[2];
-				} else {
+				} else if (last != null) {
 					iMonth = last[0]; iWeek = last[1]; iDow = last[2];
 				}
 			} else {
 				if (next != null) {
 					iMonth = next[0]; iWeek = next[1]; iDow = next[2];
-				} else {
+				} else if (first != null) {
 					iMonth = first[0]; iWeek = first[1]; iDow = first[2];
 				}
 			}

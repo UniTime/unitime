@@ -159,7 +159,6 @@ public class CourseCurriculaTable extends Composite {
 		
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.headerCurricula() : "");
 		iHeader.setCollapsible(showHeader ? CurriculumCookie.getInstance().getCurriculaCoursesDetails() : null);
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		if (showHeader) {
 			iHeader.addButton("operations", MESSAGES.buttonCurriculaOperations(), (Integer)null, iMenu);
 			iHeader.setEnabled("operations", false);

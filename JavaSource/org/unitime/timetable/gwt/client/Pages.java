@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
+import org.unitime.timetable.gwt.client.instructor.InstructorDetailPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorsPage;
 import org.unitime.timetable.gwt.client.instructor.SetupTeachingRequestsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsChangesPage;
@@ -336,7 +337,11 @@ public enum Pages {
 	instructors(new PageFactory() {
 		public Widget create() { return new InstructorsPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructors(); }
-		}),
+		}, SolverWarnings.Type.assignments),
+	instructor(new PageFactory() {
+		public Widget create() { return new InstructorDetailPage(); }
+		public String name(GwtMessages messages) { return messages.pageInstructorDetail(); }
+		}, SolverWarnings.Type.assignments),
 	;
 	
 	private PageFactory iFactory;

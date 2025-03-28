@@ -68,7 +68,6 @@ public class TeachingAssignmentsWidget extends SimpleForm {
 			}
 		});
 		iHeader.setCollapsible(InstructorCookie.getInstance().isShowTeachingAssignments());
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		removeStyleName("unitime-NotPrintableBottomLine");
 		
 		addHeaderRow(iHeader);
@@ -83,6 +82,14 @@ public class TeachingAssignmentsWidget extends SimpleForm {
 		panel.getElement().setInnerText(null);
 		panel.add(this);
 		panel.setVisible(true);
+	}
+	
+	public TeachingAssignmentsWidget forInstructorId(Long id) {
+		iInstructorId = id.toString();
+		if (InstructorCookie.getInstance().isShowTeachingAssignments()) {
+			refresh();
+		}
+		return this;
 	}
 	
 	protected void refresh() {

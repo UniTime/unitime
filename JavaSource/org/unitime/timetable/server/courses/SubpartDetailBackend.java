@@ -44,8 +44,10 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -253,7 +255,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
 					CellInterface tpCell = table.addProperty(MSG.propertyTime());
 					for (TimePref tp: timePrefs) {
-						if (tp.getTimePattern().isExactTime()) {
+						if (tp.getTimePattern() != null && tp.getTimePattern().isExactTime()) {
 							tpCell.add(tp.getTimePatternModel().toString()).setInline(false);
 						} else {
 							RequiredTimeTable rtt = tp.getRequiredTimeTable();
@@ -360,6 +362,39 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 						cell.setText(rp.getRoomFeature().getLabelWithType() + (multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
 						cell.setAria(MSG.prefTitleRoomFeature(rp.getPrefLevel().getPrefName(), cell.getText()));
 						String hint = HtmlUtils.htmlEscape(MSG.prefTitleRoomFeature(rp.getPrefLevel().getPrefName(), cell.getText()));
+						cell.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, '" + hint + "');");
+						cell.setMouseOut("$wnd.hideGwtHint();");
+					}
+				}
+				break;
+			case COURSE:
+				Set<InstructorCoursePref> coursePrefs = pg.effectivePreferences(InstructorCoursePref.class);
+				if (!coursePrefs.isEmpty()) {
+					CellInterface rpCell = table.addProperty(MSG.propertyCoursePrefs());
+					for (InstructorCoursePref rp: coursePrefs) {
+						CellInterface cell = rpCell.add(null).setInline(false);
+						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
+						cell.setText(rp.getCourse().getCourseNameWithTitle());
+						cell.setAria(MSG.prefTitleRoomFeature(rp.getPrefLevel().getPrefName(), cell.getText()));
+						String hint = HtmlUtils.htmlEscape(MSG.prefTitleCourse(rp.getPrefLevel().getPrefName(), cell.getText()));
+						cell.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, '" + hint + "');");
+						cell.setMouseOut("$wnd.hideGwtHint();");
+						cell.setUrl("offering?id=" + rp.getCourse().getInstructionalOffering().getUniqueId());
+					}
+				}
+				break;
+			case DISTRIBUTION:
+				Set<DistributionPref> distPrefs = pg.effectivePreferences(DistributionPref.class);
+				if (!distPrefs.isEmpty()) {
+					CellInterface rpCell = table.addProperty(MSG.propertyDistribution());
+					for (DistributionPref rp: distPrefs) {
+						CellInterface cell = rpCell.add(null).setInline(false);
+						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
+						cell.setText(rp.getDistributionType().getLabel());
+						cell.setAria(MSG.prefTitleDistribution(rp.getPrefLevel().getPrefName(), cell.getText()));
+						String hint = HtmlUtils.htmlEscape(rp.getDistributionType().getDescr());
 						cell.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, '" + hint + "');");
 						cell.setMouseOut("$wnd.hideGwtHint();");
 					}

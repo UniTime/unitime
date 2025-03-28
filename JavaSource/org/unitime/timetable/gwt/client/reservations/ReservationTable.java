@@ -101,7 +101,6 @@ public class ReservationTable extends Composite {
 		
 		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.sectReservations() : "");
 		iHeader.setCollapsible(showHeader ? ReservationCookie.getInstance().getReservationCoursesDetails() : null);
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {

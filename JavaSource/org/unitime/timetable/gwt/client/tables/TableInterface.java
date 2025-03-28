@@ -281,6 +281,7 @@ public class TableInterface implements IsSerializable {
 		private Boolean iDots;
 		private Comparable<?> iComparable;
 		private Boolean iSortable; 
+		private WidgetInterface iWidget;
 		
 		public CellInterface() {}
 		
@@ -436,6 +437,10 @@ public class TableInterface implements IsSerializable {
 		public CourseLinkInterface addCourseLink() { iCourseLink = new CourseLinkInterface(); return iCourseLink; }
 		public CourseLinkInterface getCourseLink() { return iCourseLink; }
 		
+		public boolean hasWidget() { return iWidget != null; }
+		public WidgetInterface addWidget() { iWidget = new WidgetInterface(); return iWidget; }
+		public WidgetInterface getWidget() { return iWidget; }
+		
 		public boolean hasScript() { return iScript != null; }
 		public String getScript() { return iScript; }
 		public CellInterface setScript(String script) { iScript = script; return this; }
@@ -534,6 +539,18 @@ public class TableInterface implements IsSerializable {
 		public Long getCourseId() { return iCourseId; }
 		public CourseLinkInterface setAnchor(boolean anchor) { iAnchor = anchor; return this; }
 		public boolean isAnchor() { return iAnchor == null || iAnchor.booleanValue(); }
+	}
+	
+	public static class WidgetInterface implements IsSerializable {
+		private String iId;
+		private String iContent;
+		
+		public WidgetInterface() {}
+		
+		public WidgetInterface setId(String id) { iId = id; return this; }
+		public String getId() { return iId; }
+		public WidgetInterface setContent(String content) { iContent = content; return this; }
+		public String getContent() { return iContent; }
 	}
 	
 	public static interface FilterInterface {

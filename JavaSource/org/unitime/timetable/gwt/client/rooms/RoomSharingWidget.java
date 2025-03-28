@@ -100,6 +100,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	private TextArea iNote = null;
 	private Set<Long> iAddedOptions = new HashSet<Long>();
 	private int iSplit = 24;
+	private boolean iShowLegend = true;
 	
 	public RoomSharingWidget(boolean editable) {
 		this(editable, true);
@@ -220,6 +221,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 
 		setMode(iModel.getModes().get(iModeSelection.getSelectedIndex()), iHorizontal.getValue());
 	}
+	
+	public void setShowLegend(boolean showLegend) { iShowLegend = showLegend; }
 	
 	public void insert(final RootPanel panel, boolean eventAvailability) {
 		Long locationId = Long.valueOf(panel.getElement().getInnerHTML().trim());
@@ -471,6 +474,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				});
 		}
 				
+		if (!iShowLegend && !isEditable()) return;
+		
 		P legend = new P("legend");
 		iPanel.add(legend);
 		

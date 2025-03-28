@@ -157,7 +157,7 @@ public class InstructorsTableBuilder extends TableBuilder{
 			line.setClassName("instructor-line");
 			ids.add(di.getUniqueId());
 			if (context.hasPermission(di, Right.InstructorDetail))
-				line.setURL("instructorDetail.action?instructorId=" + di.getUniqueId() + "&deptId=" + department.getUniqueId());
+				line.setURL("instructor?id=" + di.getUniqueId());
 			if (di.getExternalUniqueId() != null && !di.getExternalUniqueId().trim().isEmpty()) {
 				line.addCell(di.getExternalUniqueId()).addAnchor("A" + di.getUniqueId());
 			} else {

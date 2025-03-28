@@ -163,7 +163,6 @@ public class EnrollmentTable extends Composite {
 			}
 		});
 		iHeader.setCollapsible(showHeader ? SectioningCookie.getInstance().getEnrollmentCoursesDetails() : null);
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		iEnrollmentPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		if (showHeader) {

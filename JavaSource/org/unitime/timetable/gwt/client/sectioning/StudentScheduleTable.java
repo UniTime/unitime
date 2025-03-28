@@ -83,7 +83,6 @@ public class StudentScheduleTable extends Composite {
 			}
 		});
 		iHeader.setCollapsible(showHeader ? SectioningCookie.getInstance().getEnrollmentCoursesDetails() : null);
-		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
 		if (showHeader) {

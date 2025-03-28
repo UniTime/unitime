@@ -753,6 +753,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Time")
 	String columnEventTime();
 	
+	@DefaultMessage("Room")
+	String columnEventRoom();
+	
 	@DefaultMessage("Teaching<BR>Preference")
 	String columnTeachingPreference();
 	
@@ -2835,6 +2838,12 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("{0} Building {1}")
 	String prefTitleBuilding(String preference, String owner);
+	
+	@DefaultMessage("{0} Course {1}")
+	String prefTitleCourse(String preference, String owner);
+	
+	@DefaultMessage("{0} Distribution {1}")
+	String prefTitleDistribution(String preference, String owner);
 	
 	@DefaultMessage("Room")
 	String prefRoom();
@@ -6039,5 +6048,8 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage(" (Department)")
 	String departmentalRoomGroupSuffix();
+	
+	@DefaultMessage("Instructor Unavailability")
+	String sectionInstructorUnavailability();
 	
 }

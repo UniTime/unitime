@@ -3958,6 +3958,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructors")
 	@DoNotTranslate
 	String pageInstructors();
+	
+	@DefaultMessage("Instructor Detail")
+	@DoNotTranslate
+	String pageInstructorDetail();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

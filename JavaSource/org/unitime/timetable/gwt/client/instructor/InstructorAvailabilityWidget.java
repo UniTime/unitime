@@ -83,6 +83,24 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 		});
 	}
 	
+	public InstructorAvailabilityWidget forPattern(final String pattern) {
+		RPC.execute(InstructorAvailabilityRequest.load(null), new AsyncCallback<InstructorAvailabilityModel>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught);
+			}
+
+			@Override
+			public void onSuccess(final InstructorAvailabilityModel model) {
+				model.setPattern(pattern);
+				iEditable = false;
+				setShowLegend(false);
+				setModel(model);
+			}
+		});
+		return this;
+	}
+	
 	public static class InstructorAvailabilityRequest implements GwtRpcRequest<InstructorAvailabilityModel> {
 		private String iInstructorId;
 		private boolean iNotAvailable = false;

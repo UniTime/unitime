@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
+import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
@@ -322,7 +324,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						setText(cell.getText());
 					}
 				}
-			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null && !cell.hasScript())
+			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null && !cell.hasScript() && !cell.hasWidget())
 				setText("\u202F");
 			if (cell.hasTitle())
 				setTitle(cell.getTitle());
@@ -413,6 +415,13 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			}
 			if (cell.hasCourseLink()) {
 				add(new CourseDetailsWidget(cell.getCourseLink().isAnchor()).forCourseId(cell.getCourseLink().getCourseId()));
+			}
+			if (cell.hasWidget()) {
+				if ("UniTimeGWT:InstructorAvailability".equals(cell.getWidget().getId())) {
+					add(new InstructorAvailabilityWidget().forPattern(cell.getWidget().getContent()));
+				} else if ("UniTimeGWT:InstructorUnavailability".equals(cell.getWidget().getId())) {
+					add(new SessionDatesSelector().forPattern(cell.getWidget().getContent()));
+				}
 			}
 			if (cell.hasScript()) {
 				final Element element = getElement();

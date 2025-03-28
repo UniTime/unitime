@@ -362,20 +362,14 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 		CellInterface c = new CellInterface();
 		c.add(other.getClazz().getName()).setUrl("clazz?id=" + other.getClazz().getClassId()).setClassName("link");
 		c.add(" ");
-		c.add(other.getTime().getDaysName() + " " + other.getTime().getStartTime() + " - " + other.getTime().getEndTime())
-			.setColor(PreferenceLevel.int2color(other.getTime().getPref()))
-			.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + other.getClazz().getClassId() + "," + other.getTime().getDays() + "," + other.getTime().getStartSlot() + "');")
-			.setMouseOut("$wnd.hideGwtTimeHint();");
+		c.addItem(other.getTime().toCell());
 		c.add(" ");
 		c.add(other.getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(other.getTime().getDatePatternPreference()));
         for (int i=0;i<other.getRoom().length;i++) {
         	if (i>0) c.add(", ");
         	else c.add(" ");
         	RoomInfo room = other.getRoom()[i];
-        	c.add(room.getName())
-				.setColor(PreferenceLevel.int2color(room.getPref()))
-				.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + room.getId() + "', '" + PreferenceLevel.int2string(room.getPref()) + "');")
-				.setMouseOut("$wnd.hideGwtRoomHint();");
+        	c.addItem(room.toCell());
         }
 		return c;
 	}
@@ -388,20 +382,12 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 		} else {
 			table.addProperty(MSG.propertyDate()).add(ca.getAssignedTime().getDatePatternName())
 				.setColor(PreferenceLevel.int2color(ca.getAssignedTime().getDatePatternPreference()));
-			table.addProperty(MSG.propertyTime()).add(
-						ca.getAssignedTime().getDaysName() + " " + ca.getAssignedTime().getStartTime() +
-						" - " + ca.getAssignedTime().getEndTime())
-					.setColor(PreferenceLevel.int2color(ca.getAssignedTime().getPref()))
-					.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + ca.getClazz().getClassId() + "," + ca.getAssignedTime().getDays() + "," + ca.getAssignedTime().getStartSlot() + "');")
-					.setMouseOut("$wnd.hideGwtTimeHint();");
+			table.addProperty(MSG.propertyTime()).addItem(ca.getAssignedTime().toCell());
 			if (ca.getAssignedRoom() != null) {
 				CellInterface c = table.addProperty(MSG.propertyRoom());
 				for (RoomInfo room: ca.getAssignedRoom()) {
 					if (c.hasItems()) c.add(", ");
-					c.add(room.getName())
-						.setColor(PreferenceLevel.int2color(room.getPref()))
-						.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + room.getId() + "', '" + PreferenceLevel.int2string(room.getPref()) + "');")
-						.setMouseOut("$wnd.hideGwtRoomHint();");
+					c.addItem(room.toCell());
 				}
 			}
 		}
@@ -431,19 +417,13 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 			if (ca.isInitial()) {
 				c.add(MSG.messageThisOne()).addStyle("font-style: italic;");
 			} else {
-				c.add(ca.getInitialTime().getDaysName() + " " + ca.getInitialTime().getStartTime() + " - " + ca.getInitialTime().getEndTime())
-					.setColor(PreferenceLevel.int2color(ca.getInitialTime().getPref()))
-					.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + ca.getClazz().getClassId() + "," + ca.getInitialTime().getDays() + "," + ca.getInitialTime().getStartSlot() + "');")
-					.setMouseOut("$wnd.hideGwtTimeHint();");
+				c.addItem(ca.getInitialTime().toCell());
 				c.add(" ");
 				c.add(ca.getInitialTime().getDatePatternName()).setColor(PreferenceLevel.int2color(ca.getInitialTime().getDatePatternPreference()));
 				for (RoomInfo room: ca.getInitialRoom()) {
 					if (c.hasItems() && c.getItems().size() > 3) c.add(", ");
 					else c.add(" ");
-					c.add(room.getName())
-					.setColor(PreferenceLevel.int2color(room.getPref()))
-					.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + room.getId() + "', '" + PreferenceLevel.int2string(room.getPref()) + "');")
-					.setMouseOut("$wnd.hideGwtRoomHint();");
+					c.addItem(room.toCell());
 				}
 			}
 		}

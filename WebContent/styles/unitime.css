@@ -7917,3 +7917,13 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-InstructorsPage .unitime-MainTable .instructor-line td {
 	border-bottom: 1px dashed #9CB0CE;
 }
+
+.unitime-InstructorDetailPage .unitime-DateSelector .box .disabled {
+	background-color: inherit;
+	font-style: normal;
+	color: #202020;
+}
+
+.unitime-InstructorDetailPage .unitime-DateSelector .selected {
+	background-color: #969696;
+}
