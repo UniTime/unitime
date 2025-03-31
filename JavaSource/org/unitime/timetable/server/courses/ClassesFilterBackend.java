@@ -87,7 +87,21 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		manager.addOption("-2", MESSAGES.dropDeptDepartment());
 		for (Department d: Department.findAllExternal(context.getUser().getCurrentAcademicSessionId()))
 			manager.addOption(d.getUniqueId().toString(), d.getExternalMgrAbbv() + " - " + d.getExternalMgrLabel());
-		manager.setDefaultValue(context.getUser().getProperty("ClassList.filterManager"));
+		String defaultManager = context.getUser().getProperty("ClassList.filterManager");
+		if (defaultManager == null || defaultManager.isEmpty())
+			manager.setDefaultValue(defaultManager);
+		else {
+			String adjustedDefaultManager = null;
+			for (String option: defaultManager.split(",")) {
+				if (manager.getOptionText(option) != null) {
+					if (adjustedDefaultManager == null)
+						adjustedDefaultManager = option;
+					else
+						adjustedDefaultManager += "," + option;
+				}
+			}
+			manager.setDefaultValue(adjustedDefaultManager);
+		}
 		manager.setMaxLinesToShow(3);
 		filter.addParameter(manager);
 		
