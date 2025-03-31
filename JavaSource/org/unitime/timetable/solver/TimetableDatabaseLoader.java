@@ -2188,12 +2188,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	    		}
     	    		if (!skipDuplicateLoad)
     	    			for (TimeBlock time: instructor.listUnavailableDays()) {
-                    		iProgress.debug(ic.getName() + " not available due to " + time + " (" + department.getDeptCode() + ")");
+                    		iProgress.debug(ic.getName() + " not available due to " + time + " (" + instructor.getDepartment().getDeptCode() + ")");
                             Placement p = timeBlock2Placement(time);
                             if (p != null) {
                             	ic.setNotAvailable(p);
                             	getModel().addVariable(p.variable());
-                            	p.variable().setDepartment(department.getUniqueId());
+                            	p.variable().setDepartment(instructor.getDepartment().getUniqueId());
                             }
         	    		}
     	    	}

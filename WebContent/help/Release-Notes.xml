@@ -42,6 +42,14 @@
 				<line>Fixed an array index out of bounds when generating the room availability thumbnail icons in some instances.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling Solver: Instructor Unavailable Dates</name>
+			<description>
+				<line>Unavailability checking for externally managed classes has been corrected.
+					<line>Use the department of the instructor, not the department for which the instructor is being loaded in.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
