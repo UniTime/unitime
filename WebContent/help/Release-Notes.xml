@@ -50,6 +50,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Per Date Display</name>
+			<description>
+				<line>Avoid showing incorrect dates when the client is in a different time zone than the server.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

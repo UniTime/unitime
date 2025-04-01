@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.GwtHint;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
@@ -831,7 +832,7 @@ public class TimetableGrid extends Composite {
     
     @SuppressWarnings("deprecation")
 	protected static Date getDate(Date firstDate, int date) {
-    	Date ret = new Date(firstDate.getTime());
+    	Date ret = new Date(ServerDateTimeFormat.toLocalDate(firstDate).getTime());
     	ret.setDate(ret.getDate() + date);
     	return ret;
     }
