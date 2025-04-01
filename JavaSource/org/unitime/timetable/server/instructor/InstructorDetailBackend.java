@@ -411,7 +411,8 @@ public class InstructorDetailBackend implements GwtRpcImplementation<InstructorD
 		
         if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges)))
         	response.setLastChanges(getLastChanges(instructor));
-
+        if (context.hasPermission(Right.InstructorScheduling) && context.hasPermission(instructor.getDepartment(), Right.InstructorAssignmentPreferences))
+        	response.addOperation("teaching-assignments");
 		if (context.hasPermission(instructor, Right.InstructorEdit))
 			response.addOperation("edit");
 		if (context.hasPermission(instructor.getDepartment(), Right.InstructorAssignmentPreferences))

@@ -237,7 +237,7 @@ public class InstructorDetailPage extends Composite {
 					iPanel.getRowFormatter().setVisible(iPreferencesRow, hp.isCollapsible());
 				}
 				
-				if (response.hasExternalId()) {
+				if (response.hasOperation("teaching-assignments")) {
 					iPanel.addRow(new TeachingAssignmentsWidget().forInstructorId(response.getInstructorId()));
 				}
 				
