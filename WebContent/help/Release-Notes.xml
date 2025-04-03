@@ -53,6 +53,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Add/Edit Examination: Classes / Courses Fix</name>
+			<description>
+				<line>Fixed an issue of the Classes / Courses table not loading courses for a subject area with a course that has a quotation mark in the title.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Edit Event: Meeting Contacts</name>
