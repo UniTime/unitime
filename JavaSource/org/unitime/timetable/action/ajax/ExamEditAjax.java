@@ -106,7 +106,7 @@ public class ExamEditAjax extends UniTimeAction<BlankForm> {
         if (courseNumbers.isEmpty()) print(out, "-1", EXMSG.examOwnerNotApplicable());
         if (courseNumbers.size()>1) print(out, "-1", "-");
         for (Object[] o: courseNumbers) {
-            print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2].toString().replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("'", "&quot;").replaceAll("&", "&amp;"))));
+            print(out, o[0].toString(), (o[1].toString() + " - " + (o[2] == null?"":o[2].toString().replaceAll("&", "&amp;").replaceAll(">", "&gt;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;"))));
         }
     }
     
