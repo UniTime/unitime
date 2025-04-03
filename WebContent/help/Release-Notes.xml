@@ -65,6 +65,12 @@
 				<line>Avoid Null exceptions when the same instructor is listed two times on the same exam (under different departments).</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Examination: Classes / Courses Fix</name>
+			<description>
+				<line>Fixed an issue of the Classes / Courses table not loading courses for a subject area with a course that has a quotation mark in the title.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
