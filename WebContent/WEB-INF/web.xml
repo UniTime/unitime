@@ -245,6 +245,7 @@
     	<url-pattern>/clazz</url-pattern>
     	<url-pattern>/instructors</url-pattern>
     	<url-pattern>/instructor</url-pattern>
+    	<url-pattern>/crosslist</url-pattern>
     </servlet-mapping>
 	
 	<filter>

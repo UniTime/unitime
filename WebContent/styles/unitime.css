@@ -7927,3 +7927,18 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-InstructorDetailPage .unitime-DateSelector .selected {
 	background-color: #969696;
 }
+
+.unitime-CrossListPage .offering-limit .gwt-Label {
+	display: inline-block;
+}
+.unitime-CrossListPage .offering-limit .unitime-ErrorMessage {
+	padding-left: 20px;
+}
+
+.unitime-CrossListPage .course-selection button { 
+	min-width: 75px;
+}
+
+.unitime-CrossListPage .course-selection .unitime-Hint {
+	text-align: left;
+}

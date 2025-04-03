@@ -29,7 +29,7 @@ import org.unitime.timetable.model.CourseOffering;
  * 
  * @author Heston Fernandes, Stephanie Schluttenhofer
  */
-public class CourseOfferingComparator implements Comparator {
+public class CourseOfferingComparator implements Comparator<CourseOffering> {
     
     /** Compare 2 offerings on Subject Area and Course Number - Default **/
     public static final short COMPARE_BY_SUBJ_CRS = 1;
@@ -50,18 +50,7 @@ public class CourseOfferingComparator implements Comparator {
 		this.compareBy = compareBy;
 	}
     
-    public int compare (Object o1, Object o2){
-        // Check if objects are of class Instructional Offering
-        if (! (o1 instanceof CourseOffering)){
-            throw new ClassCastException("o1 Class must be of type CourseOffering");
-        }
-        if (! (o2 instanceof CourseOffering)){
-            throw new ClassCastException("o2 Class must be of type CourseOffering");
-        }
-        
-        CourseOffering co1 = (CourseOffering) o1;
-        CourseOffering co2 = (CourseOffering) o2;
-
+    public int compare (CourseOffering co1, CourseOffering co2){
         // Same Course Offering 
         if (co1.getUniqueId().equals(co2.getUniqueId())){
             return 0;

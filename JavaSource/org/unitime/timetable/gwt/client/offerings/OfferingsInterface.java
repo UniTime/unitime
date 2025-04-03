@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
@@ -30,7 +31,10 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.FilterInterface;
+
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 
 public class OfferingsInterface {
@@ -429,5 +433,134 @@ public class OfferingsInterface {
 		public boolean hasDistributions() { return iDistributions != null; }
 		public TableInterface getDistributions() { return iDistributions; }
 		public void setDistributions(TableInterface distributions) { iDistributions = distributions; }
+	}
+	
+	public static class CrossListGetRequest implements GwtRpcRequest<CrossListGetResponse>{
+		private Long iOfferingId;
+		
+		public CrossListGetRequest() {}
+		
+		public Long getOfferingId() { return iOfferingId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+	}
+	
+	public static class CrossListGetResponse implements GwtRpcResponse {
+		private Long iOfferingId;
+		private String iOfferingName;
+		private TreeSet<CrossListedCourse> iCourses;
+		private TreeSet<CrossListedCourse> iAvailableCourses;
+		private Integer iLimit;
+		private Boolean iUnlimited = false;
+		private Boolean iSingleCourseLimit;
+		
+		public CrossListGetResponse() {}
+		
+		public Long getOfferingId() { return iOfferingId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+		public String getOfferingName() { return iOfferingName; }
+		public void setOfferingName(String name) { iOfferingName = name; }
+		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
+		public TreeSet<CrossListedCourse> getCourses() { return iCourses; }
+		public void setCourses(TreeSet<CrossListedCourse> courses) { iCourses = courses; }
+		public void addCourse(CrossListedCourse course) {
+			if (iCourses == null) iCourses = new TreeSet<CrossListedCourse>();
+			iCourses.add(course);
+		}
+		public CrossListedCourse getCourse(Long courseId) {
+			if (iCourses == null) return null;
+			for (CrossListedCourse course: iCourses)
+				if (course.getCourseId().equals(courseId)) return course;
+			return null;
+		}
+		
+		public boolean hasAvailableCourses() { return iAvailableCourses != null && !iAvailableCourses.isEmpty(); }
+		public TreeSet<CrossListedCourse> getAvailableCourses() { return iAvailableCourses; }
+		public void addAvailableCourse(CrossListedCourse course) {
+			if (iAvailableCourses == null) iAvailableCourses = new TreeSet<CrossListedCourse>();
+			iAvailableCourses.add(course);
+		}
+		public CrossListedCourse getAvailableCourse(Long courseId) {
+			if (iAvailableCourses == null) return null;
+			for (CrossListedCourse course: iAvailableCourses)
+				if (course.getCourseId().equals(courseId)) return course;
+			return null;
+		}
+		
+		public void setUnlimited(boolean unlimited) { iUnlimited = unlimited; }
+		public boolean isUnlimited() { return iUnlimited == null || iUnlimited.booleanValue(); }
+		public void setLimit(Integer limit) { iLimit = limit; }
+		public boolean hasLimit() { return !isUnlimited() && iLimit != null; }
+		public Integer getLimit() { return iLimit; }
+		
+		public void setSingleCourseLimitAllowed(boolean singleCourseLimit) { iSingleCourseLimit = singleCourseLimit; }
+		public boolean isSingleCourseLimitAllowed() { return iSingleCourseLimit != null && iSingleCourseLimit.booleanValue(); }
+
+	}
+	
+	public static class CrossListUpdateRequest implements GwtRpcRequest<GwtRpcResponseNull>{
+		private Long iOfferingId;
+		private List<CrossListedCourse> iCourses;
+		
+		public CrossListUpdateRequest() {}
+		
+		public Long getOfferingId() { return iOfferingId; }
+		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
+		public boolean hasCourses() { return iCourses != null && !iCourses.isEmpty(); }
+		public List<CrossListedCourse> getCourses() { return iCourses; }
+		public void setCourses(List<CrossListedCourse> courses) { iCourses = courses; }
+		public void addCourse(CrossListedCourse course) {
+			if (iCourses == null) iCourses = new ArrayList<CrossListedCourse>();
+			iCourses.add(course);
+		}
+		public CrossListedCourse getCourse(Long courseId) {
+			if (iCourses == null) return null;
+			for (CrossListedCourse course: iCourses)
+				if (course.getCourseId().equals(courseId)) return course;
+			return null;
+		}
+	}
+	
+	public static class CrossListedCourse implements IsSerializable, Comparable<CrossListedCourse> {
+		private Long iCourseId;
+		private String iCourseName;
+		private Boolean iControl;
+		private Integer iReserved, iProjected, iLastTerm;
+		private Boolean iCanDelete, iCanEdit;
+		
+		public CrossListedCourse() {}
+		
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public String getCourseName() { return iCourseName; }
+		public void setCourseName(String courseName) { iCourseName = courseName; }
+		public boolean isControl() { return iControl != null && iControl.booleanValue(); }
+		public void setControl(boolean control) { iControl = control; }
+		public boolean hasReserved() { return iReserved != null; }
+		public Integer getReserved() { return iReserved; }
+		public void setReserved(Integer reserved) { iReserved = reserved; }
+		public boolean hasProjected() { return iProjected != null && iProjected > 0; }
+		public Integer getProjected() { return iProjected; }
+		public void setProjected(Integer projected) { iProjected = projected; }
+		public boolean hasLastTerm() { return iLastTerm != null && iLastTerm > 0; }
+		public Integer getLastTerm() { return iLastTerm; }
+		public void setLastTerm(Integer lastTerm) { iLastTerm = lastTerm; }
+		
+		public boolean isCanDelete() { return iCanDelete == null || iCanDelete.booleanValue(); }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+		public boolean isCanEdit() { return iCanEdit == null || iCanEdit.booleanValue(); }
+		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
+
+		@Override
+		public int hashCode() { return getCourseId().hashCode(); }
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof CrossListedCourse)) return false;
+			return getCourseId().equals(((CrossListedCourse)o).getCourseId());
+		}
+		@Override
+		public int compareTo(CrossListedCourse c) {
+			if (isControl() != c.isControl()) return isControl() ? -1 : 1;
+			return getCourseName().compareTo(c.getCourseName());
+		}
 	}
 }

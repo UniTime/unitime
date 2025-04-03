@@ -3683,6 +3683,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Instructors: switch the user interface back to the old (Struts-based) instructors page")
 	LegacyInstructors("unitime.legacy.instructors"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Instructional Offering Cross Lists: switch the user interface back to the old (Struts-based) cross lists page")
+	LegacyCrossList("unitime.legacy.crosslist"),
 	;
 
 	String iKey;

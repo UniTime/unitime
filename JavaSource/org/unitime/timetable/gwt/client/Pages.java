@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.client.offerings.ClassAssignmentsPage;
 import org.unitime.timetable.gwt.client.offerings.ClassDetailPage;
 import org.unitime.timetable.gwt.client.offerings.ClassesPage;
 import org.unitime.timetable.gwt.client.offerings.CourseOfferingEdit;
+import org.unitime.timetable.gwt.client.offerings.CrossListPage;
 import org.unitime.timetable.gwt.client.offerings.InstrOfferingConfigPage;
 import org.unitime.timetable.gwt.client.offerings.InstructionalOfferingsPage;
 import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupPage;
@@ -342,6 +343,10 @@ public enum Pages {
 		public Widget create() { return new InstructorDetailPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructorDetail(); }
 		}, SolverWarnings.Type.assignments),
+	crosslist(new PageFactory() {
+		public Widget create() { return new CrossListPage(); }
+		public String name(GwtMessages messages) { return messages.pageInstructionalOfferingCrossLists(); }
+		}),
 	;
 	
 	private PageFactory iFactory;

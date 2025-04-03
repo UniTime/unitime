@@ -22,6 +22,7 @@ package org.unitime.timetable.action;
 import java.io.IOException;
 import java.net.URLEncoder;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.unitime.localization.impl.Localization;
@@ -45,6 +46,7 @@ public class LoginAction extends UniTimeAction<BlankForm> {
 	private String menu;
 	private String target;
 	private String force;
+	private String message;
 	
 	public Integer getE() { return error; }
 	public void setE(Integer error) { this.error = error; }
@@ -54,10 +56,13 @@ public class LoginAction extends UniTimeAction<BlankForm> {
 		case 2: return MSG.errorAuthenticationFailed();
 		case 3: return MSG.errorAuthenticationFailed();
 		case 4: return MSG.errorUserLockedOut();
-		default: return null;
+		default: return message == null ? null : StringEscapeUtils.escapeHtml4(message);
 		}
 	}
-	
+		
+	public String getM() { return message; }
+	public void setM(String message) { this.message = message; }
+
 	public String getForce() { return force; }
 	public void setForce(String force) { this.force = force; }
 	

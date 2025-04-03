@@ -20,9 +20,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -99,6 +101,17 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	public void setDeletedCourseOfferingId(Long deletedCourseOfferingId) { this.deletedCourseOfferingId = deletedCourseOfferingId; }
 	
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyCrossList.isFalse()) {
+    		String url = "crosslist";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
     	if (form == null) {
     		form = new CrossListsModifyForm();
     	}
