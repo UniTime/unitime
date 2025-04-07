@@ -39,6 +39,8 @@ import org.unitime.timetable.gwt.client.admin.PasswordPage.PasswordChangeRespons
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
+import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.User;
@@ -56,6 +58,7 @@ import freemarker.template.Template;
  * @author Tomas Muller
  */
 @GwtRpcImplements(PasswordChangeRequest.class)
+@GwtRpcLogging(Level.DISABLED)
 public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChangeRequest, PasswordChangeResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
