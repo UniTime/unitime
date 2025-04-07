@@ -111,6 +111,7 @@ public class PageAccessFilter implements Filter {
 					for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
 						String n = (String)e.nextElement();
 						if ("password".equals(n)) continue;
+						if ("form.password".equals(n)) continue;
 						message+="\n    "+n+"="+r.getParameter(n);
 					}
 					try {

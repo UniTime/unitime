@@ -161,7 +161,7 @@ public class QueryLogFilter implements Filter {
 				try {
 					Map<String, Object> params = new HashMap<String, Object>();
 					for (Map.Entry<String, String[]> e: r.getParameterMap().entrySet()) {
-						if ("password".equals(e.getKey()) || "noCacheTS".equals(e.getKey())) continue;
+						if ("form.password".equals(e.getKey()) || "password".equals(e.getKey()) || "noCacheTS".equals(e.getKey())) continue;
 						if (e.getValue() == null || e.getValue().length == 0) continue;
 						if (e.getValue().length == 1)
 							params.put(e.getKey(), e.getValue()[0]);
@@ -174,7 +174,7 @@ public class QueryLogFilter implements Filter {
 				String params = "";
 				for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
 					String n = (String)e.nextElement();
-					if ("password".equals(n) || "noCacheTS".equals(n)) continue;
+					if ("form.password".equals(n) || "password".equals(n) || "noCacheTS".equals(n)) continue;
 					if (!params.isEmpty()) params += "&";
 					params += n + "=" + r.getParameter(n);
 				}
