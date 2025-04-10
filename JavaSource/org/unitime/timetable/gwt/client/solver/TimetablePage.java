@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.ToolBox.Page;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -129,6 +130,9 @@ public class TimetablePage extends Composite {
 					search(null);
 			}
 		});
+		
+		// ensure server date time format gets initialized as soon as possible
+		ServerDateTimeFormat.getServerTimeZone();
 	}
 
 	protected void init() {
