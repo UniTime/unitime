@@ -170,10 +170,9 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     	return prefs;
     }	
     
-    public Set getSolverGroups(Session session) {
-    	TreeSet groups = new TreeSet();
-    	for (Iterator i=getSolverGroups().iterator();i.hasNext();) {
-    		SolverGroup g = (SolverGroup)i.next();
+    public Set<SolverGroup> getSolverGroups(Session session) {
+    	TreeSet<SolverGroup> groups = new TreeSet<SolverGroup>();
+    	for (SolverGroup g : getSolverGroups()) {
     		if (session.equals(g.getSession())) groups.add(g);
     	}
     	return groups;
