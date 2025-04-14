@@ -150,7 +150,7 @@ public class DistributionsTableBuilder extends TableBuilder {
         		classes.addAll(instructor.getClasses());
         		for (ClassInstructor clazz: classes) {
         			if (!clazz.isLead().booleanValue()) continue;
-        			obj.add(clazz.getClassInstructing().getClassLabel(suffix));
+        			obj.add(clazz.getClassInstructing().getClassLabel(suffix)).setInline(false);
         			Department dept = clazz.getClassInstructing().getManagingDept();
             		if (dept.isInheritInstructorPreferences()) owners.add(dept);
         		}

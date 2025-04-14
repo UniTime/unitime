@@ -140,60 +140,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         Class_ previous = clazz.getPreviousClass(context, Right.ClassDetail); 
         response.setPreviousId(previous == null ? null : previous.getUniqueId());
         
-        if (clazz.isCancelled())
-        	response.addProperty("").setText(MSG.classNoteCancelled(clazz.getClassLabel()))
-        		.setColor("red").addStyle("font-weight: bold;");
-		
-		response.addProperty(MSG.filterManager()).add(clazz.getManagingDept().getManagingDeptLabel());
-        if (clazz.getParentClass() != null) {
-        	CellInterface c = response.addProperty(MSG.propertyParentClass()).setText(clazz.getParentClass().getClassLabel());
-        	if (context.hasPermission(clazz.getParentClass(), Right.ClassDetail)) {
-        		c.setUrl("clazz?id=" + clazz.getParentClass().getUniqueId());
-        		c.setClassName("link");
-        	}
-        }
-        
-        if (clazz.getClassSuffix() != null && !clazz.getClassSuffix().isEmpty())
-        	response.addProperty(MSG.propertyExternalId()).add(clazz.getClassSuffix());
-        
-        if (clazz.getEnrollment() != null)
-        	response.addProperty(MSG.propertyEnrollment()).add(clazz.getEnrollment().toString());
-        
-        if (clazz.getNbrRooms() > 0) {
-        	if (clazz.getExpectedCapacity() == clazz.getMaxExpectedCapacity())
-        		response.addProperty(MSG.propertyClassLimit()).add(clazz.getExpectedCapacity().toString());
-        	else {
-        		response.addProperty(MSG.propertyMinimumClassLimit()).add(clazz.getExpectedCapacity().toString());
-        		response.addProperty(MSG.propertyMaximumClassLimit()).add(clazz.getMaxExpectedCapacity().toString());
-        	}
-        }
-        if (clazz.getSnapshotLimit() != null)
-        	response.addProperty(MSG.propertySnapshotLimit()).add(clazz.getSnapshotLimit().toString());
-        response.addProperty(MSG.propertyNumberOfRooms()).add(clazz.getNbrRooms().toString());
-        if (clazz.getNbrRooms() != 0) {
-        	CellInterface c = response.addProperty(MSG.propertyRoomRatio());
-        	c.add(clazz.getRoomRatio().toString());
-        	c.add("( " + MSG.propertyMinimumRoomCapacity() + " " + clazz.getMinRoomLimit()).addStyle("padding-left: 20px;");
-        	if (clazz.getNbrRooms() > 1) {
-        		if (clazz.isRoomsSplitAttendance())
-        			c.add(" " + MSG.descClassMultipleRoomsSplitAttendance());
-        		else
-        			c.add(" " + MSG.descClassMultipleRoomsAlternativeAttendance());
-        	}
-        	c.add(")");
-        }
-        if (clazz.getNbrRooms() > 1)
-        	response.addProperty(MSG.propertyRoomSplitAttendance()).add(
-        			clazz.isRoomsSplitAttendance() ? MSG.descriptionClassMultipleRoomsSplitAttendance()
-        					: MSG.descriptionClassMultipleRoomsAlternativeAttendance(), true);
-        if (clazz.getLms() != null)
-        	response.addProperty(MSG.propertyLms()).add(clazz.getLms().getLabel());
-        
-        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
-        	Department d = clazz.getEffectiveFundingDept();
-        	if (d != null)
-        		response.addProperty(MSG.propertyFundingDept()).add(d.getLabel());
-        }
+        response.setProperties(getProperties(clazz, context));
         
         DatePattern datePattern = clazz.getDatePattern();
         if (datePattern != null) {
@@ -281,7 +228,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         }
         
         if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.DisplayLastChanges))) {
-        	ChangeLog cl = ChangeLog.findLastChange(ss);
+        	ChangeLog cl = ChangeLog.findLastChange(clazz);
         	if (cl != null)
         		response.addProperty(GWT.propLastChange()).add(cl.getShortLabel());
         	else
@@ -306,8 +253,12 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
     	response.setConflicts(getConflictTable(context, proxy, clazz));
     	response.setEventConflicts(getEventConflictTable(context, proxy, clazz));
 
-        response.setPreferences(getPreferenceTable(context, clazz, Preference.Type.DATE, Preference.Type.TIME,
-        		Preference.Type.ROOM_GROUP, Preference.Type.ROOM, Preference.Type.BUILDING, Preference.Type.ROOM_FEATURE));
+    	if (clazz.getNbrRooms() == 0)
+            response.setPreferences(getPreferenceTable(context, clazz, Preference.Type.DATE, Preference.Type.TIME,
+            		Preference.Type.ROOM));
+    	else
+    		response.setPreferences(getPreferenceTable(context, clazz, Preference.Type.DATE, Preference.Type.TIME,
+    				Preference.Type.ROOM_GROUP, Preference.Type.ROOM, Preference.Type.BUILDING, Preference.Type.ROOM_FEATURE));
 
         
         if (context.hasPermission(Right.ClassAssignments)) {
@@ -355,6 +306,65 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
     	if (context.hasPermission(clazz, Right.ClassAssignment))
     		response.addOperation("assign");
 		
+		return response;
+	}
+	
+	public static TableInterface getProperties(Class_ clazz, SessionContext context) {
+		TableInterface response = new TableInterface();
+        if (clazz.isCancelled())
+        	response.addProperty("").setText(MSG.classNoteCancelled(clazz.getClassLabel()))
+        		.setColor("red").addStyle("font-weight: bold;");
+		
+		response.addProperty(MSG.filterManager()).add(clazz.getManagingDept().getManagingDeptLabel());
+        if (clazz.getParentClass() != null) {
+        	CellInterface c = response.addProperty(MSG.propertyParentClass()).setText(clazz.getParentClass().getClassLabel());
+        	if (context.hasPermission(clazz.getParentClass(), Right.ClassDetail)) {
+        		c.setUrl("clazz?id=" + clazz.getParentClass().getUniqueId());
+        		c.setClassName("link");
+        	}
+        }
+        
+        if (clazz.getClassSuffix() != null && !clazz.getClassSuffix().isEmpty())
+        	response.addProperty(MSG.propertyExternalId()).add(clazz.getClassSuffix());
+        
+        if (clazz.getEnrollment() != null)
+        	response.addProperty(MSG.propertyEnrollment()).add(clazz.getEnrollment().toString());
+        
+        if (clazz.getNbrRooms() > 0) {
+        	if (clazz.getExpectedCapacity() == clazz.getMaxExpectedCapacity())
+        		response.addProperty(MSG.propertyClassLimit()).add(clazz.getExpectedCapacity().toString());
+        	else {
+        		response.addProperty(MSG.propertyMinimumClassLimit()).add(clazz.getExpectedCapacity().toString());
+        		response.addProperty(MSG.propertyMaximumClassLimit()).add(clazz.getMaxExpectedCapacity().toString());
+        	}
+        }
+        if (clazz.getSnapshotLimit() != null)
+        	response.addProperty(MSG.propertySnapshotLimit()).add(clazz.getSnapshotLimit().toString());
+        response.addProperty(MSG.propertyNumberOfRooms()).add(clazz.getNbrRooms().toString());
+        if (clazz.getNbrRooms() != 0) {
+        	CellInterface c = response.addProperty(MSG.propertyRoomRatio());
+        	c.add(clazz.getRoomRatio().toString());
+        	c.add("( " + MSG.propertyMinimumRoomCapacity() + " " + clazz.getMinRoomLimit()).addStyle("padding-left: 20px;");
+        	if (clazz.getNbrRooms() > 1) {
+        		if (clazz.isRoomsSplitAttendance())
+        			c.add(" " + MSG.descClassMultipleRoomsSplitAttendance());
+        		else
+        			c.add(" " + MSG.descClassMultipleRoomsAlternativeAttendance());
+        	}
+        	c.add(")");
+        }
+        if (clazz.getNbrRooms() > 1)
+        	response.addProperty(MSG.propertyRoomSplitAttendance()).add(
+        			clazz.isRoomsSplitAttendance() ? MSG.descriptionClassMultipleRoomsSplitAttendance()
+        					: MSG.descriptionClassMultipleRoomsAlternativeAttendance(), true);
+        if (clazz.getLms() != null)
+        	response.addProperty(MSG.propertyLms()).add(clazz.getLms().getLabel());
+        
+        if (ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()) {
+        	Department d = clazz.getEffectiveFundingDept();
+        	if (d != null)
+        		response.addProperty(MSG.propertyFundingDept()).add(d.getLabel());
+        }
 		return response;
 	}
 	
@@ -548,7 +558,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 			}
 			CellInterface instr = new CellInterface();
 			CellInterface enrolled = new CellInterface();
-			for (ClassInstructor ci: clazz.getClassInstructors()) {
+			for (ClassInstructor ci: assignment.getClazz().getClassInstructors()) {
 				CellInterface c = instr.add(ci.getInstructor().getName(nameFormat)).setInline(false);
 				String title = ci.getInstructor().getNameLastFirst();
 	    		title += " (" + (ci.getResponsibility() == null ? "" : ci.getResponsibility().getLabel() + " ") +
@@ -557,6 +567,8 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 	    			c.addStyle("font-style: italic;");
 	    			title += MSG.toolTipInstructorDoNotDisplay();
 	    		}
+	    		if (ci.isLead())
+	    			c.addStyle("font-weight: bold;");
 	    		c.setTitle(title);
 	    		if (ci.getResponsibility() != null && ci.getResponsibility().getAbbreviation() != null && !ci.getResponsibility().getAbbreviation().isEmpty())
 	    			c.add(" (" + ci.getResponsibility().getAbbreviation() + ")");
@@ -656,6 +668,8 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
                 	if (roomLocations.isEmpty()) {
             			cell.add(MSG.warnNoRoomsAreAvaliable()).setColor("red").addStyle("font-weight: bold;");
             		} else {
+                		if (roomLocations.size() < clazz.getNbrRooms())
+                    		cell.add(MSG.warnNotEnoughtRoomsAreAvaliable() + " ").setColor("red").addStyle("font-weight: bold;");
         				int idx = 0;
                 		for (RoomLocation rl: roomLocations) {
                 			if (idx>0) cell.add(", ");

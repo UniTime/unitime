@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
@@ -61,6 +62,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -77,6 +79,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final CourseMessages CMSG = GWT.create(CourseMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	AcademicSessionProvider iAcademicSession;
 	UniTimeWidget<DatesPanel> iPanel;
@@ -138,6 +141,35 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 						}
 					}
 				}
+			}
+		});
+		return this;
+	}
+	
+	public SessionDatesSelector forDatePattern(final String pattern, final Command command) {
+		RPC.execute(new PatternDatesRequest(), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
+			@Override
+			public void onFailure(Throwable err) {
+			}
+
+			@Override
+			public void onSuccess(GwtRpcResponseList<SessionMonth> months) {
+				init(months, CMSG.legendClassesOffered(), CMSG.legendClassesNotOffered());
+				int index = 0;
+				for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+					Widget w = iPanel.getWidget().getWidget(i);
+					if (w instanceof SingleMonth) {
+						SingleMonth s = (SingleMonth)w;
+						for (D d: s.getDays()) {
+							char c = pattern.charAt(index ++);
+							d.setValue(c == '1');
+							d.setEnabled(false);
+							d.removeStyleName("disabled");
+						}
+					}
+				}
+				if (command != null)
+					command.execute();
 			}
 		});
 		return this;

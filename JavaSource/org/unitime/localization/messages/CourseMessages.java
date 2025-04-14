@@ -2034,6 +2034,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Invalid room feature preference level.")
 	String errorInvalidRoomFeaturePreferenceLevel();
+	
+	@DefaultMessage("Invalid time preference: Check for duplicate / blank selection.")
+	String errorInvalidTimePreference();
 
 	@DefaultMessage("Invalid instructors: Check for duplicate / blank selection.")
 	String errorInvalidInstructors();

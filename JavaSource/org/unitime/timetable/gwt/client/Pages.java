@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.limitandprojectionsnapshot.LimitAndProje
 import org.unitime.timetable.gwt.client.offerings.AssignClassInstructorsPage;
 import org.unitime.timetable.gwt.client.offerings.ClassAssignmentsPage;
 import org.unitime.timetable.gwt.client.offerings.ClassDetailPage;
+import org.unitime.timetable.gwt.client.offerings.ClassEditPage;
 import org.unitime.timetable.gwt.client.offerings.ClassesPage;
 import org.unitime.timetable.gwt.client.offerings.CourseOfferingEdit;
 import org.unitime.timetable.gwt.client.offerings.CrossListPage;
@@ -346,6 +347,10 @@ public enum Pages {
 	crosslist(new PageFactory() {
 		public Widget create() { return new CrossListPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructionalOfferingCrossLists(); }
+		}),
+	classEdit(new PageFactory() {
+		public Widget create() { return new ClassEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageEditClass(); }
 		}),
 	;
 	

@@ -3955,6 +3955,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageClassDetail();
 	
+	@DefaultMessage("Edit Class")
+	@DoNotTranslate
+	String pageEditClass();
+	
 	@DefaultMessage("Instructors")
 	@DoNotTranslate
 	String pageInstructors();

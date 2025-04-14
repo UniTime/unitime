@@ -37,6 +37,7 @@ import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingConfigInterface;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingDetailResponse;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.ImageInterface;
@@ -761,8 +762,8 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		} else {
     			owner = " (" + MSG.prefOwnerCombined() + ")";
     		}
-    		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         	if (gridAsText || rtt.getModel().isExactTime()) {
+        		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
         		cell.add(rtt.getModel().toString())
         			.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, $wnd." + hint + ");")
         			.setMouseOut("$wnd.hideGwtHint();")
@@ -770,6 +771,9 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         			.setInline(false);
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
+        		TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, getSessionContext());
+        		if (assignment != null && assignment.getTimeLocation() != null && tpm.getId().equals(assignment.getTimeLocation().getTimePatternId()))
+        			tpm.setAssignment(assignment.getTimeLocation().getDayCode(), assignment.getTimeLocation().getStartSlot());
         		cell.add(null).setImage(
         				new ImageInterface().setSource("pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&tp=" + tp.getTimePattern().getUniqueId() + "&p=" + rtt.getModel().getPreferences() +
             					(assignment == null || assignment.getTimeLocation() == null ? "" : "&as=" + assignment.getTimeLocation().getStartSlot() + "&ad=" + assignment.getTimeLocation().getDayCode()) +
@@ -781,8 +785,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         							}
         						}
                 				))
-        			.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, $wnd." + hint + ");")
-        			.setMouseOut("$wnd.hideGwtHint();")
+        			.setToolTip(tpm)
         			.addStyle("display: inline-block;")
         			.setAria(rtt.getModel().toString());
         	}

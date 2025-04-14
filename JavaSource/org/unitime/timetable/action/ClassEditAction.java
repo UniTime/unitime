@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -104,6 +106,17 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
     public final String HASH_INSTRUCTORS = "Instructors";
 
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyClassEdit.isFalse()) {
+    		String url = "classEdit";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
     	if (form == null) form = new ClassEditForm();
 
 		super.execute();

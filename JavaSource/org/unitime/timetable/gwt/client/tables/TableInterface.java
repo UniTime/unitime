@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.tables;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 
@@ -282,6 +283,7 @@ public class TableInterface implements IsSerializable {
 		private Comparable<?> iComparable;
 		private Boolean iSortable; 
 		private WidgetInterface iWidget;
+		private TimePatternModel iTimePreference, iTimePreferenceToolTip;
 		
 		public CellInterface() {}
 		
@@ -444,6 +446,14 @@ public class TableInterface implements IsSerializable {
 		public boolean hasScript() { return iScript != null; }
 		public String getScript() { return iScript; }
 		public CellInterface setScript(String script) { iScript = script; return this; }
+		
+		public boolean hasTimePreference() { return iTimePreference != null; }
+		public void setTimePreference(TimePatternModel timePref) { iTimePreference = timePref; }
+		public TimePatternModel getTimePreference() { return iTimePreference; }
+
+		public boolean hasTimePreferenceToolTip() { return iTimePreferenceToolTip != null; }
+		public CellInterface setToolTip(TimePatternModel timePref) { iTimePreferenceToolTip = timePref; return this; }
+		public TimePatternModel getTimePreferenceToolTip() { return iTimePreferenceToolTip; }
 
 		@Override
 		public String toString() {
@@ -562,132 +572,7 @@ public class TableInterface implements IsSerializable {
 	public static interface ImageGenerator {
 		Object generate();
 	}
-	
-	public static class TimePrefInterface implements IsSerializable {
-		private String iName;
-		private List<TimePrefDay> iDayCodes = new ArrayList<TimePrefDay>();
-		private List<TimePrefTime> iTimes = new ArrayList<TimePrefTime>();
-		private List<TimePrefOption> iOptions = new ArrayList<TimePrefOption>();
-		private boolean iVertical = false;
-		private char[] iPattern = null;
-		private char iDefault = '2';
-		
-		public TimePrefInterface() {}
-		
-		public String getName() { return iName; }
-		public void setName(String name) { iName = name; }
-		
-		public void addDays(int dayCode, String label) { iDayCodes.add(new TimePrefDay(dayCode, label)); }
-		public List<TimePrefDay> getDays() { return iDayCodes; }
-		
-		public void addTime(int startSlot, String start, String stop) { iTimes.add(new TimePrefTime(startSlot, start, stop)); }
-		public List<TimePrefTime> getTimes() { return iTimes; }
-		
-		public List<TimePrefOption> getOptions() { return iOptions; }
-		public void addOption(char code, String label, String color, boolean isDefault) {
-			TimePrefOption option = new TimePrefOption(code, label, color);
-			iOptions.add(option);
-			if (isDefault) iDefault = option.getCode();
-		}
-		public TimePrefOption getOption(char code) {
-			for (TimePrefOption o: iOptions)
-				if (o.getCode() == code) return o;
-			return null;
-		}
-		public TimePrefOption getDefaultOption() { return getOption(iDefault); }
-		public boolean isDefault(TimePrefOption option) { return iDefault == option.getCode(); }
-		
-		public boolean isVertical() { return iVertical; }
-		public void setVertical(boolean vertical) { iVertical = vertical; }
-		
-		public String getPattern() { return iPattern == null ? null : new String(iPattern); }
-		public void setPattern(String pattern) {
-			if (pattern != null && pattern.length() == iTimes.size() * iDayCodes.size()) {
-				iPattern = pattern.toCharArray();
-			} else {
-				iPattern = new char[iTimes.size() * iDayCodes.size()];
-				for (int d = 0; d < iDayCodes.size(); d++)
-					for (int t = 0; t < iTimes.size(); t++) {
-						int index = d * iTimes.size() + t;
-						iPattern[index] = iDefault;
-					}
-				if (pattern != null)
-					for (int i = 0; i < pattern.length(); i++) {
-						if (i > iPattern.length) break;
-						iPattern[i] = pattern.charAt(i);
-					}
-			}
-		}
-		
-		public TimePrefOption getPreference(int day, int time) {
-			int index = day * iTimes.size() + time;
-			return getOption(iPattern[index]);
-		}
-		
-		public void setPreference(int day, int time, TimePrefOption option) {
-			if (iPattern == null) setPattern(null);
-			int index = day * iTimes.size() + time;
-			iPattern[index] = option.getCode();
-		}
-		
-	}
 
-	public static class TimePrefOption implements IsSerializable {
-		private char iCode;
-		private String iLabel;
-		private String iColor;
-		
-		public TimePrefOption() {}
-		public TimePrefOption(char code, String label, String color) {
-			iCode = code;
-			iLabel = label;
-			iColor = color;
-		}
-		
-		public void setCode(char code) { iCode = code; }
-		public char getCode() { return iCode; }
-		public void setLabel(String label) { iLabel = label; }
-		public String getLabel() { return iLabel; }
-		public void setColor(String color) { iColor = color; }
-		public String getColor() { return iColor; }
-		
-		@Override
-		public String toString() { return getLabel(); }
-	}
-	
-	public static class TimePrefDay implements IsSerializable {
-		private int iDayCode;
-		private String iLabel;
-		
-		public TimePrefDay() {}
-		public TimePrefDay(int dayCode, String label) {
-			iDayCode = dayCode; iLabel = label;
-		}
-		
-		public void setDayCode(int dayCode) { iDayCode = dayCode; }
-		public int getDayCode() { return iDayCode; }
-		public void setLabel(String label) { iLabel = label; }
-		public String getLabel() { return iLabel; }
-	}
-	
-	public static class TimePrefTime implements IsSerializable {
-		private int iStartSlot;
-		private String iStartTime;
-		private String iEndTime;
-		
-		public TimePrefTime() {}
-		public TimePrefTime(int startSlot, String startTime, String endTime) {
-			iStartSlot = startSlot; iStartTime = startTime; iEndTime = endTime;
-		}
-		
-		public void setStartSlot(int startSlot) { iStartSlot = startSlot; }
-		public int getStartSlot() { return iStartSlot; }
-		public void setStartTime(String startTime) { iStartTime = startTime; }
-		public String getStartTime() { return iStartTime; }
-		public void setEndTime(String endTime) { iEndTime = endTime; }
-		public String getEndTime() { return iEndTime; }
-	}
-	
 	public static class NavigationUpdateRequest implements GwtRpcRequest<GwtRpcResponseNull> {
 		private Integer iNavigationLevel;
 		private List<Long> iIds;

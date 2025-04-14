@@ -31,10 +31,10 @@ import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.SubpartDetailReponse;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.SubpartDetailRequest;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
-import org.unitime.timetable.gwt.client.tables.TableInterface.TimePrefInterface;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -55,8 +55,6 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.TimePatternDays;
-import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
@@ -67,11 +65,10 @@ import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.duration.DurationModel;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.JavascriptFunctions;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.BackTracker.BackItem;
 
 @GwtRpcImplements(SubpartDetailRequest.class)
@@ -216,58 +213,59 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		return response;
 	}
 	
-	protected TimePrefInterface toPreferenceIterface(TimePref tp) {
-		TimePrefInterface ret = new TimePrefInterface();
-		ret.setName(tp.getTimePattern().getName());
-		for (TimePatternDays d: new TreeSet<TimePatternDays>(tp.getTimePattern().getDays()))
-			ret.addDays(d.getDayCode(), d.getLabel());
-		for (TimePatternTime t: tp.getTimePattern().getTimes())
-			ret.addTime(t.getStartSlot(),
-					Constants.toTime(t.getStartSlot() * Constants.SLOT_LENGTH_MIN),
-					Constants.toTime((t.getStartSlot() + tp.getTimePattern().getSlotsPerMtg()) * Constants.SLOT_LENGTH_MIN - tp.getTimePattern().getBreakTime()));
-		for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList(false))
-			ret.addOption(PreferenceLevel.prolog2char(p.getPrefProlog()), p.getPrefName(), PreferenceLevel.prolog2color(p.getPrefProlog()),
-					PreferenceLevel.sNeutral.equals(p.getPrefProlog()));
-		ret.setPattern(tp.getPreference());
-		return ret;
-	}
-	
 	public static TableInterface getPreferenceTable(SessionContext context, PreferenceGroup pg, Preference.Type... types) {
 		TableInterface table = new TableInterface();
 		boolean hasNotAvailable = false;
 		boolean multipleRooms = false;
+		DurationModel dm = null;
+		int minutes = 0;
 		if (pg instanceof Class_) {
     		Class_ clazz = (Class_)pg;
     		if (clazz.getNbrRooms() > 1)
     			multipleRooms = true;
+    		dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+    		minutes = clazz.getSchedulingSubpart().getMinutesPerWk();
     	} else if (pg instanceof SchedulingSubpart) {
     		SchedulingSubpart subpart = (SchedulingSubpart)pg;
     		int maxRooms = subpart.getMaxRooms();
     		if (maxRooms > 1) {
     			multipleRooms = true;
     		}
+    		dm = subpart.getInstrOfferingConfig().getDurationModel();
+    		minutes = subpart.getMinutesPerWk();
     	}
+		DatePattern dp = pg.effectiveDatePattern();
 		for (Preference.Type type: types) {
 			switch (type) {
 			case TIME:
 				Set<TimePref> timePrefs = pg.effectivePreferences(TimePref.class, null, false);
 				if (!timePrefs.isEmpty()) {
-					boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
 					CellInterface tpCell = table.addProperty(MSG.propertyTime());
 					for (TimePref tp: timePrefs) {
 						if (tp.getTimePattern() != null && tp.getTimePattern().isExactTime()) {
 							tpCell.add(tp.getTimePatternModel().toString()).setInline(false);
 						} else {
+							TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, context);
+							tpCell.add(null).setTimePreference(tpm);
+							if (dm != null && (dp == null || !dm.isValidCombination(minutes, dp, tp.getTimePattern())))
+								tpm.setValid(false);
+							/*
 							RequiredTimeTable rtt = tp.getRequiredTimeTable();
 				        	if (tp.getTimePatternModel().hasNotAvailablePreference()) hasNotAvailable = true;
-							String hint = rtt.print(false, timeVertical, false, false, rtt.getModel().getName()).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-							tpCell.add("").setInline(false).setScript("$wnd." + hint);
+							if (dm != null && (dp == null || !dm.isValidCombination(minutes, dp, tp.getTimePattern()))) {
+								tpCell.add(tp.getTimePattern().getName());
+								tpCell.add(MSG.warnNoMatchingDatePattern()).setColor("red").addStyle("font-style: italic; padding-left: 20px;");
+								String hint = rtt.print(false, timeVertical, false, false, "").replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+								tpCell.add("").setInline(false).setScript("$wnd." + hint);
+							} else {
+								String hint = rtt.print(false, timeVertical, false, false, rtt.getModel().getName()).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+								tpCell.add("").setInline(false).setScript("$wnd." + hint);
+							}*/
 						}
 					}
 				}
 				break;
 			case DATE:
-				DatePattern dp = pg.effectiveDatePattern();
 				if (dp.getDatePatternType() == DatePatternType.PatternSet && !dp.getChildren().isEmpty()) {
 					Set<DatePatternPref> datePrefs = pg.effectivePreferences(DatePatternPref.class);
 					boolean req = false;

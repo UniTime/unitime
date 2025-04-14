@@ -194,6 +194,21 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 		if (usage==null || getPattern()==null || getOffset()==null) return false;
 		return usage.contains(getSession().getDayOfYear(day, month));
 	}
+	
+	@Transient
+	public String getPatternText() {
+		StringBuffer sb = new StringBuffer();
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
+		int year = getSession().getSessionStartYear();
+		for (int m=startMonth;m<=endMonth;m++) {
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+			for (int d=1;d<=daysOfMonth;d++) {
+				sb.append(isOffered(d,m)?"1":"0");
+			}
+		}
+		return sb.toString();
+	}
 
 	@Transient
 	public String getPatternArray() {

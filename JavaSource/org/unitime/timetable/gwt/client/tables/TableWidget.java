@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
+import org.unitime.timetable.gwt.client.offerings.TimePreferenceWidget;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
@@ -324,7 +326,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						setText(cell.getText());
 					}
 				}
-			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null && !cell.hasScript() && !cell.hasWidget())
+			} else if (!cell.hasItems() && !cell.hasWarning() && !cell.hasCourseLink() && cell.getTable() == null && !cell.hasScript() && !cell.hasWidget() && !cell.hasTimePreference())
 				setText("\u202F");
 			if (cell.hasTitle())
 				setTitle(cell.getTitle());
@@ -380,6 +382,24 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					public void onClick(ClickEvent e) {
 						setLastMouseOverElement(getElement());
 						ToolBox.eval(iCell.getMouseClick());
+					}
+				});
+			}
+			if (cell.hasTimePreferenceToolTip()) {
+				addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent e) {
+						TimePreferenceWidget w = new TimePreferenceWidget(false,
+								cell.getTimePreferenceToolTip().getPrefLevels(),
+								cell.getTimePreferenceToolTip().isHorizontal());
+						w.setShowLegend(true);
+						w.setModel(cell.getTimePreferenceToolTip());
+						GwtHint.showHint(e.getRelativeElement(), w);
+					}
+				});addMouseOutHandler(new MouseOutHandler() {
+					@Override
+					public void onMouseOut(MouseOutEvent e) {
+						GwtHint.hideHint();
 					}
 				});
 			}
@@ -443,6 +463,12 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					}
 				});
 				getWidget(0).addStyleName("link");
+			}
+			if (cell.hasTimePreference()) {
+				TimePreferenceWidget w = new TimePreferenceWidget(false, cell.getTimePreference().getPrefLevels(), cell.getTimePreference().isHorizontal());
+				w.setShowLegend(false);
+				w.setModel(cell.getTimePreference());
+				add(w);
 			}
 		}
 		

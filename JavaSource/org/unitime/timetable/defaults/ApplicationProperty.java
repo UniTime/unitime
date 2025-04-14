@@ -3681,6 +3681,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Class Edit: switch the user interface back to the old (Struts-based) class edit page")
+	LegacyClassEdit("unitime.legacy.classEdit"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Instructors: switch the user interface back to the old (Struts-based) instructors page")
 	LegacyInstructors("unitime.legacy.instructors"),
 

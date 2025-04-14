@@ -37,6 +37,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -45,7 +46,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 /**
  * @author Tomas Muller
  */
-public class SearchableListBox extends Composite {
+public class SearchableListBox extends Composite implements Focusable{
 	private ListBox iListBox;
 	private AriaSuggestBox iSuggestBox;
 	
@@ -172,4 +173,16 @@ public class SearchableListBox extends Composite {
 			callback.onSuggestionsReady(request, response);
 		}
 	}
+
+	@Override
+	public int getTabIndex() { return iSuggestBox.getTabIndex(); }
+
+	@Override
+	public void setAccessKey(char key) { iSuggestBox.setAccessKey(key); }
+
+	@Override
+	public void setFocus(boolean focus) { iSuggestBox.setFocus(focus); }
+
+	@Override
+	public void setTabIndex(int tab) { iSuggestBox.setTabIndex(tab); }
 }

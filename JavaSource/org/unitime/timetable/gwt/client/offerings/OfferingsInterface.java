@@ -409,6 +409,7 @@ public class OfferingsInterface {
 			addProperty(p);
 			return p.getCell();
 		}
+		public void setProperties(TableInterface properties) { iProperties = properties; }
 		
 		public boolean hasTimetable() { return iTimetable != null; }
 		public TableInterface getTimetable() { return iTimetable; }

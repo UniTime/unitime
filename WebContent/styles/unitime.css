@@ -7942,3 +7942,165 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CrossListPage .course-selection .unitime-Hint {
 	text-align: left;
 }
+
+.unitime-PreferenceEdit .preference-table {
+	white-space: nowrap;
+	border-top: 1px dashed #9CB0CE;
+	padding-top: 2px;
+}
+
+.unitime-PreferenceEdit .preference-table .preference-line:last-child{
+	padding-bottom: 2px;
+}
+
+.unitime-PreferenceEdit .preference-line {
+	display: block;
+	min-width: 640px;
+}
+
+.unitime-PreferenceEdit .preference-cell {
+	display: inline-block;
+	margin-right: 1px;
+	margin-top: 2px;
+}
+
+.unitime-PreferenceEdit .preference-line select:first-child {
+	width: 225px;
+}
+
+.unitime-PreferenceEdit .preference-line .room-index {
+	margin-left: 5px;
+}
+
+.unitime-PreferenceEdit .preference-line img {
+	vertical-align: text-top;
+}
+
+.unitime-PreferenceEdit .preference-line .first {
+	border-left: 1px solid black;
+}
+
+.unitime-PreferenceEdit .preference-line .legend {
+	display: inline-table;
+	vertical-align: top;
+	padding-top: 1px;
+}
+
+.unitime-PreferenceEdit .preference-line .box {
+	cursor: pointer;
+	display: table-cell;
+	border-top: 1px solid black;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+	width: 38px;
+	height: 22px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	max-width: 38px;
+	color: white;
+}
+
+.unitime-PreferenceEdit .preference-line .blank {
+	display: table-cell;
+	width: 38px;
+	height: 24px;
+}
+
+.unitime-PreferenceEdit .preference-line .selected {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	font-weight: bold;
+}
+
+.unitime-PreferenceEdit .preference-line .description {
+	white-space: pre-wrap;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	margin-right: 2px;
+	margin-left: 5px;
+	max-width: 640px;
+	width: 640px;
+	vertical-align: top;
+	display: inline-block;
+	font-style: italic;
+}
+
+.unitime-PreferenceEdit .preference-line .gwt-RadioButton {
+	white-space: nowrap;
+}
+
+.unitime-PreferenceEdit .preference-line .reason {
+	margin-top: 2px;
+	margin-bottom: 2px;
+	display: inline-block;
+}
+
+.unitime-PreferenceEdit .preference-line-readonly .preference-cell {
+	padding-right: 3px;
+}
+
+.unitime-PreferenceEdit .preference-line-readonly .reason {
+	white-space: pre-wrap;
+	padding-left: 5px;
+	max-width: 640px;
+}
+
+.unitime-PreferenceEdit .preference-line-readonly .description {
+	white-space: pre-wrap;
+	padding-left: 5px;
+	max-width: 640px;
+	width: 640px;
+}
+
+.unitime-PreferenceEdit .read-only-note {
+	max-width: 640px;
+	white-space: pre-wrap;
+}
+
+.unitime-PreferenceEdit .notes-hint {
+	color: #AAAAAA;
+	font-style: italic;
+}
+
+.unitime-PreferenceEdit .pattern-selection select {
+	width: 225px;
+}
+
+.unitime-PreferenceEdit .pattern-selection img {
+	vertical-align: text-top;
+}
+
+.unitime-PreferenceEdit .unitime-RoomSharingWidget:not(:last-child) {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-PreferenceEdit .unitime-RoomSharingWidget .header .name {
+	display: inline-block;
+	font-size: medium;
+	margin-top: 3px;
+}
+.unitime-PreferenceEdit .unitime-RoomSharingWidget .header .delete {
+	display: inline-block;
+	margin-right: 5px;
+	vertical-align: baseline;
+}
+.unitime-PreferenceEdit .unitime-RoomSharingWidget .header .warning {
+	color: red;
+	font-style: italic;
+	padding-left: 20px;
+	display: inline-block;
+	padding-bottom: 1px;
+	font-size: small;
+}
+
+.unitime-PreferenceEdit .unitime-DayCodeSector {
+	vertical-align: top;	
+}
+
+.unitime-ClassEditPage .date-pattern img {
+	margin-left: 3px;
+	vertical-align: middle;
+}

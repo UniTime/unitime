@@ -433,6 +433,8 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
                 TimePref timePref = (TimePref)preference;
                 if (timePref.getPreference() == null || timePref.getPreference().matches("2*")) continue;
             }
+            if (preference instanceof DistributionPref) continue;
+            if (preference instanceof InstructorCoursePref) continue;
             return true;
         }
         return false;

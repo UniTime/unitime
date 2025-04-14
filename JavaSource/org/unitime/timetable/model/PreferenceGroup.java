@@ -317,7 +317,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return getPreferences(type, null);
     }
     
-    public Set getPreferences(Class type, PreferenceGroup appliesTo) {
+    public <T> Set<T> getPreferences(Class type, PreferenceGroup appliesTo) {
     	Set ret = new TreeSet();
     	Iterator i = null;
     	try {
@@ -345,11 +345,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return ret;
     }
     
-    public Set effectivePreferences(Class type, Vector leadInstructors) {
+    public <T> Set<T> effectivePreferences(Class<T> type, Vector leadInstructors) {
     	return effectivePreferences(type, leadInstructors, TimePref.class.equals(type));
     }
     
-    public Set effectivePreferences(Class type, Vector leadInstructors, boolean fixDurationInTimePreferences) {
+    public <T> Set<T> effectivePreferences(Class<T> type, Vector leadInstructors, boolean fixDurationInTimePreferences) {
     	return effectivePreferences(type, fixDurationInTimePreferences);
     }
     
@@ -357,7 +357,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return effectivePreferences(type, TimePref.class.equals(type));
     }
     
-    public Set effectivePreferences(Class type, boolean fixDurationInTimePreferences) {
+    public <T> Set<T> effectivePreferences(Class<T> type, boolean fixDurationInTimePreferences) {
     	return getPreferences(type, null);
     }
     
