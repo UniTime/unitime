@@ -20,7 +20,6 @@ import org.hibernate.mapping.Property;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.action.RollForwardSessionAction.RollForwardErrors;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -1267,7 +1266,7 @@ public class CopyBetweenSessionHelper {
 						toDatePattern.addToDepartments(toDepartment);
 					}
 					toDatePattern.addToDepartments(toDepartment);
-					DepartmentDAO.getInstance().getSession().merge(toDepartment);
+//					DepartmentDAO.getInstance().getSession().merge(toDepartment);
 				}
 			}
 		}		
@@ -1351,8 +1350,9 @@ public class CopyBetweenSessionHelper {
 					if (toTimePattern == null) {
 						toTimePattern = (TimePattern) fromTimePattern.clone();
 						toTimePattern.setSession(iMergedSession);
-						mergeTimePatternOntoDepartmentsToSession(fromTimePattern, toTimePattern, defaultPrefix);
 						tpDao.getSession().persist(toTimePattern);
+						mergeTimePatternOntoDepartmentsToSession(fromTimePattern, toTimePattern, defaultPrefix);
+						tpDao.getSession().merge(toTimePattern);
 					}
 				}
 			}

@@ -339,7 +339,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
     			try {
     				setStatus(MSG.rollForwardTimePatterns() + " ...");
     				if (iForm.validateTimePatternRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollTimePatternsForward(iErrors, iForm);
+    					sessionRollForward.rollTimePatternsForward(iErrors, iForm, copyBetweenSessionHelper);
     				tx.commit();
     			} catch (Exception e) {
     				tx.rollback();
@@ -355,7 +355,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
     			try {
     				setStatus(MSG.rollForwardLMSInfo() + " ...");
     				if (iForm.validateLearningManagementSystemRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollLearningManagementSystemInfoForward(iErrors, iForm);
+    					sessionRollForward.rollLearningManagementSystemInfoForward(iErrors, iForm, copyBetweenSessionHelper);
     				tx.commit();
     			} catch (Exception e) {
     				tx.rollback();
