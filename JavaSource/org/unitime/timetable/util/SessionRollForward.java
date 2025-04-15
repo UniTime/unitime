@@ -820,48 +820,55 @@ public class SessionRollForward {
 			}
 		}		
 	}
-
-	public void rollDatePatternsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
-		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+	
+	public void rollDatePatternsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm, CopyBetweenSessionHelper copyBetweenSessionHelper) {
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
-		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
-		DatePattern fromDatePattern = null;
-		DatePattern toDatePattern = null;
-		HashMap<DatePattern, DatePattern> fromToDatePatternMap = new HashMap<DatePattern, DatePattern>();
-		for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
-			fromDatePattern = (DatePattern) it.next();
-			if (fromDatePattern != null){
-				toDatePattern = (DatePattern) fromDatePattern.clone();
-				toDatePattern.setSession(toSession);
-				rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
-				getHibSession().persist(toDatePattern);
-				fromToDatePatternMap.put(fromDatePattern, toDatePattern);
-			}
-		}
-		
-		for (DatePattern fromDp: fromToDatePatternMap.keySet()){
-			DatePattern toDp = fromToDatePatternMap.get(fromDp);
-			if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
-				for (DatePattern fromParent: fromDp.getParents()){
-					DatePattern toParent = fromToDatePatternMap.get(fromParent);
-					if (toParent != null) {
-						toDp.addToParents(toParent);
-						toParent.addToChildren(toDp);
-					}
-				}
-				getHibSession().merge(toDp);
-			}
-		}
-		
-		if (fromSession.getDefaultDatePattern() != null){
-			DatePattern defDp = DatePattern.findByName(toSession, fromSession.getDefaultDatePattern().getName());
-			if (defDp != null){
-				toSession.setDefaultDatePattern(defDp);
-				getHibSession().merge(toSession);
-			}
-		}
+		copyBetweenSessionHelper.copyMergeDatePatternsToSession(fromSession, null);
+
 		getHibSession().flush();
 	}
+
+//	public void rollDatePatternsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
+//		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+//		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
+//		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
+//		DatePattern fromDatePattern = null;
+//		DatePattern toDatePattern = null;
+//		HashMap<DatePattern, DatePattern> fromToDatePatternMap = new HashMap<DatePattern, DatePattern>();
+//		for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
+//			fromDatePattern = (DatePattern) it.next();
+//			if (fromDatePattern != null){
+//				toDatePattern = (DatePattern) fromDatePattern.clone();
+//				toDatePattern.setSession(toSession);
+//				rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
+//				getHibSession().persist(toDatePattern);
+//				fromToDatePatternMap.put(fromDatePattern, toDatePattern);
+//			}
+//		}
+//		
+//		for (DatePattern fromDp: fromToDatePatternMap.keySet()){
+//			DatePattern toDp = fromToDatePatternMap.get(fromDp);
+//			if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
+//				for (DatePattern fromParent: fromDp.getParents()){
+//					DatePattern toParent = fromToDatePatternMap.get(fromParent);
+//					if (toParent != null) {
+//						toDp.addToParents(toParent);
+//						toParent.addToChildren(toDp);
+//					}
+//				}
+//				getHibSession().merge(toDp);
+//			}
+//		}
+//		
+//		if (fromSession.getDefaultDatePattern() != null){
+//			DatePattern defDp = DatePattern.findByName(toSession, fromSession.getDefaultDatePattern().getName());
+//			if (defDp != null){
+//				toSession.setDefaultDatePattern(defDp);
+//				getHibSession().merge(toSession);
+//			}
+//		}
+//		getHibSession().flush();
+//	}
 
 	public void rollSubjectAreasForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());

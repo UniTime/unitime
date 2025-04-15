@@ -1267,6 +1267,7 @@ public class CopyBetweenSessionHelper {
 						toDatePattern.addToDepartments(toDepartment);
 					}
 					toDatePattern.addToDepartments(toDepartment);
+					DepartmentDAO.getInstance().getSession().merge(toDepartment);
 				}
 			}
 		}		
@@ -1284,8 +1285,9 @@ public class CopyBetweenSessionHelper {
 					if (toDatePattern == null) {
 						toDatePattern = (DatePattern) fromDatePattern.clone();
 						toDatePattern.setSession(iMergedSession);
-						mergeDatePatternOntoDepartmentsToSession(fromDatePattern, toDatePattern, defaultPrefix);
 						dpDao.getSession().persist(toDatePattern);
+						mergeDatePatternOntoDepartmentsToSession(fromDatePattern, toDatePattern, defaultPrefix);
+						dpDao.getSession().merge(toDatePattern);
 					}
 					fromToDatePatternMap.put(fromDatePattern, toDatePattern);
 				}

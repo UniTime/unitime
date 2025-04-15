@@ -323,7 +323,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
     			try {
     				setStatus(MSG.rollForwardDatePatterns() + " ...");
     				if (iForm.validateDatePatternRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollDatePatternsForward(iErrors, iForm);
+    					sessionRollForward.rollDatePatternsForward(iErrors, iForm, copyBetweenSessionHelper);
     				tx.commit();
     			} catch (Exception e) {
     				tx.rollback();
