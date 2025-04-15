@@ -434,7 +434,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 	        		ss.getMinutesPerWk(),
 	        		datePattern,
 	        		ss.getInstrOfferingConfig().getDurationModel(),
-	        		true,
+	        		false,
 	        		ss.getManagingDept());
 		}
 		if (timePatterns != null) {
@@ -557,7 +557,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		}		
 	}
 	
-	protected void doClear(Set<Preference> s, Preference.Type... typesArray) {
+	protected static void doClear(Set<Preference> s, Preference.Type... typesArray) {
     	int types = Preference.Type.toInt(typesArray);
     	for (Iterator<Preference> i = s.iterator(); i.hasNext(); ) {
     		Preference p = i.next();
@@ -565,7 +565,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
     	}
     }
 	
-    protected void doUpdate(PreferenceGroup pg, Set<Preference> s, PrefGroupEditResponse form, Preference.Type... typesArray) throws Exception {
+    protected static void doUpdate(PreferenceGroup pg, Set<Preference> s, PrefGroupEditResponse form, Preference.Type... typesArray) throws Exception {
     	pg.setPreferences(s);
     	
     	int types = Preference.Type.toInt(typesArray);

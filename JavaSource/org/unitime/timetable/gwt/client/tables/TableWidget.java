@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -61,6 +62,7 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -384,6 +386,24 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						ToolBox.eval(iCell.getMouseClick());
 					}
 				});
+			} else if (cell.hasClick()) {
+				addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent e) {
+						final UniTimeDialogBox box = new UniTimeDialogBox(true, true);
+						box.setEscapeToHide(true);
+						CellWidget w = new CellWidget(cell.getClick());
+						box.setWidth("80vw");
+						box.setWidget(w);
+						box.setText(cell.getClick().getTitle());
+						new Timer() {
+							@Override
+							public void run() {
+								box.center();
+							}
+						}.schedule(200);
+					}
+				});
 			}
 			if (cell.hasTimePreferenceToolTip()) {
 				addMouseOverHandler(new MouseOverHandler() {
@@ -440,6 +460,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				if ("UniTimeGWT:InstructorAvailability".equals(cell.getWidget().getId())) {
 					add(new InstructorAvailabilityWidget().forPattern(cell.getWidget().getContent()));
 				} else if ("UniTimeGWT:InstructorUnavailability".equals(cell.getWidget().getId())) {
+					add(new SessionDatesSelector().forPattern(cell.getWidget().getContent()));
+				} else if ("UniTimeGWT:DatePattern".equals(cell.getWidget().getId())) {
 					add(new SessionDatesSelector().forPattern(cell.getWidget().getContent()));
 				}
 			}

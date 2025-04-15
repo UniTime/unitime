@@ -146,6 +146,10 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		return this;
 	}
 	
+	public SessionDatesSelector forDatePattern(final String pattern) {
+		return forDatePattern(pattern, null);
+	}
+	
 	public SessionDatesSelector forDatePattern(final String pattern, final Command command) {
 		RPC.execute(new PatternDatesRequest(), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 			@Override

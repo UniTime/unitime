@@ -284,6 +284,7 @@ public class TableInterface implements IsSerializable {
 		private Boolean iSortable; 
 		private WidgetInterface iWidget;
 		private TimePatternModel iTimePreference, iTimePreferenceToolTip;
+		private CellInterface iClick;
 		
 		public CellInterface() {}
 		
@@ -454,6 +455,10 @@ public class TableInterface implements IsSerializable {
 		public boolean hasTimePreferenceToolTip() { return iTimePreferenceToolTip != null; }
 		public CellInterface setToolTip(TimePatternModel timePref) { iTimePreferenceToolTip = timePref; return this; }
 		public TimePatternModel getTimePreferenceToolTip() { return iTimePreferenceToolTip; }
+		
+		public boolean hasClick() { return iClick != null; }
+		public CellInterface getClick() { return iClick; }
+		public CellInterface addClick() { iClick = new CellInterface(); return iClick; }
 
 		@Override
 		public String toString() {

@@ -3686,6 +3686,11 @@ public enum ApplicationProperty {
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Scheduling Subpart Edit: switch the user interface back to the old (Struts-based) scheduling subpart edit page")
+	LegacySubpartEdit("unitime.legacy.subpartEdit"),
+
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Instructors: switch the user interface back to the old (Struts-based) instructors page")
 	LegacyInstructors("unitime.legacy.instructors"),
 

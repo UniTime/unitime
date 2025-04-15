@@ -247,6 +247,7 @@
     	<url-pattern>/instructor</url-pattern>
     	<url-pattern>/crosslist</url-pattern>
     	<url-pattern>/classEdit</url-pattern>
+    	<url-pattern>/subpartEdit</url-pattern>
     </servlet-mapping>
 	
 	<filter>

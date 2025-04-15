@@ -211,7 +211,7 @@ public class ClassEditPage extends Composite {
 				}
 				if (showLoading) LoadingWidget.getInstance().hide();
 				
-				if (op == Operation.DATE_PATTERN) {
+				if (op == Operation.DATE_PATTERN || op == Operation.INSTRUCTORS) {
 					iPreferences.setValue(response);
 					return;
 				}

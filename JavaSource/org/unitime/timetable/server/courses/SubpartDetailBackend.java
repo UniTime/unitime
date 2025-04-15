@@ -148,15 +148,21 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		
         DatePattern dp = ss.getDatePattern();
         if (dp != null) {
-        	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(dp.getName());
-        	c.add("").setMouseClick("$wnd.showGwtDialog('" + MSG.sectPreviewOfDatePattern(dp.getName()) + "', 'dispDatePattern.action?id=" + dp.getUniqueId() + "&subpartId=" + ss.getUniqueId() + "','840','520');")
-        	.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+        	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(dp.getName()).add("");
+        	if (dp.getDatePatternType() != DatePatternType.PatternSet) {
+        		c.addClick().setTitle(MSG.sectPreviewOfDatePattern(dp.getName()))
+        			.addWidget().setId("UniTimeGWT:DatePattern").setContent(dp.getPatternText());
+        		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+        	}
         } else {
         	dp = ss.effectiveDatePattern();
         	if (dp != null) {
-            	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(MSG.dropDefaultDatePattern() + " (" + dp.getName() + ")");
-            	c.add("").setMouseClick("$wnd.showGwtDialog('" + MSG.sectPreviewOfDatePattern(dp.getName()) + "', 'dispDatePattern.action?id=" + dp.getUniqueId() + "&subpartId=" + ss.getUniqueId() + "','840','520');")
-            	.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+            	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(MSG.dropDefaultDatePattern() + " (" + dp.getName() + ")").add("");
+            	if (dp.getDatePatternType() != DatePatternType.PatternSet) {
+            		c.addClick().setTitle(MSG.sectPreviewOfDatePattern(dp.getName()))
+            			.addWidget().setId("UniTimeGWT:DatePattern").setContent(dp.getPatternText());
+            		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+            	}
         	}
         }
         if (Boolean.FALSE.equals(ss.isAutoSpreadInTime()))
@@ -292,10 +298,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 						} else {
 							cell.setText(child.getName());
 						}
-						String hint = HtmlUtils.htmlEscape(pref.getPrefName()+" "+child.getName());
-						cell.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, '" + hint + "');");
-						cell.setMouseOut("$wnd.hideGwtHint();");
-						cell.setMouseClick("$wnd.showGwtDialog('" + MSG.sectPreviewOfDatePattern(child.getName()) + "', 'dispDatePattern.action?id=" + child.getUniqueId() + "&subpartId=" + pg.getUniqueId() + "','840','520');");
+						cell.addStyle("cursor: pointer;");
+			        	cell.addClick().setTitle(MSG.sectPreviewOfDatePattern(child.getName()))
+			        		.addWidget().setId("UniTimeGWT:DatePattern").setContent(child.getPatternText());
 					}
 					if (rpCell.hasItems())
 						table.addProperty(new PropertyInterface()

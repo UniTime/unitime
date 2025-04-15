@@ -308,6 +308,7 @@ public class OfferingsInterface {
 			addProperty(p);
 			return p.getCell();
 		}
+		public void setProperties(TableInterface properties) { iProperties = properties; }
 		
 		public boolean hasPreferences() { return iPreferences != null; }
 		public TableInterface getPreferences() { return iPreferences; }

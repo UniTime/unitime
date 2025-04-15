@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -54,6 +55,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -103,6 +105,8 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 		Class_ clazz = Class_DAO.getInstance().get(request.getClassId(), hibSession);
 		context.checkPermission(clazz, Right.ClassDetail);
 		
+		if (clazz == null)
+			throw new GwtRpcException(MSG.errorNoClassId());
 		if (request.getAction() == null) {
 	        BackTracker.markForBack(context,
 	        		"clazz?id=" + request.getClassId(),
@@ -144,15 +148,21 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         
         DatePattern datePattern = clazz.getDatePattern();
         if (datePattern != null) {
-        	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(datePattern.getName());
-        	c.add("").setMouseClick("$wnd.showGwtDialog('" + MSG.sectPreviewOfDatePattern(datePattern.getName()) + "', 'dispDatePattern.action?id=" + datePattern.getUniqueId() + "&classId=" + clazz.getUniqueId() + "','840','520');")
-        	.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+        	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(datePattern.getName()).add("");
+        	if (datePattern.getDatePatternType() != DatePatternType.PatternSet) {
+            	c.addClick().setTitle(MSG.sectPreviewOfDatePattern(datePattern.getName()))
+        			.addWidget().setId("UniTimeGWT:DatePattern").setContent(datePattern.getPatternText());
+            	c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+        	}
         } else {
         	datePattern = clazz.effectiveDatePattern();
         	if (datePattern != null) {
-            	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(MSG.dropDefaultDatePattern() + " (" + datePattern.getName() + ")");
-            	c.add("").setMouseClick("$wnd.showGwtDialog('" + MSG.sectPreviewOfDatePattern(datePattern.getName()) + "', 'dispDatePattern.action?id=" + datePattern.getUniqueId() + "&classId=" + clazz.getUniqueId() + "','840','520');")
-            	.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+            	CellInterface c = response.addProperty(MSG.propertyDatePattern()).add(MSG.dropDefaultDatePattern() + " (" + datePattern.getName() + ")").add("");
+            	if (datePattern.getDatePatternType() != DatePatternType.PatternSet) {
+            		c.addClick().setTitle(MSG.sectPreviewOfDatePattern(datePattern.getName()))
+            			.addWidget().setId("UniTimeGWT:DatePattern").setContent(datePattern.getPatternText());
+            		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+            	}
         	}
         }
         

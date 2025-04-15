@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 
@@ -88,6 +90,17 @@ public class SchedulingSubpartEditAction extends PreferencesAction2<SchedulingSu
 	public void setOp2(String op2) { this.op2 = op2; }	
 	
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacySubpartEdit.isFalse()) {
+    		String url = "subpartEdit";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
     	if (form == null) {
     		form = new SchedulingSubpartEditForm();
     		form.reset();

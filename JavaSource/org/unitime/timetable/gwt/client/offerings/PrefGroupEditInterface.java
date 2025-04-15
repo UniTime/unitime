@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -160,7 +161,11 @@ public class PrefGroupEditInterface {
 		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
 		public TableInterface getProperties() { return iProperties; }
 		public void setProperties(TableInterface properties) { iProperties = properties; }
-		
+		public CellInterface addProperty(String text) {
+			if (iProperties == null) iProperties = new TableInterface();
+			return iProperties.addProperty(text);
+		}
+
 		public InheritInstructorPrefs getInheritInstructorPrefs() {
 			return (iInheritInstructorPrefs == null ? InheritInstructorPrefs.NEVER: iInheritInstructorPrefs);
 		}
@@ -296,6 +301,176 @@ public class PrefGroupEditInterface {
 			}
 			return null;
 		}
+	}
+	
+	public static class SubpartEditRequest extends PrefGroupEditRequest<SubpartEditResponse> implements GwtRpcRequest<SubpartEditResponse> {
+		
+	}
+	
+	public static class SubpartEditResponse extends PrefGroupEditResponse {
+		private TableInterface iProperties;
+		
+		private Boolean iSearchableDatePattern;
+		private Long iDatePatternId;
+		private List<IdLabel> iDatePatterns;
+		
+		private List<IdLabel> iInstructionalTypes;
+		private List<IdLabel> iExtInstructionalTypes;
+		
+		private Boolean iAutoSpreadInTime;
+		private Boolean iStudentsCanOverlap;
+
+		private Boolean iCanClearPrefs;
+
+		private Boolean iCreditFractionsAllowed;
+		private Float iCreditUnits;
+		private Float iCreditMaxUnits;
+		private Long iCreditFormatId;
+		private List<IdLabel> iCreditFormats;
+		private Long iCreditTypeId;
+		private List<IdLabel> iCreditTypes;
+		private Long iCreditUnitTypeId;
+		private List<IdLabel> iCreditUnitTypes;
+		
+		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
+		public TableInterface getProperties() { return iProperties; }
+		public void setProperties(TableInterface properties) { iProperties = properties; }
+		public CellInterface addProperty(String text) {
+			if (iProperties == null) iProperties = new TableInterface();
+			return iProperties.addProperty(text);
+		}
+		
+		public boolean canClearPrefs() { return iCanClearPrefs != null && iCanClearPrefs.booleanValue(); }
+		public void setCanClearPrefs(boolean canClearPrefs) { iCanClearPrefs = canClearPrefs; }
+		
+		public boolean isAutoSpreadInTime() { return iAutoSpreadInTime == null || iAutoSpreadInTime.booleanValue(); }
+		public void setAutoSpreadInTime(Boolean spread) { iAutoSpreadInTime = spread; }
+		public boolean isStudentsCanOverlap() { return iStudentsCanOverlap == null || iStudentsCanOverlap.booleanValue(); }
+		public void setStudentsCanOverlap(Boolean canOverlap) { iStudentsCanOverlap = canOverlap; }
+		
+		public boolean isSearchableDatePattern() { return iSearchableDatePattern != null && iSearchableDatePattern.booleanValue(); }
+		public void setSearchableDatePattern(boolean searchableDatePattern) { iSearchableDatePattern = searchableDatePattern; }
+		public Long getDatePatternId() { return iDatePatternId; }
+		public void setDatePatternId(Long datePatternId) { iDatePatternId = datePatternId; }
+		public boolean hasDatePatterms() { return iDatePatterns != null && !iDatePatterns.isEmpty(); }
+		public List<IdLabel> getDatePatterns() { return iDatePatterns; }
+		public IdLabel getDatePattern(Long id) {
+			if (iDatePatterns == null) return null;
+			for (IdLabel item: iDatePatterns)
+				if (id.equals(item.getId())) return item;
+			return null;
+		}
+		public IdLabel addDatePattern(Long id, String label, String pattern) {
+			if (iDatePatterns == null) iDatePatterns = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, pattern);
+			iDatePatterns.add(item);
+			return item;
+		}
+		public IdLabel removeDatePattern(Long id) {
+			if (iDatePatterns == null) return null;
+			for (Iterator<IdLabel> i = iDatePatterns.iterator(); i.hasNext(); ) {
+				IdLabel item = i.next();
+				if (id.equals(item.getId())) {
+					i.remove();
+					return item;
+				}
+			}
+			return null;
+		}
+		
+		public boolean hasInstructionalTypes() { return iInstructionalTypes != null && !iInstructionalTypes.isEmpty(); }
+		public List<IdLabel> getInstructionalTypes() { return iInstructionalTypes; }
+		public IdLabel getInstructionalType(Long id) {
+			if (iInstructionalTypes != null)
+				for (IdLabel item: iInstructionalTypes)
+					if (id.equals(item.getId())) return item;
+			if (iExtInstructionalTypes != null)
+				for (IdLabel item: iExtInstructionalTypes)
+					if (id.equals(item.getId())) return item;
+			return null;
+		}
+		public IdLabel addInstructionalType(Long id, String label, String description) {
+			if (iInstructionalTypes == null) iInstructionalTypes = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, description);
+			iInstructionalTypes.add(item);
+			return item;
+		}
+		public boolean hasExtInstructionalTypes() { return iExtInstructionalTypes != null && !iExtInstructionalTypes.isEmpty(); }
+		public List<IdLabel> getExtInstructionalTypes() { return iExtInstructionalTypes; }
+		public IdLabel addExtInstructionalType(Long id, String label, String description) {
+			if (iExtInstructionalTypes == null) iExtInstructionalTypes = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, description);
+			iExtInstructionalTypes.add(item);
+			return item;
+		}
+
+		public boolean isCreditFractionsAllowed() { return iCreditFractionsAllowed != null && iCreditFractionsAllowed.booleanValue(); }
+		public void setCreditFractionsAllowed(boolean frectionsAllowed) { iCreditFractionsAllowed = frectionsAllowed; }
+		public boolean hasCreditUnits() { return iCreditUnits != null; }
+		public Float getCreditUnits() { return iCreditUnits; }
+		public void setCreditUnits(Float credits) { iCreditUnits = credits; }
+		public boolean hasCreditMaxUnits() { return iCreditMaxUnits != null; }
+		public Float getCreditMaxUnits() { return iCreditMaxUnits; }
+		public void setCreditMaxUnits(Float credits) { iCreditMaxUnits = credits; }
+		public boolean hasCreditFormats() { return iCreditFormats != null && !iCreditFormats.isEmpty(); }
+		public List<IdLabel> getCreditFormats() { return iCreditFormats; }
+		public IdLabel getCreditFormat(Long id) {
+			if (iCreditFormats == null) return null;
+			for (IdLabel item: iCreditFormats)
+				if (id.equals(item.getId())) return item;
+			return null;
+		}
+		public IdLabel getCreditFormat(String reference) {
+			if (iCreditFormats == null) return null;
+			for (IdLabel item: iCreditFormats)
+				if (reference.equals(item.getDescription())) return item;
+			return null;
+		}
+		public IdLabel addCreditFormat(Long id, String label, String reference) {
+			if (iCreditFormats == null) iCreditFormats = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, reference);
+			iCreditFormats.add(item);
+			return item;
+		}
+		public boolean hasCreditTypes() { return iCreditTypes != null && !iCreditTypes.isEmpty(); }
+		public List<IdLabel> getCreditTypes() { return iCreditTypes; }
+		public IdLabel getCreditType(Long id) {
+			if (iCreditTypes == null) return null;
+			for (IdLabel item: iCreditTypes)
+				if (id.equals(item.getId())) return item;
+			return null;
+		}
+		public IdLabel addCreditType(Long id, String label, String reference) {
+			if (iCreditTypes == null) iCreditTypes = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, reference);
+			iCreditTypes.add(item);
+			return item;
+		}
+		public boolean hasCreditUnitTypes() { return iCreditUnitTypes != null && !iCreditUnitTypes.isEmpty(); }
+		public List<IdLabel> getCreditUnitTypes() { return iCreditUnitTypes; }
+		public IdLabel getCreditUnitType(Long id) {
+			if (iCreditUnitTypes == null) return null;
+			for (IdLabel item: iCreditUnitTypes)
+				if (id.equals(item.getId())) return item;
+			return null;
+		}
+		public IdLabel addCreditUnitType(Long id, String label, String reference) {
+			if (iCreditUnitTypes == null) iCreditUnitTypes = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, reference);
+			iCreditUnitTypes.add(item);
+			return item;
+		}
+		public String getCreditFormat() {
+			if (iCreditFormatId == null) return null;
+			IdLabel format = getCreditFormat(iCreditFormatId);
+			return (format == null ? null : format.getDescription());
+		}
+		public Long getCreditFormatId() { return iCreditFormatId; }
+		public void setCreditFormatId(Long id) { iCreditFormatId = id; }
+		public Long getCreditTypeId() { return iCreditTypeId; }
+		public void setCreditTypeId(Long id) { iCreditTypeId = id; }
+		public Long getCreditUnitTypeId() { return iCreditUnitTypeId; }
+		public void setCreditUnitTypeId(Long id) { iCreditUnitTypeId = id; }
 	}
 	
 	public static class ClassInstr implements IsSerializable {

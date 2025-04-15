@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.client.offerings.InstructionalOfferingsPage;
 import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupPage;
 import org.unitime.timetable.gwt.client.offerings.OfferingDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartDetailPage;
+import org.unitime.timetable.gwt.client.offerings.SubpartEditPage;
 import org.unitime.timetable.gwt.client.page.SolverWarnings;
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
@@ -351,6 +352,10 @@ public enum Pages {
 	classEdit(new PageFactory() {
 		public Widget create() { return new ClassEditPage(); }
 		public String name(GwtMessages messages) { return messages.pageEditClass(); }
+		}),
+	subpartEdit(new PageFactory() {
+		public Widget create() { return new SubpartEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageEditSchedulingSubpart(); }
 		}),
 	;
 	
