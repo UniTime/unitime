@@ -386,7 +386,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 	    		Transaction tx = hibSession.beginTransaction();
     			try {
     				setStatus(MSG.rollForwardInstructors() + " ...");
-    				sessionRollForward.rollInstructorDataForward(iErrors, iForm);
+    				sessionRollForward.rollInstructorDataForward(iErrors, iForm, copyBetweenSessionHelper);
     				tx.commit();
     			} catch (Exception e) {
     				tx.rollback();

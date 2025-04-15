@@ -982,37 +982,37 @@ public class SessionRollForward {
 		}
 	}
 		
-	private void rollDepartmentalInstructorAttributesForward(RollForwardErrors errors, Department fromDepartment, Department toDepartment) {
-		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
-		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllDepartmentalAttributes(toDepartment.getUniqueId())) {
-			getHibSession().remove(oldAttribute);
-		}
-		List<InstructorAttribute> departmentalAttributes = InstructorAttribute.getAllDepartmentalAttributes(fromDepartment.getUniqueId());
-		for (InstructorAttribute fromAttribute: departmentalAttributes) {
-			InstructorAttribute toAttribute = new InstructorAttribute();
-			toAttribute.setSession(toDepartment.getSession());
-			toAttribute.setDepartment(toDepartment);
-			toAttribute.setCode(fromAttribute.getCode());
-			toAttribute.setName(fromAttribute.getName());
-			toAttribute.setType(fromAttribute.getType());
-			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
-			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
-			attributes.put(fromAttribute.getUniqueId(), toAttribute);
-			getHibSession().persist(toAttribute);
-		}
-		for (InstructorAttribute fromChildAttribute: departmentalAttributes) {
-			if (fromChildAttribute.getParentAttribute() != null) {
-				InstructorAttribute toChildAttribute = attributes.get(fromChildAttribute.getUniqueId());
-				InstructorAttribute toParentAttribute = attributes.get(fromChildAttribute.getParentAttribute().getUniqueId());
-				if (toParentAttribute != null) {
-					toChildAttribute.setParentAttribute(toParentAttribute);
-					toParentAttribute.getChildAttributes().add(toChildAttribute);
-					getHibSession().merge(toChildAttribute);
-				}
-			}
-		}
-		getHibSession().flush();
-	}
+//	private void rollDepartmentalInstructorAttributesForward(RollForwardErrors errors, Department fromDepartment, Department toDepartment) {
+//		Map<Long, InstructorAttribute> attributes = new HashMap<Long, InstructorAttribute>();
+//		for (InstructorAttribute oldAttribute: InstructorAttribute.getAllDepartmentalAttributes(toDepartment.getUniqueId())) {
+//			getHibSession().remove(oldAttribute);
+//		}
+//		List<InstructorAttribute> departmentalAttributes = InstructorAttribute.getAllDepartmentalAttributes(fromDepartment.getUniqueId());
+//		for (InstructorAttribute fromAttribute: departmentalAttributes) {
+//			InstructorAttribute toAttribute = new InstructorAttribute();
+//			toAttribute.setSession(toDepartment.getSession());
+//			toAttribute.setDepartment(toDepartment);
+//			toAttribute.setCode(fromAttribute.getCode());
+//			toAttribute.setName(fromAttribute.getName());
+//			toAttribute.setType(fromAttribute.getType());
+//			toAttribute.setInstructors(new HashSet<DepartmentalInstructor>());
+//			toAttribute.setChildAttributes(new HashSet<InstructorAttribute>());
+//			attributes.put(fromAttribute.getUniqueId(), toAttribute);
+//			getHibSession().persist(toAttribute);
+//		}
+//		for (InstructorAttribute fromChildAttribute: departmentalAttributes) {
+//			if (fromChildAttribute.getParentAttribute() != null) {
+//				InstructorAttribute toChildAttribute = attributes.get(fromChildAttribute.getUniqueId());
+//				InstructorAttribute toParentAttribute = attributes.get(fromChildAttribute.getParentAttribute().getUniqueId());
+//				if (toParentAttribute != null) {
+//					toChildAttribute.setParentAttribute(toParentAttribute);
+//					toParentAttribute.getChildAttributes().add(toChildAttribute);
+//					getHibSession().merge(toChildAttribute);
+//				}
+//			}
+//		}
+//		getHibSession().flush();
+//	}
 	
 	protected void rollForwardInstructorAttributePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
 		Set preferences = fromPrefGroup.getPreferences(InstructorAttributePref.class);
@@ -1238,88 +1238,94 @@ public class SessionRollForward {
 		getHibSession().flush();
 	}
 	
-	protected void rollInstructorDistributionPrefs(DepartmentalInstructor fromInstructor, DepartmentalInstructor toInstructor){
-		if (fromInstructor.getDistributionPreferences() != null && fromInstructor.getDistributionPreferences().size() > 0){
-			DistributionPref fromDistributionPref = null;
-			DistributionPref toDistributionPref = null;
-			for (Iterator it = fromInstructor.getDistributionPreferences().iterator(); it.hasNext();){
-				fromDistributionPref = (DistributionPref) it.next();
-				toDistributionPref = new DistributionPref();
-				if(fromDistributionPref.getDistributionType() != null) {
-					toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
-				}
-				if(fromDistributionPref.getGrouping() != null) {
-					toDistributionPref.setGrouping(fromDistributionPref.getGrouping());
-				}
-				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
-				toDistributionPref.setOwner(toInstructor);
-				toInstructor.addToPreferences(toDistributionPref);
-			}
-		}
-	}
+//	protected void rollInstructorDistributionPrefs(DepartmentalInstructor fromInstructor, DepartmentalInstructor toInstructor){
+//		if (fromInstructor.getDistributionPreferences() != null && fromInstructor.getDistributionPreferences().size() > 0){
+//			DistributionPref fromDistributionPref = null;
+//			DistributionPref toDistributionPref = null;
+//			for (Iterator it = fromInstructor.getDistributionPreferences().iterator(); it.hasNext();){
+//				fromDistributionPref = (DistributionPref) it.next();
+//				toDistributionPref = new DistributionPref();
+//				if(fromDistributionPref.getDistributionType() != null) {
+//					toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
+//				}
+//				if(fromDistributionPref.getGrouping() != null) {
+//					toDistributionPref.setGrouping(fromDistributionPref.getGrouping());
+//				}
+//				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
+//				toDistributionPref.setOwner(toInstructor);
+//				toInstructor.addToPreferences(toDistributionPref);
+//			}
+//		}
+//	}
 	
 	
-	public void rollInstructorDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
-		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
-		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
-		DepartmentalInstructor toInstructor = null;
-		Department toDepartment = null;
-		ArrayList<String> deptsToRollDataFor = new ArrayList<String>();
-		for(String dept : rollForwardSessionForm.getRollForwardDepartmentIds()){
-			deptsToRollDataFor.add(dept);
-		}
-		
-		if (fromSession.getDepartments() != null){
-			String existingQuery = "select di.department.deptCode || di.externalUniqueId from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is not null";
-			List<String> existingInstructors = getHibSession()
-					.createQuery(existingQuery, String.class)
-					.setParameter("sessionId", toSession.getUniqueId().longValue())
-					.list();
-			
-			String existingNoExtIdQuery = "select di.department.deptCode || di.lastName || ',' || di.firstName || ',' || di.middleName from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is null";
-			List<String> existingNoExtIdInstructors = getHibSession()
-					.createQuery(existingNoExtIdQuery, String.class)
-					.setParameter("sessionId", toSession.getUniqueId().longValue())
-					.list();
-			
-			for(Department fromDepartment: fromSession.getDepartments()){
-				if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
-					toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
-					if (toDepartment != null && deptsToRollDataFor.contains(toDepartment.getUniqueId().toString())){
-						iLog.info("Rolling instructors for " + fromDepartment);
-						rollDepartmentalInstructorAttributesForward(errors, fromDepartment, toDepartment);
-						for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
-							if (!(fromInstructor.getExternalUniqueId() == null) && !fromInstructor.getExternalUniqueId().isEmpty() && existingInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getExternalUniqueId())){
-								iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
-								continue;
-							}
-							if ((fromInstructor.getExternalUniqueId() == null || fromInstructor.getExternalUniqueId().isEmpty()) && existingNoExtIdInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getLastName()+","+fromInstructor.getFirstName()+","+fromInstructor.getMiddleName())){
-								iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
-								continue;
-							}
+//	public void rollInstructorDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
+//		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+//		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
+//		DepartmentalInstructor toInstructor = null;
+//		Department toDepartment = null;
+//		ArrayList<String> deptsToRollDataFor = new ArrayList<String>();
+//		for(String dept : rollForwardSessionForm.getRollForwardDepartmentIds()){
+//			deptsToRollDataFor.add(dept);
+//		}
+//		
+//		if (fromSession.getDepartments() != null){
+//			String existingQuery = "select di.department.deptCode || di.externalUniqueId from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is not null";
+//			List<String> existingInstructors = getHibSession()
+//					.createQuery(existingQuery, String.class)
+//					.setParameter("sessionId", toSession.getUniqueId().longValue())
+//					.list();
+//			
+//			String existingNoExtIdQuery = "select di.department.deptCode || di.lastName || ',' || di.firstName || ',' || di.middleName from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is null";
+//			List<String> existingNoExtIdInstructors = getHibSession()
+//					.createQuery(existingNoExtIdQuery, String.class)
+//					.setParameter("sessionId", toSession.getUniqueId().longValue())
+//					.list();
+//			
+//			for(Department fromDepartment: fromSession.getDepartments()){
+//				if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
+//					toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
+//					if (toDepartment != null && deptsToRollDataFor.contains(toDepartment.getUniqueId().toString())){
+//						iLog.info("Rolling instructors for " + fromDepartment);
+//						rollDepartmentalInstructorAttributesForward(errors, fromDepartment, toDepartment);
+//						for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
+//							if (!(fromInstructor.getExternalUniqueId() == null) && !fromInstructor.getExternalUniqueId().isEmpty() && existingInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getExternalUniqueId())){
+//								iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
+//								continue;
+//							}
+//							if ((fromInstructor.getExternalUniqueId() == null || fromInstructor.getExternalUniqueId().isEmpty()) && existingNoExtIdInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getLastName()+","+fromInstructor.getFirstName()+","+fromInstructor.getMiddleName())){
+//								iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
+//								continue;
+//							}
+//
+//							toInstructor = (DepartmentalInstructor) fromInstructor.clone();
+//							toInstructor.setDepartment(toDepartment);
+//							toInstructor.setAttributes(new HashSet<InstructorAttribute>());
+//							for (InstructorAttribute fromAttribute: fromInstructor.getAttributes()) {
+//								InstructorAttribute toAttribute = fromAttribute.findSameAttributeInSession(toSession);
+//								if (toAttribute != null) {
+//									toAttribute.addToInstructors(toInstructor);
+//									toInstructor.addToAttributes(toAttribute);
+//								}
+//							}
+//							rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);
+//							rollForwardRoomPrefs(fromInstructor, toInstructor, toSession);
+//							rollForwardRoomFeaturePrefs(fromInstructor, toInstructor, toSession);
+//							rollForwardRoomGroupPrefs(fromInstructor, toInstructor, toSession);
+//							rollForwardTimePrefs(fromInstructor, toInstructor, toSession);
+//							rollInstructorDistributionPrefs(fromInstructor, toInstructor);
+//							getHibSession().persist(toInstructor);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		getHibSession().flush();
+//	}
 
-							toInstructor = (DepartmentalInstructor) fromInstructor.clone();
-							toInstructor.setDepartment(toDepartment);
-							toInstructor.setAttributes(new HashSet<InstructorAttribute>());
-							for (InstructorAttribute fromAttribute: fromInstructor.getAttributes()) {
-								InstructorAttribute toAttribute = fromAttribute.findSameAttributeInSession(toSession);
-								if (toAttribute != null) {
-									toAttribute.addToInstructors(toInstructor);
-									toInstructor.addToAttributes(toAttribute);
-								}
-							}
-							rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);
-							rollForwardRoomPrefs(fromInstructor, toInstructor, toSession);
-							rollForwardRoomFeaturePrefs(fromInstructor, toInstructor, toSession);
-							rollForwardRoomGroupPrefs(fromInstructor, toInstructor, toSession);
-							rollForwardTimePrefs(fromInstructor, toInstructor, toSession);
-							rollInstructorDistributionPrefs(fromInstructor, toInstructor);
-							getHibSession().persist(toInstructor);
-						}
-					}
-				}
-			}
-		}
+	public void rollInstructorDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm, CopyBetweenSessionHelper copyBetweenSessionHelper) {
+		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
+		copyBetweenSessionHelper.copyMergeInstructorDataToSession(fromSession, null);
 		getHibSession().flush();
 	}
 
