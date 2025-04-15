@@ -371,7 +371,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
     			try {
     				setStatus(MSG.rollForwardSubjectAreas() + " ...");
     				if (iForm.validateSubjectAreaRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
+    					sessionRollForward.rollSubjectAreasForward(iErrors, iForm, copyBetweenSessionHelper);
     				tx.commit();
     			} catch (Exception e) {
     				tx.rollback();

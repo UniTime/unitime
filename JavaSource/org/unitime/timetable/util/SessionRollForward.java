@@ -84,7 +84,6 @@ import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.LearningCommunityReservation;
-import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.OfferingCoordinator;
@@ -295,111 +294,13 @@ public class SessionRollForward {
 		getHibSession().flush();
 	}
 
-
-	public void rollSubjectAreasForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
-		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+	public void rollSubjectAreasForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm, CopyBetweenSessionHelper copyBetweenSessionHelper) {
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollSubjectAreasForwardFrom());
-		SubjectArea toSubjectArea = null;
-		SubjectArea fromSubjectArea = null;
-		Department toDepartment = null;
-		if (sessionHasCourseCatalog(toSession)) {
-			List<Object[]> subjects = getHibSession().createQuery(
-					"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is not null",
-					Object[].class).setParameter("sessionId", toSession.getUniqueId()).list();
-			if (subjects != null){
-				String toSubject = null;
-				String fromSubject = null;
-				Object[] subjectInfo = null;
-				for (Iterator<Object[]> saIt = subjects.iterator(); saIt.hasNext();){
-					subjectInfo = saIt.next();
-					if (subjectInfo != null && subjectInfo.length == 2){
-						toSubject = (String) subjectInfo[0];
-						fromSubject = (String) subjectInfo[1];							
-						fromSubjectArea = SubjectArea.findByAbbv(fromSession.getUniqueId(), fromSubject);
-						if (fromSubjectArea == null){
-							continue;
-						}
-						toSubjectArea = (SubjectArea)fromSubjectArea.clone();
-						toSubjectArea.setDepartment(null);
-						if (!toSubject.equals(fromSubject)){
-							toSubjectArea.setSubjectAreaAbbreviation(toSubject);
-						}
-						if (fromSubjectArea.getFundingDept() != null){
-							Department toFundingDept = fromSubjectArea.getFundingDept().findSameDepartmentInSession(toSession);
-							toSubjectArea.setFundingDept(toFundingDept);
-						}
-						toSubjectArea.setSession(toSession);
-						toSession.addToSubjectAreas(toSubjectArea);
-						if (fromSubjectArea.getDepartment() != null) {
-							toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
-							if (toDepartment != null){
-								toSubjectArea.setDepartment(toDepartment);
-								toDepartment.addToSubjectAreas(toSubjectArea);
-								getHibSession().persist(toSubjectArea);
-							}
-						}
-						
-					}
-				}
-			}
-			List<String> newSubjects = getHibSession().createQuery(
-					"select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)",
-					String.class).setParameter("sessionId", toSession.getUniqueId()).list();
-			toDepartment = Department.findByDeptCode("TEMP", toSession.getUniqueId());
-			if (toDepartment == null){
-				toDepartment = new Department();
-				toDepartment.setAbbreviation("TEMP");
-				toDepartment.setAllowReqRoom(Boolean.valueOf(false));
-				toDepartment.setAllowReqTime(Boolean.valueOf(false));
-				toDepartment.setAllowReqDistribution(Boolean.valueOf(false));
-				toDepartment.setDeptCode("TEMP");
-				toDepartment.setExternalManager(Boolean.valueOf(false));
-				toDepartment.setExternalUniqueId(null);
-				toDepartment.setName("Temp Department For New Subjects");
-				toDepartment.setSession(toSession);
-				toDepartment.setDistributionPrefPriority(Integer.valueOf(0));
-				toDepartment.setInheritInstructorPreferences(true);
-				toDepartment.setAllowEvents(false);
-				toDepartment.setAllowStudentScheduling(true);
-				toSession.addToDepartments(toDepartment);
-				getHibSession().persist(toDepartment);
-			}
-			String toSubject = null;
-			for (Iterator<String> saIt = newSubjects.iterator(); saIt.hasNext();){
-				toSubject = saIt.next();
-				if (toSubject != null){
-					toSubjectArea = new SubjectArea();
-					toSubjectArea.setDepartment(toDepartment);
-					toSubjectArea.setTitle("New Subject");
-					toSubjectArea.setSession(toSession);
-					toSubjectArea.setSubjectAreaAbbreviation(toSubject);
-					toDepartment.addToSubjectAreas(toSubjectArea);
-					toSession.addToSubjectAreas(toSubjectArea);
-					getHibSession().persist(toSubjectArea);
-				}
-			}
-		} else if (fromSession.getSubjectAreas() != null && !fromSession.getSubjectAreas().isEmpty()){
-			for(Iterator it = fromSession.getSubjectAreas().iterator(); it.hasNext();){
-				fromSubjectArea = (SubjectArea) it.next();
-				if (fromSubjectArea != null){
-					toSubjectArea = (SubjectArea)fromSubjectArea.clone();
-					if (fromSubjectArea.getFundingDept() != null){
-						Department toFundingDept = fromSubjectArea.getFundingDept().findSameDepartmentInSession(toSession);
-						toSubjectArea.setFundingDept(toFundingDept);
-					}
-					toSubjectArea.setDepartment(null);
-					toSubjectArea.setSession(toSession);
-					toSession.addToSubjectAreas(toSubjectArea);
-					if (fromSubjectArea.getDepartment() != null) {
-						toDepartment = fromSubjectArea.getDepartment().findSameDepartmentInSession(toSession);
-						if (toDepartment != null){
-							toSubjectArea.setDepartment(toDepartment);
-							toDepartment.addToSubjectAreas(toSubjectArea);
-							getHibSession().persist(toSubjectArea);
-						}
-					}
-				}
-			}
+		try {
+			copyBetweenSessionHelper.copyMergeSubjectAreasToSession(fromSession, null);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		getHibSession().flush();
 	}
