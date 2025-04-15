@@ -499,7 +499,7 @@ public class ReservationEdit extends Composite {
 		iCurriculum.getWidget().setStyleName("unitime-TextBox");
 		iCurriculum.getWidget().addItem(MESSAGES.itemNone(), "");
 		iCurriculum.getWidget().setSelectedIndex(0);
-		iPanel.addRow("Curriculum:", iCurriculum);
+		iPanel.addRow(MESSAGES.propCurriculum(), iCurriculum);
 		iCurriculumLine = iPanel.getRowCount() - 1;
 		
 		iArea = new UniTimeWidget<ListBox>(new ListBox());
