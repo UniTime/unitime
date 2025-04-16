@@ -84,6 +84,10 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 	}
 	
 	public InstructorAvailabilityWidget forPattern(final String pattern) {
+		return forPattern(pattern, false);
+	}
+	
+	public InstructorAvailabilityWidget forPattern(final String pattern, final boolean editable) {
 		RPC.execute(InstructorAvailabilityRequest.load(null), new AsyncCallback<InstructorAvailabilityModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -93,7 +97,7 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 			@Override
 			public void onSuccess(final InstructorAvailabilityModel model) {
 				model.setPattern(pattern);
-				iEditable = false;
+				iEditable = editable;
 				setShowLegend(false);
 				setModel(model);
 			}

@@ -452,6 +452,7 @@ public class InstructorDetailBackend implements GwtRpcImplementation<InstructorD
 				if (preferences == null) {
 					preferences = new TableInterface();
 					c = preferences.addProperty(MSG.propertyTime());
+					preferences.addProperty(SubpartDetailBackend.getLegend(false));
 				} else {
 					c = new CellInterface();
 					PropertyInterface av = new PropertyInterface().setName(MSG.propertyTime()).setCell(c);

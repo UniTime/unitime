@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.offerings;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
+import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -73,8 +76,13 @@ public class PrefGroupEditInterface {
 		private TimePreferences iTimePrefs;
 		private List<PrefLevel> iPrefLevels;
 		private List<Preferences> iRoomPrefs;
+		private Preferences iDistributionPrefs;
+		private Preferences iCoursePrefs;
 		private Integer iNbrRooms;
 		private String iUrl;
+		private String iInstructorUnavailability = null;
+		private String iInstructorTimePreferences = null;
+		private Boolean iCanClearPrefs;
 		
 		public PrefGroupEditResponse() {}
 		
@@ -104,6 +112,14 @@ public class PrefGroupEditInterface {
 		public Preferences getDatePreferences() { return iDatePrefs; }
 		public void setDatePreferences(Preferences datePrefs) { iDatePrefs = datePrefs; }
 		
+		public boolean hasDistributionPreferences() { return iDistributionPrefs != null && iDistributionPrefs.hasItems(); }
+		public Preferences getDistributionPreferences() { return iDistributionPrefs; }
+		public void setDistributionPreferences(Preferences distributionPrefs) { iDistributionPrefs = distributionPrefs; }
+
+		public boolean hasCoursePreferences() { return iCoursePrefs != null && iCoursePrefs.hasItems(); }
+		public Preferences getCoursePreferences() { return iCoursePrefs; }
+		public void setCoursePreferences(Preferences coursePrefs) { iCoursePrefs = coursePrefs; }
+
 		public void addPrefLevel(PrefLevel prefLevel) {
 			if (iPrefLevels == null) iPrefLevels = new ArrayList<PrefLevel>();
 			iPrefLevels.add(prefLevel);
@@ -135,6 +151,16 @@ public class PrefGroupEditInterface {
 		public Long getPreviousId() { return iPreviousId; }
 		public void setNextId(Long id) { iNextId = id; }
 		public Long getNextId() { return iNextId; }
+		
+		public boolean hasInstructorUnavailability() { return iInstructorUnavailability != null && !iInstructorUnavailability.isEmpty(); }
+		public String getInstructorUnavailability() { return iInstructorUnavailability; }
+		public void setInstructorUnavailability(String unavailability) { iInstructorUnavailability = unavailability; }
+		public boolean hasInstructorTimePrefereneces() { return iInstructorTimePreferences != null && !iInstructorTimePreferences.isEmpty(); }
+		public String getInstructorTimePrefereneces() { return iInstructorTimePreferences; }
+		public void setInstructorTimePrefereneces(String preferences) { iInstructorTimePreferences = preferences; }
+		
+		public boolean canClearPrefs() { return iCanClearPrefs != null && iCanClearPrefs.booleanValue(); }
+		public void setCanClearPrefs(boolean canClearPrefs) { iCanClearPrefs = canClearPrefs; }
 	}
 	
 	public static class ClassEditRequest extends PrefGroupEditRequest<ClassEditResponse> implements GwtRpcRequest<ClassEditResponse> {
@@ -156,7 +182,6 @@ public class PrefGroupEditInterface {
 		private List<ClassInstr> iClassInstructors;
 		private InheritInstructorPrefs iInheritInstructorPrefs;
 		private Long iDefaultResponsibilityId;
-		private Boolean iCanClearPrefs;
 		
 		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
 		public TableInterface getProperties() { return iProperties; }
@@ -172,8 +197,6 @@ public class PrefGroupEditInterface {
 		public void setInheritInstructorPrefs(InheritInstructorPrefs prefs) {
 			iInheritInstructorPrefs = prefs;
 		}
-		public boolean canClearPrefs() { return iCanClearPrefs != null && iCanClearPrefs.booleanValue(); }
-		public void setCanClearPrefs(boolean canClearPrefs) { iCanClearPrefs = canClearPrefs; }
 		
 		public boolean hasTimetable() { return iTimetable != null; }
 		public TableInterface getTimetable() { return iTimetable; }
@@ -320,8 +343,6 @@ public class PrefGroupEditInterface {
 		private Boolean iAutoSpreadInTime;
 		private Boolean iStudentsCanOverlap;
 
-		private Boolean iCanClearPrefs;
-
 		private Boolean iCreditFractionsAllowed;
 		private Float iCreditUnits;
 		private Float iCreditMaxUnits;
@@ -339,9 +360,6 @@ public class PrefGroupEditInterface {
 			if (iProperties == null) iProperties = new TableInterface();
 			return iProperties.addProperty(text);
 		}
-		
-		public boolean canClearPrefs() { return iCanClearPrefs != null && iCanClearPrefs.booleanValue(); }
-		public void setCanClearPrefs(boolean canClearPrefs) { iCanClearPrefs = canClearPrefs; }
 		
 		public boolean isAutoSpreadInTime() { return iAutoSpreadInTime == null || iAutoSpreadInTime.booleanValue(); }
 		public void setAutoSpreadInTime(Boolean spread) { iAutoSpreadInTime = spread; }
@@ -473,6 +491,81 @@ public class PrefGroupEditInterface {
 		public void setCreditUnitTypeId(Long id) { iCreditUnitTypeId = id; }
 	}
 	
+	public static class InstructorPreferencesEditRequest extends PrefGroupEditRequest<InstructorPreferencesEditResponse> implements GwtRpcRequest<InstructorPreferencesEditResponse> {
+		
+	}
+	
+	public static class InstructorPreferencesEditResponse extends PrefGroupEditResponse {
+
+	}
+	
+	public static class InstructorAssignmentPreferencesEditRequest extends PrefGroupEditRequest<InstructorAssignmentPreferencesEditResponse> implements GwtRpcRequest<InstructorAssignmentPreferencesEditResponse> {
+	}
+	
+	public static class InstructorAssignmentPreferencesEditResponse extends PrefGroupEditResponse {
+		private Long iTeachingPrefId;
+		private Float iMaxTeachingLoad;
+		private Set<Long> iAttributeIds;
+		private List<AttributeInterface> iAttributes;
+		
+		public Long getTeachingPrefId() { return iTeachingPrefId; }
+		public void setTeachingPrefId(Long prefId) { iTeachingPrefId = prefId; }
+		public Float getMaxTeachingLoad() { return iMaxTeachingLoad; }
+		public void setMaxTeachingLoad(Float maxLoad) { iMaxTeachingLoad = maxLoad; }
+
+		public void addInstructorAttribute(AttributeInterface attribute) {
+			addInstructorAttribute(attribute.getId());
+		}
+		public void addInstructorAttribute(Long attributeId) {
+			if (iAttributeIds == null) iAttributeIds = new HashSet<Long>();
+			iAttributeIds.add(attributeId);
+		}
+		public void removeInstructorAttribute(Long attributeId) {
+			if (iAttributeIds == null) iAttributeIds = new HashSet<Long>();
+			iAttributeIds.remove(attributeId);
+		}
+		public boolean hasInstructorAttribute(AttributeInterface attribute) {
+			return hasInstructorAttribute(attribute.getId());
+		}
+		public boolean hasInstructorAttribute(Long attributeId) {
+			return iAttributeIds != null && iAttributeIds.contains(attributeId);
+		}
+		public Set<Long> getInstructorAttributeIds() { return iAttributeIds; }
+		public boolean hasInstructorAttributeIds() { return iAttributeIds != null && !iAttributeIds.isEmpty(); }
+
+		public List<AttributeInterface> getAttributes() {
+			return iAttributes;
+		}
+		public void addAttribute(AttributeInterface attribute) {
+			if (iAttributes == null) iAttributes = new ArrayList<AttributeInterface>();
+			iAttributes.add(attribute);
+		}
+		public Set<AttributeTypeInterface> getAttributeTypes() {
+			Set<AttributeTypeInterface> types = new TreeSet<AttributeTypeInterface>();
+			if (iAttributes != null)
+				for (AttributeInterface attribute: iAttributes)
+					if (attribute.getType() != null) types.add(attribute.getType());
+			return types;
+		}
+		public List<AttributeInterface> getAttributesOfType(AttributeTypeInterface type) {
+			List<AttributeInterface> ret = new ArrayList<AttributeInterface>();
+			if (iAttributes != null)
+				for (AttributeInterface attribute: iAttributes) {
+					if (type == null && attribute.getType() == null) ret.add(attribute);
+					if (type != null && type.equals(attribute.getType())) ret.add(attribute);
+				}
+			return ret;
+		}
+		public boolean hasAttributesOfType(AttributeTypeInterface type) {
+			if (iAttributes != null)
+				for (AttributeInterface attribute: iAttributes) {
+					if (type == null && attribute.getType() == null) return true;
+					if (type != null && type.equals(attribute.getType())) return true;
+				}
+			return false;
+		}
+	}
+
 	public static class ClassInstr implements IsSerializable {
 		private Long iId;
 		private Long iInstructorId;
@@ -553,6 +646,7 @@ public class PrefGroupEditInterface {
 		private Long iId;
 		private String iLabel;
 		private String iDescription;
+		private String iAllowedPrefs;
 
 		public IdLabel() {}
 		public IdLabel(Long id, String label, String description) {
@@ -579,6 +673,14 @@ public class PrefGroupEditInterface {
 		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
 		public String getDescription() { return iDescription; }
 		public void setDescription(String description) { iDescription = description; }
+		
+		public boolean hasAllowedPrefs() { return iAllowedPrefs != null && !iAllowedPrefs.isEmpty(); }
+		public String getAllowedPrefs() { return iAllowedPrefs; }
+		public void setAllowedPrefs(String prefs) { iAllowedPrefs = prefs; }
+		public boolean isAllowed(PrefLevel pref) {
+			if (iAllowedPrefs == null || iAllowedPrefs.isEmpty()) return true;
+			return iAllowedPrefs.indexOf(pref.getTpCode()) >= 0;
+		}
 		
 		@Override
 		public String toString() {
@@ -938,6 +1040,8 @@ public class PrefGroupEditInterface {
 	public static enum PreferenceType {
 		TIME, DATE,
 		ROOM, ROOM_GROUP, ROOM_FEATURE, BUILDING,
+		DISTRIBUTION,
+		COURSE,
 	}
 	
 	public static class Preferences implements IsSerializable, Comparable<Preferences> {

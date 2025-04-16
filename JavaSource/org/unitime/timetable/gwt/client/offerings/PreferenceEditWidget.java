@@ -29,6 +29,9 @@ import java.util.Set;
 
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
+import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
+import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
+import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.IdLabel;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.PrefGroupEditResponse;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.PrefLevel;
@@ -69,12 +72,22 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 	private PrefGroupEditResponse iResponse;
 	private List<PreferencesTable> iRoomPrefs;
 	private PreferencesTable iDatePrefs;
+	private PreferencesTable iDistributionPrefs;
+	private PreferencesTable iCoursePrefs;
 	private TimePreferenceTable iTimePrefs;
-
+	private InstructorAvailabilityWidget iInstructorAvailability;
+	private SessionDatesSelector iInstructorUnavailability;
+	
 	public PreferenceEditWidget() {
+		this(true);
+	}
+
+	public PreferenceEditWidget(boolean header) {
 		addStyleName("unitime-PreferenceEdit");
-		iHeader = new UniTimeHeaderPanel(COURSE.sectionTitlePreferences());
-		addHeaderRow(iHeader);
+		if (header) {
+			iHeader = new UniTimeHeaderPanel(COURSE.sectionTitlePreferences());
+			addHeaderRow(iHeader);
+		}
 	}
 
 	@Override
@@ -91,6 +104,14 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 		if (iRoomPrefs != null)
 			for (PreferencesTable rp: iRoomPrefs)
 				rp.update();
+		if (iCoursePrefs != null)
+			iCoursePrefs.update();
+		if (iDistributionPrefs != null)
+			iDistributionPrefs.update();
+		if (iInstructorAvailability != null)
+			iResponse.setInstructorTimePrefereneces(((InstructorAvailabilityModel)iInstructorAvailability.getModel()).getPattern());
+		if (iInstructorUnavailability != null)
+			iResponse.setInstructorUnavailability(iInstructorUnavailability.getPattern());
 	}
 	
 	public static String getName(PreferenceType type) {
@@ -101,6 +122,8 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 		case BUILDING: return COURSE.propertyBuildings();
 		case ROOM_FEATURE: return COURSE.propertyRoomFeatures();
 		case ROOM_GROUP: return COURSE.propertyRoomGroups();
+		case DISTRIBUTION: return COURSE.propertyDistribution();
+		case COURSE: return COURSE.propertyCoursePrefs();
 		default: return type.name();
 		}
 	}
@@ -109,12 +132,19 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 	public void setValue(PrefGroupEditResponse response) {
 		iResponse = response;
 		clear();
-		addHeaderRow(iHeader);
+		if (iHeader != null)
+			addHeaderRow(iHeader);
 		
 		iTimePrefs = null;
 		if (response.hasTimePreferences()) {
 			iTimePrefs = new TimePreferenceTable(response);
 			addRow(response.getTimePreferences().getType(), iTimePrefs);
+		}
+		iInstructorAvailability = null;
+		if (response.hasInstructorTimePrefereneces()) {
+			iInstructorAvailability = new InstructorAvailabilityWidget();
+			iInstructorAvailability.forPattern(response.getInstructorTimePrefereneces(), true);
+			addRow(COURSE.propertyTime(), iInstructorAvailability);
 		}
 
 		iDatePrefs = null;
@@ -130,6 +160,24 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				iRoomPrefs.add(tab);
 				addRow(getName(p.getType()), tab);
 			}
+		}
+		
+		iDistributionPrefs = null;
+		if (response.hasDistributionPreferences()) {
+			iDistributionPrefs = new PreferencesTable(response.getDistributionPreferences(), null, response);
+			addRow(getName(response.getDistributionPreferences().getType()), iDistributionPrefs);
+		}
+		
+		iCoursePrefs = null;
+		if (response.hasCoursePreferences()) {
+			iCoursePrefs = new PreferencesTable(response.getCoursePreferences(), null, response);
+			addRow(getName(response.getCoursePreferences().getType()), iCoursePrefs);
+		}
+		
+		if (response.hasInstructorUnavailability()) {
+			iInstructorUnavailability = new SessionDatesSelector();
+			iInstructorUnavailability.forPattern(response.getInstructorUnavailability(), true);
+			addRow(COURSE.propertyUnavailableDates(), iInstructorUnavailability);
 		}
 	}
 
@@ -299,6 +347,8 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 			case ROOM_FEATURE: return COURSE.errorInvalidRoomFeaturePreference();
 			case ROOM_GROUP: return COURSE.errorInvalidRoomGroup();
 			case DATE: return COURSE.errorInvalidDatePatternPreference();
+			case DISTRIBUTION: return COURSE.errorInvalidDistributionPreference();
+			case COURSE: return COURSE.errorInvalidCoursePreference();
 			default: return null;
 			}
 		}
@@ -465,7 +515,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				for (int i = 0; i < iOptions.size(); i++) {
 					RadioButton opt = iRadios.get(i);
 					PrefLevel option = iOptions.get(i);
-					if (item == null || (!iAllowHard && ("P".equals(option.getCode()) || "R".equals(option.getCode())) && !opt.getValue())) {
+					if (item == null || (!iAllowHard && ("P".equals(option.getCode()) || "R".equals(option.getCode())) && !opt.getValue()) || !item.isAllowed(option)) {
 						opt.setEnabled(opt.getValue());
 						opt.setVisible(opt.getValue());
 					} else {
@@ -593,6 +643,14 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				String error = p.validate();
 				if (error != null) return error;
 			}
+		if (iDistributionPrefs != null) {
+			String error = iDistributionPrefs.validate();
+			if (error != null) return error;
+		}
+		if (iCoursePrefs != null) {
+			String error = iCoursePrefs.validate();
+			if (error != null) return error;
+		}
 		return null;
 	}
 }

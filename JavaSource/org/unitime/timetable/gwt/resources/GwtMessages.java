@@ -3971,6 +3971,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageInstructorDetail();
 	
+	@DefaultMessage("Instructor Preferences")
+	@DoNotTranslate
+	String pageInstructorPreferences();
+	
+	@DefaultMessage("Instructor Assignment Preferences")
+	@DoNotTranslate
+	String pageInstructorAssignmentPreferences();
+	
 	@DefaultMessage("Instructional Offering Cross Lists")
 	@DoNotTranslate
 	String pageInstructionalOfferingCrossLists();

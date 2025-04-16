@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimeSel
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.interfaces.ExternalSchedulingSubpartEditAction;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
@@ -190,7 +191,13 @@ public class SubpartEditBackend implements GwtRpcImplementation<SubpartEditReque
 		                    subpart.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
 		                    subpart.getManagingDept());
 					
-					tx.commit();
+			        String className = ApplicationProperty.ExternalActionSchedulingSubpartEdit.value();
+			    	if (className != null && className.trim().length() > 0){
+			        	ExternalSchedulingSubpartEditAction editAction = (ExternalSchedulingSubpartEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
+			       		editAction.performExternalSchedulingSubpartEditAction(subpart, hibSession);
+			    	}
+
+			    	tx.commit();
 					tx = null;
 				} catch (Exception e) {
 					if (tx != null) { tx.rollback(); }

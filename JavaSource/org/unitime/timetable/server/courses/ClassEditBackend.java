@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
@@ -65,6 +66,8 @@ import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -83,8 +86,10 @@ import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
@@ -204,7 +209,13 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		                    clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
 		                    clazz.getManagingDept());
 					
-					tx.commit();
+                    String className = ApplicationProperty.ExternalActionClassEdit.value();
+                	if (className != null && className.trim().length() > 0){
+                    	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
+                   		editAction.performExternalClassEditAction(clazz, hibSession);
+                	}
+
+                	tx.commit();
 					tx = null;
 				} catch (Exception e) {
 					if (tx != null) { tx.rollback(); }
@@ -355,16 +366,20 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		return ret;
 	}
 	
-	protected static void fillInPreferences(PrefGroupEditResponse response, PreferenceGroup pg, SessionContext context) {
+	public static void fillInPreferences(PrefGroupEditResponse response, PreferenceGroup pg, SessionContext context) {
+		fillInPreferenceLevels(response, pg, context);
+		fillInTimePreferences(response, pg, null, pg.effectiveDatePattern(), context, true);
+		fillInRoomPreferences(response, pg, null, context, true);
+		fillInDatePreferences(response, pg, null, pg.effectiveDatePattern(), context, true);
+	}
+	
+	public static void fillInPreferenceLevels(PrefGroupEditResponse response, PreferenceGroup pg, SessionContext context) {
 		List<PreferenceLevel> preferences = PreferenceLevel.getPreferenceLevelList(false);
 		for (PreferenceLevel pref: preferences) {
 			response.addPrefLevel(new PrefLevel(
 					pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolor(),
 					PreferenceLevel.prolog2char(pref.getPrefProlog())));
 		}
-		fillInTimePreferences(response, pg, null, pg.effectiveDatePattern(), context, true);
-		fillInRoomPreferences(response, pg, null, context, true);
-		fillInDatePreferences(response, pg, null, pg.effectiveDatePattern(), context, true);
 	}
 	
 	public static TimePatternModel createTimePatternModel(PreferenceGroup pg, TimePattern tp, SessionContext context) {
@@ -416,7 +431,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		return model;
 	}
 	
-	protected static void fillInTimePreferences(PrefGroupEditResponse response, PreferenceGroup pg, Vector<DepartmentalInstructor> leadInstructors, DatePattern datePattern, SessionContext context, boolean fillPrefs) {
+	public static void fillInTimePreferences(PrefGroupEditResponse response, PreferenceGroup pg, Vector<DepartmentalInstructor> leadInstructors, DatePattern datePattern, SessionContext context, boolean fillPrefs) {
 		List<TimePattern> timePatterns = null;
 		if (pg instanceof Class_) {
 			Class_ c = (Class_)pg;
@@ -436,6 +451,14 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 	        		ss.getInstrOfferingConfig().getDurationModel(),
 	        		false,
 	        		ss.getManagingDept());
+		} else if (pg instanceof DepartmentalInstructor) {
+			for (TimePref tp: pg.effectivePreferences(TimePref.class)) {
+				response.setInstructorTimePrefereneces(tp.getPreference());
+				break;
+			}
+			if (!response.hasInstructorTimePrefereneces())
+				response.setInstructorTimePrefereneces("2");
+			return;
 		}
 		if (timePatterns != null) {
 			TimePreferences timePrefs = new TimePreferences(-5l, CMSG.propertyTime());
@@ -557,7 +580,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		}		
 	}
 	
-	protected static void doClear(Set<Preference> s, Preference.Type... typesArray) {
+	public static void doClear(Set<Preference> s, Preference.Type... typesArray) {
     	int types = Preference.Type.toInt(typesArray);
     	for (Iterator<Preference> i = s.iterator(); i.hasNext(); ) {
     		Preference p = i.next();
@@ -565,7 +588,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
     	}
     }
 	
-    protected static void doUpdate(PreferenceGroup pg, Set<Preference> s, PrefGroupEditResponse form, Preference.Type... typesArray) throws Exception {
+	public static void doUpdate(PreferenceGroup pg, Set<Preference> s, PrefGroupEditResponse form, Preference.Type... typesArray) throws Exception {
     	pg.setPreferences(s);
     	
     	int types = Preference.Type.toInt(typesArray);
@@ -577,10 +600,10 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
         // Time Prefs
     	if (Preference.Type.TIME.in(types)) {
             if (pg instanceof DepartmentalInstructor) {
-            	if (form.hasTimePreferences() && form.getTimePreferences().hasSelections()) {
+            	if (form.hasInstructorTimePrefereneces() && !form.getInstructorTimePrefereneces().matches("2+")) {
             		TimePref tp = new TimePref();
             		tp.setOwner(pg);
-            		tp.setPreference(form.getTimePreferences().getSelections().get(0).getPreference());
+            		tp.setPreference(form.getInstructorTimePrefereneces());
             		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
             		tp.setTimePattern(null);
             		s.add(tp);
@@ -808,6 +831,32 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
             		s.add(dp);
             	}
             }
+    	}
+    	
+        // Distribution Prefs
+    	if (Preference.Type.DISTRIBUTION.in(types)) {
+            Preferences prefs = form.getDistributionPreferences();
+            if (prefs != null && prefs.hasSelections())
+            	for (Selection selection: prefs.getSelections()) {
+            		DistributionPref dp = new DistributionPref();
+                    dp.setOwner(pg);
+                    dp.setPrefLevel(PreferenceLevelDAO.getInstance().get(selection.getLevel()));
+                    dp.setDistributionType(DistributionTypeDAO.getInstance().get(selection.getItem()));
+                    s.add(dp);
+            	}
+    	}
+    	
+    	// Course Prefs
+    	if (Preference.Type.COURSE.in(types)) {
+            Preferences prefs = form.getCoursePreferences();
+            if (prefs != null && prefs.hasSelections())
+            	for (Selection selection: prefs.getSelections()) {
+            		InstructorCoursePref dp = new InstructorCoursePref();
+                    dp.setOwner(pg);
+                    dp.setPrefLevel(PreferenceLevelDAO.getInstance().get(selection.getLevel()));
+                    dp.setCourse(CourseOfferingDAO.getInstance().get(selection.getItem()));
+                    s.add(dp);
+            	}
     	}
 
         // Set values in subpart

@@ -120,6 +120,10 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public SessionDatesSelector forPattern(final String pattern) {
+		return forPattern(pattern, false);
+	}
+	
+	public SessionDatesSelector forPattern(final String pattern, final boolean editable) {
 		RPC.execute(new PatternDatesRequest(), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 			@Override
 			public void onFailure(Throwable err) {
@@ -136,14 +140,29 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 						for (D d: s.getDays()) {
 							char c = pattern.charAt(index ++);
 							d.setValue(c == '1');
-							d.setEnabled(false);
-							d.removeStyleName("disabled");
+							if (!editable) {
+								d.setEnabled(false);
+								d.removeStyleName("disabled");
+							}
 						}
 					}
 				}
 			}
 		});
 		return this;
+	}
+	
+	public String getPattern() {
+		String ret = "";
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				for (D d: s.getDays())
+					ret += (d.getValue() ? "1" : "0");
+			}
+		}
+		return ret;
 	}
 	
 	public SessionDatesSelector forDatePattern(final String pattern) {

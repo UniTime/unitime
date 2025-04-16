@@ -248,6 +248,8 @@
     	<url-pattern>/crosslist</url-pattern>
     	<url-pattern>/classEdit</url-pattern>
     	<url-pattern>/subpartEdit</url-pattern>
+    	<url-pattern>/instructorPrefs</url-pattern>
+    	<url-pattern>/instrAssignmentPrefs</url-pattern>
     </servlet-mapping>
 	
 	<filter>

@@ -408,6 +408,13 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		
 		if (!table.hasProperties()) return null;
 		
+		
+		table.addProperty(getLegend(hasNotAvailable));
+		
+		return table;
+	}
+	
+	public static PropertyInterface getLegend(boolean hasNotAvailable) {
 		PropertyInterface legend = new PropertyInterface();
 		CellInterface cell = new CellInterface(); legend.setCell(cell);
 		for (PreferenceLevel pref: PreferenceLevelDAO.getInstance().getSession().createQuery(
@@ -420,8 +427,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		}
 		legend.addStyle("text-align: center;");
 		legend.addStyle("border-top: 1px dashed #9CB0CE;");
-		table.addProperty(legend);
-		
-		return table;
+		return legend;
 	}
+	
 }

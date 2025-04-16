@@ -92,7 +92,7 @@ public class DistributionType extends BaseDistributionType implements Comparable
     	return types;
     }
 
-	public static Set findApplicable(Department dept, boolean instructorPrefOnly, boolean examPref) throws Exception {
+	public static Set<DistributionType> findApplicable(Department dept, boolean instructorPrefOnly, boolean examPref) {
 		Set<DistributionType> types = null;
 		if (dept == null) {
 			types = findAll(instructorPrefOnly, examPref, true);

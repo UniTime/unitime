@@ -136,7 +136,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		return (getFormattedName() == null ? getLastName() + ", " + getFirstName() : getFormattedName()) + (getExternalId() == null ? "" : " (" + getExternalId() + ")");
 	}
 
-	public static class AttributeTypeInterface implements GwtRpcResponse, Serializable {
+	public static class AttributeTypeInterface implements GwtRpcResponse, Serializable, Comparable<AttributeTypeInterface> {
 		private static final long serialVersionUID = 1L;
 		private Long iId;
 		private String iAbbv;
@@ -177,6 +177,13 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		@Override
 		public String toString() {
 			return getLabel();
+		}
+
+		@Override
+		public int compareTo(AttributeTypeInterface type) {
+			int cmp = getLabel().compareTo(type.getLabel());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(type.getId());
 		}
 	}
 	
@@ -1545,7 +1552,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void setDepartmentFilter(FilterParameterInterface filter) { iDepartmentFilter = filter; }
 		public FilterParameterInterface getDepartmentFilter() { return iDepartmentFilter; }
 
-		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
+		public boolean hasProperties() { return iProperties != null && iProperties.hasProperties(); }
 		public void addProperty(PropertyInterface property) {
 			if (iProperties == null) iProperties = new TableInterface();
 			iProperties.addProperty(property);
