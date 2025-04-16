@@ -189,7 +189,7 @@ public class CopyBetweenSessionHelper {
 		iUseCampusPrefixForDepartments = false;
 		iUseCampusPrefixForSubjectAreas = false;
 		iPrefixSeparator = null;
-		iDepartmentCodesWithDifferentPrefix = null;
+		iDepartmentCodesWithDifferentPrefix = new HashMap<String, String>();
 		iLog = log;
 		iResetClassSuffix = ApplicationProperty.RollForwardResetClassSuffix.isTrue();
 		initDbColumnLengths();
