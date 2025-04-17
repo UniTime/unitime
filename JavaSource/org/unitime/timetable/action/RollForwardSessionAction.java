@@ -399,7 +399,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 
 			if (iErrors.isEmpty() && iForm.getRollForwardCourseOfferings()) {
 				setStatus(MSG.rollForwardCourseOfferings() + " ...");
-				sessionRollForward.rollCourseOfferingsForward(iErrors, iForm);
+				sessionRollForward.rollCourseOfferingsForward(iErrors, iForm, copyBetweenSessionHelper);
 	    	}
 	        iProgress++;
 

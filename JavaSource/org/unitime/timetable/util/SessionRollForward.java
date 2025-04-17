@@ -1238,90 +1238,6 @@ public class SessionRollForward {
 		getHibSession().flush();
 	}
 	
-//	protected void rollInstructorDistributionPrefs(DepartmentalInstructor fromInstructor, DepartmentalInstructor toInstructor){
-//		if (fromInstructor.getDistributionPreferences() != null && fromInstructor.getDistributionPreferences().size() > 0){
-//			DistributionPref fromDistributionPref = null;
-//			DistributionPref toDistributionPref = null;
-//			for (Iterator it = fromInstructor.getDistributionPreferences().iterator(); it.hasNext();){
-//				fromDistributionPref = (DistributionPref) it.next();
-//				toDistributionPref = new DistributionPref();
-//				if(fromDistributionPref.getDistributionType() != null) {
-//					toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
-//				}
-//				if(fromDistributionPref.getGrouping() != null) {
-//					toDistributionPref.setGrouping(fromDistributionPref.getGrouping());
-//				}
-//				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
-//				toDistributionPref.setOwner(toInstructor);
-//				toInstructor.addToPreferences(toDistributionPref);
-//			}
-//		}
-//	}
-	
-	
-//	public void rollInstructorDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
-//		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
-//		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
-//		DepartmentalInstructor toInstructor = null;
-//		Department toDepartment = null;
-//		ArrayList<String> deptsToRollDataFor = new ArrayList<String>();
-//		for(String dept : rollForwardSessionForm.getRollForwardDepartmentIds()){
-//			deptsToRollDataFor.add(dept);
-//		}
-//		
-//		if (fromSession.getDepartments() != null){
-//			String existingQuery = "select di.department.deptCode || di.externalUniqueId from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is not null";
-//			List<String> existingInstructors = getHibSession()
-//					.createQuery(existingQuery, String.class)
-//					.setParameter("sessionId", toSession.getUniqueId().longValue())
-//					.list();
-//			
-//			String existingNoExtIdQuery = "select di.department.deptCode || di.lastName || ',' || di.firstName || ',' || di.middleName from DepartmentalInstructor di where di.department.session.uniqueId = :sessionId and di.externalUniqueId is null";
-//			List<String> existingNoExtIdInstructors = getHibSession()
-//					.createQuery(existingNoExtIdQuery, String.class)
-//					.setParameter("sessionId", toSession.getUniqueId().longValue())
-//					.list();
-//			
-//			for(Department fromDepartment: fromSession.getDepartments()){
-//				if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
-//					toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
-//					if (toDepartment != null && deptsToRollDataFor.contains(toDepartment.getUniqueId().toString())){
-//						iLog.info("Rolling instructors for " + fromDepartment);
-//						rollDepartmentalInstructorAttributesForward(errors, fromDepartment, toDepartment);
-//						for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
-//							if (!(fromInstructor.getExternalUniqueId() == null) && !fromInstructor.getExternalUniqueId().isEmpty() && existingInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getExternalUniqueId())){
-//								iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
-//								continue;
-//							}
-//							if ((fromInstructor.getExternalUniqueId() == null || fromInstructor.getExternalUniqueId().isEmpty()) && existingNoExtIdInstructors.contains(toDepartment.getDeptCode()+fromInstructor.getLastName()+","+fromInstructor.getFirstName()+","+fromInstructor.getMiddleName())){
-//								iLog.info(fromInstructor.toString() + ": already exists in term, not rolling forward");
-//								continue;
-//							}
-//
-//							toInstructor = (DepartmentalInstructor) fromInstructor.clone();
-//							toInstructor.setDepartment(toDepartment);
-//							toInstructor.setAttributes(new HashSet<InstructorAttribute>());
-//							for (InstructorAttribute fromAttribute: fromInstructor.getAttributes()) {
-//								InstructorAttribute toAttribute = fromAttribute.findSameAttributeInSession(toSession);
-//								if (toAttribute != null) {
-//									toAttribute.addToInstructors(toInstructor);
-//									toInstructor.addToAttributes(toAttribute);
-//								}
-//							}
-//							rollForwardBuildingPrefs(fromInstructor, toInstructor, toSession);
-//							rollForwardRoomPrefs(fromInstructor, toInstructor, toSession);
-//							rollForwardRoomFeaturePrefs(fromInstructor, toInstructor, toSession);
-//							rollForwardRoomGroupPrefs(fromInstructor, toInstructor, toSession);
-//							rollForwardTimePrefs(fromInstructor, toInstructor, toSession);
-//							rollInstructorDistributionPrefs(fromInstructor, toInstructor);
-//							getHibSession().persist(toInstructor);
-//						}
-//					}
-//				}
-//			}
-//		}
-//		getHibSession().flush();
-//	}
 
 	public void rollInstructorDataForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm, CopyBetweenSessionHelper copyBetweenSessionHelper) {
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollInstructorDataForwardFrom());
@@ -1384,6 +1300,39 @@ public class SessionRollForward {
 			}
 			getHibSession().clear();
 		}
+//	public void rollCourseOfferingsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) throws Exception {
+//		for (String subjectId: rollForwardSessionForm.getRollForwardSubjectAreaIds()) {
+//			Transaction tx = getHibSession().beginTransaction();
+//			try {
+//				SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.parseLong(subjectId));
+//				iLog.info("Rolling " + subjectArea.getLabel() + " course offerings forward...");
+//				Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+//				if (rollForwardSessionForm.validateCourseOfferingRollForward(toSession, subjectArea, errors)) {
+//					Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom());
+//					InstructionalOfferingRollForward instrOffrRollFwd = new InstructionalOfferingRollForward(iLog);
+//					instrOffrRollFwd.setClassPrefRollForwardParameter(rollForwardSessionForm.getClassPrefsAction());
+//					instrOffrRollFwd.setSubpartLocationPrefRollForwardParameters(rollForwardSessionForm.getSubpartLocationPrefsAction());
+//					instrOffrRollFwd.setSubpartTimePrefRollForwardParameters(rollForwardSessionForm.getSubpartTimePrefsAction());
+//					instrOffrRollFwd.setRollForwardDistributions(rollForwardSessionForm.getRollForwardDistributions());
+//					instrOffrRollFwd.setCancelledClassActionRollForwardParameter(rollForwardSessionForm.getCancelledClassAction());
+//					instrOffrRollFwd.setWaitListsAndProhibitedOverrides(rollForwardSessionForm.getRollForwardWaitListsProhibitedOverrides());
+//					instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
+//				} else {
+//					break;
+//				}
+//				tx.commit();
+//			} catch (Exception e) {
+//				tx.rollback();
+//				iLog.error(MSG.errorRollForwardFailedAll(MSG.rollForwardCourseOfferings()), e);
+//				errors.addFieldError("rollForward", e.getMessage());
+//				break;
+//			}
+//			getHibSession().clear();
+//		}
+//	}
+	
+	public void rollCourseOfferingsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm, CopyBetweenSessionHelper copyBetweenSessionHelper) throws Exception {
+		copyBetweenSessionHelper.copyMergeCourseOfferingsToSession(errors);
 	}
 	
 	public void addNewCourseOfferings(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
