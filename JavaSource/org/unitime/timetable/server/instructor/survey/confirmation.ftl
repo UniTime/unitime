@@ -55,7 +55,7 @@
 				<#if timePrefs??>
 					<tr><td style='vertical-align: top;'>${msg.propTimePrefs()}</td><td>${timePrefs}</td></tr>
 					<#if survey.timePrefs.note?? && survey.timePrefs.hasHard()>
-						<tr><td></td><td style='white-space: pre-wrap; padding-left: 5px;'>${survey.timePrefs.note}</td></tr>
+						<tr><td></td><td style='white-space: pre-wrap !important; padding-left: 5px;'>${survey.timePrefs.note}</td></tr>
 					</#if>
 				</#if>
 				<#if survey.hasRoomPreferences()>
@@ -69,7 +69,7 @@
 					 							<#if prefLevel.getId() == selection.getLevel()>
 					 								<div style='color:${prefLevel.getColor()};'>${prefLevel.getTitle()} ${item.getLabel()}</div>
 					 								<#if prefLevel.isHard() && selection.hasNote()>
-					 									<div style='white-space: pre-wrap; padding-left: 5px;'>${selection.getNote()}</div>
+					 									<div style='white-space: pre-wrap; padding-left: 5px;'>${selection.getNote()?replace("\n","<br>")}</div>
 				 									</#if>
 				 								</#if>
 				 							</#list>
@@ -91,7 +91,7 @@
 					 							<#if prefLevel.getId() == selection.getLevel()>
 					 								<div style='color:${prefLevel.getColor()};'>${prefLevel.getTitle()} ${item.getLabel()}</div>
 					 								<#if prefLevel.isHard() && selection.hasNote()>
-					 									<div style='white-space: pre-wrap; padding-left: 5px;'>${selection.getNote()}</div>
+					 									<div style='white-space: pre-wrap; padding-left: 5px;'>${selection.getNote()?replace("\n","<br>")}</div>
 				 									</#if>
 				 								</#if>
 				 							</#list>
@@ -102,7 +102,7 @@
 						</#if>
 				</#if>
 				<#if survey.hasNote()>
-					<tr><td style='vertical-align: top;'>${msg.propOtherPreferences()}</td><td style='white-space: pre-wrap;'>${survey.getNote()}</td></tr>
+					<tr><td style='vertical-align: top;'>${msg.propOtherPreferences()}</td><td style='white-space: pre-wrap;'>${survey.getNote()?replace("\n","<br>")}</td></tr>
 				</#if>
 			</table></td></tr>
 			<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.sectCoursePreferences()}</td></tr>
@@ -123,7 +123,7 @@
 							<#list survey.getCustomFields() as cf>
 								<#assign max = (677 * cf.getLength() / 100)>
 								<#if ci.hasCustomField(cf)>
-									<td style='vertical-align: top; white-space: pre-wrap; width: ${max} px;'>${ci.getCustomField(cf)}</td>
+									<td style='vertical-align: top; white-space: pre-wrap; width: ${max} px;'>${ci.getCustomField(cf)?replace("\n","<br>")}</td>
 								<#else>
 									<td></td>
 								</#if>

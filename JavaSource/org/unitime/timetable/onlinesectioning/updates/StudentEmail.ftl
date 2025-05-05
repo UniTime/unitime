@@ -38,12 +38,12 @@
  			
  			<#if message?? && message?has_content>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailMessage()}</td></tr>
- 				<tr><td style="white-space: pre-wrap;">${message}</td></tr>
+ 				<tr><td style="white-space: pre-wrap;">${message?replace("\n","<br>")}</td></tr>
  			</#if>
  			
  			<#if reason?? && reason?has_content>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailReschedulingReason()}</td></tr>
- 				<tr><td style="white-space: pre-wrap;">${reason}</td></tr>
+ 				<tr><td style="white-space: pre-wrap;">${reason?replace("\n","<br>")}</td></tr>
  			</#if>
 
  			<#if changedCourse??>
@@ -57,7 +57,7 @@
  					</table></tr></tr>
  				</#if>
  				<#if changeMessage??>
- 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage}</td></tr>
+ 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage?replace("\n","<br>")}</td></tr>
  				</#if>
  			<#elseif changes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailEnrollmentChanges()}</td></tr>
@@ -217,7 +217,7 @@
 	 		<td style="${style}">${line.rooms}</td>
 	 		<td style="${stylebr}">${line.instructors}</td>
 	 		<#if line.requires??><td style="${stylebr}">${line.requires}</td><#else><td style="${style}"></td></#if>
-	 		<#if line.note??><td style="${stylebr} white-space: pre-wrap;">${line.note}</td><#else><td style="${style}"></td></#if>
+	 		<#if line.note??><td style="${stylebr} white-space: pre-wrap;">${line.note?replace("\n","<br>")}</td><#else><td style="${style}"></td></#if>
 	 		<#if line.credit??><td style="${style}">${line.credit}</td><#else><td style="${style}"></td></#if>
 		</tr>
 		<#if line.last && line.courseNote??>
@@ -301,7 +301,7 @@
  		<#if requests.hasPref><td style="${style}">${line.prefs}</td></#if>
  		<#if requests.hasWarn>
  			<#if line.note?? && line.note?has_content>
- 				<td style="${style} white-space: pre-wrap;">${line.note}</td>
+ 				<td style="${style} white-space: pre-wrap;">${line.note?replace("\n","<br>")}</td>
  			<#else>
  				<td style="${style}"></td>
  			</#if>
@@ -374,7 +374,7 @@
  		</#if>
  		<td style="${style}">${line.courseTitle}</td>
  		<td style="${style} padding-right: 5px;" align="right">${line.credit}</td>
- 		<#if advisor.hasPref && !line.last><td style="${style} white-space:pre-wrap;">${line.prefs}</td></#if>
+ 		<#if advisor.hasPref && !line.last><td style="${style} white-space:pre-wrap;">${line.prefs?replace("\n","<br>")}</td></#if>
  		<#if line.rows gt 0>
  			<#assign noteColSpan="1">
  			<#if line.last>
@@ -393,7 +393,7 @@
  				</#if>
  			</#if>
  			<#if line.note?? && line.note?has_content>
- 				<td style="${style} white-space: pre-wrap;" rowSpan="${line.rows}" colSpan="${noteColSpan}">${line.note}</td>
+ 				<td style="${style} white-space: pre-wrap;" rowSpan="${line.rows}" colSpan="${noteColSpan}">${line.note?replace("\n","<br>")}</td>
  			<#else>
  				<td style="${style}" rowSpan="${line.rows}" colSpan="${noteColSpan}"></td>
  			</#if>

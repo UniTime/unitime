@@ -38,7 +38,7 @@
  			
  			<#if message?? && message?has_content>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailMessage()}</td></tr>
- 				<tr><td style="white-space: pre-wrap;">${message}</td></tr>
+ 				<tr><td style="white-space: pre-wrap;">${message?replace("\n","<br>")}</td></tr>
  			</#if>
  			
  			<#if course??>
@@ -52,7 +52,7 @@
  					</table></tr></tr>
  				</#if>
  				<#if changeMessage??>
- 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage}</td></tr>
+ 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage?replace("\n","<br>")}</td></tr>
  				</#if>
  			<#elseif changes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailAssignmentChanges()}</td></tr>
@@ -175,7 +175,7 @@
 	 		<#if showAssignmentColumn>
 	 			<td style="${stylebr}">${line.instructors}</td>
 	 		</#if>
-	 		<#if line.note??><td style="${stylebr} white-space: pre-wrap;">${line.note}</td><#else><td style="${style}"></td></#if>
+	 		<#if line.note??><td style="${stylebr} white-space: pre-wrap;">${line.note?replace("\n","<br>")}</td><#else><td style="${style}"></td></#if>
 		</tr>
 		<#if line.last && line.courseNote??>
 			<tr style='vertical-align: top'>
