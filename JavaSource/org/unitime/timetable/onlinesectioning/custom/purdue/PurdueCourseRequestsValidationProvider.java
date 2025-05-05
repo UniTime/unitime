@@ -2758,6 +2758,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		Float maxCredit = student.getMaxCredit();
+		if (validation != null && validation.maxCredit != null && !validation.maxCredit.equals(student.getMaxCredit()))
+			maxCredit = validation.maxCredit;
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
 		SpecialRegistrationRequest submitRequest = new SpecialRegistrationRequest();
