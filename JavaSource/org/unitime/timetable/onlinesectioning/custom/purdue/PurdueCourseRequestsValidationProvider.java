@@ -2505,6 +2505,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 
 		// When there is a pending override, try to update student first
 		boolean studentUpdated = false;
+		boolean studentChanged = false;
 		if (hasOverride(student))
 			studentUpdated = updateStudent(server, helper, student, action);
 
@@ -2758,8 +2759,11 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		}
 		
 		Float maxCredit = student.getMaxCredit();
-		if (validation != null && validation.maxCredit != null && !validation.maxCredit.equals(student.getMaxCredit()))
+		if (validation != null && validation.maxCredit != null && !validation.maxCredit.equals(student.getMaxCredit())) {
 			maxCredit = validation.maxCredit;
+			student.setMaxCredit(validation.maxCredit);
+			studentChanged = true;
+		}
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 		
 		SpecialRegistrationRequest submitRequest = new SpecialRegistrationRequest();
@@ -2988,7 +2992,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
-		boolean studentChanged = false;
 		if (submitRequest.maxCredit != null) {
 			for (SpecialRegistration r: response.data) {
 				if (r.maxCredit != null) {
