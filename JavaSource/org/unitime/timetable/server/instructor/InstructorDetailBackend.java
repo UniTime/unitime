@@ -161,7 +161,7 @@ public class InstructorDetailBackend implements GwtRpcImplementation<InstructorD
 		if (instructor.getPositionType() != null)
 			response.addProperty(MSG.propertyInstructorPosition()).add(instructor.getPositionType().getLabel());
 		if (instructor.getNote() != null && !instructor.getNote().isEmpty())
-			response.addProperty(MSG.propertyNote()).add(instructor.getPositionType().getLabel(), true).addStyle("white-space: pre-wrap;");
+			response.addProperty(MSG.propertyNote()).add(instructor.getNote(), true).addStyle("white-space: pre-wrap;");
 		if (instructor.isIgnoreToFar()) {
 			CellInterface c = response.addProperty(MSG.propertyIgnoreTooFar());
 			c.add(MSG.enabled()).setColor("red");

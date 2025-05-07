@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -70,6 +72,17 @@ public class InstructorInfoEditAction extends InstructorAction {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyInstructors.isFalse()) {
+    		String url = "instructorEdit";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		super.execute();
 		
         //Read parameters

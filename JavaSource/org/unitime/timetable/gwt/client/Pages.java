@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAssignmentPreferencesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorDetailPage;
+import org.unitime.timetable.gwt.client.instructor.InstructorEditPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorPreferencesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorsPage;
 import org.unitime.timetable.gwt.client.instructor.SetupTeachingRequestsPage;
@@ -366,6 +367,14 @@ public enum Pages {
 	instrAssignmentPrefs(new PageFactory() {
 		public Widget create() { return new InstructorAssignmentPreferencesPage(); }
 		public String name(GwtMessages messages) { return messages.pageInstructorAssignmentPreferences(); }
+		}),
+	instructorAdd(new PageFactory() {
+		public Widget create() { return new InstructorEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageAddInstructor(); }
+		}),
+	instructorEdit(new PageFactory() {
+		public Widget create() { return new InstructorEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageEditInstructor(); }
 		}),
 	;
 	

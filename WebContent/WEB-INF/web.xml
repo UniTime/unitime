@@ -250,6 +250,8 @@
     	<url-pattern>/subpartEdit</url-pattern>
     	<url-pattern>/instructorPrefs</url-pattern>
     	<url-pattern>/instrAssignmentPrefs</url-pattern>
+    	<url-pattern>/instructorAdd</url-pattern>
+    	<url-pattern>/instructorEdit</url-pattern>
     </servlet-mapping>
 	
 	<filter>

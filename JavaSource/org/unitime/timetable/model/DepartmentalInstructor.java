@@ -62,6 +62,7 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
+import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.util.NameFormat;
 import org.unitime.timetable.util.NameInterface;
 
@@ -383,29 +384,21 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 
 	public DepartmentalInstructor getNextDepartmentalInstructor(SessionContext context, Right right) {
-    	List instructors = DepartmentalInstructor.findInstructorsForDepartment(getDepartment().getUniqueId());
-    	DepartmentalInstructor next = null;
-    	for (Iterator i=instructors.iterator();i.hasNext();) {
-    		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? di.getDepartment() : di, right)) continue;
-    		if (this.compareTo(di)>=0) continue;
-    		if (next==null || next.compareTo(di)>0)
-    			next = di;
+    	Long nextId = Navigation.getNext(context, Navigation.sInstructionalOfferingLevel, getUniqueId());
+    	if (nextId!=null) {
+    		if (nextId.longValue()<0) return null;
+    		return (DepartmentalInstructorDAO.getInstance()).get(nextId);
     	}
-    	return next;
+    	return null;
     }
 	
     public DepartmentalInstructor getPreviousDepartmentalInstructor(SessionContext context, Right right) {
-    	List instructors = DepartmentalInstructor.findInstructorsForDepartment(getDepartment().getUniqueId());
-    	DepartmentalInstructor prev = null;
-    	for (Iterator i=instructors.iterator();i.hasNext();) {
-    		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-    		if (right != null && !context.hasPermission(Department.class.equals(right.type()) ? di.getDepartment() : di, right)) continue;
-    		if (this.compareTo(di)<=0) continue;
-    		if (prev==null || prev.compareTo(di)<0)
-    			prev = di;
+    	Long prevId = Navigation.getPrevious(context, Navigation.sInstructionalOfferingLevel, getUniqueId());
+    	if (prevId!=null) {
+    		if (prevId.longValue()<0) return null;
+    		return (DepartmentalInstructorDAO.getInstance()).get(prevId);
     	}
-    	return prev;
+    	return null;
     }
     
     public String toString() {

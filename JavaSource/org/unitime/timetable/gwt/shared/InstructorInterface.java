@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget.InstructorAvailabilityModel;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.IdLabel;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
@@ -1588,5 +1589,93 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	}
 	
 	public static class PatternDatesRequest implements GwtRpcRequest<GwtRpcResponseList<SessionMonth>> {
+	}
+	
+	public static class InstructorEditRequest implements GwtRpcRequest<InstructorEditResponse>{
+		private Long iInstructorId, iDepartmentId;
+		private Operation iOperation;
+		private InstructorEditResponse iData;
+		
+		public static enum Operation {
+			GET, SAVE, DELETE, PREVIOUS, NEXT,
+		}
+		
+		public InstructorEditRequest() {}
+
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long departmentId) { iDepartmentId = departmentId; }
+		public Operation getOperation() { return iOperation; }
+		public void setOperation(Operation operation) { iOperation = operation; }
+		public InstructorEditResponse getData() { return iData; }
+		public void setData(InstructorEditResponse data) { iData = data; }
+	}
+	
+	public static class InstructorEditResponse implements GwtRpcResponse {
+		private Long iInstructorId, iDepartmentId;
+		private String iExternalId;
+		private String iFirstName, iMiddleName, iLastName;
+		private Long iPositionId;
+		private List<IdLabel> iPositions;
+		private boolean iCanDelete;
+		private Long iNextId, iPreviousId;
+		private String iAcademicTitle, iEmail, iDepartment;
+		private String iNote;
+		private Boolean iIgnoreTooFar = false;
+		private String iCareerAcct;
+		private boolean iConfirms = true;
+
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long id) { iInstructorId = id; }
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long id) { iDepartmentId = id; }
+		
+	    public String getExternalId() { return iExternalId; }
+	    public void setExternalId(String externalId) { iExternalId = externalId; }
+	    
+	    public String getFirstName() { return iFirstName; }
+	    public void setFirstName(String fname) { iFirstName = fname; }
+	    
+	    public String getMiddleName() { return iMiddleName; }
+	    public void setMiddleName(String mname) { iMiddleName = mname; }
+	    
+	    public String getLastName() { return iLastName; }
+	    public void setLastName(String lname) { iLastName = lname; }
+	    
+	    public Long getPositionId() { return iPositionId; }
+	    public void setPositionId(Long positionId) { iPositionId = positionId; }
+	    public boolean hasPositions() { return iPositions != null && !iPositions.isEmpty(); }
+	    public void addPosition(Long id, String label) {
+	    	if (iPositions == null) iPositions = new ArrayList<IdLabel>();
+	    	iPositions.add(new IdLabel(id, label, null));
+	    }
+	    public List<IdLabel> getPositions() { return iPositions; }
+	    
+	    public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+	    public boolean isCanDelete() { return iCanDelete; }
+	    public void setNextId(Long id) { iNextId = id; }
+	    public boolean hasNext() { return iNextId != null; }
+	    public Long getNextId() { return iNextId; }
+	    public void setPreviousId(Long id) { iPreviousId = id; }
+	    public boolean hasPrevious() { return iPreviousId != null; }
+	    public Long getPreviousId() { return iPreviousId; }
+	    
+	    public void setAcademicTitle(String academicTitle) { iAcademicTitle = academicTitle; }
+	    public String getAcademicTitle() { return iAcademicTitle; }
+	    public void setEmail(String email) { iEmail = email; }
+	    public String getEmail() { return iEmail; }
+	    public void setDepartment(String dept) { iDepartment = dept; }
+	    public String getDepartment() { return iDepartment; }
+	    public void setNote(String note) { iNote = note; }
+	    public String getNote() { return iNote; }
+	    public void setIgnoteTooFar(Boolean ignoreTooFar) { iIgnoreTooFar = ignoreTooFar; }
+	    public boolean isIgnoreTooFar() { return iIgnoreTooFar == null || iIgnoreTooFar.booleanValue(); }
+	    public void setCareerAcct(String careerAcct) { iCareerAcct = careerAcct; }
+	    public String getCareerAcct() { return iCareerAcct; }
+	    
+		public boolean isConfirms() { return iConfirms; }
+		public void setConfirms(boolean confirms) { iConfirms = confirms; }
+
 	}
 }

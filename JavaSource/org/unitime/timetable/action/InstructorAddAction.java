@@ -19,12 +19,16 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+import java.util.Enumeration;
+
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -47,6 +51,17 @@ public class InstructorAddAction extends InstructorAction {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyInstructors.isFalse()) {
+    		String url = "instructorAdd";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		super.execute();
 		
 		form.setMatchFound(null);

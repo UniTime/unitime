@@ -3982,6 +3982,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Instructional Offering Cross Lists")
 	@DoNotTranslate
 	String pageInstructionalOfferingCrossLists();
+	
+	@DefaultMessage("Add Instructor")
+	@DoNotTranslate
+	String pageAddInstructor();
+	
+	@DefaultMessage("Edit Instructor")
+	@DoNotTranslate
+	String pageEditInstructor();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

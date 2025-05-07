@@ -105,7 +105,7 @@ public class InstructorDetailPage extends Composite {
 			@Override
 			public void onClick(ClickEvent evt) {
 				UniTimeFrameDialog.openDialog(COURSE.actionInstructorSurvey(),
-						"instructorSurvey?menu=hide&id=" + iResponse.getInstructorId(),
+						"instructorSurvey?menu=hide&id=" + iResponse.getExternalId(),
 						"900", "90%");
 			}
 		});

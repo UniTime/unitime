@@ -91,8 +91,8 @@ public class PositionType extends BasePositionType implements Comparable{
 	 * 
 	 * @return
 	 */
-	public static TreeSet findAll() {
-		return new TreeSet(
+	public static TreeSet<PositionType> findAll() {
+		return new TreeSet<PositionType>(
 				(PositionTypeDAO.getInstance().findAll()));
 	}
 	
