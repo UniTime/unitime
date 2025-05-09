@@ -237,18 +237,24 @@ public class DistributionsTableBuilder extends TableBuilder {
             	if (getSessionContext().hasPermission(pg, Right.InstructorDetail))
             		line.setURL("instructorDetail.action?instructorId=" + dp.getOwner().getUniqueId() + "&op=Show%20Instructor%20Preferences");
             } else {
-            	if (getSessionContext().hasPermission(dp, Right.DistributionPreferenceEdit))
-            		line.setURL("distributionPrefs.action?dp=" + dp.getUniqueId() + "&op=view");
+            	if (getSessionContext().hasPermission(dp, Right.DistributionPreferenceEdit)) {
+            		if (ApplicationProperty.LegacyDistributions.isTrue())
+            			line.setURL("distributionPrefs.action?dp=" + dp.getUniqueId() + "&op=view");
+            		else
+            			line.setURL("distributionEdit?id=" + dp.getUniqueId());
+            	}
             }
-            
-            if ("PreferenceGroup".equals(getBackType()) && dp.getUniqueId().toString().equals(getBackId()))
-            	line.setAnchor("back");
             
             if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
             line.addCell(distType).setColor(prefColor).setTitle(prefLevel + " " + distType).setAria(prefLevel + " " + distType).setNoWrap(true);
             line.addCell(groupingText).setNoWrap(true);
             line.addCell(ownerType);
             line.addCell(obj);
+            
+            if ("DistributionPref".equals(getBackType()) && dp.getUniqueId().toString().equals(getBackId()))
+            	line.getCells().get(0).addAnchor("back");
+            else if ("PreferenceGroup".equals(getBackType()) && dp.getOwner().getUniqueId().toString().equals(getBackId()))
+            	line.getCells().get(0).addAnchor("back");
         }
         
         if (nrPrefs==0)

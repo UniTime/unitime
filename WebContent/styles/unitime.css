@@ -8121,3 +8121,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;	
 }
 
+.unitime-Description {
+	max-width: 800px;
+	white-space: pre-wrap;
+}

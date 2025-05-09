@@ -253,6 +253,8 @@
     	<url-pattern>/instructorAdd</url-pattern>
     	<url-pattern>/instructorEdit</url-pattern>
     	<url-pattern>/distributions</url-pattern>
+    	<url-pattern>/distributionAdd</url-pattern>
+    	<url-pattern>/distributionEdit</url-pattern>
     </servlet-mapping>
 	
 	<filter>

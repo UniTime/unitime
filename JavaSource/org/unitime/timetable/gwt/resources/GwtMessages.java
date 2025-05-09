@@ -3994,6 +3994,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Distribution Preferences")
 	@DoNotTranslate
 	String pageDistributionPreferences();
+	
+	@DefaultMessage("Add Distribution Preference")
+	@DoNotTranslate
+	String pageAddDistributionPreference();
+	
+	@DefaultMessage("Edit Distribution Preference")
+	@DoNotTranslate
+	String pageEditDistributionPreference();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

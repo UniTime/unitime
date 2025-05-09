@@ -336,7 +336,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		return null;
 	}
 	
-	private void swapRows(int r0, int r1) {
+	public void swapRows(int r0, int r1) {
 		if (r0 == r1) return;
 		if (r0 > r1) {
 			swapRows(r1, r0);

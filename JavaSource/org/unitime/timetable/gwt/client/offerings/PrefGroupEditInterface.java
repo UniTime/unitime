@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
@@ -1182,4 +1183,170 @@ public class PrefGroupEditInterface {
 	public static boolean equals(Object o1, Object o2) {
         return (o1 == null ? o2 == null : o1.equals(o2));
     }
+	
+	public static class DistributionEditRequest implements GwtRpcRequest<DistributionEditResponse> {
+		private Long iPreferenceId, iSubpartId, iClassId;
+		private Operation iOperation;
+		private DistributionEditResponse iData;
+		
+		public static enum Operation {
+			GET, SAVE, DELETE,
+		}
+		
+		public DistributionEditRequest() {}
+
+		public Long getPreferenceId() { return iPreferenceId; }
+		public void setPreferenceId(Long preferenceId) { iPreferenceId = preferenceId; }
+		public Long getClassId() { return iClassId; }
+		public void setClassId(Long classId) { iClassId = classId; }
+		public Long getSubpartId() { return iSubpartId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
+		public Operation getOperation() { return iOperation; }
+		public void setOperation(Operation operation) { iOperation = operation; }
+		public DistributionEditResponse getData() { return iData; }
+		public void setData(DistributionEditResponse data) { iData = data; }		
+	}
+	
+	public static class DistributionEditResponse implements GwtRpcResponse {
+		private Long iPreferenceId;
+		private Long iPrefLevelId, iDistTypeId, iStructureId;
+		private List<IdLabel> iDistTypes, iStructures, iPrefLevels, iSubjects;
+		private List<DistributionObjectInterface> iDistributionObjects;
+		private boolean iCanDelete;
+		private String iBackUrl, iBackTitle;
+		private boolean iConfirms;
+		
+		public Long getPreferenceId() { return iPreferenceId; }
+		public void setPreferenceId(Long preferenceId) { iPreferenceId = preferenceId; }
+
+		public Long getPrefLevelId() { return iPrefLevelId; }
+		public void setPrefLevelId(Long id) { iPrefLevelId = id; }
+		public void addPrefLevel(Long id, String label, char pref) {
+			if (iPrefLevels == null) iPrefLevels = new ArrayList<IdLabel>();
+			iPrefLevels.add(new IdLabel(id, label, ""+pref));
+		}
+		public List<IdLabel> getPrefLevels() { return iPrefLevels; }
+		public boolean hasPrefLevels() { return iPrefLevels != null && !iPrefLevels.isEmpty(); }
+		public IdLabel getPrefLevel(Long id) {
+			if (iPrefLevels == null) return null;
+			for (IdLabel item: iPrefLevels)
+				if (item.getId().equals(id)) return item;
+			return null;
+		}
+		
+		public Long getDistTypeId() { return iDistTypeId; }
+		public void setDistTypeId(Long id) { iDistTypeId = id; }
+		public void addDistType(Long id, String label, String description, String allowedPrefs) {
+			if (iDistTypes == null) iDistTypes = new ArrayList<IdLabel>();
+			IdLabel dt = new IdLabel(id, label, description);
+			dt.setAllowedPrefs(allowedPrefs);
+			iDistTypes.add(dt);
+		}
+		public List<IdLabel> getDistTypes() { return iDistTypes; }
+		public boolean hasDistTypes() { return iDistTypes != null && !iDistTypes.isEmpty(); }
+		public IdLabel getDistType(Long id) {
+			if (iDistTypes == null) return null;
+			for (IdLabel item: iDistTypes)
+				if (item.getId().equals(id)) return item;
+			return null;
+		}
+		
+		public Long getStructureId() { return iStructureId; }
+		public void setStructureId(Long id) { iStructureId = id; }
+		public void addStructure(int id, String label, String description) {
+			if (iStructures == null) iStructures = new ArrayList<IdLabel>();
+			iStructures.add(new IdLabel(Long.valueOf(id), label, description));
+		}
+		public List<IdLabel> getStructures() { return iStructures; }
+		public boolean hasStructures() { return iStructures != null && !iStructures.isEmpty(); }
+		public IdLabel getStructure(Long id) {
+			if (iStructures == null) return null;
+			for (IdLabel item: iStructures)
+				if (item.getId().equals(id)) return item;
+			return null;
+		}
+		
+		public void addSubject(Long id, String label, String description) {
+			if (iSubjects == null) iSubjects = new ArrayList<IdLabel>();
+			iSubjects.add(new IdLabel(id, label, description));
+		}
+		public List<IdLabel> getSubjects() { return iSubjects; }
+		public boolean hasSubjects() { return iSubjects != null && !iSubjects.isEmpty(); }
+		public IdLabel getSubject(Long id) {
+			if (iSubjects == null) return null;
+			for (IdLabel item: iSubjects)
+				if (item.getId().equals(id)) return item;
+			return null;
+		}
+		
+		public void addDistributionObject(DistributionObjectInterface dist) {
+			if (iDistributionObjects == null) iDistributionObjects = new ArrayList<DistributionObjectInterface>();
+			iDistributionObjects.add(dist);
+		}
+		public List<DistributionObjectInterface> getDistributionObjects() { return iDistributionObjects; }
+		public boolean hasDistributionObjects() { return iDistributionObjects != null && !iDistributionObjects.isEmpty(); }
+		public void setDistributionObjects(List<DistributionObjectInterface> objects) {
+			iDistributionObjects = objects;
+		}
+		
+		public boolean isCanDelete() { return iCanDelete; }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+		
+		public boolean hasBackUrl() { return iBackUrl != null && !iBackUrl.isEmpty(); }
+		public void setBackUrl(String backUrl) { iBackUrl = backUrl; }
+		public String getBackUrl() { return iBackUrl; }
+		public boolean hasBackTitle() { return iBackTitle != null && !iBackTitle.isEmpty(); }
+		public void setBackTitle(String backTitle) { iBackTitle = backTitle; }
+		public String getBackTitle() { return iBackTitle; }
+		public boolean isConfirms() { return iConfirms; }
+		public void setConfirms(boolean confirms) { iConfirms = confirms; }
+	}
+	
+	public static class DistributionObjectInterface implements IsSerializable {
+		private Long iSubjectId, iCourseId, iSubpartId, iClassId;
+		private String iSubject, iCourse, iSubpart, iClazz;
+		
+		public Long getSubjectId() { return iSubjectId; }
+		public void setSubjectId(Long subjectId) { iSubjectId = subjectId; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public Long getSubpartId() { return iSubpartId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
+		public Long getClassId() { return iClassId; }
+		public void setClassId(Long classId) { iClassId = classId; }
+		
+		public String getSubject() { return iSubject ; }
+		public void setSubject(String subject) { iSubject = subject; }
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+		public String getSubpart() { return iSubpart; }
+		public void setSubpart(String subpart) { iSubpart = subpart; }
+		public String getClazz() { return iClazz; }
+		public void setClazz(String clazz) { iClazz = clazz; }
+		
+		public boolean isValid() {
+			if (iClassId == null) return false;
+			if (iClassId < 0) return iSubpartId != null;
+			return true; 
+		}
+		public String getId() { return iCourseId + ":" + iSubpartId + ":" + iClassId; }
+	}
+	
+	public static class DistributionsLookupCourses implements GwtRpcRequest<GwtRpcResponseList<IdLabel>> {
+		private Long iSubjectId;
+		public Long getSubjectId() { return iSubjectId; }
+		public void setSubjectId(Long subjectId) { iSubjectId = subjectId; }
+	}
+	
+	public static class DistributionsLookupSubparts implements GwtRpcRequest<GwtRpcResponseList<IdLabel>> {
+		private Long iCourseId;
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+	}
+	
+	public static class DistributionsLookupClasses implements GwtRpcRequest<GwtRpcResponseList<IdLabel>> {
+		private Long iSubpartId;
+		public Long getSubpartId() { return iSubpartId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
+	}
 }

@@ -215,13 +215,23 @@ public class ClassDetailPage extends Composite {
 						hp.addButton("add-distribution", COURSE.actionAddDistributionPreference(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
+								ToolBox.open(GWT.getHostPageBaseURL() + "distributionAdd?classId=" + iResponse.getClassId());
+							}
+						});
+						hp.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
+						hp.getButton("add-distribution").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
+					}
+					if (response.hasOperation("add-distribution-legacy")) {
+						hp.addButton("add-distribution-legacy", COURSE.actionAddDistributionPreference(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent evt) {
 								ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
 										URL.encodeQueryString(COURSE.actionAddDistributionPreference()) + "&classId=" + iResponse.getClassId()
 										);
 							}
 						});
-						hp.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
-						hp.getButton("add-distribution").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
+						hp.getButton("add-distribution-legacy").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
+						hp.getButton("add-distribution-legacy").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
 					}
 				}
 				

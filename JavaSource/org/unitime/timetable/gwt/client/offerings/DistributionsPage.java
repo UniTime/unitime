@@ -135,7 +135,7 @@ public class DistributionsPage extends Composite {
 		iFilter.getFooter().setEnabled("exportPdf", false);
 	
 		iRootPanel = new SimplePanel(iPanel);
-		iRootPanel.addStyleName("unitime-InstructionalOfferingsPage");
+		iRootPanel.addStyleName("unitime-DistributionsPage");
 		initWidget(iRootPanel);
 		init();
 		
@@ -231,8 +231,7 @@ public class DistributionsPage extends Composite {
 							header.addButton("add-distribution", COURSE.actionAddDistributionPreference(), new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent e) {
-									ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
-											URL.encodeQueryString(COURSE.actionAddDistributionPreference()));
+									ToolBox.open(GWT.getHostPageBaseURL() + "distributionAdd?subjectId=" + table.getId());
 								}
 							});
 							header.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));

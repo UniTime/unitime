@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.client.offerings.ClassEditPage;
 import org.unitime.timetable.gwt.client.offerings.ClassesPage;
 import org.unitime.timetable.gwt.client.offerings.CourseOfferingEdit;
 import org.unitime.timetable.gwt.client.offerings.CrossListPage;
+import org.unitime.timetable.gwt.client.offerings.DistributionsEditPage;
 import org.unitime.timetable.gwt.client.offerings.DistributionsPage;
 import org.unitime.timetable.gwt.client.offerings.InstrOfferingConfigPage;
 import org.unitime.timetable.gwt.client.offerings.InstructionalOfferingsPage;
@@ -380,6 +381,14 @@ public enum Pages {
 	distributions(new PageFactory() {
 		public Widget create() { return new DistributionsPage(); }
 		public String name(GwtMessages messages) { return messages.pageDistributionPreferences(); }
+		}),
+	distributionAdd(new PageFactory() {
+		public Widget create() { return new DistributionsEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageAddDistributionPreference(); }
+		}),
+	distributionEdit(new PageFactory() {
+		public Widget create() { return new DistributionsEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageEditDistributionPreference(); }
 		}),
 	;
 	

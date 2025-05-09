@@ -1959,6 +1959,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Select a distribution type.")
 	String errorSelectDistributionType();
+	
+	@DefaultMessage("Select a structure.")
+	String errorSelectDistributionStructure();
 
 	@DefaultMessage("Select a preference level.")
 	String errorSelectDistributionPreferenceLevel();

@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.SubpartDetailReponse;
@@ -209,8 +210,12 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
     		response.addOperation("next");
     	if (context.hasPermission(Right.ExaminationAdd))
     		response.addOperation("add-exam");
-    	if (context.hasPermission(ss.getManagingDept(), Right.DistributionPreferenceAdd) && context.hasPermission(ss, Right.DistributionPreferenceSubpart))
-    		response.addOperation("add-distribution");
+    	if (context.hasPermission(ss.getManagingDept(), Right.DistributionPreferenceAdd) && context.hasPermission(ss, Right.DistributionPreferenceSubpart)) {
+    		if (ApplicationProperty.LegacyDistributions.isTrue())
+    			response.addOperation("add-distribution-legacy");
+    		else
+    			response.addOperation("add-distribution");
+    	}
     	if (context.hasPermission(ss, Right.SchedulingSubpartEdit))
     		response.addOperation("edit");
     	if (context.hasPermission(ss, Right.SchedulingSubpartDetailClearClassPreferences))
