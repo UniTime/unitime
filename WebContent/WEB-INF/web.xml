@@ -252,6 +252,7 @@
     	<url-pattern>/instrAssignmentPrefs</url-pattern>
     	<url-pattern>/instructorAdd</url-pattern>
     	<url-pattern>/instructorEdit</url-pattern>
+    	<url-pattern>/distributions</url-pattern>
     </servlet-mapping>
 	
 	<filter>

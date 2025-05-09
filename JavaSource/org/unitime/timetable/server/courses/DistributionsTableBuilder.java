@@ -21,6 +21,7 @@ package org.unitime.timetable.server.courses;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,6 +29,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -103,11 +105,73 @@ public class DistributionsTableBuilder extends TableBuilder {
 		return createTableForDistributions(prefs); 
 	}
 	
+	public TableInterface getDistPrefsTableForFilter(FilterInterface filter, Long subjAreaId) {
+		Set<DistributionPref> prefs = new TreeSet<DistributionPref>();
+		
+		String courseNbr = filter.getParameterValue("courseNbr");
+		for (Department d: Department.getUserDepartments(getSessionContext().getUser())) {
+            prefs.addAll(DistributionPref.getPreferences(getSessionContext().getUser().getCurrentAcademicSessionId(),
+            		d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+            prefs.addAll(DistributionPref.getInstructorPreferences(getSessionContext().getUser().getCurrentAcademicSessionId(),
+            		d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+        }
+		
+		String prefLevel = filter.getParameterValue("prefLevel");
+		String distType = filter.getParameterValue("distType");
+		String structure = filter.getParameterValue("structure");
+		for (Iterator<DistributionPref> i = prefs.iterator(); i.hasNext(); ) {
+			DistributionPref dp = i.next();
+			if (prefLevel != null && !prefLevel.isEmpty()) {
+				boolean match = false;
+				for (String prefId: prefLevel.split(","))
+					if (dp.getPrefLevel().getUniqueId().toString().equals(prefId)) {
+						match = true;
+						break;
+					}
+				if (!match) {
+					i.remove();
+					continue;
+				}
+			}
+			if (distType != null && !distType.isEmpty()) {
+				boolean match = false;
+				for (String typeId: distType.split(","))
+					if (dp.getDistributionType().getUniqueId().toString().equals(typeId)) {
+						match = true;
+						break;
+					}
+				if (!match) {
+					i.remove();
+					continue;
+				}
+			}
+			if (structure != null && !structure.isEmpty()) {
+				boolean match = false;
+				for (String structureName: structure.split(",")) {
+					if ("instructor".equals(structureName) && dp.getStructure() == null) {
+						match = true;
+						break;
+					} else if (dp.getStructure() != null && dp.getStructure().name().equals(structureName)) {
+						match = true;
+						break;
+					}
+				}
+				if (!match) {
+					i.remove();
+					continue;
+				}
+			}
+		}
+		
+		return createTableForDistributions(prefs); 
+	}
+	
     public TableInterface createTableForDistributions(Collection<DistributionPref> distPrefs) {
     	TableInterface table = new TableInterface();
     	table.setName(MSG.sectionTitleDistributionPreferences());
     	
         LineInterface header = table.addHeader();
+        if (isSimple()) header.addCell(MSG.columnDistrPrefLevel());
         header.addCell(MSG.columnDistrPrefType());
         header.addCell(MSG.columnDistrPrefStructure());
         header.addCell(MSG.columnDistrPrefOwner());
@@ -128,7 +192,7 @@ public class DistributionsTableBuilder extends TableBuilder {
 
         	nrPrefs++;
         	
-        	CellInterface obj = new CellInterface();
+        	CellInterface obj = new CellInterface().setNoWrap(true);
         	CellInterface ownerType = new CellInterface().setText(MSG.ownerUnknown());
         	
         	PreferenceGroup pg = dp.getOwner();
@@ -150,13 +214,13 @@ public class DistributionsTableBuilder extends TableBuilder {
         		classes.addAll(instructor.getClasses());
         		for (ClassInstructor clazz: classes) {
         			if (!clazz.isLead().booleanValue()) continue;
-        			obj.add(clazz.getClassInstructing().getClassLabel(suffix)).setInline(false);
+        			obj.add(clazz.getClassInstructing().getClassLabel(suffix)).setInline(false).setNoWrap(true);
         			Department dept = clazz.getClassInstructing().getManagingDept();
             		if (dept.isInheritInstructorPreferences()) owners.add(dept);
         		}
         		ownerType.setText((String)null);
         		for (Department owner: owners)
-        			ownerType.add(owner.getShortLabel()).setTitle(owner.getHtmlTitle()).setInline(false);
+        			ownerType.add(owner.getShortLabel()).setTitle(owner.getHtmlTitle()).setInline(false).setNoWrap(true);
         		groupingText = MSG.columnInstructor() + " "+instructor.getName(getInstructorNameFormat());
         		if (owners.isEmpty()) continue;
         	}
@@ -180,8 +244,9 @@ public class DistributionsTableBuilder extends TableBuilder {
             if ("PreferenceGroup".equals(getBackType()) && dp.getUniqueId().toString().equals(getBackId()))
             	line.setAnchor("back");
             
-            line.addCell(distType).setColor(prefColor).setTitle(prefLevel + " " + distType);
-            line.addCell(groupingText);
+            if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
+            line.addCell(distType).setColor(prefColor).setTitle(prefLevel + " " + distType).setAria(prefLevel + " " + distType).setNoWrap(true);
+            line.addCell(groupingText).setNoWrap(true);
             line.addCell(ownerType);
             line.addCell(obj);
         }

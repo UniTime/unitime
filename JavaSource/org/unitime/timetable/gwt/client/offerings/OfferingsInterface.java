@@ -565,4 +565,59 @@ public class OfferingsInterface {
 			return getCourseName().compareTo(c.getCourseName());
 		}
 	}
+	
+	public static class DistributionsFilterRequest implements GwtRpcRequest<DistributionsFilterResponse> {}
+	
+	public static class DistributionsFilterResponse extends FilterInterface {
+		private static final long serialVersionUID = 1L;
+		private boolean iSticky = false;
+		private boolean iCanAdd = false;
+		private Integer iMaxSubjectsToSearchAutomatically = null;
+		private Long iSessionId = null;
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
+		
+		public boolean isCanAdd() { return iCanAdd; }
+		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
+
+		public Integer getMaxSubjectsToSearchAutomatically() { return iMaxSubjectsToSearchAutomatically; }
+		public void setMaxSubjectsToSearchAutomatically(Integer max) { iMaxSubjectsToSearchAutomatically = max; }
+		
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		public Long getSessionId() { return iSessionId; }
+	}
+	
+	public static class DistributionsRequest implements GwtRpcRequest<DistributionsResponse> {
+		private FilterInterface iFilter;
+		private String iBackId, iBackType;
+		
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+		
+		public String getBackId() { return iBackId; }
+		public void setBackId(String backId) { iBackId = backId; }
+		public String getBackType() { return iBackType; }
+		public void setBackType(String backType) { iBackType = backType; }
+	}
+	
+	public static class DistributionsResponse implements GwtRpcResponse {
+		private List<TableInterface> iTables;
+		private Set<String> iOperations;
+		
+		public boolean hasTables() { return iTables != null && !iTables.isEmpty(); }
+		public void addTable(TableInterface table) {
+			if (iTables == null) iTables = new ArrayList<TableInterface>();
+			iTables.add(table);
+		}
+		public List<TableInterface> getTables() {
+			return iTables;
+		}
+		
+		public boolean hasOperation(String operation) { return iOperations != null && iOperations.contains(operation); }
+		public void addOperation(String operation) {
+			if (iOperations == null) iOperations = new HashSet<String>();
+			iOperations.add(operation);
+		}
+	}
 }

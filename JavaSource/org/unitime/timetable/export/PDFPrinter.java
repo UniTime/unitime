@@ -46,6 +46,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
@@ -346,6 +347,8 @@ public class PDFPrinter implements Printer {
 				float mw = iMaxWidth[i];
 				if (!iHiddenColumns.contains(i)) { width += 15f + mw; w[wi++] = mw; }
 			}
+			if (width < PageSize.A4.getWidth() - 60f)
+				width = PageSize.A4.getWidth() - 60f;
 			if (iDocument == null) {
 				iDocument = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
 				iWriter = PdfWriter.getInstance(iDocument, iOutput);
@@ -473,6 +476,10 @@ public class PDFPrinter implements Printer {
 			if ("blue".equals(iColor)) return Color.BLUE;
 			if ("black".equals(iColor)) return Color.BLACK;
 			if ("gray".equals(iColor)) return Color.GRAY;
+			if (iColor != null && iColor.matches("rgb\\([0-9]+,[0-9]+,[0-9]+\\)")) {
+				String[] sub = iColor.substring(iColor.indexOf('(') + 1, iColor.indexOf(')')).split(",");
+				return new Color(Integer.parseInt(sub[0]),Integer.parseInt(sub[1]),Integer.parseInt(sub[2]));
+			}
 			try {
 				return hasColor() ? new Color(Integer.parseInt(iColor,16)) : Color.BLACK; 
 			} catch (Exception e) {

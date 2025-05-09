@@ -133,6 +133,13 @@
 			<item name="Distribution Preferences" page="distributionPrefs.action">
 				<condition>
 					<hasPermission name="DistributionPreferences"/>
+					<propertyEquals name="unitime.legacy.distributions" value="true"/>
+				</condition>
+			</item>
+			<item name="Distribution Preferences" page="distributions" type="gwt">
+				<condition>
+					<hasPermission name="DistributionPreferences"/>
+					<propertyEquals name="unitime.legacy.distributions" value="false"/>
 				</condition>
 			</item>
 			<item name="Reservations" page="reservations" type="gwt">

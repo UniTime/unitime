@@ -37,6 +37,7 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.courses.ClassAssignmentsTableBuilder;
 import org.unitime.timetable.server.courses.ClassesTableBuilder;
+import org.unitime.timetable.server.courses.DistributionsTableBuilder;
 import org.unitime.timetable.server.courses.InstructionalOfferingTableBuilder;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -127,6 +128,30 @@ public class OfferingsCSV implements Exporter {
 		        new Filter(helper), 
 		        helper.getParameter("subjectArea").split(","), 
 		        response);
+
+    	return response;
+	}
+	
+	protected List<TableInterface> getDistributions(ExportHelper helper) {
+    	List<TableInterface> response = new ArrayList<TableInterface>();
+    	
+    	DistributionsTableBuilder builder = new DistributionsTableBuilder(
+    			helper.getSessionContext(),
+    			helper.getParameter("backType"),
+		        helper.getParameter("backId")
+		        );
+    	builder.setSimple(true);
+    	
+    	Filter filter = new Filter(helper);
+    	for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
+    		if (subjectAreaId.isEmpty()) continue;
+    		SubjectArea area = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
+    		if (area == null) continue;
+    		TableInterface table = builder.getDistPrefsTableForFilter(filter, area.getUniqueId());
+    		table.setName(area.getLabel());
+    		table.setId(subjectAreaId);
+    		response.add(table);
+    	}
 
     	return response;
 	}

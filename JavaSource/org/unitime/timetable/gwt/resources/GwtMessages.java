@@ -3990,6 +3990,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Instructor")
 	@DoNotTranslate
 	String pageEditInstructor();
+	
+	@DefaultMessage("Distribution Preferences")
+	@DoNotTranslate
+	String pageDistributionPreferences();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

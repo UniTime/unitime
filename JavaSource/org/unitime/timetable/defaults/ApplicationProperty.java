@@ -3698,6 +3698,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Instructional Offering Cross Lists: switch the user interface back to the old (Struts-based) cross lists page")
 	LegacyCrossList("unitime.legacy.crosslist"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Distribution Preferences: switch the user interface back to the old (Struts-based) distribution preferences page")
+	LegacyDistributions("unitime.legacy.distributions"),
 	;
 
 	String iKey;
