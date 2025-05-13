@@ -1827,6 +1827,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .gwt-DialogBox .dialogContainer {
   position: relative;  
+  display: inline-block;
 }
 .gwt-DialogBox .dialogControls { 
   position: absolute;
@@ -1837,11 +1838,20 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
   cursor: pointer;
 }
 .gwt-DialogBox .dialogControls .close {
-  display: block;
+  display: inline-block;
   height: 13px;
   width: 13px;  
   background: transparent url(../images/dialog-close.png) center center no-repeat;
   -background: transparent url(../images/dialog-close.gif) center center no-repeat;
+}
+
+.gwt-DialogBox .dialogControls .maximize {
+  display: inline-block;
+  height: 13px;
+  width: 13px;
+  background: transparent url(../images/dialog-maximize.png) center center no-repeat;
+  -background: transparent url(../images/dialog-maximize.gif) center center no-repeat;
+  margin-left: 4px;
 }
 
 .unitime-MessageBlue {

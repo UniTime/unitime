@@ -3105,6 +3105,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Click here or outside of the dialog to close.")
 	String hintCloseDialog();
 	
+	@DefaultMessage("Click here to maximize the dialog.")
+	String hintMaximizeDialog();
+	
+	@DefaultMessage("Click here to restore the original size of the dialog.")
+	String hintDemaximizeDialog();
+	
 	@DefaultMessage("Reservation type must be selected.")
 	String hintReservationTypeNotSelected();
 	

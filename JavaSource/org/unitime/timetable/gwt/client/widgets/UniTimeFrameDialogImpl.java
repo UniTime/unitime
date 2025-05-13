@@ -53,6 +53,7 @@ public class UniTimeFrameDialogImpl extends UniTimeDialogBox implements UniTimeF
 		super(true, true);
 		
 		setEscapeToHide(true);
+		setMaximizeEnabled(true);
 		iFrame = new Frame();
 		iFrame.getElement().getStyle().setBorderWidth(0, Unit.PX);
 		hookFrameLoaded((FrameElement)iFrame.getElement().cast());
