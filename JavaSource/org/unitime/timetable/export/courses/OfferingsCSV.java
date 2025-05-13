@@ -47,8 +47,8 @@ import org.unitime.timetable.solver.service.SolverService;
 @Service("org.unitime.timetable.export.Exporter:offerings.csv")
 public class OfferingsCSV implements Exporter {
 
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+	protected @Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+	protected @Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	@Override
 	public String reference() {

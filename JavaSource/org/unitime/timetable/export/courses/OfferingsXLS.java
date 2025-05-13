@@ -22,23 +22,15 @@ package org.unitime.timetable.export.courses;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.XLSPrinter;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
-import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.service.AssignmentService;
-import org.unitime.timetable.solver.service.SolverService;
 
 @Service("org.unitime.timetable.export.Exporter:offerings.xls")
 public class OfferingsXLS extends OfferingsCSV {
-
-	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	@Override
 	public String reference() {
