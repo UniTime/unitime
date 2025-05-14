@@ -147,7 +147,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 			response.setCourseNumber(control.getCourseNbr());
 	        response.setName(io.getCourseNameWithTitle());
 	        response.setOffered(!io.isNotOffered());
-	        response.setCourses(createCoursesTable(context, io));
+	        response.setCourses(createCoursesTable(context, io, true));
 	        response.addProperty(MSG.propertyEnrollment()).setText(io.getEnrollment() == null ? "0" : io.getEnrollment().toString());
 	        response.addProperty(MSG.propertyLastEnrollment()).setText(io.getDemand() == null || io.getDemand().intValue() == 0 ? "-" : io.getDemand().toString());
 	        if (io.getProjectedDemand() != null && io.getProjectedDemand() > 0)
@@ -433,7 +433,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 		
 	}
 	
-	public static TableInterface createCoursesTable(SessionContext context, InstructionalOffering io) {
+	public static TableInterface createCoursesTable(SessionContext context, InstructionalOffering io, boolean showButtons) {
         ArrayList<CourseOffering> offerings = new ArrayList<CourseOffering>(io.getCourseOfferings());
         Collections.sort(
                 offerings, 
@@ -441,6 +441,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         
         boolean hasCourseTypes = false, hasExtId = false, hasRes = false, hasCred = false, hasNote = false, hasDemandsFrom = false,
         		hasAlt = false, hasDisOvrd = false;
+        boolean hasEnrollment = false, hasDemand = false, hasProjDemand = false;
         for (CourseOffering co: offerings) {
         	if (co.getCourseType() != null) hasCourseTypes = true;
         	if (ApplicationProperty.CourseOfferingShowExternalIds.isTrue() && co.getExternalUniqueId() != null && !co.getExternalUniqueId().isEmpty()) hasExtId = true;
@@ -450,6 +451,11 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         	if (co.getDemandOffering() != null) hasDemandsFrom = true;
         	if (co.getAlternativeOffering() != null) hasAlt = true;
         	if (!co.getDisabledOverrides().isEmpty()) hasDisOvrd = true;
+        	if (io.getCourseOfferings().size() > 1) {
+        		if (co.getEnrollment() != null && co.getEnrollment() > 0) hasEnrollment = true;
+        		if (co.getDemand() != null && co.getDemand() > 0) hasDemand = true;
+        		if (co.getProjectedDemand() != null && co.getProjectedDemand() > 0) hasProjDemand = true;
+        	}
         }
         boolean hasUrl = ApplicationProperty.CustomizationCourseLink.value() != null &&  !ApplicationProperty.CustomizationCourseLink.value().isEmpty();
         
@@ -461,14 +467,17 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         header.addCell(MSG.columnTitle());
         if (hasExtId) header.addCell(MSG.columnExternalId());
         if (hasRes) header.addCell(MSG.columnReserved()).setTextAlignment(Alignment.RIGHT);
-        if (hasCred) header.addCell(MSG.columnCredit());
+        if (hasEnrollment) header.addCell(MSG.columnEnrollment()).setTextAlignment(Alignment.RIGHT);
+        if (hasDemand) header.addCell(MSG.columnCrossListsLastTerm()).setTextAlignment(Alignment.RIGHT);
+        if (hasProjDemand) header.addCell(MSG.columnCrossListsProjected()).setTextAlignment(Alignment.RIGHT);
+        if (hasCred) header.addCell(MSG.columnCredit()).setTextAlignment(Alignment.RIGHT);
         if (hasNote) header.addCell(MSG.columnScheduleOfClassesNote());
         if (hasDemandsFrom) header.addCell(MSG.columnDemandsFrom());
         if (hasAlt) header.addCell(MSG.columnAlternativeCourse());
         header.addCell(MSG.columnConsent());
         if (hasDisOvrd) header.addCell(MSG.columnDisabledOverrides());
         if (hasUrl) header.addCell(MSG.columnCourseCatalog());
-        header.addCell();
+        if (showButtons) header.addCell();
         for (CellInterface h: header.getCells())
         	h.setClassName("WebTableHeader");
         
@@ -490,9 +499,15 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         	line.addCell(co.getCourseNameWithTitle());
         	if (hasExtId) line.addCell(co.getExternalUniqueId());
         	if (hasRes) line.addCell(co.getReservation() == null ? "" : co.getReservation().toString()).setTextAlignment(Alignment.RIGHT);
+        	if (hasEnrollment)
+        		line.addCell(co.getEnrollment() == null ? "" : co.getEnrollment().toString()).setTextAlignment(Alignment.RIGHT);
+        	if (hasDemand)
+        		line.addCell(co.getDemand() == null ? "" : co.getDemand().toString()).setTextAlignment(Alignment.RIGHT);
+        	if (hasProjDemand)
+        		line.addCell(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString()).setTextAlignment(Alignment.RIGHT);
         	if (hasCred) {
         		if (co.getCredit() != null)
-        			line.addCell(co.getCredit().creditAbbv()).setTitle(co.getCredit().creditText());
+        			line.addCell(co.getCredit().creditAbbv()).setTitle(co.getCredit().creditText()).setTextAlignment(Alignment.RIGHT);
         		else
         			line.addCell();
         	}
@@ -515,15 +530,17 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         	}
         	if (hasUrl)
         		line.addCell().addCourseLink().setCourseId(co.getUniqueId());
-        	CellInterface buttons = line.addCell().setTextAlignment(Alignment.RIGHT);
-        	if (context.hasPermission(co, Right.EditCourseOffering) || context.hasPermission(co, Right.EditCourseOfferingCoordinators) || context.hasPermission(co, Right.EditCourseOfferingNote))
-        		buttons.addButton().setUrl("gwt.jsp?page=courseOffering&offering=" + co.getUniqueId() + "&op=editCourseOffering")
-        			.setText(MSG.actionEditCourseOffering()).setTitle(MSG.titleEditCourseOffering());
+        	if (showButtons) {
+        		CellInterface buttons = line.addCell().setTextAlignment(Alignment.RIGHT);
+        		if (context.hasPermission(co, Right.EditCourseOffering) || context.hasPermission(co, Right.EditCourseOfferingCoordinators) || context.hasPermission(co, Right.EditCourseOfferingNote))
+        			buttons.addButton().setUrl("gwt.jsp?page=courseOffering&offering=" + co.getUniqueId() + "&op=editCourseOffering")
+        				.setText(MSG.actionEditCourseOffering()).setTitle(MSG.titleEditCourseOffering());
+        	}
         }
         return table;
 	}
 	
-	protected int printLastChangeTableRow(TableInterface table, ChangeLog lastChange) {
+	protected static int printLastChangeTableRow(TableInterface table, ChangeLog lastChange) {
 		if (lastChange == null) return 0;
 		LineInterface line = table.addLine();
 		line.addCell(lastChange.getSourceTitle());
@@ -534,13 +551,13 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 		return 1;
     }
 	
-	protected ChangeLog combine(ChangeLog c1, ChangeLog c2) {
+	protected static ChangeLog combine(ChangeLog c1, ChangeLog c2) {
         if (c1==null) return c2;
         if (c2==null) return c1;
         return (c1.compareTo(c2)<0?c2:c1);
     }
 	
-	public TableInterface getLastChanges(InstructionalOffering io) {
+	public static TableInterface getLastChanges(InstructionalOffering io) {
         if (io==null) return null;
         
         TableInterface table = new TableInterface();
