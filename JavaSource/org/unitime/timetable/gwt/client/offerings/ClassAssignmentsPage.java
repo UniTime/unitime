@@ -70,7 +70,7 @@ public class ClassAssignmentsPage extends Composite {
 
 	public ClassAssignmentsPage() {
 		iFilter = new PageFilter();
-		iFilter.getHeader().setCollapsible(!"0".equals(ToolBox.getSessionCookie("ClassAssignments.Filter")));
+		iFilter.getHeader().setCollapsible("1".equals(ToolBox.getSessionCookie("ClassAssignments.Filter")));
 		iFilter.getHeader().addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {

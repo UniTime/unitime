@@ -72,7 +72,7 @@ public class InstructionalOfferingsPage extends Composite {
 
 	public InstructionalOfferingsPage() {
 		iFilter = new PageFilter();
-		iFilter.getHeader().setCollapsible(!"0".equals(ToolBox.getSessionCookie("Offerings.Filter")));
+		iFilter.getHeader().setCollapsible("1".equals(ToolBox.getSessionCookie("Offerings.Filter")));
 		iFilter.getHeader().addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
