@@ -424,13 +424,13 @@ public class PointInTimeDataReportsPage extends Composite {
 					else if ("__Subpart".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.action?ssuid=" + event.getData()[0]);
 					else if ("__Room".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=rooms&back=1&id=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "rooms?back=1&id=" + event.getData()[0]);
 					else if ("__Instructor".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "instructorDetail.action?instructorId=" + event.getData()[0]);
 					else if ("__Exam".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "examDetail.action?examId=" + event.getData()[0]);
 					else if ("__Event".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=events#event=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "events#event=" + event.getData()[0]);
 				}
 			}
 		});

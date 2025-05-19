@@ -193,9 +193,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 						).setParameter("sessionId", sessionContext.getUser().getCurrentAcademicSessionId())
 						.setParameter("user", sessionContext.getUser().getExternalUserId())
 						.setParameter("role", sessionContext.getUser().getCurrentAuthority().getRole()).setCacheable(true).uniqueResult();
-				response.sendRedirect("gwt.jsp?page=onlinesctdash" + (target == null ? "" : "&" + target) + (myStudents.intValue() > 0 ? "#mode:%22My%20Students%22@" : ""));
+				response.sendRedirect("onlinesctdash" + (target == null ? "" : "&" + target) + (myStudents.intValue() > 0 ? "#mode:%22My%20Students%22@" : ""));
 			} else
-				response.sendRedirect("gwt.jsp?page=onlinesctdash" + (target == null ? "" : "&" + target));
+				response.sendRedirect("onlinesctdash" + (target == null ? "" : "&" + target));
 			return null;
 		}
 		
@@ -218,7 +218,7 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								if (student == null) continue;
 								StudentSectioningStatus status = student.getEffectiveStatus();
 								if (status == null || !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
-								response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
+								response.sendRedirect("requests" + (target == null ? "" : "&" + target));
 								return null;
 							}
 						}
@@ -235,7 +235,7 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								if (student == null) continue;
 								StudentSectioningStatus status = student.getEffectiveStatus();
 								if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) continue;
-								response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
+								response.sendRedirect("sectioning" + (target == null ? "" : "&" + target));
 								return null;
 							}
 						}
@@ -253,7 +253,7 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								if (student == null) continue;
 								StudentSectioningStatus status = student.getEffectiveStatus();
 								if (status != null && !status.hasOption(StudentSectioningStatus.Option.enrollment)) continue;
-								response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
+								response.sendRedirect("sectioning" + (target == null ? "" : "&" + target));
 								return null;
 							}
 						}
@@ -268,7 +268,7 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								if (student == null) continue;
 								StudentSectioningStatus status = student.getEffectiveStatus();
 								if (status == null || !status.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
-								response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
+								response.sendRedirect("requests" + (target == null ? "" : "&" + target));
 								return null;
 							}
 						}
@@ -281,7 +281,7 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 		try {
 			for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
 				if (match(request, session, useDefault)) {
-					response.sendRedirect("gwt.jsp?page=sectioning" + (target == null ? "" : "&" + target));
+					response.sendRedirect("sectioning" + (target == null ? "" : "&" + target));
 					return null;
 				}
 			}
@@ -291,7 +291,7 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 		try {
 			for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
 				if (match(request, session, useDefault)) {
-					response.sendRedirect("gwt.jsp?page=requests" + (target == null ? "" : "&" + target));
+					response.sendRedirect("requests" + (target == null ? "" : "&" + target));
 					return null;
 				}
 			}

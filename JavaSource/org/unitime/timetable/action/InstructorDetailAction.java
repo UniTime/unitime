@@ -435,7 +435,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
                         String time = m.getMeetings().first().startTime() + " - " + m.getMeetings().first().stopTime();
                         String room = (m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().getLabelWithHint());
                         eventTable.addLine(
-                        		sessionContext.hasPermission(event, Right.EventDetail) ? "onClick=\"showGwtDialog('Event Detail', 'gwt.jsp?page=events&menu=hide#event=" + event.getUniqueId() + "','900','85%');\"" : null,
+                        		sessionContext.hasPermission(event, Right.EventDetail) ? "onClick=\"showGwtDialog('Event Detail', 'events?menu=hide#event=" + event.getUniqueId() + "','900','85%');\"" : null,
                         		new String[] {
                         			event.getEventName(),
                         			event.getEventTypeAbbv(),

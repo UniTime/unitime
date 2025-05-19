@@ -95,7 +95,7 @@ public class InstructorRequirementsTable extends UniTimeTable<CourseRequirement>
 				if (data.isAdmin())
 					UniTimeFrameDialog.openDialog(
 							MESSAGES.sectInstructorSurvey(),
-							"gwt.jsp?page=instructorSurvey&menu=hide&id=" + event.getData().getExternalId(),
+							"instructorSurvey?menu=hide&id=" + event.getData().getExternalId(),
 							"900", "90%");
 				else if (event.getData().getInstructorId() != null)
 					ToolBox.open("instructorDetail.action?instructorId=" + event.getData().getInstructorId());

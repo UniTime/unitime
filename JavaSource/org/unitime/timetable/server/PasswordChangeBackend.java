@@ -116,7 +116,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 					input.put("const", CONSTANTS);
 					String url = iRequest.getScheme()+"://"+iRequest.getServerName()+":"+iRequest.getServerPort()+iRequest.getContextPath();
 					if (!url.endsWith("/")) url += "/";
-					url += "gwt.jsp?page=password&user=" + user.getUsername() + "&key=" + key;
+					url += "password?user=" + user.getUsername() + "&key=" + key;
 					input.put("username", user.getUsername());
 					input.put("url", url);
 					input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));

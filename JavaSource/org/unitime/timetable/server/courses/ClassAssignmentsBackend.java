@@ -85,7 +85,7 @@ public class ClassAssignmentsBackend implements GwtRpcImplementation<ClassAssign
 			}
 			BackTracker.markForBack(
 					context, 
-					"gwt.jsp?page=classAssignments&subjectArea=" + request.getFilter().getParameterValue("subjectArea"),
+					"classAssignments?subjectArea=" + request.getFilter().getParameterValue("subjectArea"),
 					MESSAGES.backClassAssignments(subjects), 
 					true, true);
 		} catch (Exception e) {

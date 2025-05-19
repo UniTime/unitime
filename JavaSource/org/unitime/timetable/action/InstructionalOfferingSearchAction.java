@@ -526,7 +526,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 	    	setOp(MSG.actionAddCourseOffering());
 	        return "showCourseOfferingEdit";
 	    } else {
-	    	response.sendRedirect("gwt.jsp?page=courseOffering&subjArea=" + (subjAreaId == null ? "" : subjAreaId) + "&courseNbr=" + courseNbr + "&op=addCourseOffering");
+	    	response.sendRedirect("courseOffering?subjArea=" + (subjAreaId == null ? "" : subjAreaId) + "&courseNbr=" + courseNbr + "&op=addCourseOffering");
 	    	return null;
 	    }
 	}

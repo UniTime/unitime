@@ -503,7 +503,7 @@ public class PurdueClassAttendance implements CustomClassAttendanceProvider {
 			}
 			if (hasMessage) {
 				if (classEvent == null)
-					message += ApplicationProperties.getProperty("purdue.classAttendance.footerMessage", "\nFor more details, see your <a href='gwt.jsp?page=personal' target='_blank'>Personal Schedule</a>.");
+					message += ApplicationProperties.getProperty("purdue.classAttendance.footerMessage", "\nFor more details, see your <a href='personal' target='_blank'>Personal Schedule</a>.");
 				return message;
 			}
 			return null;

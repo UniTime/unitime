@@ -708,7 +708,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         	    }
         		
         		table.addRow(new TableRowInterface(g.getClazz().getClazz().getClassId(), 
-        				"gwt.jsp?page=suggestions&menu=hide&id=" + clazz.getClassId(),
+        				"suggestions?menu=hide&id=" + clazz.getClassId(),
     	    			MESSAGES.dialogSuggestions(),
     	    			new TableCellClickableClassName(clazz.getClassId(), clazz.getName()).setColor(PreferenceLevel.prolog2color(clazz.getPref())),
     	    			date, time, room,

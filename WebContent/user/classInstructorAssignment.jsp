@@ -66,7 +66,7 @@ function doAddInstructor(idx) {
 								<A  title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
 									accesskey="${MSG.accessBackToIOList()}"
 									class="l8" 
-									href="gwt.jsp?page=offerings&subjectArea=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"
+									href="offerings?subjectArea=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"
 								><s:property value="form.instrOfferingName"/></A>
 							</tt:propertyNotEquals>
 							<s:hidden name="form.instrOfferingName"/>

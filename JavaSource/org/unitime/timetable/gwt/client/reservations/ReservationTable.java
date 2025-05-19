@@ -122,7 +122,7 @@ public class ReservationTable extends Composite {
 				iHeader.addButton("add", MESSAGES.buttonAddReservation(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=reservation&offering=" + iOfferingId);
+						ToolBox.open(GWT.getHostPageBaseURL() + "reservation?offering=" + iOfferingId);
 					}
 				});
 			}
@@ -582,7 +582,7 @@ public class ReservationTable extends Composite {
 		addReservationClickHandler(new ReservationClickHandler() {
 			@Override
 			public void onClick(ReservationClickedEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=reservation&id=" + evt.getReservation().getId() + "&reservations=" + getReservationIds());
+				ToolBox.open(GWT.getHostPageBaseURL() + "reservation?id=" + evt.getReservation().getId() + "&reservations=" + getReservationIds());
 			}
 		});
 	}
@@ -600,7 +600,7 @@ public class ReservationTable extends Composite {
 		addReservationClickHandler(new ReservationClickHandler() {
 			@Override
 			public void onClick(ReservationClickedEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=reservation&id=" + evt.getReservation().getId() + "&reservations=" + getReservationIds());
+				ToolBox.open(GWT.getHostPageBaseURL() + "reservation?id=" + evt.getReservation().getId() + "&reservations=" + getReservationIds());
 			}
 		});
 		return this;

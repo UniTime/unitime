@@ -94,7 +94,7 @@ public class UserEditAction extends UniTimeAction<UserEditForm> {
         }
         
         if (MSG.actionRequestPasswordChange().equals(op)) {
-        	response.sendRedirect("gwt.jsp?page=password&reset=1");
+        	response.sendRedirect("password?reset=1");
         	return null;
         }
 

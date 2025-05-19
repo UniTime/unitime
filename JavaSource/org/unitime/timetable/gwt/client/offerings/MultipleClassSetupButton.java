@@ -41,7 +41,7 @@ public class MultipleClassSetupButton extends AriaButton {
 		addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=multipleClassSetup&id=" + iConfigId);
+				ToolBox.open(GWT.getHostPageBaseURL() + "multipleClassSetup?id=" + iConfigId);
 			}
 		});
 		setVisible(editable);

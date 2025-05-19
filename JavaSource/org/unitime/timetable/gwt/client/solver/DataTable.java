@@ -271,7 +271,7 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 					addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							UniTimeFrameDialog.openDialog(MESSAGES.dialogSuggestions(), "gwt.jsp?page=suggestions&menu=hide&id=" + classId,"900","90%");
+							UniTimeFrameDialog.openDialog(MESSAGES.dialogSuggestions(), "suggestions?menu=hide&id=" + classId,"900","90%");
 						}
 					});
 				}

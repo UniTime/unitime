@@ -165,7 +165,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 					doLoad(courseOfferingId);
 					return "edit";
 			    } else {
-			    	response.sendRedirect("gwt.jsp?page=courseOffering&offering=" + (courseOfferingId == null ? "" : courseOfferingId) + "&op=editCourseOffering");
+			    	response.sendRedirect("courseOffering?offering=" + (courseOfferingId == null ? "" : courseOfferingId) + "&op=editCourseOffering");
 			    	return null;
 			    }
 			}

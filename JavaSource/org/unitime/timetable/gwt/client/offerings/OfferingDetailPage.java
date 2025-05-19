@@ -113,7 +113,7 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("add-config", COURSE.actionAddConfiguration(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.action?page=instrOfferingConfig&op=" + URL.encodeQueryString(COURSE.actionAddConfiguration()) + "&offering=" + iResponse.getOfferingId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "instrOfferingConfig?op=" + URL.encodeQueryString(COURSE.actionAddConfiguration()) + "&offering=" + iResponse.getOfferingId());
 			}
 		});
 		iHeader.setEnabled("add-config", false);
@@ -282,7 +282,7 @@ public class OfferingDetailPage extends Composite {
 							hp.addButton("config-edit", COURSE.actionEditConfiguration(), new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent evt) {
-									ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=instrOfferingConfig&id=" + config.getConfigId());
+									ToolBox.open(GWT.getHostPageBaseURL() + "instrOfferingConfig?id=" + config.getConfigId());
 								}
 							});
 							hp.getButton("config-edit").setTitle(COURSE.titleEditConfiguration());
@@ -291,7 +291,7 @@ public class OfferingDetailPage extends Composite {
 							hp.addButton("class-setup", COURSE.actionClassSetup(), new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent evt) {
-									ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=multipleClassSetup&id=" + config.getConfigId());
+									ToolBox.open(GWT.getHostPageBaseURL() + "multipleClassSetup?id=" + config.getConfigId());
 								}
 							});
 							hp.getButton("class-setup").setTitle(COURSE.titleClassSetup());
@@ -301,7 +301,7 @@ public class OfferingDetailPage extends Composite {
 							hp.addButton("assign-instructors", COURSE.actionAssignInstructors(), new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent evt) {
-									ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=assignClassInstructors&configId=" + config.getConfigId());
+									ToolBox.open(GWT.getHostPageBaseURL() + "assignClassInstructors?configId=" + config.getConfigId());
 								}
 							});
 							hp.getButton("assign-instructors").setTitle(COURSE.titleAssignInstructors());

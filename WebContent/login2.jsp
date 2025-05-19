@@ -109,7 +109,7 @@
 			</span>
 		</span>
 		<c:if test="${SUGGEST_PASSWORD_RESET}">
-			<span class='forgot'><a href='gwt.jsp?page=password&reset=1' class='unitime-FooterLink'><loc:message name="linkForgotYourPassword"/></a></span>
+			<span class='forgot'><a href='password?reset=1' class='unitime-FooterLink'><loc:message name="linkForgotYourPassword"/></a></span>
 		</c:if>
 		<s:if test="hasOauth2Authentication == true">
 			<span class='alt-login'><a href="${oauth2LoginUrl}"><s:property value="oauth2LoginMessage"/></a>

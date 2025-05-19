@@ -80,7 +80,7 @@ public class TeachingRequestsWidget extends SimpleForm {
 		iHeader.addButton("setup", MESSAGES.buttonSetupTeachingRequests(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=setupTeachingRequests&offeringId=" + iOfferingId);
+				ToolBox.open(GWT.getHostPageBaseURL() + "setupTeachingRequests?offeringId=" + iOfferingId);
 			}
 		});
 	}

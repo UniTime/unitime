@@ -209,7 +209,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	    if (simple)
         	    	response.addRow(new TableRowInterface(
         	    			ca.getClazz().getClassId(),
-        	    			"gwt.jsp?page=suggestions&menu=hide&" + link,
+        	    			"suggestions?menu=hide&" + link,
         	    			MESSAGES.dialogSuggestions(),
         	    			new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
         	    			date, time, room, instructor, studentConfs
@@ -217,7 +217,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	    else
         	    	response.addRow(new TableRowInterface(
         	    			ca.getClazz().getClassId(),
-        	    			"gwt.jsp?page=suggestions&menu=hide&" + link,
+        	    			"suggestions?menu=hide&" + link,
         	    			MESSAGES.dialogSuggestions(),
         	    			new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
         	    			date, time, room, instructor, studentConfs,
@@ -260,7 +260,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 					new TableHeaderIterface(MESSAGES.colShortPerturbations()));
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
-		BackTracker.markForBack(context, "gwt.jsp?page=solutionChanges", MESSAGES.pageSolutionChanges(), true, true);
+		BackTracker.markForBack(context, "solutionChanges", MESSAGES.pageSolutionChanges(), true, true);
 		
 		if (ApplicationProperty.TimeGridShowCrosslists.isTrue())
 			addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());

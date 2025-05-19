@@ -1511,7 +1511,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("The changes in your schedule were made by {0}.")
 	String emailChangesMadeBy(String manager);
 	
-	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/selectPrimaryRole.action?target=gwt.jsp%3Fpage%3Dsectioning' style='color: inherit; background-color : transparent;'>{0}</a>.")
+	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/selectPrimaryRole.action?target=sectioning' style='color: inherit; background-color : transparent;'>{0}</a>.")
 	String emailLinkToUniTime(String baseUrl);
 
 	@DefaultMessage("Class schedule notification for %session%")
@@ -3678,7 +3678,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Current Instructor Assignments")
 	String emailInstructorClassList();
 	
-	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/selectPrimaryRole.action?target=gwt.jsp%3Fpage%3Dpersonal' style='color: inherit; background-color : transparent;'>{0}</a>.")
+	@DefaultMessage("For an up to date schedule, please visit <a href='{0}/selectPrimaryRole.action?target=personal' style='color: inherit; background-color : transparent;'>{0}</a>.")
 	String emailLinkToPersonalSchedule(String baseUrl);
 	
 	@DefaultMessage("Class cancelled.")

@@ -159,7 +159,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 						@Override
 						public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
 							LoadingWidget.getInstance().hide();
-							ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=solver&type=student");
+							ToolBox.open(GWT.getHostPageBaseURL() + "solver?type=student");
 						}
 						@Override
 						public void onFailure(Throwable caught) {
@@ -481,7 +481,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 				@Override
 				public void onSuccess(GwtRpcResponseList<PublishedSectioningSolutionInterface> result) {
 					LoadingWidget.getInstance().hide();
-					ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=solver&type=student");
+					ToolBox.open(GWT.getHostPageBaseURL() + "solver?type=student");
 				}
 				@Override
 				public void onFailure(Throwable caught) {

@@ -155,7 +155,7 @@ public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarning
 				}
 				if (names == null || names.isEmpty()) names.add(MESSAGES.notApplicable());
 				return new SolverWarningsResponse(
-						interactive ? "gwt.jsp?page=listSolutions" : "gwt.jsp?page=solver&type=course",
+						interactive ? "listSolutions" : "solver?type=course",
 						MESSAGES.infoSolverShowingSolution(SolverPageBackend.toString(names))
 						);
 			}
@@ -171,7 +171,7 @@ public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarning
 				names.add(solutionIds.length <= 3 ? solution.getOwner().getName() : solution.getOwner().getAbbv());
 			}
 			return new SolverWarningsResponse(
-					"gwt.jsp?page=listSolutions",
+					"listSolutions",
 					names.isEmpty() ? null : names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(SolverPageBackend.toString(names))
 					);
 		}
@@ -193,7 +193,7 @@ public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarning
 						if (selectedExamTypeId != null && !selectedExamTypeId.equals(type.getUniqueId())) return null;
 					}
 					return new SolverWarningsResponse(
-						"gwt.jsp?page=solver&type=exam",
+						"solver?type=exam",
 						MESSAGES.infoExamSolverShowingSolution(type.getLabel())
 					);
 				}

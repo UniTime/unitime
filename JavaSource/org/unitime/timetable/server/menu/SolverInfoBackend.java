@@ -72,7 +72,7 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 			solver = studentSectioningSolverService.getPublishedSolver(); 
 		SolverInfoInterface info = getInfo(solver, request.isIncludeSolutionInfo());
 		if (solver != null && solver.getType() == SolverType.STUDENT && info != null && !context.hasPermission(Right.StudentSectioningSolver))
-			info.setUrl("gwt.jsp?page=batchsctdash");
+			info.setUrl("batchsctdash");
 		return info;
 	}
 	
@@ -98,22 +98,22 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 		switch (solver.getType()) {
 		case COURSE:
 			ret.setType(MESSAGES.solverCourse());
-			ret.setUrl("gwt.jsp?page=solver&type=course");
+			ret.setUrl("solver?type=course");
 			translations = SOLVERMSG.courseInfoMessages();
 			break;
 		case EXAM:
 			ret.setType(MESSAGES.solverExamination());
-			ret.setUrl("gwt.jsp?page=solver&type=exam");
+			ret.setUrl("solver?type=exam");
 			translations = SOLVERMSG.examInfoMessages();
 			break;
 		case STUDENT:
 			ret.setType(MESSAGES.solverStudent());
-			ret.setUrl("gwt.jsp?page=solver&type=student");
+			ret.setUrl("solver?type=student");
 			translations = SOLVERMSG.studentInfoMessages();
 			break;
 		case INSTRUCTOR:
 			ret.setType(MESSAGES.solverInstructor());
-			ret.setUrl("gwt.jsp?page=solver&type=instructor");
+			ret.setUrl("solver?type=instructor");
 			translations = SOLVERMSG.instructorInfoMessages();
 			break;
 		}

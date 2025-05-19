@@ -153,7 +153,7 @@ public class InstructionalOfferingsPage extends Composite {
 				String subjectId = filter.getParameterValue("subjectArea", "");
 				if (subjectId.indexOf(',') > 0)
 					subjectId = subjectId.substring(0, subjectId.indexOf(','));
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=courseOffering&subjArea=" + subjectId +
+				ToolBox.open(GWT.getHostPageBaseURL() + "courseOffering?subjArea=" + subjectId +
 						"&courseNbr=" + URL.encodeQueryString(filter.getParameterValue("courseNbr", "")) + "&op=addCourseOffering");
 			}
 		});

@@ -58,7 +58,7 @@ public class HQLSetBackBackend implements GwtRpcImplementation<HQLSetBackRpcRequ
 		case APPEARANCE_ADMINISTRATION:
 			title = MESSAGES.pageAdministrationReports(); break;
 		}
-		BackTracker.markForBack(sessionContext, "gwt.jsp?page=hql&appearance=" + request.getAppearance() + "#" + request.getHistory(), title, true, true);
+		BackTracker.markForBack(sessionContext, "hql?appearance=" + request.getAppearance() + "#" + request.getHistory(), title, true, true);
 		if ("__Class".equals(request.getType()))
 			Navigation.set(sessionContext, Navigation.sClassLevel, request.getIds());
 		else if ("__Offering".equals(request.getType()))

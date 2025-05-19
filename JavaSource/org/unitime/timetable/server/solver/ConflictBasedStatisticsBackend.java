@@ -204,13 +204,13 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
     		case ConflictStatisticsInfo.sConstraintTypeInstructor :
     			node.setName(MESSAGES.constraintInstructor(constraint.getName()));
     			try {
-    				node.setLink("gwt.jsp?page=timetableGrid&resource=1&filter=" + URLEncoder.encode(constraint.getName(), "UTF-8") + "&search=1");
+    				node.setLink("timetableGrid?resource=1&filter=" + URLEncoder.encode(constraint.getName(), "UTF-8") + "&search=1");
     			} catch (UnsupportedEncodingException e) {}
     			break;
     		case ConflictStatisticsInfo.sConstraintTypeRoom :
     			node.setName(MESSAGES.constraintRoom(constraint.getName()));
     			try {
-    				node.setLink("gwt.jsp?page=timetableGrid&resource=0&filter=" + URLEncoder.encode(constraint.getName(), "UTF-8") + "&search=1");
+    				node.setLink("timetableGrid?resource=0&filter=" + URLEncoder.encode(constraint.getName(), "UTF-8") + "&search=1");
     			} catch (UnsupportedEncodingException e) {}
     			break;
     		case ConflictStatisticsInfo.sConstraintTypeClassLimit :

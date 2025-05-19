@@ -476,7 +476,7 @@ public class SolverPage extends SimpleForm {
 						p.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
-								if (pm.hasUrl() && !pm.getUrl().startsWith("gwt.jsp?page=solver"))
+								if (pm.hasUrl() && !pm.getUrl().startsWith("solver"))
 									ToolBox.open(GWT.getHostPageBaseURL() + pm.getUrl());
 								else
 									execute(SolverOperation.CHECK);

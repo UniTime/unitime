@@ -122,7 +122,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 				case MakeOffered:
 					context.checkPermission(io, Right.OfferingMakeOffered);
 					makeOffered(io, context);
-					response.setUrl("gwt.jsp?page=instrOfferingConfig&offering=" + io.getUniqueId() + "&op=" + URLEncoder.encode(MSG.actionMakeOffered(), "utf-8"));
+					response.setUrl("instrOfferingConfig?offering=" + io.getUniqueId() + "&op=" + URLEncoder.encode(MSG.actionMakeOffered(), "utf-8"));
 					return response;
 				case MakeNotOffered:
 					context.checkPermission(io, Right.OfferingMakeNotOffered);
@@ -533,7 +533,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         	if (showButtons) {
         		CellInterface buttons = line.addCell().setTextAlignment(Alignment.RIGHT);
         		if (context.hasPermission(co, Right.EditCourseOffering) || context.hasPermission(co, Right.EditCourseOfferingCoordinators) || context.hasPermission(co, Right.EditCourseOfferingNote))
-        			buttons.addButton().setUrl("gwt.jsp?page=courseOffering&offering=" + co.getUniqueId() + "&op=editCourseOffering")
+        			buttons.addButton().setUrl("courseOffering?offering=" + co.getUniqueId() + "&op=editCourseOffering")
         				.setText(MSG.actionEditCourseOffering()).setTitle(MSG.titleEditCourseOffering());
         	}
         }

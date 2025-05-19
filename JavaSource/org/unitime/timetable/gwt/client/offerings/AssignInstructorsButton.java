@@ -40,7 +40,7 @@ public class AssignInstructorsButton extends AriaButton {
 		addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=assignClassInstructors&configId=" + iConfigId);
+				ToolBox.open(GWT.getHostPageBaseURL() + "assignClassInstructors?configId=" + iConfigId);
 			}
 		});
 		setVisible(editable);

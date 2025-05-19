@@ -120,7 +120,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 				boolean showClassDetail = (solver == null && context.hasPermission(ucr.getId(), "Class_", Right.ClassDetail));
 				response.addRow(new TableRowInterface(
 						ucr.getId(),
-						(showClassDetail ? "classDetail.action?cid="+ucr.getId() : "gwt.jsp?page=suggestions&menu=hide&id="+ucr.getId()),
+						(showClassDetail ? "classDetail.action?cid="+ucr.getId() : "suggestions?menu=hide&id="+ucr.getId()),
 						(showClassDetail ? null : MESSAGES.dialogSuggestions()),
 	    	    		new TableInterface.TableCellClassName(ucr.getName()),
 	    	    		new TableInterface.TableCellItems(ucr.getInstructors()),
@@ -136,7 +136,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 				new TableHeaderIterface(MESSAGES.colInitialAssignment()));
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
-		BackTracker.markForBack(context, "gwt.jsp?page=notAssignedClasses", MESSAGES.pageNotAssignedClasses(), true, true);
+		BackTracker.markForBack(context, "notAssignedClasses", MESSAGES.pageNotAssignedClasses(), true, true);
 		
 		if (ApplicationProperty.TimeGridShowCrosslists.isTrue())
 			AssignedClassesBackend.addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());

@@ -41,7 +41,7 @@ public class InstrOfferingConfigButton extends AriaButton {
 		addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=instrOfferingConfig&id=" + iConfigId);
+				ToolBox.open(GWT.getHostPageBaseURL() + "instrOfferingConfig?id=" + iConfigId);
 			}
 		});
 		setVisible(editable);

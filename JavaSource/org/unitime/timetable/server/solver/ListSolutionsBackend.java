@@ -299,7 +299,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 		fillAvailableOperations(response, context, solver);
 		fillSolverInfos(response, context, solver);
 		
-		BackTracker.markForBack(context, "gwt.jsp?page=listSolutions", MESSAGES.pageListSolutions(), true, true);
+		BackTracker.markForBack(context, "listSolutions", MESSAGES.pageListSolutions(), true, true);
 		return response;
 	}
 	

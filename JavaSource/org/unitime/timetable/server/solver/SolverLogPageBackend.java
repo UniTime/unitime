@@ -120,16 +120,16 @@ public class SolverLogPageBackend implements GwtRpcImplementation<SolverLogPageR
 		
 		switch (request.getType()) {
 		case COURSE:
-			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=course", MESSAGES.pageCourseTimetablingSolverLog(), true, true);
+			BackTracker.markForBack(context, "solverlog?type=course", MESSAGES.pageCourseTimetablingSolverLog(), true, true);
 			break;
 		case EXAM:
-			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=exam", MESSAGES.pageExaminationTimetablingSolverLog(), true, true);
+			BackTracker.markForBack(context, "solverlog?type=exam", MESSAGES.pageExaminationTimetablingSolverLog(), true, true);
 			break;
 		case INSTRUCTOR:
-			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=instructor", MESSAGES.pageInstructorSchedulingSolverLog(), true, true);
+			BackTracker.markForBack(context, "solverlog?type=instructor", MESSAGES.pageInstructorSchedulingSolverLog(), true, true);
 			break;
 		case STUDENT:
-			BackTracker.markForBack(context, "gwt.jsp?page=solverlog&type=student", MESSAGES.pageStudentSchedulingSolverLog(), true, true);
+			BackTracker.markForBack(context, "solverlog?type=student", MESSAGES.pageStudentSchedulingSolverLog(), true, true);
 			break;
 		}
 

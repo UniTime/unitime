@@ -46,7 +46,7 @@
 						<tt:propertyNotEquals name="unitime.legacy.course.offerings" value="true">
 							<A title="${MSG.titleBackToIOList(MSG.accessBackToIOList())}" 
 								accesskey="${MSG.accessBackToIOList()}" class="l8"
-								href="gwt.jsp?page=offerings&subjectArea=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"><s:property value="form.instrOfferingName"/></A>
+								href="offerings?subjectArea=${form.subjectAreaId}&courseNbr=${crsNbr}#A${form.instrOfferingId}"><s:property value="form.instrOfferingName"/></A>
 						</tt:propertyNotEquals>
 					</tt:section-title>						
 					<sec:authorize access="hasPermission(#form.instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">

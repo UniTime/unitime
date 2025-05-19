@@ -45,7 +45,7 @@ public class PITDSetBackBackend implements GwtRpcImplementation<PITDSetBackRpcRe
 	@PreAuthorize("checkPermission('PointInTimeDataReports')")
 	public GwtRpcResponseNull execute(PITDSetBackRpcRequest request, SessionContext context) {
 		String title = MESSAGES.pagePointInTimeDataReports();
-		BackTracker.markForBack(sessionContext, "gwt.jsp?page=pointInTimeDataReports" + "#" + request.getHistory(), title, true, true);
+		BackTracker.markForBack(sessionContext, "pointInTimeDataReports" + "#" + request.getHistory(), title, true, true);
 		if ("__Class".equals(request.getType()))
 			Navigation.set(sessionContext, Navigation.sClassLevel, request.getIds());
 		else if ("__Offering".equals(request.getType()))

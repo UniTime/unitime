@@ -90,7 +90,7 @@ public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtR
 			}
 			BackTracker.markForBack(
 					context, 
-					"gwt.jsp?page=classSearch&subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
+					"classSearch?subjectArea=" + request.getFilter().getParameterValue("subjectArea") +
 						"&courseNbr=" + (courseNbr == null ? "" : URLEncoder.encode(courseNbr, "utf-8")),
 					MESSAGES.backClasses(subjects + (courseNbr == null || courseNbr.isEmpty() ? "" : " " + courseNbr)), 
 					true, true);

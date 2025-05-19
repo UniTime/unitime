@@ -120,23 +120,23 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
         	case COURSE:
             	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, owner);
             	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
-        		response.sendRedirect("gwt.jsp?page=solver&type=course");
+        		response.sendRedirect("solver?type=course");
         		return null;
         	case EXAM:
                 sessionContext.setAttribute(SessionAttribute.ExaminationUser, owner);
                 sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
                 LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
-        		response.sendRedirect("gwt.jsp?page=solver&type=exam");
+        		response.sendRedirect("solver?type=exam");
         		return null;
         	case STUDENT:
                 sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, owner);
                 sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
-        		response.sendRedirect("gwt.jsp?page=solver&type=student");
+        		response.sendRedirect("solver?type=student");
         		return null;
         	case INSTRUCTOR:
                 sessionContext.setAttribute(SessionAttribute.InstructorSchedulingUser, owner);
                 sessionContext.removeAttribute(SessionAttribute.InstructorSchedulingSolver);
-                response.sendRedirect("gwt.jsp?page=solver&type=instructor");
+                response.sendRedirect("solver?type=instructor");
                 return null;
         	}
         }

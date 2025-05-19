@@ -53,7 +53,7 @@
 								title="${MSG.titleInstructorSurvey(MSG.accessInstructorSurvey())}" 
 								class="btn" 
 								accesskey="${MSG.accessInstructorSurvey()}"
-								onClick="showGwtDialog('${MSG.actionInstructorSurvey()}', 'gwt.jsp?page=instructorSurvey&menu=hide&id=${form.puId}','900','90%');"
+								onClick="showGwtDialog('${MSG.actionInstructorSurvey()}', 'instructorSurvey?menu=hide&id=${form.puId}','900','90%');"
 						/>
 			</s:if>
 			<s:if test="form.previousId != null">
@@ -303,7 +303,7 @@
 								title="${MSG.titleInstructorSurvey(MSG.accessInstructorSurvey())}" 
 								class="btn" 
 								accesskey="${MSG.accessInstructorSurvey()}"
-								onClick="showGwtDialog('${MSG.actionInstructorSurvey()}', 'gwt.jsp?page=instructorSurvey&menu=hide&id=${form.puId}','900','90%');"
+								onClick="showGwtDialog('${MSG.actionInstructorSurvey()}', 'instructorSurvey?menu=hide&id=${form.puId}','900','90%');"
 							/>
 				</s:if>
 				<s:if test="form.previousId != null">

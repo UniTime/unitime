@@ -218,7 +218,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    if (simple)
     	    	response.addRow(new TableRowInterface(
     	    			ca.getClazz().getClassId(),
-    	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "gwt.jsp?page=suggestions&menu=hide&id="+ca.getClazz().getClassId()),
+    	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId()),
     	    			(showClassDetail ? null : MESSAGES.dialogSuggestions()),
     	    			new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
     	    			new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
@@ -231,7 +231,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    else
     	    	response.addRow(new TableRowInterface(
     	    			ca.getClazz().getClassId(),
-    	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "gwt.jsp?page=suggestions&menu=hide&id="+ca.getClazz().getClassId()),
+    	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId()),
         	    		(showClassDetail ? null : MESSAGES.dialogSuggestions()),
         	    		new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
         	    		new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
@@ -279,7 +279,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 					new TableHeaderIterface(MESSAGES.colShortPerturbations()));
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
-		BackTracker.markForBack(context, "gwt.jsp?page=assignedClasses", MESSAGES.pageAssignedClasses(), true, true);
+		BackTracker.markForBack(context, "assignedClasses", MESSAGES.pageAssignedClasses(), true, true);
 		
 		if (ApplicationProperty.TimeGridShowCrosslists.isTrue())
 			addCrosslistedNames(response, ApplicationProperty.SolverShowClassSufix.isTrue(), ApplicationProperty.SolverShowConfiguratioName.isTrue());

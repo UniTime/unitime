@@ -171,7 +171,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 			if (ApplicationProperty.LegacyCourseEdit.isTrue()) {
 				return "editCourse";
 			} else {
-				response.sendRedirect("gwt.jsp?page=courseOffering&offering=" + form.getCrsOfferingId() + "&op=editCourseOffering");
+				response.sendRedirect("courseOffering?offering=" + form.getCrsOfferingId() + "&op=editCourseOffering");
 				return null;
 			}
 		}

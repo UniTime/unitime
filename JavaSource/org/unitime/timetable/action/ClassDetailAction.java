@@ -386,7 +386,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
         			if (block instanceof MeetingTimeBlock) {
         				MeetingTimeBlock mtb = (MeetingTimeBlock)block;
         				if (mtb.getEventId() != null && sessionContext.hasPermission(mtb.getEventId(), Right.EventDetail))
-        					link = "onClick=\"showGwtDialog('Event Detail', 'gwt.jsp?page=events&menu=hide#event=" + mtb.getEventId() + "','900','85%');\"";
+        					link = "onClick=\"showGwtDialog('Event Detail', 'events?menu=hide#event=" + mtb.getEventId() + "','900','85%');\"";
         			}
         			table.addLine(
         					link,

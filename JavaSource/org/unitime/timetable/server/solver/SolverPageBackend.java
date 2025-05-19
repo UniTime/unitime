@@ -158,16 +158,16 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 		
 		switch (request.getType()) {
 		case COURSE:
-			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=course", MESSAGES.pageCourseTimetablingSolver(), true, true);
+			BackTracker.markForBack(context, "solver?type=course", MESSAGES.pageCourseTimetablingSolver(), true, true);
 			break;
 		case EXAM:
-			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=exam", MESSAGES.pageExaminationTimetablingSolver(), true, true);
+			BackTracker.markForBack(context, "solver?type=exam", MESSAGES.pageExaminationTimetablingSolver(), true, true);
 			break;
 		case INSTRUCTOR:
-			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=instructor", MESSAGES.pageInstructorSchedulingSolver(), true, true);
+			BackTracker.markForBack(context, "solver?type=instructor", MESSAGES.pageInstructorSchedulingSolver(), true, true);
 			break;
 		case STUDENT:
-			BackTracker.markForBack(context, "gwt.jsp?page=solver&type=student", MESSAGES.pageStudentSchedulingSolver(), true, true);
+			BackTracker.markForBack(context, "solver?type=student", MESSAGES.pageStudentSchedulingSolver(), true, true);
 			break;
 		}
 
@@ -754,7 +754,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
                     	response.addPageMessage(new PageMessage(PageMessageType.WARNING, MESSAGES.warnExamSolverNoRoomAvailability(type.getLabel().toLowerCase())));
                     else
                     	response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoExamSolverRoomAvailabilityLastUpdated(type.getLabel().toLowerCase(), ts)));
-					response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoExamSolverShowingSolution(type.getLabel()), "gwt.jsp?page=solver&type=exam"));
+					response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoExamSolverShowingSolution(type.getLabel()), "solver?type=exam"));
 				}
 			}
 			break;
@@ -773,7 +773,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				   }
 				}
 				if (names == null || names.isEmpty()) names.add(MESSAGES.notApplicable());
-				response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoSolverShowingSolution(toString(names)), interactive ? "gwt.jsp?page=listSolutions" : "gwt.jsp?page=solver&type=course"));
+				response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoSolverShowingSolution(toString(names)), interactive ? "listSolutions" : "solver?type=course"));
             	/*
             	String ts = solver.getProperties().getProperty("RoomAvailability.TimeStamp");
             	if (ts==null)
@@ -834,7 +834,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 					}
 					if (warn != null && !warn.isEmpty())
 						response.addPageMessage(new PageMessage(PageMessageType.WARNING, warn));
-					response.addPageMessage(new PageMessage(PageMessageType.INFO, (names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(toString(names))), "gwt.jsp?page=listSolutions"));
+					response.addPageMessage(new PageMessage(PageMessageType.INFO, (names.size() == 1 ? MESSAGES.infoSolverShowingSelectedSolution(names.get(0)) : MESSAGES.infoSolverShowingSelectedSolutions(toString(names))), "listSolutions"));
 				}
 			}
 			break;
@@ -843,7 +843,7 @@ public class SolverPageBackend implements GwtRpcImplementation<SolverPageRequest
 				String published = solver.getProperties().getProperty("StudentSct.Published");
 				if (published != null)
 					response.addPageMessage(new PageMessage(PageMessageType.INFO, MESSAGES.infoSolverShowingPublishedSectioningSolution(Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP).format(new Date(Long.valueOf(published)))),
-							context.hasPermission(Right.StudentSectioningSolverPublish) ? "gwt.jsp?page=publishedSolutions" : null));
+							context.hasPermission(Right.StudentSectioningSolverPublish) ? "publishedSolutions" : null));
 			}
 		}
 	}

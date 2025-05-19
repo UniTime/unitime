@@ -158,7 +158,7 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
         	    if (simple)
         	    	response.addRow(new TableRowInterface(
         	    			idx,
-        	    			"gwt.jsp?page=suggestions&menu=hide&id=" + classId + "&history=" + idx,
+        	    			"suggestions?menu=hide&id=" + classId + "&history=" + idx,
         	    			MESSAGES.dialogSuggestions(),
         	    			new TableCellInterface<Date>(record.getTimeStamp(), sTS.format(record.getTimeStamp())),
         	    			dispNumber(aSg.getValue()-bSg.getValue()),
@@ -169,7 +169,7 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
         	    else
         	    	response.addRow(new TableRowInterface(
         	    			idx,
-        	    			"gwt.jsp?page=suggestions&menu=hide&id=" + classId + "&history=" + idx,
+        	    			"suggestions?menu=hide&id=" + classId + "&history=" + idx,
         	    			MESSAGES.dialogSuggestions(),
         	    			new TableCellInterface<Date>(record.getTimeStamp(), sTS.format(record.getTimeStamp())),
         	    			dispNumber(aSg.getValue()-bSg.getValue()),
@@ -222,7 +222,7 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 					new TableHeaderIterface(MESSAGES.colShortPerturbations()));
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
-		BackTracker.markForBack(context, "gwt.jsp?page=solutionChanges", MESSAGES.pageSolutionChanges(), true, true);
+		BackTracker.markForBack(context, "solutionChanges", MESSAGES.pageSolutionChanges(), true, true);
 		
 		return response;
 	}

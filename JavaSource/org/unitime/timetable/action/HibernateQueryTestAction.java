@@ -481,7 +481,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 				link = "schedulingSubpartDetail.action?ssuid=" + x;
 				ids.add((Long)x);
     		} else if ("__Room".equals(alias)) {
-				link = "gwt.jsp?page=rooms&back=1&id=" + x;
+				link = "rooms?back=1&id=" + x;
 				ids.add((Long)x);
     		} else if ("__Instructor".equals(alias)) {
 				link = "instructorDetail.action?instructorId=" + x;
@@ -490,7 +490,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 				link = "examDetail.action?examId=" + x;
 				ids.add((Long)x);
     		} else if ("__Event".equals(alias)) {
-				link = "gwt.jsp?page=events#event=" + x;
+				link = "events#event=" + x;
     			ids.add((Long)x);
     		}
     	}

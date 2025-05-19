@@ -332,7 +332,7 @@ public class EnrollmentTable extends Composite {
 					buttons.addButton("acrf", MESSAGES.buttonAdvisorCourseRequests(), new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							Window.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=acrf#" + student.getId(), "_blank", "");
+							Window.open(GWT.getHostPageBaseURL() + "acrf#" + student.getId(), "_blank", "");
 						}
 					});
 					buttons.setEnabled("acrf", student.isCanSelect() && student.getSessionId() != null);
