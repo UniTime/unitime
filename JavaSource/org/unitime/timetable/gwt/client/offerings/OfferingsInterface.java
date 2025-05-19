@@ -85,9 +85,10 @@ public class OfferingsInterface {
 		public void setCanExportPdf(boolean canExport) { iCanExportPdf = canExport; }
 	}
 	
-	public static class OfferingsRequest implements GwtRpcRequest<GwtRpcResponseList<TableInterface>> {
+	public static class OfferingsRequest implements GwtRpcRequest<OfferingsResponse> {
 		private FilterInterface iFilter;
 		private String iBackId, iBackType;
+		private Boolean iOpenDetailsOnSingleResult;
 		
 		public FilterInterface getFilter() { return iFilter; }
 		public void setFilter(FilterInterface filter) { iFilter = filter; }
@@ -96,6 +97,17 @@ public class OfferingsInterface {
 		public void setBackId(String backId) { iBackId = backId; }
 		public String getBackType() { return iBackType; }
 		public void setBackType(String backType) { iBackType = backType; }
+		public boolean isOpenDetailsOnSingleResult() { return iOpenDetailsOnSingleResult != null && iOpenDetailsOnSingleResult.booleanValue(); }
+		public void setOpenDetailsOnSingleResult(boolean openDetailsOnSingleResult) { iOpenDetailsOnSingleResult = openDetailsOnSingleResult; }
+	}
+	
+	public static class OfferingsResponse extends GwtRpcResponseList<TableInterface> {
+		private static final long serialVersionUID = 1L;
+		private String iUrl; 
+		
+		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		public void setUrl(String url) { iUrl = url; }
+		public String getUrl() { return iUrl; }
 	}
 	
 	public static class ClassesRequest extends OfferingsRequest {}

@@ -24,9 +24,8 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassAssignmentsRequest;
-import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
@@ -41,7 +40,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.webutil.BackTracker;
 
 @GwtRpcImplements(ClassAssignmentsRequest.class)
-public class ClassAssignmentsBackend implements GwtRpcImplementation<ClassAssignmentsRequest, GwtRpcResponseList<TableInterface>> {
+public class ClassAssignmentsBackend implements GwtRpcImplementation<ClassAssignmentsRequest, OfferingsResponse> {
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -49,14 +48,14 @@ public class ClassAssignmentsBackend implements GwtRpcImplementation<ClassAssign
 	
 
 	@Override
-	public GwtRpcResponseList<TableInterface> execute(ClassAssignmentsRequest request, SessionContext context) {
+	public OfferingsResponse execute(ClassAssignmentsRequest request, SessionContext context) {
 		context.checkPermission(Right.ClassAssignments);
 		
 		String subjectArea = request.getFilter().getParameterValue("subjectArea");
 		if (subjectArea == null || subjectArea.isEmpty())
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
-		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
+		OfferingsResponse response = new OfferingsResponse();
 		ClassAssignmentsTableBuilder builder = new ClassAssignmentsTableBuilder(
 				context, request.getBackType(), request.getBackId());
 		

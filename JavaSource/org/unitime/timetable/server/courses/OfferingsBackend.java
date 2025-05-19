@@ -26,13 +26,14 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsRequest;
-import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -43,7 +44,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.webutil.BackTracker;
 
 @GwtRpcImplements(OfferingsRequest.class)
-public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, GwtRpcResponseList<TableInterface>> {
+public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, OfferingsResponse> {
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -51,14 +52,14 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 	
 
 	@Override
-	public GwtRpcResponseList<TableInterface> execute(OfferingsRequest request, SessionContext context) {
+	public OfferingsResponse execute(OfferingsRequest request, SessionContext context) {
 		context.checkPermission(Right.InstructionalOfferings);
 		
 		String subjectArea = request.getFilter().getParameterValue("subjectArea");
 		if (subjectArea == null || subjectArea.isEmpty())
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
-		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
+		OfferingsResponse response = new OfferingsResponse();
 		InstructionalOfferingTableBuilder builder = new InstructionalOfferingTableBuilder(context, request.getBackType(), request.getBackId());
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
@@ -96,6 +97,18 @@ public class OfferingsBackend implements GwtRpcImplementation<OfferingsRequest, 
 					true, true);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		if (request.isOpenDetailsOnSingleResult() && subjectArea != null && !subjectArea.isEmpty() && subjectArea.indexOf(',') < 0 && courseNbr != null && !courseNbr.isEmpty()) {
+			try {
+				CourseOffering co = CourseOfferingDAO.getInstance().getSession().createQuery(
+						"from CourseOffering where subjectArea.uniqueId = :subjectAreaId and courseNbr = :courseNbr", CourseOffering.class
+						).setParameter("subjectAreaId", Long.valueOf(subjectArea)).setParameter("courseNbr", courseNbr).uniqueResult();
+				if (co != null && context.hasPermission(co.getInstructionalOffering(), Right.InstructionalOfferingDetail)) {
+					response.setUrl("offering?id=" + co.getInstructionalOffering().getUniqueId());
+					return response;
+				}
+			} catch (Exception e) {}
 		}
 		
 		builder.generateTableForInstructionalOfferings(

@@ -26,9 +26,8 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesRequest;
-import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
-import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
@@ -43,7 +42,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.webutil.BackTracker;
 
 @GwtRpcImplements(ClassesRequest.class)
-public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtRpcResponseList<TableInterface>> {
+public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, OfferingsResponse> {
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
@@ -51,14 +50,14 @@ public class ClassesBackend implements GwtRpcImplementation<ClassesRequest, GwtR
 	
 
 	@Override
-	public GwtRpcResponseList<TableInterface> execute(ClassesRequest request, SessionContext context) {
+	public OfferingsResponse execute(ClassesRequest request, SessionContext context) {
 		context.checkPermission(Right.Classes);
 		
 		String subjectArea = request.getFilter().getParameterValue("subjectArea");
 		if (subjectArea == null || subjectArea.isEmpty())
 			throw new GwtRpcException(MESSAGES.errorSubjectRequired());
 		
-		GwtRpcResponseList<TableInterface> response = new GwtRpcResponseList<TableInterface>();
+		OfferingsResponse response = new OfferingsResponse();
 		ClassesTableBuilder builder = new ClassesTableBuilder(context, request.getBackType(), request.getBackId());
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
