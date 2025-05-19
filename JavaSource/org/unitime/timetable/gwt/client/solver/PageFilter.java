@@ -31,6 +31,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomFilterBox;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
 import org.unitime.timetable.gwt.client.widgets.DayCodeSelector;
@@ -57,6 +58,8 @@ import com.google.gwt.event.dom.client.HasKeyUpHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -73,6 +76,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 /**
  * @author Tomas Muller
@@ -325,6 +329,13 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 					else
 						param.setValue(event.getValue());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
+				}
+			});
+			box.addSelectionHandler(new SelectionHandler<Suggestion>() {
+				@Override
+				public void onSelection(SelectionEvent<Suggestion> event) {
+					if (event.getSelectedItem() != null)
+						param.setValue(event.getSelectedItem().getReplacementString());
 				}
 			});
 			return box;
