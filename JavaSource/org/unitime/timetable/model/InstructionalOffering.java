@@ -20,16 +20,9 @@
 package org.unitime.timetable.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -37,9 +30,11 @@ import java.util.TreeSet;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
-import org.hibernate.query.Query;
 import org.hibernate.Session;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.query.Query;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseInstructionalOffering;
@@ -51,6 +46,10 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.webutil.Navigation;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * @author Stephanie Schluttenhofer, Tomas Muller
@@ -346,28 +345,46 @@ public class InstructionalOffering extends BaseInstructionalOffering {
                 SchedulingSubpart tSp = (SchedulingSubpart) iterSp.next();
 
                 // Loop through classes
-                Set sCl = tSp.getClasses();
-                for (Iterator iterCl=sCl.iterator(); iterCl.hasNext(); ) {
-                    Class_ c = (Class_) iterCl.next();
-
-                    // Delete Class Instructors
-                    Set classInstrs = c.getClassInstructors();
-                    for (Iterator iterCi=classInstrs.iterator(); iterCi.hasNext() ;) {
-                        ClassInstructor ci = (ClassInstructor) iterCi.next();
-                        DepartmentalInstructor instr = ci.getInstructor();
-                        instr.removeClassInstructor(ci);
-                        hibSession.remove(ci);
-                    }
-                    
-                    Event.deleteFromEvents(hibSession, c);
-                    Exam.deleteFromExams(hibSession, c);
-
-                    // Delete class
-                    hibSession.remove(c);
-                }
-
-                // Delete set of classes
-                tSp.getClasses().clear();
+	                if (tSp.getClasses() != null && ! tSp.getClasses().isEmpty()) {
+	                Set<Class_> sCl = new HashSet<Class_>(tSp.getClasses());
+	                for (Iterator<Class_> iterCl=sCl.iterator(); iterCl.hasNext(); ) {
+	                    Class_ c = (Class_) iterCl.next();
+	
+	                    // Delete Class Instructors
+	                    Set<ClassInstructor> classInstrs = c.getClassInstructors();
+	                    if (classInstrs != null && !classInstrs.isEmpty()) {
+		                    for (Iterator<ClassInstructor> iterCi=classInstrs.iterator(); iterCi.hasNext() ;) {
+		                        ClassInstructor ci = iterCi.next();
+		                        DepartmentalInstructor instr = ci.getInstructor();
+		                        instr.removeClassInstructor(ci);
+		                        hibSession.remove(ci);
+		                    }
+	                    }
+	                    
+	                    Event.deleteFromEvents(hibSession, c);
+	                    Exam.deleteFromExams(hibSession, c);
+	                    
+	                    if (c.getParentClass() != null) {
+	                    	c.getParentClass().getChildClasses().remove(c);
+	                    	c.setParentClass(null);
+	                    }
+	                    if (c.getChildClasses() != null && !c.getChildClasses().isEmpty()) {
+	                    	Set<Class_> sChildCl = new HashSet<Class_>(c.getChildClasses());
+	                    	for (Iterator<Class_> iterChildCl = sChildCl.iterator(); iterChildCl.hasNext();) {
+	                    		Class_ cc = iterChildCl.next();
+	                    		cc.setParentClass(null);
+	                    		c.getChildClasses().remove(cc);
+	                    	}
+	                    }
+	
+	                    // Delete class
+	                    tSp.getClasses().remove(c);
+	                    hibSession.remove(c);
+	                }
+	
+	                // Delete set of classes
+	                tSp.getClasses().clear();
+	            }
             }
             
             Event.deleteFromEvents(hibSession, tIoc);
