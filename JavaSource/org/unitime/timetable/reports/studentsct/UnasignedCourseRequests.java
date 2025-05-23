@@ -33,7 +33,10 @@ import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.constraint.ConfigLimit;
+import org.cpsolver.studentsct.constraint.CourseLimit;
 import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
+import org.cpsolver.studentsct.constraint.SectionLimit;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Config;
 import org.cpsolver.studentsct.model.Course;
@@ -41,6 +44,7 @@ import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.FreeTimeRequest;
 import org.cpsolver.studentsct.model.Instructor;
+import org.cpsolver.studentsct.model.Offering;
 import org.cpsolver.studentsct.model.Request;
 import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.cpsolver.studentsct.model.SctAssignment;
@@ -50,11 +54,11 @@ import org.cpsolver.studentsct.model.StudentGroup;
 import org.cpsolver.studentsct.model.Subpart;
 import org.cpsolver.studentsct.model.Unavailability;
 import org.cpsolver.studentsct.report.AbstractStudentSectioningReport;
+import org.cpsolver.studentsct.reservation.Reservation;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
-import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
 /**
  * @author Tomas Muller
@@ -85,6 +89,324 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
         for (Instructor instructor: student.getAdvisors())
         	advisors += (advisors.isEmpty() ? "" : ", ") + instructor.getName();
         return advisors;
+    }
+    
+    /**
+     * Return minimum of two limits where -1 counts as unlimited (any limit is smaller)
+     */
+    private static int min(int l1, int l2) {
+        return (l1 < 0 ? l2 : l2 < 0 ? l1 : Math.min(l1, l2));
+    }
+    
+    /**
+     * Add two limits where -1 counts as unlimited (unlimited plus anything is unlimited)
+     */
+    private static int add(int l1, int l2) {
+        return (l1 < 0 ? -1 : l2 < 0 ? -1 : l1 + l2);
+    }
+    
+    /**
+     * Compute offering limit excluding cancelled and/or disabled sections
+     */
+    public static int getOfferingLimit(Offering offering, boolean skipCancelled, boolean skipDisabled) {
+    	int offeringLimit = 0;
+    	for (Config config: offering.getConfigs()) {
+    		Integer configLimit = null;
+    		for (Subpart subpart: config.getSubparts()) {
+    			int subpartLimit = 0;
+    			for (Section section: subpart.getSections()) {
+    				if (skipCancelled && section.isCancelled()) continue;
+    				if (skipDisabled && !section.isEnabled()) continue;
+    				subpartLimit = add(subpartLimit, section.getLimit());
+    			}
+    			if (configLimit == null)
+    				configLimit = subpartLimit;
+    			else
+    				configLimit = min(configLimit, subpartLimit);
+    		}
+    		if (configLimit != null)
+    			offeringLimit = add(offeringLimit, min(configLimit, config.getLimit()));
+    	}
+    	return offeringLimit;
+    }
+    
+    /**
+     * Compute offering limit excluding cancelled and/or disabled sections
+     */
+    public static double getOfferingEnrollment(Offering offering, Assignment<Request, Enrollment> assignment, boolean skipCancelled, boolean skipDisabled) {
+    	double enrollment = 0;
+    	for (Config config: offering.getConfigs()) {
+    		e: for (Enrollment e: config.getContext(assignment).getEnrollments()) {
+    			if (skipCancelled)
+    				for (Section s: e.getSections())
+    					if (s.isCancelled()) continue e;
+    			if (skipDisabled)
+    				for (Section s: e.getSections())
+    					if (!s.isEnabled()) continue e;
+    			enrollment += e.getRequest().getWeight();
+    		}
+    	}
+    	return enrollment;
+    }
+    
+    public static void computeNoAvailableReasons(CourseRequest courseRequest, Assignment<Request, Enrollment> assignment, Set<String> reasons, Course course, Config config, HashSet<Section> sections, int idx) {
+        if (idx == 0) { // run only once for each configuration
+            if (courseRequest.isNotAllowed(course, config)) {
+            	reasons.add(MSG.unavailableConfigNotAllowedDueToRestrictions(config.getInstructionalMethodName() != null ? config.getInstructionalMethodName() : config.getName()));
+            	return;
+            }
+            boolean canOverLimit = false;
+            for (Reservation r: courseRequest.getReservations(course)) {
+                if (!r.canBatchAssignOverLimit()) continue;
+                if (r.neverIncluded()) continue;
+                if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(config)) continue;
+                if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                canOverLimit = true; break;
+            }
+            if (!canOverLimit) {
+                if (config.getOffering().hasReservations()) {
+                    boolean hasReservation = false, hasConfigReservation = false, reservationMustBeUsed = false;
+                    for (Reservation r: courseRequest.getReservations(course)) {
+                        if (r.mustBeUsed()) reservationMustBeUsed = true;
+                        if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                        if (r.neverIncluded()) {
+                        } else if (r.getConfigs().isEmpty()) {
+                            hasReservation = true;
+                        } else if (r.getConfigs().contains(config)) {
+                            hasReservation = true;
+                            hasConfigReservation = true;
+                        } else if (!r.areRestrictionsInclusive()) {
+                            hasReservation = true;
+                        }
+                    }
+                    if (!hasReservation && reservationMustBeUsed) {
+                    	reasons.add(MSG.unavailableMustUseReservationIsFull());
+                        return;
+                    }
+                    if (!hasReservation && config.getOffering().getUnreservedSpace(assignment, courseRequest) < courseRequest.getWeight()) {
+                    	reasons.add(MSG.unavailableCourseIsReserved(course.getName()));
+                        return;
+                    }
+                    if (!hasConfigReservation && config.getUnreservedSpace(assignment, courseRequest) < courseRequest.getWeight()) {
+                    	reasons.add(MSG.unavailableConfigIsReserved(config.getName()));
+                        return;
+                    }
+                }
+                if (config.getLimit() >= 0 && ConfigLimit.getEnrollmentWeight(assignment, config, courseRequest) > config.getLimit()) {
+                	reasons.add(MSG.unavailableConfigIsFull(config.getName()));
+                    return;
+                }
+            }
+        }
+        if (config.getSubparts().size() == idx) {
+            Enrollment e = new Enrollment(courseRequest, 0, course, config, new HashSet<SctAssignment>(sections), null);
+            if (courseRequest.isNotAllowed(e)) {
+            	reasons.add(MSG.unavailableNotAllowed());
+            } else if (config.getOffering().hasReservations()) {
+                boolean mustHaveReservation = config.getOffering().getTotalUnreservedSpace() < courseRequest.getWeight();
+                boolean mustHaveConfigReservation = config.getTotalUnreservedSpace() < courseRequest.getWeight();
+                boolean mustHaveSectionReservation = false;
+                boolean containDisabledSection = false;
+                for (Section s: sections) {
+                    if (s.getTotalUnreservedSpace() < courseRequest.getWeight()) {
+                        mustHaveSectionReservation = true;
+                    }
+                    if (!courseRequest.getStudent().isAllowDisabled() && !s.isEnabled(courseRequest.getStudent())) {
+                        containDisabledSection = true;
+                    }
+                }
+                boolean canOverLimit = false;
+                for (Reservation r: courseRequest.getReservations(course)) {
+                    if (!r.canBatchAssignOverLimit() || !r.isIncluded(e)) continue;
+                    if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                    if (containDisabledSection && !r.isAllowDisabled()) continue;
+                    canOverLimit = true;
+                }
+                if (!canOverLimit) {
+                    boolean reservationMustBeUsed = false;
+                    reservations: for (Reservation r: courseRequest.getSortedReservations(assignment, course)) {
+                        if (r.mustBeUsed()) reservationMustBeUsed = true;
+                        if (!r.isIncluded(e)) continue;
+                        if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                        if (mustHaveConfigReservation && r.getConfigs().isEmpty()) continue;
+                        if (mustHaveSectionReservation)
+                            for (Section s: sections)
+                                if (r.getSections(s.getSubpart()) == null && s.getTotalUnreservedSpace() < courseRequest.getWeight()) continue reservations;
+                        if (containDisabledSection && !r.isAllowDisabled()) continue;
+                        return;
+                    }
+                    // a case w/o reservation
+                    if (!(mustHaveReservation || mustHaveConfigReservation || mustHaveSectionReservation) &&
+                        !(config.getOffering().getUnreservedSpace(assignment, courseRequest) < courseRequest.getWeight()) &&
+                        !reservationMustBeUsed && !containDisabledSection) {
+                        return;
+                    }
+                    reasons.add(MSG.unavailableDueToReservation());
+                }
+            }
+        } else {
+            Subpart subpart = config.getSubparts().get(idx);
+            List<Section> sectionsThisSubpart = subpart.getSections();
+            List<Section> matchingSectionsThisSubpart = new ArrayList<Section>(subpart.getSections().size());
+            for (Section section : sectionsThisSubpart) {
+                if (section.getParent() != null && !sections.contains(section.getParent()))
+                    continue;
+
+                boolean canOverLimit = false;
+                for (Reservation r: courseRequest.getReservations(course)) {
+                    if (!r.canBatchAssignOverLimit()) continue;
+                    if (r.getSections(subpart) != null && !r.getSections(subpart).contains(section)) continue;
+                    if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                    canOverLimit = true; break;
+                }
+                if (!canOverLimit) {
+                    if (section.getLimit() >= 0 && SectionLimit.getEnrollmentWeight(assignment, section, courseRequest) > section.getLimit())
+                        continue;
+                    if (section.isCancelled()) {
+                    	reasons.add(MSG.unavailableSectionCancelled(section.getName(course.getId())));
+                        continue;
+                    }
+                    if (section.isOverlapping(sections)) {
+                    	for (Section a : sections) {
+                            if (a.isAllowOverlap()) continue;
+                            if (a.getTime() == null) continue;
+                            if (section.isToIgnoreStudentConflictsWith(a.getId())) continue;
+                            if (section.getTime().hasIntersection(a.getTime()))
+                            	reasons.add(MSG.unavailableSectionConflict(section.getName(course.getId()), a.getName(course.getId())));    	
+                        }
+                        continue;
+                    }
+                    if (config.getOffering().hasReservations()) {
+                        boolean hasReservation = false, hasSectionReservation = false, reservationMustBeUsed = false;
+                        for (Reservation r: courseRequest.getReservations(course)) {
+                            if (r.mustBeUsed()) reservationMustBeUsed = true;
+                            if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                            if (r.getSections(subpart) == null) {
+                                hasReservation = true;
+                            } else if (r.getSections(subpart).contains(section)) {
+                                hasReservation = true;
+                                hasSectionReservation = true;
+                            }
+                        }
+                        if (!hasSectionReservation && section.getUnreservedSpace(assignment, courseRequest) < courseRequest.getWeight()) {
+                        	reasons.add(MSG.unavailableSectionReserved(section.getName(course.getId())));
+                            continue;
+                        }
+                        if (!hasReservation && reservationMustBeUsed) {
+                        	reasons.add(MSG.unavailableDueToMustTakeReservation(section.getName(course.getId())));
+                            continue;
+                        }
+                    }
+                } else {
+                    if (section.isCancelled()) {
+                    	reasons.add(MSG.unavailableSectionCancelled(section.getName(course.getId())));
+                        continue;
+                    }
+                    if (section.isOverlapping(sections)) {
+                    	for (Section a : sections) {
+                            if (a.isAllowOverlap()) continue;
+                            if (a.getTime() == null) continue;
+                            if (section.isToIgnoreStudentConflictsWith(a.getId())) continue;
+                            if (section.getTime().hasIntersection(a.getTime()))
+                            	reasons.add(MSG.unavailableSectionConflict(section.getName(course.getId()), a.getName(course.getId())));    	
+                        }
+                        continue;
+                    }
+                }
+
+                if (courseRequest.getInitialAssignment() != null && (courseRequest.getModel() != null && ((StudentSectioningModel)courseRequest.getModel()).getKeepInitialAssignments()) &&
+                        !courseRequest.getInitialAssignment().getAssignments().contains(section)) {
+                	reasons.add(MSG.unavailableNotInitial());
+                    continue;
+                }
+                if (courseRequest.isFixed() && !courseRequest.getFixedValue().getAssignments().contains(section)) {
+                	reasons.add(MSG.unavailableNotFixed());
+                    continue;
+                }
+
+                if (!courseRequest.isRequired(section)) {
+                	reasons.add(MSG.unavailableStudentPrefs(section.getName(course.getId())));
+                    continue;
+                }
+                if (courseRequest.isNotAllowed(course, section)) {
+                	reasons.add(MSG.unavailableStudentRestrictions(section.getName(course.getId())));
+                	continue;
+                }
+                if (!courseRequest.getStudent().isAvailable(section)) {
+                    boolean canOverlap = false;
+                    for (Reservation r: courseRequest.getReservations(course)) {
+                        if (!r.isAllowOverlap()) continue;
+                        if (r.getSections(subpart) != null && !r.getSections(subpart).contains(section)) continue;
+                        if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
+                        canOverlap = true; break;
+                    }
+                    if (!canOverlap) {
+                    	reasons.add(MSG.unavailableStudentUnavailabilities(section.getName(course.getId())));
+                    	continue;
+                    }
+                }
+
+                if (!courseRequest.getStudent().isAllowDisabled() && !section.isEnabled(courseRequest.getStudent())) {
+                    boolean allowDisabled = false;
+                    for (Reservation r: courseRequest.getReservations(course)) {
+                        if (!r.isAllowDisabled()) continue;
+                        if (r.getSections(subpart) != null && !r.getSections(subpart).contains(section)) continue;
+                        if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(config)) continue;
+                        allowDisabled = true; break;
+                    }
+                    if (!allowDisabled) {
+                    	reasons.add(MSG.unavailableSectionDisabled(section.getName(course.getId())));
+                    	continue;
+                    }
+                }
+                matchingSectionsThisSubpart.add(section);
+            }
+            for (Section section: matchingSectionsThisSubpart) {
+                sections.add(section);
+                computeNoAvailableReasons(courseRequest, assignment, reasons, course, config, sections, idx + 1);
+                sections.remove(section);
+            }
+        }
+    }
+    		
+    
+    public static String getNoAvailableMessage(CourseRequest courseRequest, Assignment<Request, Enrollment> assignment) {
+    	Course course = courseRequest.getCourses().get(0);
+    	Offering offering = course.getOffering();
+    	
+    	int limit = getOfferingLimit(offering, false, false);
+    	double enrollment = getOfferingEnrollment(offering, assignment, false, false);
+    	if (limit >= 0 && limit < courseRequest.getWeight() + enrollment)
+    		return MSG.unavailableCourseIsFull(course.getName());
+    	
+    	if (course.getLimit() >= 0 && CourseLimit.getEnrollmentWeight(assignment, course, courseRequest) > course.getLimit())
+    		return MSG.unavailableCourseIsFull(course.getName());
+    	
+    	boolean reservationMustBeUsed = false, hasReservation = false;
+    	for (Reservation r: courseRequest.getSortedReservations(assignment, course)) {
+            if (r.mustBeUsed()) reservationMustBeUsed = true;
+            if (r.getReservedAvailableSpace(assignment, courseRequest) < courseRequest.getWeight()) continue;
+            hasReservation = true;
+        }
+        if (reservationMustBeUsed && !hasReservation)
+        	return MSG.unavailableMustTakeReservationIsFull();
+
+    	Set<String> reasons = new TreeSet<String>();
+    	for (Config config : offering.getConfigs()) {
+    		computeNoAvailableReasons(courseRequest, assignment, reasons, course, config, new HashSet<Section>(), 0);
+        }
+    	if (!reasons.isEmpty()) {
+    		String ret = "";
+    		int count = 0;
+    		for (String reason: reasons) {
+    			if (count == 10) { return ret + "\n..."; } 
+    			ret += (ret.isEmpty() ? "" : "\n") + reason;
+    			count++;
+    		}
+    		return ret;
+    	}
+    	
+    	return null;
     }
 	
     @Override
@@ -161,13 +483,10 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 				RequestPriority conflictPriority = null;
 				if (av.isEmpty() || (av.size() == 1 && av.get(0).equals(courseRequest.getInitialAssignment()) && getModel().inConflict(assignment, av.get(0)))) {
 					if (skipFull) continue;
-					if (courseRequest.getCourses().get(0).getLimit() >= 0) {
-						line.add(new CSVFile.CSVField(MSG.courseIsFull()));
-					} else if (SectioningRequest.hasInconsistentRequirements(courseRequest, null)) {
-						line.add(new CSVFile.CSVField(MSG.classNotAvailableDueToStudentPrefs()));
-					} else {
-						line.add(new CSVFile.CSVField(MSG.classNotAvailable()));
-					}
+					String message = getNoAvailableMessage(courseRequest, assignment);
+					if (message == null)
+						message = MSG.classNotAvailable();
+					line.add(new CSVFile.CSVField(message));
 				} else {
 					for (Iterator<Enrollment> e = av.iterator(); e.hasNext();) {
 						Enrollment enrl = e.next();
