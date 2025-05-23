@@ -178,6 +178,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iNotAvailable = false, iFull = false, iLocked = false, iCanWaitList = false, iHasIncompReqs = false;
 		private String iInstead;
 		private String iEnrollmentMessage = null;
+		private String iConflictMessage = null;
 		private Date iRequestedDate = null;
 		private Date iWaitListedDate = null;
 		private Integer iSelection = null;
@@ -267,7 +268,11 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public boolean isFull() { return iFull; }
 		public void setFull(boolean full) { iFull = full; }
-		
+
+		public boolean hasConflictMessage() { return iConflictMessage != null && !iConflictMessage.isEmpty(); }
+		public void setConflictMessage(String conflictMessage) { iConflictMessage = conflictMessage; }
+		public String getConflictMessage() { return iConflictMessage; }
+
 		public boolean hasHasIncompReqs() { return iHasIncompReqs; }
 		public void setHasIncompReqs(boolean incompReqs) { iHasIncompReqs = incompReqs; }
 		

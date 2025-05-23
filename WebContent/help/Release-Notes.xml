@@ -38,6 +38,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Solver Reports, Student Dashboard: Not Available message</name>
+			<description>
+				<line>Added a better explanation of why a course is not available for a student.
+					<line>Applies to the Not-Assigned Course Requests report.</line>
+					<line>Applies to the List of Classes tab when a student is clicked.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Data Exchange: Import</name>

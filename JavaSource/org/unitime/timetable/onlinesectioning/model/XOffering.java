@@ -507,6 +507,31 @@ public class XOffering implements Serializable, Externalizable {
     }
     
     /**
+     * Compute offering limit excluding cancelled sections
+     */
+    public int getLimit() {
+    	int offeringLimit = 0;
+    	for (XConfig config: getConfigs()) {
+    		Integer configLimit = null;
+    		for (XSubpart subpart: config.getSubparts()) {
+    			int subpartLimit = 0;
+    			for (XSection section: subpart.getSections()) {
+    				if (!section.isCancelled()) {
+    					subpartLimit = add(subpartLimit, section.getLimit());
+    				}
+    			}
+    			if (configLimit == null)
+    				configLimit = subpartLimit;
+    			else
+    				configLimit = min(configLimit, subpartLimit);
+    		}
+    		if (configLimit != null)
+    			offeringLimit = add(offeringLimit, min(configLimit, config.getLimit()));
+    	}
+    	return offeringLimit;
+    }
+    
+    /**
      * Course availability excluding disabled sections and enrollments using disabled sections
      * @param requests course requests for this offering
      * @param courseId course in question

@@ -111,6 +111,7 @@ import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
+import org.unitime.timetable.reports.studentsct.UnasignedCourseRequests;
 import org.unitime.timetable.solver.jgroups.SolverServer;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
@@ -810,17 +811,23 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						}
 						if (avEnrls.isEmpty()) {
 							ca.setNotAvailable(true);
-							if (course.getLimit() >= 0) {
+							int offeringLimit = offering.getLimit();
+							if (offeringLimit >= 0 || course.getLimit() >= 0) {
 								Collection<XCourseRequest> requests = server.getRequests(course.getOfferingId());
-								int enrl = 0;
+								int courseEnrl = 0;
+								int offerEnrl = 0;
 								if (requests != null) {
-									for (XCourseRequest x: requests)
+									for (XCourseRequest x: requests) {
 										if (x.getEnrollment() != null && x.getEnrollment().getCourseId().equals(course.getCourseId()))
-											enrl ++;
+											courseEnrl ++;
+										if (x.getEnrollment() != null && x.getEnrollment().getOfferingId().equals(course.getOfferingId()))
+											offerEnrl ++;
+									}
 								}
-								ca.setFull(enrl >= course.getLimit());
+								ca.setFull((offeringLimit >= 0 && offerEnrl >= offeringLimit) || (course.getLimit() >= 0 && courseEnrl >= course.getLimit()));
 							}
 							ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(crq, course.getCourseId()));
+							ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(crq, assignment));
 						}
 						if (student.getMaxCredit() != null) {
 							Float minCred = course.getMinCredit();

@@ -3740,5 +3740,61 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("My PIN Suppressed")
 	String modeMyPinSuppressed();
-
+	
+	@DefaultMessage("Configuration {0} not allowed due to a restriction.")
+	String unavailableConfigNotAllowedDueToRestrictions(String cfg);
+	
+	@DefaultMessage("A reservation that must be followed is full.")
+	String unavailableMustUseReservationIsFull();
+	
+	@DefaultMessage("Course {0} is full.")
+	String unavailableCourseIsFull(String course);
+	
+	@DefaultMessage("Course {0} is reserved.")
+	String unavailableCourseIsReserved(String course);
+	
+	@DefaultMessage("Configuration {0} is reserved.")
+	String unavailableConfigIsReserved(String config);
+	
+	@DefaultMessage("Configuration {0} is full.")
+	String unavailableConfigIsFull(String config);
+	
+	@DefaultMessage("Not allowed due to a restriction.")
+	String unavailableNotAllowed();
+	
+	@DefaultMessage("Not allowed due to a reservation.")
+	String unavailableDueToReservation();
+	
+	@DefaultMessage("Section {0} is cancelled.")
+	String unavailableSectionCancelled(String section);
+	
+	@DefaultMessage("Section {0} is reserved.")
+	String unavailableSectionReserved(String section);
+	
+	@DefaultMessage("Section {0} is disabled for student scheduling.")
+	String unavailableSectionDisabled(String section);
+	
+	@DefaultMessage("Section {0} is conflicting with {1}.")
+	String unavailableSectionConflict(String section, String other);
+	
+	@DefaultMessage("Cannot take {0} due to a reservation.")
+	String unavailableDueToMustTakeReservation(String section);
+	
+	@DefaultMessage("Initial enrollment must be followed.")
+	String unavailableNotInitial();
+	
+	@DefaultMessage("Fixed enrollment must be followed.")
+	String unavailableNotFixed();
+	
+	@DefaultMessage("Section {0} is not allowed by student preferences.")
+	String unavailableStudentPrefs(String section);
+	
+	@DefaultMessage("Section {0} is not allowed due to a restriction.")
+	String unavailableStudentRestrictions(String section);
+	
+	@DefaultMessage("Section {0} overlaps with student unavailabily.")
+	String unavailableStudentUnavailabilities(String section);
+	
+	@DefaultMessage("A reservation that must be followed is full.")
+	String unavailableMustTakeReservationIsFull();
 }
