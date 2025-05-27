@@ -332,6 +332,7 @@ public class DataImportAction extends UniTimeAction<DataImportForm> {
 			}
 			} finally {
 				fis.close();
+				iForm.getFile().delete();
 			}
 		}
 

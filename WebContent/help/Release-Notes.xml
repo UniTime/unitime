@@ -37,6 +37,19 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Data Exchange: Import</name>
+			<description>
+				<line>Avoid an issue with the import file being removed before it is imported by:
+					<line>1. Renaming the file once it is passed to the data exchange form</line>
+					<line>2. Remove the file only after the import is finished</line>
+				</line>
+				<line>This resolves the occasional "The system cannot find the file specified" error that may occur during the import.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

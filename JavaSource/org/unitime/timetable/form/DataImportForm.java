@@ -20,6 +20,9 @@
 package org.unitime.timetable.form;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -116,7 +119,19 @@ public class DataImportForm implements UniTimeForm {
 	}
 
 	public File getFile() { return iFile; }
-	public void setFile(File file) { iFile = file; }
+	public void setFile(File file) {
+		if (file != null && file.exists()) {
+			try {
+				File newFile = new File(file.getParent(), file.getName() + ".lock");
+				Files.move(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				iFile = newFile;
+			} catch (IOException e) {
+				iFile = file;
+			}
+		} else {
+			iFile = file;
+		}
+	}
 	public String getFileContentType() { return iFileContentType; }
 	public void setFileContentType(String contentType) { iFileContentType = contentType; }
 	public String getFileFileName() { return iFileFileName; }
