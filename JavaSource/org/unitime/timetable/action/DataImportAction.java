@@ -24,6 +24,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
@@ -105,9 +107,19 @@ public class DataImportAction extends UniTimeAction<DataImportForm> implements U
 		if (form == null)
 			form = new DataImportForm();
 		if (!uploadedFiles.isEmpty()) {
-			form.setFile(new File(uploadedFiles.get(0).getAbsolutePath()));
-			form.setFileFileName(uploadedFiles.get(0).getOriginalName());
-			form.setFileContentType(uploadedFiles.get(0).getContentType());
+			UploadedFile uf = uploadedFiles.get(0);
+			File uploaded = (uf == null || uf.getAbsolutePath() == null ? null : new File(uf.getAbsolutePath()));
+			if (uploaded != null && uploaded.exists()) {
+				File processed = new File(uploaded.getParentFile(), uploaded.getName() + ".locked");
+				try {
+					Files.move(uploaded.toPath(), processed.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					form.setFile(processed);
+				} catch (IOException e) {
+					form.setFile(uploaded);
+				}
+				form.setFileFileName(uf.getOriginalName());
+				form.setFileContentType(uf.getContentType());
+			}
 		}
 	}
 	
@@ -348,6 +360,7 @@ public class DataImportAction extends UniTimeAction<DataImportForm> implements U
 			}
 			} finally {
 				fis.close();
+				iForm.getFile().delete();
 			}
 		}
 
