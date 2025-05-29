@@ -980,17 +980,21 @@ public class Class_ extends BaseClass_ {
     public void deleteAllDistributionPreferences(org.hibernate.Session hibSession, boolean updateClass) {
     	boolean deleted = false;
     	if (getDistributionObjects()==null) return;
-    	for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
+       	Set<DistributionObject> distObjects = new HashSet(getDistributionObjects());
+        for (Iterator i=distObjects.iterator();i.hasNext();) {
     		DistributionObject relatedObject = (DistributionObject)i.next();
     		DistributionPref distributionPref = relatedObject.getDistributionPref();
     		distributionPref.getDistributionObjects().remove(relatedObject);
-    		Integer seqNo = relatedObject.getSequenceNumber();
+			getDistributionObjects().remove(relatedObject);
+			Integer seqNo = relatedObject.getSequenceNumber();
 			hibSession.remove(relatedObject);
+			hibSession.merge(distributionPref);
 			deleted = true;
+			hibSession.flush();
+			hibSession.refresh(distributionPref);
 			if (distributionPref.getDistributionObjects().isEmpty()) {
 				PreferenceGroup owner = distributionPref.getOwner();
 				owner.getPreferences().remove(distributionPref);
-				getPreferences().remove(distributionPref);
 				hibSession.merge(owner);
 				hibSession.remove(distributionPref);
 			} else {
@@ -1003,15 +1007,17 @@ public class Class_ extends BaseClass_ {
 						}
 					}
 				}
+				hibSession.merge(distributionPref);
 
 				if (updateClass)
 					hibSession.merge(distributionPref);
 			}
-			i.remove();
+			getDistributionObjects().remove(relatedObject);
     	}
 
-    	if (deleted && updateClass)
+    	if (deleted && updateClass) {
     		hibSession.merge(this);
+    	}
     }
 
 	@Transient
