@@ -30,6 +30,8 @@ import java.util.TreeSet;
 
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
+import org.cpsolver.ifs.model.Constraint;
+import org.cpsolver.ifs.model.GlobalConstraint;
 import org.cpsolver.ifs.util.CSVFile;
 import org.cpsolver.ifs.util.DataProperties;
 import org.cpsolver.studentsct.StudentSectioningModel;
@@ -149,7 +151,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
     	return enrollment;
     }
     
-    public static void computeNoAvailableReasons(CourseRequest courseRequest, Assignment<Request, Enrollment> assignment, Set<String> reasons, Course course, Config config, HashSet<Section> sections, int idx) {
+    public static void computeNoAvailableReasons(CourseRequest courseRequest, Assignment<Request, Enrollment> assignment, Set<String> reasons, Set<String> conflicts, Course course, Config config, HashSet<Section> sections, int idx) {
         if (idx == 0) { // run only once for each configuration
             if (courseRequest.isNotAllowed(course, config)) {
             	reasons.add(MSG.unavailableConfigNotAllowedDueToRestrictions(config.getInstructionalMethodName() != null ? config.getInstructionalMethodName() : config.getName()));
@@ -160,6 +162,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
                 if (!r.canBatchAssignOverLimit()) continue;
                 if (r.neverIncluded()) continue;
                 if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(config)) continue;
+                if (r.getReservedAvailableSpace(assignment, courseRequest) < courseRequest.getWeight()) continue;
                 if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
                 canOverLimit = true; break;
             }
@@ -168,6 +171,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
                     boolean hasReservation = false, hasConfigReservation = false, reservationMustBeUsed = false;
                     for (Reservation r: courseRequest.getReservations(course)) {
                         if (r.mustBeUsed()) reservationMustBeUsed = true;
+                        if (r.getReservedAvailableSpace(assignment, courseRequest) < courseRequest.getWeight()) continue;
                         if (r.getReservedAvailableSpace(assignment, config, courseRequest) < courseRequest.getWeight()) continue;
                         if (r.neverIncluded()) {
                         } else if (r.getConfigs().isEmpty()) {
@@ -193,7 +197,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
                     }
                 }
                 if (config.getLimit() >= 0 && ConfigLimit.getEnrollmentWeight(assignment, config, courseRequest) > config.getLimit()) {
-                	reasons.add(MSG.unavailableConfigIsFull(config.getName()));
+                	conflicts.add(MSG.unavailableConfigIsFull(config.getName()));
                     return;
                 }
             }
@@ -363,7 +367,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
             }
             for (Section section: matchingSectionsThisSubpart) {
                 sections.add(section);
-                computeNoAvailableReasons(courseRequest, assignment, reasons, course, config, sections, idx + 1);
+                computeNoAvailableReasons(courseRequest, assignment, reasons, conflicts, course, config, sections, idx + 1);
                 sections.remove(section);
             }
         }
@@ -392,8 +396,9 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
         	return MSG.unavailableMustTakeReservationIsFull();
 
     	Set<String> reasons = new TreeSet<String>();
+    	Set<String> conflicts = new TreeSet<String>();
     	for (Config config : offering.getConfigs()) {
-    		computeNoAvailableReasons(courseRequest, assignment, reasons, course, config, new HashSet<Section>(), 0);
+    		computeNoAvailableReasons(courseRequest, assignment, reasons, conflicts, course, config, new HashSet<Section>(), 0);
         }
     	if (!reasons.isEmpty()) {
     		String ret = "";
@@ -401,6 +406,17 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
     		for (String reason: reasons) {
     			if (count == 10) { return ret + "\n..."; } 
     			ret += (ret.isEmpty() ? "" : "\n") + reason;
+    			count++;
+    		}
+    		return ret;
+    	}
+    	// only list time conflicts when there is no other reason found
+    	if (!conflicts.isEmpty()) {
+    		String ret = "";
+    		int count = 0;
+    		for (String conflict: conflicts) {
+    			if (count == 10) { return ret + "\n..."; } 
+    			ret += (ret.isEmpty() ? "" : "\n") + conflict;
     			count++;
     		}
     		return ret;
@@ -526,6 +542,33 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 											continue unavailabilities;
 										}
 									}
+					}
+					if (overlaps.isEmpty() && other.isEmpty()) {
+						for (Iterator<Enrollment> e = av.iterator(); e.hasNext();) {
+							Enrollment enrl = e.next();
+							Set<Enrollment> conflicts = new HashSet<Enrollment>();
+					        for (Constraint<Request, Enrollment> constraint : enrl.variable().hardConstraints())
+					            if (constraint.inConflict(assignment, enrl))
+					            	other.add(constraint.getName());
+					            else {
+					            	constraint.computeConflicts(assignment, enrl, conflicts);
+					            	if (!conflicts.isEmpty()) {
+					            		other.add(constraint.getClass().getSimpleName());
+					            		conflicts.clear();
+					            	}
+					            }
+					        
+					        for (GlobalConstraint<Request, Enrollment> constraint : getModel().globalConstraints())
+					        	if (constraint.inConflict(assignment, enrl))
+					            	other.add(constraint.getName());
+					        	else {
+					            	constraint.computeConflicts(assignment, enrl, conflicts);
+					            	if (!conflicts.isEmpty()) {
+					            		other.add(constraint.getClass().getSimpleName().replaceAll("(?<=[^A-Z])([A-Z])"," $1"));
+					            		conflicts.clear();
+					            	}
+					            }
+						}
 					}
 					if (!overlaps.isEmpty() || !other.isEmpty()) {
 						TreeSet<String> ts = new TreeSet<String>(other);
