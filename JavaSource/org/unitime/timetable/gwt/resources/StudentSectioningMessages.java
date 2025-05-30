@@ -3786,7 +3786,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Fixed enrollment must be followed.")
 	String unavailableNotFixed();
 	
-	@DefaultMessage("Section {0} is not allowed by student prefernces.")
+	@DefaultMessage("Section {0} is not allowed by student preferences.")
 	String unavailableStudentPrefs(String section);
 	
 	@DefaultMessage("Section {0} is not allowed due to a restriction.")

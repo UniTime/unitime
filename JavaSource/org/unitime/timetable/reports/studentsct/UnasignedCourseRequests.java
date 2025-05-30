@@ -167,6 +167,10 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
                 canOverLimit = true; break;
             }
             if (!canOverLimit) {
+                if (config.getLimit() >= 0 && ConfigLimit.getEnrollmentWeight(assignment, config, courseRequest) > config.getLimit()) {
+                	conflicts.add(MSG.unavailableConfigIsFull(config.getName()));
+                    return;
+                }
                 if (config.getOffering().hasReservations()) {
                     boolean hasReservation = false, hasConfigReservation = false, reservationMustBeUsed = false;
                     for (Reservation r: courseRequest.getReservations(course)) {
@@ -195,10 +199,6 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
                     	reasons.add(MSG.unavailableConfigIsReserved(config.getName()));
                         return;
                     }
-                }
-                if (config.getLimit() >= 0 && ConfigLimit.getEnrollmentWeight(assignment, config, courseRequest) > config.getLimit()) {
-                	conflicts.add(MSG.unavailableConfigIsFull(config.getName()));
-                    return;
                 }
             }
         }
