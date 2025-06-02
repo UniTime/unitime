@@ -35,8 +35,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.CacheMode;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.unitime.timetable.gwt.shared.ExcludeFromJsonApi;
 import org.unitime.timetable.security.SessionContext;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -130,6 +133,16 @@ public class JsonApiHelper extends AbstractApiHelper {
 					return matcher.group(1).toLowerCase() + matcher.group(2);
 				else
 					return f.getName();
+			}
+		})
+		.setExclusionStrategies(new ExclusionStrategy() {
+			@Override
+			public boolean shouldSkipClass(Class<?> clazz) {
+				return clazz.getAnnotation(ExcludeFromJsonApi.class) != null;
+			}
+			@Override
+			public boolean shouldSkipField(FieldAttributes field) {
+				return field.getAnnotation(ExcludeFromJsonApi.class) != null;
 			}
 		})
 		.setPrettyPrinting().create();
