@@ -49,6 +49,14 @@
 				<line>This resolves the occasional "The system cannot find the file specified" error that may occur during the import.</line>
 			</description>
 		</item>
+		<item>
+			<name>JSON API: Reservations</name>
+			<description>
+				<line>Added an ability to indicate that a given field or class should be excluded from JSON serialization (with the new @ExcludeFromJsonApi annotation).</line>
+				<line>Fixed an issue with both IdName and Subpart/Clazz having a parent field.</line>
+				<line>Fixed an issue with Subpart.config and Clazz.subpart creating a circle.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

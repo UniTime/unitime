@@ -383,8 +383,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 
 	public static class Subpart extends IdName {
 		private static final long serialVersionUID = 1L;
-		private Long iParentId = null;
 		private List<Clazz> iClasses = new ArrayList<Clazz>();
+		@ExcludeFromJsonApi
 		private Config iConfig;
 		
 		public Subpart() { super(); }
@@ -392,8 +392,6 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public Config getConfig() { return iConfig; }
 		public void setConfig(Config config) { iConfig = config; }
 		public List<Clazz> getClasses() { return iClasses; }
-		public Long getParentId() { return iParentId; }
-		public void setParentId(Long parentId) { iParentId = parentId; }
 		
 		public Clazz getClazz(Long id) {
 			if (id == null) return null;
@@ -405,8 +403,8 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 
 	public static class Clazz extends IdName {
 		private static final long serialVersionUID = 1L;
+		@ExcludeFromJsonApi
 		private Subpart iSubpart = null;
-		private Long iParentId = null;
 		private String iExternalId = null;
 		private boolean iCancelled = false;
 		private String iTime = null;
@@ -417,8 +415,6 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		
 		public Clazz() { super(); }
 		
-		public Long getParentId() { return iParentId; }
-		public void setParentId(Long parentId) { iParentId = parentId; }
 		public Subpart getSubpart() { return iSubpart; }
 		public void setSubpart(Subpart subpart) { iSubpart = subpart; }
 		
