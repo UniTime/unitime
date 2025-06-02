@@ -120,6 +120,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.reports.studentsct.UnasignedCourseRequests;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**
@@ -1140,6 +1141,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
 								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
+								if (server instanceof StudentSolver)
+									ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment));
 							}
 							if (r.getStudent().hasMaxCredit()) {
 								Float minCred = null;
@@ -1238,6 +1241,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
 								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
+								if (server instanceof StudentSolver)
+									ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment));
 							}
 							if (r.getStudent().hasMaxCredit()) {
 								Float minCred = null;
