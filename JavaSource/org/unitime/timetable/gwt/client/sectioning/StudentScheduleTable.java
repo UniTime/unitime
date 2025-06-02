@@ -272,7 +272,9 @@ public class StudentScheduleTable extends Composite {
 						unassignedMessage += MESSAGES.conflictAssignedAlternative(course.getInstead());
 					unassignedMessage += ".";
 				} else if (course.isNotAvailable()) {
-					if (course.isFull())
+					if (course.hasConflictMessage())
+						unassignedMessage = course.getConflictMessage();
+					else if (course.isFull())
 						unassignedMessage = MESSAGES.courseIsFull();
 					else if (course.hasHasIncompReqs())
 						unassignedMessage = MESSAGES.classNotAvailableDueToStudentPrefs();
