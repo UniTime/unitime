@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.query.Query;
+import org.python.jline.internal.Log;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -489,15 +490,25 @@ public class DistributionPref extends BaseDistributionPref {
     }
     
     public static DistributionPref findByIdRolledForwardFrom(Long uidRolledForwardFrom, Long sessionId) {
-        return DistributionPrefDAO.getInstance().
+    	List<DistributionPref> prefs = DistributionPrefDAO.getInstance().
             getSession().
             createQuery(
                 "select dp from DistributionPref dp, Department d where "+
-                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner=d and d.session.uniqueId=:sessionId", DistributionPref.class).
+                "dp.uniqueIdRolledForwardFrom=:uidRolledFrom and dp.owner.uniqueId=d.uniqueId and d.session.uniqueId=:sessionId order by dp.uniqueId", DistributionPref.class).
             setParameter("uidRolledFrom", uidRolledForwardFrom).
             setParameter("sessionId", sessionId).
             setCacheable(true).
-            uniqueResult(); 
+            list(); 
+        DistributionPref dp = null;
+        for (DistributionPref d : prefs) {
+        	if (prefs.size() > 1) {
+        		Log.info(d.preferenceText());
+        	}
+        	if (dp == null) {
+        		dp = d;
+        	}
+        }
+        return(dp);
     }
     
     public String toString(){
