@@ -36,6 +36,13 @@
 				<line>Added an ability to maximize the Suggestions and Instructor Survey dialogs.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Initial Student Sectioning</name>
+			<description>
+				<line>Added the ability to skip the assignment of a student to the course when there is a reservation for a class or a course that is not being loaded (e.g., distance configuration when solving on-campus students).</line>
+				<line>Enable by setting StudentSectioning.MustFollowReservations in the solver configuration to true (defaults to false, which is the existing behavior).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
