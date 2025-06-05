@@ -214,9 +214,15 @@ public class EnrollmentCheck {
         }
         return false;
     }
+    
+    public String getStudentId(Student student) {
+    	return (student.getCurriculum() != null ? student.getCurriculum() + " (" + student.getId() + ")" : "" + student.getId());
+    }
 
     public void checkStudentEnrollments(Progress p) {
         p.setStatus("Student Enrollments Check");
+        
+        boolean mustFollowReservations = iModel.getProperties().getPropertyBoolean("StudentSectioning.MustFollowReservations", false);
         
         DecimalFormat df = new DecimalFormat("0.##");
         Criterion<Lecture, Placement> sc = iModel.getCriterion(StudentConflict.class);
@@ -262,7 +268,7 @@ public class EnrollmentCheck {
             for (Iterator j=student.getLectures().iterator();j.hasNext();) {
                 Lecture lecture = (Lecture)j.next();
                 if (!student.canEnroll(lecture))
-                    p.message(iMessageLowerLevel, MSG.warnStudentInInvalidClass(student.getId(), getClassLabel(lecture)));
+                    p.message(iMessageLowerLevel, MSG.warnStudentInInvalidClass(getStudentId(student), getClassLabel(lecture)));
             }
             if (student.getConfigurations().size()!=student.getOfferings().size()) {
                 Vector got = new Vector();
@@ -270,7 +276,7 @@ public class EnrollmentCheck {
                     Configuration cfg = (Configuration)j.next();
                     got.add(cfg.getOfferingId());
                 }
-                p.message(iMessageLevel, MSG.warnStudentInWrongCourses(student.getId(), getOfferingsLabel(student.getOfferings()), getOfferingsLabel(got)));
+                p.message(mustFollowReservations ? iMessageLowerLevel : iMessageLevel, MSG.warnStudentInWrongCourses(getStudentId(student), getOfferingsLabel(student.getOfferings()), getOfferingsLabel(got)));
             }
             for (Iterator j=student.getConfigurations().iterator();j.hasNext();) {
                 Configuration cfg = (Configuration)j.next();

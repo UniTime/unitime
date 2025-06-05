@@ -356,10 +356,10 @@ public interface CPSolverMessages extends Messages, Constants {
 	String warnClassLimitOver(String className, String students, int limit);
 	
 	@DefaultMessage("Student {0} enrolled to invalid class {1}.")
-	String warnStudentInInvalidClass(Long id, String className);
+	String warnStudentInInvalidClass(String id, String className);
 	
 	@DefaultMessage("Student {0} demands offerings {1}, but got {2}.")
-	String warnStudentInWrongCourses(Long id, String requested, String got);
+	String warnStudentInWrongCourses(String id, String requested, String got);
 	
 	@DefaultMessage("WARNING: Time {0} is no longer valid for class {1}.")
 	String warnTimeNoLongerValid(String time, String className);
