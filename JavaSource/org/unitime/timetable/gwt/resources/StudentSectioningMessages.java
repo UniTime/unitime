@@ -3741,7 +3741,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("My PIN Suppressed")
 	String modeMyPinSuppressed();
 	
-	@DefaultMessage("Configuration {0} is not allowed due to a restriction.")
+	@DefaultMessage("{0} configuration is not allowed due to a restriction.")
 	String unavailableConfigNotAllowedDueToRestrictions(String cfg);
 	
 	@DefaultMessage("A reservation that must be followed is full.")
@@ -3786,7 +3786,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Fixed enrollment must be followed.")
 	String unavailableNotFixed();
 	
-	@DefaultMessage("Section {0} is not allowed by student preferences.")
+	@DefaultMessage("Section {0} is not allowed due to student preferences.")
 	String unavailableStudentPrefs(String section);
 	
 	@DefaultMessage("Section {0} is not allowed due to a restriction.")

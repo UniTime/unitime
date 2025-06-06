@@ -631,7 +631,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 					ca.setWaitListedDate(r.getWaitListedTimeStamp());
 				ca.setHasCrossList(offering.hasCrossList());
 				if (enrollment == null) {
-					if (r.isWaitlist() && offering.isWaitList()) {
+					if (r.isWaitlist(wlMode) && offering.isWaitList()) {
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 						CourseRequest courseRequest = SectioningRequest.convert(assignment, r, server, wlMode, helper);
 						Collection<Enrollment> enrls = courseRequest.getEnrollmentsSkipSameTime(assignment);
