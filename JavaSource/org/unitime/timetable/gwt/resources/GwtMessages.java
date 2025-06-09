@@ -4008,6 +4008,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Distribution Preference")
 	@DoNotTranslate
 	String pageEditDistributionPreference();
+	
+	@DefaultMessage("Class Assignment")
+	@DoNotTranslate
+	String pageClassAssignment();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

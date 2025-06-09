@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.EventDateMapping;
@@ -108,6 +109,15 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 	
 	public Collection<ClassRoomInfo> getRooms() {
 		return iRooms;
+	}
+	
+	public CellInterface toRoomCell() {
+		CellInterface r = new CellInterface(); r.setNoWrap(true);
+		for (ClassRoomInfo rm: getRooms()) {
+			if (r.hasItems()) r.add(", ");
+			r.addItem(rm.toCell());
+		}
+		return r;
 	}
 	
 	public boolean hasRoom(Long roomId) {

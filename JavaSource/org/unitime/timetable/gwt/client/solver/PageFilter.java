@@ -31,7 +31,6 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomFilterBox;
 import org.unitime.timetable.gwt.client.widgets.CourseNumbersSuggestBox;
 import org.unitime.timetable.gwt.client.widgets.DayCodeSelector;

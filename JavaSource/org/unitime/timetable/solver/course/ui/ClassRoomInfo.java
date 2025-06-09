@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -94,6 +95,23 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         		getName()+
         		(s?"</s>":"")+
         		"</span>";
+    }
+    
+    public CellInterface toCell() {
+    	int pref = getPreference();
+    	boolean s = false;
+    	if (pref>5000) {
+    		s=true;
+    		pref-=5000;
+    	}
+    	CellInterface c = new CellInterface();
+    	c.add(getName())
+			.setColor(PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(pref)))
+			.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + iId + "', '" + PreferenceLevel.prolog2string(PreferenceLevel.int2prolog(pref)) + "'" +
+				(hasNote() ? ", null, '" + getNote().replace("'", "\\'") + "'": "") + ");")
+			.setMouseOut("$wnd.hideGwtRoomHint();");
+    	if (s) c.addStyle("text-decoration: line-through;");
+    	return c;
     }
     
     public int compareTo(ClassRoomInfo room) {

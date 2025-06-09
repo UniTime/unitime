@@ -318,7 +318,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
     	if (context.hasPermission(clazz, Right.ClassEdit))
     		response.addOperation("edit");
     	if (context.hasPermission(clazz, Right.ClassAssignment))
-    		response.addOperation("assign");
+    		response.addOperation(ApplicationProperty.LegacyClassAssignment.isTrue() ? "assign-legacy" : "assign");
 		
 		return response;
 	}

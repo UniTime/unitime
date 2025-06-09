@@ -1668,7 +1668,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			} else {
 				options.clear();
 			}
-			options.add(value);
+			if (value != null) options.add(value);
 		}
 		
 		public void setOptions(String command, Collection<String> values) {

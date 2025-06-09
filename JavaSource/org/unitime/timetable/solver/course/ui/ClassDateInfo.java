@@ -26,6 +26,7 @@ import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -65,6 +66,12 @@ public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 	public String getName() { return iName; }
 	public BitSet getPattern() { return iPattern; }
 	public int getPreference() { return iPreference; }
+	public String getPatternText() {
+		String text = "";
+		for (int i = 0; i < getPattern().length(); i++)
+			text += (getPattern().get(i) ? "1" : "0");
+		return text;
+	}
 	
 	public int hashCode() { return iId.hashCode(); }
 	public boolean equals(Object o) {
@@ -78,6 +85,14 @@ public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 		return "<span style='color:" + PreferenceLevel.int2color(getPreference()) + "'>" + getName() + "</span>" +
 				" <img style=\"cursor: pointer;\" src=\"images/calendar.png\" border=\"0\" " +
 					"onclick=\"showGwtDialog('" + HtmlUtils.htmlEscape(MSG.sectPreviewOfDatePattern(getName())) + "', 'dispDatePattern.action?id=" + getId() + "&classId=" + getClassId() + "','840','520');\">";
+	}
+	public CellInterface toCell() {
+		CellInterface cell = new CellInterface();
+		cell.add(getName()).setColor(PreferenceLevel.int2color(getPreference()));
+		CellInterface icon = cell.add("");
+		icon.addClick().setTitle(MSG.sectPreviewOfDatePattern(getName())).addWidget().setId("UniTimeGWT:DatePattern").setContent(getPatternText());
+		icon.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+		return cell;
 	}
 
 	public int compareTo(ClassDateInfo other) {

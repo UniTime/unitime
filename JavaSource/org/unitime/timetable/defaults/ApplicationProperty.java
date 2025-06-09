@@ -3703,6 +3703,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Distribution Preferences: switch the user interface back to the old (Struts-based) distribution preferences page")
 	LegacyDistributions("unitime.legacy.distributions"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Class Assignment: switch the user interface back to the old (Struts-based) class assignment page")
+	LegacyClassAssignment("unitime.legacy.classAssignment"),
 	;
 
 	String iKey;

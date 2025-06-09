@@ -304,6 +304,10 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 		return iFilter.getWidget().getChips(command);
 	}
 	
+	public String getText() {
+		return iFilter.getWidget().getText();
+	}
+	
 	public void addChip(FilterBox.Chip chip, boolean fireEvents) {
 		iFilter.getWidget().addChip(chip, fireEvents);
 	}

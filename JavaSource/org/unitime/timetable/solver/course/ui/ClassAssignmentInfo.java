@@ -152,6 +152,10 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 			iConflictingStudents = students;
 		}
 		
+		public ClassAssignmentInfo getThisClass() {
+			return ClassAssignmentInfo.this;
+		}
+		
 		public ClassAssignment getOtherClass() {
 			return iOtherClass;
 		}

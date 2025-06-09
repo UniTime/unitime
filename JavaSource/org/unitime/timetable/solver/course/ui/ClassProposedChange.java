@@ -133,6 +133,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
     public void setSelected(Long classId) {
         iSelectedClassId = classId;
     }
+    public Long getSelectedClassId() { return iSelectedClassId; }
     
     public String getHtmlTable(SessionContext context) {
         String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";

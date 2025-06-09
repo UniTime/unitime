@@ -30,6 +30,7 @@ import java.util.Locale;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -197,6 +198,22 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
             getDayHeader()+" "+getStartTimeHeader()+" - "+getEndTimeHeader()+
             "</span>";
     }
+    
+    public CellInterface toCell() {
+		return new CellInterface()
+			.setText(getName())
+			.setColor(PreferenceLevel.int2color(getPreference()))
+			.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + iClassId + "," + iDayCode + "," + iStartSlot + "');")
+			.setMouseOut("$wnd.hideGwtTimeHint();");
+	}
+
+    public CellInterface toLongCell() {
+		return new CellInterface()
+			.setText(getDayHeader() + " " + getStartTimeHeader() + " - " + getEndTimeHeader())
+			.setColor(PreferenceLevel.int2color(getPreference()))
+			.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + iClassId + "," + iDayCode + "," + iStartSlot + "');")
+			.setMouseOut("$wnd.hideGwtTimeHint();");
+	}
 
     public int getPreference() { return iPreference; }
 

@@ -585,6 +585,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	text-align: center;
 	font-style: italic;
 	font-weight: normal;
+	white-space: pre-wrap;
 }
 
 .unitime-Disabled {
@@ -8134,4 +8135,38 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-Description {
 	max-width: 800px;
 	white-space: pre-wrap;
+}
+
+.unitime-ClassAssignmentPage .domain-items {
+	max-width: 800px;
+}
+
+.unitime-ClassAssignmentPage .domain-item {
+	display: inline-block;
+	min-width: 25%;
+	padding: 0px 5px 0px 5px;
+	cursor: pointer;
+	border-right: 1px dashed #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-ClassAssignmentPage .selected-total {
+	display: inline;
+	padding-left: 20px;
+}
+
+.unitime-ClassAssignmentPage .domain-item:nth-child(4n+4) {
+	border-right: none;
+}
+
+.unitime-ClassAssignmentPage .domain-item-label {
+	display: inline-block;
+	min-width: 80%;
+}
+
+.unitime-ClassAssignmentPage .domain-item-extra {
+	display: inline-block;
+	min-width: 20%;
+	text-align: right;
+	padding-right: 3px;
 }

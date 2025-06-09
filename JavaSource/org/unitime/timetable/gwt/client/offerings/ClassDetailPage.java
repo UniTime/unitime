@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
@@ -94,13 +95,24 @@ public class ClassDetailPage extends Composite {
 			@Override
 			public void onClick(ClickEvent evt) {
 				UniTimeFrameDialog.openDialog(COURSE.dialogClassAssignment(),
-						"classInfo.action?classId=" + iResponse.getClassId(),
+						"classAssignment?id=" + iResponse.getClassId() + "&menu=hide",
 						"900", "90%");
 			}
 		});
 		iHeader.setEnabled("assign", false);
 		iHeader.getButton("assign").setAccessKey(COURSE.accessOpenClassAssignmentDialog().charAt(0));
 		iHeader.getButton("assign").setTitle(COURSE.titleOpenClassAssignmentDialog(COURSE.accessOpenClassAssignmentDialog()));
+		iHeader.addButton("assign-legacy", COURSE.actionOpenClassAssignmentDialog(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent evt) {
+				UniTimeFrameDialog.openDialog(COURSE.dialogClassAssignment(),
+						"classInfo.action?classId=" + iResponse.getClassId(),
+						"900", "90%");
+			}
+		});
+		iHeader.setEnabled("assign-legacy", false);
+		iHeader.getButton("assign-legacy").setAccessKey(COURSE.accessOpenClassAssignmentDialog().charAt(0));
+		iHeader.getButton("assign-legacy").setTitle(COURSE.titleOpenClassAssignmentDialog(COURSE.accessOpenClassAssignmentDialog()));
 		
 		iHeader.addButton("previous", COURSE.actionPreviousClass(), new ClickHandler() {
 			@Override
@@ -177,6 +189,7 @@ public class ClassDetailPage extends Composite {
 				anchor.setStyleName("l8");
 				iHeader.getHeaderTitlePanel().add(anchor);
 				P suffix = new P(DOM.createSpan()); suffix.setText(response.getClassName());
+				suffix.getElement().getStyle().setPaddingLeft(5, Unit.PX);
 				iHeader.getHeaderTitlePanel().add(suffix);
 				
 				for (PropertyInterface property: response.getProperties().getProperties())

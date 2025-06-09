@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Date;
+import java.util.Enumeration;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
@@ -79,6 +81,17 @@ public class ClassInfoAction extends UniTimeAction<ClassInfoForm> {
 	
 	@Override
     public String execute() throws Exception {
+		if (ApplicationProperty.LegacyClassAssignment.isFalse()) {
+    		String url = "classAssignment?menu=hide";
+    		boolean first = false;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (form == null) {
 			form = new ClassInfoForm();
 		}

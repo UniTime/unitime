@@ -6058,4 +6058,10 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructor Unavailability")
 	String sectionInstructorUnavailability();
 	
+	@DefaultMessage("This coudse is not locked. Do you want to lock it?")
+	String confirmCourseLock();
+	
+	@DefaultMessage("Show student conflicts:")
+	String propertyShowStudentConflicts();
+
 }

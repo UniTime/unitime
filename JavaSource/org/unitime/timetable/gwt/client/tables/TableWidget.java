@@ -62,6 +62,7 @@ import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
@@ -88,8 +89,12 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			@Override
 			public void onMouseClick(TableEvent<LineInterface> event) {
 				if (event.getData() != null && event.getData().hasURL()) {
-					LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
-					ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getURL());
+					if (event.getData().getURL().startsWith("#")) {
+						History.newItem(event.getData().getURL().substring(1), true);
+					} else {
+						LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
+						ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getURL());
+					}
 				}
 			}
 		});
@@ -402,6 +407,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 								box.center();
 							}
 						}.schedule(200);
+						e.stopPropagation();
 					}
 				});
 			}
@@ -438,7 +444,12 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent evt) {
-						ToolBox.open(GWT.getHostPageBaseURL() + cell.getUrl());
+						if (cell.getUrl().startsWith("#")) {
+							History.newItem(cell.getUrl().substring(1), true);
+							evt.stopPropagation();
+						} else {
+							ToolBox.open(GWT.getHostPageBaseURL() + cell.getUrl());
+						}
 					}
 				});
 			}

@@ -138,7 +138,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 					if (w instanceof SingleMonth) {
 						SingleMonth s = (SingleMonth)w;
 						for (D d: s.getDays()) {
-							char c = pattern.charAt(index ++);
+							char c = (index < pattern.length() ? pattern.charAt(index ++) : '0');
 							d.setValue(c == '1');
 							if (!editable) {
 								d.setEnabled(false);
