@@ -58,8 +58,8 @@ import org.unitime.timetable.model.LearningManagementSystemInfo;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.NonUniversityLocationPicture;
+import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.OverrideType;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -2340,128 +2340,131 @@ public class CopyBetweenSessionHelper {
 	}
 	
 	
-//	private InstructionalOffering createToInstructionalOfferingFromCourseCatalog(CourseCatalog courseCatalogEntry, Session session){
-//		if (courseCatalogEntry == null || session == null){
-//			return(null);
-//		}
-//		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
-//		toInstructionalOffering.setNotOffered(Boolean.valueOf(false));
-//		toInstructionalOffering.setSession(session);
-//		toInstructionalOffering.setByReservationOnly(false);
-//		return(toInstructionalOffering);
-//	}
+	private InstructionalOffering createToInstructionalOfferingFromCourseCatalog(CourseCatalog courseCatalogEntry, Session session){
+		if (courseCatalogEntry == null || session == null){
+			return(null);
+		}
+		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
+		toInstructionalOffering.setNotOffered(Boolean.valueOf(false));
+		toInstructionalOffering.setSession(session);
+		toInstructionalOffering.setByReservationOnly(false);
+		return(toInstructionalOffering);
+	}
 	
-//	private CourseOffering createToCourseOfferingFromCourseCatalog(CourseCatalog courseCatalogEntry, Session session, String prefix){
-//		if (courseCatalogEntry == null || session == null){
-//			return(null);
-//		}
-//		CourseOffering toCourseOffering = new CourseOffering();
-//		toCourseOffering.setSubjectArea(SubjectArea.findByAbbv(session.getUniqueId(), ((prefix != null? prefix + iPrefixSeparator : "") + courseCatalogEntry.getSubject())));
-//		toCourseOffering.setCourseNbr(courseCatalogEntry.getCourseNumber());
-//		toCourseOffering.setIsControl(Boolean.valueOf(true));
-//		toCourseOffering.setExternalUniqueId(courseCatalogEntry.getExternalUniqueId());
-//		toCourseOffering.setPermId(courseCatalogEntry.getPermanentId());
-//		toCourseOffering.setTitle(courseCatalogEntry.getTitle());
-//		toCourseOffering.setNbrExpectedStudents(Integer.valueOf(0));
-//		toCourseOffering.setDemand(Integer.valueOf(0));
-//		toCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
-//		if (courseCatalogEntry.getCreditFormat() != null) {
-//			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
-//			if (ccuc instanceof ArrangeCreditUnitConfig) {					
-//				ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
-//				toAcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addToCreditConfigs(toAcuc);
-//			} else if (ccuc instanceof FixedCreditUnitConfig) {
-//				FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
-//				toFcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addToCreditConfigs(toFcuc);
-//			} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
-//				VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
-//				toVrcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addToCreditConfigs(toVrcuc);
-//			} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
-//				VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
-//				toVfcuc.setOwner(toCourseOffering);
-//				toCourseOffering.addToCreditConfigs(toVfcuc);
-//			}		
-//		}
-//
-//		return(toCourseOffering);
-//	}
+	private CourseOffering createToCourseOfferingFromCourseCatalog(CourseCatalog courseCatalogEntry, Session session, String prefix){
+		if (courseCatalogEntry == null || session == null){
+			return(null);
+		}
+		CourseOffering toCourseOffering = new CourseOffering();
+		toCourseOffering.setSubjectArea(SubjectArea.findByAbbv(session.getUniqueId(), ((prefix != null? prefix + iPrefixSeparator : "") + courseCatalogEntry.getSubject())));
+		toCourseOffering.setCourseNbr(courseCatalogEntry.getCourseNumber());
+		toCourseOffering.setIsControl(Boolean.valueOf(true));
+		toCourseOffering.setExternalUniqueId(courseCatalogEntry.getExternalUniqueId());
+		toCourseOffering.setPermId(courseCatalogEntry.getPermanentId());
+		toCourseOffering.setTitle(courseCatalogEntry.getTitle());
+		toCourseOffering.setNbrExpectedStudents(Integer.valueOf(0));
+		toCourseOffering.setDemand(Integer.valueOf(0));
+		toCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
+		if (courseCatalogEntry.getCreditFormat() != null) {
+			CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
+			if (ccuc instanceof ArrangeCreditUnitConfig) {					
+				ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
+				toAcuc.setOwner(toCourseOffering);
+				toCourseOffering.addToCreditConfigs(toAcuc);
+			} else if (ccuc instanceof FixedCreditUnitConfig) {
+				FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
+				toFcuc.setOwner(toCourseOffering);
+				toCourseOffering.addToCreditConfigs(toFcuc);
+			} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
+				VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
+				toVrcuc.setOwner(toCourseOffering);
+				toCourseOffering.addToCreditConfigs(toVrcuc);
+			} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
+				VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
+				toVfcuc.setOwner(toCourseOffering);
+				toCourseOffering.addToCreditConfigs(toVfcuc);
+			}		
+		}
+
+		return(toCourseOffering);
+	}
 	
-//	private HashMap<String, InstructionalOffering> createToInstructionalOfferingsBasedOnCourseCatalog(InstructionalOffering fromInstructionalOffering, 
-//			String defaultPrefix) {
-//		HashMap<String, InstructionalOffering> offeringMap = new HashMap<String, InstructionalOffering>();
-//		
-//		for (String prefix : getPrefixesForOffering(fromInstructionalOffering, defaultPrefix)) {
-//			offeringMap.put(prefix, createToInstructionalOfferingBasedOnCourseCatalog(fromInstructionalOffering, prefix));
-//		}
-//		
-//		return offeringMap;
-//	}
+	private HashMap<String, InstructionalOffering> createToInstructionalOfferingsBasedOnCourseCatalog(InstructionalOffering fromInstructionalOffering, 
+			String defaultPrefix) {
+		HashMap<String, InstructionalOffering> offeringMap = new HashMap<String, InstructionalOffering>();
+		
+		for (String prefix : getPrefixesForOffering(fromInstructionalOffering, defaultPrefix)) {
+			offeringMap.put(prefix, createToInstructionalOfferingBasedOnCourseCatalog(fromInstructionalOffering, prefix));
+		}
+		
+		return offeringMap;
+	}
 
 	
-//	private InstructionalOffering createToInstructionalOfferingBasedOnCourseCatalog(InstructionalOffering fromInstructionalOffering, String prefix){
-//		if (fromInstructionalOffering == null) {
-//			return(null);
-//		}
-//		
-//		CourseCatalog controllingCourseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromInstructionalOffering.getControllingCourseOffering(), iMergedSession);
-//
-//		if (controllingCourseCatalogEntry == null){
-//			return(null);
-//		}
-//		InstructionalOffering toInstructionalOffering = createToInstructionalOfferingFromCourseCatalog(controllingCourseCatalogEntry, iMergedSession);
-//		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
-//		toInstructionalOffering.setInstrOfferingPermId(fromInstructionalOffering.getInstrOfferingPermId());
-//		CourseOffering fromCourseOffering = null;
-//		CourseOffering toCourseOffering = null;
-//		CourseCatalog courseCatalogEntry = null;
-//		for(Iterator<CourseOffering> coIt = fromInstructionalOffering.getCourseOfferings().iterator(); coIt.hasNext();){
-//			fromCourseOffering = (CourseOffering) coIt.next();
-//			courseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromCourseOffering, iMergedSession);
-//			if (courseCatalogEntry != null){
-//				toCourseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, iMergedSession, prefix);
-//				toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
-//				toCourseOffering.setScheduleBookNote(fromCourseOffering.getScheduleBookNote());
-//				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
-//				toCourseOffering.setNbrExpectedStudents(fromCourseOffering.getNbrExpectedStudents());
-//				toCourseOffering.setDemand(fromCourseOffering.getDemand());
-//				toCourseOffering.setInstructionalOffering(toInstructionalOffering);
-//				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
-//				toInstructionalOffering.addToCourseOfferings(toCourseOffering);
-//				if(courseCatalogEntry.getCreditType() != null){
-//					CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
-//					if (ccuc instanceof ArrangeCreditUnitConfig) {					
-//						ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
-//						toAcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addToCreditConfigs(toAcuc);
-//					} else if (ccuc instanceof FixedCreditUnitConfig) {
-//						FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
-//						toFcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addToCreditConfigs(toFcuc);
-//					} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
-//						VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
-//						toVrcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addToCreditConfigs(toVrcuc);
-//					} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
-//						VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
-//						toVfcuc.setOwner(toCourseOffering);
-//						toCourseOffering.addToCreditConfigs(toVfcuc);
-//					}
-//				}				
-//			}
-//		}
-//		if (toInstructionalOffering.getCourseOfferings().size() == 1){
-//			toCourseOffering.setIsControl(Boolean.valueOf(true));
-//		}
-//
-//		if (toInstructionalOffering.getInstrOfferingPermId() == null){
-//			toInstructionalOffering.generateInstrOfferingPermId();
-//		}
-//		toInstructionalOffering.setUniqueId(InstructionalOfferingDAO.getInstance().getSession().persist(toInstructionalOffering)); 
-//		return(toInstructionalOffering);		
-//	}
+	private InstructionalOffering createToInstructionalOfferingBasedOnCourseCatalog(InstructionalOffering fromInstructionalOffering, String prefix){
+		if (fromInstructionalOffering == null) {
+			return(null);
+		}
+		
+		CourseCatalog controllingCourseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromInstructionalOffering.getControllingCourseOffering(), iMergedSession);
+
+		if (controllingCourseCatalogEntry == null){
+			return(null);
+		}
+		InstructionalOffering toInstructionalOffering = createToInstructionalOfferingFromCourseCatalog(controllingCourseCatalogEntry, iMergedSession);
+		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
+		toInstructionalOffering.setInstrOfferingPermId(fromInstructionalOffering.getInstrOfferingPermId());
+		CourseOffering fromCourseOffering = null;
+		CourseOffering toCourseOffering = null;
+		CourseCatalog courseCatalogEntry = null;
+		for(Iterator<CourseOffering> coIt = fromInstructionalOffering.getCourseOfferings().iterator(); coIt.hasNext();){
+			fromCourseOffering = (CourseOffering) coIt.next();
+			courseCatalogEntry = CourseCatalog.findCourseFromPreviousSessionInCatalogForSession(fromCourseOffering, iMergedSession);
+			if (courseCatalogEntry != null){
+				toCourseOffering = createToCourseOfferingFromCourseCatalog(courseCatalogEntry, iMergedSession, prefix);
+				toCourseOffering.setIsControl(fromCourseOffering.isIsControl());
+				toCourseOffering.setScheduleBookNote(fromCourseOffering.getScheduleBookNote());
+				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
+				toCourseOffering.setNbrExpectedStudents(fromCourseOffering.getNbrExpectedStudents());
+				toCourseOffering.setDemand(fromCourseOffering.getDemand());
+				toCourseOffering.setInstructionalOffering(toInstructionalOffering);
+				toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
+				toInstructionalOffering.addToCourseOfferings(toCourseOffering);
+				if(courseCatalogEntry.getCreditType() != null){
+					CourseCreditUnitConfig ccuc = CourseCreditUnitConfig.createCreditUnitConfigOfFormat(courseCatalogEntry.getCreditFormat(), courseCatalogEntry.getCreditType(), courseCatalogEntry.getCreditUnitType(), courseCatalogEntry.getFixedMinimumCredit(), courseCatalogEntry.getMaximumCredit(), courseCatalogEntry.isFractionalCreditAllowed(), Boolean.valueOf(true));
+					if (ccuc instanceof ArrangeCreditUnitConfig) {					
+						ArrangeCreditUnitConfig toAcuc = (ArrangeCreditUnitConfig)ccuc;
+						toAcuc.setOwner(toCourseOffering);
+						toCourseOffering.addToCreditConfigs(toAcuc);
+					} else if (ccuc instanceof FixedCreditUnitConfig) {
+						FixedCreditUnitConfig toFcuc = (FixedCreditUnitConfig) ccuc;
+						toFcuc.setOwner(toCourseOffering);
+						toCourseOffering.addToCreditConfigs(toFcuc);
+					} else if (ccuc instanceof VariableRangeCreditUnitConfig) {
+						VariableRangeCreditUnitConfig toVrcuc = (VariableRangeCreditUnitConfig) ccuc;
+						toVrcuc.setOwner(toCourseOffering);
+						toCourseOffering.addToCreditConfigs(toVrcuc);
+					} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
+						VariableFixedCreditUnitConfig toVfcuc = (VariableFixedCreditUnitConfig) ccuc;
+						toVfcuc.setOwner(toCourseOffering);
+						toCourseOffering.addToCreditConfigs(toVfcuc);
+					}
+				}				
+			}
+		}
+		if (toInstructionalOffering.getCourseOfferings().size() == 1){
+			toCourseOffering.setIsControl(Boolean.valueOf(true));
+		}
+
+		if (toInstructionalOffering.getInstrOfferingPermId() == null){
+			toInstructionalOffering.generateInstrOfferingPermId();
+		}
+//		toInstructionalOffering.setUniqueId(
+				InstructionalOfferingDAO.getInstance().getSession().persist(toInstructionalOffering)
+				;
+//				); 
+		return(toInstructionalOffering);		
+	}
 	
 	private HashMap<String, InstructionalOffering> createToInstructionalOfferingsFromFromInstructionalOffering(InstructionalOffering fromInstructionalOffering, 
 			String defaultPrefix, boolean mergeWaitListsProhibitedOverrides) {
@@ -2513,7 +2516,7 @@ public class CopyBetweenSessionHelper {
 			if (toSa == null) {
 				continue;
 			}
-			toCourseOffering = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(iMergedSession.getUniqueId(), subject, fromControlingCourse.getCourseNbr());
+			toCourseOffering = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(iMergedSession.getUniqueId(), toSa.getSubjectAreaAbbreviation(), fromCourseOffering.getCourseNbr());
 
 			if (toCourseOffering == null) {
 				toCourseOffering = new CourseOffering();
@@ -2631,11 +2634,11 @@ public class CopyBetweenSessionHelper {
 				}
 			}
 		}
-//		if (iSessionRollForward.sessionHasCourseCatalog(iMergedSession)){
-//			return(createToInstructionalOfferingsBasedOnCourseCatalog(fromInstructionalOffering, defaultPrefix));
-//		} else {
+		if (iSessionRollForward.sessionHasCourseCatalog(iMergedSession)){
+			return(createToInstructionalOfferingsBasedOnCourseCatalog(fromInstructionalOffering, defaultPrefix));
+		} else {
 		return(createToInstructionalOfferingsFromFromInstructionalOffering(fromInstructionalOffering, defaultPrefix, mergeWaitListsProhibitedOverrides));
-//		}
+		}
 		
 	}
 	
