@@ -19,15 +19,21 @@
 */
 package org.unitime.timetable.server.courses;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.ImageGenerator;
 import org.unitime.timetable.gwt.client.tables.TableInterface.ImageInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
@@ -48,14 +54,19 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
+import org.unitime.timetable.webutil.Navigation;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 
 public class ExaminationsTableBuilder extends TableBuilder {
+	protected static ExaminationMessages XMSG = Localization.create(ExaminationMessages.class);
 	
     public ExaminationsTableBuilder(SessionContext context, String backType, String backId) {
     	super(context, backType, backId);
@@ -94,9 +105,16 @@ public class ExaminationsTableBuilder extends TableBuilder {
         	return cell;
         } else {
         	final PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), exam.getExamType().getUniqueId());
+        	final boolean timeVertical = getTimeVertival();
         	px.load(exam);
         	CellInterface c = new CellInterface();
-        	c.setImage(new ImageInterface().setSource("pattern?v=" + (getTimeVertival() ? 1 : 0) + "&x=" + exam.getUniqueId()).setAlt(px.toString()));
+        	c.setImage(new ImageInterface()
+        			.setSource("pattern?v=" + (timeVertical ? 1 : 0) + "&x=" + exam.getUniqueId()).setAlt(px.toString())
+        			.setGenerator(new ImageGenerator() {
+						public Object generate() {
+							return new RequiredTimeTable(px).createBufferedImage(timeVertical);
+						}
+					}));
         	c.addStyle("display: inline-block;");
         	c.setAria(px.toString());
         	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
@@ -109,7 +127,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
         	return c;
         }
     }
-	
+    
 	public TableInterface createExamsTable(String type, Long id, ExamSolverProxy solver) {
     	if (!getSessionContext().hasPermission(Right.Examinations) && !getSessionContext().hasPermission(Right.ExaminationSchedule))
     		return null;
@@ -225,6 +243,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 	if (assignment.getRooms() != null)
                 		for (ExamRoomInfo room: assignment.getRooms()) {
                 			CellInterface cell = roomPref.add(room.getName());
+                			cell.setInline(false);
                 			if (view) {
                 				cell.setColor(PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())));
                 				cell.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + room.getLocationId() + "', '" + PreferenceLevel.int2string(room.getPreference()) + "');");
@@ -350,4 +369,186 @@ public class ExaminationsTableBuilder extends TableBuilder {
         	
         return ret;
 	}
+	
+	public TableInterface generateTableForExams(
+            ExamType examType, 
+            ExamAssignmentProxy examAssignment,
+            FilterInterface filter, 
+            String[] subjectAreaIds){
+    	
+		String courseNbr = filter.getParameterValue("courseNbr");
+		if (courseNbr == null || courseNbr.isEmpty())
+			courseNbr = "%";
+		else
+			courseNbr = courseNbr.replace('*', '%');
+		
+		List<Exam> exams = null;
+		if (subjectAreaIds.length > 0 && "-1".equals(subjectAreaIds[0]))
+			exams = ExamDAO.getInstance().getSession().createQuery(
+		            "select distinct x from Exam x inner join x.owners o where " +
+		            "x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId and " +
+		            "o.course.courseNbr like :courseNbr", Exam.class
+		            )
+		            .setParameter("sessionId", getSessionContext().getUser().getCurrentAcademicSessionId())
+		            .setParameter("examTypeId", examType.getUniqueId())
+		            .setParameter("courseNbr", courseNbr)
+		            .setCacheable(true)
+		            .list();
+		else
+			exams = ExamDAO.getInstance().getSession().createQuery(
+		            "select distinct x from Exam x inner join x.owners o where " +
+		            "cast(o.course.subjectArea.uniqueId as string) in :subjectAreaIds and x.examType.uniqueId = :examTypeId and " +
+		            "o.course.courseNbr like :courseNbr", Exam.class
+		            )
+		            .setParameterList("subjectAreaIds", subjectAreaIds)
+		            .setParameter("examTypeId", examType.getUniqueId())
+		            .setParameter("courseNbr", courseNbr)
+		            .setCacheable(true)
+		            .list();
+		
+		for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+        	if (!getSessionContext().hasPermission(i.next(), Right.ExaminationView))
+        		i.remove();
+        }
+		
+        TableInterface ret = new TableInterface();
+        ret.setName(XMSG.tableExaminations(examType.getLabel()));
+        ret.setId("Exams");
+
+        Long solverType = (examAssignment == null ? null : examAssignment.getExamTypeId());
+        boolean hasBack = false;
+        
+        LineInterface header = ret.addHeader();
+        header.addCell(MSG.columnExamClassesCourses());
+        header.addCell(MSG.columnExamLength()).setTextAlignment(Alignment.RIGHT);
+        header.addCell(MSG.columnExamSeatingType()).setTextAlignment(Alignment.CENTER);
+        header.addCell(MSG.columnExamSize()).setTextAlignment(Alignment.RIGHT);
+        header.addCell(MSG.columnExamMaxRooms()).setTextAlignment(Alignment.RIGHT);
+        header.addCell(MSG.columnExamInstructor());
+        header.addCell(MSG.columnExamPeriodPreferences());
+        header.addCell(MSG.columnExamRoomPreferences());
+        header.addCell(MSG.columnExamDistributionPreferences());                	
+        header.addCell(MSG.columnExamAssignedPeriod());
+        header.addCell(MSG.columnExamAssignedRoom());
+
+        List<Long> examIds = new ArrayList<Long>();
+        for (Exam exam: new TreeSet<Exam>(exams)) {
+            boolean view = getSessionContext().hasPermission(exam, Right.ExaminationDetail);
+        
+            CellInterface objects = new CellInterface(); objects.setInline(false);
+            CellInterface instructors = new CellInterface(); instructors.setInline(false);
+            CellInterface perPref = new CellInterface(); perPref.setInline(false);
+            CellInterface roomPref = new CellInterface(); roomPref.setInline(false);
+            CellInterface distPref = new CellInterface(); distPref.setInline(false);
+            CellInterface assPer = new CellInterface(); assPer.setInline(false);
+            CellInterface assRoom = new CellInterface(); assRoom.setInline(false);
+            
+            ExamAssignment assignment = null;
+            if (exam.getExamType().getUniqueId().equals(solverType))
+                assignment = examAssignment.getAssignment(exam.getUniqueId());
+            else if (exam.getAssignedPeriod()!=null)
+                assignment = new ExamAssignment(exam);
+            
+            for (Enumeration e=exam.getOwnerObjects().elements();e.hasMoreElements();) {
+                Object object = e.nextElement();
+                if (object instanceof Class_)
+                	objects.add(((Class_)object).getClassLabel()).setInline(false);
+                else if (object instanceof InstrOfferingConfig)
+                	objects.add(((InstrOfferingConfig)object).toString()).setInline(false);
+                else if (object instanceof InstructionalOffering)
+                	objects.add(((InstructionalOffering)object).getCourseName()).setInline(false);
+                else if (object instanceof CourseOffering)
+                	objects.add(((CourseOffering)object).getCourseName()).setInline(false);
+                else
+                	objects.add(object.toString()).setInline(false);
+            }
+            
+    		for (Object pref: exam.effectivePreferences(RoomPref.class))
+    			roomPref.addItem(preferenceCell((Preference)pref));
+    		for (Object pref: exam.effectivePreferences(BuildingPref.class))
+    			roomPref.addItem(preferenceCell((Preference)pref));
+    		for (Object pref: exam.effectivePreferences(RoomFeaturePref.class))
+    			roomPref.addItem(preferenceCell((Preference)pref));
+    		for (Object pref: exam.effectivePreferences(RoomGroupPref.class))
+    			roomPref.addItem(preferenceCell((Preference)pref));
+    		perPref.addItem(cellForPeriodPrefs(exam, exam.effectivePreferences(ExamPeriodPref.class)));
+			for (Object pref: exam.effectivePreferences(DistributionPref.class))
+				distPref.addItem(preferenceCell((DistributionPref)pref));
+			
+			if (assignment != null) {
+				if (assignment.getPeriodPref() != null) {
+	        		CellInterface cell = assPer.add(assignment.getPeriodAbbreviation()).setColor(PreferenceLevel.prolog2color(assignment.getPeriodPref()));
+	            	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+	            		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + "," + assignment.getPeriodId() + "');");
+	            		cell.setMouseOut("$wnd.hideGwtTimeHint();");
+	            	} else {
+	            		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "','"+assignment.getPeriodId()+"');");
+	            		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
+	            	}
+	        	} else {
+	        		assPer.add(assignment.getPeriodAbbreviation());
+	        	}
+				assPer.setComparable(assignment.getPeriod().getStartTime());
+
+	        	if (assignment.getRooms() != null)
+	        		for (ExamRoomInfo room: assignment.getRooms()) {
+	        			CellInterface cell = assRoom.add(room.getName());
+	        			cell.setInline(false);
+	    				cell.setColor(PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())));
+	    				cell.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + room.getLocationId() + "', '" + PreferenceLevel.int2string(room.getPreference()) + "');");
+	    				cell.setMouseOut("$wnd.hideGwtRoomHint();");
+	        		}
+	        	assRoom.setComparable(assRoom.toString());
+			} else {
+				assPer.setComparable(new Date(0));
+				assRoom.setComparable("");
+			}
+        	
+            for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(exam.getInstructors()))
+                instructors.add(instructor.getName(getInstructorNameFormat())).setInline(false);
+            
+            int nrStudents = exam.getSize();
+            
+            if (exam.getUniqueId().toString().equals(getBackId())) {
+            	hasBack = true;
+            	objects.addAnchor("back");
+            }
+            
+            LineInterface line = ret.addLine();
+            if (view)
+            	line.setURL("examDetail.action?examId="+exam.getUniqueId());
+            line.addCell(objects);
+            line.addCell(exam.getLength().toString()).setTextAlignment(Alignment.RIGHT).setComparable(exam.getLength());
+            line.addCell((Exam.sSeatingTypeNormal==exam.getSeatingType()?MSG.examSeatingTypeNormal():MSG.examSeatingTypeExam())).setTextAlignment(Alignment.CENTER).setComparable(exam.getSeatingType());
+            line.addCell(String.valueOf(nrStudents)).setTextAlignment(Alignment.RIGHT).setComparable(nrStudents);
+            line.addCell(exam.getMaxNbrRooms().toString()).setTextAlignment(Alignment.RIGHT).setComparable(exam.getMaxNbrRooms());
+            line.addCell(instructors);
+            line.addCell(perPref);
+            line.addCell(roomPref);
+            line.addCell(distPref);
+            line.addCell(assPer);
+            line.addCell(assRoom);
+            examIds.add(exam.getUniqueId());
+            line.setId(exam.getUniqueId());
+        }
+        
+        if (!isSimple()) {
+        	Navigation.set(getSessionContext(), Navigation.sInstructionalOfferingLevel, examIds);
+        	ret.setNavigationLevel(Navigation.sInstructionalOfferingLevel);
+        }
+
+        if (!hasBack && "Exam".equals(getBackType()))
+        	ret.addHeader().getCells().get(0).addAnchor("back");
+        
+        for (CellInterface cell: header.getCells()) {
+    		cell.setClassName("WebTableHeader");
+    		cell.setText(cell.getText().replace("<br>", "\n"));
+    		cell.addStyle("white-space: pre-wrap;");
+    		cell.setSortable(true);
+    	}
+        
+        return ret;
+    }
+	
+	
 }

@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.departments.DepartmentsPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
+import org.unitime.timetable.gwt.client.exams.ExamsPage;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAssignmentPreferencesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
@@ -161,11 +162,11 @@ public enum Pages {
 		}),
 	classes(new PageFactory() {
 		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Classes); }
-		public String name(GwtMessages messages) { return messages.pageClasses(); }
+		public String name(GwtMessages messages) { return messages.pageLookupClasses(); }
 		}),
 	exams(new PageFactory() {
 		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Exams); }
-		public String name(GwtMessages messages) { return messages.pageExaminations(); }
+		public String name(GwtMessages messages) { return messages.pageLookupExaminations(); }
 		}),
 	personal(new PageFactory() {
 		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Personal); }
@@ -394,6 +395,10 @@ public enum Pages {
 	classAssignment(new PageFactory() {
 		public Widget create() { return new ClassAssignmentPage(); }
 		public String name(GwtMessages messages) { return messages.pageClassAssignment(); }
+		}),
+	examinations(new PageFactory() {
+		public Widget create() { return new ExamsPage(); }
+		public String name(GwtMessages messages) { return messages.pageExaminations(); }
 		}),
 	;
 	

@@ -2187,6 +2187,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	List<Long> navigationOfferingIds = new ArrayList<Long>();
     	
     	for (String subjectAreaId: subjectAreaIds) {
+    		if ("-1".equals(subjectAreaId)) continue;
     		generateTableForInstructionalOfferings(classAssignment, examAssignment,
         			InstructionalOffering.search(
         					getCurrentAcademicSessionId(),

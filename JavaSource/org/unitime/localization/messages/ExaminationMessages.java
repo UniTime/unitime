@@ -159,6 +159,9 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Export CSV")
 	String buttonExportCSV();
 	
+	@DefaultMessage("Export XLS")
+	String buttonExportXLS();
+	
 	@DefaultMessage("Search")
 	String buttonSearch();
 	
@@ -896,6 +899,9 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("No subject area selected.")
 	String messageNoSubject();
+	
+	@DefaultMessage("No examination type selected.")
+	String messageNoExamType();
 	
 	@DefaultMessage("Solutions are identical.")
 	String messageNoChanges();

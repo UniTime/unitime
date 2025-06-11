@@ -307,7 +307,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
                 if (pref==null || !pref.equals(p)) {
                     if (pref!=null && !"@".equals(pref) && !PreferenceLevel.sNeutral.equals(pref)) {
                         if (sb.length()>0) sb.append(", ");
-                        if (ld!=d) { sb.append(getDayHeader(d)+" "); ld = d; }
+                        if (ld!=d) { sb.append(getDayHeader(d).replaceAll("<br>", " ")+" "); ld = d; }
                         sb.append(PreferenceLevel.prolog2abbv(pref)+" ");
                         sb.append(getStartTime(a)+" - "+getEndTime(b));
                         ld = d;

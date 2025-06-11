@@ -452,7 +452,16 @@
 				</item>
 			</menu>
 			<separator/>
-			<item name="Examinations" page="examList.action"/>
+			<item name="Examinations" page="examList.action">
+				<condition>
+					<propertyEquals name="unitime.legacy.examinations" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Examinations" page="examinations" type="gwt">
+				<condition>
+					<propertyEquals name="unitime.legacy.examinations" value="false" defaultValue="false"/>
+				</condition>
+			</item>
 			<item name="Distribution Preferences" page="examDistributionPrefs.action">
 				<condition>
 					<hasPermission name="ExaminationDistributionPreferences"/>

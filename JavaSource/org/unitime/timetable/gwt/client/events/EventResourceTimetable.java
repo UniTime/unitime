@@ -197,10 +197,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		RoomTimetable("type", "room", "fixedType", "true", "title", MESSAGES.pageRoomTimetable(), "showClear", "true"),
 		Classes(
 				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
-				"rooms", "", "title", MESSAGES.pageClasses(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
+				"rooms", "", "title", MESSAGES.pageLookupClasses(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
 		Exams(
 				"type", "subject", "fixedType", "true", "events", "type:\"Final Exam\" type:\"Midterm Exam\"",
-				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
+				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageLookupExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
 		Personal(
 				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", MESSAGES.pagePersonalTimetable(),
 				"addEvent", "false", "fixedTitle", "true", "showFilter", "false", "showClear", "false"

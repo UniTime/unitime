@@ -21,10 +21,14 @@ package org.unitime.timetable.export.courses;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
@@ -32,12 +36,17 @@ import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.courses.ClassAssignmentsTableBuilder;
 import org.unitime.timetable.server.courses.ClassesTableBuilder;
 import org.unitime.timetable.server.courses.DistributionsTableBuilder;
+import org.unitime.timetable.server.courses.ExaminationsTableBuilder;
 import org.unitime.timetable.server.courses.InstructionalOfferingTableBuilder;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -46,6 +55,7 @@ import org.unitime.timetable.solver.service.SolverService;
 
 @Service("org.unitime.timetable.export.Exporter:offerings.csv")
 public class OfferingsCSV implements Exporter {
+	protected static ExaminationMessages EXAM = Localization.create(ExaminationMessages.class);
 
 	protected @Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 	protected @Autowired SolverService<ExamSolverProxy> examinationSolverService;
@@ -154,6 +164,80 @@ public class OfferingsCSV implements Exporter {
     	}
 
     	return response;
+	}
+	
+	protected List<TableInterface> getExams(ExportHelper helper) {
+    	List<TableInterface> response = new ArrayList<TableInterface>();
+    	
+    	ExaminationsTableBuilder builder = new ExaminationsTableBuilder(
+    			helper.getSessionContext(),
+    			helper.getParameter("backType"),
+		        helper.getParameter("backId")
+		        );
+    	builder.setSimple(true);
+    	
+    	Filter filter = new Filter(helper);
+    	String examType = filter.getParameterValue("examType");
+		ExamType type = null;
+		try {
+			type = ExamTypeDAO.getInstance().get(Long.valueOf(examType));
+		} catch (Exception e) {}
+		if (type == null)
+			type = ExamType.findByReference(examType);
+		if (type == null)
+			throw new GwtRpcException(EXAM.messageNoExamType());
+		
+		response.add(sorted(builder.generateTableForExams(
+				type,
+				examinationSolverService.getSolver(),
+		        filter, 
+		        helper.getParameter("subjectArea").split(",")), helper));
+
+    	return response;
+	}
+	
+	protected TableInterface sorted(TableInterface table, ExportHelper helper) {
+		String sort = helper.getParameter("sort");
+		if (sort != null && !sort.isEmpty() && table.hasLines()) {
+			int sortColumn = -1;
+			boolean sortAsc = true;
+			if (table.getHeader() != null)
+				for (LineInterface line: table.getHeader()) {
+					for (int col = 0; col < line.getCells().size(); col++) {
+						CellInterface cell = line.getCells().get(col);
+						if (cell.hasText() && sort.equals(cell.getText())) {
+							sortColumn = col; sortAsc = true;
+							break;
+						}
+						if (cell.hasText() && sort.equals("!" + cell.getText())) {
+							sortColumn = col; sortAsc = false;
+							break;
+						}
+					}
+					break;
+				}
+			if (sortColumn >= 0) {
+				final int col = sortColumn;
+				final boolean asc = sortAsc;
+				Collections.sort(table.getLines(), new Comparator<LineInterface>() {
+					@Override
+					@SuppressWarnings({ "rawtypes", "unchecked" })
+					public int compare(LineInterface l1, LineInterface l2) {
+						CellInterface c1 = l1.getCells().get(col);
+						CellInterface c2 = l2.getCells().get(col);
+						Comparable o1 = c1.getComparable();
+						Comparable o2 = c2.getComparable();
+						if (o1 instanceof String)
+							return asc ?
+									NaturalOrderComparator.compare(o1.toString(), o2.toString()):
+									NaturalOrderComparator.compare(o2.toString(), o1.toString());
+						else
+							return asc ? o1.compareTo(o2) : o2.compareTo(o1);
+					}
+				});
+			}
+		}
+		return table;
 	}
 	
 	protected void exportDataCsv(List<TableInterface> response, ExportHelper helper) throws IOException {

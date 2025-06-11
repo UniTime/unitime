@@ -3559,9 +3559,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Lookup Classes")
 	@DoNotTranslate
-	String pageClasses();
+	String pageLookupClasses();
 	
 	@DefaultMessage("Lookup Examinations")
+	@DoNotTranslate
+	String pageLookupExaminations();
+	
+	@DefaultMessage("Examinations")
 	@DoNotTranslate
 	String pageExaminations();
 	

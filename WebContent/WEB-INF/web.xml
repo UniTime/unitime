@@ -256,6 +256,7 @@
     	<url-pattern>/distributionAdd</url-pattern>
     	<url-pattern>/distributionEdit</url-pattern>
     	<url-pattern>/classAssignment</url-pattern>
+    	<url-pattern>/examinations</url-pattern>
     </servlet-mapping>
 	
 	<filter>

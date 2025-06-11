@@ -95,6 +95,17 @@ public class ExamListAction extends UniTimeAction<ExamListForm> {
 	public void setOrd(String ord) { this.ord = ord; }
 
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyExaminations.isFalse()) {
+    		String url = "examinations";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         sessionContext.checkPermission(Right.Examinations);
         
         if (getForm() == null) setForm(new ExamListForm());
