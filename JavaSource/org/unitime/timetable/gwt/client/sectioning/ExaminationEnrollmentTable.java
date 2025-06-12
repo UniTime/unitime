@@ -86,6 +86,18 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 		}
 	}
 	
+	public EnrollmentTable forExamId(Long examId) {
+		setId(examId);
+		if (SectioningCookie.getInstance().getEnrollmentCoursesDetails()) {
+			refresh();
+		} else {
+			clear();
+			getHeader().clearMessage();
+			getHeader().setCollapsible(false);
+		}
+		return this;
+	}
+	
 	@Override
 	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
 		RPC.execute(ExaminationScheduleRpcRequest.getScheduleForStudent(getId(), student.getId()), new AsyncCallback<ExaminationScheduleRpcResponse>() {

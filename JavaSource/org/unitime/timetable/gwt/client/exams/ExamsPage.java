@@ -21,9 +21,9 @@ package org.unitime.timetable.gwt.client.exams;
 
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ExamsFilterRequest;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ExamsFilterResponse;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ExamsRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamsFilterRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamsFilterResponse;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamsRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsResponse;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.solver.PageFilter;

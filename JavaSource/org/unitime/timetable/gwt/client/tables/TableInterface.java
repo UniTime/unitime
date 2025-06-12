@@ -25,6 +25,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -40,6 +41,7 @@ public class TableInterface implements IsSerializable {
 	private List<LinkInteface> iLinks;
 	private List<PropertyInterface> iProperties;
 	private Integer iNavigationLevel;
+	private Boolean iMultiRows;
 	
 	public TableInterface() {}
 	
@@ -131,6 +133,9 @@ public class TableInterface implements IsSerializable {
 		addProperty(p);
 		return p.getCell();
 	}
+	
+	public boolean isMultiRows() { return iMultiRows != null && iMultiRows.booleanValue(); }
+	public void setMultiRows(boolean multiRows) { iMultiRows = multiRows; }
 	
 	public static class PropertyInterface implements IsSerializable {
 		private String iName;
@@ -284,6 +289,7 @@ public class TableInterface implements IsSerializable {
 		private Boolean iSortable; 
 		private WidgetInterface iWidget;
 		private TimePatternModel iTimePreference, iTimePreferenceToolTip;
+		private PeriodPreferenceModel iPeriodPreference;
 		private CellInterface iClick;
 		
 		public CellInterface() {}
@@ -455,6 +461,10 @@ public class TableInterface implements IsSerializable {
 		public boolean hasTimePreferenceToolTip() { return iTimePreferenceToolTip != null; }
 		public CellInterface setToolTip(TimePatternModel timePref) { iTimePreferenceToolTip = timePref; return this; }
 		public TimePatternModel getTimePreferenceToolTip() { return iTimePreferenceToolTip; }
+		
+		public boolean hasPeriodPreference() { return iPeriodPreference != null; }
+		public CellInterface setPeriodPreference(PeriodPreferenceModel periodPref) { iPeriodPreference = periodPref; return this; }
+		public PeriodPreferenceModel getPeriodPreference() { return iPeriodPreference; }
 		
 		public boolean hasClick() { return iClick != null; }
 		public CellInterface getClick() { return iClick; }

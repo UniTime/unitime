@@ -46,6 +46,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.InstructorCoursePref;
@@ -228,6 +229,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		TableInterface table = new TableInterface();
 		boolean hasNotAvailable = false;
 		boolean multipleRooms = false;
+		boolean excap = (pg instanceof Exam && ((Exam)pg).getSeatingType() == Exam.sSeatingTypeExam);
 		DurationModel dm = null;
 		int minutes = 0;
 		if (pg instanceof Class_) {
@@ -337,7 +339,8 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 						CellInterface cell = rpCell.add(null).setInline(false);
 						if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
-						cell.setText(rp.getRoom().getLabelWithCapacity()+ (multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
+						cell.setText((excap ? rp.getRoom().getLabelWithExamCapacity() : rp.getRoom().getLabelWithCapacity()) +
+						(multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
 						cell.setAria(MSG.prefTitleRoom(rp.getPrefLevel().getPrefName(), cell.getText()));
 						cell.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + rp.getRoom().getUniqueId() + "', '" + rp.getPrefLevel().getPrefName() + " " + MSG.prefRoom() + " {0} ({1})');");
 				    	cell.setMouseOut("$wnd.hideGwtRoomHint();");

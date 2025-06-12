@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ExamsRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamsRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;

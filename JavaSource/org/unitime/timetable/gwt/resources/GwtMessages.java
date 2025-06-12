@@ -3569,6 +3569,10 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageExaminations();
 	
+	@DefaultMessage("Examination Detail")
+	@DoNotTranslate
+	String pageExaminationDetail();
+	
 	@DefaultMessage("Personal Schedule")
 	@DoNotTranslate
 	String pagePersonalTimetable();

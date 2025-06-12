@@ -42,6 +42,9 @@ import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.exam.model.ExamStudent;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -941,6 +944,92 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return ret;
     }
     
+    public TableInterface generateConflictTable() {
+    	TableInterface table = new TableInterface();
+    	table.addStyle("width: 100%");
+    	table.setMultiRows(true);
+    	LineInterface header = table.addHeader();
+    	header.addCell(MSG.colStudents()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colConflict()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colExamination()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colPeriod()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colRoom()).setClassName("WebTableHeader");
+    	long id = 0;
+        for (DirectConflict dc: getDirectConflicts()) {
+        	LineInterface line = table.addLine();
+        	line.setId(id);
+        	line.addCell().setText(dc.getNrStudents()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-weight:bold;");
+        	line.addCell().setText(dc.getOtherExam() == null ? (dc.isOtherClass() ? MSG.typeClass() :MSG.typeEvent()) : MSG.conflictDirect())
+        		.setColor(PreferenceLevel.prolog2color("P")).addStyle("font-weight:bold;");
+        	if (dc.getOtherExam() != null)
+        		line.setURL("examDetail.action?examId=" + dc.getOtherExam().getExamId());
+        	if (dc.getOtherExam() == null) {
+                if (dc.getOtherEventName() != null) {
+                	line.addCell().setText(dc.getOtherEventName());
+                	line.addCell().setText(dc.getOtherEventDate() + dc.getOtherEventTime());
+                	line.addCell().setText(dc.getOtherEventRoom());
+                } else {
+                	line.addCell().setText(MSG.infoNotAvailableForUnknownReason()).setColSpan(3);
+                }
+            } else {
+            	line.addCell(dc.getOtherExam().getExamNameCell());
+            	line.addCell(dc.getOtherExam().getPeriodCell());
+            	CellInterface rooms = line.addCell();
+            	if (dc.getOtherExam().getRooms() != null)
+                	for (ExamRoomInfo room: dc.getOtherExam().getRooms()) {
+                		if (rooms.hasItems()) rooms.add(", ");
+                		rooms.addItem(room.toCell());
+                	}
+            }
+        	id++;
+        }
+        for (MoreThanTwoADayConflict m2d: getMoreThanTwoADaysConflicts()) {
+            int idx = 0;
+            for (ExamAssignment a: m2d.getOtherExams()) {
+            	LineInterface line = table.addLine();
+            	line.setURL("examDetail.action?examId=" + a.getExamId());
+            	line.setId(id);
+            	if (idx == 0) {
+        			line.addCell().setRowSpan(m2d.getOtherExams().size())
+        				.setColor(PreferenceLevel.prolog2color("2"))
+        				.setText(m2d.getNrStudents())
+        				.addStyle("font-weight:bold;");
+        			line.addCell().setRowSpan(m2d.getOtherExams().size())
+        				.setColor(PreferenceLevel.prolog2color("2"))
+        				.setText(MSG.conflictMoreThanTwoADay())
+        				.addStyle("font-weight:bold;");
+        		}
+            	line.addCell(a.getExamNameCell());
+            	line.addCell(a.getPeriodCell());
+            	CellInterface rooms = line.addCell();
+            	if (a.getRooms() != null)
+                	for (ExamRoomInfo room: a.getRooms()) {
+                		if (rooms.hasItems()) rooms.add(", ");
+                		rooms.addItem(room.toCell());
+                	}
+            	idx++;
+            }
+            id++;
+        }
+        for (BackToBackConflict b2b: getBackToBackConflicts()) {
+        	LineInterface line = table.addLine();
+        	line.setId(id);
+        	line.addCell().setText(b2b.getNrStudents()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
+        	line.addCell().setText(MSG.conflictBackToBack()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
+        	line.setURL("examDetail.action?examId=" + b2b.getOtherExam().getExamId());
+        	line.addCell(b2b.getOtherExam().getExamNameCell());
+        	line.addCell(b2b.getOtherExam().getPeriodCell());
+        	CellInterface rooms = line.addCell();
+        	if (b2b.getOtherExam().getRooms() != null)
+            	for (ExamRoomInfo room: b2b.getOtherExam().getRooms()) {
+            		if (rooms.hasItems()) rooms.add(", ");
+            		rooms.addItem(room.toCell());
+            	}
+        	id++;
+        }
+        return table;
+    }
+    
     public String getConflictInfoTable() {
         String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
         ret += "<tr>";
@@ -979,6 +1068,53 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             ret += i.next().toString();
         ret += "</table>";
         return ret;
+    }
+    
+    public TableInterface generateDistributionConflictTable() {
+    	TableInterface table = new TableInterface();
+    	table.addStyle("width: 100%");
+    	table.setMultiRows(true);
+    	LineInterface header = table.addHeader();
+    	header.addCell(MSG.colPreference()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colDistribution()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colExamination()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colPeriod()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colRoom()).setClassName("WebTableHeader");
+    	for (DistributionConflict dc: getDistributionConflicts()) {
+    		int idx = 0;
+    		for (ExamInfo a: dc.getOtherExams()) {
+        		LineInterface line = table.addLine();
+        		line.setId(dc.getId());
+        		line.setURL("examDetail.action?examId=" + a.getExamId());
+        		if (idx == 0) {
+        			line.addCell().setRowSpan(dc.getOtherExams().size())
+        				.setColor(PreferenceLevel.prolog2color(dc.getPreference()))
+        				.setText(PreferenceLevel.prolog2string(dc.getPreference()))
+        				.addStyle("font-weight:bold;");
+        			line.addCell().setRowSpan(dc.getOtherExams().size())
+        				.setColor(PreferenceLevel.prolog2color(dc.getPreference()))
+        				.setText(dc.getType())
+        				.addStyle("font-weight:bold;");
+        		}
+        		line.addCell(a.getExamNameCell());
+        		if (a instanceof ExamAssignment) {
+                    ExamAssignment ea = (ExamAssignment)a;
+                    line.addCell(ea.getPeriodCell());
+                    CellInterface rooms = new CellInterface();
+                    if (ea.getRooms() != null)
+                    	for (ExamRoomInfo room: ea.getRooms()) {
+                    		if (rooms.hasItems()) rooms.add(", ");
+                    		rooms.addItem(room.toCell());
+                    	}
+                    line.addCell(rooms);
+        		} else {
+        			line.addCell();
+        			line.addCell();        			
+        		}
+        		idx++;
+    		}
+    	}
+        return table;
     }
     
     public String getDistributionInfoConflictTable() {
@@ -1067,6 +1203,92 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     
     public String getInstructorConflictTable() {
         return getInstructorConflictTable(true);
+    }
+    
+    public TableInterface generateInstructorConflictTable() {
+    	TableInterface table = new TableInterface();
+    	table.addStyle("width: 100%");
+    	table.setMultiRows(true);
+    	LineInterface header = table.addHeader();
+    	header.addCell(MSG.colInstructors()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colConflict()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colExamination()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colPeriod()).setClassName("WebTableHeader");
+    	header.addCell(MSG.colRoom()).setClassName("WebTableHeader");
+    	long id = 0;
+        for (DirectConflict dc: getInstructorDirectConflicts()) {
+        	LineInterface line = table.addLine();
+        	line.setId(id);
+        	line.addCell().setText(dc.getNrStudents()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-weight:bold;");
+        	line.addCell().setText(dc.getOtherExam() == null ? (dc.isOtherClass() ? MSG.typeClass() :MSG.typeEvent()) : MSG.conflictDirect())
+        		.setColor(PreferenceLevel.prolog2color("P")).addStyle("font-weight:bold;");
+        	if (dc.getOtherExam() != null)
+        		line.setURL("examDetail.action?examId=" + dc.getOtherExam().getExamId());
+        	if (dc.getOtherExam() == null) {
+                if (dc.getOtherEventName() != null) {
+                	line.addCell().setText(dc.getOtherEventName());
+                	line.addCell().setText(dc.getOtherEventDate() + dc.getOtherEventTime());
+                	line.addCell().setText(dc.getOtherEventRoom());
+                } else {
+                	line.addCell().setText(MSG.infoNotAvailableForUnknownReason()).setColSpan(3);
+                }
+            } else {
+            	line.addCell(dc.getOtherExam().getExamNameCell());
+            	line.addCell(dc.getOtherExam().getPeriodCell());
+            	CellInterface rooms = line.addCell();
+            	if (dc.getOtherExam().getRooms() != null)
+                	for (ExamRoomInfo room: dc.getOtherExam().getRooms()) {
+                		if (rooms.hasItems()) rooms.add(", ");
+                		rooms.addItem(room.toCell());
+                	}
+            }
+        	id++;
+        }
+        for (MoreThanTwoADayConflict m2d: getInstructorMoreThanTwoADaysConflicts()) {
+            int idx = 0;
+            for (ExamAssignment a: m2d.getOtherExams()) {
+            	LineInterface line = table.addLine();
+            	line.setURL("examDetail.action?examId=" + a.getExamId());
+            	line.setId(id);
+            	if (idx == 0) {
+        			line.addCell().setRowSpan(m2d.getOtherExams().size())
+        				.setColor(PreferenceLevel.prolog2color("2"))
+        				.setText(m2d.getNrStudents())
+        				.addStyle("font-weight:bold;");
+        			line.addCell().setRowSpan(m2d.getOtherExams().size())
+        				.setColor(PreferenceLevel.prolog2color("2"))
+        				.setText(MSG.conflictMoreThanTwoADay())
+        				.addStyle("font-weight:bold;");
+        		}
+            	line.addCell(a.getExamNameCell());
+            	line.addCell(a.getPeriodCell());
+            	CellInterface rooms = line.addCell();
+            	if (a.getRooms() != null)
+                	for (ExamRoomInfo room: a.getRooms()) {
+                		if (rooms.hasItems()) rooms.add(", ");
+                		rooms.addItem(room.toCell());
+                	}
+            	idx++;
+            }
+            id++;
+        }
+        for (BackToBackConflict b2b: getInstructorBackToBackConflicts()) {
+        	LineInterface line = table.addLine();
+        	line.setId(id);
+        	line.addCell().setText(b2b.getNrStudents()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
+        	line.addCell().setText(MSG.conflictBackToBack()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
+        	line.setURL("examDetail.action?examId=" + b2b.getOtherExam().getExamId());
+        	line.addCell(b2b.getOtherExam().getExamNameCell());
+        	line.addCell(b2b.getOtherExam().getPeriodCell());
+        	CellInterface rooms = line.addCell();
+        	if (b2b.getOtherExam().getRooms() != null)
+            	for (ExamRoomInfo room: b2b.getOtherExam().getRooms()) {
+            		if (rooms.hasItems()) rooms.add(", ");
+            		rooms.addItem(room.toCell());
+            	}
+        	id++;
+        }
+        return table;
     }
     
     public String getInstructorConflictTable(boolean header) {

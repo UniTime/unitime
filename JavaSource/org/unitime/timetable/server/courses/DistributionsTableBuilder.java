@@ -36,6 +36,8 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -103,6 +105,10 @@ public class DistributionsTableBuilder extends TableBuilder {
 		}
 		
 		return createTableForDistributions(prefs); 
+	}
+	
+	public TableInterface getDistPrefsTableForExam(Exam exam) {
+		return createTableForExamDistributions(new TreeSet<DistributionPref>(exam.effectivePreferences(DistributionPref.class))); 
 	}
 	
 	public TableInterface getDistPrefsTableForFilter(FilterInterface filter, Long subjAreaId) {
@@ -250,6 +256,72 @@ public class DistributionsTableBuilder extends TableBuilder {
             line.addCell(groupingText).setNoWrap(true);
             line.addCell(ownerType);
             line.addCell(obj);
+            
+            if ("DistributionPref".equals(getBackType()) && dp.getUniqueId().toString().equals(getBackId()))
+            	line.getCells().get(0).addAnchor("back");
+            else if ("PreferenceGroup".equals(getBackType()) && dp.getOwner().getUniqueId().toString().equals(getBackId()))
+            	line.getCells().get(0).addAnchor("back");
+        }
+        
+        if (nrPrefs==0)
+        	table.addLine().addCell(MSG.noPreferencesFound()).setColSpan(4);
+        
+        return table;
+    }
+    
+    public TableInterface createTableForExamDistributions(Collection<DistributionPref> distPrefs) {
+    	TableInterface table = new TableInterface();
+    	table.setName(MSG.sectionTitleDistributionPreferences());
+    	
+        LineInterface header = table.addHeader();
+        if (isSimple()) header.addCell(MSG.columnDistrPrefLevel());
+        header.addCell(MSG.columnDistrPrefType());
+        header.addCell(MSG.columnExam());
+        header.addCell(MSG.columnExamClassesCourses());
+    	for (CellInterface cell: header.getCells()) {
+    		cell.setClassName("WebTableHeader");
+    		cell.setText(cell.getText().replace("<br>", "\n"));
+    		cell.addStyle("white-space: pre-wrap;");
+    	}
+
+        int nrPrefs = 0;
+        
+        for (DistributionPref dp: distPrefs) {
+        	if (!getSessionContext().hasPermission(dp, Right.ExaminationDistributionPreferenceDetail)) continue;
+        	
+        	nrPrefs++;
+        	
+        	CellInterface examStr = new CellInterface().setNoWrap(true);
+        	CellInterface objectStr = new CellInterface().setNoWrap(true);
+        	
+        	for (DistributionObject dO: dp.getOrderedSetOfDistributionObjects()) {
+        		Exam exam = (Exam)dO.getPrefGroup();
+        		examStr.add(exam.getLabel()).setInline(false);
+        		boolean first = true;
+        		for (ExamOwner owner: exam.getOwners()) {
+        			objectStr.add(owner.getLabel()).setInline(false);
+        			if (first)
+        				first = false;
+        			else
+        				examStr.add("\u00a0").setInline(false);
+        		}
+        	}
+             
+        	String distType = dp.getDistributionType().getLabel();
+            String prefLevel = dp.getPrefLevel().getPrefName();
+            String prefColor = dp.getPrefLevel().prefcolor();
+        	if (PreferenceLevel.sNeutral.equals(dp.getPrefLevel().getPrefProlog()))
+        		prefColor = "#808080";
+            
+            LineInterface line = table.addLine();
+
+            if (getSessionContext().hasPermission(dp, Right.ExaminationDistributionPreferenceEdit))
+            	line.setURL("examDistributionPrefs.action?dp=" + dp.getUniqueId() + "&op=view");
+            
+            if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
+            line.addCell(distType).setColor(prefColor).setTitle(prefLevel + " " + distType).setAria(prefLevel + " " + distType).setNoWrap(true);
+            line.addCell(examStr);
+            line.addCell(objectStr);
             
             if ("DistributionPref".equals(getBackType()) && dp.getUniqueId().toString().equals(getBackId()))
             	line.getCells().get(0).addAnchor("back");

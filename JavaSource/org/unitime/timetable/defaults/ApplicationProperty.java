@@ -3713,7 +3713,12 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Examinations: switch the user interface back to the old (Struts-based) examinations page")
 	LegacyExaminations("unitime.legacy.examinations"),
-;
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Examinations: switch the user interface back to the old (Struts-based) examinations page")
+	LegacyExaminationDetail("unitime.legacy.examinationDetail"),
+	;
 
 	String iKey;
 	

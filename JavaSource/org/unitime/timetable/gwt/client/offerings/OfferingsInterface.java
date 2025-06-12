@@ -85,16 +85,6 @@ public class OfferingsInterface {
 		public void setCanExportPdf(boolean canExport) { iCanExportPdf = canExport; }
 	}
 	
-	public static class ExamsFilterRequest implements GwtRpcRequest<ExamsFilterResponse> {}
-	
-	public static class ExamsFilterResponse extends ClassesFilterResponse {
-		private static final long serialVersionUID = 1L;
-		private boolean iCanAdd = false;
-		
-		public boolean isCanAdd() { return iCanAdd; }
-		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
-	}
-	
 	public static class OfferingsRequest implements GwtRpcRequest<OfferingsResponse> {
 		private FilterInterface iFilter;
 		private String iBackId, iBackType;
@@ -123,8 +113,6 @@ public class OfferingsInterface {
 	public static class ClassesRequest extends OfferingsRequest {}
 	
 	public static class ClassAssignmentsRequest extends OfferingsRequest {}
-	
-	public static class ExamsRequest extends OfferingsRequest {}
 	
 	public static class OfferingDetailRequest implements GwtRpcRequest<OfferingDetailResponse> {
 		private Long iOfferingId;

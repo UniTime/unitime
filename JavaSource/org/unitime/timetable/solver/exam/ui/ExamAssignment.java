@@ -53,6 +53,7 @@ import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
@@ -266,6 +267,21 @@ public class ExamAssignment extends ExamInfo implements Serializable {
                     getPeriodName()+
                     "</span>";
         }
+    }
+    
+    public CellInterface getPeriodCell() {
+    	CellInterface cell = new CellInterface();
+    	cell.setText(getPeriodName());
+    	if (getPeriodId() != null) {
+        	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
+        		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + getExamId() + "," + getPeriodId() + "');");
+        		cell.setMouseOut("$wnd.hideGwtTimeHint();");
+        	} else {
+        		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + getExamId() + "'," + getPeriodId() + ");");
+        		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
+        	}
+    	}
+    	return cell;
     }
     
     public String getPeriodAbbreviationWithPref() {

@@ -36,6 +36,7 @@ import org.cpsolver.exam.model.ExamModel;
 import org.cpsolver.exam.model.ExamStudent;
 import org.cpsolver.ifs.model.Constraint;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -155,6 +156,13 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
             return "<span title='"+name+"'>"+name.substring(0,50)+"...</span>";
         else
             return name;
+    }
+    
+    public CellInterface getExamNameCell() {
+    	String name = getExamName();
+        if (name.length()>50)
+        	return new CellInterface().setText(name.substring(0,50) + "...").setTitle(name);
+        return new CellInterface().setText(name);
     }
 
     public int getNrStudents() {

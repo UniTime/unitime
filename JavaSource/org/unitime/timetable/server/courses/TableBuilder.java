@@ -24,6 +24,7 @@ import java.util.Iterator;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
@@ -47,6 +48,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 
 public class TableBuilder {
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
+	protected static ExaminationMessages XMSG = Localization.create(ExaminationMessages.class);
 	private SessionContext iContext;
     private String iBackType = null;
     private String iBackId = null;

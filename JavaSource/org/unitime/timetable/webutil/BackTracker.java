@@ -200,8 +200,11 @@ public class BackTracker {
 	}
 
 	public static boolean hasBack(SessionContext context, int nrBackSteps) {
-		Vector backList = (Vector)context.getAttribute(SessionAttribute.Back);
-		return backList != null && backList.size() >= nrBackSteps;
+		synchronized (context) {
+			List<BackItem> backList = getBackList(context);
+			if (backList.size()<nrBackSteps) return false;
+			return true;
+		}
 	}
 
 	public static boolean doBack(HttpServletRequest request, HttpServletResponse response) throws IOException {

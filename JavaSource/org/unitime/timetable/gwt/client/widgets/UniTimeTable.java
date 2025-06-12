@@ -549,7 +549,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	    SmartTableRow<T> r = getSmartRow(row);
 	    boolean hasData = showHower(row, r == null ? null : r.getData());
 	    
-	    TableEvent<T> tableEvent = new TableEvent<T>(event, row, col, tr, td, hasData ? r.getData() : null);
+	    TableEvent<T> tableEvent = new TableEvent<T>(event, row, col, tr, td, r == null ? null : r.getData());
 
 	    Widget hint = null;
 		if (widget instanceof HasHint) {

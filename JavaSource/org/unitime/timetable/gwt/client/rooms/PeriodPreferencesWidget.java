@@ -71,6 +71,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 	protected boolean iEditable = true;
 	private CheckBox iHorizontal;
 	private List<Cell> iCells = new ArrayList<Cell>();
+	private boolean iShowLegend = true;
 	
 	public PeriodPreferencesWidget(boolean editable) {
 		iEditable = editable;
@@ -98,6 +99,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 	public void setEditable(boolean editable) {
 		iEditable = editable;
 	}
+	
+	public boolean isShowLegend() { return iShowLegend; }
+	public void setShowLegend(boolean showLegend) { iShowLegend = showLegend; }
 	
 	public boolean isEditable(PreferenceInterface preference) {
 		return isEditable() && preference.isEditable();
@@ -559,6 +563,8 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 				}
 			}
 		}
+
+		if (!isShowLegend() && !isEditable()) return;
 
 		P legend = new P("legend");
 		iPanel.add(legend);

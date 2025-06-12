@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
 import org.unitime.timetable.gwt.client.offerings.TimePreferenceWidget;
+import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesWidget;
 import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
@@ -82,6 +83,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	private int iSortColumn = -1;
 	private boolean iSortAsc = true;
 	private Integer iNavigationLevel = null;
+	private TableInterface iTable = null;
 
 	public TableWidget() {
 		super();
@@ -111,7 +113,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	
 	@Override
 	protected boolean showHower(int row, LineInterface data) {
-		return data != null && data.hasURL();
+		return data != null && data.hasURL() && !iTable.isMultiRows();
 	}
 	
 	protected static void applyStyle(Style style, String text) {
@@ -129,6 +131,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	}
 	
 	public void setData(TableInterface table) {
+		iTable = table;
 		clearTable();
 		iNavigationLevel = table.getNavigationLevel();
 		String sortCookie = ToolBox.getSessionCookie(table.getId() + ".Sort");
@@ -197,6 +200,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						getRowFormatter().getElement(row).addClassName(line.getClassName());
 					if (line.hasStyle())
 						applyStyle(getRowFormatter().getElement(row).getStyle(), line.getStyle());
+					if (table.isMultiRows() && line.hasURL())
+						getRowFormatter().getElement(row).getStyle().setCursor(Cursor.POINTER);
 				}
 			}
 		if (table.hasProperties()) {
@@ -227,6 +232,31 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			}
 		}
 		sort();
+		if (table.isMultiRows()) {
+			addMouseOverListener(new MouseOverListener<LineInterface>() {
+				@Override
+				public void onMouseOver(TableEvent<LineInterface> event) {
+					updateHover(event.getData() == null ? null : event.getData().getId());
+				}
+			});
+			addMouseOutListener(new MouseOutListener<LineInterface>() {
+				@Override
+				public void onMouseOut(TableEvent<LineInterface> event) {
+					updateHover(null);
+				}
+			});
+		}
+	}
+	
+	protected void updateHover(Long id) {
+		for (int row = 0; row < getRowCount(); row++) {
+			LineInterface line = getData(row);
+			if (line == null || id == null || !id.equals(line.getId())) {
+				getRowFormatter().getElement(row).getStyle().clearBackgroundColor();
+			} else {
+				getRowFormatter().getElement(row).getStyle().setBackgroundColor("#d0e4f6");
+			}
+		}
 	}
 	
 	public static class ErrorWidget extends P implements HasColSpan {
@@ -501,6 +531,12 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				TimePreferenceWidget w = new TimePreferenceWidget(false, cell.getTimePreference().getPrefLevels(), cell.getTimePreference().isHorizontal());
 				w.setShowLegend(false);
 				w.setModel(cell.getTimePreference());
+				add(w);
+			}
+			if (cell.hasPeriodPreference()) {
+				PeriodPreferencesWidget w = new PeriodPreferencesWidget(false);
+				w.setModel(cell.getPeriodPreference());
+				w.setShowLegend(false);
 				add(w);
 			}
 		}
