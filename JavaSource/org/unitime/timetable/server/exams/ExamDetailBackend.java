@@ -30,6 +30,7 @@ import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamDetailReponse;
@@ -211,8 +212,12 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 			response.addOperation("edit");
 		if (context.hasPermission(exam, Right.ExaminationClone))
 			response.addOperation("clone");
-		if (context.hasPermission(exam, Right.DistributionPreferenceExam))
-			response.addOperation("add-distribution");
+		if (context.hasPermission(exam, Right.DistributionPreferenceExam)) {
+			if (ApplicationProperty.LegacyExamDistributions.isTrue())
+				response.addOperation("add-distribution-legacy");
+			else
+				response.addOperation("add-distribution");
+		}
 		if (context.hasPermission(exam, Right.ExaminationAssignment))
 			response.addOperation("assign");
 		if (context.hasPermission(exam, Right.ExaminationDelete))

@@ -222,6 +222,15 @@ public class ExamDetailPage extends Composite {
 						hp.addButton("add-distribution", EXAM.actionAddDistributionPreference(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
+								ToolBox.open(GWT.getHostPageBaseURL() + "examDistributionAdd?examId=" + iResponse.getExamId());
+							}
+						});
+						hp.getButton("add-distribution").setAccessKey(EXAM.accessAddDistributionPreference().charAt(0));
+						hp.getButton("add-distribution").setTitle(EXAM.titleAddDistributionPreference(EXAM.accessAddDistributionPreference()));					
+					} else if (response.hasOperation("add-distribution-legacy")) {
+						hp.addButton("add-distribution", EXAM.actionAddDistributionPreference(), new ClickHandler() {
+							@Override
+							public void onClick(ClickEvent evt) {
 								ToolBox.open(GWT.getHostPageBaseURL() + "examDistributionPrefs.action?examId=" + iResponse.getExamId() + "&op=" +
 										URL.encodeQueryString(EXAM.actionAddDistributionPreference())
 										);

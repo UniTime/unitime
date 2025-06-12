@@ -17,36 +17,39 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.server.courses;
+package org.unitime.timetable.server.exams;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsFilterRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamDistributionsFilterRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsFilterResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
-import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DistributionType;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.BackTracker;
 
-@GwtRpcImplements(DistributionsFilterRequest.class)
-public class DistributionsFilterBackend implements GwtRpcImplementation<DistributionsFilterRequest, DistributionsFilterResponse>{
+@GwtRpcImplements(ExamDistributionsFilterRequest.class)
+public class ExamDistributionsFilterBackend implements GwtRpcImplementation<ExamDistributionsFilterRequest, DistributionsFilterResponse>{
 	protected static CourseMessages MESSAGES = Localization.create(CourseMessages.class);
+	protected static ExaminationMessages XMSG = Localization.create(ExaminationMessages.class);
 	protected static GwtMessages GWT = Localization.create(GwtMessages.class);
 
 	@Override
-	public DistributionsFilterResponse execute(DistributionsFilterRequest request, SessionContext context) {
-		context.checkPermission(Right.DistributionPreferences);
+	public DistributionsFilterResponse execute(ExamDistributionsFilterRequest request, SessionContext context) {
+		context.checkPermission(Right.ExaminationDistributionPreferences);
 		DistributionsFilterResponse filter = new DistributionsFilterResponse();
 		
 		FilterParameterInterface preference = new FilterParameterInterface();
@@ -57,31 +60,33 @@ public class DistributionsFilterBackend implements GwtRpcImplementation<Distribu
 		preference.setLabel(MESSAGES.propertyDistributionPreference());
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false))
 			preference.addOption(pref.getPrefId().toString(), pref.getPrefName());
-		preference.setDefaultValue(context.getUser().getProperty("Distributions.prefLevel", ""));
+		preference.setDefaultValue(context.getUser().getProperty("ExamDistributions.prefLevel", ""));
 		filter.addParameter(preference);
 		
-		FilterParameterInterface type = new FilterParameterInterface();
-		type.setName("distType");
-		type.setType("list");
-		type.setMultiSelect(true);
-		type.setCollapsible(true);
-		type.setLabel(MESSAGES.propertyDistributionType());
-		for (DistributionType dt: DistributionType.findAll(false, false, true))
-			type.addOption(dt.getUniqueId().toString(), dt.getLabel());
-		type.setDefaultValue(context.getUser().getProperty("Distributions.distType", ""));
-		filter.addParameter(type);
+		FilterParameterInterface distType = new FilterParameterInterface();
+		distType.setName("distType");
+		distType.setType("list");
+		distType.setMultiSelect(true);
+		distType.setCollapsible(true);
+		distType.setLabel(MESSAGES.propertyDistributionType());
+		for (DistributionType dt: DistributionType.findAll(false, true, true))
+			distType.addOption(dt.getUniqueId().toString(), dt.getLabel());
+		distType.setDefaultValue(context.getUser().getProperty("ExamDistributions.distType", ""));
+		filter.addParameter(distType);
 		
-		FilterParameterInterface structure = new FilterParameterInterface();
-		structure.setName("structure");
-		structure.setType("list");
-		structure.setMultiSelect(true);
-		structure.setCollapsible(true);
-		structure.setLabel(MESSAGES.propertyDistributionStructure());
-		for (DistributionPref.Structure str: DistributionPref.Structure.values())
-			structure.addOption(str.name(), str.getName());
-		structure.addOption("instructor", MESSAGES.columnInstructor());
-		structure.setDefaultValue(context.getUser().getProperty("Distributions.structure", ""));
-		filter.addParameter(structure);
+		FilterParameterInterface examType = new FilterParameterInterface();
+		examType.setName("examType");
+		examType.setType("list");
+		examType.setMultiSelect(false);
+		examType.setCollapsible(false);
+		examType.setLabel(XMSG.propExamType());
+        for (ExamType type: ExamType.findAllUsedApplicable(context.getUser(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable))
+        	examType.addOption(type.getUniqueId().toString(), type.getLabel());
+        Object et = context.getAttribute(SessionAttribute.ExamType);
+        examType.setDefaultValue(et == null ? null : et.toString());
+        if (!examType.hasDefaultValue() && examType.hasOptions())
+        	examType.setDefaultValue(examType.getOptions().get(0).getValue());
+		filter.addParameter(examType);
 		
 		FilterParameterInterface subjectArea = new FilterParameterInterface();
 		subjectArea.setName("subjectArea");
@@ -89,6 +94,7 @@ public class DistributionsFilterBackend implements GwtRpcImplementation<Distribu
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
 		subjectArea.setLabel(MESSAGES.filterSubject());
+		subjectArea.addOption("-1", GWT.itemAllSubjectAreas());
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
 			subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
 		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));

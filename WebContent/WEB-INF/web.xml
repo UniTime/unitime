@@ -258,6 +258,9 @@
     	<url-pattern>/classAssignment</url-pattern>
     	<url-pattern>/examinations</url-pattern>
     	<url-pattern>/examination</url-pattern>
+    	<url-pattern>/examDistributions</url-pattern>
+    	<url-pattern>/examDistributionAdd</url-pattern>
+    	<url-pattern>/examDistributionEdit</url-pattern>
     </servlet-mapping>
 	
 	<filter>

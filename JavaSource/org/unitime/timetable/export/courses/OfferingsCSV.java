@@ -166,6 +166,34 @@ public class OfferingsCSV implements Exporter {
     	return response;
 	}
 	
+	protected List<TableInterface> getExamDistributions(ExportHelper helper) {
+    	List<TableInterface> response = new ArrayList<TableInterface>();
+    	
+    	DistributionsTableBuilder builder = new DistributionsTableBuilder(
+    			helper.getSessionContext(),
+    			helper.getParameter("backType"),
+		        helper.getParameter("backId")
+		        );
+    	builder.setSimple(true);
+    	
+    	Filter filter = new Filter(helper);
+		String examType = filter.getParameterValue("examType");
+		ExamType type = null;
+		try {
+			type = ExamTypeDAO.getInstance().get(Long.valueOf(examType));
+		} catch (Exception e) {}
+		if (type == null)
+			type = ExamType.findByReference(examType);
+		if (type == null)
+			throw new GwtRpcException(EXAM.messageNoExamType());
+		
+		TableInterface table = builder.getExamDistPrefsTableForFilter(filter, type);
+		table.setName(EXAM.sectionDistributionPreferences(type.getLabel()));
+		response.add(sorted(table, helper));
+
+    	return response;
+	}
+	
 	protected List<TableInterface> getExams(ExportHelper helper) {
     	List<TableInterface> response = new ArrayList<TableInterface>();
     	

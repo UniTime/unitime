@@ -17,13 +17,13 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.client.offerings;
+package org.unitime.timetable.gwt.client.exams;
 
-import org.unitime.localization.messages.CourseMessages;
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsFilterRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamDistributionsFilterRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamDistributionsRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsFilterResponse;
-import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsResponse;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.solver.PageFilter;
@@ -49,7 +49,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -59,9 +58,9 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 
-public class DistributionsPage extends Composite {
+public class ExamDistributionsPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
+	private static final ExaminationMessages EXAM = GWT.create(ExaminationMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private SimplePanel iRootPanel;
 	private SimpleForm iPanel;
@@ -69,13 +68,13 @@ public class DistributionsPage extends Composite {
 	
 	private DistributionsFilterResponse iConfig;
 
-	public DistributionsPage() {
+	public ExamDistributionsPage() {
 		iFilter = new PageFilter();
-		iFilter.getHeader().setCollapsible("1".equals(ToolBox.getSessionCookie("Distributions.Filter")));
+		iFilter.getHeader().setCollapsible("1".equals(ToolBox.getSessionCookie("ExamDistributions.Filter")));
 		iFilter.getHeader().addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				ToolBox.setSessionCookie("Distributions.Filter", event.getValue() ? "1" : "0");
+				ToolBox.setSessionCookie("ExamDistributions.Filter", event.getValue() ? "1" : "0");
 			}
 		});
 		
@@ -83,7 +82,7 @@ public class DistributionsPage extends Composite {
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		iPanel.addRow(iFilter);
 		
-		iFilter.getFooter().addButton("search", COURSE.actionSearchDistributionPreferences(), new ClickHandler() {
+		iFilter.getFooter().addButton("search", EXAM.actionSearchDistributionPreferences(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				String token = iFilter.getQuery();
@@ -93,8 +92,8 @@ public class DistributionsPage extends Composite {
 			}
 		});
 		iFilter.getFooter().setEnabled("search", false);
-		iFilter.getFooter().getButton("search").setAccessKey(COURSE.accessSearchDistributionPreferences().charAt(0));
-		iFilter.getFooter().getButton("search").setTitle(COURSE.titleSearchDistributionPreferences(COURSE.accessSearchDistributionPreferences()));
+		iFilter.getFooter().getButton("search").setAccessKey(EXAM.accessSearchDistributionPreferences().charAt(0));
+		iFilter.getFooter().getButton("search").setTitle(EXAM.titleSearchDistributionPreferences(EXAM.accessSearchDistributionPreferences()));
 		iFilter.setSubmitCommand(new Command() {
 			@Override
 			public void execute() {
@@ -103,35 +102,35 @@ public class DistributionsPage extends Composite {
 			}
 		});
 		
-		iFilter.getFooter().addButton("exportCsv", COURSE.actionExportCsv(), new ClickHandler() {
+		iFilter.getFooter().addButton("exportCsv", EXAM.actionExportCsv(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				export("distributions.csv");
+				export("exam-distributions.csv");
 			}
 		});
 		
-		iFilter.getFooter().getButton("exportCsv").setAccessKey(COURSE.accessExportCsv().charAt(0));
-		iFilter.getFooter().getButton("exportCsv").setTitle(COURSE.titleExportCsv(COURSE.accessExportCsv()));
+		iFilter.getFooter().getButton("exportCsv").setAccessKey(EXAM.accessExportCsv().charAt(0));
+		iFilter.getFooter().getButton("exportCsv").setTitle(EXAM.titleExportCsv(EXAM.accessExportCsv()));
 		iFilter.getFooter().setEnabled("exportCsv", false);
 		
-		iFilter.getFooter().addButton("exportXls", COURSE.actionExportXls(), new ClickHandler() {
+		iFilter.getFooter().addButton("exportXls", EXAM.actionExportXls(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				export("distributions.xls");
+				export("exam-distributions.xls");
 			}
 		});
-		iFilter.getFooter().getButton("exportXls").setAccessKey(COURSE.accessExportXls().charAt(0));
-		iFilter.getFooter().getButton("exportXls").setTitle(COURSE.titleExportXls(COURSE.accessExportXls()));
+		iFilter.getFooter().getButton("exportXls").setAccessKey(EXAM.accessExportXls().charAt(0));
+		iFilter.getFooter().getButton("exportXls").setTitle(EXAM.titleExportXls(EXAM.accessExportXls()));
 		iFilter.getFooter().setEnabled("exportXls", false);
 		
-		iFilter.getFooter().addButton("exportPdf", COURSE.actionExportPdf(), new ClickHandler() {
+		iFilter.getFooter().addButton("exportPdf", EXAM.actionExportPdf(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				export("distributions.pdf");
+				export("exam-distributions.pdf");
 			}
 		});
-		iFilter.getFooter().getButton("exportPdf").setAccessKey(COURSE.accessExportPdf().charAt(0));
-		iFilter.getFooter().getButton("exportPdf").setTitle(COURSE.titleExportPdf(COURSE.accessExportPdf()));
+		iFilter.getFooter().getButton("exportPdf").setAccessKey(EXAM.accessExportPdf().charAt(0));
+		iFilter.getFooter().getButton("exportPdf").setTitle(EXAM.titleExportPdf(EXAM.accessExportPdf()));
 		iFilter.getFooter().setEnabled("exportPdf", false);
 	
 		iRootPanel = new SimplePanel(iPanel);
@@ -153,7 +152,7 @@ public class DistributionsPage extends Composite {
 	}
 	
 	protected void init() {
-		RPC.execute(new DistributionsFilterRequest(), new AsyncCallback<DistributionsFilterResponse>() {
+		RPC.execute(new ExamDistributionsFilterRequest(), new AsyncCallback<DistributionsFilterResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				iFilter.getFooter().setErrorMessage(MESSAGES.failedToInitialize(caught.getMessage()));
@@ -196,7 +195,7 @@ public class DistributionsPage extends Composite {
 	}
 	
 	protected void search(final AsyncCallback<Boolean> callback) {
-		final DistributionsRequest request = new DistributionsRequest();
+		final ExamDistributionsRequest request = new ExamDistributionsRequest();
 		request.setBackId(Window.Location.getParameter("backId"));
 		request.setBackType(Window.Location.getParameter("backType"));
 		request.setFilter(iFilter.getValue());
@@ -228,14 +227,14 @@ public class DistributionsPage extends Composite {
 					for (TableInterface table: result.getTables()) {
 						UniTimeHeaderPanel header = new UniTimeHeaderPanel(table.getName());
 						if (iConfig.isCanAdd()) {
-							header.addButton("add-distribution", COURSE.actionAddDistributionPreference(), new ClickHandler() {
+							header.addButton("add-distribution", EXAM.actionAddDistributionPreference(), new ClickHandler() {
 								@Override
 								public void onClick(ClickEvent e) {
-									ToolBox.open(GWT.getHostPageBaseURL() + "distributionAdd?subjectId=" + table.getId());
+									ToolBox.open(GWT.getHostPageBaseURL() + "examDistributionAdd");
 								}
 							});
-							header.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
-							header.getButton("add-distribution").setTitle(COURSE.titleAddDistributionPreference(COURSE.accessAddDistributionPreference()));					
+							header.getButton("add-distribution").setAccessKey(EXAM.accessAddDistributionPreference().charAt(0));
+							header.getButton("add-distribution").setTitle(EXAM.titleAddDistributionPreference(EXAM.accessAddDistributionPreference()));					
 						}
 						if (table.hasAnchor()) {
 							Anchor a = new Anchor(); a.setName(table.getAnchor()); a.getElement().setId(table.getAnchor());
@@ -268,6 +267,8 @@ public class DistributionsPage extends Composite {
 						p.getElement().getStyle().clearOverflow();
 						p.add(new TableWidget(table));
 						iPanel.addRow(p);
+						UniTimeHeaderPanel footer = header.clonePanel("");
+						iPanel.addBottomRow(footer);
 					}
 				iFilter.getFooter().setEnabled("search", true);
 				iFilter.getFooter().setEnabled("exportCsv", true);
@@ -286,19 +287,6 @@ public class DistributionsPage extends Composite {
 							ToolBox.scrollToElement(e);
 					}
 				});
-				if (iConfig.isCanAdd()) {
-					UniTimeHeaderPanel footer = new UniTimeHeaderPanel(COURSE.sectionTitleDistributionPreferences());
-					footer.addButton("add-distribution", COURSE.actionAddDistributionPreference(), new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent e) {
-							ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
-									URL.encodeQueryString(COURSE.actionAddDistributionPreference()));
-						}
-					});
-					footer.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
-					footer.getButton("add-distribution").setTitle(COURSE.titleAddDistributionPreference(COURSE.accessAddDistributionPreference()));
-					iPanel.addBottomRow(footer);
-				}
 				if (callback != null)
 					callback.onSuccess(result.hasTables());
 			}
@@ -306,7 +294,10 @@ public class DistributionsPage extends Composite {
 	}
 	
 	protected void export(String format) {
-		ToolBox.open(GWT.getHostPageBaseURL() + "export?output=" + format + "&sid=" + iConfig.getSessionId() + iFilter.getFullQuery());
+		String sort = ToolBox.getSessionCookie("ExamDistributions.Sort");
+		ToolBox.open(GWT.getHostPageBaseURL() + "export?output=" + format + "&sid=" + iConfig.getSessionId() +
+				(sort == null ? "" : "&sort=" + sort) +
+				iFilter.getFullQuery());
 	}
 
 }

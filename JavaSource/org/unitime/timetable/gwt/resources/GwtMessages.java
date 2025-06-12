@@ -4017,6 +4017,18 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageEditDistributionPreference();
 	
+	@DefaultMessage("Examination Distribution Preferences")
+	@DoNotTranslate
+	String pageExaminationDistributionPreferences();
+	
+	@DefaultMessage("Add Examination Distribution Preference")
+	@DoNotTranslate
+	String pageAddExaminationDistributionPreference();
+	
+	@DefaultMessage("Edit Examination Distribution Preference")
+	@DoNotTranslate
+	String pageEditExaminationDistributionPreference();
+
 	@DefaultMessage("Class Assignment")
 	@DoNotTranslate
 	String pageClassAssignment();

@@ -19,6 +19,8 @@
 */
 package org.unitime.localization.messages;
 
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
+
 /**
  * @author Tomas Muller
  */
@@ -441,6 +443,9 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Export CSV")
 	String actionExportCsv();
 	
+	@DefaultMessage("Export XLS")
+	String actionExportXls();
+	
 	@DefaultMessage("Delete")
 	String actionDelete();
 	
@@ -473,7 +478,10 @@ public interface ExaminationMessages extends Messages {
 
 	@DefaultMessage("Export CSV (Alt+{0})")
 	String titleExportCsv(String accessKey);
-	
+
+	@DefaultMessage("Export XLS (Alt+{0})")
+	String titleExportXls(String accessKey);
+
 	@DefaultMessage("Add Distribution Preference (Alt+{0})")
 	String titleAddDistributionPreference(String accessKey);
 	
@@ -501,6 +509,9 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("C")
 	String accessExportCsv();
 	
+	@DefaultMessage("X")
+	String accessExportXls();
+
 	@DefaultMessage("A")
 	String accessAddDistributionPreference();
 	
@@ -2375,4 +2386,10 @@ public interface ExaminationMessages extends Messages {
 	
 	@DefaultMessage("Week {0} ({1} - {2})")
 	String itemWeek(int weekNumber, String from, String to);
+	
+	@DefaultMessage("Invalid examination selections: Check for duplicate / blank selection.")
+	String errorInvalidClassSelectionDP();
+	
+	@DefaultMessage("Invalid examination selections: Select at least two examinations.")
+	String errorInvalidClassSelectionDPMinTwoExams();
 }

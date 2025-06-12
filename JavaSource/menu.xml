@@ -465,6 +465,13 @@
 			<item name="Distribution Preferences" page="examDistributionPrefs.action">
 				<condition>
 					<hasPermission name="ExaminationDistributionPreferences"/>
+					<propertyEquals name="unitime.legacy.examDistributions" value="true" defaultValue="false"/>
+				</condition>
+			</item>
+			<item name="Distribution Preferences" page="examDistributions" type="gwt">
+				<condition>
+					<hasPermission name="ExaminationDistributionPreferences"/>
+					<propertyEquals name="unitime.legacy.examDistributions" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>

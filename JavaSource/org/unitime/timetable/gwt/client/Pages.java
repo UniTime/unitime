@@ -29,6 +29,8 @@ import org.unitime.timetable.gwt.client.departments.DepartmentsPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.exams.ExamDetailPage;
+import org.unitime.timetable.gwt.client.exams.ExamDistributionsEditPage;
+import org.unitime.timetable.gwt.client.exams.ExamDistributionsPage;
 import org.unitime.timetable.gwt.client.exams.ExamsPage;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAssignmentPreferencesPage;
@@ -405,6 +407,18 @@ public enum Pages {
 		public Widget create() { return new ExamDetailPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationDetail(); }
 		}, SolverWarnings.Type.exam),
+	examDistributions(new PageFactory() {
+		public Widget create() { return new ExamDistributionsPage(); }
+		public String name(GwtMessages messages) { return messages.pageExaminationDistributionPreferences(); }
+		}),
+	examDistributionAdd(new PageFactory() {
+		public Widget create() { return new ExamDistributionsEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageAddExaminationDistributionPreference(); }
+		}),
+	examDistributionEdit(new PageFactory() {
+		public Widget create() { return new ExamDistributionsEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageEditExaminationDistributionPreference(); }
+		}),
 	;
 	
 	private PageFactory iFactory;
