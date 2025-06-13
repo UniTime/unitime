@@ -5240,6 +5240,102 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 660px;
 }
 
+.unitime-CourseRequests .line .course .unitime-WarningHint {
+	max-width: 620px;
+}
+
+.unitime-CourseRequests .nowaitlist .line .course .unitime-WarningHint {
+	max-width: 640px;
+}
+
+.unitime-CourseRequests .noarrows .line .course .unitime-WarningHint {
+	max-width: 690px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-WarningHint {
+	max-width: 710px;
+}
+
+.unitime-CourseRequests .alt-line .course .unitime-WarningHint {
+	max-width: 570px;
+}
+
+.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-WarningHint {
+	max-width: 590px;
+}
+
+.unitime-CourseRequests .noarrows .alt-line .course .unitime-WarningHint {
+	max-width: 640px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-WarningHint {
+	max-width: 660px;
+}
+
+.unitime-CourseRequests .line .course .unitime-InfoHint {
+	max-width: 620px;
+}
+
+.unitime-CourseRequests .nowaitlist .line .course .unitime-InfoHint {
+	max-width: 640px;
+}
+
+.unitime-CourseRequests .noarrows .line .course .unitime-InfoHint {
+	max-width: 690px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-InfoHint {
+	max-width: 710px;
+}
+
+.unitime-CourseRequests .alt-line .course .unitime-InfoHint {
+	max-width: 570px;
+}
+
+.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-InfoHint {
+	max-width: 590px;
+}
+
+.unitime-CourseRequests .noarrows .alt-line .course .unitime-InfoHint {
+	max-width: 640px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-InfoHint {
+	max-width: 660px;
+}
+
+.unitime-CourseRequests .line .course .unitime-ErrorHint {
+	max-width: 620px;
+}
+
+.unitime-CourseRequests .nowaitlist .line .course .unitime-ErrorHint {
+	max-width: 640px;
+}
+
+.unitime-CourseRequests .noarrows .line .course .unitime-ErrorHint {
+	max-width: 690px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .line .course .unitime-ErrorHint {
+	max-width: 710px;
+}
+
+.unitime-CourseRequests .alt-line .course .unitime-ErrorHint {
+	max-width: 570px;
+}
+
+.unitime-CourseRequests .nowaitlist .alt-line .course .unitime-ErrorHint {
+	max-width: 590px;
+}
+
+.unitime-CourseRequests .noarrows .alt-line .course .unitime-ErrorHint {
+	max-width: 640px;
+}
+
+.unitime-CourseRequests .noarrowswaitlist .alt-line .course .unitime-ErrorHint {
+	max-width: 660px;
+}
+
 .unitime-CourseRequests .line .alternative {
 	display: inline-block;
 	padding: 2px;
