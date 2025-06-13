@@ -3320,20 +3320,19 @@ public class CopyBetweenSessionHelper {
 		}
 	}
 
-	public void copyMergeClassInstructorsToSession(Session fromSession, 
-			String prefix) {
+	public void copyMergeClassInstructorsToSession() {
 		SubjectAreaDAO sDao = SubjectAreaDAO.getInstance();
-		List<SubjectArea> subjects = sDao.findBySession(getHibSession(), fromSession.getUniqueId());
+		List<SubjectArea> subjects = sDao.findBySession(getHibSession(), iMergedSession.getUniqueId());
 		
-		if (iMergedSession.getSubjectAreas() != null) {
+		if (subjects != null && !subjects.isEmpty()) {
 			for (SubjectArea subjectArea : subjects){
-				copyMergeClassInstructorsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), prefix);
+				copyMergeClassInstructorsForASubjectArea(subjectArea.getSubjectAreaAbbreviation());
 			}
 		}		
 	}
 
-	private void copyMergeClassInstructorsForASubjectArea(
-			String subjectAreaAbbreviation, String defaultPrefix) {
+	public void copyMergeClassInstructorsForASubjectArea(
+			String subjectAreaAbbreviation) {
 		iLog.info("Rolling forward class instructors for:  " + subjectAreaAbbreviation);
 		Class_DAO clsDao = new Class_DAO();
 		List<Class_> classes = Class_.findAllForControllingSubjectArea(subjectAreaAbbreviation, iMergedSession.getUniqueId(), getHibSession());
@@ -3346,6 +3345,16 @@ public class CopyBetweenSessionHelper {
 					
 					fromClass = clsDao.get(toClass.getUniqueIdRolledForwardFrom(), getHibSession());
 					if (fromClass != null){
+						HashMap<String, ArrayList<ClassInstructor>> classInstructors = new HashMap<String, ArrayList<ClassInstructor>>();
+						if (toClass.getClassInstructors() != null && !toClass.getClassInstructors().isEmpty()) {
+							for (ClassInstructor ci : toClass.getClassInstructors()) {
+								String ciKey = ci.getInstructor().getUniqueId().toString() + (ci.getResponsibility() == null?"null":ci.getResponsibility().getLabel());
+								if (classInstructors.get(ciKey) == null) {
+									classInstructors.put(ciKey, new ArrayList<ClassInstructor>());
+								}
+								classInstructors.get(ciKey).add(ci);
+							}
+						}
 						if (fromClass.getClassInstructors() != null && !fromClass.getClassInstructors().isEmpty()) {
 							ClassInstructor fromClassInstr = null;
 							ClassInstructor toClassInstr = null;
@@ -3355,21 +3364,42 @@ public class CopyBetweenSessionHelper {
 								if (fromClassInstr.getTeachingRequest() != null) continue;
 								toDeptInstr = DepartmentalInstructor.findByPuidDepartmentId(fromClassInstr.getInstructor().getExternalUniqueId(), toClass.getControllingDept().getUniqueId());
 								if (toDeptInstr != null){
-									toClassInstr = new ClassInstructor();
-									toClassInstr.setClassInstructing(toClass);
-									toClassInstr.setInstructor(toDeptInstr);
-									toClassInstr.setLead(fromClassInstr.isLead());
-									toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
-									toClassInstr.setResponsibility(fromClassInstr.getResponsibility());
-									
-									toClassInstr.setUniqueId(null);
-									toClass.addToClassInstructors(toClassInstr);
-									toDeptInstr.addToClasses(toClassInstr);
+									String ciKey = toDeptInstr.getUniqueId().toString() + (fromClassInstr.getResponsibility() == null? "null":fromClassInstr.getResponsibility().getLabel());
+									ArrayList<ClassInstructor> toInstructors = classInstructors.get(ciKey);
+									if (toInstructors == null || toInstructors.isEmpty()) {
+										toClassInstr = new ClassInstructor();
+										toClassInstr.setClassInstructing(toClass);
+										toClassInstr.setInstructor(toDeptInstr);
+										toClassInstr.setLead(fromClassInstr.isLead());
+										toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
+										toClassInstr.setResponsibility(fromClassInstr.getResponsibility());
+										
+										toClassInstr.setUniqueId(null);
+										toClass.addToClassInstructors(toClassInstr);
+										toDeptInstr.addToClasses(toClassInstr);
+									} else {
+										toClassInstr = toInstructors.get(0);
+										toInstructors.remove(toClassInstr);
+										toClassInstr.setLead(fromClassInstr.isLead());
+										toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
+									}
+								} 
+							}
+							for (String key : classInstructors.keySet()) {
+								ArrayList<ClassInstructor> toInstructors = classInstructors.get(key);
+								if (toInstructors != null && !toInstructors.isEmpty()) {
+									for (ClassInstructor ci : toInstructors) {
+										ci.getClassInstructing().getClassInstructors().remove(ci);
+										ci.setClassInstructing(null);
+										ci.getInstructor().getClasses().remove(ci);
+										ci.setInstructor(null);
+										getHibSession().remove(ci);
+									}
 								}
 							}
-							Transaction t = getHibSession().beginTransaction();
+//							Transaction t = getHibSession().beginTransaction();
 							getHibSession().merge(toClass);
-							t.commit();
+//							t.commit();
 						} 
 					}
 				}

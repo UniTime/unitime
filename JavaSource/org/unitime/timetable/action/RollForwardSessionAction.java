@@ -405,7 +405,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 
 	    	if (iErrors.isEmpty() && iForm.getRollForwardClassInstructors()) {
 	    		setStatus(MSG.rollForwardClassInstructors() + " ...");
-	    		sessionRollForward.rollClassInstructorsForward(iErrors, iForm);
+	    		sessionRollForward.rollClassInstructorsForward(iErrors, iForm, copyBetweenSessionHelper);
 	    	}
 	        iProgress++;
 

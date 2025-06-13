@@ -209,15 +209,15 @@ public class AcademicSessionMerge {
 					subpartTimePrefsAction, mergeWaitListsProhibitedOverrides, distributionPrefMode, 
 					cancelledClassAction, secondarySessionDefaultPrefix);
 
-			// Pull the instructors onto their classes for each session
+			// Pull the instructors onto their classes
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
-			log.info("Copying Primary Session Instructors onto Classes: " + iPrimarySession.getLabel());
-			copyBetweenSessionHelper.copyMergeClassInstructorsToSession(iPrimarySession, primarySessionDefaultPrefix);
+			log.info("Copying Session Instructors onto Classes");
+			copyBetweenSessionHelper.copyMergeClassInstructorsToSession();
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 
-			log.info("Copying Secondary Session Instructors onto Classes: " + iSecondarySession.getLabel());
-			copyBetweenSessionHelper.copyMergeClassInstructorsToSession(iSecondarySession, secondarySessionDefaultPrefix);
-			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
+//			log.info("Copying Secondary Session Instructors onto Classes: " + iSecondarySession.getLabel());
+//			copyBetweenSessionHelper.copyMergeClassInstructorsToSession(iSecondarySession);
+//			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 
 		} catch (Exception e) {
 			log.error(e.getMessage());

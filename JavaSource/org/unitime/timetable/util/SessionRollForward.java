@@ -1482,7 +1482,7 @@ public class SessionRollForward {
 	}
 	
 		
-	public void rollClassInstructorsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm) {
+	public void rollClassInstructorsForward(RollForwardErrors errors, RollForwardSessionForm rollForwardSessionForm, CopyBetweenSessionHelper copyBetweenSessionHelper) {
 		for (String subjectId: rollForwardSessionForm.getRollForwardClassInstrSubjectIds()) {
 			Transaction tx = getHibSession().beginTransaction();
 			try {
@@ -1490,7 +1490,8 @@ public class SessionRollForward {
 				iLog.info("Rolling " + subjectArea.getLabel() + " class instructors forward...");
 				Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 				if (rollForwardSessionForm.validateClassInstructorRollForward(toSession, subjectArea, errors)) {
-					rollForwardClassInstructorsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), toSession);
+					copyBetweenSessionHelper.copyMergeClassInstructorsForASubjectArea(subjectArea.getSubjectAreaAbbreviation());
+//					rollForwardClassInstructorsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), toSession);
 				} else {
 					break;
 				}
