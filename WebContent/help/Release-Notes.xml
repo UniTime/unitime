@@ -29,34 +29,6 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
-		<title>Administration</title>
-		<item>
-			<name>Technology Upgrade</name>
-			<description>
-				<line>Hibernate upgraded to version 6.6.</line>
-				<line>Infinispan upgraded to version 15.0.
-					<line>This fixes the issue with Java 23 or later (ISPN-14375 issue), however, this change also bumps the minimal version to Java 17.</line>
-				</line>
-				<line>Apache Struts upgraded to version 6.7.</line>
-				<line>JGroups upgraded to version 6.5</line>
-				<line>GWT upgraded to version 2.12.</line>
-			</description>
-		</item>
-		<item>
-			<name>Hibernate Community Dialects</name>
-			<description>
-				<line>Added hibernate-community-dialects dependency to include additional dialects.
-					<line>Namely the org.hibernate.community.dialect.OracleLegacyDialect allowing for older Oracle Database versions.</line>
-				</line>
-			</description>
-		</item>
-	</category>
-</release>
-
-<release>
-	<version>4.8.170</version>
-	<release-date>Fri, 6 Dec 2024</release-date>
-	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Suggestions, Instructor Survey: Maximize</name>
@@ -102,6 +74,18 @@
 				<line>Added an ability to indicate that a given field or class should be excluded from JSON serialization (with the new @ExcludeFromJsonApi annotation).</line>
 				<line>Fixed an issue with both IdName and Subpart/Clazz having a parent field.</line>
 				<line>Fixed an issue with Subpart.config and Clazz.subpart creating a circle.</line>
+			</description>
+		</item>
+		<item>
+			<name>Technology Upgrade</name>
+			<description>
+				<line>Hibernate upgraded to version 6.6.</line>
+				<line>Infinispan upgraded to version 15.0.
+					<line>This fixes the issue with Java 23 or later (ISPN-14375 issue), however, this change also bumps the minimal version to Java 17.</line>
+				</line>
+				<line>Apache Struts upgraded to version 6.7</line>
+				<line>JGroups upgraded to version 6.5</line>
+				<line>GWT upgraded to version 2.12</line>
 			</description>
 		</item>
 	</category>
@@ -260,12 +244,6 @@
 			</description>
 		</item>
 		<item>
-			<name>Curricula</name>
-			<description>
-				<line>Multiple Majors: Fixed a Hibernate issue when setting up a curriculum with multiple majors.</line>
-			</description>
-		</item>
-		<item>
 			<name>Instructor Unavailable Dates</name>
 			<description>
 				<line>Course Timetabling Solver: Consider instructor's department when checking for the unavailable dates.
@@ -279,6 +257,12 @@
 					<line>That is, show a class conflicting warning when the class is placed at a time during which the instructor is not available
 					due to an event, or unavailable dates.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Curricula</name>
+			<description>
+				<line>Multiple Majors: Fixed a Hibernate issue when setting up a curriculum with multiple majors.</line>
 			</description>
 		</item>
 	</category>
