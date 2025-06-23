@@ -62,7 +62,7 @@ error-prone annotations (error_prone_annotations-2.27.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://errorprone.info/error_prone_annotations
 
-Protocol Buffers [Core] (protobuf-java-4.29.3.jar)
+Protocol Buffers [Core] (protobuf-java-4.31.1.jar)
 	under BSD-3-Clause
 	https://developers.google.com/protocol-buffers/protobuf-java/
 
@@ -233,15 +233,15 @@ Apache POI - Common (poi-5.4.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://poi.apache.org/
 
-Struts 2 Convention Plugin (struts2-convention-plugin-6.7.0.jar)
+Struts 2 Convention Plugin (struts2-convention-plugin-6.7.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://struts.apache.org/struts2-plugins/struts2-convention-plugin/
 
-Struts 2 Core (struts2-core-6.7.0.jar)
+Struts 2 Core (struts2-core-6.7.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://struts.apache.org/struts2-core/
 
-Struts 2 Tiles Plugin (struts2-tiles-plugin-6.7.0.jar)
+Struts 2 Tiles Plugin (struts2-tiles-plugin-6.7.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://struts.apache.org/struts2-plugins/struts2-tiles-plugin/
 
@@ -293,7 +293,7 @@ TXW2 Runtime (txw2-4.0.2.jar)
 	under Eclipse Distribution License - v 1.0
 	https://eclipse-ee4j.github.io/jaxb-ri/
 
-gwt-servlet (gwt-servlet-2.12.1.jar)
+gwt-servlet (gwt-servlet-2.12.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.gwtproject.org/gwt-servlet/
 
@@ -301,51 +301,59 @@ Hibernate Commons Annotations (hibernate-commons-annotations-7.0.3.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://hibernate.org
 
-Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.5.Final.jar)
+Hibernate ORM - hibernate-c3p0 (hibernate-c3p0-6.6.18.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.6.5.Final.jar)
+Hibernate ORM - hibernate-community-dialects (hibernate-community-dialects-6.6.18.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Hibernate ORM - hibernate-core (hibernate-core-6.6.5.Final.jar)
+Hibernate ORM - hibernate-core (hibernate-core-6.6.18.Final.jar)
 	under GNU Library General Public License v2.1 or later
 	https://hibernate.org/orm
 
-Infinispan Commons (infinispan-commons-15.0.12.Final.jar)
+Infinispan Commons (infinispan-commons-15.2.4.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.infinispan.org
+	https://infinispan.org/infinispan-commons-parent/infinispan-commons
 
-Infinispan Core (infinispan-core-15.0.12.Final.jar)
+Infinispan Commons SPI (infinispan-commons-spi-15.2.4.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.infinispan.org
+	https://infinispan.org/infinispan-commons-parent/infinispan-commons-spi
 
-Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-15.0.12.Final.jar)
+Infinispan Core (infinispan-core-15.2.4.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.infinispan.org
+	https://infinispan.org/infinispan-core
 
-Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-15.0.12.Final.jar)
+Infinispan Counter API (infinispan-counter-api-15.2.4.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.infinispan.org
+	https://infinispan.org/infinispan-counter-api
 
-Infinispan Hibernate 6.2 Cache (infinispan-hibernate-cache-v62-15.0.12.Final.jar)
+Infinispan Hibernate Cache Commons (infinispan-hibernate-cache-commons-15.2.4.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.infinispan.org
+	https://infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-commons
 
-Infinispan JBoss Marshalling (infinispan-jboss-marshalling-15.0.12.Final.jar)
+Infinispan Hibernate Cache SPI (infinispan-hibernate-cache-spi-15.2.4.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.infinispan.org
+	https://infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-spi
 
-ProtoStream - core (protostream-5.0.12.Final.jar)
+Infinispan Hibernate 6.2+ Cache (infinispan-hibernate-cache-v62-15.2.4.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://infinispan.org/infinispan-hibernate-parent/infinispan-hibernate-cache-v62
+
+Infinispan JBoss Marshalling (infinispan-jboss-marshalling-15.2.4.Final.jar)
+	under Apache Software License (ASL), Version 2.0
+	https://infinispan.org/infinispan-jboss-marshalling
+
+ProtoStream - core (protostream-5.0.13.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/infinispan/protostream
 
-ProtoStream - annotation processor (protostream-processor-5.0.12.Final.jar)
+ProtoStream - annotation processor (protostream-processor-5.0.13.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/infinispan/protostream
 
-ProtoStream - builtin types (protostream-types-5.0.12.Final.jar)
+ProtoStream - builtin types (protostream-types-5.0.13.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://infinispan.org
 
@@ -365,19 +373,19 @@ JBoss Logging 3 (jboss-logging-3.5.0.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org
 
-JBoss Marshalling API (jboss-marshalling-2.1.6.Final.jar)
+JBoss Marshalling API (jboss-marshalling-2.2.2.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling
+	http://www.jboss.org
 
-JBoss Marshalling River (jboss-marshalling-river-2.1.6.Final.jar)
+JBoss Marshalling River (jboss-marshalling-river-2.2.2.Final.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.jboss.org/jboss-marshalling-parent/jboss-marshalling-river
+	http://www.jboss.org
 
 JBoss Threads (jboss-threads-3.6.1.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jboss.org
 
-JGroups (jgroups-5.4.1.Final.jar)
+JGroups (jgroups-5.4.8.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
 
