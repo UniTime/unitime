@@ -754,39 +754,39 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cpsolver.version>1.4-SNAPSHOT</cpsolver.version>
-		<hibernate.version>6.6.5.Final</hibernate.version>
+		<hibernate.version>6.6.18.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
-		<struts2.version>7.0.0</struts2.version>
-		<protobuf.version>4.29.3</protobuf.version>
-		<gwt.version>2.12.1</gwt.version>
-		<spring.version>6.2.2</spring.version>
-		<spring-security.version>6.4.2</spring-security.version>
-		<spring-integration.version>6.4.1</spring-integration.version>
+		<struts2.version>7.0.3</struts2.version>
+		<protobuf.version>4.31.1</protobuf.version>
+		<gwt.version>2.12.2</gwt.version>
+		<spring.version>6.2.8</spring.version>
+		<spring-security.version>6.5.1</spring-security.version>
+		<spring-integration.version>6.5.0</spring-integration.version>
 		<servlet.version>6.0.0</servlet.version>
 		<jsp.version>3.1.1</jsp.version>
 		<mail.version>2.1.3</mail.version>
 		<angus-mail.version>2.0.3</angus-mail.version>
-		<io.version>2.18.0</io.version>
+		<io.version>2.19.0</io.version>
 		<restlet.version>2.4.4</restlet.version>
-		<log4j.version>2.24.3</log4j.version>
+		<log4j.version>2.25.0</log4j.version>
 		<javassist.version>3.30.2-GA</javassist.version>
 		<mysql.version>8.0.33</mysql.version>
 		<jstl.version>3.0.1</jstl.version>
 		<freemarker.version>2.3.34</freemarker.version>
 		<oracle.version>23.2.0.0</oracle.version>
 		<jython.version>2.7.4</jython.version>
-		<jgroups.version>5.4.1.Final</jgroups.version>
+		<jgroups.version>5.4.8.Final</jgroups.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
-		<joda.version>2.13.0</joda.version>
-		<gson.version>2.11.0</gson.version>
+		<joda.version>2.14.0</joda.version>
+		<gson.version>2.13.1</gson.version>
 		<biweekly.version>0.6.8</biweekly.version>
-		<poi.version>5.4.0</poi.version>
+		<poi.version>5.4.1</poi.version>
 		<dom4j.version>2.1.4</dom4j.version>
-		<jackson.version>2.18.2</jackson.version>
-		<text.version>1.13.0</text.version>
+		<jackson.version>2.19.1</jackson.version>
+		<text.version>1.13.1</text.version>
 		<lang3.version>3.17.0</lang3.version>
-		<asm.version>9.7.1</asm.version>
-		<infinispan-hibernate.version>15.0.12.Final</infinispan-hibernate.version>
+		<asm.version>9.8</asm.version>
+		<infinispan-hibernate.version>15.2.4.Final</infinispan-hibernate.version>
 		<nashorn.version>15.6</nashorn.version>
 	</properties>
 
