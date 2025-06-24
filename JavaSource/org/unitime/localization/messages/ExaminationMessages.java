@@ -2390,6 +2390,18 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Invalid examination selections: Check for duplicate / blank selection.")
 	String errorInvalidClassSelectionDP();
 	
+	@DefaultMessage("Invalid classes/courses selections: Check for duplicate / blank selection.")
+	String errorInvalidOwnerSelectionDP();
+
 	@DefaultMessage("Invalid examination selections: Select at least two examinations.")
 	String errorInvalidClassSelectionDPMinTwoExams();
+	
+	@DefaultMessage("(A number of enrolled students is used when blank)")
+	String noteBlankSizeEnrolledStudents();
+	
+	@DefaultMessage("(A number of enrolled students or a total limit of selected classes/courses (whichever is bigger) is used when blank)")
+	String noteBlankSizeLimit();
+	
+	@DefaultMessage("Notes cannot exceed 999 characters.")
+	String errorNotesLongerThan999();
 }

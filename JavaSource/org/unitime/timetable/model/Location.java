@@ -623,7 +623,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         return ret.toString();
     }
     
-    public static TreeSet findAllExamLocations(Long sessionId, ExamType examType) {
+    public static TreeSet<Location> findAllExamLocations(Long sessionId, ExamType examType) {
     	return findAllExamLocations(sessionId, examType == null ? null : examType.getUniqueId());
     }
 

@@ -261,6 +261,8 @@
     	<url-pattern>/examDistributions</url-pattern>
     	<url-pattern>/examDistributionAdd</url-pattern>
     	<url-pattern>/examDistributionEdit</url-pattern>
+    	<url-pattern>/examEdit</url-pattern>
+    	<url-pattern>/examAdd</url-pattern>
     </servlet-mapping>
 	
 	<filter>

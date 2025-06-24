@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.Selecti
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePreferences;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimeSelection;
+import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -77,6 +78,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 	private TimePreferenceTable iTimePrefs;
 	private InstructorAvailabilityWidget iInstructorAvailability;
 	private SessionDatesSelector iInstructorUnavailability;
+	private PeriodPreferencesWidget iPeriodPrefs;
 	
 	public PreferenceEditWidget() {
 		this(true);
@@ -134,6 +136,13 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 		clear();
 		if (iHeader != null)
 			addHeaderRow(iHeader);
+		
+		iPeriodPrefs = null;
+		if (response.hasPeriodPreferences()) {
+			iPeriodPrefs = new PeriodPreferencesWidget(true);
+			iPeriodPrefs.setModel(response.getPeriodPreferences());
+			addRow(COURSE.propertyPeriodPrefs(), iPeriodPrefs);
+		}
 		
 		iTimePrefs = null;
 		if (response.hasTimePreferences()) {

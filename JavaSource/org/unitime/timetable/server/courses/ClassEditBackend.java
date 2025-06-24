@@ -52,6 +52,8 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
+import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -67,6 +69,9 @@ import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Preference;
@@ -276,7 +281,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 					}
 				fillInTimePreferences(ret, clazz, leadInstructors, datePattern, context, true);
 				// fillInDatePreferences(ret, clazz, leadInstructors, datePattern, context, true);
-				fillInRoomPreferences(ret, clazz, leadInstructors, context, true);
+				fillInRoomPreferences(ret, clazz, leadInstructors, context, true, false);
 				return ret;
 			default:
 				break;
@@ -324,7 +329,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
         		clazz.getManagingDept(), dp))
         	ret.addDatePattern(p.getUniqueId(), p.getName(), (p.getDatePatternType() == DatePatternType.PatternSet ? null : p.getPatternText()));
 		
-		fillInPreferences(ret, clazz, context);
+		fillInPreferences(ret, clazz, context, false);
 		
 		for (ClassInstructor ci: new TreeSet<ClassInstructor>(clazz.getClassInstructors())) {
 			ClassInstr i = new ClassInstr();
@@ -367,13 +372,19 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 	}
 	
 	public static void fillInPreferences(PrefGroupEditResponse response, PreferenceGroup pg, SessionContext context) {
+		fillInPreferences(response, pg, context, false);
+	}
+	
+	public static void fillInPreferences(PrefGroupEditResponse response, PreferenceGroup pg, SessionContext context, boolean examSeating) {
 		fillInPreferenceLevels(response, pg, context);
 		fillInTimePreferences(response, pg, null, pg.effectiveDatePattern(), context, true);
-		fillInRoomPreferences(response, pg, null, context, true);
+		fillInRoomPreferences(response, pg, null, context, true, examSeating);
 		fillInDatePreferences(response, pg, null, pg.effectiveDatePattern(), context, true);
 	}
 	
 	public static void fillInPreferenceLevels(PrefGroupEditResponse response, PreferenceGroup pg, SessionContext context) {
+		if (response.getPrefLevels() != null)
+			response.getPrefLevels().clear();
 		List<PreferenceLevel> preferences = PreferenceLevel.getPreferenceLevelList(false);
 		for (PreferenceLevel pref: preferences) {
 			response.addPrefLevel(new PrefLevel(
@@ -514,7 +525,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		}
 	}
 	
-	protected static void fillInRoomPreferences(PrefGroupEditResponse response, PreferenceGroup pg, Vector<DepartmentalInstructor> leadInstructors, SessionContext context, boolean fillPrefs) {
+	protected static void fillInRoomPreferences(PrefGroupEditResponse response, PreferenceGroup pg, Vector<DepartmentalInstructor> leadInstructors, SessionContext context, boolean fillPrefs, boolean examSeating) {
 		boolean allowHardRoom = context.hasPermission(pg, Right.CanUseHardRoomPrefs);
 		Set<Location> rooms = pg.getAvailableRooms();
 		if (response.getRoomPreferences() != null)
@@ -523,7 +534,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 			Preferences roomPrefs = new Preferences(PreferenceType.ROOM);
 			roomPrefs.setAllowHard(allowHardRoom);
 			for (Location location: rooms)
-				roomPrefs.addItem(location.getUniqueId(), location.getLabelWithCapacity(), location.getDisplayName());
+				roomPrefs.addItem(location.getUniqueId(), examSeating ? location.getLabelWithExamCapacity() : location.getLabelWithCapacity(), location.getDisplayName());
 			if (fillPrefs)
 				for (RoomPref rp: pg.effectivePreferences(RoomPref.class, leadInstructors)) {
 					Selection selection = new Selection(rp.getRoom().getUniqueId(), rp.getPrefLevel().getUniqueId());
@@ -857,6 +868,24 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
                     dp.setCourse(CourseOfferingDAO.getInstance().get(selection.getItem()));
                     s.add(dp);
             	}
+    	}
+    	
+    	// Period Prefs
+    	if (Preference.Type.PERIOD.in(types) && pg instanceof Exam) {
+    		PeriodPreferenceModel prefs = form.getPeriodPreferences();
+    		Exam exam = (Exam)pg;
+    		if (prefs != null) {
+    			for (ExamPeriod period: ExamPeriod.findAll(exam.getSession().getUniqueId(), exam.getExamType())) {
+    				PreferenceInterface pref = prefs.getPreference(period.getDateOffset(), period.getStartSlot());
+    				if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode())) {
+    					ExamPeriodPref pp = new ExamPeriodPref();
+    					pp.setExamPeriod(period);
+    					pp.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref.getCode()));
+    					pp.setOwner(exam);
+    			        s.add(pp);
+    				}
+    			}
+    		}
     	}
 
         // Set values in subpart

@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -44,6 +45,7 @@ public class PrefGroupEditInterface {
 	public static enum Operation {
 		GET, UPDATE, NEXT, PREVIOUS, CLEAR_CLASS_PREFS,
 		DATE_PATTERN, INSTRUCTORS,
+		CLONE_EXAM, EXAM_TYPE, CLEAR_EXAM_PREFS, EXAM_OWNERS, EXAM_SEATING,
 		;
 	}
 	public static enum InheritInstructorPrefs {
@@ -56,9 +58,9 @@ public class PrefGroupEditInterface {
 		private Operation iOperation;
 		private T iPayLoad;
 		
-		PrefGroupEditRequest() {}
-		PrefGroupEditRequest(Long id) { iId = id; }
-		PrefGroupEditRequest(Long id, Operation op, T payLoad) { iId = id; iOperation = op; iPayLoad = payLoad; }
+		public PrefGroupEditRequest() {}
+		public PrefGroupEditRequest(Long id) { iId = id; }
+		public PrefGroupEditRequest(Long id, Operation op, T payLoad) { iId = id; iOperation = op; iPayLoad = payLoad; }
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
@@ -75,6 +77,7 @@ public class PrefGroupEditInterface {
 		private String iName;
 		private Preferences iDatePrefs;
 		private TimePreferences iTimePrefs;
+		private PeriodPreferenceModel iPeriodPrefs;
 		private List<PrefLevel> iPrefLevels;
 		private List<Preferences> iRoomPrefs;
 		private Preferences iDistributionPrefs;
@@ -108,6 +111,10 @@ public class PrefGroupEditInterface {
 		public boolean hasTimePreferences() { return iTimePrefs != null && iTimePrefs.hasItems(); }
 		public TimePreferences getTimePreferences() { return iTimePrefs; }
 		public void setTimePreferences(TimePreferences datePrefs) { iTimePrefs = datePrefs; }
+		
+		public boolean hasPeriodPreferences() { return iPeriodPrefs != null; }
+		public PeriodPreferenceModel getPeriodPreferences() { return iPeriodPrefs; }
+		public void setPeriodPreferences(PeriodPreferenceModel periodPrefs) { iPeriodPrefs = periodPrefs; }
 		
 		public boolean hasDatePreferences() { return iDatePrefs != null && iDatePrefs.hasItems(); }
 		public Preferences getDatePreferences() { return iDatePrefs; }

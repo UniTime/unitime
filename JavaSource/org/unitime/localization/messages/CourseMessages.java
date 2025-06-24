@@ -311,6 +311,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Courses:")
 	String propertyCoursePrefs();
+	
+	@DefaultMessage("Periods:")
+	String propertyPeriodPrefs();
 
 	@DefaultMessage("Instructors:")
 	String propertyInstructorPrefs();

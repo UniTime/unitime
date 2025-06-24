@@ -3573,6 +3573,14 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageExaminationDetail();
 	
+	@DefaultMessage("Add Examination")
+	@DoNotTranslate
+	String pageAddExamination();
+	
+	@DefaultMessage("Edit Examination")
+	@DoNotTranslate
+	String pageEditExamination();
+	
 	@DefaultMessage("Personal Schedule")
 	@DoNotTranslate
 	String pagePersonalTimetable();

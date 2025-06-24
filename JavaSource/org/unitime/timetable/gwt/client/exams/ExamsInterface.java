@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.exams;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +30,8 @@ import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.Distributio
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingsRequest;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.IdLabel;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.PrefGroupEditRequest;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.PrefGroupEditResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
@@ -293,6 +296,240 @@ public class ExamsInterface {
 		private Long iExamTypeId;
 		public Long getExamTypeId() { return iExamTypeId; }
 		public void setExamTypeId(Long typeId) { iExamTypeId = typeId; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+	}
+	
+	public static class ExamEditRequest extends PrefGroupEditRequest<ExamEditResponse> implements GwtRpcRequest<ExamEditResponse> {
+		private String iFirstId;
+		private String iFirstType;
+		
+		public String getFirstId() { return iFirstId; }
+		public void setFirstId(String firstId) { iFirstId = firstId; }
+		public String getFirstType() { return iFirstType; }
+		public void setFirstType(String firstType) { iFirstType = firstType; }
+	}
+	
+	public static class ExamEditResponse extends PrefGroupEditResponse {
+		private TableInterface iProperties;
+		private TableInterface iTimetable;
+		
+		private boolean iExamSeating;
+		private String iLabel;
+		private Integer iLength;
+		private IdLabel iExamType;
+		private List<IdLabel> iExamTypes;
+		private Integer iMaxRooms;
+		private Integer iSize;
+		private Integer iPrintOffset;
+		private String iNotes;
+
+		private List<IdLabel> iInstructors;
+		private List<IdLabel> iExamInstructors;
+		private List<IdLabel> iSubjects;
+		private String iBackTitle, iBackUrl;
+		
+		private List<ExamObjectInterface> iExamObjects;
+		private Boolean iSizeUseLimitInsteadOfEnrollment;
+		
+		public boolean hasProperties() { return iProperties != null && !iProperties.hasProperties(); }
+		public TableInterface getProperties() { return iProperties; }
+		public void setProperties(TableInterface properties) { iProperties = properties; }
+		public CellInterface addProperty(String text) {
+			if (iProperties == null) iProperties = new TableInterface();
+			return iProperties.addProperty(text);
+		}
+
+		public boolean hasTimetable() { return iTimetable != null; }
+		public TableInterface getTimetable() { return iTimetable; }
+		public void setTimetable(TableInterface timetable) { iTimetable = timetable; }
+		
+		public String getLabel() { return iLabel; }
+		public boolean hasLabel() { return iLabel != null && !iLabel.isEmpty(); }
+		public void setLabel(String label) { iLabel = label; }
+
+		public Integer getLength() { return iLength; }
+		public void setLength(Integer length) { iLength = length; }
+		
+		public boolean isExamSeating() { return iExamSeating; }
+		public void setExamSeating(boolean examSeating) { iExamSeating = examSeating; }
+
+		public IdLabel getExamType() { return iExamType; }
+		public Long getExamTypeId() { return iExamType == null ? null : iExamType.getId(); }
+		public void setExamType(IdLabel examType) { iExamType = examType; }
+		public IdLabel setExamType(Long examTypeId) {
+			if (iExamTypes != null)
+				for (IdLabel type: iExamTypes)
+					if (type.getId().equals(examTypeId)) {
+						iExamType = type;
+						return type;
+					}
+			return null;
+		}
+		public boolean hasExamTypes() { return iExamTypes != null && !iExamTypes.isEmpty(); }
+		public List<IdLabel> getExamTypes() { return iExamTypes; }
+		public IdLabel getExamType(Long id) {
+			if (iExamTypes == null) return null;
+			for (IdLabel item: iExamTypes)
+				if (id.equals(item.getId())) return item;
+			return null;
+		}
+		public IdLabel addExamType(Long id, String label, String ref) {
+			if (iExamTypes == null) iExamTypes = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, ref);
+			iExamTypes.add(item);
+			return item;
+		}
+		public IdLabel removeExamType(Long id) {
+			if (iExamTypes == null) return null;
+			for (Iterator<IdLabel> i = iExamTypes.iterator(); i.hasNext(); ) {
+				IdLabel item = i.next();
+				if (id.equals(item.getId())) {
+					i.remove();
+					return item;
+				}
+			}
+			return null;
+		}
+
+		public Integer getMaxRooms() { return iMaxRooms; }
+		public void setMaxRooms(Integer maxRooms) { iMaxRooms = maxRooms; }
+		public Integer getSize() { return iSize; }
+		public void setSize(Integer size) { iSize = size; }
+		public Integer getPrintOffset() { return iPrintOffset; }
+		public void setPrintOffset(Integer printOffset) { iPrintOffset = printOffset; }
+		
+		public String getNotes() { return iNotes; }
+		public boolean hasNotes() { return iNotes != null && !iNotes.isEmpty(); }
+		public void setNotes(String notes) { iNotes = notes; }
+
+		public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+		public List<IdLabel> getInstructors() { return iInstructors; }
+		public IdLabel getInstructor(Long id) {
+			if (iInstructors == null) return null;
+			for (IdLabel item: iInstructors)
+				if (item.getId().equals(id)) return item;
+			return null;
+		}
+		public IdLabel addInstructor(Long id, String label, String description) {
+			if (iInstructors == null) iInstructors = new ArrayList<IdLabel>();
+			IdLabel item = new IdLabel(id, label, description);
+			iInstructors.add(item);
+			return item;
+		}
+		public IdLabel removeInstructor(Long id) {
+			if (iInstructors == null) return null;
+			for (Iterator<IdLabel> i = iInstructors.iterator(); i.hasNext(); ) {
+				IdLabel item = i.next();
+				if (id.equals(item.getId())) {
+					i.remove();
+					return item;
+				}
+			}
+			return null;
+		}
+		public void setInstructors(List<IdLabel> instructors) { iInstructors = instructors; }
+		
+		public boolean hasExamInstructors() { return iExamInstructors != null && !iExamInstructors.isEmpty(); }
+		public List<IdLabel> getExamInstructors() { return iExamInstructors; }
+		public void setExamInstructors(List<IdLabel> examInstructor) { iExamInstructors = examInstructor; }
+		public void addExamInstructor(IdLabel instructor) {
+			if (iExamInstructors == null) iExamInstructors = new ArrayList<IdLabel>();
+			iExamInstructors.add(instructor);
+		}
+		public IdLabel removeExamInstructor(Long instructorId) {
+			if (iExamInstructors == null) return null;
+			for (Iterator<IdLabel> i = iExamInstructors.iterator(); i.hasNext(); ) {
+				IdLabel item = i.next();
+				if (instructorId.equals(item.getId())) {
+					i.remove();
+					return item;
+				}
+			}
+			return null;
+		}
+		
+		public void addExamObject(ExamObjectInterface dist) {
+			if (iExamObjects == null) iExamObjects = new ArrayList<ExamObjectInterface>();
+			iExamObjects.add(dist);
+		}
+		public List<ExamObjectInterface> getExamObjects() { return iExamObjects; }
+		public boolean hasExamObjects() { return iExamObjects != null && !iExamObjects.isEmpty(); }
+		public void setExamObjects(List<ExamObjectInterface> objects) {
+			iExamObjects = objects;
+		}
+		
+		public boolean isSizeUseLimitInsteadOfEnrollment() { return iSizeUseLimitInsteadOfEnrollment != null && iSizeUseLimitInsteadOfEnrollment.booleanValue(); }
+		public void setSizeUseLimitInsteadOfEnrollment(Boolean sizeUseLimitInsteadOfEnrollment) { iSizeUseLimitInsteadOfEnrollment = sizeUseLimitInsteadOfEnrollment; }
+		
+		public void addSubject(Long id, String label, String description) {
+			if (iSubjects == null) iSubjects = new ArrayList<IdLabel>();
+			iSubjects.add(new IdLabel(id, label, description));
+		}
+		public List<IdLabel> getSubjects() { return iSubjects; }
+		public boolean hasSubjects() { return iSubjects != null && !iSubjects.isEmpty(); }
+		public IdLabel getSubject(Long id) {
+			if (iSubjects == null) return null;
+			for (IdLabel item: iSubjects)
+				if (item.getId().equals(id)) return item;
+			return null;
+		}
+		
+		public boolean hasBackUrl() { return iBackUrl != null && !iBackUrl.isEmpty(); }
+		public void setBackUrl(String backUrl) { iBackUrl = backUrl; }
+		public String getBackUrl() { return iBackUrl; }
+		public boolean hasBackTitle() { return iBackTitle != null && !iBackTitle.isEmpty(); }
+		public void setBackTitle(String backTitle) { iBackTitle = backTitle; }
+		public String getBackTitle() { return iBackTitle; }
+	}
+	
+	public static class ExamObjectInterface implements IsSerializable {
+		private Long iSubjectId, iCourseId, iSubpartId, iClassId;
+		private String iSubject, iCourse, iSubpart, iClazz;
+		
+		public Long getSubjectId() { return iSubjectId; }
+		public void setSubjectId(Long subjectId) { iSubjectId = subjectId; }
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public Long getSubpartId() { return iSubpartId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
+		public Long getClassId() { return iClassId; }
+		public void setClassId(Long classId) { iClassId = classId; }
+		
+		public String getSubject() { return iSubject ; }
+		public void setSubject(String subject) { iSubject = subject; }
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
+		public String getSubpart() { return iSubpart; }
+		public void setSubpart(String subpart) { iSubpart = subpart; }
+		public String getClazz() { return iClazz; }
+		public void setClazz(String clazz) { iClazz = clazz; }
+		
+		public boolean isValid() {
+			if (iSubpartId != null && iSubpartId < 0)
+				return iSubjectId != Long.MIN_VALUE + 2 && iSubjectId != Long.MIN_VALUE + 3;
+			return iClassId != null;
+		}
+		public String getId() { return iCourseId + ":" + iSubpartId + ":" + iClassId; }
+	}
+	
+	public static class ExamLookupCourses implements GwtRpcRequest<GwtRpcResponseList<IdLabel>> {
+		private Long iSubjectId;
+		public Long getSubjectId() { return iSubjectId; }
+		public void setSubjectId(Long subjectId) { iSubjectId = subjectId; }
+	}
+	
+	public static class ExamLookupSubparts implements GwtRpcRequest<GwtRpcResponseList<IdLabel>> {
+		private Long iCourseId;
+		public Long getCourseId() { return iCourseId; }
+		public void setCourseId(Long courseId) { iCourseId = courseId; }
+	}
+	
+	public static class ExamLookupClasses implements GwtRpcRequest<GwtRpcResponseList<IdLabel>> {
+		private Long iSubpartId;
+		private Long iCourseId;
+		public Long getSubpartId() { return iSubpartId; }
+		public void setSubpartId(Long subpartId) { iSubpartId = subpartId; }
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 	}

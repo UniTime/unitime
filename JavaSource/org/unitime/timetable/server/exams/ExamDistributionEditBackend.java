@@ -47,7 +47,6 @@ import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
 import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;

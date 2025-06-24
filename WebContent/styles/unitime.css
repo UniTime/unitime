@@ -8266,3 +8266,15 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 	padding-right: 3px;
 }
+
+.unitime-ExamEditPage .exam-size .gwt-Label {
+	display: inline-block;
+	padding-left: 20px;
+	font-style: italic;
+}
+
+.unitime-ExamEditPage .print-offset .gwt-Label {
+	display: inline-block;
+	padding-left: 20px;
+	font-style: italic;
+}

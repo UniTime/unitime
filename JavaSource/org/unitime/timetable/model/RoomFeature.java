@@ -68,7 +68,7 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 		return "";		
 	}
 	
-	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId) throws HibernateException {
+	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId)  throws HibernateException{
 		return RoomFeatureDAO.getInstance().getSession().createQuery(
 				"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId order by label", GlobalRoomFeature.class
 				).setParameter("sessionId", sessionId).setCacheable(true).list();

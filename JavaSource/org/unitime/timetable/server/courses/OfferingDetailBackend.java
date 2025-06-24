@@ -94,8 +94,8 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	
 	@Override
 	public OfferingDetailResponse execute(OfferingDetailRequest request, SessionContext context) {
+		context.checkPermission(request.getOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail);
 		try {
-			context.checkPermission(request.getOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail);
 			InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(request.getOfferingId());
 
 	        OfferingDetailResponse response = new OfferingDetailResponse();
@@ -361,13 +361,15 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	    			classAssignmentService.getAssignment(), examinationSolverService.getSolver(),
 	    			io, response);
 	    	
-	    	ExaminationsTableBuilder examBuilder = new ExaminationsTableBuilder(context, request.getBackType(), request.getBackId());
-	    	if (request.getExamId() != null && !request.getExamId().isEmpty()) {
-	    		examBuilder.setBackId(request.getBackId());
-	    		examBuilder.setBackType("Exam");
+	    	if (!io.isNotOffered()) {
+	    		ExaminationsTableBuilder examBuilder = new ExaminationsTableBuilder(context, request.getBackType(), request.getBackId());
+	    		if (request.getExamId() != null && !request.getExamId().isEmpty()) {
+	    			examBuilder.setBackId(request.getBackId());
+	    			examBuilder.setBackType("Exam");
+	    		}
+	    		response.setExaminations(examBuilder.createExamsTable(
+	    				"InstructionalOffering", io.getUniqueId(), examinationSolverService.getSolver()));
 	    	}
-	    	response.setExaminations(examBuilder.createExamsTable(
-	    			"InstructionalOffering", io.getUniqueId(), examinationSolverService.getSolver()));
 		    
 	    	DistributionsTableBuilder distBuilder = new DistributionsTableBuilder(context, request.getBackType(), request.getBackId());
 	    	response.setDistributions(distBuilder.getDistPrefsTableForInstructionalOffering(io));
@@ -394,7 +396,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	            		break;
 	            	}
 	        
-	    	if (context.hasPermission(Right.ExaminationAdd))
+	    	if (context.hasPermission(Right.ExaminationAdd) && !io.isNotOffered())
 	    		response.addOperation("add-exam");
 	    	
 	    	BackItem back = BackTracker.getBackItem(context, 2);
