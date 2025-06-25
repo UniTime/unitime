@@ -124,7 +124,7 @@ public class ExamPdfReportAction extends UniTimeAction<ExamPdfReportForm> {
 			ownerId = sessionContext.getUser().getExternalUserId();
 		List<QueueItem> queue = getSolverServerService().getQueueProcessor().getItems(ownerId, null, PdfExamReportQueueItem.TYPE);
 		if (queue.isEmpty()) return null;
-		WebTable table = new WebTable(9, MSG.sectReportsInProgress(), "examPdfReport.action?ord=%%",
+		WebTable table = new WebTable(9, null, "examPdfReport.action?ord=%%",
 				new String[] {
 						MSG.colTaskName(),
 						MSG.colTaskStatus(),
