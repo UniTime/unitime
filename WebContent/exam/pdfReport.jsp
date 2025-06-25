@@ -43,11 +43,16 @@
 	</s:if>
 	<s:if test="#request.table != null">
 		<TR><TD colspan="2">
+			<tt:section-header>
+					<tt:section-title><loc:message name="sectReportsInProgress"/></tt:section-title>
+					<s:submit accesskey='%{#msg.accessRegreshLog()}' name='op' value='%{#msg.actionRegreshLog()}' title='%{#msg.titleRegreshLog()}'/>
+				</tt:section-header>
+		</TD></TR>
+		<TR><TD colspan="2">
 			<table style="width:100%;">
 				<s:property value="#request.table" escapeHtml="false"/>
 			</table>
 		</TD></TR>
-		<TR><TD colspan='2'>&nbsp;</TD></TR>
 	</s:if>
 	<s:if test="#request.log != null">
 		<TR>
@@ -56,16 +61,13 @@
 					<tt:section-title>
 						<loc:message name="sectLogOfTask"><s:property value="#request.logname"/></loc:message>
 					</tt:section-title>
-					<s:hidden name="log" value="#request.logid"/>
-					<s:submit accesskey='%{#msg.accessRegreshLog()}' name='op' value='%{#msg.actionRegreshLog()}' title='%{#msg.titleRegreshLog()}'/>
+					<s:hidden name="log" value="%{#request.logid}"/>
 				</tt:section-header>
 			</TD>
 		</TR>
 		<TR>
   			<TD colspan='2'>
-  				<blockquote>
-  					<s:property value="#request.log" escapeHtml="false"/>
-  				</blockquote>
+  				<div style="white-space: pre-wrap;"><s:property value="#request.log" escapeHtml="false"/></div>
   			</TD>
 		</TR>
 	</s:if>
