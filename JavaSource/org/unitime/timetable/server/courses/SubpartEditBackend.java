@@ -42,6 +42,7 @@ import org.unitime.timetable.model.CourseCreditUnitConfig;
 import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
@@ -49,6 +50,8 @@ import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.DatePattern.DatePatternType;
 import org.unitime.timetable.model.dao.DatePatternDAO;
+import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -101,6 +104,8 @@ public class SubpartEditBackend implements GwtRpcImplementation<SubpartEditReque
 					subpart.setAutoSpreadInTime(data.isAutoSpreadInTime());
 					subpart.setStudentAllowOverlap(data.isStudentsCanOverlap());
 					subpart.setDatePattern(data.getDatePatternId() == null ? null : DatePatternDAO.getInstance().get(data.getDatePatternId()));
+					if (data.getInstructionalTypeId() != null)
+						subpart.setItype(ItypeDescDAO.getInstance().get(data.getInstructionalTypeId().intValue()));
 					
 					ClassEditBackend.doUpdate(subpart, subpart.getPreferences(), data,
 							Preference.Type.TIME, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
@@ -311,6 +316,16 @@ public class SubpartEditBackend implements GwtRpcImplementation<SubpartEditReque
             		ret.addProperty(MSG.propertySubpartCredit()).add(credit.creditText());
             }
         }
+        
+		for (ItypeDesc itype: InstrOfferingConfigDAO.getInstance().getSession().createQuery(
+				"from ItypeDesc order by itype", ItypeDesc.class).setCacheable(true).list()) {
+			if (itype.getBasic())
+				ret.addInstructionalType(itype.getItype().longValue(), itype.getDesc(), itype.getDesc().trim());
+			else
+				ret.addExtInstructionalType(itype.getItype().longValue(), itype.getDesc(), itype.getDesc().trim());
+		}
+		ret.setInstructionalTypeId((long)subpart.getItype().getItype());
+
         
         BackTracker.markForBack(
         		context,

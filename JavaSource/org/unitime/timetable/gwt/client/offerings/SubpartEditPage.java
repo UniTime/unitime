@@ -71,6 +71,7 @@ public class SubpartEditPage extends Composite {
 	private SubpartEditResponse iData;
 	private CreditTable iCredits;
 	
+	private ListBox iInstructionalType;
 	private ListBox iDatePattern;
 	
 	private PreferenceEditWidget iPreferences;
@@ -198,6 +199,57 @@ public class SubpartEditPage extends Composite {
 				iPanel.addHeaderRow(iHeader);
 				for (PropertyInterface property: response.getProperties().getProperties())
 					iPanel.addRow(property.getName(), new TableWidget.CellWidget(property.getCell(), true));
+				
+				iInstructionalType = new ListBox();
+				boolean ext = false;
+				if (response.hasExtInstructionalTypes())
+					for (IdLabel itype: response.getExtInstructionalTypes()) {
+						if (itype.getId().equals(response.getInstructionalTypeId())) {
+							ext = true;
+							break;
+						}
+					}
+				if (ext) {
+					for (IdLabel itype: response.getExtInstructionalTypes()) {
+						iInstructionalType.addItem(itype.getLabel(), itype.getId().toString());
+						if (itype.getId().equals(response.getInstructionalTypeId())) {
+							iInstructionalType.setSelectedIndex(iInstructionalType.getItemCount() - 1);
+						}
+					}
+					if (response.hasInstructionalTypes())
+						iInstructionalType.addItem(COURSE.selectLessOptions(), "less");
+				} else {
+					for (IdLabel itype: response.getInstructionalTypes()) {
+						iInstructionalType.addItem(itype.getLabel(), itype.getId().toString());
+						if (itype.getId().equals(response.getInstructionalTypeId())) {
+							iInstructionalType.setSelectedIndex(iInstructionalType.getItemCount() - 1);
+						}
+					}
+					if (response.hasExtInstructionalTypes())
+						iInstructionalType.addItem(COURSE.selectMoreOptions(), "more");
+				}
+				iPanel.addRow(COURSE.filterInstructionalType(), iInstructionalType);
+				iInstructionalType.addChangeHandler(new ChangeHandler() {
+					@Override
+					public void onChange(ChangeEvent e) {
+						if ("less".equals(iInstructionalType.getSelectedValue())) {
+							iInstructionalType.clear();
+							for (IdLabel itype: response.getInstructionalTypes()) {
+								iInstructionalType.addItem(itype.getLabel(), itype.getId().toString());
+							}
+							iInstructionalType.addItem(COURSE.selectMoreOptions(), "more");
+							iInstructionalType.setSelectedIndex(0);
+						} else if ("more".equals(iInstructionalType.getSelectedValue())) {
+							iInstructionalType.clear();
+							for (IdLabel itype: response.getExtInstructionalTypes()) {
+								iInstructionalType.addItem(itype.getLabel(), itype.getId().toString());
+							}
+							iInstructionalType.addItem(COURSE.selectLessOptions(), "less");
+							iInstructionalType.setSelectedIndex(0);
+						}
+						iData.setInstructionalTypeId(Long.valueOf(iInstructionalType.getSelectedValue()));
+					}
+				});
 				
 				if (response.hasDatePatterms()) {
 					iDatePattern = new ListBox();

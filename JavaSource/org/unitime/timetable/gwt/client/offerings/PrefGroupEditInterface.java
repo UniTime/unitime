@@ -345,6 +345,7 @@ public class PrefGroupEditInterface {
 		private Long iDatePatternId;
 		private List<IdLabel> iDatePatterns;
 		
+		private Long iInstructionalTypeId;
 		private List<IdLabel> iInstructionalTypes;
 		private List<IdLabel> iExtInstructionalTypes;
 		
@@ -404,6 +405,8 @@ public class PrefGroupEditInterface {
 			return null;
 		}
 		
+		public Long getInstructionalTypeId() { return iInstructionalTypeId; }
+		public void setInstructionalTypeId(Long instructionalTypeId) { iInstructionalTypeId = instructionalTypeId; }
 		public boolean hasInstructionalTypes() { return iInstructionalTypes != null && !iInstructionalTypes.isEmpty(); }
 		public List<IdLabel> getInstructionalTypes() { return iInstructionalTypes; }
 		public IdLabel getInstructionalType(Long id) {
