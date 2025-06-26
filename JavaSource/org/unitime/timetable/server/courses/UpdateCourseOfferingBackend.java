@@ -391,10 +391,6 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         	
             hibSession.flush();
             tx.commit();
-
-            hibSession.refresh(courseOffering);
-
-            hibSession.refresh(io);
             
             String className = ApplicationProperty.ExternalActionCourseOfferingEdit.value();
         	if (className != null && className.trim().length() > 0){

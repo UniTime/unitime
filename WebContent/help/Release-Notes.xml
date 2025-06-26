@@ -31,6 +31,21 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Edit Course Offering</name>
+			<description>
+				<line>Fixed a Hibernate error thrown when a course that has been just added in a cross-list is being edited.</line>
+				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.8.219</version>
+	<release-date>Tue, 9 Sep 2025</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Curricula: Add/Edit Curriculum</name>
 			<description>
 				<line>Added an ability to customize the course selection box width (unitime.curricula.courseWidth property, defaults to 130px).</line>
