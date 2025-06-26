@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingDet
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingDetailResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -159,9 +160,9 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	        	else offeringLimit += config.getLimit();
 	        }
 	        if (unlimited)
-	        	response.addProperty(MSG.titleUnlimitedEnrollment()).setHtml("&infin;").addStyle("font-size: +1");
+	        	response.addProperty(MSG.propertyOfferingLimit()).setHtml("&infin;").addStyle("font-size: +1").setTitle(MSG.titleUnlimitedEnrollment());
 	        else {
-	    		CellInterface c = response.addProperty(MSG.titleUnlimitedEnrollment());
+	    		CellInterface c = response.addProperty(MSG.propertyOfferingLimit());
 	    		c.setText(String.valueOf(offeringLimit));
 	        	
 	        	// Check limits on courses if cross-listed
@@ -231,7 +232,8 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	            	c.add(coordinator.getInstructor().getName(instructorNameFormat) +
 	            			(coordinator.getResponsibility() == null ?  (coordinator.getPercentShare() != 0 ? " (" + coordinator.getPercentShare() + "%)" : "") :
 	            				" (" + coordinator.getResponsibility().getLabel() + (coordinator.getPercentShare() > 0 ? ", " + coordinator.getPercentShare() + "%" : "") + ")")
-	            			).setUrl("instructorDetail.action?instructorId=" + coordinator.getInstructor().getUniqueId()).setClassName("noFancyLinks");
+	            			).setUrl("instructorDetail.action?instructorId=" + coordinator.getInstructor().getUniqueId()).setClassName("noFancyLinks")
+	            		.setInline(false);
 	            }
 	        }
 	        if (io.getLastWeekToEnroll() != null)
@@ -330,8 +332,8 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	        	}
 	        	if (notes.hasProperties()) {
 	        		if (io.getNotes() != null && !io.getNotes().isEmpty())
-	        			notes.addProperty(io.getCourseName())
-	        			.setText(io.getNotes()).addStyle("white-space: pre-wrap;");
+	        			notes.getProperties().add(0, new PropertyInterface().setName(io.getCourseName())
+	        					.setCell(new CellInterface().setText(io.getNotes()).addStyle("white-space: pre-wrap;")));
 	        		response.addProperty(MSG.propertyRequestsNotes()).setTable(notes);
 	        	} else {
 	        		if (io.getNotes() != null && !io.getNotes().isEmpty())
@@ -546,7 +548,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 		if (lastChange == null) return 0;
 		LineInterface line = table.addLine();
 		line.addCell(lastChange.getSourceTitle());
-		line.addCell(lastChange.getObjectTitle());
+		line.addCell(lastChange.getObjectTitle()).setHtml(true);
 		line.addCell(lastChange.getOperationTitle());
 		line.addCell(lastChange.getManager().getShortName());
 		line.addCell(ChangeLog.sDF.format(lastChange.getTimeStamp()));
