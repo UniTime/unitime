@@ -178,10 +178,13 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 		List<ClassDurationType> cdts = ClassDurationType.findAll();
 		if (!cdts.isEmpty()) {
 			ClassDurationType defaultType = io.getSession().getDefaultClassDurationType();
-			if (defaultType == null)
+			if (defaultType == null) {
+				form.setDefaultDurationType(MSG.columnMinPerWk());
 				form.addDurationType(-1l, "", MSG.systemDefaultDurationType());
-			else
+			} else {
+				form.setDefaultDurationType(defaultType.getLabel());
 				form.addDurationType(-1l, defaultType.getReference(), MSG.sessionDefault(defaultType.getLabel()));
+			}
 	    	for (ClassDurationType type: cdts)
 	    		if (type.isVisible() || (ioc != null && type.equals(ioc.getClassDurationType())))
 	    			form.addDurationType(type.getUniqueId(), type.getReference(), type.getLabel());

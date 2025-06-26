@@ -172,7 +172,9 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 		case NBR_ROOMS: return MESSAGES.columnSubpartNumberOfRooms();
 		case SPLIT_ATTENDANCE: return MESSAGES.columnRoomSplitAttendance();
 		case DEPARTMENT: return MESSAGES.columnSubpartManagingDepartment();
-		case MINS_PER_WK: return (iData.getDurationTypeId() == null ? MESSAGES.columnSubpartMinutesPerWeek() : iData.getDurationType(iData.getDurationTypeId()).getLabel());
+		case MINS_PER_WK: return (iData.getDurationTypeId() == null ? MESSAGES.columnSubpartMinutesPerWeek() :
+				iData.getDurationTypeId() == -1l && iData.hasDefaultDurationType() ? iData.getDefaultDurationType() :
+				iData.getDurationType(iData.getDurationTypeId()).getLabel());
 		case NBR_CLASSES: return MESSAGES.columnSubpartNumberOfClasses();
 		default: return column.name();
 		}

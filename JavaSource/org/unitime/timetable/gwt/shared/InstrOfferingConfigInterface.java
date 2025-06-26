@@ -55,6 +55,7 @@ public class InstrOfferingConfigInterface implements IsSerializable, Serializabl
 	private Long iInstructionalMethodId;
 	private Boolean iInstructionalMethodEditable;
 	private Long iDurationTypeId;
+	private String iDefaultDurationType;
 	private Boolean iDurationTypeEditable;
 	private String iCourseName;
 	private String iConfigName;
@@ -127,6 +128,9 @@ public class InstrOfferingConfigInterface implements IsSerializable, Serializabl
 	public Long getInstructionalMethodId() { return iInstructionalMethodId; }
 	public void setDurationTypeId(Long durationTypeId) { iDurationTypeId = durationTypeId; }
 	public Long getDurationTypeId() { return iDurationTypeId; }
+	public void setDefaultDurationType(String durationType) { iDefaultDurationType = durationType; }
+	public String getDefaultDurationType() { return iDefaultDurationType; }
+	public boolean hasDefaultDurationType() { return iDefaultDurationType != null && !iDefaultDurationType.isEmpty(); }
 
 	public void setDisplayOptionForMaxLimit(boolean displayOptionForMaxLimit) { iDisplayOptionForMaxLimit = displayOptionForMaxLimit; }
 	public boolean isDisplayOptionForMaxLimit() { return Boolean.TRUE.equals(iDisplayOptionForMaxLimit); }
