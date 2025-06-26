@@ -247,7 +247,7 @@ public class InstructorAssignmentPreferencesPage extends Composite {
 				iPreferences.setValue(response);
 				iPanel.addRow(iPreferences);
 				
-				iPanel.addHeaderRow(iFooter);
+				iPanel.addBottomRow(iFooter);
 				
 				UniTimeNavigation.getInstance().refresh();
 				

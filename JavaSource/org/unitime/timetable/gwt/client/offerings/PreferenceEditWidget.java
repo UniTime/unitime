@@ -86,6 +86,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 
 	public PreferenceEditWidget(boolean header) {
 		addStyleName("unitime-PreferenceEdit");
+		removeStyleName("unitime-NotPrintableBottomLine");
 		if (header) {
 			iHeader = new UniTimeHeaderPanel(COURSE.sectionTitlePreferences());
 			addHeaderRow(iHeader);
