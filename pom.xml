@@ -492,6 +492,11 @@
 			<artifactId>asm-commons</artifactId>
 			<version>${asm.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${project.build.directory}/src</sourceDirectory>
@@ -783,6 +788,7 @@
 		<asm.version>9.7.1</asm.version>
 		<infinispan-hibernate.version>15.2.4.Final</infinispan-hibernate.version>
 		<nashorn.version>15.6</nashorn.version>
+		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
 	</properties>
 
 	<distributionManagement>
