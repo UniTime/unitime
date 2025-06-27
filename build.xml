@@ -139,7 +139,7 @@
 					gwt-servlet-jakarta-2.12.2.jar hibernate-c3p0-6.6.18.Final.jar hibernate-commons-annotations-7.0.3.Final.jar hibernate-core-6.6.18.Final.jar istack-commons-runtime-4.1.1.jar
 					itext-2.1.7.jar jackson-core-2.19.1.jar jakarta.activation-api-2.1.3.jar jakarta.mail-2.0.3.jar jakarta.mail-api-2.1.3.jar jakarta.persistence-api-3.1.0.jar
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar jakarta.servlet-api-6.0.0.jar jakarta.servlet.jsp-api-3.1.1.jar
-					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.5.0.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.4.8.Final.jar joda-time-2.14.0.jar log4j-api-2.25.0.jar
+					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.6.1.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.4.8.Final.jar joda-time-2.14.0.jar log4j-api-2.25.0.jar
 					log4j-core-2.25.0.jar log4j-jcl-2.25.0.jar log4j-slf4j-impl-2.25.0.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.31.1.jar
 					slf4j-api-1.7.36.jar spring-beans-6.2.8.jar spring-context-6.2.8.jar spring-core-6.2.8.jar spring-security-core-6.5.1.jar spring-web-6.2.8.jar
 					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar hibernate-community-dialects-6.6.18.Final.jar"/>
@@ -295,7 +295,7 @@
 				<include name="dom4j-2.1.4.jar"/>
 				<include name="gwt-servlet-jakarta-2.12.2.jar"/>
 				<include name="javassist-3.30.2-GA.jar"/>
-				<include name="jboss-logging-3.5.0.Final.jar"/>
+				<include name="jboss-logging-3.6.1.Final.jar"/>
 				<include name="jgroups-5.4.8.Final.jar"/>
 				<include name="log4j-api-2.25.0.jar"/>
 				<include name="log4j-core-2.25.0.jar"/>
@@ -363,7 +363,7 @@
 				<include name="dom4j-2.1.4.jar"/>
 				<include name="gwt-servlet-jakarta-2.12.2.jar"/>
 				<include name="javassist-3.30.2-GA.jar"/>
-				<include name="jboss-logging-3.5.0.Final.jar"/>
+				<include name="jboss-logging-3.6.1.Final.jar"/>
 				<include name="jgroups-5.4.8.Final.jar"/>
 				<include name="log4j-api-2.25.0.jar"/>
 				<include name="log4j-core-2.25.0.jar"/>
