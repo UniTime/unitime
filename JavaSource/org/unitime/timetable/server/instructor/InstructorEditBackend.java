@@ -281,6 +281,7 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 		for (PositionType type: PositionType.findAll())
 			data.addPosition(type.getUniqueId(), type.getLabel());
 		data.setConfirms(JavascriptFunctions.isJsConfirm(context));
+		data.setCanEditExternalId(ApplicationProperty.InstructorAllowEditExternalId.isTrue());
 		
 		return data;
 	}

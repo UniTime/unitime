@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -166,7 +167,7 @@ public class InstructorEditPage extends Composite {
 		
 		initWidget(iPanel);
 		
-		iExternalId = new TextBox(); iExternalId.setMaxLength(40); iExternalId.setWidth("100px");
+		iExternalId = new UniTimeTextBox(); iExternalId.setMaxLength(40); iExternalId.setWidth("100px");
 		iExternalId.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> e) {
@@ -355,6 +356,7 @@ public class InstructorEditPage extends Composite {
 		
 		iExternalId.setValue(iData.getExternalId() == null ? "" : iData.getExternalId());
 		iPanel.addRow(COURSE.propertyExternalId(), iExternalId);
+		iExternalId.setReadOnly(!response.isCanEditExternalId());
 		
 		iAccountName.setValue(iData.getCareerAcct() == null ? "" : iData.getCareerAcct());
 		iPanel.addRow(COURSE.propertyAccountName(), iAccountName);

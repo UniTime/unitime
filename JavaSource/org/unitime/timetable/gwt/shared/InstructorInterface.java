@@ -1625,6 +1625,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private Boolean iIgnoreTooFar = false;
 		private String iCareerAcct;
 		private boolean iConfirms = true;
+		private boolean iCanEditExternalId = true;
 
 		public Long getInstructorId() { return iInstructorId; }
 		public void setInstructorId(Long id) { iInstructorId = id; }
@@ -1676,6 +1677,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 	    
 		public boolean isConfirms() { return iConfirms; }
 		public void setConfirms(boolean confirms) { iConfirms = confirms; }
+		
+		public boolean isCanEditExternalId() { return iCanEditExternalId; }
+		public void setCanEditExternalId(boolean canEditExternalId) { iCanEditExternalId = canEditExternalId; }
 
 	}
 }
