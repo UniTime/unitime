@@ -224,7 +224,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         		if (!responsibilities.isEmpty())
         			line.addCell(ci.getResponsibility() == null ? null : ci.getResponsibility().getLabel());
         	}
-        	table.setStyle("width: 50%;");
+        	table.setStyle("min-width: 50%;");
         	response.addProperty(MSG.propertyInstructors()).setTable(table);
         }
         

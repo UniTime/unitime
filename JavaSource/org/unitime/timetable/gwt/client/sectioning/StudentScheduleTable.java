@@ -173,6 +173,29 @@ public class StudentScheduleTable extends Composite {
 		});
 	}
 	
+	public StudentScheduleTable forStudent(final String studentId) {
+		iPanel.setVisible(false);
+		sSectioningService.lookupStudent(iOnline, studentId, new AsyncCallback<ClassAssignmentInterface.Student>() {
+			@Override
+			public void onSuccess(Student result) {
+				if (result != null) {
+					iPanel.setVisible(true);
+					setStudent(result);
+					if (SectioningCookie.getInstance().getEnrollmentCoursesDetails()) {
+						refresh();
+					} else {
+						clear();
+						iHeader.clearMessage();
+						iHeader.setCollapsible(false);
+					}
+				}
+			}
+			@Override
+			public void onFailure(Throwable caught) {}
+		});
+		return this;
+	}
+	
 	public void setStudent(ClassAssignmentInterface.Student student) {
 		iStudent = student;
 		iHeader.setEnabled("registration", iStudent != null && iStudent.isCanRegister());

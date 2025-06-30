@@ -5,6 +5,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.instructor.survey.InstructorSurveyWidget;
 import org.unitime.timetable.gwt.client.page.UniTimeNavigation;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.sectioning.StudentScheduleTable;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -237,6 +238,10 @@ public class InstructorDetailPage extends Composite {
 					iPanel.getRowFormatter().setVisible(iPreferencesRow, hp.isCollapsible());
 				}
 				
+				if (response.hasExternalId()) {
+					iPanel.addRow(new StudentScheduleTable(true, true, false).forStudent(response.getExternalId()));
+				}
+
 				if (response.hasOperation("teaching-assignments")) {
 					iPanel.addRow(new TeachingAssignmentsWidget().forInstructorId(response.getInstructorId()));
 				}
