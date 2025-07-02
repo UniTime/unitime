@@ -3461,7 +3461,7 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageEditCurriculum();
 	
-	@DefaultMessage("Curriculum Details")
+	@DefaultMessage("Curriculum Detail")
 	@DoNotTranslate
 	String pageCurriculumDetails();
 	
@@ -5285,7 +5285,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Curricula")
 	String headerCurricula();
 	
-	@DefaultMessage("Curriculum Details")
+	@DefaultMessage("Curriculum Detail")
 	String headerCurriculumDetails();
 	
 	@DefaultMessage("Curriculum Classifications")
