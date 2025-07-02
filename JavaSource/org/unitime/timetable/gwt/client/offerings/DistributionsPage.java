@@ -287,7 +287,7 @@ public class DistributionsPage extends Composite {
 					}
 				});
 				if (iConfig.isCanAdd()) {
-					UniTimeHeaderPanel footer = new UniTimeHeaderPanel(COURSE.sectionTitleDistributionPreferences());
+					UniTimeHeaderPanel footer = new UniTimeHeaderPanel("");
 					footer.addButton("add-distribution", COURSE.actionAddDistributionPreference(), new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent e) {
