@@ -15,6 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM tomcat:9-jre11
+FROM tomcat:9-jre17
 ADD https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.31/mysql-connector-j-8.0.31.jar /usr/local/tomcat/lib
 ADD web/UniTime.war /usr/local/tomcat/webapps/ROOT.war
