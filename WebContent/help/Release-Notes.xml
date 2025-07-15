@@ -31,6 +31,20 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed a Hibernate exception when removing a course from a cross-list that has some advisor course recommendations.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.8.204</version>
+	<release-date>Thu, 26 Jun 2025</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Suggestions, Instructor Survey: Maximize</name>
 			<description>
 				<line>Added an ability to maximize the Suggestions and Instructor Survey dialogs.</line>

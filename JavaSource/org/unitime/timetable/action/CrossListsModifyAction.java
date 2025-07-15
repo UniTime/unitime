@@ -287,9 +287,11 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
                     		hibSession.remove(oldReq);
                     	}
                     
-                    advCourseReqs.put(co2.getCourseName(), hibSession.createQuery(
+                    List<AdvisorCourseRequest> acrs = hibSession.createQuery(
                 			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
-                			.setParameter("courseId", co1.getUniqueId()).list());
+                			.setParameter("courseId", co1.getUniqueId()).list();
+                    advCourseReqs.put(co2.getCourseName(), acrs);
+                    for (AdvisorCourseRequest acr: acrs) acr.setCourseOffering(null);
                     
                     deletedOfferings.add(co2);
 /*	                
@@ -421,10 +423,13 @@ public class CrossListsModifyAction extends UniTimeAction<CrossListsModifyForm> 
 	                    		hibSession.remove(oldReq);
 	                    	}
 
-	                    advCourseReqs.put(co3.getCourseName(), hibSession.createQuery(
+	                    List<AdvisorCourseRequest> acrs = hibSession.createQuery(
 	                			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
-	                			.setParameter("courseId", co2.getUniqueId()).list());
+	                			.setParameter("courseId", co2.getUniqueId()).list();
+	                    advCourseReqs.put(co3.getCourseName(), acrs);
 	                    addedOfferings.add(co3);
+	                    for (AdvisorCourseRequest acr: acrs) acr.setCourseOffering(null);
+	                    
 
     	                int indx = form.getIndex(course);
     	                try {
