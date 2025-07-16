@@ -37,6 +37,18 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Authentication &amp; Authorization: User Name</name>
+			<description>
+				<line>Added an ability to use the student's name from the most recent applicable active academic session as the user name.
+					<line>Enable by setting unitime.authorization.preferStudentName to true (defaults to false).</line>
+				</line>
+				<line>Added an ability to customize user name format by setting unitime.authorization.userNameFormat, defaults to last-first-middle.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

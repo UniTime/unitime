@@ -49,6 +49,7 @@ import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.HasRights;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LoginManager;
+import org.unitime.timetable.util.NameFormat;
 
 /**
  * @author Tomas Muller
@@ -66,6 +67,9 @@ public class UniTimeUserContext extends AbstractUserContext {
 		iLogin = login; iPassword = password; iId = userId; iName = name;
 		org.hibernate.Session hibSession = TimetableManagerDAO.getInstance().createNewSession();
 		try {
+			String nameFormat = ApplicationProperty.AuthorizationUserNameFormat.value();
+			if (nameFormat == null || nameFormat.isEmpty())
+				nameFormat = NameFormat.LAST_FIRST_MIDDLE.reference();
 			for (UserData data: hibSession.createQuery(
 					"from UserData where externalUniqueId = :id", UserData.class)
 					.setParameter("id", userId).list()) {
@@ -90,7 +94,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					"from TimetableManager where externalUniqueId = :id", TimetableManager.class)
 					.setParameter("id", userId).setMaxResults(1).uniqueResult();
 			if (manager != null) {
-				iName = manager.getName();
+				iName = manager.getName(nameFormat);
 				iEmail = manager.getEmailAddress();
 				Roles primary = null;
 				
@@ -149,7 +153,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				if (advisor.getRole() == null || !advisor.getRole().isEnabled()) continue;
 				if (ApplicationProperty.AuthorizationAdvisorMustHaveStudents.isTrue() && advisor.getStudents().isEmpty()) continue;
 				if ((advisor.getSession().getStatusType() == null || advisor.getSession().getStatusType().isTestSession()) && !advisor.getRole().hasRight(Right.AllowTestSessions)) continue;
-				if (iName == null && advisor.hasName()) iName = advisor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				if (iName == null && advisor.hasName()) iName = advisor.getName(nameFormat);
 				if (iEmail == null) iEmail = advisor.getEmail();
 				RoleAuthority authority = new RoleAuthority(advisor.getUniqueId(), advisor.getRole());
 				authority.addQualifier(advisor.getSession());
@@ -162,7 +166,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				for (DepartmentalInstructor instructor: hibSession.createQuery(
 						"from DepartmentalInstructor where externalUniqueId = :id order by department.session.sessionBeginDateTime desc, department.deptCode", DepartmentalInstructor.class)
 						.setParameter("id", userId).list()) {
-					if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+					if (iName == null) iName = instructor.getName(nameFormat);
 					if (iEmail == null) iEmail = instructor.getEmail();
 					if ((instructor.getDepartment().getSession().getStatusType() != null && !instructor.getDepartment().getSession().getStatusType().isTestSession())
 							|| Roles.getRole(Roles.ROLE_INSTRUCTOR, hibSession).hasRight(Right.AllowTestSessions)) {
@@ -195,10 +199,12 @@ public class UniTimeUserContext extends AbstractUserContext {
 
 			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT, hibSession);
 			if (studentRole != null && studentRole.isEnabled()) {
+				boolean preferStudentName = ApplicationProperty.AuthorizationUseStudentName.isTrue();
+				Date now = new Date();
 				for (Student student: hibSession.createQuery(
 						"from Student where externalUniqueId = :id order by session.sessionBeginDateTime desc", Student.class)
 						.setParameter("id", userId).list()) {
-					if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+					if (iName == null) iName = student.getName(nameFormat);
 					if (iEmail == null) iEmail = student.getEmail();
 					if ((student.getSession().getStatusType() == null || student.getSession().getStatusType().isTestSession()) && !studentRole.hasRight(Right.AllowTestSessions)) continue;
 					UserAuthority authority = new RoleAuthority(student.getUniqueId(), studentRole);
@@ -206,6 +212,10 @@ public class UniTimeUserContext extends AbstractUserContext {
 					authority.addQualifier(student);
 					addAuthority(authority);
 					sessions.add(student.getSession());
+					if (preferStudentName && now.before(student.getSession().getSessionEndDateTime())) {
+						iName = student.getName(nameFormat);
+						preferStudentName = false;
+					}
 				}				
 			}
 			

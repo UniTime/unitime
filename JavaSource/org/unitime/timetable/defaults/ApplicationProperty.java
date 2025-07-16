@@ -3644,6 +3644,15 @@ public enum ApplicationProperty {
 	@DefaultValue("initial-last")
 	@Description("Timetable Managers: short name format (e.g., used in the Last Changed messages)")
 	ManagerShortNameFormat("unitime.managers.shortNameFormat"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Authentication & Authorization: prefer student name as user name when possible (over other records, including the name from the CAS ticket)")
+	AuthorizationUseStudentName("unitime.authorization.preferStudentName"),
+	
+	@DefaultValue("last-first-middle")
+	@Description("Authentication & Authorization: preferred format of the user name")
+	AuthorizationUserNameFormat("unitime.authorization.userNameFormat"),
 	;
 
 	String iKey;
