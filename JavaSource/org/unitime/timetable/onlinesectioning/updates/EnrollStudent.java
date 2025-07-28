@@ -294,6 +294,35 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					}
 				}
 				
+				Map<IdPair, StudentClassEnrollment> oldEnrollments = new HashMap<IdPair, StudentClassEnrollment>();
+				Map<Long, Object[]> oldApprovals = new HashMap<Long, Object[]>();
+				for (StudentClassEnrollment e: student.getClassEnrollments()) {
+					oldEnrollments.put(new IdPair(e.getCourseOffering().getUniqueId(), e.getClazz().getUniqueId()), e);
+					if (e.getApprovedBy() != null && !oldApprovals.containsKey(e.getCourseOffering().getUniqueId())) {
+						oldApprovals.put(e.getCourseOffering().getUniqueId(), new Object[] {e.getApprovedBy(), e.getApprovedDate()});
+					}
+				}
+				
+				Map<Long, Class_> classes = new HashMap<Long, Class_>();
+				String classIds = null;
+				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
+					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment() || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
+					if (classIds == null)
+						classIds = ca.getClassId().toString();
+					else
+						classIds += "," + ca.getClassId();
+				}
+				if (classIds != null) {
+					for (Class_ clazz: helper.getHibSession().createQuery(
+							"select c from Class_ c " +
+							"left join fetch c.studentEnrollments as e " +
+							"left join fetch c.schedulingSubpart as s " +
+							"where c.uniqueId in (" + classIds + ")", Class_.class).list()) {
+						classes.put(clazz.getUniqueId(), clazz);
+					}
+				}
+				Map<Long, Long> courseDemandId2courseId = new HashMap<Long, Long>();
+				
 				Set<CourseDemand> remaining = new TreeSet<CourseDemand>(student.getCourseDemands());
 				int priority = 0;
 				Date ts = new Date();
@@ -617,34 +646,6 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						}
 					}
 				}
-				
-				Map<IdPair, StudentClassEnrollment> oldEnrollments = new HashMap<IdPair, StudentClassEnrollment>();
-				Map<Long, Object[]> oldApprovals = new HashMap<Long, Object[]>();
-				for (StudentClassEnrollment e: student.getClassEnrollments()) {
-					oldEnrollments.put(new IdPair(e.getCourseOffering().getUniqueId(), e.getClazz().getUniqueId()), e);
-					if (e.getApprovedBy() != null && !oldApprovals.containsKey(e.getCourseOffering().getUniqueId())) {
-						oldApprovals.put(e.getCourseOffering().getUniqueId(), new Object[] {e.getApprovedBy(), e.getApprovedDate()});
-					}
-				}
-				
-				Map<Long, Class_> classes = new HashMap<Long, Class_>();
-				String classIds = null;
-				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
-					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment() || oldEnrollments.containsKey(new IdPair(ca.getCourseId(), ca.getClassId()))) continue;
-					if (classIds == null)
-						classIds = ca.getClassId().toString();
-					else
-						classIds += "," + ca.getClassId();
-				}
-				if (classIds != null)
-					for (Class_ clazz: helper.getHibSession().createQuery(
-							"select c from Class_ c " +
-							"left join fetch c.studentEnrollments as e " +
-							"left join fetch c.schedulingSubpart as s " +
-							"where c.uniqueId in (" + classIds + ")", Class_.class).list()) {
-						classes.put(clazz.getUniqueId(), clazz);
-					}
-				Map<Long, Long> courseDemandId2courseId = new HashMap<Long, Long>();
 				
 				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment()) {
 					if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
