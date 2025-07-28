@@ -103,6 +103,19 @@ public class ExamEditPage extends Composite {
 		
 		load(id != null && !id.isEmpty() ? Long.valueOf(id) : null, clone ? Operation.CLONE_EXAM : Operation.GET, true, null);
 		
+		iHeader.addButton("save", EXAM.actionExamSave(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				update();
+				if (validate()) {
+					load(iData.getId(), Operation.UPDATE, true, null);
+				}
+			}
+		});
+		iHeader.getButton("save").setTitle(EXAM.titleExamSave());
+		iHeader.getButton("save").setAccessKey(EXAM.actionExamSave().charAt(0));
+		iHeader.setEnabled("save", false);
+		
 		iHeader.addButton("update", EXAM.actionExamUpdate(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -404,7 +417,8 @@ public class ExamEditPage extends Composite {
 				
 				UniTimeNavigation.getInstance().refresh();
 				
-				iHeader.setEnabled("update", true);
+				iHeader.setEnabled("save", response.getId() == null);
+				iHeader.setEnabled("update", response.getId() != null);
 				iHeader.setEnabled("previous", response.getPreviousId() != null);
 				iHeader.setEnabled("next", response.getNextId() != null);
 				iHeader.setEnabled("clear", response.canClearPrefs());
