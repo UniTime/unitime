@@ -54,6 +54,18 @@
 				<line>Removed a Hibernate session refresh that was occasionally causing the import to fail after the Hibernate upgrade to version 6.6.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Groups, Solver Parameters</name>
+			<description>
+				<line>Corrected the Export CSV/PDF when the filter is set to All.</line>
+			</description>
+		</item>
+		<item>
+			<name>Roll Forward Session: Roll Exam Configuration Data</name>
+			<description>
+				<line>Fixed the QueryTypeMismatchException when checking for existing examination period.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
