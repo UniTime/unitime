@@ -2032,7 +2032,8 @@ public class SimpleEditPage extends Composite {
 		String query = "output=admin-report." + format + "&type=" + iType;
 		if (iFilter != null && iFilter.getValues() != null)
 			for (String f: iFilter.getValues())
-				query += "&filter=" + f;
+				if (f != null)
+					query += "&filter=" + f;
 		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
