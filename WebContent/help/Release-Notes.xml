@@ -48,6 +48,12 @@
 				<line>Added an ability to customize user name format by setting unitime.authorization.userNameFormat, defaults to last-first-middle.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Course Offering XML Import</name>
+			<description>
+				<line>Removed a Hibernate session refresh that was occasionally causing the import to fail after the Hibernate upgrade to version 6.6.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
