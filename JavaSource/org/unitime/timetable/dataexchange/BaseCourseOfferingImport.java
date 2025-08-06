@@ -2057,7 +2057,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					else
 						getHibSession().merge(clazz);
 					getHibSession().flush();
-					getHibSession().refresh(clazz);
 				}
 				if (changed){
 					ChangeLog.addChange(getHibSession(), getManager(), session, clazz, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (isAdd?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), ioc.getControllingCourseOffering().getSubjectArea(), ioc.getDepartment());
