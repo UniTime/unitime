@@ -3625,7 +3625,7 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageAttachmentTypes();
 	
-	@DefaultMessage("InstructionalMethod")
+	@DefaultMessage("Instructional Method")
 	@DoNotTranslate
 	String pageInstructionalMethod();
 	
