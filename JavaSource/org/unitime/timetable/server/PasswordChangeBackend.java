@@ -84,6 +84,9 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 				userIds.addAll(hibSession.createQuery(
 						"select distinct externalUniqueId from Student where lower(email) = :email and externalUniqueId is not null", String.class)
 						.setParameter("email", request.getEmail().toLowerCase()).list());
+				userIds.addAll(hibSession.createQuery(
+						"select distinct externalUniqueId from Advisor where lower(email) = :email and externalUniqueId is not null", String.class)
+						.setParameter("email", request.getEmail().toLowerCase()).list());
 
 				if (userIds.isEmpty())
 					throw new GwtRpcException(MESSAGES.errorEmailNotValid());
