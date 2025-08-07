@@ -4058,7 +4058,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Manager")
 	String columnTimetableManager();
 	
-	@DefaultMessage("API Secret")
+	@DefaultMessage("API Token")
 	String columnAPIKey();
 	
 	@DefaultMessage("No users defined.")
