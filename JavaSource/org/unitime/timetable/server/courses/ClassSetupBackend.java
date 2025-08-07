@@ -709,11 +709,12 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 			if (c.getPreferences() != null)
 			    c.getPreferences().removeAll(c.getPreferences());
 			
-			c.deleteAllDependentObjects(hibSession, false);
-			
 			c.getSchedulingSubpart().getClasses().remove(c);
 			hibSession.remove(c);
     	}
+		for (Class_ c: deleteClasses.values()) {
+			c.deleteAllDependentObjects(hibSession, false);
+		}
 	}
 	
     private void modifySubparts(ClassSetupInterface form, InstrOfferingConfig ioc, Map<Long, Department> origSubpartManagingDept, Session hibSession, SessionContext context) {

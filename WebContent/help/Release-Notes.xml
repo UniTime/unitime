@@ -34,8 +34,17 @@
 			<name>Instructional Offering Cross Lists</name>
 			<description>
 				<line>Fixed a Hibernate exception when removing a course from a cross-list that has some advisor course recommendations.</line>
+				<line>Likely caused by the latest Hibernate upgrade (to version 6.6).</line>
 			</description>
 		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Fixed a Hibernate exception that is sometimes thrown when deleting two or more classes in a parent-child relation.</line>
+				<line>Likely caused by the latest Hibernate upgrade (to version 6.6).</line>
+			</description>
+		</item>
+		
 	</category>
 	<category>
 		<title>Administration</title>
