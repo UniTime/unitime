@@ -270,6 +270,30 @@ public enum ApplicationProperty {
 	@Secret
 	UrlEncoderSecret("unitime.encode.secret"),
 	
+	@DefaultValue("PBKDF2WithHmacSHA1")
+	@Description("Configuration: encoder secret algorithm, set to PBKDF2WithHmacSHA512 for more secure encoding")
+	@Secret
+	UrlEncoderSecretAlgorithm("unitime.encode.algorithm"),
+	
+	@DefaultValue("1024")
+	@Description("Configuration: encoder secret algorithm iteration count, set it to 100000 for more secure encoding")
+	@Secret
+	UrlEncoderSecretIterationCount("unitime.encode.iterationCount"),
+	
+	@DefaultValue("128")
+	@Description("Configuration: encoder secret algorithm key length")
+	@Secret
+	UrlEncoderSecretKeyLength("unitime.encode.keyLength"),
+	
+	@DefaultValue("AES/ECB/PKCS5Padding")
+	@Description("Configuration: encoder secret cipher transformation, set to AES/CBC/PKCS5Padding for more secure encoding")
+	@Secret
+	UrlEncoderCipher("unitime.encode.cipher"),
+	
+	@Description("Configuration: encoder secret cipher initialization vector, set to a secret text when AES/CBC/PKCS5Padding is being used")
+	@Secret
+	UrlEncoderCipherIV("unitime.encode.cipher.iv"),
+	
 	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Configuration: hash calendar queries to make the iCalendar URL short")

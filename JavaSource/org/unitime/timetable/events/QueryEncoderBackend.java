@@ -22,6 +22,7 @@ package org.unitime.timetable.events;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Base64;
@@ -31,6 +32,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -64,17 +66,33 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 	
 	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {
 		byte salt[] = new byte[] { (byte)0x33, (byte)0x7b, (byte)0x09, (byte)0x0e, (byte)0xcf, (byte)0x5a, (byte)0x58, (byte)0xd9 };
-		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-		KeySpec spec = new PBEKeySpec(ApplicationProperty.UrlEncoderSecret.value().toCharArray(), salt, 1024, 128);
+		SecretKeyFactory factory = SecretKeyFactory.getInstance(ApplicationProperty.UrlEncoderSecretAlgorithm.value());
+		KeySpec spec = new PBEKeySpec(ApplicationProperty.UrlEncoderSecret.value().toCharArray(), salt,
+				ApplicationProperty.UrlEncoderSecretIterationCount.intValue(),
+				ApplicationProperty.UrlEncoderSecretKeyLength.intValue());
 		SecretKey key = factory.generateSecret(spec);
 		return new SecretKeySpec(key.getEncoded(), "AES");
 	}
 	
 	public static String encode(String text) {
 		try {
-			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-			cipher.init(Cipher.ENCRYPT_MODE, secret());
-			return Base64.getUrlEncoder().withoutPadding().encodeToString(cipher.doFinal(text.getBytes()));
+			if (ApplicationProperty.UrlEncoderCipher.value().contains("/ECB/")) { // no IV needed
+				Cipher cipher = Cipher.getInstance(ApplicationProperty.UrlEncoderCipher.value());
+				cipher.init(Cipher.ENCRYPT_MODE, secret());
+				return Base64.getUrlEncoder().withoutPadding().encodeToString(cipher.doFinal(text.getBytes()));
+			} else {
+				byte[] iv = new byte[16];
+				SecureRandom random = new SecureRandom();
+				random.nextBytes(iv);
+				IvParameterSpec ivSpec = new IvParameterSpec(iv);
+				Cipher cipher = Cipher.getInstance(ApplicationProperty.UrlEncoderCipher.value());
+				cipher.init(Cipher.ENCRYPT_MODE, secret(), ivSpec);
+				byte[] encrypted = cipher.doFinal(text.getBytes());
+				byte[] encryptedIVAndText = new byte[iv.length + encrypted.length];
+		        System.arraycopy(iv, 0, encryptedIVAndText, 0, iv.length);
+		        System.arraycopy(encrypted, 0, encryptedIVAndText, iv.length, encrypted.length);
+				return Base64.getUrlEncoder().withoutPadding().encodeToString(encryptedIVAndText);
+			}
 		} catch (Exception e) {
 			throw new GwtRpcException("Encoding failed: " + e.getMessage(), e);
 		}
@@ -116,8 +134,8 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 				HashedQueryDAO.getInstance().getSession().merge(hq);
 				HashedQueryDAO.getInstance().getSession().flush();
 				return hq.getQueryText();
-			} else {
-				Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			} else if (ApplicationProperty.UrlEncoderCipher.value().contains("/ECB/")) { // no IV needed
+				Cipher cipher = Cipher.getInstance(ApplicationProperty.UrlEncoderCipher.value());
 				cipher.init(Cipher.DECRYPT_MODE, secret());
 				try {
 					return new String(cipher.doFinal(Base64.getUrlDecoder().decode(text)));
@@ -132,6 +150,17 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 						return new String(cipher.doFinal(fixed));
 					}
 				}
+			} else {
+				byte[] iv = new byte[16];
+				byte[] encryptedIvTextBytes = Base64.getUrlDecoder().decode(text);
+				System.arraycopy(encryptedIvTextBytes, 0, iv, 0, iv.length);
+		        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+				Cipher cipher = Cipher.getInstance(ApplicationProperty.UrlEncoderCipher.value());
+				cipher.init(Cipher.DECRYPT_MODE, secret(), ivSpec);
+				int encryptedSize = encryptedIvTextBytes.length - iv.length;
+		        byte[] encryptedBytes = new byte[encryptedSize];
+		        System.arraycopy(encryptedIvTextBytes, iv.length, encryptedBytes, 0, encryptedSize);
+				return new String(cipher.doFinal(encryptedBytes));
 			}
 		} catch (Exception e) {
 			throw new GwtRpcException("Decoding failed: " + e.getMessage(), e);
