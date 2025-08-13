@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.services.CurriculaService;
+import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
@@ -117,6 +119,7 @@ public class ReservationEdit extends Composite {
 	private UniTimeWidget<TextBox> iStudentFilter;
 	
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
+	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
 	private int iStartDateLine, iExpirationLine, iReservedSpaceLine, iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine, iInclusionLine, iFilterLine;
 	
 	private CheckBox iCanOverlap, iMustBeUsed, iOverLimit, iAlwaysExpired;
@@ -334,6 +337,16 @@ public class ReservationEdit extends Composite {
 		
 		iCourseBox = new ReservationCourseSelectionBox();
 		iCourseBox.setWidth("130px");
+		iCurriculaService.getApplicationProperty(new String[] {"unitime.curricula.courseWidth"}, new AsyncCallback<String[]>() {
+			@Override
+			public void onSuccess(String[] ret) {
+				if (ret != null && ret.length >= 1 && ret[0] != null && ret[0].length() > 0) {
+					iCourseBox.setWidth(ret[0]);
+				}
+			}
+			@Override
+			public void onFailure(Throwable e) {}
+		});
 		iPanel.addRow(MESSAGES.propInstructionalOffering(), iCourseBox);
 		iPanel.getCellFormatter().getElement(iPanel.getRowCount() - 1, 0).getStyle().setWidth(100, Unit.PX);
 		

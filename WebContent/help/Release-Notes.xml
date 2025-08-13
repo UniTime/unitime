@@ -31,6 +31,21 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Curricula: Add/Edit Curriculum</name>
+			<description>
+				<line>Added an ability to customize the course selection box width (unitime.curricula.courseWidth property, defaults to 130px).</line>
+				<line>The setting gets also used to set the course selection box width on the Add/Edit Reservation page.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.8.213</version>
+	<release-date>Sat, 9 Aug 2025</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Instructional Offering Cross Lists</name>
 			<description>
 				<line>Fixed a Hibernate exception when removing a course from a cross-list that has some advisor course recommendations.</line>

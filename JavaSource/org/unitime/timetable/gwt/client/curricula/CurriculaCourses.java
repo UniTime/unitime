@@ -43,6 +43,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HintProvider;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.services.CurriculaService;
+import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
@@ -67,6 +69,7 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -86,7 +89,9 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class CurriculaCourses extends Composite implements SimpleForm.HasMobileScroll {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
 	private UniTimeTable<String> iTable = null;
+	private String iCurriculumBoxWidth = "130px";
 	
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 	
@@ -199,6 +204,22 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 				if (studentsTable.canShow()) return studentsTable;
 				return null;
 			}
+		});
+		iCurriculaService.getApplicationProperty(new String[] {"unitime.curricula.courseWidth"}, new AsyncCallback<String[]>() {
+			
+			@Override
+			public void onSuccess(String[] ret) {
+				if (ret != null && ret.length >= 1 && ret[0] != null && ret[0].length() > 0) {
+					iCurriculumBoxWidth = ret[0];
+					for (int row = iTable.getRowCount() - 1; row > 0; row --) {
+						CurriculaCourseSelectionBox course = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
+						course.setWidth(iCurriculumBoxWidth);
+					}
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable e) {}
 		});
 	}
 	
@@ -983,7 +1004,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 				CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox();
 				RequestedCourse rc = new RequestedCourse(); rc.setCourseId(course.getId()); rc.setCourseName(course.getCourseName());
 				cx.setValue(course, false);
-				cx.setWidth("130px");
+				cx.setWidth(iCurriculumBoxWidth);
 				if (cx.getCourseFinder() instanceof HasOpenHandlers)
 					((HasOpenHandlers<PopupPanel>)cx.getCourseFinder()).addOpenHandler(fx);
 				cx.addCourseSelectionHandler(iCourseChangedHandler);
@@ -1131,7 +1152,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 		line.add(hp);
 
 		CurriculaCourseSelectionBox cx = new CurriculaCourseSelectionBox();
-		cx.setWidth("130px");
+		cx.setWidth(iCurriculumBoxWidth);
 		cx.addCourseSelectionHandler(iCourseChangedHandler);
 		if (cx.getCourseFinder() instanceof HasOpenHandlers)
 			((HasOpenHandlers<PopupPanel>)cx.getCourseFinder()).addOpenHandler(new OpenHandler<PopupPanel>() {
