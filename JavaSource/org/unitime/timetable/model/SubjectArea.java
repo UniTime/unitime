@@ -148,6 +148,8 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 	
 	@Transient
 	public String getLabel() {
+		if (getTitle() == null || getTitle().isEmpty() || getTitle().equals(getSubjectAreaAbbreviation()))
+			return getSubjectAreaAbbreviation();
 		return this.getSubjectAreaAbbreviation() + " - " + this.getTitle();
 	}
 	
