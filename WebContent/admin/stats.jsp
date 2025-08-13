@@ -19,6 +19,7 @@
  --%>
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <table class="unitime-MainTable">
 	<s:set var="colspan" value="%{chartWindows.length}"/>
 	<s:iterator value="chartWindows" var="ch">
@@ -27,8 +28,33 @@
 		</td></tr>
 		<tr>
 		<s:iterator value="chartTypes" var="t">
-			<s:set var="url" value="%{getChartUrl(#ch,#t)}"/>
-			<td><img src="${url}" border="0"/></td>
+			<s:set var="chartId" value="#ch + '_' + #t"/>
+			<s:set var="cols" value="%{getColumns(#ch,#t)}"/>
+			<td><div id="${chartId}" style="width: 600px; height: 400px"/></td>
+			<s:set var="chartData" value="%{getChartUrl(#ch,#t)}"/>
+<script type="text/javascript">
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(draw${chartId});
+function draw${chartId}() {
+    var data = google.visualization.arrayToDataTable(${chartData});
+    var options = {
+		legend: { position: 'top', maxLines: 2, },		
+		series: {
+	          0: {targetAxisIndex: 0},
+	          1: {targetAxisIndex: 0},
+	          2: {targetAxisIndex: 1},
+	          3: {targetAxisIndex: 1}
+	        },
+	        vAxes: {
+	          // Adds titles to each axis.
+	          0: {title: '${cols[0]}'},
+	          1: {title: '${cols[1]}'}
+	        },
+    };
+    var chart = new google.visualization.LineChart(document.getElementById('${chartId}'));
+    chart.draw(data, options);
+}
+</script>
 		</s:iterator>
 		</tr>
 	</s:iterator>

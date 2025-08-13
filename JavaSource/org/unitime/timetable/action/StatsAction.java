@@ -60,6 +60,10 @@ public class StatsAction extends UniTimeAction<BlankForm> {
 		return QueryLog.getChart(w, t);
 	}
 	
+	public String[] getColumns(QueryLog.ChartWindow w, QueryLog.ChartType t) {
+		return QueryLog.getColumns(w, t);
+	}
+	
 	public String getQueryTable() {
 		return QueryLog.getTopQueries(7).printTable(WebTable.getOrder(sessionContext, "pageStats.ord"));
 	}

@@ -31,18 +31,15 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeFieldType;
 import org.joda.time.Days;
 import org.joda.time.Hours;
 import org.joda.time.Minutes;
@@ -159,19 +156,19 @@ public class QueryLog extends BaseQueryLog {
 	
 	public static enum ChartWindow {
 		LAST_HOUR("Last 3 Hours", "kkmm", Hours.THREE, 10, Minutes.ONE,
-				"k:mm", DateTimeFieldType.minuteOfHour(), 20, 0, 10, "Minute",
+				"k:mm", 20, 0, 10, "Minute",
 				"to_char(timeStamp, 'HH24MI')", "timeStamp > adddate(current_date(), -1)",
 				"date_format(timeStamp, '%H%i')", "timeStamp > adddate(current_date(), -1)"),
 /*		LAST_DAY("Last 24 Hours (1-hour average)", "kk", Days.ONE, 1, Hours.ONE,
-				"k", DateTimeFieldType.hourOfDay(), 3, 2, 60, "Hour",
+				"k", 3, 2, 60, "Hour",
 				"to_char(timeStamp, 'HH24')", "timeStamp > adddate(current_date(), -1)",
 				"date_format(timeStamp, '%H')", "timeStamp > adddate(current_date(), -1)"),*/
 		LAST_WEEK("Last 7 Days", "ddkk", Days.SEVEN, 1, Hours.ONE,
-				"MM/d", DateTimeFieldType.hourOfDay(), 24, 0, 60, "Hour",
+				"M/d kk", 24, 0, 60, "Hour",
 				"to_char(timeStamp, 'DDHH24')", "timeStamp > adddate(current_date(), - 7)",
 				"date_format(timeStamp, '%d%H')", "timeStamp > adddate(current_date(), -7)"),
 		LAST_MONTH("Last 3 Months", "MMdd", Months.THREE, 1, Days.ONE,
-				"MMM/d", DateTimeFieldType.dayOfMonth(), 32, 1, 24 * 60, "Day",
+				"MMM d", 32, 1, 24 * 60, "Day",
 				"to_char(timeStamp, 'MMDD')", "timeStamp > adddate(current_date(), - 92)",
 				"date_format(timeStamp, '%m%d')", "timeStamp > adddate(current_date(), -92)"),
 		;
@@ -183,16 +180,16 @@ public class QueryLog extends BaseQueryLog {
 		private String iMySqlFormat, iMySqlCondition;
 		private String iAxeFormat, iBase;
 		private int iMinutes;
-		private DateTimeFieldType iAxeType; int iAxeMod, iAxeValue;
+		int iAxeMod, iAxeValue;
 		
 		ChartWindow(String name, String format,
 				ReadablePeriod start, int window, ReadablePeriod increment,
-				String axeFormat, DateTimeFieldType axeType, int axeMod, int axeValue, int minutes, String base,
+				String axeFormat,  int axeMod, int axeValue, int minutes, String base,
 				String oracleFormat, String oracleCondition, String mySqlFormat, String mySqlCondition) {
 			iName = name;
 			iFormat = new SimpleDateFormat(format, Locale.US);
 			iStart = start; iWindow = window; iIncrement = increment;
-			iAxeFormat = axeFormat; iAxeType = axeType; iAxeMod = axeMod; iAxeValue = axeValue;
+			iAxeFormat = axeFormat; iAxeMod = axeMod; iAxeValue = axeValue;
 			iMinutes = minutes; iBase = base;
 			iOracleFormat = oracleFormat; iOracleCondition = oracleCondition;
 			iMySqlFormat = mySqlFormat; iMySqlCondition = mySqlCondition;
@@ -329,50 +326,51 @@ public class QueryLog extends BaseQueryLog {
 		
 		public String axe(DateTime now) {
 			SimpleDateFormat format = new SimpleDateFormat(iAxeFormat, Localization.getJavaLocale());
-			DateTime dt = getFirst(now);
-			int i = 0;
-			StringBuffer ret = new StringBuffer();
-			while (dt != null) {
-				if (i > 0) ret.append("|");
-				if ((dt.get(iAxeType) % iAxeMod) == iAxeValue)
-					ret.append(format.format(dt.getMillis()));
-				i++;
-				dt = next(dt, now);
-			}
-			return ret.toString();
+			return format.format(now.getMillis());
 		}
 	}
 	
 	public static enum ChartType {
 		USERS, TIME
 	}
-	
-	private static String sExtendedEncoding = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.";
-	private static int sExtendedEncodingMax = sExtendedEncoding.length() * sExtendedEncoding.length();
-	
-	private static String encode(List<Double> data, double max) {
-		StringBuffer ret = new StringBuffer();
-		for (Double val: data) {
-			int scaled = (int)Math.floor(sExtendedEncodingMax * val / max);
-			if (scaled >= sExtendedEncodingMax) {
-				ret.append("..");
-			} else if (scaled < 0) {
-				ret.append("__");
-			} else {
-				ret.append(sExtendedEncoding.charAt(scaled / sExtendedEncoding.length()));
-				ret.append(sExtendedEncoding.charAt(scaled % sExtendedEncoding.length()));
-			}
+		
+	public static String[] getColumns(ChartWindow w, ChartType t) {
+		switch (t) {
+		case USERS:
+			return new String[] {
+					"Number of Users/Sessions",
+					"Calls per Minute",
+					
+			};
+		case TIME:
+			return new String[] {
+					"Max Time [s]",
+					"Average Time [ms]",
+			};
+		default:
+			return null;
 		}
-		return ret.toString();
 	}
 	
 	public static String getChart(ChartWindow w, ChartType t) {
 		DateTime now = DateTime.now();
-		String axe = w.axe(now);
 
 		DateTime dt = w.getFirst(now);
-		List<Double>[] data = new List[] { new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>(), new ArrayList<Double>()};
-		double max[] = new double[] { 0, 0 };
+		String ret = "[";
+		switch (t) {
+		case USERS:
+			ret += "['Time', 'Users per " + w.getBase() + "', " +
+				"'HTTP Sessions per " + w.getBase() + "', " +
+				"'Pages per Minute', " +
+				"'GWT Calls per Minute'],";
+			break;
+		case TIME:
+			ret += "['Time', 'Max Time', " +
+				"'GWT Max Time', " +
+				"'Average Time', " +
+				"'GWT Average Time'],";
+			break;
+		}
 		if (t == ChartType.USERS) {
 			Map<String, int[]> queries = w.getQueriesPerType(QueryLogDAO.getInstance().getSession());
 			Map<String, int[]> usersAndSessions = w.getUsersAndSessions(QueryLogDAO.getInstance().getSession());
@@ -380,24 +378,20 @@ public class QueryLog extends BaseQueryLog {
 				double[] us = w.countUsers(usersAndSessions, dt);
 				int[] q = w.countQueries(queries, dt);
 				
+				ret += "\n['" + w.axe(dt) + "'";
+
 				double users = us[0];
-				data[0].add(users);
+				ret += "," + users;
 				double sessions = us[1];
-				data[1].add(sessions);
-				max[0] = Math.max(max[0], Math.max(users, sessions));
+				ret += "," + sessions;
 				
 				double calls = ((double)(q[Type.STRUCTS.ordinal()] + q[Type.OTHER.ordinal()])) / w.getMinutes();
 				double gwtCalls = ((double)(q[Type.GWT.ordinal()] + q[Type.RPC.ordinal()])) / w.getMinutes();
-				data[2].add(calls);
-				data[3].add(gwtCalls);
-				max[1] = Math.max(max[1], Math.max(calls, gwtCalls));
-				
+				ret += "," + calls;
+				ret += "," + gwtCalls;
+				ret += "],";
 				dt = w.next(dt, now);
 			}
-			sLog.debug("[" + w.name() + "] Users: " + max[0] + " / " + data[0]);
-			sLog.debug("[" + w.name() + "] Sessions: " + max[0] + " / " + data[1]);
-			sLog.debug("[" + w.name() + "] Calls: " + max[1] + " / " + data[2]);
-			sLog.debug("[" + w.name() + "] GWT: " + max[1] + " / " + data[3]);
 		} else {
 			Map<String, double[]> times = w.getTimes(QueryLogDAO.getInstance().getSession());
 			while (dt != null) {
@@ -412,49 +406,17 @@ public class QueryLog extends BaseQueryLog {
 				double maxTime = Math.max(tm[3 * Type.STRUCTS.ordinal() + 2],tm[3 * Type.OTHER.ordinal() + 2]);
 				double gwtMaxTime = Math.max(tm[3 * Type.GWT.ordinal() + 2],tm[3 * Type.RPC.ordinal() + 2]);
 				
-				data[0].add(maxTime);
-				data[1].add(avgTime);
-				data[2].add(gwtMaxTime);
-				data[3].add(gwtAvgTime);
-				max[0] = Math.max(max[0], Math.max(maxTime, gwtMaxTime));
-				max[1] = Math.max(max[1], Math.max(avgTime, gwtAvgTime));
+				ret += "\n['" + w.axe(dt) + "'";
+				ret += "," + maxTime / 1000.0;
+				ret += "," + gwtMaxTime / 1000.0;
+				ret += "," + avgTime;
+				ret += "," + gwtAvgTime;
+				ret += "],";
 				
 				dt = w.next(dt, now);
 			}
-			sLog.debug("[" + w.name() + "] Max Time: " + max[0] + " / " + data[0]);
-			sLog.debug("[" + w.name() + "] Avg Time: " + max[1] + " / " + data[1]);
-			sLog.debug("[" + w.name() + "] Gwt Max Time: " + max[0] + " / " + data[2]);
-			sLog.debug("[" + w.name() + "] Gwt Avg Time: " + max[1] + " / " + data[3]);
 		}
-
-		DecimalFormat df = new DecimalFormat("0.0");
-		double range[] = new double[] { 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 50000, 100000, 1000000, 10000000};
-		double step[] = new double[] { 1, 1};
-		for (int i = 0; i < max.length; i++) {
-			if (max[i] <= 1.0) { max[i] = 1.0; step[i] = 0.1; continue; }
-			int x = 0;
-			while (max[i] / range[x] > 16) x++;
-			step[i] = range[x];
-		}
-		switch (t) {
-		case USERS:
-			return "http://chart.apis.google.com/chart?" + 
-				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[1], max[0]) + "," + encode(data[2], max[1]) + "," + encode(data[3], max[1]) +
-				"&chs=400x300&chl=" + axe + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
-				"&chdl=Users+per+" + w.getBase() + "|HTTP+Sessions+per+" + w.getBase() + "|Pages+per+Minute|GWT+Calls+per+Minute&chco=0000FF,00FF00,FF0000,FFA500" +
-				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[1]) +
-				"&chxl=4:||e|t|u|n|i|M|+|r|e|p|+|s|l|l|a|C||2:|s|n|o|i|s|s|e|s|+|s|r|e|s|u|+|f|o|+|r|b|N" +
-				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
-		case TIME:
-			return "http://chart.apis.google.com/chart?" +
-				"cht=lc&chd=e:" + encode(data[0], max[0]) + "," + encode(data[2], max[0]) + "," + encode(data[1], max[1]) + "," + encode(data[3], max[1]) +
-				"&chs=400x300&chl=" + axe + "&chxt=x,y,y,r,r&chxr=1,0," + df.format(max[0]) + "," + df.format(step[0]) + "|3,0," + df.format(max[1]) + "," + df.format(step[1]) +
-				"&chdlp=t&chds=0," + df.format(max[0]) + ",0," + df.format(max[0]) + ",0," + df.format(max[1]) + ",0," + df.format(max[1]) +
-				"&chdl=Max+Time+[s]|GWT+Max+Time+[s]|Average+Time+[ms]|GWT+Average+Time+[ms]&chco=0000FF,00FF00,FF0000,FFA500" + 
-				"&chxl=4:||e|m|i|T|+|e|g|a|r|e|v|A||2:||e|m|i|T|+|x|a|M|" +
-				"&chxs=1,0000FF|2,00FF00|3,FF0000|4,FFA500";
-		default:
-			return "";
-		}
+		ret += "\n]";
+		return ret;
 	}
 }
