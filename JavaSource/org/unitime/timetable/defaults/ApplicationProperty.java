@@ -3681,6 +3681,10 @@ public enum ApplicationProperty {
 	@DefaultValue("last-first-middle")
 	@Description("Authentication & Authorization: preferred format of the user name")
 	AuthorizationUserNameFormat("unitime.authorization.userNameFormat"),
+	
+	@DefaultValue("130px")
+	@Description("Add/Edit Curriculum: Width of the couse selection box.")
+	CurriculaCourseWidth("unitime.curricula.courseWidth"),
 
 	@Type(Boolean.class)
 	@DefaultValue("false")
