@@ -75,6 +75,7 @@ import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.OfferingCoordinatorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
+import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -95,6 +96,11 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	
 	@Override
 	public OfferingDetailResponse execute(OfferingDetailRequest request, SessionContext context) {
+		if (request.getOfferingId() != null && request.getOfferingId() < 0) {
+			CourseOffering co = CourseOfferingDAO.getInstance().get(-request.getOfferingId());
+			if (co != null)
+				request.setOfferingId(co.getInstructionalOffering().getUniqueId());
+		}
 		context.checkPermission(request.getOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail);
 		try {
 			InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(request.getOfferingId());

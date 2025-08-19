@@ -83,9 +83,14 @@ public class OfferingDetailPage extends Composite {
 		String id = Window.Location.getParameter("id");
 		if (id == null)
 			id = Window.Location.getParameter("io");
-		if (id == null || id.isEmpty()) {	
-			LoadingWidget.getInstance().hide();
-			iHeader.setErrorMessage(COURSE.errorNoOfferingId());
+		if (id == null || id.isEmpty()) {
+			String courseId = Window.Location.getParameter("co");
+			if (courseId != null && !courseId.isEmpty()) {
+				load(-Long.valueOf(courseId), null);
+			} else {
+				LoadingWidget.getInstance().hide();
+				iHeader.setErrorMessage(COURSE.errorNoOfferingId());
+			}
 		} else {
 			load(Long.valueOf(id), null);	
 		}
