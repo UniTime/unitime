@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.MappingException;
@@ -669,7 +669,7 @@ public class HibernateUtil {
     
     public static String escapeSql(String str) {
     	if (str == null) return null;
-    	return StringUtils.replace(str, "'", "''");
+    	return Strings.CS.replace(str, "'", "''");
     }
     
     /**

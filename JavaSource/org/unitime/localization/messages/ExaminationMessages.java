@@ -19,8 +19,6 @@
 */
 package org.unitime.localization.messages;
 
-import com.google.gwt.i18n.client.Messages.DefaultMessage;
-
 /**
  * @author Tomas Muller
  */
