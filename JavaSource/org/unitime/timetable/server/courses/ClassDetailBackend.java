@@ -360,7 +360,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         	c.add(clazz.getRoomRatio().toString());
         	c.add("( " + MSG.propertyMinimumRoomCapacity() + " " + clazz.getMinRoomLimit()).addStyle("padding-left: 20px;");
         	if (clazz.getNbrRooms() > 1) {
-        		if (clazz.isRoomsSplitAttendance())
+        		if (Boolean.TRUE.equals(clazz.isRoomsSplitAttendance()))
         			c.add(" " + MSG.descClassMultipleRoomsSplitAttendance());
         		else
         			c.add(" " + MSG.descClassMultipleRoomsAlternativeAttendance());
@@ -369,7 +369,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         }
         if (clazz.getNbrRooms() > 1)
         	response.addProperty(MSG.propertyRoomSplitAttendance()).add(
-        			clazz.isRoomsSplitAttendance() ? MSG.descriptionClassMultipleRoomsSplitAttendance()
+        			Boolean.TRUE.equals(clazz.isRoomsSplitAttendance()) ? MSG.descriptionClassMultipleRoomsSplitAttendance()
         					: MSG.descriptionClassMultipleRoomsAlternativeAttendance(), true);
         if (clazz.getLms() != null)
         	response.addProperty(MSG.propertyLms()).add(clazz.getLms().getLabel());
