@@ -3731,6 +3731,11 @@ unitime-RoomSharingWidget .legend .blank {
 	border-bottom: 1px dashed #AB8B00;
 }
 
+.unitime-PopupHint .unitime-InfoTable td {
+	vertical-align: top;
+	max-width: 400px;
+}
+
 .unitime-PageWarn {
 	display: block;
 	padding: 2px 2px 2px 10px;
