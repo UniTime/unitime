@@ -44,6 +44,13 @@
 				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
 			</description>
 		</item>
+		<item>
+			<name>Multiple Class Setup</name>
+			<description>
+				<line>Fixed a Hibernate exception when removing multiple classes assigned to the same instructor.</line>
+				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

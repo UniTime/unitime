@@ -52,6 +52,8 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalMethod;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -710,10 +712,15 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 			    c.getPreferences().removeAll(c.getPreferences());
 			
 			c.getSchedulingSubpart().getClasses().remove(c);
+			c.deleteAllDistributionPreferences(hibSession, false);
+			c.deleteTeachingRequests(hibSession);
+    	    c.deleteClassInstructors(hibSession);
+    	    c.deleteAssignments(hibSession);
 			hibSession.remove(c);
     	}
 		for (Class_ c: deleteClasses.values()) {
-			c.deleteAllDependentObjects(hibSession, false);
+			Exam.deleteFromExams(hibSession, c);
+			Event.deleteFromEvents(hibSession, c);
 		}
 	}
 	
