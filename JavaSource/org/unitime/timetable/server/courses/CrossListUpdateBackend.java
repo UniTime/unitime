@@ -158,6 +158,9 @@ public class CrossListUpdateBackend implements GwtRpcImplementation<CrossListUpd
                     
                     // Delete old course offering
     		        io.removeCourseOffering(co1);
+    		        for (CourseOffering co: io.getCourseOfferings())
+    		        	if (co1.equals(co.getDemandOffering()))
+    		        		co.setDemandOffering(null);
     		        
                     Event.deleteFromEvents(hibSession, co1);
     	            Exam.deleteFromExams(hibSession, co1);
@@ -266,6 +269,10 @@ public class CrossListUpdateBackend implements GwtRpcImplementation<CrossListUpd
                         
                         // Delete course offering
                         io1.removeCourseOffering(co2);
+                        for (CourseOffering co: io.getCourseOfferings())
+        		        	if (co2.equals(co.getDemandOffering()))
+        		        		co.setDemandOffering(null);
+                        
                         Event.deleteFromEvents(hibSession, co2);
                         Exam.deleteFromExams(hibSession, co2);
                     	String className = ApplicationProperty.ExternalActionCourseOfferingRemove.value();
