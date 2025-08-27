@@ -37,6 +37,13 @@
 				<line>The setting gets also used to set the course selection box width on the Add/Edit Reservation page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Cross Lists</name>
+			<description>
+				<line>Fixed a Hibernate exception when removing/addding a course from/to a cross-list, if the course is listed as demand course on some other course of the cross-list.</line>
+				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
