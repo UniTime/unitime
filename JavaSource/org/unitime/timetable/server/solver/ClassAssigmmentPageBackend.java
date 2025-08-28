@@ -168,6 +168,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         		}
         		
         		if ("null".equals(ch.getTime())) {
+        			date = null;
         		} else if (ch.hasTime()) {
         			DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         			String[] timeId = ch.getTime().split(":");
@@ -249,14 +250,65 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
 		else
 			classInfo = new ClassInfo(clazz);
 		
-		if (!request.hasChange(clazz.getUniqueId()) && classInfo instanceof ClassAssignmentInfo) {
-			ClassAssignmentInfo initial = (ClassAssignmentInfo)classInfo;
+		if (!request.hasChange(clazz.getUniqueId()) && classInfo instanceof ClassAssignment) {
+			ClassAssignment initial = (ClassAssignment)classInfo;
 			if (proposed == null) {
 				proposed = new ClassProposedChange();
 				proposed.setSelected(request.getSelectedClassId());
 			}
+			ClassDateInfo date = initial.getDate();
+			DatePattern dp = clazz.effectiveDatePattern();
+			if (dp != null) {
+				if (dp.getDatePatternType() != DatePatternType.PatternSet)
+					date = new ClassDateInfo(dp.getUniqueId(), clazz.getUniqueId(), dp.getName(), dp.getPatternBitSet(), 0);
+				else {
+					Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+					for (DatePattern child: dp.findChildren()) {
+	            		String pr = PreferenceLevel.sNeutral;
+	            		for (DatePatternPref p: datePatternPrefs)
+	            			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+						if (PreferenceLevel.sRequired.equals(pr)) {
+							date = new ClassDateInfo(
+                        			child.getUniqueId(),
+                        			clazz.getUniqueId(),
+                        			child.getName(),
+                        			child.getPatternBitSet(),
+                        			0);
+							break;
+						}
+						if (PreferenceLevel.sProhibited.equals(pr)) continue;
+						if (date == null) {
+							date = new ClassDateInfo(
+                        			child.getUniqueId(),
+                        			clazz.getUniqueId(),
+                        			child.getName(),
+                        			child.getPatternBitSet(),
+                        			PreferenceLevel.prolog2int(pr));
+						}
+					}
+					if (date == null) {
+						for (DatePattern child: dp.findChildren()) {
+							date = new ClassDateInfo(
+                        			child.getUniqueId(),
+                        			clazz.getUniqueId(),
+                        			child.getName(),
+                        			child.getPatternBitSet(),
+                        			100);
+						}
+					}
+				}
+			}
+			ClassAssignment modified = initial;
+			if (date != null && !date.equals(initial.getDate())) {
+				ClassTimeInfo time = initial.getTime();
+				DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
+				List<Date> dates = dm.getDates(
+                		clazz.getSchedulingSubpart().getMinutesPerWk(), date.getDatePattern(), time.getDayCode(), time.getMinutesPerMeeting(),
+                		class2eventDates);
+				modified = new ClassAssignment(clazz, new ClassTimeInfo(time, date, dates), date, initial.getRooms());
+			}
 			proposed.addChange(new ClassAssignmentInfo(
-    				clazz, initial.getTime(), initial.getDate(), null, proposed.getAssignmentTable(), request.isUseRealStudents(), conflicts),
+    				clazz, modified.getTime(), modified.getDate(), null, proposed.getAssignmentTable(), request.isUseRealStudents(), conflicts),
     				initial);
 		}
 		
@@ -296,7 +348,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         	if (initial.getRooms() != null && !initial.getRooms().isEmpty()) {
         		CellInterface c = response.addProperty(MSG.filterAssignedRoom());
         		for (ClassRoomInfo r: initial.getRooms())
-        			c.addItem(r.toCell()).setInline(false);
+        			c.addItem(r.toCell().setInline(false));
         	}
         } else {
         	DatePattern datePattern = clazz.effectiveDatePattern();
@@ -321,7 +373,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                 	if (assignment.getRooms() != null && !assignment.getRooms().isEmpty()) {
                 		CellInterface c = response.addProperty(MSG.properySelectedRoom());
                 		for (ClassRoomInfo r: assignment.getRooms())
-                			c.addItem(r.toCell()).setInline(false);
+                			c.addItem(r.toCell().setInline(false));
                 	}
         		}
         	response.setAssignments(generateAssigmentsTable(proposed, context));
@@ -330,7 +382,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         }
         
         try {
-            Collection<ClassAssignment> dates = getDates(classInfo, response.isShowStudentConflicts(), response.isUseRealStudents(), conflicts);
+        	Collection<ClassAssignment> dates = getDates(classInfo, response.isShowStudentConflicts(), response.isUseRealStudents(), conflicts);
             if (dates == null) {
             	response.addDatesErrorMessage(MSG.messageClassHasNoDatePatternSelected(classInfo.getClassName()));
             } else if (dates.size() > 1) {
@@ -476,7 +528,10 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
     		if (initial==null && assignment.getClazz().effectiveDatePattern().getDatePatternType() == DatePatternType.PatternSet)
     			d.add(MSG.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;")
     			.add(" \u2192 ");
-    		d.addItem(assignment.getDate().toCell());
+    		if (assignment.getDate() == null)
+    			d.add(MSG.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;");
+    		else
+    			d.addItem(assignment.getDate().toCell());
     		CellInterface t = line.addCell(); t.setNoWrap(true);
     		if (initial!=null && !initial.getTimeId().equals(assignment.getTimeId()))
     			t.addItem(initial.getTime().toCell()).add(" \u2192 ");
@@ -494,7 +549,9 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
     			r.add(MSG.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;")
     			.add(" \u2192 ");
     		r.addItem(assignment.toRoomCell());
-			if (assignment.getNrRooms()!=assignment.getNumberOfRooms()) {
+    		if (assignment.getNumberOfRooms() > 0 && assignment.getNrRooms() == 0 && assignment.getTime() == null) {
+    			r.add(MSG.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;");
+    		} else if (assignment.getNrRooms()!=assignment.getNumberOfRooms()) {
                 if (assignment.getClassId().equals(proposed.getSelectedClassId()))
                 	r.add(MSG.assignmentRoomSelectBelow()).addStyle("font-style: italic;");
                 else
