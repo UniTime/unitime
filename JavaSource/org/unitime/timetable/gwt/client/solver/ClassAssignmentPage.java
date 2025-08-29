@@ -510,6 +510,8 @@ public class ClassAssignmentPage extends Composite {
 							if ("time".equals(key)) {
 								iRequest.getChange(iRequest.getSelectedClassId()).setTime(getSelection());
 								iRequest.getChange(iRequest.getSelectedClassId()).setRoom(null);
+								if ("null".equals(getSelection()))
+									iRequest.getChange(iRequest.getSelectedClassId()).setDate(null);
 							}
 							if ("room".equals(key)) {
 								iRequest.getChange(iRequest.getSelectedClassId()).setRoom(getSelection());

@@ -168,7 +168,6 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         		}
         		
         		if ("null".equals(ch.getTime())) {
-        			date = null;
         		} else if (ch.hasTime()) {
         			DurationModel dm = clazz.getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
         			String[] timeId = ch.getTime().split(":");
