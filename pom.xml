@@ -812,8 +812,8 @@
 		</repository>
 		<repository>
 			<id>snapshot-repo</id>
-			<name>Sonatype's SNAPSHOT repository</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<name>Sonatype's Central Portal Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
 			<releases><enabled>false</enabled></releases>
 			<snapshots><enabled>true</enabled></snapshots>
 		</repository>
