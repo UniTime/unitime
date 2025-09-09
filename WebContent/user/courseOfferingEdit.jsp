@@ -585,6 +585,22 @@
 			</TD>
 		</TR>
 	</s:if>
+	
+	<sec:authorize access="(not #form.add and hasPermission(#form.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+						(#form.add and hasPermission(#form.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+		<s:if test="form.allowParentCourseOfferings == true && #request.parentOfferingList != null && !#request.parentOfferingList.isEmpty()">
+			<TR>
+				<TD><loc:message name="propertyParentCourseOffering"/> </TD>
+				<TD>
+					<s:select name="form.parentCourseOfferingId"
+						list="#request.parentOfferingList" listKey="uniqueId" listValue="courseNameWithTitle"
+						headerKey="" headerValue="%{#msg.itemNoParentCourse()}"/>
+					<i style="max-width: 600px; white-space: normal; display: block;"><loc:message name="descParentCourseOffering"/></i>
+				</TD>
+			</TR>
+		</s:if>
+	</sec:authorize>		
+	
 
 <!-- Buttons -->
 		<TR>

@@ -276,6 +276,13 @@ public class InstructionalOfferingDetailForm implements UniTimeForm {
     		if (((CourseOffering)i.next()).getAlternativeOffering()!=null) return true;
     	return false;
     }
+    
+    public boolean getHasParentCourse() {
+    	if (courseOfferings==null || courseOfferings.isEmpty() || ApplicationProperty.StudentSchedulingParentCourse.isFalse()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();)
+    		if (((CourseOffering)i.next()).getParentOffering()!=null) return true;
+    	return false;
+    }
 
 	public Integer getEnrollment() {
 		return enrollment;

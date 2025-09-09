@@ -239,6 +239,13 @@
             not-null="false"
             lazy="proxy"
             foreign-key="fk_co_fund_dept"/>
+            
+		<many-to-one
+            name="parentOffering"
+            class="CourseOffering"
+            column="parent_offering_id"
+            not-null="false"
+            foreign-key="fk_course_offering_parent_offr"/>
         
     </class>
 </hibernate-mapping>

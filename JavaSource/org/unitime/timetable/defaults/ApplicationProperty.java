@@ -3765,6 +3765,12 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Examination Distribution Preferences: switch the user interface back to the old (Struts-based) examination distribution prefererences page")
 	LegacyExamDistributions("unitime.legacy.examDistributions"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Student Scheduling: provide prerequisite (parent) course -- a student requesting both courses cannot get the course without also getting the prerequisite course")
+	@Since(4.9)
+	StudentSchedulingParentCourse("unitime.sectioning.parentCourse"),
 	;
 
 	String iKey;

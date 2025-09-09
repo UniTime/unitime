@@ -450,7 +450,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
                 new CourseOfferingComparator(CourseOfferingComparator.COMPARE_BY_CTRL_CRS));
         
         boolean hasCourseTypes = false, hasExtId = false, hasRes = false, hasCred = false, hasNote = false, hasDemandsFrom = false,
-        		hasAlt = false, hasDisOvrd = false;
+        		hasAlt = false, hasDisOvrd = false, hasParent = false;
         boolean hasEnrollment = false, hasDemand = false, hasProjDemand = false;
         for (CourseOffering co: offerings) {
         	if (co.getCourseType() != null) hasCourseTypes = true;
@@ -466,6 +466,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         		if (co.getDemand() != null && co.getDemand() > 0) hasDemand = true;
         		if (co.getProjectedDemand() != null && co.getProjectedDemand() > 0) hasProjDemand = true;
         	}
+        	if (co.getParentOffering() != null) hasParent = true;
         }
         boolean hasUrl = ApplicationProperty.CustomizationCourseLink.value() != null &&  !ApplicationProperty.CustomizationCourseLink.value().isEmpty();
         
@@ -484,6 +485,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         if (hasNote) header.addCell(MSG.columnScheduleOfClassesNote());
         if (hasDemandsFrom) header.addCell(MSG.columnDemandsFrom());
         if (hasAlt) header.addCell(MSG.columnAlternativeCourse());
+        if (hasParent) header.addCell(MSG.columnParentCourse());
         header.addCell(MSG.columnConsent());
         if (hasDisOvrd) header.addCell(MSG.columnDisabledOverrides());
         if (hasUrl) header.addCell(MSG.columnCourseCatalog());
@@ -527,6 +529,8 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         		line.addCell(co.getDemandOffering() == null ? "" : co.getDemandOffering().getCourseName());
         	if (hasAlt)
         		line.addCell(co.getAlternativeOffering() == null ? "" : co.getAlternativeOffering().getCourseName());
+        	if (hasParent)
+        		line.addCell(co.getParentOffering() == null ? "" : co.getParentOffering().getCourseName());
         	if (co.getConsentType() == null)
         		line.addCell(MSG.noConsentRequired());
         	else

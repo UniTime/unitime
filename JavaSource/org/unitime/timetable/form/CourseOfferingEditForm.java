@@ -81,6 +81,8 @@ public class CourseOfferingEditForm implements UniTimeForm {
     private String externalId;
     private Long alternativeCourseOfferingId;
     private boolean allowAlternativeCourseOfferings;
+    private Long parentCourseOfferingId;
+    private boolean allowParentCourseOfferings;
     private String notes;
     private String defaultTeachingResponsibilityId;
     private Set<String> overrides;
@@ -401,8 +403,14 @@ public class CourseOfferingEditForm implements UniTimeForm {
     public Long getAlternativeCourseOfferingId() { return alternativeCourseOfferingId; }
     public void setAlternativeCourseOfferingId(Long alternativeCourseOfferingId) { this.alternativeCourseOfferingId = alternativeCourseOfferingId; }
     
+    public Long getParentCourseOfferingId() { return parentCourseOfferingId; }
+    public void setParentCourseOfferingId(Long parentCourseOfferingId) { this.parentCourseOfferingId = parentCourseOfferingId; }
+    
     public boolean getAllowAlternativeCourseOfferings() { return allowAlternativeCourseOfferings; }
     public void setAllowAlternativeCourseOfferings(boolean allowAlternativeCourseOfferings) { this.allowAlternativeCourseOfferings = allowAlternativeCourseOfferings; }
+    
+    public boolean getAllowParentCourseOfferings() { return allowParentCourseOfferings; }
+    public void setAllowParentCourseOfferings(boolean allowParentCourseOfferings) { this.allowParentCourseOfferings = allowParentCourseOfferings; }
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

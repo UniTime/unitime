@@ -267,6 +267,17 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         				courseOffering.setAlternativeOffering(dco==null?null:dco);
         			}
                 }
+                
+                Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue();
+                
+                if (allowParentCourseOfferings) {
+                	if (courseOfferingInterface.getParentCourseOfferingId()==null) {
+                    	courseOffering.setParentOffering(null);
+        			} else {
+        				CourseOffering dco = CourseOfferingDAO.getInstance().get(courseOfferingInterface.getParentCourseOfferingId(), hibSession);
+        				courseOffering.setParentOffering(dco==null?null:dco);
+        			}
+                }
 
                 if (courseOfferingInterface.getCourseTypeId()==null) {
                 	courseOffering.setCourseType(null);
@@ -503,6 +514,17 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     			} else {
     				CourseOffering dco = CourseOfferingDAO.getInstance().get(courseOfferingInterface.getAlternativeCourseOfferingId(), hibSession);
     				courseOffering.setAlternativeOffering(dco==null?null:dco);
+    			}
+            }
+            
+            Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue();
+            
+            if (allowParentCourseOfferings) {
+            	if (courseOfferingInterface.getParentCourseOfferingId()==null) {
+                	courseOffering.setParentOffering(null);
+    			} else {
+    				CourseOffering dco = CourseOfferingDAO.getInstance().get(courseOfferingInterface.getParentCourseOfferingId(), hibSession);
+    				courseOffering.setParentOffering(dco==null?null:dco);
     			}
             }
             

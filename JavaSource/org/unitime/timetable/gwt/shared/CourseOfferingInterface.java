@@ -61,6 +61,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	private Long iDemandOfferingId;
 	private String iDemandOfferingText;
 	private Long iAlternativeCourseOfferingId;
+	private Long iParentCourseOfferingId;
 	private Long iFundingDepartmentId;
 	private Long iEffectiveFundingDepartmentId;
 	private Long iCourseTypeId;
@@ -170,6 +171,9 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	
 	public Long getAlternativeCourseOfferingId() { return iAlternativeCourseOfferingId; }
 	public void setAlternativeCourseOfferingId(Long alternativeCourseOfferingId) { iAlternativeCourseOfferingId = alternativeCourseOfferingId; }
+	
+	public Long getParentCourseOfferingId() { return iParentCourseOfferingId; }
+	public void setParentCourseOfferingId(Long parentCourseOfferingId) { iParentCourseOfferingId = parentCourseOfferingId; }
 	
 	public Long getFundingDepartmentId() { return iFundingDepartmentId; }
 	public void setFundingDepartmentId(Long fundingDepartmentId) { iFundingDepartmentId = fundingDepartmentId; }
@@ -488,6 +492,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private List<OfferingConsentTypeInterface> iOfferingConsentTypes = new ArrayList<OfferingConsentTypeInterface>();
 		private List<ResponsibilityInterface> iResponsibilities = new ArrayList<ResponsibilityInterface>();
 		private List<DepartmentInterface> iFundingDepartments = new ArrayList<DepartmentInterface>();
+		private List<CourseOfferingInterface> iParentCourseOfferings = new ArrayList<CourseOfferingInterface>();
 		private String iCourseNbrRegex;
 		private String iCourseNbrInfo;
 		private Boolean iCourseOfferingMustBeUnique;
@@ -506,6 +511,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 		private String iInstructionalOfferingId;
 		private String iDefaultTeachingResponsibilityId;
 		private Long iSubjectAreaEffectiveFundingDept;
+		private Boolean iAllowParentCourseOfferings;
 
 		private List<InstructorInterface> iInstructors = new ArrayList<InstructorInterface>();
 		
@@ -609,7 +615,11 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	    public Long getSubjectAreaEffectiveFundingDept() { return iSubjectAreaEffectiveFundingDept; }
 	    public void setSubjectAreaEffectiveFundingDept(Long subjectAreaEffectiveFundingDept) { iSubjectAreaEffectiveFundingDept = subjectAreaEffectiveFundingDept; }
 	    
-	    
+		public void setAllowParentCourseOfferings(Boolean allowParentCourseOfferings) { iAllowParentCourseOfferings = allowParentCourseOfferings; }
+		public Boolean getAllowParentCourseOfferings() { return iAllowParentCourseOfferings; }
+		
+		public void addParentCourseOffering(CourseOfferingInterface altCourseOffering) { iParentCourseOfferings.add(altCourseOffering); }
+		public List<CourseOfferingInterface> getParenCourseOfferings() { return iParentCourseOfferings; }
 	}
 	
 	public static class SubjectAreaInterface implements GwtRpcResponse {

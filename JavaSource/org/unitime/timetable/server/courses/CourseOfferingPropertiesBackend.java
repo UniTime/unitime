@@ -327,6 +327,9 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		Boolean allowAlternativeCourseOfferings = ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue();
 		response.setAllowAlternativeCourseOfferings(allowAlternativeCourseOfferings);
 		
+		Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue();
+		response.setAllowParentCourseOfferings(allowParentCourseOfferings);
+		
 		String courseUrlProvider = ApplicationProperty.CustomizationCourseLink.value();
 		response.setCourseUrlProvider(courseUrlProvider);
 		
@@ -360,6 +363,22 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 				courseOffering.setId(co.getUniqueId());
 				courseOffering.setLabel(co.getCourseNameWithTitle());
 				response.addAltCourseOffering(courseOffering);
+			}
+		}
+		
+		if (allowParentCourseOfferings) {
+			List<CourseOffering> parentCourseOfferings = setupCourseOfferings(context, new CourseFilter() {
+				@Override
+				public boolean accept(CourseOffering course) {
+					return !course.getInstructionalOffering().isNotOffered() && course.getParentOffering() == null;
+				}
+			});
+
+			for (CourseOffering co: parentCourseOfferings) {
+				CourseOfferingInterface courseOffering = new CourseOfferingInterface();
+				courseOffering.setId(co.getUniqueId());
+				courseOffering.setLabel(co.getCourseNameWithTitle());
+				response.addParentCourseOffering(courseOffering);
 			}
 		}
 

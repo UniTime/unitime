@@ -79,4 +79,9 @@ public class CourseOfferingDAO extends _RootDAO<CourseOffering,Long> {
 	public List<CourseOffering> findByFundingDept(org.hibernate.Session hibSession, Long fundingDeptId) {
 		return hibSession.createQuery("from CourseOffering x where x.fundingDept.uniqueId = :fundingDeptId", CourseOffering.class).setParameter("fundingDeptId", fundingDeptId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<CourseOffering> findByParentOffering(org.hibernate.Session hibSession, Long parentOfferingId) {
+		return hibSession.createQuery("from CourseOffering x where x.parentOffering.uniqueId = :parentOfferingId", CourseOffering.class).setParameter("parentOfferingId", parentOfferingId).list();
+	}
 }

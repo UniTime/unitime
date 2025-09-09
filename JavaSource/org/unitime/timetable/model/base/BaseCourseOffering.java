@@ -83,6 +83,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private OfferingConsentType iConsentType;
 	private CourseOffering iAlternativeOffering;
 	private Department iFundingDept;
+	private CourseOffering iParentOffering;
 	private Set<CourseCreditUnitConfig> iCreditConfigs;
 	private Set<OverrideType> iDisabledOverrides;
 
@@ -203,6 +204,11 @@ public abstract class BaseCourseOffering implements Serializable {
 	public Department getFundingDept() { return iFundingDept; }
 	public void setFundingDept(Department fundingDept) { iFundingDept = fundingDept; }
 
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "parent_offering_id", nullable = true)
+	public CourseOffering getParentOffering() { return iParentOffering; }
+	public void setParentOffering(CourseOffering parentOffering) { iParentOffering = parentOffering; }
+
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "courseOwner", cascade = {CascadeType.ALL}, orphanRemoval = true)
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	public Set<CourseCreditUnitConfig> getCreditConfigs() { return iCreditConfigs; }
@@ -264,6 +270,7 @@ public abstract class BaseCourseOffering implements Serializable {
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	IsControl: " + getIsControl() +
 			"\n	NbrExpectedStudents: " + getNbrExpectedStudents() +
+			"\n	ParentOffering: " + getParentOffering() +
 			"\n	PermId: " + getPermId() +
 			"\n	ProjectedDemand: " + getProjectedDemand() +
 			"\n	Reservation: " + getReservation() +

@@ -7445,6 +7445,12 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 0px;
 }
 
+.unitime-CourseOfferingEdit .parentCourse .description {
+	max-width: 700px;
+	white-space: normal;
+	font-style: italic;
+}
+
 .unitime-HQLTable {
 	white-space: pre-wrap;
 }

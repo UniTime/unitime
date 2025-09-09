@@ -15710,4 +15710,19 @@
 		<pgsql onFail="next">alter table %SCHEMA%.room_join_room_feature add primary key (room_id, feature_id)</pgsql>
 		<pgsql onFail="next">alter table %SCHEMA%.event_join_event_contact add primary key (event_id, event_contact_id)</pgsql>
 	</update>
+	<update version="273" date="5-Sep-2025" comment="Dependent Course Offerings">
+		<mysql>
+			alter table %SCHEMA%.course_offering add parent_offering_id decimal(20,0) null
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.course_offering add parent_offering_id number(20)
+		</plsql>
+		<pgsql>
+			alter table %SCHEMA%.course_offering add parent_offering_id bigint
+		</pgsql>
+		<sql>
+			alter table %SCHEMA%.course_offering add constraint fk_course_offering_parent_offr foreign key (parent_offering_id)
+			references %SCHEMA%.course_offering (uniqueid) on delete set null
+		</sql>
+	</update>
 </dbupdate>

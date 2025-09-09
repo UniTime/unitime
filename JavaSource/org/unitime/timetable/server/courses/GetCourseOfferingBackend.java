@@ -111,6 +111,10 @@ public class GetCourseOfferingBackend implements GwtRpcImplementation<GetCourseO
 			cof.setAlternativeCourseOfferingId(courseOffering.getAlternativeOffering().getUniqueId());
 		}
 		
+		if (courseOffering.getParentOffering() != null) {
+			cof.setParentCourseOfferingId(courseOffering.getParentOffering().getUniqueId());
+		}
+		
 		if (courseOffering.getFundingDept() != null) {
 			cof.setFundingDepartmentId(courseOffering.getFundingDept().getUniqueId());
 		}

@@ -6066,5 +6066,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Show student conflicts:")
 	String propertyShowStudentConflicts();
-
+	
+	@DefaultMessage("Prerequisite")
+	String columnParentCourse();
+	
+	@DefaultMessage("Prerequisite Course:")
+	String propertyParentCourseOffering();
+	
+	@DefaultMessage("If both this course and the prerequisite course are requested by a student, the student scheduling student solver cannot assign the student this course when the prerequisite course is not assigned.")
+	String descParentCourseOffering();
+	
+	@DefaultMessage("No Prerequisite Course")
+	String itemNoParentCourse();
 }

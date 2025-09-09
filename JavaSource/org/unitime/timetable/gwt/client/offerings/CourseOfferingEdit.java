@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -89,6 +90,7 @@ public class CourseOfferingEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final CourseMessages CMSG = GWT.create(CourseMessages.class);
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	Logger logger = java.util.logging.Logger.getLogger("CourseOfferingEdit");
 
@@ -98,7 +100,7 @@ public class CourseOfferingEdit extends Composite {
 	private UniTimeHeaderPanel iTitleAndButtons;
 	private UniTimeWidget<UniTimeTextBox> iCourseNumber, iTitle, iUnits, iMaxUnits, iExternalId;
 	private UniTimeTextBox iNewEnrollmentDeadline, iClassChangesDeadline, iCourseDropDeadline;
-	private UniTimeWidget<ListBox> iConsent, iFundingDepartment, iSubjectArea, iCredit, iCreditType, iCreditUnitType, iCourseDemands, iAlternativeCourseOfferings, iCourseType, iWaitListing;
+	private UniTimeWidget<ListBox> iConsent, iFundingDepartment, iSubjectArea, iCredit, iCreditType, iCreditUnitType, iCourseDemands, iAlternativeCourseOfferings, iCourseType, iWaitListing, iParentCourseOfferings;
 	private UniTimeWidget<TextArea> iScheduleNote, iRequestsNotes;
 	private Label iCreditText, iScheduleNoteText, iConsentText, iCourseDemandsText, iRequestNotesText, iTitleText, iNewEnrollmentDeadlineText, iClassChangesDeadlineText;
 	private Label iCourseDropDeadlineText, iReservationOnlyText, iWaitListingText;
@@ -111,13 +113,14 @@ public class CourseOfferingEdit extends Composite {
 	private Boolean iCourseOfferingNumberMustBeUnique;
 	private Boolean iCourseOfferingNumberUpperCase;
 	private Boolean iAllowAlternativeCourseOfferings;
+	private Boolean iAllowParentCourseOfferings;
 	private Boolean iCoursesFundingDepartmentsEnabled;
 	private Boolean iCanEditExternalIds;
 	private Boolean iCanShowExternalIds;
 	private Boolean iAllowDemandCourseOfferings;
 	private Image waitListingImage;
 	
-	private int iNewEnrollmentDeadlineLine, iClassChangesDeadlineLine, iCourseDropDeadlineLine, iAltCourseOfferingLine, iFundingDeptLine, iCourseNumberLine, iTitleLine, iReservationOnlyLine;
+	private int iNewEnrollmentDeadlineLine, iClassChangesDeadlineLine, iCourseDropDeadlineLine, iAltCourseOfferingLine, iFundingDeptLine, iCourseNumberLine, iTitleLine, iReservationOnlyLine, iParentCourseOfferingLine;
 	private int iExternalIdLine, iCourseTypeLine, iConsentLine, iInstructorPanelLine, iRequestsNotesLine, iScheduleNoteLine;
 	private int iCreditSectionLine, iCreditTextLine, iCatalogLinkLabelLine, iCourseUrlProviderLine, iOverrideTypeLine, iDescEnrollmentDeadlinesLine;
 	private int iCourseDemandsLine, iWaitListingLine, iScheduleNoteTextLine, iConsentTextLine, iCourseDemandsTextLine, iRequestNotesTextLine, iTitleTextLine;
@@ -543,9 +546,8 @@ public class CourseOfferingEdit extends Composite {
 		});
 		iAltCourseOfferingLine = iPanel.addRow(MESSAGES.propAlternativeCourseOffering(), iAlternativeCourseOfferings);
 		iPanel.getRowFormatter().setVisible(iAltCourseOfferingLine, false);
-				
 		//End Alternative course offering
-		
+
 		//Catalog Link Label
 		iCatalogLinkLabel = new Anchor();
 		iCatalogLinkLabelLine = iPanel.addRow(MESSAGES.propertyCourseCatalog(), iCatalogLinkLabel);
@@ -757,6 +759,21 @@ public class CourseOfferingEdit extends Composite {
 		iOverrideTypeLine = iPanel.addRow(MESSAGES.propertyDisabledOverrides(), overrideTypesForm);
 		overrideTypesForm.removeStyleName("unitime-NotPrintableBottomLine");
 		iPanel.getRowFormatter().setVisible(iOverrideTypeLine, false);
+		
+		
+		iParentCourseOfferings = new UniTimeWidget<ListBox>(new ListBox());
+		iParentCourseOfferings.getWidget().setStyleName("unitime-TextBox");
+		iParentCourseOfferings.getWidget().setSelectedIndex(0);
+		iParentCourseOfferings.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iParentCourseOfferings.clearHint();
+			}
+		});
+		P parentCoursePanel = new P("parentCourse"); parentCoursePanel.add(iParentCourseOfferings);
+		P desc = new P("description"); desc.setText(CMSG.descParentCourseOffering()); parentCoursePanel.add(desc);
+		iParentCourseOfferingLine = iPanel.addRow(CMSG.propertyParentCourseOffering(), parentCoursePanel);
+		iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
 
 		LoadingWidget.getInstance().show(MESSAGES.waitPlease());
 		RPC.execute(new CourseOfferingCheckPermissions(iCourseOfferingId, iSubjAreaId), new AsyncCallback<CourseOfferingPermissionsInterface>() {
@@ -1302,6 +1319,26 @@ public class CourseOfferingEdit extends Composite {
 							}
 						}
 					}
+					
+					iAllowParentCourseOfferings = result.getAllowParentCourseOfferings();
+					
+					if (iAllowParentCourseOfferings) {
+						if (result.getParenCourseOfferings() == null || result.getParenCourseOfferings().isEmpty()) {
+							iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
+						} else {
+							iParentCourseOfferings.getWidget().addItem(CMSG.itemNoParentCourse(), "none");
+							for (CourseOfferingInterface courseOffering: result.getParenCourseOfferings()) {
+								iParentCourseOfferings.getWidget().addItem(courseOffering.getLabel(), courseOffering.getId().toString());
+							}
+							
+							if (iCanAddCourseOffering) {
+								iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, true);
+							} else {
+								iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
+							}
+						}
+					}
+					
 					
 					iCoursesFundingDepartmentsEnabled = result.getCoursesFundingDepartmentsEnabled();
 					
@@ -1922,6 +1959,35 @@ public class CourseOfferingEdit extends Composite {
 						}
 					}
 					
+					iAllowParentCourseOfferings = result.getAllowParentCourseOfferings();
+					if (iAllowParentCourseOfferings) {
+						if (result.getParenCourseOfferings() == null || result.getParenCourseOfferings().isEmpty()) {
+							iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
+						} else {
+							iParentCourseOfferings.getWidget().addItem(CMSG.itemNoParentCourse(), "none");
+							for (CourseOfferingInterface courseOffering: result.getParenCourseOfferings()) {
+								iParentCourseOfferings.getWidget().addItem(courseOffering.getLabel(), courseOffering.getId().toString());
+							}
+
+							if (courseOffering.getParentCourseOfferingId() != null) {
+								int altIndex = -1;
+								for (int i = 0; i < iParentCourseOfferings.getWidget().getItemCount(); i++) {
+									if (iParentCourseOfferings.getWidget().getValue(i).equals(courseOffering.getParentCourseOfferingId().toString())) {
+										altIndex = i;
+										break;
+									}
+								}
+								iParentCourseOfferings.getWidget().setSelectedIndex(altIndex);
+							}
+							
+							if (iCanEditCourseOffering) {
+								iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, true);
+							} else {
+								iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
+							}
+						}
+					}
+					
 					if (result.getCourseUrlProvider() != null && !result.getCourseUrlProvider().isEmpty()) {
 						iPanel.getRowFormatter().setVisible(iCourseUrlProviderLine, true);
 					} else {
@@ -2103,6 +2169,16 @@ public class CourseOfferingEdit extends Composite {
 					iCourseOffering.setAlternativeCourseOfferingId(null);
 				} else {
 					iCourseOffering.setAlternativeCourseOfferingId(Long.parseLong (iAlternativeCourseOfferings.getWidget().getSelectedValue()));
+				}
+			}
+		}
+		
+		if (iAllowParentCourseOfferings) {
+			if (iParentCourseOfferings.getWidget().getSelectedValue() != null) {
+				if ("none".equals(iParentCourseOfferings.getWidget().getSelectedValue())) {
+					iCourseOffering.setParentCourseOfferingId(null);
+				} else {
+					iCourseOffering.setParentCourseOfferingId(Long.parseLong (iParentCourseOfferings.getWidget().getSelectedValue()));
 				}
 			}
 		}

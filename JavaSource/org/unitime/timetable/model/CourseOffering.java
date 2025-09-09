@@ -336,6 +336,8 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
         co.setScheduleBookNote(this.getScheduleBookNote());
         co.setIsControl(this.getIsControl());
         co.setFundingDept(this.getFundingDept());
+        co.setAlternativeOffering(this.getAlternativeOffering());
+        co.setParentOffering(this.getParentOffering());
     	return co;
     }
     //End

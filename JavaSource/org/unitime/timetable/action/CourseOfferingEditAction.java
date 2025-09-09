@@ -191,6 +191,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        form.setWkDropDefault(session.getLastWeekToDrop());
 	        form.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(session.getSessionBeginDateTime()));
 	        form.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
+	        form.setAllowParentCourseOfferings(ApplicationProperty.StudentSchedulingParentCourse.isTrue());
 			doReload();
 		}
 
@@ -379,6 +380,12 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 			        else {
 			        	co.setAlternativeOffering(CourseOfferingDAO.getInstance().get(form.getAlternativeCourseOfferingId(),hibSession));
 			        }	
+		        }
+		        if (ApplicationProperty.StudentSchedulingParentCourse.isTrue()) {
+		        	if (form.getParentCourseOfferingId() == null)
+		        		co.setParentOffering(null);
+		        	else
+		        		co.setParentOffering(CourseOfferingDAO.getInstance().get(form.getParentCourseOfferingId(),hibSession));
 		        }
 		        
 		        if (form.getCourseTypeId() == null || form.getCourseTypeId().isEmpty()) {
@@ -599,6 +606,9 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 	        
 	        if (form.getAlternativeCourseOfferingId() != null && ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue())
 	        	co.setAlternativeOffering(CourseOfferingDAO.getInstance().get(form.getAlternativeCourseOfferingId(),hibSession));
+	        
+	        if (form.getParentCourseOfferingId() != null && ApplicationProperty.StudentSchedulingParentCourse.isTrue())
+	        	co.setParentOffering(CourseOfferingDAO.getInstance().get(form.getParentCourseOfferingId(),hibSession));
 
 	        if (form.getCourseTypeId() != null && !form.getCourseTypeId().isEmpty()) 
 	        	co.setCourseType(CourseTypeDAO.getInstance().get(Long.valueOf(form.getCourseTypeId()), hibSession));
@@ -741,6 +751,8 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         form.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
         form.setAlternativeCourseOfferingId(co.getAlternativeOffering() == null ? null : co.getAlternativeOffering().getUniqueId());
         form.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
+        form.setParentCourseOfferingId(co.getParentOffering() == null ? null : co.getParentOffering().getUniqueId());
+        form.setAllowParentCourseOfferings(ApplicationProperty.StudentSchedulingParentCourse.isTrue());
         if (ApplicationProperty.CourseOfferingShowExternalIds.isTrue() || ApplicationProperty.CourseOfferingEditExternalIds.isTrue())
         	form.setExternalId(co.getExternalUniqueId());
 
@@ -838,6 +850,13 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
     				return !course.getInstructionalOffering().isNotOffered() && !course.equals(co);
     			}
     		}, "altOfferingList");
+        if (ApplicationProperty.StudentSchedulingParentCourse.isTrue())
+            LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+    			@Override
+    			public boolean accept(CourseOffering course) {
+    				return !course.getInstructionalOffering().isNotOffered() && course.getParentOffering() == null;
+    			}
+    		}, "parentOfferingList");        
         
         LookupTables.setupCourseTypes(request);
     }
@@ -872,6 +891,13 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
         				return !course.getInstructionalOffering().isNotOffered();
         			}
         		}, "altOfferingList");
+            if (ApplicationProperty.StudentSchedulingParentCourse.isTrue())
+                LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+        			@Override
+        			public boolean accept(CourseOffering course) {
+        				return !course.getInstructionalOffering().isNotOffered() && course.getParentOffering() == null;
+        			}
+        		}, "parentOfferingList");
             LookupTables.setupCourseTypes(request);
             List<SubjectArea> subjects = new ArrayList<SubjectArea>();
             boolean found = false;
@@ -897,6 +923,7 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
 
     	form.setAllowDemandCourseOfferings(true);
     	form.setAllowAlternativeCourseOfferings(ApplicationProperty.StudentSchedulingAlternativeCourse.isTrue());
+    	form.setAllowParentCourseOfferings(ApplicationProperty.StudentSchedulingParentCourse.isTrue());
 
         LookupTables.setupConsentType(request);
         LookupTables.setupCoordinatorTeachingResponsibilities(request);
@@ -918,6 +945,13 @@ public class CourseOfferingEditAction extends UniTimeAction<CourseOfferingEditFo
     				return !course.getInstructionalOffering().isNotOffered() && !course.equals(co);
     			}
     		}, "altOfferingList");
+        if (ApplicationProperty.StudentSchedulingParentCourse.isTrue())
+            LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+    			@Override
+    			public boolean accept(CourseOffering course) {
+    				return !course.getInstructionalOffering().isNotOffered() && course.getParentOffering() == null;
+    			}
+    		}, "parentOfferingList");
         
         if (co.isIsControl()) {
             // Setup instructors
