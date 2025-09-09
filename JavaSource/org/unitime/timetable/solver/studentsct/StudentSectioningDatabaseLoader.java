@@ -55,6 +55,7 @@ import org.cpsolver.ifs.util.Progress;
 import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningLoader;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.constraint.DependentCourses;
 import org.cpsolver.studentsct.constraint.FixedAssignments;
 import org.cpsolver.studentsct.constraint.LinkedSections;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
@@ -236,6 +237,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iMoveFreeTimesDown = false;
 	private boolean iCorrectConfigLimit = false;
 	private boolean iUseSnapShotLimits = false;
+	private boolean iMoveParentCoursesUp = false;
 	private Map<StudentPriority, String> iPriorityStudentGroupReference = new HashMap<StudentPriority, String>();
 	private Map<StudentPriority, Query> iPriorityStudentQuery = new HashMap<StudentPriority, Query>();
 	private Query iProjectedStudentQuery = null;
@@ -386,6 +388,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
         iMoveCriticalCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveCriticalCoursesUp", iMoveCriticalCoursesUp);
         iMoveFreeTimesDown = model.getProperties().getPropertyBoolean("Load.MoveFreeTimesDown", iMoveFreeTimesDown);
+        iMoveParentCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveParentCoursesUp", iMoveParentCoursesUp || iMoveFreeTimesDown);
 
         String onlineOnlyStudentFilter = model.getProperties().getProperty("Load.OnlineOnlyStudentFilter", null);
         iOnlineOnlyInstructionalModeRegExp = model.getProperties().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
@@ -2080,19 +2083,48 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     	}
     }
     
+    private boolean isParent(Request r1, Request r2) {
+		if (r1 instanceof CourseRequest && r2 instanceof CourseRequest && !r1.equals(r2)) {
+			CourseRequest cr1 = (CourseRequest)r1;
+			CourseRequest cr2 = (CourseRequest)r2;
+			for (Course course: cr2.getCourses())
+				if (course.hasParent() && cr1.hasCourse(course.getParent())) return true;
+		}
+		return false;
+    }
+    
     public void reorderStudentRequests(Student student) {
-    	int assigned = 0, critical = 0, freetime = 0;
+    	int assigned = 0, critical = 0, freetime = 0, dependents = 0;
     	for (Request r: student.getRequests()) {
     		if (r instanceof CourseRequest) {
     			if (r.getInitialAssignment() != null && getAssignment().getValue(r) != null)
     				assigned ++;
     			if (r.isCritical() && !r.isAlternative())
     				critical ++;
+    			for (Course c: ((CourseRequest)r).getCourses())
+    				if (c.hasParent()) {
+    					dependents ++; break;
+    				}
     		} else if (r instanceof FreeTimeRequest) {
     			freetime ++;
     		}
     	}
-    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0) || (iMoveFreeTimesDown && freetime > 0) || (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty())) {
+    	if (iMoveParentCoursesUp && dependents > 0) {
+    		for (Request r1: student.getRequests()) {
+        		if (r1 instanceof CourseRequest && r1.hasChildren()) {
+        			for (Request r2: student.getRequests()) {
+        				if (isParent(r1, r2) && !r1.getRequestPriority().isSame(r2)) {
+        					CourseRequest cr1 = (CourseRequest)r1;
+        					CourseRequest cr2 = (CourseRequest)r2;
+        					RequestPriority rp = (cr1.getRequestPriority().isHigher(r2) ? cr1.getRequestPriority() : cr2.getRequestPriority());
+        					cr1.setRequestPriority(rp);
+        					cr2.setRequestPriority(rp);
+        				}
+        			}
+        		}
+    		}
+    	}
+    	if ((getModel().isMPP() && getModel().getKeepInitialAssignments() && assigned > 0) || (iMoveCriticalCoursesUp && critical > 0) || (iMoveFreeTimesDown && freetime > 0) || (iMPPCoursesRegExp != null && !iMPPCoursesRegExp.isEmpty()) || (iMoveParentCoursesUp && dependents > 0)) {
 			Collections.sort(student.getRequests(), new Comparator<Request>() {
 				@Override
 				public int compare(Request r1, Request r2) {
@@ -2107,6 +2139,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null);
 						boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null);
 						if (a1 != a2) return a1 ? -1 : 1;
+					}
+					if (iMoveParentCoursesUp) {
+						boolean p1 = isParent(r1, r2);
+						boolean p2 = isParent(r2, r1);
+						if (p1 && !p2) return -1;
+						if (p2 && !p1) return 1;
 					}
 					if (iMoveCriticalCoursesUp) {
 						RequestPriority p1 = r1.getRequestPriority();
@@ -2668,6 +2706,27 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (offering!=null) getModel().addOffering(offering);
         }
         
+        setPhase("Loading parent coursess...", offerings.size());
+        for (InstructionalOffering io: offerings) {
+        	incProgress();
+        	boolean hasParent = false;
+        	for (CourseOffering co: io.getCourseOfferings()) {
+        		if (co.getParentOffering() != null) {
+        			Course course = courseTable.get(co.getUniqueId());
+        			if (course == null) continue;
+        			Course parent = courseTable.get(co.getParentOffering().getUniqueId());
+        			if (parent == null) {
+        				iProgress.warn("Prerequisite course " + co.getParentOffering().getCourseName() + " for " + co.getCourseName() + " did not get loaded.");
+        			} else {
+        				course.setParent(parent);
+        				hasParent = true;
+        			}
+        		}
+        	}
+        	if (hasParent && getModel().getProperties().getPropertyBoolean("Sectioning.DependentCourses", true)) 
+        		getModel().addGlobalConstraint(new DependentCourses());
+        }
+        
         List<DistributionPref> distPrefs = hibSession.createQuery(
         		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
         		" and p.owner = d and p.prefLevel.prefProlog = :pref", DistributionPref.class)
@@ -3158,7 +3217,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	incProgress();
             	reorderStudentRequests(student);
             }
-        }
+        } else if (iMoveParentCoursesUp && getModel().getDependentCoursesConstraint() != null) {
+        	setPhase("Moving prerequisite course up...", getModel().getStudents().size());
+            for (Student student: getModel().getStudents()) {
+            	incProgress();
+            	reorderStudentRequests(student);
+            }
+        } 
                 
         if (iStudentCourseDemands != null) {
         	iStudentCourseDemands.init(hibSession, iProgress, SessionDAO.getInstance().get(iSessionId, hibSession), offerings);
