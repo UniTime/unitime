@@ -154,6 +154,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 			Lock lock = server.readLock();
 			
 			try {
+				Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 	    		for (XCourseId ci: server.findCourses(new AnyCourseMatcher())) {
 		        	XOffering offering = server.getOffering(ci.getOfferingId());
 		        	if (offering == null || offerings.containsKey(offering.getOfferingId())) continue;
@@ -166,6 +167,8 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 		        		clonedCourse.setTitle(course.getTitle());
 		        		clonedCourse.setCredit(course.getCredit());
 		        		courses.put(course.getCourseId(), clonedCourse);
+		        		if (course.getParentCourseId() != null)
+		        			parentCourses.put(course.getCourseId(), course.getParentCourseId());
 	        		}
 	        		for (XConfig config: offering.getConfigs()) {
 	        			Config clonedConfig = new Config(config.getConfigId(), config.getLimit(), config.getName(), clonedOffering);
@@ -313,6 +316,12 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 	        		offerings.put(offering.getOfferingId(), clonedOffering);
 	        		model.addOffering(clonedOffering);
 	        	}
+				for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+					Course course = courses.get(e.getKey());
+					Course parent = courses.get(e.getValue());
+					if (course != null && parent != null)
+						course.setParent(parent);
+				}
 		        
 		        Map<Long, Student> students = new HashMap<Long, Student>();
 				for (XStudentId id: server.findStudents(new AnyStudentMatcher())) {

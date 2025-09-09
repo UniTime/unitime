@@ -44,6 +44,7 @@ import org.cpsolver.ifs.assignment.AssignmentMap;
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.cpsolver.ifs.util.ToolBox;
 import org.cpsolver.studentsct.StudentSectioningModel;
+import org.cpsolver.studentsct.constraint.DependentCourses;
 import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
@@ -241,13 +242,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				action.addEnrollment(enrollment);
 			}
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
+			Map<Long, Course> courseTable = new HashMap<Long, Course>();
+			Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			if (getAssignment() != null) getRequest().moveActiveSubstitutionsUp();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
+				addRequest(server, model, assignment, student, original, c, false, false, classTable, courseTable, parentCourses, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
 			if (student.getRequests().isEmpty() && !CONSTANTS.allowEmptySchedule()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
+				addRequest(server, model, assignment, student, original, c, true, false, classTable, courseTable, parentCourses, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -266,7 +269,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								if (ci != null) {
 									XOffering x = server.getOffering(ci.getOfferingId());
 									if (x != null) {
-										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, helper));
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, courseTable, parentCourses, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, helper));
 										distributions.addAll(x.getDistributions());
 									}
 								}
@@ -275,6 +278,17 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					}
 				}
 			}
+			boolean hasParent = false;
+			for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+				Course course = courseTable.get(e.getKey());
+				Course parent = courseTable.get(e.getValue());
+				if (course != null && parent != null) {
+					course.setParent(parent);
+					hasParent = true;
+				}
+			}
+			if (hasParent && model.getProperties().getPropertyBoolean("Sectioning.DependentCourses", true)) 
+				model.addGlobalConstraint(new DependentCourses());
 			if (providedUnavailabilities != null) {
 				for (CourseSection cs: providedUnavailabilities) {
 					if (!cs.getSection().isCancelled() && cs.getSection().getTime() != null) {
@@ -633,7 +647,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, OnlineSectioningServer server, StudentSectioningModel model, boolean hasAssignment, boolean checkDeadlines, Integer currentDateIndex, boolean onlineOnlyFilter, OnlineSectioningHelper helper) {
+	public static Course clone(XOffering offering, XEnrollments enrollments, Long courseId, long studentId, XStudent originalStudent, Map<Long, Section> sections, Map<Long, Course> courses, Map<Long, Long> parents, OnlineSectioningServer server, StudentSectioningModel model, boolean hasAssignment, boolean checkDeadlines, Integer currentDateIndex, boolean onlineOnlyFilter, OnlineSectioningHelper helper) {
 		Offering clonedOffering = new Offering(offering.getOfferingId(), offering.getName());
 		clonedOffering.setModel(model);
 		XExpectations expectations = server.getExpectations(offering.getOfferingId());
@@ -652,6 +666,8 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		clonedCourse.setType(course.getType());
 		clonedCourse.setTitle(course.getTitle());
 		clonedCourse.setCreditValue(course.getMinCredit());
+		courses.put(courseId, clonedCourse);
+		if (course.getParentCourseId() != null) parents.put(courseId, course.getParentCourseId());
 		CourseDeadlines deadline = null;
 		if (checkDeadlines)
 			deadline = server.getCourseDeadlines(courseId);
@@ -913,15 +929,15 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 		return clonedCourse;
 	}
 	
-	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter, OnlineSectioningHelper helper) {
-		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter, true, helper);
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Map<Long, Course> courseTable, Map<Long, Long> parentCourses, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter, OnlineSectioningHelper helper) {
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, courseTable, parentCourses, distributions, hasAssignment, false, false, null, onlineOnlyFilter, true, helper);
 	}
 	
-	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter, boolean allowRequiredPrefs, OnlineSectioningHelper helper) {
-		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, distributions, hasAssignment, false, false, null, onlineOnlyFilter, allowRequiredPrefs, helper);
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Map<Long, Course> courseTable, Map<Long, Long> parentCourses, Set<XDistribution> distributions, boolean hasAssignment, boolean onlineOnlyFilter, boolean allowRequiredPrefs, OnlineSectioningHelper helper) {
+		addRequest(server, model, assignment, student, originalStudent, request, alternative, updateFromCache, classTable, courseTable, parentCourses, distributions, hasAssignment, false, false, null, onlineOnlyFilter, allowRequiredPrefs, helper);
 	}
 	
-	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive, boolean checkDeadline, Integer currentDateIndex, boolean onlineOnlyFilter, boolean allowRequiredPrefs, OnlineSectioningHelper helper) {
+	public static void addRequest(OnlineSectioningServer server, StudentSectioningModel model, Assignment<Request, Enrollment> assignment, Student student, XStudent originalStudent, CourseRequestInterface.Request request, boolean alternative, boolean updateFromCache, Map<Long, Section> classTable, Map<Long, Course> courseTable, Map<Long, Long> parentCourses, Set<XDistribution> distributions, boolean hasAssignment, boolean excludeInactive, boolean checkDeadline, Integer currentDateIndex, boolean onlineOnlyFilter, boolean allowRequiredPrefs, OnlineSectioningHelper helper) {
 		if (request.hasRequestedCourse()) {
 			Vector<Course> cr = new Vector<Course>();
 			Set<Choice> selChoices = new HashSet<Choice>();
@@ -944,7 +960,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					XOffering offering = null;
 					if (courseInfo != null) offering = server.getOffering(courseInfo.getOfferingId());
 					if (offering != null) {
-						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, server, model, hasAssignment, checkDeadline, currentDateIndex, onlineOnlyFilter, helper);
+						Course course = clone(offering, server.getEnrollments(offering.getOfferingId()), courseInfo.getCourseId(), student.getId(), originalStudent, classTable, courseTable, parentCourses, server, model, hasAssignment, checkDeadline, currentDateIndex, onlineOnlyFilter, helper);
 						cr.add(course);
 						if (rc.hasSelectedIntructionalMethods()) {
 							for (Config config: course.getOffering().getConfigs()) {

@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.constraint.DependentCourses;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
@@ -888,10 +889,23 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					hasAssignment = true; break;
 				}
 			}
+			Map<Long, Course> courseTable = new HashMap<Long, Course>();
+			Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 			for (CourseRequestInterface.Request c: request.getCourses())
-				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
 			for (CourseRequestInterface.Request c: request.getAlternatives())
-				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
+			boolean hasParent = false;
+			for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+				Course course = courseTable.get(e.getKey());
+				Course parent = courseTable.get(e.getValue());
+				if (course != null && parent != null) {
+					course.setParent(parent);
+					hasParent = true;
+				}
+			}
+			if (hasParent && "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkDependentCourses", "true"))) 
+				model.addGlobalConstraint(new DependentCourses());
 			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
 				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
 					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);
@@ -1665,10 +1679,23 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					hasAssignment = true; break;
 				}
 			}
+			Map<Long, Course> courseTable = new HashMap<Long, Course>();
+			Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 			for (CourseRequestInterface.Request c: request.getCourses())
-				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
 			for (CourseRequestInterface.Request c: request.getAlternatives())
-				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
+				FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
+			boolean hasParent = false;
+			for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+				Course course = courseTable.get(e.getKey());
+				Course parent = courseTable.get(e.getValue());
+				if (course != null && parent != null) {
+					course.setParent(parent);
+					hasParent = true;
+				}
+			}
+			if (hasParent && "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkDependentCourses", "true"))) 
+				model.addGlobalConstraint(new DependentCourses());
 			if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
 				if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
 					GetInfo.fillInUnavailabilitiesFromOtherSessions(student, server, helper);

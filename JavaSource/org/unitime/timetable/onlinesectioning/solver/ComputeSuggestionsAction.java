@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentComparator;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.constraint.DependentCourses;
 import org.cpsolver.studentsct.constraint.HardDistanceConflicts;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
@@ -200,13 +201,15 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 				action.addEnrollment(enrollment);
 			}
 			Map<Long, Section> classTable = new HashMap<Long, Section>();
+			Map<Long, Course> courseTable = new HashMap<Long, Course>();
+			Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 			Set<XDistribution> distributions = new HashSet<XDistribution>();
 			if (getAssignment() != null) getRequest().moveActiveSubstitutionsUp();
 			for (CourseRequestInterface.Request c: getRequest().getCourses())
-				addRequest(server, model, assignment, student, original, c, false, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
+				addRequest(server, model, assignment, student, original, c, false, true, classTable, courseTable, parentCourses, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
 			if (student.getRequests().isEmpty()) throw new SectioningException(MSG.exceptionNoCourse());
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
-				addRequest(server, model, assignment, student, original, c, true, true, classTable, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
+				addRequest(server, model, assignment, student, original, c, true, true, classTable, courseTable, parentCourses, distributions, getAssignment() != null, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, isCanRequirePreferences(), helper);
 			if (helper.isAlternativeCourseEnabled()) {
 				for (Request r: student.getRequests()) {
 					if (r.isAlternative() || !(r instanceof CourseRequest)) continue;
@@ -225,7 +228,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 								if (ci != null) {
 									XOffering x = server.getOffering(ci.getOfferingId());
 									if (x != null) {
-										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, helper));
+										cr.getCourses().add(clone(x, server.getEnrollments(x.getOfferingId()), ci.getCourseId(), student.getId(), original, classTable, courseTable, parentCourses, server, model, getAssignment() != null, checkDeadlines, currentDateIndex, onlineOnlyFilter, helper));
 										distributions.addAll(x.getDistributions());
 									}
 								}
@@ -234,6 +237,17 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 					}
 				}
 			}
+			boolean hasParent = false;
+			for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+				Course course = courseTable.get(e.getKey());
+				Course parent = courseTable.get(e.getValue());
+				if (course != null && parent != null) {
+					course.setParent(parent);
+					hasParent = true;
+				}
+			}
+			if (hasParent && model.getProperties().getPropertyBoolean("Sectioning.DependentCourses", true)) 
+				model.addGlobalConstraint(new DependentCourses());
 			if (providedUnavailabilities != null) {
 				for (CourseSection cs: providedUnavailabilities) {
 					if (!cs.getSection().isCancelled() && cs.getSection().getTime() != null) {

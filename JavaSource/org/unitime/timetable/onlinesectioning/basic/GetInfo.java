@@ -118,6 +118,7 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
     		Hashtable<Long, Subpart> subparts = new Hashtable<Long, Subpart>();
     		Hashtable<Long, Section> sections = new Hashtable<Long, Section>();
     		Hashtable<Long, Reservation> reservations = new Hashtable<Long, Reservation>();
+    		Map<Long, Long> parentCourses = new HashMap<Long, Long>();
     		DistanceMetric dm = server.getDistanceMetric();
     		
     		AcademicSessionInfo session = server.getAcademicSession();
@@ -143,6 +144,8 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
 	        		clonedCourse.setTitle(course.getTitle());
 	        		clonedCourse.setCredit(course.getCredit());
 	        		courses.put(course.getCourseId(), clonedCourse);
+	        		if (course.getParentCourseId() != null)
+	        			parentCourses.put(course.getCourseId(), course.getParentCourseId());
         		}
         		for (XConfig config: offering.getConfigs()) {
         			Config clonedConfig = new Config(config.getConfigId(), config.getLimit(), config.getName(), clonedOffering);
@@ -286,6 +289,12 @@ public class GetInfo implements OnlineSectioningAction<Map<String, String>>{
         		
         		offerings.put(offering.getOfferingId(), clonedOffering);
         	}
+			for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+				Course course = courses.get(e.getKey());
+				Course parent = courses.get(e.getValue());
+				if (course != null && parent != null)
+					course.setParent(parent);
+			}
 	        
 	        Map<Long, Student> students = new HashMap<Long, Student>();
 	        Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();

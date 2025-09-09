@@ -49,6 +49,7 @@ public class XCourse extends XCourseId {
     private Integer iWkEnroll = null, iWkChange = null, iWkDrop = null;
     private XCredit iCredit = null;
     private Long iAlternativeCourseId = null;
+    private Long iParentCourseId = null;
     private boolean iControl = false;
     private Set<String> iDisabledOverrides = new HashSet<String>();
 
@@ -94,6 +95,7 @@ public class XCourse extends XCourseId {
         for (OverrideType override: course.getDisabledOverrides())
         	iDisabledOverrides.add(override.getReference());
         iAlternativeCourseId = (course.getAlternativeOffering() == null ? null : course.getAlternativeOffering().getUniqueId());
+        iParentCourseId = (course.getParentOffering() == null ? null : course.getParentOffering().getUniqueId());
         iControl = course.isIsControl();
     }
     
@@ -105,6 +107,7 @@ public class XCourse extends XCourseId {
         if (course.getCredit() != null)
         	iCredit = new XCredit(course.getCredit());
         iControl = course.getName().equals(course.getOffering().getName());
+        iParentCourseId = (course.hasParent() ? course.getParent().getId() : null);
     }
 
     /** Course offering limit */
@@ -154,6 +157,9 @@ public class XCourse extends XCourseId {
     public boolean hasAlternativeCourse() { return iAlternativeCourseId != null; }
     public Long getAlternativeCourseId() { return iAlternativeCourseId; }
     
+    public boolean hasParentCourse() { return iParentCourseId != null; }
+    public Long getParentCourseId() { return iParentCourseId; }
+    
     public boolean isControlling() { return iControl; }
 	
 	@Override
@@ -172,6 +178,7 @@ public class XCourse extends XCourseId {
 		iWkDrop = (in.readBoolean() ? in.readInt() : null);
 		iCredit = (in.readBoolean() ? new XCredit(in) : null);
 		iAlternativeCourseId = (in.readBoolean() ? in.readLong() : null);
+		iParentCourseId = (in.readBoolean() ? in.readLong() : null);
 		iControl = in.readBoolean();
 		int overrides = in.readInt();
 		for (int i = 0; i < overrides; i++)
@@ -204,6 +211,9 @@ public class XCourse extends XCourseId {
 		out.writeBoolean(iAlternativeCourseId != null);
 		if (iAlternativeCourseId != null)
 			out.writeLong(iAlternativeCourseId);
+		out.writeBoolean(iParentCourseId != null);
+		if (iParentCourseId != null)
+			out.writeLong(iParentCourseId);
 		out.writeBoolean(iControl);
 		out.writeInt(iDisabledOverrides.size());
 		for (String override: iDisabledOverrides)

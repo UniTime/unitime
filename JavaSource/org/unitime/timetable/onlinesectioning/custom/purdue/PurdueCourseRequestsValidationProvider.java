@@ -41,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.TimeLocation;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.assignment.AssignmentMap;
+import org.cpsolver.studentsct.constraint.DependentCourses;
 import org.cpsolver.studentsct.extension.StudentQuality;
 import org.cpsolver.studentsct.heuristics.selection.BranchBoundSelection.BranchBoundNeighbour;
 import org.cpsolver.studentsct.model.Choice;
@@ -402,11 +403,24 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				hasAssignment = true; break;
 			}
 		}
+		Map<Long, Course> courseTable = new HashMap<Long, Course>();
+		Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
+		boolean hasParent = false;
+		for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+			Course course = courseTable.get(e.getKey());
+			Course parent = courseTable.get(e.getValue());
+			if (course != null && parent != null) {
+				course.setParent(parent);
+				hasParent = true;
+			}
+		}
+		if (hasParent && "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkDependentCourses", "true"))) 
+			model.addGlobalConstraint(new DependentCourses());
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
@@ -3370,11 +3384,24 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				hasAssignment = true; break;
 			}
 		}
+		Map<Long, Course> courseTable = new HashMap<Long, Course>();
+		Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 		for (CourseRequestInterface.Request c: request.getCourses())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, distributions, hasAssignment, true, helper);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, false, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
 		// if (student.getRequests().isEmpty()) return;
 		for (CourseRequestInterface.Request c: request.getAlternatives())
-			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, distributions, hasAssignment, true, helper);
+			FindAssignmentAction.addRequest(server, model, assignment, student, original, c, true, false, classTable, courseTable, parentCourses, distributions, hasAssignment, true, helper);
+		boolean hasParent = false;
+		for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+			Course course = courseTable.get(e.getKey());
+			Course parent = courseTable.get(e.getValue());
+			if (course != null && parent != null) {
+				course.setParent(parent);
+				hasParent = true;
+			}
+		}
+		if (hasParent && "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkDependentCourses", "true"))) 
+			model.addGlobalConstraint(new DependentCourses());
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		Set<XCourseId> fixedCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
