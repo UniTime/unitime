@@ -3797,4 +3797,10 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("A reservation that must be followed is full.")
 	String unavailableMustTakeReservationIsFull();
+	
+	@DefaultMessage("Not-assigned prerequisite course {0}.")
+	String notAssignedParentCourse(String course);
+	
+	@DefaultMessage("Not-Assigned Prerequisite Course Issues")
+	String reportDependentCourseIssues();
 }

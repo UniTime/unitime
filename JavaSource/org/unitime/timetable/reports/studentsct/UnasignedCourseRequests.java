@@ -394,6 +394,17 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
         }
         if (reservationMustBeUsed && !hasReservation)
         	return MSG.unavailableMustTakeReservationIsFull();
+        
+        if (course.hasParent()) {
+        	Course parent = course.getParent();
+        	for (Request r: courseRequest.getStudent().getRequests()) {
+        		if (r.hasCourse(parent)) {
+        			Enrollment e = assignment.getValue(r);
+        			if (e == null || e.getCourse() == null || !parent.equals(e.getCourse()))
+        				return MSG.notAssignedParentCourse(parent.getName());
+        		}
+        	}
+        }
 
     	Set<String> reasons = new TreeSet<String>();
     	Set<String> conflicts = new TreeSet<String>();
@@ -553,7 +564,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 					            else {
 					            	constraint.computeConflicts(assignment, enrl, conflicts);
 					            	if (!conflicts.isEmpty()) {
-					            		other.add(constraint.getClass().getSimpleName());
+					            		other.add(constraint.getClass().getSimpleName().replaceAll("(?<=[^A-Z])([A-Z])"," $1"));
 					            		conflicts.clear();
 					            	}
 					            }
