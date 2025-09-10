@@ -107,6 +107,7 @@ public class CourseSelectionBoxBackend {
 				course.setCourseId(c.getUniqueId());
 				course.setSubject(c.getSubjectAreaAbbv());
 				course.setCourseNbr(c.getCourseNbr());
+				course.setParentCourseId(c.getParentOffering() == null ? null : c.getParentOffering().getUniqueId());
 				course.setNote(c.getScheduleBookNote());
 				course.setTitle(c.getTitle());
 				if (c.getCredit() != null) {

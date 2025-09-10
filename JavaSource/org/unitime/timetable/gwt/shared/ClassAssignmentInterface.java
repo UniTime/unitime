@@ -168,7 +168,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	
 	public static class CourseAssignment implements IsSerializable, Serializable, Comparable<CourseAssignment> {
 		private static final long serialVersionUID = 1L;
-		private Long iCourseId = null;
+		private Long iCourseId = null, iParentCourseId = null;
 		private boolean iAssigned = true, iTeachingAssigment = false;
 		private String iSubject, iCourseNbr, iTitle, iNote, iCreditText = null, iCreditAbbv = null;
 		private boolean iHasUniqueName = true, iHasCrossList = false;
@@ -193,6 +193,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 		public boolean isFreeTime() { return (iCourseId == null); }
 		
+		public boolean hasParentCourseId() { return iParentCourseId != null; }
+		public void setParentCourseId(Long parentCourseId) { iParentCourseId = parentCourseId; }
+		public Long getParentCourseId() { return iParentCourseId; }
+
 		public boolean isAssigned() { return iAssigned; }
 		public void setAssigned(boolean assigned) { iAssigned = assigned; }
 		

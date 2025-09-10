@@ -248,9 +248,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					rc.setCourseTitle(cid.getTitle());
 					if (cid instanceof XCourse) {
 						rc.setCredit(((XCourse)cid).getMinCredit(), ((XCourse)cid).getMaxCredit());
+						rc.setParentCourseId(((XCourse)cid).getParentCourseId());
 					} else if (cid.getCourseId() != null) {
 						XCourse c = server.getCourse(cid.getCourseId());
-						if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						if (c != null) {
+							rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+							rc.setParentCourseId(c.getParentCourseId());
+						}
 					}
 					r.setCritical(group.isCritical ? CourseDemand.Critical.CRITICAL.ordinal() : CourseDemand.Critical.NORMAL.ordinal());
 					if (group.isCritical != null) b.setCritical(group.isCritical);
@@ -269,9 +273,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							orc.setCourseTitle(ocid.getTitle());
 							if (ocid instanceof XCourse) {
 								orc.setCredit(((XCourse)ocid).getMinCredit(), ((XCourse)ocid).getMaxCredit());
+								orc.setParentCourseId(((XCourse)ocid).getParentCourseId());
 							} else if (ocid.getCourseId() != null) {
 								XCourse c = server.getCourse(ocid.getCourseId());
-								if (c != null) orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+								if (c != null) {
+									orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+									orc.setParentCourseId(c.getParentCourseId());
+								}
 							}
 							r.addRequestedCourse(orc);
 							b.addCourse(toEntity(other, ocid));
@@ -295,9 +303,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 							orc.setCourseTitle(ocid.getTitle());
 							if (ocid instanceof XCourse) {
 								orc.setCredit(((XCourse)ocid).getMinCredit(), ((XCourse)ocid).getMaxCredit());
+								orc.setParentCourseId(((XCourse)ocid).getParentCourseId());
 							} else if (ocid.getCourseId() != null) {
 								XCourse c = server.getCourse(ocid.getCourseId());
-								if (c != null) orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+								if (c != null) {
+									orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+									orc.setParentCourseId(c.getParentCourseId());
+								}
 							}
 							CourseRequestInterface.Request r = null;
 							OnlineSectioningLog.Request.Builder b = null;
@@ -329,9 +341,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 					rc.setCourseTitle(cid.getTitle());
 					if (cid instanceof XCourse) {
 						rc.setCredit(((XCourse)cid).getMinCredit(), ((XCourse)cid).getMaxCredit());
+						rc.setParentCourseId(((XCourse)cid).getParentCourseId());
 					} else if (cid.getCourseId() != null) {
 						XCourse c = server.getCourse(cid.getCourseId());
-						if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						if (c != null) {
+							rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+							rc.setParentCourseId(c.getParentCourseId());
+						}
 					}
 					r.addRequestedCourse(rc);
 					b.addCourse(toEntity(course, cid));
@@ -363,9 +379,13 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 				rc.setCourseTitle(cid.getTitle());
 				if (cid instanceof XCourse) {
 					rc.setCredit(((XCourse)cid).getMinCredit(), ((XCourse)cid).getMaxCredit());
+					rc.setParentCourseId(((XCourse)cid).getParentCourseId());
 				} else if (cid.getCourseId() != null) {
 					XCourse c = server.getCourse(cid.getCourseId());
-					if (c != null) rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+					if (c != null) {
+						rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						rc.setParentCourseId(c.getParentCourseId());
+					}
 				}
 				r.setCritical(course.isCritical ? CourseDemand.Critical.CRITICAL.ordinal() : CourseDemand.Critical.NORMAL.ordinal());
 				if (course.isCritical != null) b.setCritical(course.isCritical);
@@ -417,6 +437,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						orc.setCourseName(c.getCourseName());
 						orc.setCourseTitle(c.getTitle());
 						orc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						orc.setParentCourseId(c.getParentCourseId());
 						r.addRequestedCourse(orc);
 						b.addCourse(toEntity(c));
 					}
@@ -576,6 +597,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
+						ca.setParentCourseId(xc.getParentCourseId());
 						if (server instanceof DatabaseServer) {
 							InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(id.getOfferingId(), helper.getHibSession());
 							if (io != null) {
@@ -655,6 +677,7 @@ public class DegreeWorksCourseRequests implements CourseRequestsProvider, Degree
 						ca.setTitle(xc.getTitle());
 						ca.setHasUniqueName(xc.hasUniqueName());
 						ca.setLimit(xc.getLimit());
+						ca.setParentCourseId(xc.getParentCourseId());
 						if (server instanceof DatabaseServer) {
 							InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(xc.getOfferingId(), helper.getHibSession());
 							if (io != null) {

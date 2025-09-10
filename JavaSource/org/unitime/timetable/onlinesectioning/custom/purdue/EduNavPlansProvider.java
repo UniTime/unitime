@@ -377,6 +377,7 @@ public class EduNavPlansProvider implements DegreePlansProvider {
 													CourseAssignment ca = new CourseAssignment();
 													ca.setCourseId(xc.getCourseId());
 													ca.setSubject(xc.getSubjectArea());
+													ca.setParentCourseId(xc.getParentCourseId());
 													ca.setCourseNbr(xc.getCourseNumber());
 													ca.setTitle(xc.getTitle());
 													ca.setNote(xc.getNote());

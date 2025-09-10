@@ -292,6 +292,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 				ca.setTitle(xc.getTitle());
 				ca.setHasUniqueName(xc.hasUniqueName());
 				ca.setLimit(xc.getLimit());
+				ca.setParentCourseId(xc.getParentCourseId());
 				int firstChoiceReqs = 0;
 				int enrl = 0;
 				Collection<XCourseRequest> requests = server.getRequests(id.getOfferingId());
@@ -462,6 +463,7 @@ public class CriticalCoursesQuery implements CriticalCoursesProvider, DegreePlan
 								ca.setTitle(xc.getTitle());
 								ca.setHasUniqueName(xc.hasUniqueName());
 								ca.setLimit(xc.getLimit());
+								ca.setParentCourseId(xc.getParentCourseId());
 								int firstChoiceReqs = 0;
 								int enrl = 0;
 								Collection<XCourseRequest> requests = server.getRequests(xc.getOfferingId());

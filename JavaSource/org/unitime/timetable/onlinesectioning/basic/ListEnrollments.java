@@ -212,6 +212,7 @@ public class ListEnrollments extends WaitlistedOnlineSectioningAction<List<Class
 					c.setSubject(course.getSubjectArea());
 					c.setCourseNbr(course.getCourseNumber());
 					c.setTitle(course.getTitle());
+					c.setParentCourseId(course.getParentCourseId());
 					c.setHasCrossList(offering.hasCrossList());
 					c.setCanWaitList(offering.isWaitList());
 					e.setCourse(c);

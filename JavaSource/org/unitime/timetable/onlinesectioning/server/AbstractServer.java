@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +55,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameter;
@@ -91,6 +93,7 @@ import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.MinMaxCredit;
 import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.PersistExpectedSpacesAction;
@@ -875,8 +878,68 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	
 	@Override
 	public float[] getCredits(String studentExternalId) {
-		XStudent student = getStudentForExternalId(studentExternalId);
+		return getCredits(getStudentForExternalId(studentExternalId));
+	}
+	
+	public static XCourse getParentRequest(CourseCache server, XStudent student, XCourse childCourse) {
+		if (childCourse == null || childCourse.getParentCourseId() == null) return null;
+		for (XRequest cr: student.getRequests())
+			if (cr instanceof XCourseRequest)
+				for (XCourseId parent: ((XCourseRequest)cr).getCourseIds())
+					if (parent.getCourseId().equals(childCourse.getParentCourseId()))
+						return server.getCourse(parent.getCourseId());
+		return null;
+	}
+	
+	public MinMaxCredit getMinMaxCredit(CourseCache server, XStudent student, XCourse course, Float ec) {
+		if (course == null) return null;
+		XCredit c = course.getCreditInfo();
+		// no course or credit -> no values
+		if (c == null && ec == null) return null;
+		// has parent course --> count this credit with the parent
+		XCourse pc = getParentRequest(server, student, course);
+		if (pc != null && pc.getCreditInfo() != null) return new MinMaxCredit(0f, 0f);
+		
+		float tMin = 0f, tMax = 0f;
+		for (XRequest request: student.getRequests())
+			if (request instanceof XCourseRequest) {
+				Float min = null, max = null;
+				XCourseRequest cr = (XCourseRequest)request;
+				XEnrollment e = cr.getEnrollment();
+				if (e != null) {
+					XCourse child = server.getCourse(e.getCourseId());
+					if (child != null && course.getCourseId().equals(child.getParentCourseId())) {
+						float cred = e.getCredit(this);
+						if (min == null || min > cred) min = cred;
+						if (max == null || max < cred) max = cred;
+					}
+				} else {
+					for (XCourseId cid: cr.getCourseIds()) {
+						XCourse child = server.getCourse(cid.getCourseId());
+						if (child != null && course.getCourseId().equals(child.getParentCourseId())) {
+							XCredit cc = child.getCreditInfo();
+							if (cc != null) {
+								if (min == null || min > cc.getMinCredit()) min = cc.getMinCredit();
+								if (max == null || max < cc.getMaxCredit()) max = cc.getMinCredit();
+							}
+						}
+					}
+				}
+				if (min != null) {
+					tMin += min; tMax += max;
+				}
+			}
+		if (ec != null)
+			return new MinMaxCredit(ec + tMin, ec + tMax);
+		else
+			return new MinMaxCredit(c.getMinCredit() + tMin, c.getMinCredit() + tMax);
+	}
+	
+	@Override
+	public float[] getCredits(XStudent student) {
 		if (student == null) return null;
+		Set<Long> advisorWaitListedCourseIds = student.getAdvisorWaitListedCourseIds(this);
+		CourseCache cache = new CourseCache(this);
 		List<Float> mins = new ArrayList<Float>();
 		List<Float> maxs = new ArrayList<Float>();
 		int nrCourses = 0;
@@ -887,16 +950,22 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 				XEnrollment e = cr.getEnrollment();
 				if (e != null) {
 					float cred = e.getCredit(this);
-					tMin += cred; tMax += cred;
+					MinMaxCredit rc = getMinMaxCredit(cache, student, cache.getCourse(e.getCourseId()), cred);
+					if (rc != null) {
+						// child course added
+						tMin += rc.getMinCredit(); tMax += rc.getMaxCredit();
+					} else {
+						tMin += cred; tMax += cred;
+					}
 					tEnrl += cred;
 					if (cr.isAlternative())
 						nrCourses --;
 				} else {
 					Float min = null, max = null;
-					for (XCourseId course: cr.getCourseIds()) {
-						XOffering offering = getOffering(course.getOfferingId());
-						XCredit rc = (offering == null ? null : offering.getCourse(course.getCourseId()).getCreditInfo());
-						if (cr != null) {
+					for (XCourseId courseId: cr.getCourseIds()) {
+						XCourse course = getCourse(courseId.getCourseId());
+						MinMaxCredit rc = getMinMaxCredit(cache, student, course, null);
+						if (rc != null) {
 							if (min == null || min > rc.getMinCredit()) min = rc.getMinCredit();
 							if (max == null || max < rc.getMaxCredit()) max = rc.getMaxCredit();
 						}
@@ -907,7 +976,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 						}
 					} else {
 						if (min != null) {
-							if (cr.isNoSub()) {
+							if (cr.isWaitListOrNoSub(WaitListMode.NoSubs, advisorWaitListedCourseIds)) {
 								tMin += min; tMax += max;
 							} else {
 								mins.add(min); maxs.add(max); nrCourses ++;

@@ -325,6 +325,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setCourseTitle(course.getTitle());
 			ret.setCredit(course.guessCreditRange());
 			ret.setCanWaitList(course.isCanWaitList());
+			ret.setParentCourseId(course.getParentCourseId());
 			if (iLastCourse != null && iLastCourse.isCourse() && iLastCourse.hasCourseId() && courseName.equalsIgnoreCase(iLastCourse.getCourseName())) {
 				ret.setStatus(iLastCourse.getStatus());
 				ret.setStatusNote(iLastCourse.getStatusNote());
@@ -347,6 +348,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			ret.setRequestId(iLastCourse.getRequestId());
 			ret.setRequestorNote(iLastCourse.getRequestorNote());
 			ret.setCanWaitList(iLastCourse.isCanWaitList());
+			ret.setParentCourseId(iLastCourse.getParentCourseId());
 		} else if (iFreeTimeParser != null) {
 			try {
 				ret.setFreeTime(iFreeTimeParser.parseFreeTime(courseName));
@@ -698,6 +700,7 @@ public class CourseRequestBox extends P implements CourseSelection {
 			iCourse.setCourseTitle(course.getTitle());
 			iCourse.setCredit(course.guessCreditRange());
 			iCourse.setCanWaitList(course.isCanWaitList());
+			iCourse.setParentCourseId(course.getParentCourseId());
 			if (getText().equals(course.getCourseName()) || getText().startsWith(course.getCourseName() + " ") || 
 				getText().equals(course.getCourseNameWithTitle()) || getText().startsWith(course.getCourseNameWithTitle() + " ")) {
 				for (Chip chip: iFilter.getChips("section"))

@@ -1063,6 +1063,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setAssigned(false);
 					ca.setCourseId(course.getId());
 					ca.setSubject(course.getSubjectArea());
+					ca.setParentCourseId(course.getParent() == null ? null : course.getParent().getId());
 					ca.setCourseNbr(course.getCourseNumber());
 					XOffering offering = server.getOffering(course.getOffering().getId());
 					ca.setTitle(offering.getCourse(course.getId()).getTitle());
@@ -1291,6 +1292,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					FreeTimeRequest r = (FreeTimeRequest)enrollment.getRequest();
 					ca.setAssigned(false);
 					ca.setCourseId(null);
+					ca.setParentCourseId(null);
 					if (computeOverlaps) {
 						for (Enrollment x: enrollments) {
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
@@ -1329,6 +1331,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				ca.setCourseId(course.getId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());
+				ca.setParentCourseId(course.getParent() == null ? null : course.getParent().getId());
 				ca.setHasCrossList(course.getOffering().getCourses().size() > 1);
 				boolean hasAlt = false;
 				if (r.getCourses().size() > 1) {
@@ -1497,6 +1500,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				ClassAssignmentInterface.CourseAssignment ca = new ClassAssignmentInterface.CourseAssignment();
 				ca.setAssigned(true);
 				ca.setCourseId(null);
+				ca.setParentCourseId(null);
 				ClassAssignmentInterface.ClassAssignment a = ca.addClassAssignment();
 				a.setAlternative(r.isAlternative());
 				for (DayCode d : DayCode.toDayCodes(r.getTime().getDayCode()))

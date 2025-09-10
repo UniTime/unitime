@@ -282,6 +282,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 		    	ca.setCanWaitList(offering.isWaitList());
 				ca.setAssigned(true);
 				ca.setCourseId(course.getCourseId());
+				ca.setParentCourseId(course.getParentCourseId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
@@ -462,6 +463,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						course.setTitle(enrollment.getCourseOffering().getTitle());
 						course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 						course.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+						course.setParentCourseId(enrollment.getCourseOffering().getParentOffering() == null ? null : enrollment.getCourseOffering().getParentOffering().getUniqueId());
 						course.setAssigned(true);
 						course.setTeachingAssignment(true);
 						credit = enrollment.getCourseOffering().getCredit();
@@ -622,6 +624,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 				ca.setCanWaitList(offering.isWaitList());
 				ca.setAssigned(enrollment != null);
 				ca.setCourseId(course.getCourseId());
+				ca.setParentCourseId(course.getParentCourseId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());
 				ca.setTitle(course.getTitle());
@@ -1062,6 +1065,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 			} else if (request instanceof XFreeTimeRequest) {
 				XFreeTimeRequest r = (XFreeTimeRequest)request;
 				ca.setCourseId(null);
+				ca.setParentCourseId(null);
 				for (XRequest q: studentRequests) {
 					if (q instanceof XCourseRequest) {
 						XEnrollment otherEnrollment = ((XCourseRequest)q).getEnrollment();
@@ -1172,6 +1176,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 						rc.setCourseTitle(c.getTitle());
 						rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						rc.setParentCourseId(c.getParentCourseId());
 						boolean isEnrolled = ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId());
 						if (setReadOnly && isEnrolled)
 							rc.setReadOnly(true);

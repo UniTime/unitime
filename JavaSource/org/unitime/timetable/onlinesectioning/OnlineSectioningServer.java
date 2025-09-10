@@ -165,4 +165,5 @@ public interface OnlineSectioningServer {
 	public XStudent getStudentForExternalId(String externalUniqueId);
 	public Collection<XClassEnrollment> getStudentSchedule(String studentExternalId);
 	public float[] getCredits(String studentExternalId);
+	public float[] getCredits(XStudent student);
 }

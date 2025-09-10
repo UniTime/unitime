@@ -409,31 +409,13 @@ public class AdvisorConfirmationPDF {
 		}
 		
 		if (primary) {
-			float min = 0, max = 0;
-			for (Request r: getDetails().getRequest().getCourses()) {
-				if (!r.hasAdvisorCredit()) continue;
-				String cred = r.getAdvisorCredit().replaceAll("\\s","");
-				try {
-					min += Float.parseFloat(cred);
-					max += Float.parseFloat(cred);
-					continue;
-				} catch (NumberFormatException e) {}
-				int idx = cred.indexOf('-');
-				if (idx >= 0) {
-					try {
-						min += Float.parseFloat(cred.substring(0, idx));
-						max += Float.parseFloat(cred.substring(idx + 1));
-						continue;
-					} catch (NumberFormatException e) {}	
-				}
-			}
-			
+			float[] minMax = getDetails().getRequest().getAdvisorCreditRange();
 			String credTx = "";
 			Formats.Format<Number> nf = Formats.getNumberFormat("0.#"); 
-			if (min < max) {
-				credTx = nf.format(min) + " - " + nf.format(max);
+			if (minMax[0] < minMax[1]) {
+				credTx = nf.format(minMax[0]) + " - " + nf.format(minMax[1]);
 			} else {
-				credTx = nf.format(min);
+				credTx = nf.format(minMax[0]);
 			}
 			PdfPCell credit = number(MSG.labelTotalPriorityCreditHours());
 			credit.setColspan(3);

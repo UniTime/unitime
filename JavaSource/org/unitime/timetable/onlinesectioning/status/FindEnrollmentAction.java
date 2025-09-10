@@ -263,6 +263,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 			c.setSubject(course.getSubjectArea());
 			c.setCourseNbr(course.getCourseNumber());
 			c.setTitle(course.getTitle());
+			c.setParentCourseId(course.getParentCourseId());
 			c.setHasCrossList(offering.hasCrossList());
 			c.setCanWaitList(offering.isWaitList());
 			e.setCourse(c);

@@ -434,6 +434,7 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 			iSuggestion.setCourseId(suggestion.getCourseId());
 			iSuggestion.setCourseName(iReplace);
 			iSuggestion.setCourseTitle(suggestion.getTitle());
+			iSuggestion.setParentCourseId(suggestion.getParentCourseId());
 		}
 		
 		public SimpleSuggestion(RequestedCourse course) {

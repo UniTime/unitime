@@ -836,15 +836,18 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	}
 	
 	private void updateTotalCredits() {
+		/*
 		float min = 0, max = 0;
 		for (AdvisorCourseRequestLine line: iCourses) {
 			min += line.getCreditMin();
 			max += line.getCreditMax();
 		}
-		if (min < max)
-			iTotalCredit.setText(MESSAGES.creditRange(min, max));
+		*/
+		float[] minMax = getValue().getAdvisorCreditRange();
+		if (minMax[0] < minMax[1])
+			iTotalCredit.setText(MESSAGES.creditRange(minMax[0], minMax[1]));
 		else
-			iTotalCredit.setText(MESSAGES.credit(min));
+			iTotalCredit.setText(MESSAGES.credit(minMax[1]));
 	}
 	
 	private void clearRequests() {
@@ -1584,7 +1587,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				hasWarn = true;
 			}
 			float[] range = iDetails.getStudentRequest().getCreditRange(iDetails.getAdvisorWaitListedCourseIds());
-			WebTable.Cell credit = new WebTable.Cell(range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : "");
+			WebTable.Cell credit = new WebTable.Cell((range != null ? range[0] < range[1] ? df.format(range[0]) + " - " + df.format(range[1]) : df.format(range[0]) : ""));
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			WebTable.Row row = new WebTable.Row(
 					new WebTable.Cell(MESSAGES.rowRequestedCredit(), 2, null),

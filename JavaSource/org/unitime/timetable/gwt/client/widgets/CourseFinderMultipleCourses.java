@@ -242,6 +242,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		rc.setCourseTitle(record.getTitle());
 		rc.setCredit(record.guessCreditRange());
 		rc.setCanWaitList(record.isCanWaitList());
+		rc.setParentCourseId(record.getParentCourseId());
 		for (Map.Entry<Preference, CheckBox> e: iInstructionalMethods.entrySet())
 			if (e.getValue().isEnabled() && e.getValue().getValue())
 				rc.setSelectedIntructionalMethod(e.getKey(), true);
@@ -345,6 +346,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 								rc.setCourseTitle(record.getTitle());
 								rc.setCredit(record.guessCreditRange());
 								rc.setCanWaitList(record.isCanWaitList());
+								rc.setParentCourseId(record.getParentCourseId());
 								if (event.getValue()) {
 									iCheckedCourses.add(rc);
 								} else {

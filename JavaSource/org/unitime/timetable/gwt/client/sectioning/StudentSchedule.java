@@ -627,12 +627,8 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				}
 				priority ++;
 			}
-			float min = 0, max = 0;
-			for (Request request: iAssignment.getAdvisorRequest().getCourses()) {
-				min += request.getAdvisorCreditMin();
-				max += request.getAdvisorCreditMax();
-			}
-			WebTable.Cell credit = new WebTable.Cell(min < max ? MESSAGES.creditRange(min, max) : MESSAGES.credit(min));
+			float[] minMax = iAssignment.getAdvisorRequest().getAdvisorCreditRange();
+			WebTable.Cell credit = new WebTable.Cell(minMax[0] < minMax[1] ? MESSAGES.creditRange(minMax[0], minMax[1]) : MESSAGES.credit(minMax[0]));
 			credit.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			String noteMessage = (iAssignment.getAdvisorRequest().hasCreditNote() ? iAssignment.getAdvisorRequest().getCreditNote() : "");
 			if (iAssignment.getAdvisorRequest().hasReleasedPin() && !noteMessage.contains(iAssignment.getAdvisorRequest().getPin()))

@@ -576,6 +576,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			enrl.setEnrolledDate(enrollment.getTimestamp());
     			CourseAssignment c = new CourseAssignment();
     			c.setCourseId(enrollment.getCourseOffering().getUniqueId());
+    			c.setParentCourseId(enrollment.getCourseOffering().getParentOffering() == null ? null : enrollment.getCourseOffering().getParentOffering().getUniqueId()); 
     			c.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
     			c.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
     			c.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());

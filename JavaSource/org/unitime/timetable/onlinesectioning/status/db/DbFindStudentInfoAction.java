@@ -90,7 +90,86 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 		}
 		return false;
 	}
-
+	
+	public static CourseRequest getParentRequest(CourseRequest r) {
+		if (r.getCourseOffering().getParentOffering() == null) return null;
+		for (CourseDemand cd: r.getCourseDemand().getStudent().getCourseDemands())
+			for (CourseRequest cr: cd.getCourseRequests())
+				if (cr.getCourseOffering().equals(r.getCourseOffering().getParentOffering()))
+					return cr;
+		return null;
+	}
+	
+	public static MinMaxCredit getMinMaxCredit(CourseRequest r) {
+		CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+		// no course or credit -> no values
+		if (c == null) return null;
+		// has parent course --> count this credit with the parent
+		CourseRequest pc = getParentRequest(r);
+		if (pc != null && pc.getCourseOffering().getCredit() != null) return new MinMaxCredit(0f, 0f);
+		
+		float tMin = 0f, tMax = 0f;
+		for (CourseDemand cd: r.getCourseDemand().getStudent().getCourseDemands()) {
+			Float min = null, max = null;
+			for (CourseRequest cr: cd.getCourseRequests()) {
+				if (r.getCourseOffering().equals(cr.getCourseOffering().getParentOffering())) {
+					CourseCreditUnitConfig cc = cr.getCourseOffering().getCredit();
+					if (cc != null) {
+						if (min == null || min > cc.getMinCredit()) min = cc.getMinCredit();
+						if (max == null || max < cc.getMaxCredit()) max = cc.getMaxCredit();
+					}
+				}
+			}
+			if (min != null) {
+				tMin += min; tMax += max;
+			}
+		}
+		return new MinMaxCredit(c.getMinCredit() + tMin, c.getMaxCredit() + tMax);
+	}
+	
+	public static AdvisorCourseRequest getParentRequest(AdvisorCourseRequest r) {
+		CourseOffering parent = (r.getCourseOffering() == null ? null : r.getCourseOffering().getParentOffering());
+		if (parent == null) return null;
+		for (AdvisorCourseRequest a: r.getStudent().getAdvisorCourseRequests())
+			if (parent.equals(a.getCourseOffering()))
+				return a;
+		return null;
+	}
+	
+	public static MinMaxCredit getMinMaxCredit(AdvisorCourseRequest r) {
+		CourseCreditUnitConfig c = (r.getCourseOffering() == null ? null : r.getCourseOffering().getCredit());
+		// no course or credit -> no values
+		if (c == null) {
+			if (r.getCredit() != null)
+				return new MinMaxCredit(r.getCreditMin(), r.getCreditMax());
+			return null;				
+		}
+		// has parent course --> count this credit with the parent
+		AdvisorCourseRequest pc = getParentRequest(r);
+		if (pc != null && pc.getCourseOffering().getCredit() != null) return new MinMaxCredit(0f, 0f);
+		
+		float tMin = 0f, tMax = 0f;
+		for (AdvisorCourseRequest a: r.getStudent().getAdvisorCourseRequests()) {
+			if (a.getAlternative() == 0 && a.getPriority() >= 0) {
+				Float min = null, max = null;
+				for (AdvisorCourseRequest b: r.getStudent().getAdvisorCourseRequests()) {
+					if (a.getPriority().equals(b.getPriority()) && b.getCourseOffering() != null &&
+							r.getCourseOffering().equals(b.getCourseOffering().getParentOffering())) {
+						CourseCreditUnitConfig cc = b.getCourseOffering().getCredit();
+						if (cc != null) {
+							if (min == null || min > cc.getMinCredit()) min = cc.getMinCredit();
+							if (max == null || max < cc.getMaxCredit()) max = cc.getMaxCredit();
+						}
+					}
+				}
+				if (min != null) {
+					tMin += min; tMax += max;
+				}
+			}
+		}
+		return new MinMaxCredit(c.getMinCredit() + tMin, c.getMaxCredit() + tMax);
+	}
+	
 	@Override
 	public List<StudentInfo> execute(final OnlineSectioningServer server, final OnlineSectioningHelper helper) {
 		if (iFilter == null) return super.execute(server, helper);
@@ -209,7 +288,7 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 							Float minTot = null, maxTot = null;
 							Float min = null, max = null;
 							for (CourseRequest r: demand.getCourseRequests()) {
-								CourseCreditUnitConfig c = r.getCourseOffering().getCredit();
+								MinMaxCredit c = getMinMaxCredit(r);
 								if (c != null) {
 									if (minTot == null || minTot > c.getMinCredit()) minTot = c.getMinCredit();
 									if (maxTot == null || maxTot < c.getMaxCredit()) maxTot = c.getMaxCredit();
@@ -927,7 +1006,8 @@ public class DbFindStudentInfoAction extends FindStudentInfoAction {
 				firstEnrolled = null; nrCoursesAssigned = 0;
 			}
 			if (!acr.isSubstitute()) {
-				CourseCreditUnitConfig credit = (acr.getCourseOffering() == null ? null: acr.getCourseOffering().getCredit());
+				// CourseCreditUnitConfig credit = (acr.getCourseOffering() == null ? null: acr.getCourseOffering().getCredit());
+				MinMaxCredit credit = getMinMaxCredit(acr);
 				if (credit != null) {
 					if (acr.getAlternative() == 0 || credit.getMinCredit() < cm) cm = credit.getMinCredit();
 					if (acr.getAlternative() == 0 || credit.getMaxCredit() > cx) cx = credit.getMaxCredit();

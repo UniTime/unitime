@@ -178,6 +178,7 @@ public class DbFindEnrollmentAction extends FindEnrollmentAction {
 			c.setCourseId(course.getUniqueId());
 			c.setSubject(course.getSubjectAreaAbbv());
 			c.setCourseNbr(course.getCourseNbr());
+			c.setParentCourseId(course.getParentOffering() == null ? null : course.getParentOffering().getUniqueId());
 			c.setTitle(course.getTitle());
 			c.setHasCrossList(course.getInstructionalOffering().hasCrossList());
 			c.setCanWaitList(course.getInstructionalOffering().effectiveWaitList());

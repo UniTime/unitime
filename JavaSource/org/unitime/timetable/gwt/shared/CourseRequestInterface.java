@@ -284,6 +284,60 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return __getRequestPriority(course);
 	}
 	
+	public RequestedCourse getParentRequest(RequestedCourse rc) {
+		if (rc.getParentCourseId() == null) return null;
+		for (Request r: getCourses())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse x: r.getRequestedCourse())
+					if (rc.getParentCourseId().equals(x.getCourseId())) return x;
+		for (Request r: getAlternatives())
+			if (r.hasRequestedCourse())
+				for (RequestedCourse x: r.getRequestedCourse())
+					if (rc.getParentCourseId().equals(x.getCourseId())) return x;
+		return null;
+	}
+	
+	public float[] getMinMaxCredit(RequestedCourse rc) {
+		// no course or credit -> no values
+		if (!rc.hasCourseId() || !rc.hasCredit()) return new float[] {0f, 0f};
+		// has parent course --> count this credit with the parent
+		RequestedCourse pc = getParentRequest(rc);
+		if (pc != null && pc.hasCredit()) return new float[] {0f, 0f};
+		
+		float tMin = 0f, tMax = 0f;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse()) {
+				Float min = null, max = null;
+				for (RequestedCourse chRc: r.getRequestedCourse()) {
+					// only count courses that the given course is a parent of
+					if (chRc.hasCredit() && rc.getCourseId().equals(chRc.getParentCourseId())) {
+						if (min == null || min > chRc.getCreditMin()) min = chRc.getCreditMin();
+						if (max == null || max < chRc.getCreditMax()) max = chRc.getCreditMax();
+					}
+				}
+				if (min != null) {
+					tMin += min; tMax += max;
+				}
+			}
+		}
+		for (Request r: getAlternatives()) {
+			if (r.hasRequestedCourse()) {
+				Float min = null, max = null;
+				for (RequestedCourse chRc: r.getRequestedCourse()) {
+					// only count courses that the given course is a parent of
+					if (chRc.hasCredit() && rc.getCourseId().equals(chRc.getParentCourseId())) {
+						if (min == null || min > chRc.getCreditMin()) min = chRc.getCreditMin();
+						if (max == null || max < chRc.getCreditMax()) max = chRc.getCreditMax();
+					}
+				}
+				if (min != null) {
+					tMin += min; tMax += max;
+				}
+			}
+		}
+		return new float[] {rc.getCreditMin() + tMin, rc.getCreditMax() + tMax};
+	}
+
 	public float[] getCreditRange(Set<Long> advisorWaitListedCourseIds) {
 		List<Float> mins = new ArrayList<Float>();
 		List<Float> maxs = new ArrayList<Float>();
@@ -294,8 +348,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				Float min = null, max = null;
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.hasCredit()) {
-						if (min == null || min > rc.getCreditMin()) min = rc.getCreditMin();
-						if (max == null || max < rc.getCreditMax()) max = rc.getCreditMax();
+						float[] rcCred = getMinMaxCredit(rc);
+						if (min == null || min > rcCred[0]) min = rcCred[0];
+						if (max == null || max < rcCred[1]) max = rcCred[1];
 					}
 				}
 				if (min != null) {
@@ -312,8 +367,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				Float min = null, max = null;
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.hasCredit()) {
-						if (min == null || min > rc.getCreditMin()) min = rc.getCreditMin();
-						if (max == null || max < rc.getCreditMax()) max = rc.getCreditMax();
+						float[] rcCred = getMinMaxCredit(rc);
+						if (min == null || min > rcCred[0]) min = rcCred[0];
+						if (max == null || max < rcCred[1]) max = rcCred[1];
 					}
 				}
 				if (min != null) {
@@ -330,6 +386,32 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return new float[] {tMin, tMax};
 	}
 	
+	public float[] getAdvisorCreditRange() {
+		float tMin = 0f, tMax = 0f;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse()) {
+				Float min = null, max = null;
+				Float adjMin = null, adjMax = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCredit()) {
+						float[] rcCred = getMinMaxCredit(rc);
+						if (min == null || min > rc.getCreditMin()) min = rc.getCreditMin();
+						if (max == null || max < rc.getCreditMax()) max = rc.getCreditMax();
+						if (adjMin == null || adjMin > rcCred[0]) adjMin = rcCred[0];
+						if (adjMax == null || adjMax < rcCred[1]) adjMax = rcCred[1];
+					}
+				}
+				if (min != null && (min == r.getAdvisorCreditMin()) && (max == r.getAdvisorCreditMax())) {
+					tMin += adjMin; tMax += adjMax;
+				} else {
+					tMin += r.getAdvisorCreditMin();
+					tMax += r.getAdvisorCreditMax();
+				}
+			}
+		}
+		return new float[] {tMin, tMax};
+	}
+	
 	public float getCredit(Set<Long> advisorWaitListedCourseIds) {
 		List<Float> credits = new ArrayList<Float>();
 		int nrCourses = 0;
@@ -339,7 +421,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				Float credit = null;
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.hasCredit()) {
-						if (credit == null || credit < rc.getCreditMin()) credit = rc.getCreditMin();
+						float[] rcCred = getMinMaxCredit(rc);
+						if (credit == null || credit < rcCred[0]) credit = rcCred[0];
 					}
 				}
 				if (credit != null) {
@@ -356,7 +439,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				Float credit = null;
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.hasCredit()) {
-						if (credit == null || credit < rc.getCreditMin()) credit = rc.getCreditMin();
+						float[] rcCred = getMinMaxCredit(rc);
+						if (credit == null || credit < rcCred[0]) credit = rcCred[0];
 					}
 				}
 				if (credit != null) {
@@ -367,6 +451,30 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		Collections.sort(credits);
 		for (int i = 0; i < nrCourses; i++) {
 			total += credits.get(credits.size() - i - 1);
+		}
+		return total;
+	}
+	
+	public float getAdvisorCredit() {
+		float total = 0f;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse()) {
+				Float min = null, max = null;
+				Float credit = null;
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasCredit()) {
+						float[] rcCred = getMinMaxCredit(rc);
+						if (min == null || min > rc.getCreditMin()) min = rc.getCreditMin();
+						if (max == null || max < rc.getCreditMax()) max = rc.getCreditMax();
+						if (credit == null || credit < rcCred[0]) credit = rcCred[0];
+					}
+				}
+				if (min != null && (min == r.getAdvisorCreditMin()) && (max == r.getAdvisorCreditMax())) {
+					total += credit;
+				} else {
+					total += r.getAdvisorCreditMin();
+				}
+			}
 		}
 		return total;
 	}
@@ -601,6 +709,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		private String iWaitListPosition = null;
 		private String iChangedBy = null;
 		private Date iTimeStamp = null;
+		private Long iParentCourseId;
 		
 		public RequestedCourse() {}
 		public RequestedCourse(List<FreeTime> freeTime) {
@@ -649,12 +758,16 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			iWaitListPosition = rc.iWaitListPosition;
 			iChangedBy = rc.iChangedBy;
 			iTimeStamp = rc.iTimeStamp;
+			iParentCourseId = rc.iParentCourseId;
 		}
 		
 		public boolean isCourse() { return hasCourseId() || hasCourseName(); }
 		public Long getCourseId() { return iCourseId; }
 		public boolean hasCourseId() { return iCourseId != null; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public boolean hasParentCourseId() { return iParentCourseId != null; }
+		public void setParentCourseId(Long parentCourseId) { iParentCourseId = parentCourseId; }
+		public Long getParentCourseId() { return iParentCourseId; }
 		public String getCourseName() { return iCourseName; }
 		public boolean hasCourseName() { return iCourseName != null && !iCourseName.isEmpty(); }
 		public void setCourseName(String courseName) { iCourseName = courseName; }

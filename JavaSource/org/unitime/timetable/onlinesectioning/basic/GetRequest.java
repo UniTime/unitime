@@ -242,6 +242,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 						rc.setCourseName(c.getSubjectArea() + " " + c.getCourseNumber() + (c.hasUniqueName() && !CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 						rc.setCourseTitle(c.getTitle());
 						rc.setCredit(c.getMinCredit(), c.getMaxCredit());
+						rc.setParentCourseId(c.getParentCourseId());
 						boolean isEnrolled = ((XCourseRequest)cd).getEnrollment() != null && c.getCourseId().equals(((XCourseRequest)cd).getEnrollment().getCourseId());
 						boolean isWaitListed = !isEnrolled && offering.isWaitList() && ((XCourseRequest)cd).isWaitlist(request.getWaitListMode()); 
 						if (setReadOnly && isEnrolled)

@@ -144,6 +144,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 						XCourse xcourse = server.getCourse(course.getCourseId());
 						if (xcourse != null) {
 							rc.setCredit(xcourse.getMinCredit(), xcourse.getMaxCredit());
+							rc.setParentCourseId(xcourse.getParentCourseId());
 						}
 						Date hasEnrollments = null;
 						if (xcr.getEnrollment() != null && xcr.getEnrollment().equals(course))
@@ -260,6 +261,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 						rc.setCourseTitle(course.getCourseOffering().getTitle());
 						CourseCreditUnitConfig credit = course.getCourseOffering().getCredit(); 
 						if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
+						rc.setParentCourseId(course.getCourseOffering().getParentOffering() == null ? null : course.getCourseOffering().getParentOffering().getUniqueId());
 						Date hasEnrollments = null;
 						for (StudentClassEnrollment e: course.getClassEnrollments())
 							if (hasEnrollments == null || hasEnrollments.before(e.getTimestamp()))
@@ -393,6 +395,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				rc.setCanWaitList(acr.getCourseOffering().getInstructionalOffering().effectiveWaitList());
 				CourseCreditUnitConfig credit = acr.getCourseOffering().getCredit(); 
 				if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
+				rc.setParentCourseId(acr.getCourseOffering().getParentOffering() == null ? null : acr.getCourseOffering().getParentOffering().getUniqueId());
 				if (acr.getPreferences() != null)
 					for (AdvisorSectioningPref ssp: acr.getPreferences()) {
 						if (ssp instanceof AdvisorClassPref) {
@@ -516,6 +519,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 				XCourse course = server.getCourse(acr.getCourseId().getCourseId());
 				if (course != null) {
 					rc.setCredit(course.getMinCredit(), course.getMaxCredit());
+					rc.setParentCourseId(course.getParentCourseId());
 				}
 				XOffering offering = server.getOffering(acr.getCourseId().getOfferingId());
 				rc.setCanWaitList(offering != null && offering.isWaitList());

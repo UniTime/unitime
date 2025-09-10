@@ -368,6 +368,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setHasUniqueName(true);
 								course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 								course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
+								course.setParentCourseId(c.getParentOffering() == null ? null : c.getParentOffering().getUniqueId());
 								boolean unlimited = false;
 								int courseLimit = 0;
 								int snapshotLimit = 0;
@@ -451,6 +452,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setHasUniqueName(true);
 				course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 				course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
+				course.setParentCourseId(c.getParentOffering() == null ? null : c.getParentOffering().getUniqueId());
 				if (overrides != null && !overrides.isEmpty()) {
 					for (OverrideType override: overrides)
 						if (!c.getDisabledOverrides().contains(override))
@@ -1501,6 +1503,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setTitle(enrollment.getCourseOffering().getTitle());
 							c.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 							c.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+							c.setParentCourseId(enrollment.getCourseOffering().getParentOffering() == null ? null : enrollment.getCourseOffering().getParentOffering().getUniqueId());
 							e.setCourse(c);
 							student2enrollment.put(enrollment.getStudent().getUniqueId(), e);
 							if (enrollment.getCourseRequest() != null) {
@@ -1617,6 +1620,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							c.setTitle(request.getCourseOffering().getTitle());
 							c.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
 							c.setCanWaitList(request.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+							c.setParentCourseId(request.getCourseOffering().getParentOffering() == null ? null : request.getCourseOffering().getParentOffering().getUniqueId());
 							e.setCourse(c);
 							e.setWaitList(request.getCourseDemand().effectiveWaitList());
 							e.setNoSub(request.getCourseDemand().effectiveNoSub());
@@ -1736,6 +1740,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setTitle(enrollment.getCourseOffering().getTitle());
 								course.setHasCrossList(enrollment.getCourseOffering().getInstructionalOffering().hasCrossList());
 								course.setCanWaitList(enrollment.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+								course.setParentCourseId(enrollment.getCourseOffering().getParentOffering() == null ? null : enrollment.getCourseOffering().getParentOffering().getUniqueId());
 								credit = enrollment.getCourseOffering().getCredit();
 								if (enrollment.getCourseRequest() != null) {
 									course.setRequestedDate(enrollment.getCourseRequest().getCourseDemand().getTimestamp());
@@ -1880,6 +1885,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								course.setTitle(request.getCourseOffering().getTitle());
 								course.setHasCrossList(request.getCourseOffering().getInstructionalOffering().hasCrossList());
 								course.setCanWaitList(request.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+								course.setParentCourseId(request.getCourseOffering().getParentOffering() == null ? null : request.getCourseOffering().getParentOffering().getUniqueId());
 							}
 						}
 						
@@ -2555,6 +2561,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						rc.setReadOnly(hasEnrollments);
 						rc.setCanDelete(!hasEnrollments);
 						rc.setCanWaitList(course.getCourseOffering().getInstructionalOffering().effectiveWaitList());
+						rc.setParentCourseId(course.getCourseOffering().getParentOffering() == null ? null : course.getCourseOffering().getParentOffering().getUniqueId());
 						if (hasEnrollments)
 							rc.setStatus(RequestedCourseStatus.ENROLLED);
 						else if (course.getOverrideStatus() != null)
@@ -2633,6 +2640,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				rc.setCourseName(c.getSubjectAreaAbbv() + " " + c.getCourseNbr() + (!CONSTANTS.showCourseTitle() ? "" : " - " + c.getTitle()));
 				rc.setCourseTitle(c.getTitle());
 				rc.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
+				rc.setParentCourseId(c.getParentOffering() == null ? null : c.getParentOffering().getUniqueId());
 				CourseCreditUnitConfig credit = c.getCredit(); 
 				if (credit != null) rc.setCredit(credit.getMinCredit(), credit.getMaxCredit());
 				r.addRequestedCourse(rc);
@@ -4288,6 +4296,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				course.setHasUniqueName(true);
 				course.setHasCrossList(c.getInstructionalOffering().hasCrossList());
 				course.setCanWaitList(c.getInstructionalOffering().effectiveWaitList());
+				course.setParentCourseId(c.getParentOffering() == null ? null : c.getParentOffering().getUniqueId());
 				if (overrides != null && !overrides.isEmpty()) {
 					for (OverrideType override: overrides)
 						if (!c.getDisabledOverrides().contains(override))

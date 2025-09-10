@@ -231,6 +231,7 @@ public class ListCourseOfferings implements OnlineSectioningAction<Collection<Cl
 		course.setCourseId(c.getCourseId());
 		course.setSubject(c.getSubjectArea());
 		course.setCourseNbr(c.getCourseNumber());
+		course.setParentCourseId(c.getParentCourseId());
 		course.setTitle(c.getTitle());
 		course.setNote(c.getNote());
 		course.setCreditAbbv(c.getCreditAbbv());

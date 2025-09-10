@@ -1931,13 +1931,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			priority ++;
 		}
 		
-		float min = 0, max = 0;
-		for (Request request: requests.getCourses()) {
-			min += request.getAdvisorCreditMin();
-			max += request.getAdvisorCreditMax();
-		}
+		float[] minMax = requests.getAdvisorCreditRange();
 		String note = (requests.hasCreditNote() ? requests.getCreditNote() : "");
-		String credit = (min < max ? df.format(min) + " - " + df.format(max) : df.format(min));
+		String credit = (minMax[0] < minMax[1] ? df.format(minMax[0]) + " - " + df.format(minMax[1]) : df.format(minMax[0]));
 		CourseRequestLine line = new CourseRequestLine();
 		line.priority = "";
 		line.courseName = MSG.rowTotalPriorityCreditHours();

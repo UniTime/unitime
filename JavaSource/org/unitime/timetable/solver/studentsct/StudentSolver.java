@@ -136,7 +136,6 @@ import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
-import org.unitime.timetable.onlinesectioning.model.XCredit;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XEnrollments;
 import org.unitime.timetable.onlinesectioning.model.XExpectations;
@@ -149,6 +148,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.model.XTime;
+import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction.MinMaxCredit;
 import org.unitime.timetable.server.sectioning.SectioningReportTypesBackend.ReportType;
 import org.unitime.timetable.solver.AbstractSolver;
 import org.unitime.timetable.solver.SolverDisposeListener;
@@ -1621,10 +1621,66 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			return getModel().getStudentQuality().getStudentQualityContext().getUnavailabilityDistanceMetric();
 		return getDistanceMetric();
 	}
+	
+	public float[] getCredits(XStudent student) {
+		return getCredits(getStudentCache().get(student.getStudentId()));
+	}
 
 	@Override
 	public float[] getCredits(String studentExternalId) {
-		Student student = getStudentExtCache().get(studentExternalId);
+		return getCredits(getStudentExtCache().get(studentExternalId));
+	}
+	
+	public CourseRequest getParentRequest(Student student, Course course) {
+		if (course == null || course.getParent() == null) return null;
+		for (Request r: student.getRequests())
+			if (r.hasCourse(course.getParent())) return (CourseRequest)r;
+		return null;
+	}
+	
+	public MinMaxCredit getMinMaxCredit(Student student, Course course, Float ec) {
+		if (course == null) return null;
+		Float c = course.getCreditValue();
+		// no course or credit -> no values
+		if (c == null && ec == null) return null;
+		// has parent course --> count this credit with the parent
+		CourseRequest pc = getParentRequest(student, course);
+		if (pc != null && course.getParent().getCreditValue() != null) return new MinMaxCredit(0f, 0f);
+		
+		float tMin = 0f, tMax = 0f;
+		for (Request request: student.getRequests())
+			if (request instanceof CourseRequest) {
+				Float min = null, max = null;
+				CourseRequest cr = (CourseRequest)request;
+				Enrollment e = currentSolution().getAssignment().getValue(request);
+				if (e != null && course.equals(e.getCourse().getParent())) {
+					if (course.equals(e.getCourse())) {
+						float cred = e.getCredit();
+						if (min == null || min > cred) min = cred;
+						if (max == null || max < cred) max = cred;
+					}
+				} else {
+					for (Course child: cr.getCourses()) {
+						if (course.equals(child.getParent())) {
+							Float cc = child.getCreditValue();
+							if (cc != null) {
+								if (min == null || min > cc) min = cc;
+								if (max == null || max < cc) max = cc;
+							}
+						}
+					}
+				}
+				if (min != null) {
+					tMin += min; tMax += max;
+				}
+			}
+		if (ec != null)
+			return new MinMaxCredit(ec + tMin, ec + tMax);
+		else
+			return new MinMaxCredit(c + tMin, c + tMax);
+	}
+	
+	public float[] getCredits(Student student) {
 		if (student == null) return null;
 		List<Float> mins = new ArrayList<Float>();
 		List<Float> maxs = new ArrayList<Float>();
@@ -1634,26 +1690,37 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 			if (request instanceof CourseRequest) {
 				CourseRequest cr = (CourseRequest)request;
 				Enrollment e = currentSolution().getAssignment().getValue(cr);
-				if (e != null)
-					tEnrl += e.getCredit();
-				Float min = null, max = null;
-				for (Course course: cr.getCourses()) {
-					if (course.getCredit() != null) {
-						XCredit xc = new XCredit(course.getCredit());
-						if (min == null || min > xc.getMinCredit()) min = xc.getMinCredit();
-						if (max == null || max < xc.getMaxCredit()) max = xc.getMaxCredit();
+				if (e != null) {
+					float cred = e.getCredit();
+					tEnrl += cred;
+					MinMaxCredit rc = getMinMaxCredit(student, e.getCourse(), e.getCredit());
+					if (rc != null) {
+						// child course added
+						tMin += rc.getMinCredit(); tMax += rc.getMaxCredit();
+					} else {
+						tMin += cred; tMax += cred;
 					}
-				}
-				if (cr.isAlternative()) {
-					if (min != null) {
-						mins.add(min); maxs.add(max);
-					}
+					if (cr.isAlternative()) nrCourses --;
 				} else {
-					if (min != null) {
-						if (cr.isWaitlist()) {
-							tMin += min; tMax += max;
-						} else {
-							mins.add(min); maxs.add(max); nrCourses ++;
+					Float min = null, max = null;
+					for (Course course: cr.getCourses()) {
+						MinMaxCredit rc = getMinMaxCredit(student, course, null);
+						if (rc != null) {
+							if (min == null || min > rc.getMinCredit()) min = rc.getMinCredit();
+							if (max == null || max < rc.getMaxCredit()) max = rc.getMaxCredit();
+						}
+					}
+					if (cr.isAlternative()) {
+						if (min != null) {
+							mins.add(min); maxs.add(max);
+						}
+					} else {
+						if (min != null) {
+							if (cr.isWaitlist()) {
+								tMin += min; tMax += max;
+							} else {
+								mins.add(min); maxs.add(max);nrCourses ++;
+							}
 						}
 					}
 				}

@@ -1778,8 +1778,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				Float credit = null;
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.hasCredit()) {
-						if (credit == null || credit < rc.getCreditMin()) {
-							credit = rc.getCreditMin();
+						float[] rcCred = request.getMinMaxCredit(rc);
+						if (credit == null || credit < rcCred[0]) {
+							credit = rcCred[0];
 							if (total + credit > maxCredit) ret.add(rc);
 						}
 					}
@@ -1799,7 +1800,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			if (r.hasRequestedCourse()) {
 				for (RequestedCourse rc: r.getRequestedCourse()) {
 					if (rc.hasCredit()) {
-						if (total + rc.getCreditMin() - low > maxCredit) { ret.add(rc); break; }
+						float[] rcCred = request.getMinMaxCredit(rc);
+						if (total + rcCred[0] - low > maxCredit) { ret.add(rc); break; }
 					}
 				}
 				if (first == null)
@@ -2863,16 +2865,14 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				change.errors.add(err);
 			}
 		float total = otherCredits[1];
-		List<Float> credits = new ArrayList<Float>();
-		int nrCourses = 0;
+		float[] credits = server.getCredits(original);
+		if (credits != null) total +=credits[1];
 		submitRequest.courseCreditHrs = new ArrayList<CourseCredit>();
 		submitRequest.alternateCourseCreditHrs = new ArrayList<CourseCredit>();
-		Set<Long> advisorWaitListedCourseIds = original.getAdvisorWaitListedCourseIds(server);
 		for (XRequest r: original.getRequests()) {
 			CourseCredit cc = null;
 			if (r instanceof XCourseRequest) {
 				XCourseRequest cr = (XCourseRequest)r;
-				Float credit = null;
 				for (XCourseId cid: cr.getCourseIds()) {
 					XCourse course = server.getCourse(cid.getCourseId());
 					if (course == null) continue;
@@ -2889,15 +2889,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						acc.creditHrs = (course.hasCredit() ? course.getMinCredit() : 0f);
 						cc.alternatives.add(acc);
 					}
-					if (course.hasCredit() && (credit == null || credit < course.getMinCredit())) credit = course.getMinCredit();
-				}
-				if (credit != null) {
-					if (!r.isAlternative() && cr.isWaitListOrNoSub(wlMode, advisorWaitListedCourseIds)) {
-						total += credit;
-					} else {
-						credits.add(credit);
-						if (!r.isAlternative()) nrCourses ++;
-					}
 				}
 			}
 			if (cc != null) {
@@ -2906,10 +2897,6 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				else
 					submitRequest.courseCreditHrs.add(cc);
 			}
-		}
-		Collections.sort(credits);
-		for (int i = 0; i < nrCourses; i++) {
-			total += credits.get(credits.size() - i - 1);
 		}
 		String maxCreditLimitStr = ApplicationProperties.getProperty("purdue.specreg.maxCreditCheck");
 		if (maxCreditLimitStr != null) {
