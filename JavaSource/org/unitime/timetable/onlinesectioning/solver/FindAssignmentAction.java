@@ -1158,8 +1158,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
 								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
-								if (server instanceof StudentSolver)
-									ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment));
+								ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment, server instanceof StudentSolver));
 							}
 							if (r.getStudent().hasMaxCredit()) {
 								Float minCred = null;
@@ -1258,8 +1257,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
 								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
-								if (server instanceof StudentSolver)
-									ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment));
+								ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment, server instanceof StudentSolver));
 							}
 							if (r.getStudent().hasMaxCredit()) {
 								Float minCred = null;

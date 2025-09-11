@@ -372,18 +372,22 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
             }
         }
     }
-    		
     
     public static String getNoAvailableMessage(CourseRequest courseRequest, Assignment<Request, Enrollment> assignment) {
+    	return getNoAvailableMessage(courseRequest, assignment, true); 
+    }
+    		
+    
+    public static String getNoAvailableMessage(CourseRequest courseRequest, Assignment<Request, Enrollment> assignment, boolean detailed) {
     	Course course = courseRequest.getCourses().get(0);
     	Offering offering = course.getOffering();
     	
     	int limit = getOfferingLimit(offering, false, false);
     	double enrollment = getOfferingEnrollment(offering, assignment, false, false);
-    	if (limit >= 0 && limit < courseRequest.getWeight() + enrollment)
+    	if (detailed && limit >= 0 && limit < courseRequest.getWeight() + enrollment)
     		return MSG.unavailableCourseIsFull(course.getName());
     	
-    	if (course.getLimit() >= 0 && CourseLimit.getEnrollmentWeight(assignment, course, courseRequest) > course.getLimit())
+    	if (detailed && course.getLimit() >= 0 && CourseLimit.getEnrollmentWeight(assignment, course, courseRequest) > course.getLimit())
     		return MSG.unavailableCourseIsFull(course.getName());
     	
     	boolean reservationMustBeUsed = false, hasReservation = false;
@@ -392,7 +396,7 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
             if (r.getReservedAvailableSpace(assignment, courseRequest) < courseRequest.getWeight()) continue;
             hasReservation = true;
         }
-        if (reservationMustBeUsed && !hasReservation)
+        if (detailed && reservationMustBeUsed && !hasReservation)
         	return MSG.unavailableMustTakeReservationIsFull();
         
         if (course.hasParent()) {
@@ -405,6 +409,8 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
         		}
         	}
         }
+
+        if (!detailed) return null;
 
     	Set<String> reasons = new TreeSet<String>();
     	Set<String> conflicts = new TreeSet<String>();
