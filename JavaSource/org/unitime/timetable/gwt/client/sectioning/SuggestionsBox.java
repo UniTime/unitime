@@ -843,7 +843,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iSectioningService.computeSuggestions(request, rows, index, iFilter.getText(), iCallback);
 	}
 	
-	public void open(final CourseRequestInterface request, final ArrayList<ClassAssignmentInterface.ClassAssignment> rows, RequestedCourse course, boolean useGwtConfirmations, AsyncCallback<ClassAssignmentInterface> callback) {
+	public void open(final CourseRequestInterface request, final ArrayList<ClassAssignmentInterface.ClassAssignment> rows, RequestedCourse course, boolean useGwtConfirmations, final boolean waitList, AsyncCallback<ClassAssignmentInterface> callback) {
 		LoadingWidget.getInstance().show(MESSAGES.suggestionsLoadingChoices());
 		iAssignment = null; iCourse = course;
 		iCurrent = rows;
@@ -917,7 +917,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 						LoadingWidget.getInstance().hide();
 						iCustomCallback.onFailure(new SectioningException(message != null ? message : MESSAGES.suggestionsNoChoices(iSource)));
 					}
-				} else if (!hasAnyChange && MESSAGES.suggestionsNoChoicesCourseIsFull(iSource).equals(message) && iCourse.isCanWaitList()) {
+				} else if (!hasAnyChange && MESSAGES.suggestionsNoChoicesCourseIsFull(iSource).equals(message) && iCourse.isCanWaitList() && waitList) {
 					LoadingWidget.getInstance().hide();
 					iCustomCallback.onFailure(new SectioningException(message));
 				} else {

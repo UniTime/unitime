@@ -3205,6 +3205,10 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.GWT_CONFIRMATIONS);
 	}
 	
+	public boolean canWaitList() {
+		return iEligibilityCheck == null || iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST);
+	}
+	
 	protected Command confirmEnrollment(final Command callback) {
 		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(confirmSectionSwapNoPref(confirmLongTravel(callback))))));
 	}
@@ -3402,7 +3406,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								}
 							});
 						}
-						iQuickAddSuggestions.open(iCourseRequests.getRequest(), iLastResult, event.getSelectedItem(), useDefaultConfirmDialog(), new AsyncCallback<ClassAssignmentInterface>() {
+						iQuickAddSuggestions.open(iCourseRequests.getRequest(), iLastResult, event.getSelectedItem(), useDefaultConfirmDialog(), canWaitList(), new AsyncCallback<ClassAssignmentInterface>() {
 							@Override
 							public void onSuccess(ClassAssignmentInterface result) {
 								clearMessage();
@@ -3417,7 +3421,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable caught) {
 								if (caught != null) iStatus.error(caught.getMessage());
 								iAssignmentPanel.setFocus(true);
-								if (event.getSelectedItem().isCanWaitList() && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+								if (event.getSelectedItem().isCanWaitList() && canWaitList()) {
 									UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), caught.getMessage() + "\n" + MESSAGES.confirmQuickWaitList(event.getSelectedItem().getCourseName()), new Command() {
 										@Override
 										public void execute() {
