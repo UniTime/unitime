@@ -388,7 +388,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iMinDefaultCredit = model.getProperties().getPropertyFloat("Load.DefaultMinCredit", iMinDefaultCredit);
         iMoveCriticalCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveCriticalCoursesUp", iMoveCriticalCoursesUp);
         iMoveFreeTimesDown = model.getProperties().getPropertyBoolean("Load.MoveFreeTimesDown", iMoveFreeTimesDown);
-        iMoveParentCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveParentCoursesUp", iMoveParentCoursesUp || iMoveFreeTimesDown);
+        iMoveParentCoursesUp = model.getProperties().getPropertyBoolean("Load.MoveParentCoursesUp", iMoveCriticalCoursesUp || iMoveFreeTimesDown);
 
         String onlineOnlyStudentFilter = model.getProperties().getProperty("Load.OnlineOnlyStudentFilter", null);
         iOnlineOnlyInstructionalModeRegExp = model.getProperties().getProperty("Load.OnlineOnlyInstructionalModeRegExp");
