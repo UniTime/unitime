@@ -3771,6 +3771,12 @@ public enum ApplicationProperty {
 	@Description("Student Scheduling: provide prerequisite (parent) course -- a student requesting both courses cannot get the course without also getting the prerequisite course")
 	@Since(4.9)
 	StudentSchedulingParentCourse("unitime.sectioning.parentCourse"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Scheduling Assistant: when showing 'Not available (course is full)' to the student, indicate that an override can be requested when CLOS overrides are allowed by the course")
+	@Since(4.9)
+	OnlineSchedulingFullCanRequestOverride("unitime.enrollment.fullCourseCanRequestOverride"),
 	;
 
 	String iKey;

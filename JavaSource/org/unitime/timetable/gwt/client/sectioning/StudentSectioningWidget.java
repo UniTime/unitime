@@ -1868,7 +1868,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (course.hasConflictMessage())
 							unassignedMessage = course.getConflictMessage();
 						else if (course.isFull())
-							unassignedMessage = MESSAGES.courseIsFull();
+							unassignedMessage = (course.isCanRequestOverride() && iSpecRegCx.areSpaceConflictsAllowed()? MESSAGES.courseIsFullCanRequestOverride() :  MESSAGES.courseIsFull());
 						else if (course.hasHasIncompReqs())
 							unassignedMessage = MESSAGES.classNotAvailableDueToStudentPrefs();
 						else

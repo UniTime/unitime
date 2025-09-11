@@ -61,6 +61,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Scheduling Assistant: Not available (course is full).</name>
+			<description>
+				<line>When displaying the &quot;Not available (course is full).&quot; for a course for which a limit override can be requested,
+					also include &quot;An override can be requested.&quot; in the message.</line>
+				<line>Only enabled when unitime.enrollment.fullCourseCanRequestOverride is set to true.</line>
+			</description>
+		</item>
+	</category>	
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Update</name>

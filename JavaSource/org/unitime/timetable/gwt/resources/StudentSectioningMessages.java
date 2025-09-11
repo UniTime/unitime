@@ -716,6 +716,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not available (course is full).")
 	String courseIsFull();
+	
+	@DefaultMessage("Not available (course is full). An override can be requested.")
+	String courseIsFullCanRequestOverride();
 
 	@DefaultMessage("Not assigned.")
 	String courseNotAssigned();

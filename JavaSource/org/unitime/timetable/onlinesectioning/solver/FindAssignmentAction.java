@@ -1157,6 +1157,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (r.getAvaiableEnrollments(assignment).isEmpty()) {
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
+								if (ca.isFull() && ApplicationProperty.OnlineSchedulingFullCanRequestOverride.isTrue()) {
+									XCourse xc = server.getCourse(course.getId());
+									ca.setCanRequestOverride(xc != null && xc.areSpaceConflictOverridesAllowed());
+								}
 								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
 								ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment, server instanceof StudentSolver));
 							}
@@ -1256,6 +1260,10 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (avEnrls.isEmpty()) {
 								ca.setNotAvailable(true);
 								ca.setFull(course.getLimit() == 0);
+								if (ca.isFull() && ApplicationProperty.OnlineSchedulingFullCanRequestOverride.isTrue()) {
+									XCourse xc = server.getCourse(course.getId());
+									ca.setCanRequestOverride(xc != null && xc.areSpaceConflictOverridesAllowed());
+								}
 								ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(r, course.getId()));
 								ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(r, assignment, server instanceof StudentSolver));
 							}

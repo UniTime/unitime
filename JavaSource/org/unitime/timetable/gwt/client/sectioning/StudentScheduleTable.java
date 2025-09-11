@@ -298,7 +298,7 @@ public class StudentScheduleTable extends Composite {
 					if (course.hasConflictMessage())
 						unassignedMessage = course.getConflictMessage();
 					else if (course.isFull())
-						unassignedMessage = MESSAGES.courseIsFull();
+						unassignedMessage = (course.isCanRequestOverride() ? MESSAGES.courseIsFullCanRequestOverride() :  MESSAGES.courseIsFull());
 					else if (course.hasHasIncompReqs())
 						unassignedMessage = MESSAGES.classNotAvailableDueToStudentPrefs();
 					else

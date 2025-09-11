@@ -828,6 +828,9 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									}
 								}
 								ca.setFull((offeringLimit >= 0 && offerEnrl >= offeringLimit) || (course.getLimit() >= 0 && courseEnrl >= course.getLimit()));
+								if (ca.isFull() && ApplicationProperty.OnlineSchedulingFullCanRequestOverride.isTrue()) {
+									ca.setCanRequestOverride(course.areSpaceConflictOverridesAllowed());
+								}
 							}
 							ca.setHasIncompReqs(SectioningRequest.hasInconsistentRequirements(crq, course.getCourseId()));
 							ca.setConflictMessage(UnasignedCourseRequests.getNoAvailableMessage(crq, assignment));
