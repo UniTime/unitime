@@ -5502,6 +5502,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Offerings")
 	String rollForwardCourseOfferings();
 	
+	@DefaultMessage("Prerequisite Course Offerings")
+	String rollForwardParentCourseOfferings();
+	
 	@DefaultMessage("Class Instructors")
 	String rollForwardClassInstructors();
 	
@@ -5613,6 +5616,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Include Wait-Listing and Prohibited Overrides")
 	String checkIncludeWaitListAndOverrides();
+	
+	@DefaultMessage("Include Prerequisite Course Settings")
+	String checkIncludeParentOfferings();
 	
 	@DefaultMessage("Scheduling Subpart Level Time Preference Options:")
 	String propSubpartLevelTimePrefs();

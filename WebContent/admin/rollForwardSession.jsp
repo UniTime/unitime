@@ -178,6 +178,12 @@
 				<s:checkbox name="form.rollForwardWaitListsProhibitedOverrides"/>
 				<loc:message name="checkIncludeWaitListAndOverrides"/>
 			</td></tr>
+			<tt:propertyEquals name="unitime.sectioning.parentCourse" value="true">
+				<tr><td valign="top" colspan="2">
+					<s:checkbox name="form.roolForwardParentOfferings"/>
+					<loc:message name="checkIncludeParentOfferings"/>
+				</td></tr>
+			</tt:propertyEquals>
 			<tr><td style="padding-top: 20px;" rowspan="2" valign="top"><loc:message name="propSubpartLevelTimePrefs"/></td><td style="padding-top: 20px;">
 				<s:radio name="form.subpartTimePrefsAction" list="#{'rollUnchanged':''}"/> <loc:message name="optRollSubpartTimePrefs"/></td></tr>
 			<tr><td>

@@ -125,6 +125,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 	private Boolean rollForwardLearningManagementSystems;
 	private Long sessionToRollLearningManagementSystemsForwardFrom;
 	private Boolean rollForwardWaitListsProhibitedOverrides;
+	private Boolean roolForwardParentOfferings;
 	
 	private Boolean rollForwardReservations;
 	private Long sessionToRollReservationsForwardFrom;
@@ -537,6 +538,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 		rollForwardLearningManagementSystems = Boolean.valueOf(false);
 		sessionToRollLearningManagementSystemsForwardFrom = null;
 		rollForwardWaitListsProhibitedOverrides = false;
+		roolForwardParentOfferings = false;
 	}
 
 	public String getButtonAction() {
@@ -1101,6 +1103,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 		form.rollForwardLearningManagementSystems = rollForwardLearningManagementSystems;
 		form.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
 		form.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides;
+		form.roolForwardParentOfferings = roolForwardParentOfferings;
 		form.rollForwardUniversalReservations = rollForwardUniversalReservations;
 		form.expirationUniversalReservations = expirationUniversalReservations;
 		form.startDateUniversalReservations = startDateUniversalReservations;
@@ -1173,6 +1176,9 @@ public class RollForwardSessionForm implements UniTimeForm {
 	
 	public Boolean getRollForwardWaitListsProhibitedOverrides() { return rollForwardWaitListsProhibitedOverrides; }
 	public void setRollForwardWaitListsProhibitedOverrides(Boolean rollForwardWaitListsProhibitedOverrides) { this.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides; }
+	
+	public Boolean getRoolForwardParentOfferings() { return roolForwardParentOfferings; }
+	public void setRoolForwardParentOfferings(Boolean roolForwardParentOfferings) { this.roolForwardParentOfferings = roolForwardParentOfferings; }
 
 
 	public Object clone() {

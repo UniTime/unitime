@@ -330,7 +330,11 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     		else
     			i = null;
     	} catch (Exception e){
-    		i = null;
+    		Debug.error("Exception "+e.getMessage()+" seen for "+this, e);
+    		i = new _RootDAO().getSession().createQuery(
+    				"select p from Preference p where p.owner.uniqueId = :ownerId and p.class = :type", Preference.class)
+    				.setParameter("ownerId", getUniqueId())
+    				.setParameter("type", type).list().iterator();
     	}
     	
     	if (i == null){

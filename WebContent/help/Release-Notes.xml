@@ -80,6 +80,7 @@
 				<line>Scheduling Dashboards: show an error when not-assigned prerequisite course as a reason for a dependent course not being assigned.</line>
 				<line>Course Requests &amp; Advisor Recommendation Credit Computation: adjusted credit computation for dependent courses.</line>
 				<line>Scheduling Assistant: show the &quot;Not assigned prerequisite course X.&quot; message when a course cannot be assigned because the parent (prerequisite) course is requested, but not assigned.</line>
+				<line>Roll Forward Session: added an option to copy parent course settings from the previous session.</line>
 			</description>
 		</item>
 		<item>

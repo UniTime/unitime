@@ -179,7 +179,7 @@ public class SessionRollForward {
 	
 	private boolean resetClassSuffix;
 	
-	private boolean waitListsAndProhibitedOverrides; 
+	private boolean waitListsAndProhibitedOverrides;
 
 	public static String ROLL_PREFS_ACTION = "rollUnchanged";
 	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
@@ -2083,8 +2083,6 @@ public class SessionRollForward {
 					instrOffrRollFwd.setCancelledClassActionRollForwardParameter(rollForwardSessionForm.getCancelledClassAction());
 					instrOffrRollFwd.setWaitListsAndProhibitedOverrides(rollForwardSessionForm.getRollForwardWaitListsProhibitedOverrides());
 					instrOffrRollFwd.rollForwardInstructionalOfferingsForASubjectArea(subjectArea.getSubjectAreaAbbreviation(), fromSession, toSession);
-				} else {
-					break;
 				}
 				tx.commit();
 			} catch (Exception e) {
@@ -2092,6 +2090,34 @@ public class SessionRollForward {
 				iLog.error(MSG.errorRollForwardFailedAll(MSG.rollForwardCourseOfferings()), e);
 				errors.addFieldError("rollForward", e.getMessage());
 				break;
+			}
+			getHibSession().clear();
+		}
+		if (Boolean.TRUE.equals(rollForwardSessionForm.getRoolForwardParentOfferings())) {
+			iLog.info("Checking for prerequisite courses...");
+			Transaction tx = getHibSession().beginTransaction();
+			try {
+				for (Object[] courses: getHibSession().createQuery(
+						"select co, parent " +
+						"from CourseOffering co, CourseOffering orig, CourseOffering parent where " +
+						"co.subjectArea.session.uniqueId = :targetSessionId and parent.subjectArea.session.uniqueId = :targetSessionId and " +
+						"co.uniqueIdRolledForwardFrom = orig.uniqueId and " +
+						"parent.uniqueIdRolledForwardFrom = orig.parentOffering.uniqueId and " +
+						"cast(co.subjectArea.uniqueId as string) in :subjectAreaIds", Object[].class)
+						.setParameter("targetSessionId", rollForwardSessionForm.getSessionToRollForwardTo())
+						.setParameterList("subjectAreaIds", rollForwardSessionForm.getRollForwardSubjectAreaIds())
+						.list()) {
+					CourseOffering co = (CourseOffering)courses[0];
+					CourseOffering parent = (CourseOffering)courses[1];
+					iLog.info("Setting " + parent.getCourseName() + " as a prerequisite for " + co.getCourseName());
+					co.setParentOffering(parent);
+					getHibSession().merge(co);
+				}
+				tx.commit();
+			} catch (Exception e) {
+				tx.rollback();
+				iLog.error(MSG.errorRollForwardFailedAll(MSG.rollForwardParentCourseOfferings()), e);
+				errors.addFieldError("rollForward", e.getMessage());
 			}
 			getHibSession().clear();
 		}
