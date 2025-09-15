@@ -371,6 +371,7 @@ public class XStudent extends XStudentId implements Externalizable {
     public void setLastNote(XStudentNote note) { iLastNote = note; }
 
     public XCourseRequest getRequestForCourse(Long courseId) {
+    	if (courseId == null) return null;
     	for (XRequest request: iRequests)
     		if (request instanceof XCourseRequest && ((XCourseRequest)request).hasCourse(courseId))
     			return (XCourseRequest)request;
@@ -395,7 +396,7 @@ public class XStudent extends XStudentId implements Externalizable {
     }
     
     public XAdvisorRequest getAdvisorRequestForCourse(Long courseId) {
-    	if (iAdvisorRequests == null) return null;
+    	if (iAdvisorRequests == null || courseId == null) return null;
     	for (XAdvisorRequest request: iAdvisorRequests)
     		if (request.hasCourseId() && request.getCourseId().getCourseId().equals(courseId))
     			return request;

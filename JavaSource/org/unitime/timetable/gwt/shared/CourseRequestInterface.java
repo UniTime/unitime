@@ -90,6 +90,20 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			return iAlternatives.get(index);
 		return null;
 	}
+	public Request getAlternativeForCourseId(Long courseId) {
+		if (courseId == null) return null;
+		for (Request r: iAlternatives)
+			if (r.getCourse(courseId) != null) return r;
+		return null;
+	}
+	public boolean hasCourse(Long courseId) {
+		if (courseId == null) return false;
+		for (Request r: iCourses)
+			if (r.getCourse(courseId) != null) return true;
+		for (Request r: iAlternatives)
+			if (r.getCourse(courseId) != null) return true;
+		return false;
+	}
 	public void addCourseCriticalFirst(Request request) {
 		if (request.isCritical() || request.isImportant() || request.isVital()) {
 			int lastCritical = -1;
@@ -1281,6 +1295,13 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				break;
 			}
 			return false;
+		}
+
+		public RequestedCourse getCourse(Long courseId) {
+			if (iRequestedCourse == null || courseId == null) return null;
+			for (RequestedCourse rc: iRequestedCourse)
+				if (courseId.equals(rc.getCourseId())) return rc;
+			return null;
 		}
 		
 		public boolean hasNoSub() { return iNoSub != null; }

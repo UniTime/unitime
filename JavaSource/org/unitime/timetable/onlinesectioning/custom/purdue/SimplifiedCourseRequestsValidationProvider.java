@@ -97,6 +97,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ResponseStatus;
 import org.unitime.timetable.onlinesectioning.model.XAdvisorRequest;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XDistribution;
@@ -588,9 +589,74 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
 				RequestedCourse rc = r.getRequestedCourse(0);
-				if (rc.getCourseId() != null && !rc.isReadOnly() && !advisorCoursesNoAlt.contains(rc.getCourseId())) {
+				if (rc.getCourseId() != null && !rc.isReadOnly() && !advisorCoursesNoAlt.contains(rc.getCourseId()) && !request.hasCourse(rc.getParentCourseId())) {
 					request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
 							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()), ORD_UNITIME);
+				}
+			}
+		}
+		for (CourseRequestInterface.Request r: request.getCourses()) {
+			if (r.hasRequestedCourse() && r.getRequestedCourse().size() > 1) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
+					if (parent != null) {
+						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName())
+								, ORD_UNITIME);
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					CourseRequestInterface.Request a = request.getAlternativeForCourseId(rc.getParentCourseId());
+					if (a != null) {
+						RequestedCourse parent = a.getCourse(rc.getParentCourseId());
+						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SUBST",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSubstitute", "Prerequisite course {parent} is requested as a substitute.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName())
+								, ORD_UNITIME);
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasParentCourseId() && !request.hasCourse(rc.getParentCourseId())) {
+						XCourse parent = server.getCourse(rc.getParentCourseId());
+						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "NO_PARENT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.noParent", "Depends on {parent}.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName())
+								, ORD_UNITIME);
+					}
+				}
+			}
+		}
+		for (CourseRequestInterface.Request r: request.getAlternatives()) {
+			if (r.hasRequestedCourse() && r.getRequestedCourse().size() > 1) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
+					if (parent != null) {
+						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName())
+								, ORD_UNITIME);
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasParentCourseId() && !request.hasCourse(rc.getParentCourseId())) {
+						XCourse parent = server.getCourse(rc.getParentCourseId());
+						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "NO_PARENT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.noParent", "Depends on {parent}.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName())
+								, ORD_UNITIME);
+					}
 				}
 			}
 		}
@@ -853,12 +919,98 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
 				RequestedCourse rc = r.getRequestedCourse(0);
-				if (rc.getCourseId() != null && !rc.isReadOnly() && !advisorCoursesNoAlt.contains(rc.getCourseId())) {
+				if (rc.getCourseId() != null && !rc.isReadOnly() && !advisorCoursesNoAlt.contains(rc.getCourseId()) && !request.hasCourse(rc.getParentCourseId())) {
 					response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
 							ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()),
 							!coursesWithNotAlt.contains(rc.getCourseId()) ? CONF_UNITIME : CONF_NONE);
 					if (!coursesWithNotAlt.contains(rc.getCourseId())) {
 						questionNoAlt = true;
+					}
+				}
+			}
+		}
+		boolean questionParentSameReq = false;
+		boolean questionParentSubstitute = false;
+		boolean questionNoParent = false;
+		for (CourseRequestInterface.Request r: request.getCourses()) {
+			if (r.hasRequestedCourse() && r.getRequestedCourse().size() > 1) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
+					if (parent != null) {
+						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
+						boolean alreadyExist = (cr != null && cr.hasCourse(rc.getParentCourseId()));
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								!alreadyExist ? CONF_UNITIME : CONF_NONE);
+						if (!alreadyExist) questionParentSameReq = true;
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					CourseRequestInterface.Request a = request.getAlternativeForCourseId(rc.getParentCourseId());
+					if (a != null) {
+						RequestedCourse parent = a.getCourse(rc.getParentCourseId());
+						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
+						XCourseRequest acr = original.getRequestForCourse(rc.getParentCourseId());
+						boolean alreadyExist = (cr != null && acr != null && !cr.isAlternative() && acr.isAlternative());
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SUBST",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSubstitute", "Prerequisite course {parent} is requested as a substitute.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								!alreadyExist ? CONF_UNITIME : CONF_NONE);
+						if (!alreadyExist) questionParentSubstitute = true;
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasParentCourseId() && !request.hasCourse(rc.getParentCourseId())) {
+						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
+						XCourseRequest acr = original.getRequestForCourse(rc.getParentCourseId());
+						boolean alreadyExist = (cr != null && acr == null);
+						XCourse parent = server.getCourse(rc.getParentCourseId());
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_PARENT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.noParent", "Depends on {parent}.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								!alreadyExist ? CONF_UNITIME : CONF_NONE);
+						if (!alreadyExist) questionNoParent = true;
+					}
+				}
+			}
+		}
+		for (CourseRequestInterface.Request r: request.getAlternatives()) {
+			if (r.hasRequestedCourse() && r.getRequestedCourse().size() > 1) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
+					if (parent != null) {
+						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
+						boolean alreadyExist = (cr != null && cr.hasCourse(rc.getParentCourseId()));
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								!alreadyExist ? CONF_UNITIME : CONF_NONE);
+						if (!alreadyExist) questionParentSameReq = true;
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasParentCourseId() && !request.hasCourse(rc.getParentCourseId())) {
+						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
+						XCourseRequest acr = original.getRequestForCourse(rc.getParentCourseId());
+						boolean alreadyExist = (cr != null && acr == null);
+						XCourse parent = server.getCourse(rc.getParentCourseId());
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_PARENT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.noParent", "Depends on {parent}.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								!alreadyExist ? CONF_UNITIME : CONF_NONE);
+						if (!alreadyExist) questionNoParent = true;
 					}
 				}
 			}
@@ -1344,6 +1496,19 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.noAlternatives", (line > 2 ? "\n" : "") +
 					"One or more of the newly requested courses have no alternatives provided. You may not be able to get a full schedule because you did not provide an alternative course."),
 					CONF_UNITIME, line ++);
+
+		if (questionParentSameReq)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.question.parentSameRequest", (line > 2 ? "\n" : "") +
+					"A course and its prerequisite are in the same request. You will not be able to get both coures."),
+					CONF_UNITIME, line ++);
+		if (questionParentSubstitute)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.question.parentSubstitute", (line > 2 ? "\n" : "") +
+					"A prerequisite course is requested as a substitute. You may not be able to get both coures."),
+					CONF_UNITIME, line ++);
+		if (questionNoParent)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.question.noParent", (line > 2 ? "\n" : "") +
+					"A course depends on another course. You will not be able to get the course if you do not request the prerequisite course unless you have already taken the prerequisite course in the past."),
+					CONF_UNITIME, line ++);
 		
 		if (questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.timeConflicts", (line > 2 ? "\n" : "") +
@@ -1645,7 +1810,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 				if (r.hasRequestedCourse() && r.getRequestedCourse().size() == 1) {
 					if ((r.isWaitList() || r.isNoSub()) && isWaitListNoAlts()) continue;
 					RequestedCourse rc = r.getRequestedCourse(0);
-					if (rc.getCourseId() != null && !rc.isReadOnly()) {
+					if (rc.getCourseId() != null && !rc.isReadOnly() && !request.hasCourse(rc.getParentCourseId())) {
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_ALT",
 								ApplicationProperties.getProperty("purdue.specreg.messages.courseHasNoAlt", "No alternative course provided.").replace("{course}", rc.getCourseName()),
 								CONF_UNITIME);
@@ -1653,6 +1818,80 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					}
 				}
 			}
+		
+		boolean questionParentSameReq = false;
+		boolean questionParentSubstitute = false;
+		boolean questionNoParent = false;
+		for (CourseRequestInterface.Request r: request.getCourses()) {
+			if (r.hasRequestedCourse() && r.getRequestedCourse().size() > 1) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
+					if (parent != null) {
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								CONF_UNITIME);
+						questionParentSameReq = true;
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					CourseRequestInterface.Request a = request.getAlternativeForCourseId(rc.getParentCourseId());
+					if (a != null) {
+						RequestedCourse parent = a.getCourse(rc.getParentCourseId());
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SUBST",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSubstitute", "Prerequisite course {parent} is requested as a substitute.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								CONF_UNITIME);
+						questionParentSubstitute = true;
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasParentCourseId() && !request.hasCourse(rc.getParentCourseId())) {
+						XCourse parent = server.getCourse(rc.getParentCourseId());
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_PARENT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.noParent", "Depends on {parent}.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								CONF_UNITIME);
+						questionNoParent = true;
+					}
+				}
+			}
+		}
+		for (CourseRequestInterface.Request r: request.getAlternatives()) {
+			if (r.hasRequestedCourse() && r.getRequestedCourse().size() > 1) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
+					if (parent != null) {
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								CONF_UNITIME);
+						questionParentSameReq = true;
+					}
+				}
+			}
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse()) {
+					if (rc.hasParentCourseId() && !request.hasCourse(rc.getParentCourseId())) {
+						XCourse parent = server.getCourse(rc.getParentCourseId());
+						response.addMessage(rc.getCourseId(), rc.getCourseName(), "NO_PARENT",
+								ApplicationProperties.getProperty("purdue.specreg.messages.noParent", "Depends on {parent}.")
+								.replace("{parent}", parent.getCourseName())
+								.replace("{course}", rc.getCourseName()),
+								CONF_UNITIME);
+						questionNoParent = true;
+					}
+				}
+			}
+		}
 		
 		boolean questionTimeConflict = false;
 		boolean questionInconStuPref = false;
@@ -2029,6 +2268,18 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 		if (questionNoAlt)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noAlternatives", (line > 2 ? "\n" : "") +
 					"One or more of the recommended courses have no alternatives provided. The student may not be able to get a full schedule."),
+					CONF_UNITIME, line ++);
+		if (questionParentSameReq)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.parentSameRequest", (line > 2 ? "\n" : "") +
+					"A course and its prerequisite are in the same request. The student will not be able to get both coures."),
+					CONF_UNITIME, line ++);
+		if (questionParentSubstitute)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.parentSubstitute", (line > 2 ? "\n" : "") +
+					"A prerequisite course is requested as a substitute. The student may not be able to get both coures."),
+					CONF_UNITIME, line ++);
+		if (questionNoParent)
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noParent", (line > 2 ? "\n" : "") +
+					"A course depends on another course. The student will not be able to get the course if they do not request the prerequisite course, unless they have already taken the prerequisite course in the past."),
 					CONF_UNITIME, line ++);
 		if (questionTimeConflict)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.timeConflicts", (line > 2 ? "\n" : "") +
