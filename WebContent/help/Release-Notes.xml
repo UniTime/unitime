@@ -107,7 +107,19 @@
 					<line>Jakarta JSP API 4.0</line>
 					<line>Jakarta Standard Tag Library API 3.0</line>
 				</line>
-
+			</description>
+		</item>
+		<item>
+			<name>API Tokens, Query Encoder</name>
+			<description>
+				<line>Added an ability to use more secure algorithms to encode query parameters and API token using the following parameters:
+					<line>unitime.encode.algorithm=PBKDF2WithHmacSHA512</line>
+					<line>unitime.encode.iterationCount=100000</line>
+					<line>unitime.encode.keyLength=128</line>
+					<line>unitime.encode.cipher=AES/CBC/PKCS5Padding</line>
+					<line>unitime.encode.cipher.iv=FIXME</line>
+				</line>
+				<line>Please note that any change in the above parameters will invalidate the existing API tokens and encoded queries.</line>
 			</description>
 		</item>
 	</category>	
