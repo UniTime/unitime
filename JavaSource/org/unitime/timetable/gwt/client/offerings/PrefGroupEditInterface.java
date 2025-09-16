@@ -770,8 +770,8 @@ public class PrefGroupEditInterface {
 					getPreference().indexOf('P') >= 0 ||
 					getPreference().indexOf('0') >= 0 ||
 					getPreference().indexOf('1') >= 0 ||
-					getPreference().indexOf('2') >= 0 ||
-					getPreference().indexOf('3') >= 0);
+					getPreference().indexOf('3') >= 0 ||
+					getPreference().indexOf('4') >= 0);
 		}
 		
 		public void addTime(int time) {
