@@ -2720,6 +2720,8 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 		Set<XCourseId> lcCourses = new HashSet<XCourseId>();
 		boolean ignoreLcCourses = isIngoreLCRegistrationErrors();
 		
+		Map<Long, Course> courseTable = new HashMap<Long, Course>();
+		Map<Long, Long> parentCourses = new HashMap<Long, Long>();
 		for (XRequest r: original.getRequests()) {
 			action.addRequest(OnlineSectioningHelper.toProto(r));
 			if (r instanceof XFreeTimeRequest) {
@@ -2736,6 +2738,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					XOffering offering = server.getOffering(c.getOfferingId());
 					if (offering == null) continue;
 					Course clonnedCourse = offering.toCourse(c.getCourseId(), original, server, helper);
+					courseTable.put(c.getCourseId(), clonnedCourse);
+					Long parentCourseId = offering.getCourse(c).getParentCourseId();
+					if (parentCourseId != null)
+						parentCourses.put(c.getCourseId(), parentCourseId);
 					courses.add(clonnedCourse);
 					model.addOffering(clonnedCourse.getOffering());
 					distributions.addAll(offering.getDistributions());
@@ -2784,6 +2790,17 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				}
 			}
 		}
+		boolean hasParent = false;
+		for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+			Course course = courseTable.get(e.getKey());
+			Course parent = courseTable.get(e.getValue());
+			if (course != null && parent != null) {
+				course.setParent(parent);
+				hasParent = true;
+			}
+		}
+		if (hasParent && "true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkDependentCourses", "true"))) 
+			model.addGlobalConstraint(new DependentCourses());
 		if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("purdue.specreg.checkUnavailabilitiesFromOtherSessions", "false"))) {
 			if (server.getConfig().getPropertyBoolean("General.CheckUnavailabilitiesFromOtherSessions", false))
 				GetInfo.fillInUnavailabilitiesFromOtherSessions(s, server, helper);
