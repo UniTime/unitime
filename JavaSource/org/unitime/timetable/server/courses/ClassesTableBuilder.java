@@ -322,6 +322,7 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 			TimeLocation filterAssignedTime = null;
 			if (doFilterAssignedTime) {
 				int dayCode = filterDayCode.isEmpty() ? 255 : Integer.parseInt(filter.getParameterValue("filterDayCode","255"));
+				if (dayCode == 0) dayCode = 255;
 				String filterStartTime = filter.getParameterValue("filterStartTime","");
 				int startTime = filterStartTime.isEmpty() ? 0 : Integer.parseInt(filterStartTime);
 				String filterEndTime = filter.getParameterValue("filterEndTime","");
