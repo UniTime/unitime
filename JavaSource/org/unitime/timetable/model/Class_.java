@@ -1469,7 +1469,7 @@ public class Class_ extends BaseClass_ {
             return null;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
-            e.printStackTrace();
+            Debug.error("Unassignment of "+getClassLabel()+" failed, reason: "+e.getMessage(), e);
             return "Unassignment of "+getClassLabel()+" failed, reason: "+e.getMessage();
         }   
     }
@@ -1498,8 +1498,9 @@ public class Class_ extends BaseClass_ {
                 	}
                 	hibSession.remove(ci);
                 }
-                
             	hibSession.remove(oldAssignment);
+            	setCommittedAssignment(null);
+            	hibSession.merge(this);
             }
             
             SolverGroup group = getManagingDept().getSolverGroup();
@@ -1598,7 +1599,7 @@ public class Class_ extends BaseClass_ {
             return null;
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
-            e.printStackTrace();
+            Debug.error("Assignment of "+getClassLabel()+" failed, reason: "+e.getMessage(), e);
             return "Assignment of "+getClassLabel()+" failed, reason: "+e.getMessage();
         }   
     }

@@ -399,6 +399,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
             	}
             }
         } catch (GwtRpcException e) {
+        	sLog.error("Failed to enumerate possible dates: " + e.getMessage(), e);
         	response.addDatesErrorMessage(e.getMessage());
         }
         
@@ -431,6 +432,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
             	}
             }
         } catch (GwtRpcException e) {
+        	sLog.error("Failed to enumerate possible times: " + e.getMessage(), e);
         	response.addTimesErrorMessage(e.getMessage());
         }
         
@@ -471,6 +473,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                 		response.addRoomsErrorMessage(MSG.messageNoMatchingRoomFound());
         		}
         	} catch (GwtRpcException e) {
+        		sLog.error("Failed to enumerate possible rooms: " + e.getMessage(), e);
         		response.addRoomsErrorMessage(e.getMessage());
         	}
         }
@@ -753,7 +756,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
             try {
             	children.addAll(clazz.getChildClasses());
             } catch (LazyInitializationException e) {
-            	sLog.error("This should never happen.");
+            	sLog.error("Failed to get child classes: " + e.getMessage(), e);
             	Class_ c = Class_DAO.getInstance().get(assignment.getClassId());
             	children.addAll(c.getChildClasses());
             }
@@ -1433,6 +1436,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                 }
                 classIds.add(clazz.getUniqueId());
             } catch (Exception e) {
+            	sLog.error(MSG.errorUnassignmentFailed(assignment.getClassName(), e.getMessage()), e);
                 message = (message==null?"":message+"\n")+MSG.errorUnassignmentFailed(assignment.getClassName(), e.getMessage());
             }
         }
@@ -1449,6 +1453,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                 }
                 classIds.add(clazz.getUniqueId());
             } catch (Exception e) {
+            	sLog.error(MSG.errorAssignmentFailed(assignment.getClassName(), assignment.getTime().getName()+" "+assignment.getRoomNames(", "), e.getMessage()), e);
                 message = (message==null?"":message+"\n")+MSG.errorAssignmentFailed(assignment.getClassName(), assignment.getTime().getName()+" "+assignment.getRoomNames(", "), e.getMessage());
             }
         }
