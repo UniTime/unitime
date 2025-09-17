@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface.ClassLine;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ChangeLog;
@@ -612,6 +613,8 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 				newClass.setSnapshotLimit(snapshotLimit);
 				newClass.setSnapshotLimitDate(timeStamp);
 				newClass.setCancelled(false);
+				newClass.setAssignments(new HashSet<Assignment>());
+				newClass.setPreferences(new HashSet<Preference>());
 				if (lmsId != null)
 					newClass.setLmsInfo(LearningManagementSystemInfoDAO.getInstance().get(lmsId, hibSession));
 				newClass.setRoomsSplitAttendance(splitAttendance);
