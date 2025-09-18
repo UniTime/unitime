@@ -141,6 +141,7 @@ public class CrossListPage extends Composite {
 				CrossListUpdateRequest request = new CrossListUpdateRequest();
 				request.setOfferingId(iCrossList.getOfferingId());
 				request.setCourses(iTable.getData());
+				LoadingWidget.getInstance().show(MESSAGES.waitSavingData());
 				RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
 					@Override
 					public void onFailure(Throwable caught) {
