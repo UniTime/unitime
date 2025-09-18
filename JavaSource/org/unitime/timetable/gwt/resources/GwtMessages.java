@@ -2916,7 +2916,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No best solution saved so far.")
 	String errorNoBestSolutionSaved();
 	
-	@DefaultMessage("No solution selected. However, you can select one <a href='listSolutions'>here")
+	@DefaultMessage("No solution selected. However, you can select one <a href='listSolutions'>here</a>.")
 	String errorNoSolutionSelected();
 	
 	@DefaultMessage("No solution committed so far.")
