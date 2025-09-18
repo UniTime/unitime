@@ -530,7 +530,7 @@ public class ExamInfoModel implements Serializable {
                         try {
                             iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, (iChange==null?null:iChange.getAssignmentTable())));
                         } catch (Exception e) {
-                            if (!MSG.errorPeriodProhibited().equals(e.getMessage()) && !MSG.errorPeriodTooShort().equals(e.getMessage()))
+                            if (!MSG.errorPeriodProhibited().equals(e.getMessage()) && !MSG.errorPeriodTooShort().equals(e.getMessage()) && !MSG.errorPeriodNotRequired().equals(e.getMessage()))
                                 Debug.error(e);
                         }
                     }
