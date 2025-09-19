@@ -58,7 +58,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -1428,6 +1427,7 @@ public class Class_ extends BaseClass_ {
             String old = oldAssignment.getPlacement().getName();
             
             oldAssignment.getSolution().getAssignments().remove(oldAssignment);
+            getAssignments().remove(oldAssignment);
             
             // Remove all related constraint infos to avoid hibernate cache issues 
             // when an orphaned constraint info is automatically deleted
@@ -1457,9 +1457,14 @@ public class Class_ extends BaseClass_ {
                     getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(),
                     getManagingDept());
 
-            if (tx!=null) tx.commit();
+            if (tx!=null) {
+            	tx.commit();
+            	tx = null;
+            } else {
+            	hibSession.flush();
+            }
+            hibSession.refresh(this);
             
-            new _RootDAO().getSession().refresh(this);
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
             	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
@@ -1487,6 +1492,7 @@ public class Class_ extends BaseClass_ {
                 old = oldAssignment.getPlacement().getName();
                 
                 oldAssignment.getSolution().getAssignments().remove(oldAssignment);
+                getAssignments().remove(oldAssignment);
                 
                 // Remove all related constraint infos to avoid hibernate cache issues 
                 // when an orphaned constraint info is automatically deleted
@@ -1529,6 +1535,8 @@ public class Class_ extends BaseClass_ {
             for (ClassInstructorInfo inst: assignment.getInstructors())
             	if (inst.isLead()) a.getInstructors().add(inst.getInstructor(hibSession).getInstructor());
             
+            solution.getAssignments().add(a);
+            getAssignments().add(a);
             hibSession.persist(a);
 
             //TODO: More information should be gathered about the assignment.
@@ -1587,9 +1595,14 @@ public class Class_ extends BaseClass_ {
                     getSchedulingSubpart().getControllingCourseOffering().getSubjectArea(),
                     getManagingDept());
             
-            if (tx!=null) tx.commit();
+            if (tx!=null) {
+            	tx.commit();
+            	tx = null;
+            } else {
+            	hibSession.flush();
+            }
+            hibSession.refresh(this);
             
-            new _RootDAO().getSession().refresh(this);
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
             	ExternalClassEditAction editAction = (ExternalClassEditAction) (Class.forName(className).getDeclaredConstructor().newInstance());
