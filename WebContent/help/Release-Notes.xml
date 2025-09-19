@@ -37,6 +37,13 @@
 				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Fixed a potential Hibernate exception (TransientObjectException) when making a larger change.</line>
+				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
