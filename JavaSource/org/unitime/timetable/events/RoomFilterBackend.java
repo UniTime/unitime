@@ -383,6 +383,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		Set<String> building = (options == null || "building".equals(ignoreCommand) ? null : options.get("building"));
 		Set<String> size = (options == null || "size".equals(ignoreCommand) ? null : options.get("size"));
 		Set<String> flag = (options == null || "flag".equals(ignoreCommand) ? null : options.get("flag"));
+		Set<String> departments = (options == null || "department".equals(ignoreCommand) ? null : options.get("department"));
 		boolean nearby = (flag != null && (flag.contains("nearby") || flag.contains("Nearby")));
 
 		Set<String> featureTypes = new HashSet<String>();
@@ -391,7 +392,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		
 		List<Location> ret = new ArrayList<Location>();
 		for (Location location: locations) {
-			if (query != null && !query.match(new LocationMatcher(location, featureTypes))) continue;
+			if (query != null && !query.match(new LocationMatcher(location, featureTypes, departments))) continue;
 			if (nearby && building != null && !building.isEmpty() && (!(location instanceof Room) || !building.contains(((Room)location).getBuilding().getAbbreviation()))) continue;
 			ret.add(location);
 		}
@@ -416,7 +417,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			if (!coord.isEmpty()) {
 				for (Location location: locations) {
 					if (building != null && !building.isEmpty() && (location instanceof Room) && building.contains(((Room)location).getBuilding().getAbbreviation())) continue;
-					if (query != null && !query.match(new LocationMatcher(location, featureTypes))) continue;
+					if (query != null && !query.match(new LocationMatcher(location, featureTypes, departments))) continue;
 					Coordinates c = new Coordinates(location);
 					Double distance = null;
 					for (Coordinates x: coord) {
@@ -554,10 +555,16 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	public static class LocationMatcher implements TermMatcher {
 		private Location iLocation;
 		private Set<String> iFeatureTypes = null;
+		private Set<String> iDepartments = null;
 		
 		public LocationMatcher(Location location, Set<String> featureTypes) {
+			this(location, featureTypes, null);
+		}
+
+		public LocationMatcher(Location location, Set<String> featureTypes, Set<String> departments) {
 			iLocation = location;
 			iFeatureTypes = featureTypes;
+			iDepartments = departments;
 		}
 		
 		public Location getLocation() { return iLocation; }
@@ -567,12 +574,19 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			if (attr == null || attr.isEmpty()) {
 				return term.isEmpty() || has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term) || eq(getLocation().getLabelWithDisplayName(), term);
 			} else if ("feature".equals(attr) || (iFeatureTypes != null && iFeatureTypes.contains(attr.toLowerCase()))) {
-				for (RoomFeature rf: getLocation().getFeatures())
+				for (RoomFeature rf: getLocation().getFeatures()) {
 					if (rf instanceof GlobalRoomFeature && (eq(rf.getAbbv(), term) || has(rf.getLabel(), term))) return true;
+					if (iDepartments != null && rf instanceof DepartmentRoomFeature && (eq(rf.getAbbv(), term) || has(rf.getLabel(), term)) &&
+							iDepartments.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()))
+						return true;
+				}
 				return false;
 			} else if ("group".equals(attr)) {
-				for (RoomGroup rg: getLocation().getRoomGroups())
+				for (RoomGroup rg: getLocation().getRoomGroups()) {
 					if (rg.isGlobal() && (eq(rg.getAbbv(), term) || has(rg.getName(), term))) return true;
+					if (iDepartments != null && !rg.isGlobal() && (eq(rg.getAbbv(), term) || has(rg.getName(), term)) &&
+							rg.getDepartment() != null && iDepartments.contains(rg.getDepartment().getDeptCode())) return true;
+				}
 				return false;
 			} else if ("type".equals(attr)) {
 				return eq(getLocation().getRoomType().getReference(), term) || has(getLocation().getRoomType().getLabel(), term);
