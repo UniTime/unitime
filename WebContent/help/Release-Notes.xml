@@ -45,6 +45,16 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Data Exchange</title>
+		<item>
+			<name>Course Offering XML Import</name>
+			<description>
+				<line>Fixed a Hibernate exception when importing exams with instructors.</line>
+				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

@@ -2402,6 +2402,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					ss.setItype(itype);
 					ss.setSchedulingSubpartSuffixCache(suffix);
 					ss.setInstrOfferingConfig(ioc);
+					ss.setClasses(new HashSet<Class_>());
 					ioc.addToschedulingSubparts(ss);
 					if(parentSubpart != null){
 						ss.setParentSubpart(parentSubpart);
@@ -2943,6 +2944,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					exam.setOwners(new HashSet<ExamOwner>());
 					exam.setInstructors(new HashSet<DepartmentalInstructor>());
 					exam.setAssignedRooms(new HashSet<Location>());
+					getHibSession().persist(exam);
 					changed = true;
 					addNew = true;
 				} else {
@@ -3096,10 +3098,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				
 				if (changed){
 					addNote("\texam element changed: " + name);
-					if (exam.getUniqueId() == null)
-						getHibSession().persist(exam);
-					else
-						getHibSession().merge(exam);
+					getHibSession().merge(exam);
 		        	ChangeLog.addChange(getHibSession(), getManager(), session, exam, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
 
 					if (periodElement != null) {
