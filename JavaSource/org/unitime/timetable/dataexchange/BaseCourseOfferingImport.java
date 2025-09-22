@@ -23,6 +23,7 @@ package org.unitime.timetable.dataexchange;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,6 +84,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.test.MakeAssignmentsForClassEvents;
 import org.unitime.timetable.test.UpdateExamConflicts;
 import org.unitime.timetable.util.CalendarUtils;
@@ -433,7 +435,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	protected void logXmlFileCreateInformation(Element rootElement) {
         String created = getOptionalStringAttribute(rootElement, "created");
         if (created != null) {
-	        addNote("Loading offerings XML file created on: " + created);
+	        addNote("Loading " + rootElementName + " XML file created on: " + created);
 			ChangeLog.addChange(getHibSession(), getManager(), session, session, created, ChangeLog.Source.DATA_IMPORT_OFFERINGS, ChangeLog.Operation.UPDATE, null, null);
 			updateChangeList(true);
         }		
@@ -1744,6 +1746,15 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					limit = Integer.valueOf(limitStr);
 				}
 				String suffix = getRequiredStringAttribute(classElement, "suffix", elementName);
+				String classIndex = suffix;
+				String subpartSuffix = "-";
+				if (suffix.matches("[0-9]+[a-z]")) {
+					subpartSuffix = suffix.substring(suffix.length() - 1);
+					classIndex = suffix.substring(0, suffix.length() - 1);
+				} else if (suffix.matches("[0-9]+[a-z][a-z]")) {
+					subpartSuffix = suffix.substring(suffix.length() - 2);
+					classIndex = suffix.substring(0, suffix.length() - 2);
+				}
 				String type = getRequiredStringAttribute(classElement, "type", elementName);
 				String scheduleNote = getOptionalStringAttribute(classElement, "scheduleNote");
 				String fundingDepartmentCode = getOptionalStringAttribute(classElement, "fundingDepartment");
@@ -1772,7 +1783,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							origClass.setClassSuffix(suffix);
 							Integer origSectionNbr = origClass.getSectionNumberCache();
 							try {
-								origClass.setSectionNumberCache(Integer.valueOf(suffix));
+								origClass.setSectionNumberCache(Integer.valueOf(classIndex));
 							} catch (Exception e) {
 								origClass.setSectionNumberCache(origSectionNbr);			
 							}
@@ -1795,9 +1806,10 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					existingClasses.remove(clazz.getUniqueId());
 					SchedulingSubpart prevSubpart = clazz.getSchedulingSubpart();
 					if (!clazz.getSchedulingSubpart().getItype().getItype().equals(itypeId) || !possibleSubpartsAtThisLevel.contains(clazz.getSchedulingSubpart())){
+						boolean suffixMatched = false;
 						for (Iterator<SchedulingSubpart> ssIt = possibleSubpartsAtThisLevel.iterator(); ssIt.hasNext(); ){
 							SchedulingSubpart ss = (SchedulingSubpart) ssIt.next();
-							if (ss.getItype().getItype().equals(itypeId)){
+							if (ss.getItype().getItype().equals(itypeId) && subpartSuffix.equals(ss.getSchedulingSubpartSuffixCache())) {
 								org.hibernate.Session hSess = this.getHibSession();
 								clazz.setSchedulingSubpart(ss);
 								ss.addToClasses(clazz);
@@ -1805,9 +1817,24 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 								hSess.flush();
 								hSess.refresh(ss);
 								hSess.refresh(prevSubpart);
+								suffixMatched = true;
 								break;
 							}
 						}
+						if (!suffixMatched)
+							for (Iterator<SchedulingSubpart> ssIt = possibleSubpartsAtThisLevel.iterator(); ssIt.hasNext(); ){
+								SchedulingSubpart ss = (SchedulingSubpart) ssIt.next();
+								if (ss.getItype().getItype().equals(itypeId)) {
+									org.hibernate.Session hSess = this.getHibSession();
+									clazz.setSchedulingSubpart(ss);
+									ss.addToClasses(clazz);
+									hSess.merge(ss);
+									hSess.flush();
+									hSess.refresh(ss);
+									hSess.refresh(prevSubpart);
+									break;
+								}
+							}
 						prevSubpart.getClasses().remove(clazz);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' itype changed");
 						changed = true;
@@ -1875,7 +1902,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setClassSuffix(suffix);
 					clazz.setCancelled(false);
 					try {
-						clazz.setSectionNumberCache(Integer.valueOf(suffix));
+						clazz.setSectionNumberCache(Integer.valueOf(classIndex));
 					} catch (Exception e) {
 						// Ignore Exception						
 					}
@@ -1902,12 +1929,21 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					}
 					for (Iterator<SchedulingSubpart> ssIt = possibleSubpartsAtThisLevel.iterator(); ssIt.hasNext(); ){
 						SchedulingSubpart ss = (SchedulingSubpart) ssIt.next();
-						if (ss.getItype().getItype().equals(itypeId)){
+						if (ss.getItype().getItype().equals(itypeId) && subpartSuffix.equals(ss.getSchedulingSubpartSuffixCache())){
 							clazz.setSchedulingSubpart(ss);
 							ss.addToClasses(clazz);
 							break;
 						}
 					}
+					if (clazz.getSchedulingSubpart() == null)
+						for (Iterator<SchedulingSubpart> ssIt = possibleSubpartsAtThisLevel.iterator(); ssIt.hasNext(); ){
+							SchedulingSubpart ss = (SchedulingSubpart) ssIt.next();
+							if (ss.getItype().getItype().equals(itypeId)){
+								clazz.setSchedulingSubpart(ss);
+								ss.addToClasses(clazz);
+								break;
+							}
+						}
 					if (managingDept != null){
 						clazz.setManagingDept(managingDept);
 					}
@@ -2400,7 +2436,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				} else {
 					ss = new SchedulingSubpart();
 					ss.setItype(itype);
-					ss.setSchedulingSubpartSuffixCache(suffix);
+					ss.setSchedulingSubpartSuffixCache(suffix.isEmpty() ? "-" : suffix);
 					ss.setInstrOfferingConfig(ioc);
 					ss.setClasses(new HashSet<Class_>());
 					ioc.addToschedulingSubparts(ss);
@@ -2884,6 +2920,226 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
     protected static boolean equals(Object o1, Object o2) {
         return (o1 == null ? o2 == null : o1.equals(o2));
     }
+    
+    protected boolean importExam(Element examElement, InstructionalOffering io, Collection<Exam> exams) throws Exception {
+    	boolean changed = false;
+    	String elementName = examElement.getName();
+    	String name = getRequiredStringAttribute(examElement, "name", elementName);
+		Integer size = getOptionalIntegerAttribute(examElement, "size");
+		Integer length = getRequiredIntegerAttribute(examElement, "length", elementName);
+		String seating = getOptionalStringAttribute(examElement, "seatingType");
+		int seatingType = ("normal".equals(seating) ? Exam.sSeatingTypeNormal : Exam.sSeatingTypeExam);
+		String type = getRequiredStringAttribute(examElement, "type", elementName);
+		String note = getOptionalStringAttribute(examElement, "note");
+		Integer printOffset = getOptionalIntegerAttribute(examElement, "printOffset");
+		String maxRooms = getOptionalStringAttribute(examElement, "maxRooms");
+		Integer maxNbrRooms = (maxRooms == null ? defaultMaxNbrRooms : Integer.valueOf(maxRooms));
+		
+		ExamType et = ExamType.findByReference(type);
+		if (et == null)
+			throw new Exception("Examination type " + type + " does not exist.");
+		
+		Exam exam = null;
+		for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
+			Exam x = i.next();
+			if (x.getExamType().equals(et) && x.getLabel().equals(name)) {
+				exam = x; i.remove(); break;
+			}
+		}
+		
+		boolean addNew = false;
+		if (exam == null) {
+			addNote("\t did not find matching exam element, adding new exam: " + name + " (" + et.getReference() + ")");
+			exam = new Exam();
+			exam.setSession(io == null ? session : io.getSession());
+			exam.setName(name);
+			exam.setExamType(et);
+			exam.setSeatingType(seatingType);
+			exam.setExamSize(size);
+			exam.setLength(length);
+			exam.setNote(note);
+			exam.setMaxNbrRooms(maxNbrRooms);
+			exam.setPrintOffset(printOffset);
+			exam.setOwners(new HashSet<ExamOwner>());
+			exam.setInstructors(new HashSet<DepartmentalInstructor>());
+			exam.setAssignedRooms(new HashSet<Location>());
+			getHibSession().persist(exam);
+			changed = true;
+			addNew = true;
+		} else {
+			if (io == null) exam = ExamDAO.getInstance().get(exam.getUniqueId(), getHibSession());
+			if (exam.getSeatingType() != seatingType) {
+				addNote("\tseating type changed");
+				exam.setSeatingType(seatingType);
+				changed = true;
+			}
+			if (!length.equals(exam.getLength())) {
+				addNote("\t length changed");
+				exam.setLength(length);
+				changed = true;
+			}
+			if (!equals(size, exam.getExamSize())) {
+				addNote("\t size changed");
+				exam.setExamSize(size);
+				changed = true;
+			}
+			if (!equals(note, exam.getNote())) {
+				addNote("\t note changed");
+				exam.setNote(note);
+				changed = true;
+			}
+			if (!equals(maxNbrRooms, exam.getMaxNbrRooms())) {
+				addNote("\t max rooms changed");
+				exam.setMaxNbrRooms(maxNbrRooms);
+				changed = true;
+			}
+			if (!equals(printOffset, exam.getPrintOffset())) {
+				addNote("\t print offset changed");
+				exam.setPrintOffset(printOffset);
+				changed = true;
+			}
+		}
+		
+		Set<ExamOwner> owners = new HashSet<ExamOwner>(exam.getOwners());
+		
+		for (Object obj: getExamOwners(examElement, io)) {
+			ExamOwner owner = null;
+			for (Iterator<ExamOwner> i = owners.iterator(); i.hasNext(); ) {
+				ExamOwner own = i.next();
+				if (own.getOwnerType() == ExamOwner.sOwnerTypeClass && obj instanceof Class_ && own.getOwnerId().equals(((Class_)obj).getUniqueId())) {
+					owner = own; i.remove(); break;
+				}
+				if (own.getOwnerType() == ExamOwner.sOwnerTypeConfig && obj instanceof InstrOfferingConfig && own.getOwnerId().equals(((InstrOfferingConfig)obj).getUniqueId())) {
+					owner = own; i.remove(); break;
+				}
+				if (own.getOwnerType() == ExamOwner.sOwnerTypeCourse && obj instanceof CourseOffering && own.getOwnerId().equals(((CourseOffering)obj).getUniqueId())) {
+					owner = own; i.remove(); break;
+				}
+				if (own.getOwnerType() == ExamOwner.sOwnerTypeOffering && obj instanceof InstructionalOffering && own.getOwnerId().equals(((InstructionalOffering)obj).getUniqueId())) {
+					owner = own; i.remove(); break;
+				}
+			}
+			if (owner == null) {
+				owner = new ExamOwner();
+				if (obj instanceof Class_)
+					owner.setOwner((Class_)obj);
+				else if (obj instanceof InstrOfferingConfig)
+					owner.setOwner((InstrOfferingConfig)obj);
+				else if (obj instanceof CourseOffering)
+					owner.setOwner((CourseOffering)obj);
+				else if (obj instanceof InstructionalOffering)
+					owner.setOwner((InstructionalOffering)obj);
+				owner.setExam(exam);
+				exam.getOwners().add(owner);
+				addNote("\t exam owner changed (" + owner.getLabel() + ")");
+				changed = true;
+			}
+			if (io == null) io = owner.getCourse().getInstructionalOffering();
+		}
+		if (!owners.isEmpty()) {
+			for (ExamOwner owner: owners) {
+				owner.setExam(null);
+				exam.getOwners().remove(owner);
+				getHibSession().remove(owner);
+				addNote("\t exam owner removed (" + owner.getLabel() + ")");
+				changed = true;
+			}
+		}
+		
+		if (elementInstructor(examElement, exam, io)) {
+			addNote("\t exam instructor(s) changed");
+			changed = true;
+		}
+		
+		ExamPeriod period = null;
+		Element periodElement = examElement.element("period");
+		if (periodElement != null) {
+			Calendar date = null;
+			if (dateFormat == null) {								
+				date = getCalendarForDate(getRequiredStringAttribute(periodElement, "date", "period"));
+			} else {
+				date = Calendar.getInstance();
+				date.setTime(CalendarUtils.getDate(getRequiredStringAttribute(periodElement, "date", "period"), dateFormat));
+			}
+			if (date == null) {
+				throw new Exception("For element 'period' a 'date' is required, unable to parse given date.");
+			}
+			long diff = date.getTimeInMillis() - io.getSession().getExamBeginDate().getTime();
+            int dateOffset = (int)Math.round(diff/(1000.0 * 60 * 60 * 24)); 
+
+			int startSlot = str2Slot(getRequiredStringAttribute(periodElement, "startTime", "period"), exam.getPrintOffset());
+			period = ExamPeriod.findByDateStart(io.getSessionId(), dateOffset, startSlot, exam.getExamType().getUniqueId());
+			if (period == null) {
+				addNote("\t failed to find matchin examination period for " + new SimpleDateFormat(dateFormat == null ? "yyyy/M/d" : dateFormat).format(date.getTime()) + " " + Constants.slot2str(startSlot));
+			} else if (!equals(period, exam.getAssignedPeriod())) {
+				addNote("\t exam assigned period changed");
+				exam.setAssignedPeriod(period);
+				examPeriodChanged = true;
+				changed = true;
+			}
+			
+			Set<Location> rooms = new HashSet<Location>(exam.getAssignedRooms());
+			for (Iterator<?> j = examElement.elementIterator("room"); j.hasNext();){
+				Element roomElement = (Element) j.next();
+				String building = getRequiredStringAttribute(roomElement, "building", "room");
+				String roomNbr = getRequiredStringAttribute(roomElement, "roomNbr", "room");
+				String id = getOptionalStringAttribute(roomElement, "id");
+				Room room = findRoom(id, building, roomNbr);
+				if (room != null) {
+					if (!rooms.remove(room)) {
+						exam.getAssignedRooms().add(room);
+						addNote("\t exam assigned room(s) changed");
+						changed = true;
+					}
+				} else {
+					addMissingLocation(building + " " + roomNbr + " - " + exam.getLabel());
+				}
+			}
+			for (Iterator<?> j = examElement.elementIterator("location"); j.hasNext();){
+				Element roomElement = (Element) j.next();
+				String locName = getRequiredStringAttribute(roomElement, "name", "location");
+				String id = getOptionalStringAttribute(roomElement, "id");
+				NonUniversityLocation location = findNonUniversityLocation(id, locName, io.getDepartment());
+				if (location != null){
+					if (!rooms.remove(location)) {
+						exam.getAssignedRooms().add(location);
+						addNote("\t exam assigned room(s) changed");
+						changed = true;
+					}
+				} else {
+					addMissingLocation(name + " - " + exam.getLabel());
+				}
+			}
+			if (!rooms.isEmpty()) {
+				addNote("\t exam assigned room(s) changed");
+				exam.getAssignedRooms().removeAll(rooms);
+				changed = true;
+			}
+		}
+		
+		if (changed){
+			addNote("\texam element changed: " + name);
+			getHibSession().merge(exam);
+        	ChangeLog.addChange(getHibSession(), getManager(), session, exam, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
+
+			if (periodElement != null) {
+				ExamEvent event = exam.generateEvent(exam.getEvent(),true);
+	            if (event != null) {
+	            	event.setEventName(exam.getLabel());
+                    event.setMinCapacity(exam.getSize());
+                    event.setMaxCapacity(exam.getSize());
+                    if (event.getUniqueId() == null)
+						getHibSession().persist(event);
+					else
+						getHibSession().merge(event);
+	            } else if (exam.getEvent() != null) {
+	            	getHibSession().remove(exam.getEvent());
+	            	exam.setEvent(null);
+	            }
+			}
+		}
+		return changed;
+	}
 	
 	private boolean elementExam(Element element, InstructionalOffering io) throws Exception{
 		boolean changed = false;
@@ -2905,218 +3161,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		if(element.element(elementName) != null) {
 			for (Iterator<?> it = element.elementIterator(elementName); it.hasNext();){
 				Element examElement = (Element) it.next();
-				String name = getRequiredStringAttribute(examElement, "name", elementName);
-				Integer size = getOptionalIntegerAttribute(examElement, "size");
-				Integer length = getRequiredIntegerAttribute(examElement, "length", elementName);
-				String seating = getOptionalStringAttribute(examElement, "seatingType");
-				int seatingType = ("normal".equals(seating) ? Exam.sSeatingTypeNormal : Exam.sSeatingTypeExam);
-				String type = getRequiredStringAttribute(examElement, "type", elementName);
-				String note = getOptionalStringAttribute(examElement, "note");
-				Integer printOffset = getOptionalIntegerAttribute(examElement, "printOffset");
-				String maxRooms = getOptionalStringAttribute(examElement, "maxRooms");
-				Integer maxNbrRooms = (maxRooms == null ? defaultMaxNbrRooms : Integer.valueOf(maxRooms));
-				
-				ExamType et = ExamType.findByReference(type);
-				if (et == null)
-					throw new Exception("Examination type " + type + " does not exist.");
-				
-				Exam exam = null;
-				for (Iterator<Exam> i = exams.iterator(); i.hasNext(); ) {
-					Exam x = i.next();
-					if (x.getExamType().equals(et) && x.getLabel().equals(name)) {
-						exam = x; i.remove(); break;
-					}
-				}
-				
-				boolean addNew = false;
-				if (exam == null) {
-					addNote("\t did not find matching exam element, adding new exam: " + name + " (" + et.getReference() + ")");
-					exam = new Exam();
-					exam.setSession(io.getSession());
-					exam.setName(name);
-					exam.setExamType(et);
-					exam.setSeatingType(seatingType);
-					exam.setExamSize(size);
-					exam.setLength(length);
-					exam.setNote(note);
-					exam.setMaxNbrRooms(maxNbrRooms);
-					exam.setPrintOffset(printOffset);
-					exam.setOwners(new HashSet<ExamOwner>());
-					exam.setInstructors(new HashSet<DepartmentalInstructor>());
-					exam.setAssignedRooms(new HashSet<Location>());
-					getHibSession().persist(exam);
+				if (importExam(examElement, io, exams))
 					changed = true;
-					addNew = true;
-				} else {
-					if (exam.getSeatingType() != seatingType) {
-						addNote("\tseating type changed");
-						exam.setSeatingType(seatingType);
-						changed = true;
-					}
-					if (!length.equals(exam.getLength())) {
-						addNote("\t length changed");
-						exam.setLength(length);
-						changed = true;
-					}
-					if (!equals(size, exam.getExamSize())) {
-						addNote("\t size changed");
-						exam.setExamSize(size);
-						changed = true;
-					}
-					if (!equals(note, exam.getNote())) {
-						addNote("\t note changed");
-						exam.setNote(note);
-						changed = true;
-					}
-					if (!equals(maxNbrRooms, exam.getMaxNbrRooms())) {
-						addNote("\t max rooms changed");
-						exam.setMaxNbrRooms(maxNbrRooms);
-						changed = true;
-					}
-					if (!equals(printOffset, exam.getPrintOffset())) {
-						addNote("\t print offset changed");
-						exam.setPrintOffset(printOffset);
-						changed = true;
-					}
-				}
-				
-				Set<ExamOwner> owners = new HashSet<ExamOwner>(exam.getOwners());
-				
-				for (Object obj: getExamOwners(examElement, io)) {
-					ExamOwner owner = null;
-					for (Iterator<ExamOwner> i = owners.iterator(); i.hasNext(); ) {
-						ExamOwner own = i.next();
-						if (own.getOwnerType() == ExamOwner.sOwnerTypeClass && obj instanceof Class_ && own.getOwnerId().equals(((Class_)obj).getUniqueId())) {
-							owner = own; i.remove(); break;
-						}
-						if (own.getOwnerType() == ExamOwner.sOwnerTypeConfig && obj instanceof InstrOfferingConfig && own.getOwnerId().equals(((InstrOfferingConfig)obj).getUniqueId())) {
-							owner = own; i.remove(); break;
-						}
-						if (own.getOwnerType() == ExamOwner.sOwnerTypeCourse && obj instanceof CourseOffering && own.getOwnerId().equals(((CourseOffering)obj).getUniqueId())) {
-							owner = own; i.remove(); break;
-						}
-						if (own.getOwnerType() == ExamOwner.sOwnerTypeOffering && obj instanceof InstructionalOffering && own.getOwnerId().equals(((InstructionalOffering)obj).getUniqueId())) {
-							owner = own; i.remove(); break;
-						}
-					}
-					if (owner == null) {
-						owner = new ExamOwner();
-						if (obj instanceof Class_)
-							owner.setOwner((Class_)obj);
-						else if (obj instanceof InstrOfferingConfig)
-							owner.setOwner((InstrOfferingConfig)obj);
-						else if (obj instanceof CourseOffering)
-							owner.setOwner((CourseOffering)obj);
-						else if (obj instanceof InstructionalOffering)
-							owner.setOwner((InstructionalOffering)obj);
-						owner.setExam(exam);
-						exam.getOwners().add(owner);
-						addNote("\t exam owner changed (" + owner.getLabel() + ")");
-						changed = true;
-					}
-				}
-				if (!owners.isEmpty()) {
-					for (ExamOwner owner: owners) {
-						owner.setExam(null);
-						exam.getOwners().remove(owner);
-						getHibSession().remove(owner);
-						addNote("\t exam owner removed (" + owner.getLabel() + ")");
-						changed = true;
-					}
-				}
-				
-				if (elementInstructor(examElement, exam, io)) {
-					addNote("\t exam instructor(s) changed");
-					changed = true;
-				}
-				
-				ExamPeriod period = null;
-				Element periodElement = examElement.element("period");
-				if (periodElement != null) {
-					Calendar date = null;
-					if (dateFormat == null) {								
-						date = getCalendarForDate(getRequiredStringAttribute(periodElement, "date", "period"));
-					} else {
-						date = Calendar.getInstance();
-						date.setTime(CalendarUtils.getDate(getRequiredStringAttribute(periodElement, "date", "period"), dateFormat));
-					}
-					if (date == null) {
-						throw new Exception("For element 'period' a 'date' is required, unable to parse given date.");
-					}
-					long diff = date.getTimeInMillis() - io.getSession().getExamBeginDate().getTime();
-		            int dateOffset = (int)Math.round(diff/(1000.0 * 60 * 60 * 24)); 
-
-					int startSlot = str2Slot(getRequiredStringAttribute(periodElement, "startTime", "period"), exam.getPrintOffset());
-					period = ExamPeriod.findByDateStart(io.getSessionId(), dateOffset, startSlot, exam.getExamType().getUniqueId());
-					if (period == null) {
-						addNote("\t failed to find matchin examination period for " + new SimpleDateFormat(dateFormat == null ? "yyyy/M/d" : dateFormat).format(date) + " " + Constants.slot2str(startSlot));
-					} else if (!equals(period, exam.getAssignedPeriod())) {
-						addNote("\t exam assigned period changed");
-						exam.setAssignedPeriod(period);
-						examPeriodChanged = true;
-						changed = true;
-					}
-					
-					Set<Location> rooms = new HashSet<Location>(exam.getAssignedRooms());
-					for (Iterator<?> j = examElement.elementIterator("room"); j.hasNext();){
-						Element roomElement = (Element) j.next();
-						String building = getRequiredStringAttribute(roomElement, "building", "room");
-						String roomNbr = getRequiredStringAttribute(roomElement, "roomNbr", "room");
-						String id = getOptionalStringAttribute(roomElement, "id");
-						Room room = findRoom(id, building, roomNbr);
-						if (room != null) {
-							if (!rooms.remove(room)) {
-								exam.getAssignedRooms().add(room);
-								addNote("\t exam assigned room(s) changed");
-								changed = true;
-							}
-						} else {
-							addMissingLocation(building + " " + roomNbr + " - " + exam.getLabel());
-						}
-					}
-					for (Iterator<?> j = examElement.elementIterator("location"); j.hasNext();){
-						Element roomElement = (Element) j.next();
-						String locName = getRequiredStringAttribute(roomElement, "name", "location");
-						String id = getOptionalStringAttribute(roomElement, "id");
-						NonUniversityLocation location = findNonUniversityLocation(id, locName, io.getDepartment());
-						if (location != null){
-							if (!rooms.remove(location)) {
-								exam.getAssignedRooms().add(location);
-								addNote("\t exam assigned room(s) changed");
-								changed = true;
-							}
-						} else {
-							addMissingLocation(name + " - " + exam.getLabel());
-						}
-					}
-					if (!rooms.isEmpty()) {
-						addNote("\t exam assigned room(s) changed");
-						exam.getAssignedRooms().removeAll(rooms);
-						changed = true;
-					}
-				}
-				
-				if (changed){
-					addNote("\texam element changed: " + name);
-					getHibSession().merge(exam);
-		        	ChangeLog.addChange(getHibSession(), getManager(), session, exam, ChangeLog.Source.DATA_IMPORT_OFFERINGS, (addNew?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), io.getControllingCourseOffering().getSubjectArea(), io.getControllingCourseOffering().getDepartment());
-
-					if (periodElement != null) {
-						ExamEvent event = exam.generateEvent(exam.getEvent(),true);
-			            if (event != null) {
-			            	event.setEventName(exam.getLabel());
-	                        event.setMinCapacity(exam.getSize());
-	                        event.setMaxCapacity(exam.getSize());
-	                        if (event.getUniqueId() == null)
-	    						getHibSession().persist(event);
-	    					else
-	    						getHibSession().merge(event);
-			            } else if (exam.getEvent() != null) {
-			            	getHibSession().remove(exam.getEvent());
-			            	exam.setEvent(null);
-			            }
-					}
-				}
 			}
 		} else if (incremental) {
 			// No exam elements & incremental mode -> make no changes
@@ -3239,7 +3285,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			CourseOffering course = findCrsOffrForSubjCrs(
 					getRequiredStringAttribute(courseElement, "subject", "course"),
 					getRequiredStringAttribute(courseElement, "courseNbr", "course"),
-					offering.getSessionId());
+					(offering == null ? session.getUniqueId() : offering.getSessionId()));
 			if (course == null) continue;
 			List<Class_> classes = new ArrayList<Class_>();
 			for (Iterator<?> j = courseElement.elementIterator("class"); j.hasNext();) {
@@ -3315,13 +3361,20 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	public Integer str2Slot(String timeString, Integer printOffset) throws Exception {
 		int slot = -1;
 		try {
-			Date date = CalendarUtils.getDate(timeString, timeFormat);
-			SimpleDateFormat df = new SimpleDateFormat("HHmm");
-			int time = Integer.parseInt(df.format(date));
-			if (printOffset != null)
-				time -= printOffset.intValue();
+			int time = 0;
+			if ("Hmm".equals(timeFormat) || "HHmm".equals(timeFormat)) {
+				time = Integer.parseInt(timeString);
+			} else {
+				Date date = CalendarUtils.getDate(timeString, timeFormat);
+				SimpleDateFormat df = new SimpleDateFormat("HHmm");
+				time = Integer.parseInt(df.format(date));
+			}
 			int hour = time/100;
 			int min = time%100;
+			if (printOffset != null) {
+				hour = (60*hour + min - printOffset)/60;
+				min = (60*hour + min - printOffset)%60;
+			}
 			if (hour >= 24)
 				throw new Exception("Invalid time '"+timeString+"' -- hour ("+hour+") must be between 0 and 23.");
 			if (min >= 60)

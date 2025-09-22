@@ -106,6 +106,7 @@ public class DataExchangeHelper {
         sImportRegister.put("sectioning", SolverImport.class);
         sImportRegister.put("instructor-schedule", SolverImport.class);
         sImportRegister.put("instructorSurveys", InstructorSurveyImport.class);
+        sImportRegister.put("exams", ExamImport.class);
     }
     
     public DataExchangeHelper() {

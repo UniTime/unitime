@@ -521,7 +521,8 @@ public class CourseOfferingExport extends BaseExport {
         Element examElement = offeringElement.addElement("exam");
         examElement.addAttribute("id", exam.getUniqueId().toString());
         examElement.addAttribute("name", exam.getLabel());
-        examElement.addAttribute("size", String.valueOf(exam.getSize()));
+        if (exam.getExamSize() != null)
+        	examElement.addAttribute("size", String.valueOf(exam.getExamSize()));
         examElement.addAttribute("length", String.valueOf(exam.getLength()));
         if (exam.getNote()!=null)
             examElement.addAttribute("note", exam.getNote());

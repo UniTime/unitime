@@ -122,6 +122,15 @@
 				<line>Please note that any change in the above parameters will invalidate the existing API tokens and encoded queries.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange</name>
+			<description>
+				<line>Course Offerings Export: only export exam size when it is set (not when it is counted from enrollment data).</line>
+				<line>Course Offerings Import: improved handling of multiple scheduling subparts with the same instructional type on the same level.</line>
+				<line>Course Offerings Import: corrected import of assigned period when print offsets are being used.</line>
+				<line>Examinations Import: added an exams-only import (matching the exams-only export).</line>
+			</description>
+		</item>
 	</category>	
 </release>
 </release-history>
