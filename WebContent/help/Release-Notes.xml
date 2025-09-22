@@ -129,6 +129,7 @@
 				<line>Course Offerings Import: improved handling of multiple scheduling subparts with the same instructional type on the same level.</line>
 				<line>Course Offerings Import: corrected import of assigned period when print offsets are being used.</line>
 				<line>Examinations Import: added an exams-only import (matching the exams-only export).</line>
+				<line>GZip the exported XMLs when unitime.export.TYPE.xml.gz is set to true (defaults to false, TYPE is the name of the root element in the export).</line>
 			</description>
 		</item>
 	</category>	

@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
@@ -392,7 +393,12 @@ public class DataImportAction extends UniTimeAction<DataImportForm> implements U
                 if (document==null) {
                     error("XML document not created: unknown reason.");
                 } else {
-                    FileOutputStream fos = new FileOutputStream(createOutput(type.getType(), "xml"));
+                	OutputStream fos = null;
+                	if (ApplicationProperty.DataExchangeExportTypeGzip.isTrue(type.getType())) {
+                		fos = new GZIPOutputStream(new FileOutputStream(createOutput(type.getType(), "xml.gz")));
+                	} else {
+                		fos = new FileOutputStream(createOutput(type.getType(), "xml"));
+                	}
                     try {
                         (new XMLWriter(fos,OutputFormat.createPrettyPrint())).write(document);
                         fos.flush();

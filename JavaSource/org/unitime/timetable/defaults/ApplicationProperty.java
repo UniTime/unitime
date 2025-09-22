@@ -3777,6 +3777,13 @@ public enum ApplicationProperty {
 	@Description("Scheduling Assistant: when showing 'Not available (course is full)' to the student, indicate that an override can be requested when CLOS overrides are allowed by the course")
 	@Since(4.9)
 	OnlineSchedulingFullCanRequestOverride("unitime.enrollment.fullCourseCanRequestOverride"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Data Exchange: export % as gzipped XMLs (.xml.gz extension instead of .xml)")
+	@Since(4.9)
+	@Parameter("export type")
+	DataExchangeExportTypeGzip("unitime.export.%.xml.gz"),
 	;
 
 	String iKey;
