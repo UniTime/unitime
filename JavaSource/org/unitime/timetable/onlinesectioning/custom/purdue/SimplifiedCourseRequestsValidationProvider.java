@@ -601,7 +601,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
 					if (parent != null) {
 						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
-								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} on the same request line.")
 								.replace("{parent}", parent.getCourseName())
 								.replace("{course}", rc.getCourseName())
 								, ORD_UNITIME);
@@ -640,7 +640,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
 					if (parent != null) {
 						request.addConfirmationMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
-								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} on the same request line.")
 								.replace("{parent}", parent.getCourseName())
 								.replace("{course}", rc.getCourseName())
 								, ORD_UNITIME);
@@ -940,7 +940,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
 						boolean alreadyExist = (cr != null && cr.hasCourse(rc.getParentCourseId()));
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
-								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} on the same request line.")
 								.replace("{parent}", parent.getCourseName())
 								.replace("{course}", rc.getCourseName()),
 								!alreadyExist ? CONF_UNITIME : CONF_NONE);
@@ -990,7 +990,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 						XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
 						boolean alreadyExist = (cr != null && cr.hasCourse(rc.getParentCourseId()));
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
-								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} on the same request line.")
 								.replace("{parent}", parent.getCourseName())
 								.replace("{course}", rc.getCourseName()),
 								!alreadyExist ? CONF_UNITIME : CONF_NONE);
@@ -1499,11 +1499,11 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 
 		if (questionParentSameReq)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.question.parentSameRequest", (line > 2 ? "\n" : "") +
-					"A course and its prerequisite are in the same request. You will not be able to get both coures."),
+					"A course and its prerequisite are on the same request line. You will not be able to get both courses."),
 					CONF_UNITIME, line ++);
 		if (questionParentSubstitute)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.question.parentSubstitute", (line > 2 ? "\n" : "") +
-					"A prerequisite course is requested as a substitute. You may not be able to get both coures."),
+					"A prerequisite course is requested as a substitute. You may not be able to get both courses."),
 					CONF_UNITIME, line ++);
 		if (questionNoParent)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.question.noParent", (line > 2 ? "\n" : "") +
@@ -1828,7 +1828,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
 					if (parent != null) {
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
-								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} on the same request line.")
 								.replace("{parent}", parent.getCourseName())
 								.replace("{course}", rc.getCourseName()),
 								CONF_UNITIME);
@@ -1870,7 +1870,7 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					RequestedCourse parent = r.getCourse(rc.getParentCourseId());
 					if (parent != null) {
 						response.addMessage(rc.getCourseId(), rc.getCourseName(), "PARENT_SAME_REQ",
-								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} in the same request.")
+								ApplicationProperties.getProperty("purdue.specreg.messages.parentSameRequest", "Prerequisite course {parent} on the same request line.")
 								.replace("{parent}", parent.getCourseName())
 								.replace("{course}", rc.getCourseName()),
 								CONF_UNITIME);
@@ -2271,11 +2271,11 @@ public class SimplifiedCourseRequestsValidationProvider implements CourseRequest
 					CONF_UNITIME, line ++);
 		if (questionParentSameReq)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.parentSameRequest", (line > 2 ? "\n" : "") +
-					"A course and its prerequisite are in the same request. The student will not be able to get both coures."),
+					"A course and its prerequisite are on the same request line. The student will not be able to get both courses."),
 					CONF_UNITIME, line ++);
 		if (questionParentSubstitute)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.parentSubstitute", (line > 2 ? "\n" : "") +
-					"A prerequisite course is requested as a substitute. The student may not be able to get both coures."),
+					"A prerequisite course is requested as a substitute. The student may not be able to get both courses."),
 					CONF_UNITIME, line ++);
 		if (questionNoParent)
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.acr.noParent", (line > 2 ? "\n" : "") +
