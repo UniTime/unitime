@@ -62,6 +62,7 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	private String iDemandOfferingText;
 	private Long iAlternativeCourseOfferingId;
 	private Long iParentCourseOfferingId;
+	private String iParentCourseOfferingName;
 	private Long iFundingDepartmentId;
 	private Long iEffectiveFundingDepartmentId;
 	private Long iCourseTypeId;
@@ -174,6 +175,8 @@ public class CourseOfferingInterface implements IsSerializable, Serializable, Gw
 	
 	public Long getParentCourseOfferingId() { return iParentCourseOfferingId; }
 	public void setParentCourseOfferingId(Long parentCourseOfferingId) { iParentCourseOfferingId = parentCourseOfferingId; }
+	public String getParentCourseOfferingName() { return iParentCourseOfferingName; }
+	public void setParentCourseOfferingName(String parentCourseOfferingName) { iParentCourseOfferingName = parentCourseOfferingName; }
 	
 	public Long getFundingDepartmentId() { return iFundingDepartmentId; }
 	public void setFundingDepartmentId(Long fundingDepartmentId) { iFundingDepartmentId = fundingDepartmentId; }

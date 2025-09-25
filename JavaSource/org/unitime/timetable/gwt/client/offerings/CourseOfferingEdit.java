@@ -1986,6 +1986,15 @@ public class CourseOfferingEdit extends Composite {
 								iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
 							}
 						}
+					} else if (courseOffering.getParentCourseOfferingId() != null) {
+						iParentCourseOfferings.getWidget().addItem(courseOffering.getParentCourseOfferingName(), courseOffering.getParentCourseOfferingId().toString());
+						iParentCourseOfferings.getWidget().setSelectedIndex(iParentCourseOfferings.getWidget().getItemCount() - 1);
+						iParentCourseOfferings.getWidget().setEnabled(false);
+						if (iCanEditCourseOffering) {
+							iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, true);
+						} else {
+							iPanel.getRowFormatter().setVisible(iParentCourseOfferingLine, false);
+						}
 					}
 					
 					if (result.getCourseUrlProvider() != null && !result.getCourseUrlProvider().isEmpty()) {
@@ -2177,8 +2186,10 @@ public class CourseOfferingEdit extends Composite {
 			if (iParentCourseOfferings.getWidget().getSelectedValue() != null) {
 				if ("none".equals(iParentCourseOfferings.getWidget().getSelectedValue())) {
 					iCourseOffering.setParentCourseOfferingId(null);
+					iCourseOffering.setParentCourseOfferingName(null);
 				} else {
 					iCourseOffering.setParentCourseOfferingId(Long.parseLong (iParentCourseOfferings.getWidget().getSelectedValue()));
+					iCourseOffering.setParentCourseOfferingName(iParentCourseOfferings.getWidget().getSelectedItemText());
 				}
 			}
 		}

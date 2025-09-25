@@ -139,6 +139,9 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
         		tx = hibSession.beginTransaction();
         	
+            Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue()
+            		&& context.hasPermission(Right.EditCourseOfferingPrerequisite);
+
             CourseOffering courseOffering = CourseOfferingDAO.getInstance().get(courseOfferingInterface.getId(), hibSession);
             InstructionalOffering io = courseOffering.getInstructionalOffering();
             
@@ -267,8 +270,6 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         				courseOffering.setAlternativeOffering(dco==null?null:dco);
         			}
                 }
-                
-                Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue();
                 
                 if (allowParentCourseOfferings) {
                 	if (courseOfferingInterface.getParentCourseOfferingId()==null) {
@@ -432,7 +433,10 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         	org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().getSession();
         	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
         		tx = hibSession.beginTransaction();
-        	
+
+            Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue()
+            		&& context.hasPermission(Right.EditCourseOfferingPrerequisite);
+
             CourseOffering courseOffering = new CourseOffering();
 
             courseOffering.setCourseNbr(courseOfferingInterface.getCourseNbr()); 
@@ -516,8 +520,6 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
     				courseOffering.setAlternativeOffering(dco==null?null:dco);
     			}
             }
-            
-            Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue();
             
             if (allowParentCourseOfferings) {
             	if (courseOfferingInterface.getParentCourseOfferingId()==null) {

@@ -71,6 +71,7 @@
 				</line>
 				<line>Edit Course Offering: Prerequisite Course field added.
 					<line>Only available when unitime.sectioning.parentCourse is set to true (defaults to false).</line>
+					<line>Also, Edit Course Offering Prerequisite permission is needed to edit the parent (prerequisite) course.</line>
 				</line>
 				<line>Instructional Offering Detail: display the Prerequisite Course when set.</line>
 				<line>Student Scheduling Solver: load parent (prerequisite) courses into the solver, create a new Dependent Courses global constraint.
