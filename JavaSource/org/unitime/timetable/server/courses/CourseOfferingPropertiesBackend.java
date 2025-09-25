@@ -328,7 +328,7 @@ public class CourseOfferingPropertiesBackend implements GwtRpcImplementation<Cou
 		response.setAllowAlternativeCourseOfferings(allowAlternativeCourseOfferings);
 		
 		Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue();
-		response.setAllowParentCourseOfferings(allowParentCourseOfferings && context.hasPermission(Right.EditCourseOfferingPrerequisite));
+		response.setAllowParentCourseOfferings(allowParentCourseOfferings && context.hasPermission(Right.EditCourseOfferingAssociatedCourse));
 		
 		String courseUrlProvider = ApplicationProperty.CustomizationCourseLink.value();
 		response.setCourseUrlProvider(courseUrlProvider);

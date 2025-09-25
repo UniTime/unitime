@@ -2094,7 +2094,7 @@ public class SessionRollForward {
 			getHibSession().clear();
 		}
 		if (Boolean.TRUE.equals(rollForwardSessionForm.getRoolForwardParentOfferings())) {
-			iLog.info("Checking for prerequisite courses...");
+			iLog.info("Checking for associated courses...");
 			Transaction tx = getHibSession().beginTransaction();
 			try {
 				for (Object[] courses: getHibSession().createQuery(
@@ -2109,7 +2109,7 @@ public class SessionRollForward {
 						.list()) {
 					CourseOffering co = (CourseOffering)courses[0];
 					CourseOffering parent = (CourseOffering)courses[1];
-					iLog.info("Setting " + parent.getCourseName() + " as a prerequisite for " + co.getCourseName());
+					iLog.info("Setting " + parent.getCourseName() + " as an associated course for " + co.getCourseName());
 					co.setParentOffering(parent);
 					getHibSession().merge(co);
 				}

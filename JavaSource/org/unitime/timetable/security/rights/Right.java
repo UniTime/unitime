@@ -105,7 +105,7 @@ public enum Right {
 	EditCourseOffering(CourseOffering.class),
 	EditCourseOfferingNote(CourseOffering.class),
 	EditCourseOfferingCoordinators(CourseOffering.class),
-	EditCourseOfferingPrerequisite(SubjectArea.class),
+	EditCourseOfferingAssociatedCourse(SubjectArea.class),
 	
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),

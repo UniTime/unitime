@@ -727,8 +727,8 @@ public class CoursePermissions {
 		
 	}
 	
-	@PermissionForRight(Right.EditCourseOfferingPrerequisite) 
-	public static class EditCourseOfferingPrerequisite extends AddCourseOffering {}
+	@PermissionForRight(Right.EditCourseOfferingAssociatedCourse) 
+	public static class EditCourseOfferingAssociatedCourse extends AddCourseOffering {}
 	
 	@PermissionForRight(Right.CanUseHardPeriodPrefs)
 	public static class CanUseHardPeriodPrefs implements Permission<PreferenceGroup> {

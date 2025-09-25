@@ -140,7 +140,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         		tx = hibSession.beginTransaction();
         	
             Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue()
-            		&& context.hasPermission(Right.EditCourseOfferingPrerequisite);
+            		&& context.hasPermission(Right.EditCourseOfferingAssociatedCourse);
 
             CourseOffering courseOffering = CourseOfferingDAO.getInstance().get(courseOfferingInterface.getId(), hibSession);
             InstructionalOffering io = courseOffering.getInstructionalOffering();
@@ -435,7 +435,7 @@ public class UpdateCourseOfferingBackend implements GwtRpcImplementation<UpdateC
         		tx = hibSession.beginTransaction();
 
             Boolean allowParentCourseOfferings = ApplicationProperty.StudentSchedulingParentCourse.isTrue()
-            		&& context.hasPermission(Right.EditCourseOfferingPrerequisite);
+            		&& context.hasPermission(Right.EditCourseOfferingAssociatedCourse);
 
             CourseOffering courseOffering = new CourseOffering();
 

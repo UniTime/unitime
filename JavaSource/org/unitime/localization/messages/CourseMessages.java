@@ -5502,7 +5502,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Offerings")
 	String rollForwardCourseOfferings();
 	
-	@DefaultMessage("Prerequisite Course Offerings")
+	@DefaultMessage("Associated Course Offerings")
 	String rollForwardParentCourseOfferings();
 	
 	@DefaultMessage("Class Instructors")
@@ -5617,7 +5617,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Include Wait-Listing and Prohibited Overrides")
 	String checkIncludeWaitListAndOverrides();
 	
-	@DefaultMessage("Include Prerequisite Course Settings")
+	@DefaultMessage("Include Associated Course Settings")
 	String checkIncludeParentOfferings();
 	
 	@DefaultMessage("Scheduling Subpart Level Time Preference Options:")
@@ -6073,15 +6073,15 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Show student conflicts:")
 	String propertyShowStudentConflicts();
 	
-	@DefaultMessage("Prerequisite")
+	@DefaultMessage("Associated Course")
 	String columnParentCourse();
 	
-	@DefaultMessage("Prerequisite Course:")
+	@DefaultMessage("Associated Course:")
 	String propertyParentCourseOffering();
 	
-	@DefaultMessage("If both this course and the prerequisite course are requested by a student, the student scheduling student solver cannot assign the student this course when the prerequisite course is not assigned.")
+	@DefaultMessage("If both this course and the associated course are requested by a student, the student scheduling student solver cannot assign the student this course when the associated course is not assigned.")
 	String descParentCourseOffering();
 	
-	@DefaultMessage("No Prerequisite Course")
+	@DefaultMessage("No Associated Course")
 	String itemNoParentCourse();
 }

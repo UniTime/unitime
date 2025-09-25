@@ -2706,7 +2706,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             if (offering!=null) getModel().addOffering(offering);
         }
         
-        setPhase("Loading parent coursess...", offerings.size());
+        setPhase("Loading associated coursess...", offerings.size());
         for (InstructionalOffering io: offerings) {
         	incProgress();
         	boolean hasParent = false;
@@ -2716,7 +2716,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         			if (course == null) continue;
         			Course parent = courseTable.get(co.getParentOffering().getUniqueId());
         			if (parent == null) {
-        				iProgress.warn("Prerequisite course " + co.getParentOffering().getCourseName() + " for " + co.getCourseName() + " did not get loaded.");
+        				iProgress.warn("Associated course " + co.getParentOffering().getCourseName() + " for " + co.getCourseName() + " did not get loaded.");
         			} else {
         				course.setParent(parent);
         				hasParent = true;
@@ -3218,7 +3218,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             	reorderStudentRequests(student);
             }
         } else if (iMoveParentCoursesUp && getModel().getDependentCoursesConstraint() != null) {
-        	setPhase("Moving prerequisite course up...", getModel().getStudents().size());
+        	setPhase("Moving associated courses up...", getModel().getStudents().size());
             for (Student student: getModel().getStudents()) {
             	incProgress();
             	reorderStudentRequests(student);
