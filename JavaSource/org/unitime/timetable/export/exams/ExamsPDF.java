@@ -36,7 +36,7 @@ public class ExamsPDF extends OfferingsPDF {
 	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		checkPermission(helper, Right.DistributionPreferences);
+		helper.getSessionContext().checkPermissionAnySession(helper.getAcademicSessionId(), Right.Examinations);
 		exportDataPdf(getExams(helper), helper);
 	}
 }

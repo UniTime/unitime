@@ -36,7 +36,7 @@ public class ExamsXLS extends OfferingsXLS {
 	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		checkPermission(helper, Right.DistributionPreferences);
+		helper.getSessionContext().checkPermissionAnySession(helper.getAcademicSessionId(), Right.Examinations);
 		exportDataXls(getExams(helper), helper);
 	}
 }

@@ -36,7 +36,7 @@ public class ExamsCSV extends OfferingsCSV {
 	
 	@Override
 	public void export(ExportHelper helper) throws IOException {
-		checkPermission(helper, Right.Examinations);
+		helper.getSessionContext().checkPermissionAnySession(helper.getAcademicSessionId(), Right.Examinations);
 		exportDataCsv(getExams(helper), helper);
 	}
 

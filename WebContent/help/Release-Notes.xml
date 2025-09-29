@@ -37,6 +37,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examinations, Examination Distribution Preferences: Export CSV/PDF/XML</name>
+			<description>
+				<line>Corrected permission checking when one or more subject areas are selected.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
