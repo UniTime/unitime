@@ -744,6 +744,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     
     protected CellInterface cellForTimePrefs(AssignmentInfo assignment, Set<TimePref> timePrefList, final boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
     	CellInterface cell = new CellInterface();
+    	cell.setNoWrap(true);
     	for (TimePref tp: timePrefList) {
     		final RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
     		String owner = "";
@@ -764,11 +765,11 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		}
         	if (gridAsText || rtt.getModel().isExactTime()) {
         		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-        		cell.add(rtt.getModel().toString())
+        		cell.addItem(rtt.getModel().toCell()
         			.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, $wnd." + hint + ");")
         			.setMouseOut("$wnd.hideGwtHint();")
         			.addStyle(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? "background: #ffa;" : "")
-        			.setInline(false);
+        			.setInline(false));
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
         		TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, getSessionContext());
@@ -787,10 +788,9 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
                 				))
         			.setToolTip(tpm)
         			.addStyle("display: inline-block;")
-        			.setAria(rtt.getModel().toString());
+        			.setAria(rtt.getModel().toString().replace(", ", "\n"));
         	}
     	}
-    	cell.setNoWrap(true);
     	return cell;
     }
     
@@ -806,7 +806,6 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	
 		
     	CellInterface cell = cellForTimePrefs(a, prefGroup.effectivePreferences(TimePref.class), getTimeVertival(), getGridAsText(), getDefaultTimeGridSize(), isHighlightClassPrefs());
-        cell.setNoWrap(true);
     	return (cell);
     	
     }

@@ -31,6 +31,20 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Instructional Offerings, Classes, Instructional Offering Detail: Time Preferences</name>
+			<description>
+				<line>Corrected display for time preferences when set to be displayed as text (allow the preference to get split into multiple lines).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.82</version>
+	<release-date>Fri, 26 Sep 2025</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Technology Update / GWT</name>
 			<description>
 				<line>The following pages have been rewritten to GWT:
@@ -51,6 +65,16 @@
 					<line>Distribution Preferences</line>
 					<line>Add/Edit Distribution Preference</line>
 					<line>Class Assignment</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Technology Update / GWT</name>
+			<description>
+				<line>The following pages have been rewritten to GWT:
 					<line>Examinations</line>
 					<line>Examination Detail</line>
 					<line>Add/Edit Examination</line>

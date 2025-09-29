@@ -37,6 +37,7 @@ import org.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import org.cpsolver.coursett.preference.PreferenceCombination;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.model.TimePattern.TimePatternType;
@@ -594,6 +595,136 @@ public class TimePatternModel implements RequiredTimeTableModel {
     		return sb.toString();
     	}
     }
+    
+	@Override
+	public CellInterface toCell() {
+		CellInterface cell = new CellInterface();
+		Integer firstDayOfWeek = ApplicationProperty.TimePatternFirstDayOfWeek.intValue();
+		if (isExactTime()) {
+			if (iPref == null) {
+				cell.add("not set");
+				return cell;
+			}
+			int days = getExactDays();
+			int startSlot = getExactStartSlot();
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < Constants.DAY_CODES.length; i++) {
+				int j = (firstDayOfWeek == null ? i : (i + firstDayOfWeek) % 7);
+				if ((Constants.DAY_CODES[j] & days) != 0)
+					sb.append(CONSTANTS.shortDays()[j]);
+			}
+			sb.append(" ");
+			sb.append(Constants.toTime(startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
+			cell.add(sb.toString()).setColor(PreferenceLevel.prolog2color("R"));
+			return cell;
+		} else {
+			boolean canMergeDays = true;
+			for (int i = 0; canMergeDays && i + 1 < iDays.length; i++) {
+				for (int j = i + 1; canMergeDays && j < iDays.length; j++) {
+					if ((iDayCodes[i] & iDayCodes[j]) != 0)
+						canMergeDays = false;
+				}
+			}
+			StringBuffer sb = new StringBuffer();
+			String pref = null;
+			boolean out[][] = new boolean[iDays.length][iMinutes.length];
+			for (int i = 0; i < iDays.length; i++)
+				for (int j = 0; j < iMinutes.length; j++)
+					out[i][j] = false;
+			for (int i = 0; i < iDays.length; i++)
+				for (int j = 0; j < iMinutes.length; j++) {
+					if (out[i][j]) continue;
+					out[i][j] = true;
+					if (PreferenceLevel.sNeutral.equals(iPreferences[i][j])) continue;
+					int endDay = i, endTime = j;
+					while (endTime + 1 < iMinutes.length && !out[i][endTime + 1]
+							&& iPreferences[i][endTime + 1].equals(iPreferences[i][j]))
+						endTime++;
+					if (i == 0) {
+						boolean same = true;
+						for (int k = i; k + 1 < iDays.length; k++) {
+							for (int x = j; x <= endTime; x++) {
+								if (!out[k + 1][x] && !iPreferences[i][x].equals(iPreferences[k + 1][x])) {
+									same = false;
+									break;
+								}
+								if (!same)
+									break;
+							}
+							if (!same)
+								break;
+						}
+						if (same)
+							endDay = iDays.length - 1;
+					}
+					while (canMergeDays && endDay + 1 < iDays.length) {
+						boolean same = true;
+						for (int x = j; x <= endTime; x++)
+							if (!out[endDay + 1][x] && !iPreferences[i][x].equals(iPreferences[endDay + 1][x])) {
+								same = false;
+								break;
+							}
+						if (!same)
+							break;
+						endDay++;
+					}
+					for (int a = i; a <= endDay; a++)
+						for (int b = j; b <= endTime; b++)
+							out[a][b] = true;
+					if (sb.length() > 0) {
+						cell.add(sb.toString()).setColor(PreferenceLevel.prolog2color(pref))
+								.setAria(PreferenceLevel.prolog2abbv(pref) + " " + sb).setInline(false);
+						sb = new StringBuffer();
+						pref = null;
+					}
+					pref = iPreferences[i][j];
+					int nrDays = 0;
+					for (int x = 0; x < Constants.DAY_CODES.length; x++) {
+						boolean thisDay = false;
+						for (int a = i; a <= endDay; a++)
+							if ((iDayCodes[a] & Constants.DAY_CODES[x]) != 0)
+								thisDay = true;
+						if (thisDay)
+							nrDays++;
+					}
+
+					for (int x = 0; x < Constants.DAY_CODES.length; x++) {
+						int y = (firstDayOfWeek == null ? x : (x + firstDayOfWeek) % 7);
+						boolean thisDay = false;
+						for (int a = i; a <= endDay; a++)
+							if ((iDayCodes[a] & Constants.DAY_CODES[y]) != 0)
+								thisDay = true;
+						if (thisDay)
+							sb.append(nrDays == 1 ? CONSTANTS.days()[y] : CONSTANTS.shortDays()[y]);
+					}
+					String d1 = " ";
+					String d2 = " ";
+					for (int x = 0; x < 7; x++) {
+						int y = (firstDayOfWeek == null ? x : (x + firstDayOfWeek) % 7);
+						if (x < 5)
+							d1 += CONSTANTS.shortDays()[y];
+						d2 += CONSTANTS.shortDays()[y];
+					}
+					if (iTimePattern != null && sb.toString().endsWith(d1))
+						sb.delete(sb.length() - d1.length(), sb.length());
+					if (iTimePattern == null && sb.toString().endsWith(d2))
+						sb.delete(sb.length() - d2.length(), sb.length());
+					if (j == 0 && endTime + 1 == iMinutes.length) {
+						// all day
+					} else {
+						sb.append(" ");
+						sb.append(Constants.toTime(iMinutes[j]));
+						sb.append(" - ");
+						sb.append(Constants.toTime(iMinutes[endTime] + getSlotsPerMtg() * Constants.SLOT_LENGTH_MIN - iBreakTime));
+					}
+				}
+			if (sb.length() > 0) {
+				cell.add(sb.toString()).setColor(PreferenceLevel.prolog2color(pref))
+						.setAria(PreferenceLevel.prolog2abbv(pref) + " " + sb).setInline(false);
+			}
+			return cell;
+		}
+	}
     
     public boolean isExactTime() {
    		return getType()==TimePatternType.ExactTime.ordinal();

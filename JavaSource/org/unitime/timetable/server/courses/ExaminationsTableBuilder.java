@@ -93,7 +93,8 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 		.setColor(PreferenceLevel.prolog2color(tp.getPrefLevel().getPrefProlog()))
                 		.setTitle(tp.getPrefLevel().getPrefName() + " " + tp.preferenceText())
                 		.setNoWrap(true)
-                		.setInline(false);
+                		.setInline(false)
+                		.setAria(tp.getPrefLevel().getAbbreviation() + " " + tp.preferenceText());
         	}
         	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
         		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + ",-1');");
@@ -116,7 +117,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
 						}
 					}));
         	c.addStyle("display: inline-block;");
-        	c.setAria(px.toString());
+        	c.setAria(px.toString().replace(", ", "\n"));
         	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
         		c.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + ".-1');");
         		c.setMouseOut("$wnd.hideGwtTimeHint();");

@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -426,5 +427,61 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
          	   }
             }
 		return sb.toString();
+	}
+	
+    @Override
+    public CellInterface toCell() {
+    	CellInterface cell = new CellInterface();
+    	StringBuffer sb = new StringBuffer();
+		boolean out[][] = new boolean [getNrDays()][getNrTimes()];
+        for (int i = 0; i < getNrDays(); i++)
+               for (int j = 0; j < getNrTimes(); j++)
+            	   out[i][j]=false;
+        for (int i = 0; i < getNrDays(); i++)
+            for (int j = 0; j < getNrTimes(); j++) {
+         	   if (out[i][j]) continue;
+         	   out[i][j]=true;
+         	   if (sFreeForAllPref.equals(iPreference[i][j])) continue;
+         	   int endDay = i, endTime = j;
+         	   while (endTime+1<getNrTimes() && !out[i][endTime+1] && iPreference[i][endTime+1].equals(iPreference[i][j]))
+         		   endTime++;
+         	   while (endDay+1<getNrDays()) {
+         		   boolean same = true;
+         		   for (int x=j;x<=endTime;x++)
+         			   if (!out[endDay+1][x] && !iPreference[i][x].equals(iPreference[endDay+1][x])) {
+         				   same = false; break;
+         			   }
+         		   if (!same) break;
+         		   endDay++;
+         	   }
+         	   for (int a=i;a<=endDay;a++)
+         		   for (int b=j;b<=endTime;b++)
+         			   out[a][b]=true;
+         	   if (sb.length()>0) {
+         		   cell.add(sb.toString()).setInline(false);
+         		   sb = new StringBuffer();
+         	   }
+         	   sb.append(getPreferenceAbbv(iPreference[i][j])+" ");
+         	   int nrDays = endDay-i+1;
+         	   if (i==0 && endDay+1==Constants.DAY_CODES.length) {
+         		   //all week
+         	   } else {
+         		   for (int a=i;a<=endDay;a++)
+         			   sb.append(nrDays==1?CONSTANTS.days()[a]:CONSTANTS.shortDays()[a]);
+         	   }
+         	   if (j==0 && endTime+1==getNrTimes()) {
+         		   //all day
+         	   } else {
+         		  sb.append(" ");
+         		  sb.append(Constants.toTime(j*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
+         		  sb.append(" - ");
+                  sb.append(Constants.toTime((endTime+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
+         	   }
+            }
+        if (sb.length()>0) {
+  		   cell.add(sb.toString()).setInline(false);
+  		   sb = new StringBuffer();
+  	   	}
+		return cell;
 	}
 }

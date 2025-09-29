@@ -21,6 +21,8 @@ package org.unitime.timetable.webutil;
 
 import java.awt.Color;
 
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+
 /**
  * @author Tomas Muller
  */
@@ -83,4 +85,6 @@ public interface RequiredTimeTableModel {
 	public void setDefaultSelection(String selectionName);
 	
 	public String getPreferenceCheck();
+	
+	public CellInterface toCell();
 }

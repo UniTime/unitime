@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
@@ -325,5 +326,50 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
             }
         }
         return sb.toString();
+    }
+    
+    @Override
+    public CellInterface toCell() {
+    	CellInterface cell = new CellInterface();
+    	StringBuffer sb = new StringBuffer();
+    	String prefColor = null;
+        int ld = -1;
+        for (int d=0;d<getNrDays();d++) {
+            String pref = null; int a = 0, b = 0;
+            for (int t=0;t<getNrTimes();t++) {
+                String p = getPreference(d,t);
+                if (pref==null || !pref.equals(p)) {
+                    if (pref!=null && !"@".equals(pref) && !PreferenceLevel.sNeutral.equals(pref)) {
+                        if (sb.length()>0) {
+                        	cell.add(sb.toString()).setColor(prefColor).setInline(false);
+                        	sb = new StringBuffer(); prefColor = null;
+                        }
+                        if (ld!=d) { sb.append(getDayHeader(d).replaceAll("<br>", " ")+" "); ld = d; }
+                        sb.append(PreferenceLevel.prolog2abbv(pref)+" ");
+                        prefColor = PreferenceLevel.prolog2color(pref);
+                        sb.append(getStartTime(a)+" - "+getEndTime(b));
+                        ld = d;
+                    }
+                    pref = p; a = b = t;
+                } else {
+                    b = t;
+                }
+            }
+            if (pref!=null && !"@".equals(pref) && !PreferenceLevel.sNeutral.equals(pref)) {
+            	if (sb.length()>0) {
+                	cell.add(sb.toString()).setColor(prefColor).setInline(false);
+                	sb = new StringBuffer(); prefColor = null;
+                }
+                if (ld!=d) { sb.append(getDayHeader(d)+" "); ld = d; }
+                sb.append(PreferenceLevel.prolog2abbv(pref)+" ");
+                prefColor = PreferenceLevel.prolog2color(pref);
+                sb.append(getStartTime(a)+" - "+getEndTime(b));
+            }
+        }
+        if (sb.length()>0) {
+        	cell.add(sb.toString()).setColor(prefColor).setInline(false);
+        	sb = new StringBuffer(); prefColor = null;
+        }
+        return cell;
     }
 }
