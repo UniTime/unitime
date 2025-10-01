@@ -46,6 +46,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Examination Detail: Clone</name>
+			<description>
+				<line>The new exam does not copy the period preferences from the original exam (just like it did not on the legacy Struts-based page).</line>
+			</description>
+		</item>
+		<item>
 			<name>Examination Timetabling Manual</name>
 			<description>
 				<line>A new examination timetabling manual is linked from the menu (Help &gt; Manuals).</line>

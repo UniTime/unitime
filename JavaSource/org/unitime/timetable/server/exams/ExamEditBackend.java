@@ -439,8 +439,11 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
         
         fillInPreferences(ret, exam, examType, ret.isExamSeating(), context);
         
-        if (request.getOperation() == Operation.CLONE_EXAM)
+        if (request.getOperation() == Operation.CLONE_EXAM) {
         	ret.setId(null);
+        	if (ret.hasPeriodPreferences())
+        		ret.getPeriodPreferences().setPattern("");
+        }
         
 		
         if (exam != null && ret.getId() != null) {
