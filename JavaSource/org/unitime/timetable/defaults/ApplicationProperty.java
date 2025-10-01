@@ -2233,6 +2233,10 @@ public enum ApplicationProperty {
 	@DefaultValue("https://help.unitime.org/manuals/scheduling-dashboard")
 	@Description("Manuals: Student Scheduling Dashboard user manual")
 	ManualSchedulinDashboard("tmtbl.help.manual.schedulingDashboard"),
+	
+	@DefaultValue("https://help.unitime.org/manuals/examination-timetabling")
+	@Description("Manuals: examination timetabling manual")
+	ManualExaminationTimetabling("tmtbl.help.manual.exams"),
 
 	@DefaultValue("help/Release-Notes.xml")
 	@Description("Help: release notes")

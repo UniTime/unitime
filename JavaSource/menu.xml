@@ -1286,6 +1286,11 @@
 					</or>
 				</condition>
 			</item>
+			<item name="Examination Timetabling" page="tmtbl.help.manual.exams" type="property" target="tab">
+				<condition>
+					<hasPermission name="Examinations" check="false"/>
+				</condition>
+			</item>
 			<item name="Event Management" page="tmtbl.help.manual.events" type="property" target="tab">
 				<condition>
 					<hasPermission name="Events" authority="any" check="false"/>

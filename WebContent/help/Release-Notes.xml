@@ -45,6 +45,12 @@
 				<line>Corrected permission checking when one or more subject areas are selected.</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Timetabling Manual</name>
+			<description>
+				<line>A new examination timetabling manual is linked from the menu (Help &gt; Manuals).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
