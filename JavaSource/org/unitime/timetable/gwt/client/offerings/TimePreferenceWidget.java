@@ -335,11 +335,13 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 						title.addStyleName("selected-title");
 						iSelectedIcon = icon;
 						iSelectedTitle = title;
-						if ("R".equals(iOption.getCode()) && iModel.hasPreference()) {
-							UniTimeConfirmationDialog.alert(MESSAGES.warnPreferenceUseRequired());
-						}
-						if (iModel.hasRequired() && !"R".equals(iOption.getCode()) && !"0".equals(iOption.getCode())) {
-							UniTimeConfirmationDialog.alert(MESSAGES.warnPreferenceUseNotRequired());
+						if (iModel.isReqConfirmation()) {
+							if ("R".equals(iOption.getCode()) && iModel.hasPreference()) {
+								UniTimeConfirmationDialog.alert(MESSAGES.warnPreferenceUseRequired());
+							}
+							if (iModel.hasRequired() && !"R".equals(iOption.getCode()) && !"0".equals(iOption.getCode())) {
+								UniTimeConfirmationDialog.alert(MESSAGES.warnPreferenceUseNotRequired());
+							}
 						}
 					}
 				};

@@ -727,6 +727,7 @@ public class PrefGroupEditInterface {
 		private List<PrefLevel> iPrefLevels;
 		private Boolean iHorizontal;
 		private int iAssignedDay, iAssignedTime;
+		private boolean iReqConfirmation = false;
 		
 		public TimePatternModel() {}
 		public TimePatternModel(TimePatternModel tp) {
@@ -744,8 +745,12 @@ public class PrefGroupEditInterface {
 			iValid = tp.iValid;
 			iTimePatternId = tp.iTimePatternId;
 			iTimePatternName = tp.iTimePatternName;
+			iReqConfirmation = tp.iReqConfirmation;
 		}
 		
+		public boolean isReqConfirmation() { return iReqConfirmation; }
+		public void setReqConfirmation(boolean confirm) { iReqConfirmation = confirm; }
+				
 		public Long getId() { return iTimePatternId; }
 		public void setId(Long id) { iTimePatternId = id; }
 		public String getName() { return iTimePatternName; }

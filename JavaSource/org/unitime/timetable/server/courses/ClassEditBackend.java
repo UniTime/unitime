@@ -401,6 +401,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		model.setExactTime(tp.isExactTime());
 		model.setDayOffset(ApplicationProperty.TimePatternFirstDayOfWeek.intValue());
 		model.setAllowHard(allowHardTime);
+		model.setReqConfirmation(CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)));
 		if (!model.isExactTime()) {
 			model.setLength(5 * tp.getSlotsPerMtg() - tp.getBreakTime());
 			for (TimePatternDays days: tp.getDays())

@@ -36,6 +36,12 @@
 				<line>Corrected display for time preferences when set to be displayed as text (allow the preference to get split into multiple lines).</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Class/Scheduling Subpart: Time Preferences</name>
+			<description>
+				<line>Do not pop up the required/not-required times warning for a user who has the "Display confirmation dialogs" preference set to no.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
