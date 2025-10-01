@@ -242,6 +242,10 @@
 		width: 100%;
 	}
 	
+	#unitime-Page {
+		min-width: inherit;
+	}
+	
 	.unitime-Page .body {
 		border: none;
 		margin-top: 0px;

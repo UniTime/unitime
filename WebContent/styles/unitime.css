@@ -43,6 +43,9 @@ input[type="button"] {
 	display: table;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+#unitime-Page {
 	min-width: 800px;
 }
 
