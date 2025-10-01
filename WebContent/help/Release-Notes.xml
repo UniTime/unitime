@@ -60,7 +60,13 @@
 		<item>
 			<name>Add/Edit Examination: Period Preferences</name>
 			<description>
-				<line>Do not allow for required/prohibited preferences when the user does not have the Can Use Hard Period Prefs permission</line>
+				<line>Do not allow for required/prohibited preferences when the user does not have the Can Use Hard Period Prefs permission.</line>
+			</description>
+		</item>
+		<item>
+			<name>Add Examination: Instructors</name>
+			<description>
+				<line>Pre-populate the list of available instructors when adding an exam from the Instructional Offering Detail or the Class Detail page.</line>
 			</description>
 		</item>
 		<item>

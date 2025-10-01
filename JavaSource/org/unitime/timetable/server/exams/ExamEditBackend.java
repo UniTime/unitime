@@ -418,6 +418,19 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 	            	obj.setCourse(course.getCourseNumberWithTitle());
 	            	obj.setCourseId(course.getUniqueId());
 	            	ret.addExamObject(obj);
+
+					Set<DepartmentalInstructor> instructors = null;
+					if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue())
+						instructors = new TreeSet<DepartmentalInstructor>(new DepartmentalInstructorComparator(nameFormat));
+					else
+						instructors = new TreeSet<DepartmentalInstructor>(new DepartmentalInstructorComparator());
+
+					instructors.addAll(hibSession.createQuery(
+							"from DepartmentalInstructor where department.uniqueId = :deptId", DepartmentalInstructor.class)
+							.setParameter("deptId", course.getSubjectArea().getDepartment().getUniqueId()).list());
+
+					for (DepartmentalInstructor instr : instructors)
+						ret.addInstructor(instr.getUniqueId(), nameFormat.format(instr), instr.getDepartment().getDeptCode());
 	            }
 	        }
 			
