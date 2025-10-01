@@ -314,7 +314,7 @@ public class ExamEditAction extends PreferencesAction2<ExamEditForm> {
             LookupTables.setupRoomGroups(request, dummy);   // Room Groups
         }
         
-        form.setAllowHardPrefs(sessionContext.hasPermission(exam, Right.CanUseHardPeriodPrefs));
+        form.setAllowHardPrefs(sessionContext.hasPermission(type, Right.CanUseHardPeriodPrefs));
         
         form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
     

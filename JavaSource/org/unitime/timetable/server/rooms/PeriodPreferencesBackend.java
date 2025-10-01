@@ -100,6 +100,7 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 		model.setReqConfirmation(CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)));
 		model.setExamType(new ExamTypeInterface(type.getUniqueId(), type.getReference(), type.getLabel(), type.getType() == ExamType.sExamTypeFinal));
 		model.setFirstDate(session.getExamBeginDate());
+		boolean allowHard = context.hasPermission(type, Right.CanUseHardPeriodPrefs);
 		for (ExamPeriod period: (Set<ExamPeriod>)ExamPeriod.findAll(session.getUniqueId(), type)) {
 			model.addPeriod(new PeriodInterface(period.getUniqueId(), period.getDateOffset(), period.getStartSlot(), period.getLength()));
 		}
@@ -112,6 +113,10 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 			if (PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
 				model.setSelectedPreference(p);
 			if (PreferenceLevel.sNotAvailable.equals(pref.getPrefProlog()))
+				p.setEditable(false);
+			if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()) && !allowHard)
+				p.setEditable(false);
+			if (PreferenceLevel.sProhibited.equals(pref.getPrefProlog()) && !allowHard)
 				p.setEditable(false);
 			model.addPreference(p);
 		}

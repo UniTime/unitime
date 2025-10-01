@@ -33,6 +33,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -150,7 +151,7 @@ public enum Right {
     CanUseHardTimePrefs(PreferenceGroup.class),
     CanUseHardRoomPrefs(PreferenceGroup.class),
     CanUseHardDistributionPrefs(PreferenceGroup.class),
-    CanUseHardPeriodPrefs(PreferenceGroup.class),
+    CanUseHardPeriodPrefs(ExamType.class),
     
 	ClassAssignment(Class_.class),
 

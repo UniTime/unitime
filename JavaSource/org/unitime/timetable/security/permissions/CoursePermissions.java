@@ -33,6 +33,7 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -731,17 +732,17 @@ public class CoursePermissions {
 	public static class EditCourseOfferingAssociatedCourse extends AddCourseOffering {}
 	
 	@PermissionForRight(Right.CanUseHardPeriodPrefs)
-	public static class CanUseHardPeriodPrefs implements Permission<PreferenceGroup> {
+	public static class CanUseHardPeriodPrefs implements Permission<ExamType> {
 
 		@Autowired PermissionDepartment permissionDepartment;
 		
 		@Override
-		public boolean check(UserContext user, PreferenceGroup source) {
+		public boolean check(UserContext user, ExamType source) {
 			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 		}
 
 		@Override
-		public Class<PreferenceGroup> type() { return PreferenceGroup.class; }
+		public Class<ExamType> type() { return ExamType.class; }
 	}
 	
 	@PermissionForRight(Right.CanUseHardTimePrefs)
