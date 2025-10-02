@@ -3788,6 +3788,12 @@ public enum ApplicationProperty {
 	@Since(4.9)
 	@Parameter("export type")
 	DataExchangeExportTypeGzip("unitime.export.%.xml.gz"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Since(4.9)
+	@Description("Class Assignment: refresh class during the assignment/unassignment. An experimental setting trying to speed up the Assign action by not calling the hibSession.refresh(..) on the class after an assignment change.")
+	ClassAssignmentRefreshClass("tmtbl.classAssign.refreshClass"),
 	;
 
 	String iKey;

@@ -1394,6 +1394,7 @@ public class Class_ extends BaseClass_ {
             if (event != null) {
             	if (ApplicationProperty.ClassAssignmentChangePastMeetings.isTrue()) {
             		hibSession.remove(event);
+            		setEvent(null);
             	} else {
             		Calendar cal = Calendar.getInstance(Locale.US);
             		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -1463,7 +1464,8 @@ public class Class_ extends BaseClass_ {
             } else {
             	hibSession.flush();
             }
-            hibSession.refresh(this);
+            if (ApplicationProperty.ClassAssignmentRefreshClass.isTrue())
+            	hibSession.refresh(this);
             
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
@@ -1577,8 +1579,13 @@ public class Class_ extends BaseClass_ {
 				else
 					hibSession.merge(event);
             }
-		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
+		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null) {
 		    	hibSession.remove(event);
+		    	setEvent(null);
+		    } else {
+				setEvent(event);
+		    }
+
 
             setCommittedAssignment(a);
             hibSession.merge(this);
@@ -1601,7 +1608,8 @@ public class Class_ extends BaseClass_ {
             } else {
             	hibSession.flush();
             }
-            hibSession.refresh(this);
+            if (ApplicationProperty.ClassAssignmentRefreshClass.isTrue())
+            	hibSession.refresh(this);
             
             String className = ApplicationProperty.ExternalActionClassEdit.value();
         	if (className != null && className.trim().length() > 0){
