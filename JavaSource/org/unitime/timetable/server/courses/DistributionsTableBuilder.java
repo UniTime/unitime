@@ -182,11 +182,11 @@ public class DistributionsTableBuilder extends TableBuilder {
     	table.setName(MSG.sectionTitleDistributionPreferences());
     	
         LineInterface header = table.addHeader();
-        if (isSimple()) header.addCell(MSG.columnDistrPrefLevel());
-        header.addCell(MSG.columnDistrPrefType());
-        header.addCell(MSG.columnDistrPrefStructure());
-        header.addCell(MSG.columnDistrPrefOwner());
-        header.addCell(MSG.columnDistrPrefClass());
+        if (isSimple()) header.addCell(MSG.columnDistrPrefLevel()).setSortable(true);
+        header.addCell(MSG.columnDistrPrefType()).setSortable(true);
+        header.addCell(MSG.columnDistrPrefStructure()).setSortable(true);
+        header.addCell(MSG.columnDistrPrefOwner()).setSortable(true);
+        header.addCell(MSG.columnDistrPrefClass()).setSortable(true);
     	for (CellInterface cell: header.getCells()) {
     		cell.setClassName("WebTableHeader");
     		cell.setText(cell.getText().replace("<br>", "\n"));

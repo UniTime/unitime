@@ -48,6 +48,12 @@
 				<line>Last Changes table made sortable, sort be Date (desc) by default.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Preferences: Sort</name>
+			<description>
+				<line>Distribution Preferences table made sortable.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
