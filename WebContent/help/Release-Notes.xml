@@ -42,6 +42,12 @@
 				<line>Do not pop up the required/not-required times warning for a user who has the "Display confirmation dialogs" preference set to no.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail: Last Changes</name>
+			<description>
+				<line>Last Changes table made sortable, sort be Date (desc) by default.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

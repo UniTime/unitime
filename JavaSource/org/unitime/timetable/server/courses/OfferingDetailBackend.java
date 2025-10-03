@@ -561,7 +561,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 		line.addCell(lastChange.getObjectTitle()).setHtml(true);
 		line.addCell(lastChange.getOperationTitle());
 		line.addCell(lastChange.getManager().getShortName());
-		line.addCell(ChangeLog.sDF.format(lastChange.getTimeStamp()));
+		line.addCell(ChangeLog.sDF.format(lastChange.getTimeStamp())).setComparable(lastChange.getTimeStamp().getTime());
 		return 1;
     }
 	
@@ -575,15 +575,17 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
         if (io==null) return null;
         
         TableInterface table = new TableInterface();
+        table.setId("LastChanges");
+        table.setDefaultSortCookie("!" + MSG.columnDate());
         int nrChanges = 0;
         
         table.setName(MSG.columnLastChanges());
         LineInterface header = table.addHeader();
-        header.addCell(MSG.columnPage());
-        header.addCell(MSG.columnObject());
-        header.addCell(MSG.columnOperation());
-        header.addCell(MSG.columnManager());
-        header.addCell(MSG.columnDate());
+        header.addCell(MSG.columnPage()).setSortable(true);
+        header.addCell(MSG.columnObject()).setSortable(true);
+        header.addCell(MSG.columnOperation()).setSortable(true);
+        header.addCell(MSG.columnManager()).setSortable(true);
+        header.addCell(MSG.columnDate()).setSortable(true);
     	for (CellInterface cell: header.getCells()) {
     		cell.setClassName("WebTableHeader");
     		cell.setText(cell.getText().replace("<br>", "\n"));

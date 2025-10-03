@@ -135,6 +135,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		clearTable();
 		iNavigationLevel = table.getNavigationLevel();
 		String sortCookie = ToolBox.getSessionCookie(table.getId() + ".Sort");
+		if ((sortCookie == null || sortCookie.isEmpty()) && table.hasDefaultSortCookie())
+			sortCookie = table.getDefaultSortCookie();
 		if (table.getHeader() != null)
 			for (LineInterface line: table.getHeader()) {
 				if (line.hasCells()) {

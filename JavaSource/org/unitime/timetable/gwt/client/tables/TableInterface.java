@@ -42,6 +42,7 @@ public class TableInterface implements IsSerializable {
 	private List<PropertyInterface> iProperties;
 	private Integer iNavigationLevel;
 	private Boolean iMultiRows;
+	private String iDefaultSortCookie;
 	
 	public TableInterface() {}
 	
@@ -92,6 +93,10 @@ public class TableInterface implements IsSerializable {
 	public void setId(String id) { iId = id; }
 	public String getId() { return iId; }
 	public boolean hasId() { return iId != null && !iId.isEmpty(); }
+	
+	public void setDefaultSortCookie(String cookie) { iDefaultSortCookie = cookie; }
+	public String getDefaultSortCookie() { return iDefaultSortCookie; }
+	public boolean hasDefaultSortCookie() { return iDefaultSortCookie != null && !iDefaultSortCookie.isEmpty(); }
 
 	public void setName(String name) { iName = name; }
 	public String getName() { return iName; }
