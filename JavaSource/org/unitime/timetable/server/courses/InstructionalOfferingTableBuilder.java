@@ -1597,13 +1597,13 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	boolean isEditable = getSessionContext().hasPermission(ss, Right.SchedulingSubpartDetail);
         boolean isOffered = !ss.getInstrOfferingConfig().getInstructionalOffering().isNotOffered();        
 
-    	LineInterface row = this.initRow(isOffered);
+    	LineInterface row = this.initRow(true);
 
         if (isEditable && isOffered)
         	row.setURL("subpart?id="+ss.getUniqueId());
         
         this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, ss, indentSpaces, isEditable, null);
-        if (isSimple() && isOffered) row.setBgColor("#E1E1E1");
+        if (isSimple()) row.setBgColor("#E1E1E1");
         table.addLine(row);
     }
     
@@ -2490,7 +2490,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         ClassDurationType dtype = ioc.getEffectiveDurationType();
         
         buildTableHeader(ret, getCurrentAcademicSessionId(), dtype == null ? MSG.columnMinPerWk() : dtype.getLabel());
-        buildConfigRow(subpartIds, classAssignment, examAssignment, ret, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, !getDisplayConfigOpButtons(), true);
+        buildConfigRow(subpartIds, classAssignment, examAssignment, ret, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, false, true);
         ret.setAnchor("ioc" + ioc.getUniqueId());
         
         return ret;

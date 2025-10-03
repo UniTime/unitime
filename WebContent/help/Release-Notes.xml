@@ -55,6 +55,13 @@
 				<line>Distribution Preferences table made sortable.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering Detail: Configurations</name>
+			<description>
+				<line>Configuration tables do not show the configuration line on the Instructional Offering Detail page.</line>
+				<line>Scheduling subpart lines have blue background for not-offered courses.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
