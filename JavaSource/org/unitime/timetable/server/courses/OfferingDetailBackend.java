@@ -641,6 +641,8 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
     			ChangeLog.findLastChange(Curriculum.class.getName(), curriculumIds, ChangeLog.Source.CURRICULA),
     			ChangeLog.findLastChange(Curriculum.class.getName(), curriculumIds, ChangeLog.Source.CURRICULUM_EDIT)));
     	nrChanges += printLastChangeTableRow(table, ChangeLog.findLastChange(Class_.class.getName(), classIds, ChangeLog.Source.INSTRUCTOR_ASSIGNMENT));
+    	nrChanges += printLastChangeTableRow(table,
+    			ChangeLog.findLastChange(Class_.class.getName(), classIds, ChangeLog.Source.CLASS_INFO));
     	
     	if (nrChanges > 0) return table;
     	return null;

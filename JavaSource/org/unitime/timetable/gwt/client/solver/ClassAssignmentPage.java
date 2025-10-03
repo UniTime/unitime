@@ -210,12 +210,12 @@ public class ClassAssignmentPage extends Composite {
 		checkParent();
 	}
 	
-	protected void load(Operation op) {
+	protected void load(final Operation op) {
 		GwtHint.hideHint();
 		final Timer timer = new Timer() {
 			@Override
 			public void run() {
-				LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
+				LoadingWidget.getInstance().show(op == Operation.ASSIGN ? MESSAGES.waitSavingData() : MESSAGES.waitLoadingData());
 			}
 		};
 		timer.schedule(200);

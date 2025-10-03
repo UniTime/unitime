@@ -46,6 +46,7 @@
 			<name>Instructional Offering Detail: Last Changes</name>
 			<description>
 				<line>Last Changes table made sortable, sort be Date (desc) by default.</line>
+				<line>Added the last Class Assignment change.</line>
 			</description>
 		</item>
 		<item>
