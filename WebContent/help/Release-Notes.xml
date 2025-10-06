@@ -29,6 +29,21 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Add/Edit Examination: Size</name>
+			<description>
+				<line>Examination size did not get updated.</line>
+				<line>Set the maximal number of rooms to zero when the Maximum Number of Rooms is left empty.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.85</version>
+	<release-date>Sat, 4 Oct 2025</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offerings, Classes, Instructional Offering Detail: Time Preferences</name>

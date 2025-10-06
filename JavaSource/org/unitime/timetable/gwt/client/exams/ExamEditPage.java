@@ -195,7 +195,9 @@ public class ExamEditPage extends Composite {
 	}
 	
 	protected void load(Long examId, final Operation op, final boolean showLoading, final Command command) {
-		if (showLoading) LoadingWidget.getInstance().show(MESSAGES.waitLoadingData());
+		if (showLoading) LoadingWidget.getInstance().show(op == Operation.UPDATE || op == Operation.NEXT || op == Operation.PREVIOUS ?
+				MESSAGES.waitSavingData() :
+				MESSAGES.waitLoadingData());
 		ExamEditRequest req = new ExamEditRequest();
 		req.setOperation(op);
 		if (op != null && iData != null) {

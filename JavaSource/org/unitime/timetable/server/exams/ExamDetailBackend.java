@@ -157,7 +157,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 		response.addProperty(MSG.propExamLength()).setText(exam.getLength());
 		response.addProperty(MSG.propExamSeatingType()).setText(exam.getSeatingType() == Exam.sSeatingTypeNormal ? MSG.seatingNormal() : MSG.seatingExam());
 		response.addProperty(MSG.propExamMaxRooms()).setText(exam.getMaxNbrRooms());
-		response.addProperty(MSG.propExamSize()).setText(exam.getSize());
+		response.addProperty(MSG.propExamSize()).setText(exam.getSize()).addStyle(exam.getExamSize() == null ? "font-style: italic;" : "");
 		if (exam.getPrintOffset() != null && exam.getPrintOffset() != 0)
 			response.addProperty(MSG.propExamPrintOffset()).setText(exam.getPrintOffset()).add(" " + MSG.offsetUnitMinutes());
 		if (exam.getInstructors() != null && !exam.getInstructors().isEmpty()) {

@@ -154,9 +154,10 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 					exam.setName(data.getName());
 					exam.setSeatingType(data.isExamSeating() ? Exam.sSeatingTypeExam : Exam.sSeatingTypeNormal);
 					exam.setLength(data.getLength());
-					exam.setMaxNbrRooms(data.getMaxRooms());
+					exam.setMaxNbrRooms(data.getMaxRooms() == null ? 0 : data.getMaxRooms());
 					exam.setPrintOffset(data.getPrintOffset());
 					exam.setNote(data.getNotes());
+					exam.setExamSize(data.getSize());
 					
 					if (request.getId() == null)
 						hibSession.persist(exam);
@@ -310,7 +311,7 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 		if (exam != null) {
 			ret.setId(request.getId());
 			ret.setLabel(exam.getLabel());
-			ret.setName(exam.getName());
+			ret.setName(exam.getName() == null || exam.getName().isEmpty() ? null : exam.getName());
 			ret.setExamSeating(exam.getSeatingType() == Exam.sSeatingTypeExam);
 			ret.setSize(exam.getExamSize());
 			ret.setSizeUseLimitInsteadOfEnrollment(ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(examType.getReference(), examType.getType() != ExamType.sExamTypeFinal));
