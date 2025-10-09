@@ -38,6 +38,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Solver Dashboard: Dependent Courses</name>
+			<description>
+				<line>Show the "Not-assigned associated course {0}." message when applicable while showing student details (List of Classes).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

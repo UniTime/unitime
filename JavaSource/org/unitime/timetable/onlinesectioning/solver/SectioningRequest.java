@@ -21,8 +21,10 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cpsolver.coursett.model.RoomLocation;
@@ -59,6 +61,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
+import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
 import org.unitime.timetable.onlinesectioning.model.XEnrollment;
@@ -448,6 +451,37 @@ public class SectioningRequest implements LastSectionProvider {
 				return false;
 			}
 		return false;
+	}
+	
+	public static void setDependentCourses(CourseRequest cr, OnlineSectioningServer server) {
+		if (cr == null || server == null) return;
+		XStudent student = server.getStudent(cr.getStudent().getId());
+		if (student == null) return;
+		Map<Long, Long> parentCourses = new HashMap<Long, Long>();
+		for (XRequest r: student.getRequests()) {
+			if (r instanceof XCourseRequest) {
+				for (XCourseId c: ((XCourseRequest)r).getCourseIds()) {
+					XCourse course = server.getCourse(c.getCourseId());
+					if (course != null && course.getParentCourseId() != null)
+	        			parentCourses.put(course.getCourseId(), course.getParentCourseId());
+				}
+			}
+		}
+		if (!parentCourses.isEmpty()) {
+			Map<Long, Course> courseTable = new HashMap<Long, Course>();
+			for (Request r: cr.getStudent().getRequests()) {
+				if (r instanceof CourseRequest) {
+					for (Course course: ((CourseRequest)r).getCourses())
+						courseTable.put(course.getId(), course);
+				}
+			}
+			for (Map.Entry<Long, Long> e: parentCourses.entrySet()) {
+				Course course = courseTable.get(e.getKey());
+				Course parent = courseTable.get(e.getValue());
+				if (course != null && parent != null)
+					course.setParent(parent);
+			}
+		}
 	}
 	
 	public static CourseRequest convert(Assignment<Request, Enrollment> assignment, XCourseRequest request, OnlineSectioningServer server, WaitListMode wlMode, OnlineSectioningHelper helper) {

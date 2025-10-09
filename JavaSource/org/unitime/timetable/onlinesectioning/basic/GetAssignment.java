@@ -756,6 +756,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						Hashtable<CourseRequest, TreeSet<Section>> overlapingSections = new Hashtable<CourseRequest, TreeSet<Section>>();
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
 						CourseRequest crq = SectioningRequest.convert(assignment, r, server, wlMode, helper);
+						SectioningRequest.setDependentCourses(crq, server);
 						Collection<Enrollment> avEnrls = crq.getAvaiableEnrollmentsSkipSameTime(assignment);
 						for (Iterator<Enrollment> e = avEnrls.iterator(); e.hasNext();) {
 							Enrollment enrl = e.next();
