@@ -148,11 +148,8 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         		Class_ clazz = Class_DAO.getInstance().get(ch.getClassId());
         		if (clazz == null) continue;
         		ClassAssignmentInfo initial = null;
-    			Map<ClassAssignment, Set<Long>> conflicts = null;
-    			if (request.isShowStudentConflicts() && ApplicationProperty.ClassAssignmentPrefetchConflicts.isTrue())
-    				conflicts = ClassInfo.findAllRelatedAssignments(clazz.getUniqueId(), request.isUseRealStudents());
         		if (clazz.getCommittedAssignment() != null)
-        			initial = new ClassAssignmentInfo(clazz.getCommittedAssignment(), request.isUseRealStudents(), conflicts);
+        			initial = new ClassAssignmentInfo(clazz.getCommittedAssignment());
         		ClassTimeInfo time = null;
         		ClassDateInfo date = null;
         		Collection<ClassRoomInfo> rooms = null;
@@ -234,7 +231,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         			if (date == null) date = initial.getDate();
         		}
         		proposed.addChange(new ClassAssignmentInfo(
-        				clazz, time, date, rooms, proposed.getAssignmentTable(), request.isUseRealStudents(), conflicts),
+        				clazz, time, date, rooms, proposed.getAssignmentTable()),
         				initial);
 			}
 		}
@@ -381,7 +378,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         }
         
         try {
-        	Collection<ClassAssignment> dates = getDates(classInfo, response.isShowStudentConflicts(), response.isUseRealStudents(), conflicts);
+        	Collection<ClassAssignment> dates = getDates(classInfo, response.isShowStudentConflicts(), response.isUseRealStudents(), conflicts, proposed);
             if (dates == null) {
             	response.addDatesErrorMessage(MSG.messageClassHasNoDatePatternSelected(classInfo.getClassName()));
             } else if (dates.size() > 1) {
@@ -513,9 +510,8 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
     		if (assignment.getClassId().equals(proposed.getSelectedClassId()))
     			line.setBgColor("rgb(168,187,225)");
     		CellInterface c = line.addCell();
-    		if (proposed.getAssignments().size() > 1)
-    			c.add("").setUrl("#delete=" + assignment.getClassId()).setImage().setSource("images/action_delete.png")
-					.addStyle("cursor: pointer; padding-right: 5px; vertical-align: bottom;");
+    		c.add("").setUrl("#delete=" + assignment.getClassId()).setImage().setSource("images/action_delete.png")
+				.addStyle("cursor: pointer; padding-right: 5px; vertical-align: bottom;");
     		boolean canAssign = context.hasPermission(assignment.getClazz(), Right.ClassAssignment);
     		if (!canAssign && context.hasPermission(assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
     			c.add("").setUrl("#lock=" + assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId())
@@ -791,7 +787,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
         }
     }
 	
-	public Collection<ClassAssignment> getDates(ClassInfo classInfo, boolean showStudentConflicts, boolean useRealStudents, Map<ClassAssignment, Set<Long>> conflicts) {
+	public Collection<ClassAssignment> getDates(ClassInfo classInfo, boolean showStudentConflicts, boolean useRealStudents, Map<ClassAssignment, Set<Long>> conflicts, ClassProposedChange proposed) {
 		Class_ clazz = classInfo.getClazz();
         DatePattern datePattern = clazz.effectiveDatePattern();
         if (datePattern == null) return null;
@@ -825,6 +821,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                         			child.getPatternBitSet(),
                         			prVal),
                         	null,
+                        	(proposed == null ? null : proposed.getAssignmentTable()),
                         	useRealStudents, conflicts));
     			} else {
         			dates.add(new ClassAssignment(
@@ -851,6 +848,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                     			datePattern.getPatternBitSet(),
                     			PreferenceLevel.sIntLevelNeutral),
                     	null,
+                    	(proposed == null ? null : proposed.getAssignmentTable()),
                     	useRealStudents, conflicts));
         	} else {
             	dates.add(new ClassAssignment(
@@ -875,7 +873,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
 		if (date == null) {
 			date = (classInfo instanceof ClassAssignment ? ((ClassAssignment)classInfo).getDate() : null);
 			if (date == null) {
-	        	Collection<ClassAssignment> dates = getDates(classInfo, showStudentConflicts, useRealStudents, conflicts);
+	        	Collection<ClassAssignment> dates = getDates(classInfo, showStudentConflicts, useRealStudents, conflicts, proposed);
 	            if (dates != null && !dates.isEmpty())
 	            	date = dates.iterator().next().getDate();
 	        }

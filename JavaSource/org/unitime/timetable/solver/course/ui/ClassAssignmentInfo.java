@@ -42,6 +42,10 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 	private static final long serialVersionUID = -4277344877497509285L;
 	private TreeSet<StudentConflict> iStudentConflicts = new TreeSet();
 	
+	public ClassAssignmentInfo(Assignment assignment) {
+		super(assignment);
+	}
+	
 	public ClassAssignmentInfo(Assignment assignment, boolean useRealStudents, Map<ClassAssignment, Set<Long>> conflicts) {
 		super(assignment);
 		if (conflicts != null)
@@ -64,6 +68,10 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 			findStudentConflicts(assignmentTable, conflicts);
 		else
 			findStudentConflicts(assignmentTable, useRealStudents);
+	}
+	
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable) {
+		super(clazz, time, date, rooms);
 	}
 	
 	private void findStudentConflicts(Hashtable<Long,ClassAssignment> assignmentTable, boolean useRealStudents) {

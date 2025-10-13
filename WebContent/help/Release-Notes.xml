@@ -29,6 +29,16 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Class Assignment</name>
+			<description>
+				<line>Always show the student conflicts for the selected assignment. The Show student conflicts toggle only applies to the conflict numbers for the available times.</line>
+				<line>A few changes have been made to improve the page speed.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Examination Timetabling</title>
 		<item>
 			<name>Add/Edit Examination: Size</name>

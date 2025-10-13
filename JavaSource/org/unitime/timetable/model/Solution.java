@@ -1684,6 +1684,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     	        	"e.clazz=c.clazz and " + // link ClassEvent c with StudentClassEnrollment e
             		"m.stopPeriod>:startSlot and :endSlot>m.startPeriod and " + // meeting time within given time period
     	        	"e.solution.commited=true and x.solution.commited = true and " +
+            		"e.solution.owner.session = x.solution.owner.session and " +
             		"m.meetingDate in ("+datesStr+") and m.approvalStatus = 1", Object[].class)
             .setParameter("classId", classId)
             .setParameter("startSlot", startSlot)

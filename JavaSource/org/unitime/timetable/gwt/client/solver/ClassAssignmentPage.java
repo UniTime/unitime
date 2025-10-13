@@ -257,6 +257,8 @@ public class ClassAssignmentPage extends Composite {
 					return;
 				}
 				timer.cancel();
+				if (History.getToken() != null && !History.getToken().isEmpty())
+					History.newItem("", false);
 				LoadingWidget.getInstance().hide();
 				iPanel.clear();
 				iPanel.addHeaderRow(iHeader);
@@ -302,7 +304,7 @@ public class ClassAssignmentPage extends Composite {
 					}
 				}
 
-				if (response.hasStudentConflicts() && iShowStudentConflicts.getValue()) {
+				if (response.hasStudentConflicts()) {
 					UniTimeHeaderPanel hp = new UniTimeHeaderPanel(response.getStudentConflicts().getName());
 					iPanel.addHeaderRow(hp);
 					iPanel.addRow(new TableWidget(response.getStudentConflicts()));
