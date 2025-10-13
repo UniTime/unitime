@@ -166,6 +166,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 		iRoomPrefs = new ArrayList<PreferencesTable>();
 		if (response.hasRoomPreferences()) {
 			for (Preferences p: response.getRoomPreferences()) {
+				if (!p.hasItems()) continue;
 				PreferencesTable tab = new PreferencesTable(p, response.getNbrRooms(), response);
 				iRoomPrefs.add(tab);
 				addRow(getName(p.getType()), tab);

@@ -37,6 +37,12 @@
 				<line>Set the maximal number of rooms to zero when the Maximum Number of Rooms is left empty.</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Examination: Preferences</name>
+			<description>
+				<line>Fixed a problem of the Add/Edit Examination page not being loaded up correctly when there are no room features or no room groups.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
