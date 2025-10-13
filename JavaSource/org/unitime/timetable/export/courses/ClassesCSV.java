@@ -20,10 +20,13 @@
 package org.unitime.timetable.export.courses;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
-
+import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.export.Exporter:classes.csv")
@@ -38,5 +41,28 @@ public class ClassesCSV extends OfferingsCSV {
 	public void export(ExportHelper helper) throws IOException {
 		checkPermission(helper, Right.ClassesExportPDF);
 		exportDataCsv(getClasses(helper), helper);
+	}
+	
+	@Override
+	protected void exportDataCsv(List<TableInterface> response, ExportHelper helper) throws IOException {
+    	Printer printer = new CSVPrinter(helper, false);
+		helper.setup(printer.getContentType(), reference(), false);
+		
+		boolean firstTable = true;
+		for (TableInterface table: response) {
+			if (table.getHeader() != null) {
+				if (firstTable)
+					for (LineInterface line: table.getHeader())
+						printer.printHeader(toLine(line));
+				firstTable = false;
+			}
+			if (table.getLines() != null) {
+				for (LineInterface line: table.getLines()) {
+					printer.printLine(toLine(line));
+				}
+			}
+		}
+        
+    	printer.flush(); printer.close();
 	}
 }

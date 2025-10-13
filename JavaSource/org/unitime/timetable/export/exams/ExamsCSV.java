@@ -23,11 +23,11 @@ import java.io.IOException;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
-import org.unitime.timetable.export.courses.OfferingsCSV;
+import org.unitime.timetable.export.courses.ClassesCSV;
 import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.export.Exporter:exams.csv")
-public class ExamsCSV extends OfferingsCSV {
+public class ExamsCSV extends ClassesCSV {
 	
 	@Override
 	public String reference() {

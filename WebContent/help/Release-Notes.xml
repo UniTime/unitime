@@ -37,6 +37,12 @@
 				<line>A few changes have been made to improve the page speed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Classes, Class Assignments: Export CSV</name>
+			<description>
+				<line>Do not split the CSV export by subject area.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
