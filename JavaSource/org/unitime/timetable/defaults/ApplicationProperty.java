@@ -78,6 +78,7 @@ import org.unitime.timetable.onlinesectioning.custom.StudentEnrollmentProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.custom.StudentPinsProvider;
 import org.unitime.timetable.onlinesectioning.custom.VariableTitleCourseProvider;
+import org.unitime.timetable.onlinesectioning.custom.WaitListComparatorProvider;
 import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup;
 import org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation;
@@ -1322,7 +1323,7 @@ public enum ApplicationProperty {
 	CustomizationWaitListValidationProvider("unitime.custom.WaitListValidationProvider"),
 	
 	@Type(Class.class)
-	@Implements(WaitListValidationProvider.class)
+	@Implements(WaitListComparatorProvider.class)
 	@Description("Customization: wait-list compatator provider")
 	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultSectioningRequestComparatorProvider")
 	@Since(4.6)
@@ -2237,6 +2238,10 @@ public enum ApplicationProperty {
 	@DefaultValue("https://help.unitime.org/manuals/examination-timetabling")
 	@Description("Manuals: examination timetabling manual")
 	ManualExaminationTimetabling("tmtbl.help.manual.exams"),
+	
+	@DefaultValue("https://help.unitime.org/manuals/student-scheduling")
+	@Description("Manuals: student scheduling manual")
+	ManualStudentScheduling("tmtbl.help.manual.students"),
 
 	@DefaultValue("help/Release-Notes.xml")
 	@Description("Help: release notes")

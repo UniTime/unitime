@@ -68,6 +68,12 @@
 				<line>Show the "Not-assigned associated course {0}." message when applicable while showing student details (List of Classes).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Manual</name>
+			<description>
+				<line>A new student scheduling manual is linked from the menu (Help &gt; Manuals).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

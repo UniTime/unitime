@@ -1301,6 +1301,11 @@
 					<hasPermission name="EventStatuses" authority="any" check="false"/>
 				</condition>
 			</item>
+			<item name="Student Scheduling" page="tmtbl.help.manual.students" type="property" target="tab">
+			    <condition>
+					<hasPermission name="StudentSectioningSolver" authority="any" check="false"/>
+				</condition>
+			</item>
 			<item name="Student Scheduling Assistant" page="tmtbl.help.manual.schedulingAssistant" type="property" target="tab">
 			    <condition>
 					<hasPermission name="SchedulingAssistant" authority="any" check="false"/>
