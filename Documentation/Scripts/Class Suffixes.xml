@@ -62,7 +62,7 @@ for (var i = allClasses.iterator(); i.hasNext(); ) {
 
 
 if (file != null) {
-  var lines = file.getString('utf-8').split('\n');
+  var lines = file.getString().split('\n');
   for (var i = 0; i < lines.length; i++) {
     var tokens = csvSplitLine(lines[i]);
     if (tokens == null || tokens.length < 5 || "Subject".equals(tokens[0])) continue;

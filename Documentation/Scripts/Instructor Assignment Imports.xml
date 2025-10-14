@@ -120,7 +120,7 @@ for d in range(0, len(days)):
         times['%s%02d30' % (days[d], t)] = (d, s, 12)
 print times
 
-lines = csv.reader(file.getString('utf-8').split('\n'), delimiter=",", quotechar='"')
+lines = csv.reader(file.getString().split('\n'), delimiter=",", quotechar='"')
 head = None
 for line in lines:
     if not line: continue
@@ -317,7 +317,7 @@ qualPrefs = {'00000' : '-1',
              'OTHER' : '-2',
              }
 
-lines = csv.reader(file.getString('utf-8').split('\n'), delimiter=",", quotechar='"')
+lines = csv.reader(file.getString().split('\n'), delimiter=",", quotechar='"')
 head = None
 for line in lines:
     if not line: continue

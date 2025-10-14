@@ -40,7 +40,7 @@ if (name != null) {
 
 // Reading an input (text) file
 if (file != null) {
-  var lines = file.getString('utf-8').split('\n');
+  var lines = file.getString().split('\n');
   for (var i = 0; i < lines.length; i++) {
     log.debug((1 + i) + ': ' + lines[i]);
   }
@@ -98,7 +98,7 @@ else:
 # Reading an input (text) file
 if file:
   i = 1
-  for line in file.getString('utf-8').split('\n'):
+  for line in file.getString().split('\n'):
     log.debug('%d: %s' % (i, line))
     i = i + 1
 else:

@@ -247,7 +247,7 @@ def execute():
         
     area2major2clasf2ll = loadAreaMajorClasf2ll()
     
-    lines = csv.reader(file.getString('utf-8').split('\n'), delimiter=",", quotechar='"')
+    lines = csv.reader(file.getString().split('\n'), delimiter=",", quotechar='"')
     header = None
     for line in lines:
         if not header:
