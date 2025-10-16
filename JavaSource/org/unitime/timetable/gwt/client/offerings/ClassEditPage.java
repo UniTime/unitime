@@ -346,7 +346,9 @@ public class ClassEditPage extends Composite {
 					UniTimeTableHeader hShare = new UniTimeTableHeader(COURSE.columnInstructorShare());
 					hShare.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 					instrHeader.add(hShare);
-					instrHeader.add(new UniTimeTableHeader(COURSE.columnInstructorCheckConflicts()));
+					UniTimeTableHeader hConf = new UniTimeTableHeader(COURSE.columnInstructorCheckConflicts());
+					hConf.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+					instrHeader.add(hConf);
 					instrHeader.add(new UniTimeTableHeader(""));
 					iInstructors.addRow(null, instrHeader);
 					if (response.hasClassInstructors())
