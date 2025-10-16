@@ -374,7 +374,7 @@ public class InstructorEditPage extends Composite {
 		iPanel.addRow(COURSE.propertyAcademicTitle(), iAcadTitle);
 		
 		iEmail.setValue(iData.getEmail() == null ? "" : iData.getEmail());
-		iPanel.addRow(COURSE.propertyFirstName(), iEmail);
+		iPanel.addRow(COURSE.propertyEmail(), iEmail);
 		
 		iPanel.addRow(COURSE.propertyDepartment(), new Label(iData.getDepartment()));
 		
