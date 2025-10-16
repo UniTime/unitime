@@ -876,9 +876,12 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
     		PeriodPreferenceModel prefs = form.getPeriodPreferences();
     		Exam exam = (Exam)pg;
     		if (prefs != null) {
+    			String defaultPref = PreferenceLevel.sNeutral;
+    			if (prefs.getDefaultPreference() != null)
+    				defaultPref = prefs.getDefaultPreference().getCode();
     			for (ExamPeriod period: ExamPeriod.findAll(exam.getSession().getUniqueId(), exam.getExamType())) {
     				PreferenceInterface pref = prefs.getPreference(period.getDateOffset(), period.getStartSlot());
-    				if (pref != null && !PreferenceLevel.sNeutral.equals(pref.getCode())) {
+    				if (pref != null && !defaultPref.equals(pref.getCode())) {
     					ExamPeriodPref pp = new ExamPeriodPref();
     					pp.setExamPeriod(period);
     					pp.setPrefLevel(PreferenceLevel.getPreferenceLevel(pref.getCode()));

@@ -37,6 +37,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Add/Edit Examination</name>
+			<description>
+				<line>Corrected setting of neutral period preferences for midterm exams.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

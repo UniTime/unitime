@@ -95,9 +95,13 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 		Exam exam = ExamDAO.getInstance().get(request.getExamId(), hibSession);
 		context.checkPermission(exam, Right.ExaminationDetail);
 		
-		if (exam == null)
-			throw new GwtRpcException(MSG.errorNoExamId());
-		
+		if (exam == null) {
+			if (request.getExamId() == null)
+				throw new GwtRpcException(MSG.errorNoExamId());
+			ExamDetailReponse response = new ExamDetailReponse();
+			response.setUrl("examinations");
+			return response;
+		}
 		
 		if (request.getAction() == Action.DELETE) {
 			context.checkPermission(exam, Right.ExaminationDelete);
