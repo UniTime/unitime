@@ -40,6 +40,7 @@
 			<name>Instructional Offerings, Classes</name>
 			<description>
 				<line>Do not show examination columns when there are no examination periods defined (Examinations do not show up in the Filter).</line>
+				<line>Added an ability to not show the subject area titles in the filter (when unitime.offering.subjectFilterShowTitles is set to false).</line>
 			</description>
 		</item>
 	</category>

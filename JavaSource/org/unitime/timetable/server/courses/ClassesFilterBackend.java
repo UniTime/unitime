@@ -181,8 +181,12 @@ public class ClassesFilterBackend implements GwtRpcImplementation<ClassesFilterR
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
 		subjectArea.setLabel(MESSAGES.filterSubject());
-		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
-			subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
+		if (ApplicationProperty.OfferingsFilterSubjectTitle.isTrue())
+			for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
+				subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
+		else
+			for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
+				subjectArea.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation());
 		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassesSubjectAreas));
 		subjectArea.setEnterToSubmit(true);
 		filter.addParameter(subjectArea);

@@ -134,8 +134,13 @@ public class ClassAssignmentsFilterBackend implements GwtRpcImplementation<Class
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
 		subjectArea.setLabel(MESSAGES.filterSubject());
-		for (SubjectArea subject: SubjectArea.getAllSubjectAreas(context.getUser().getCurrentAcademicSessionId()))
-			subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
+		if (ApplicationProperty.OfferingsFilterSubjectTitle.isTrue())
+			for (SubjectArea subject: SubjectArea.getAllSubjectAreas(context.getUser().getCurrentAcademicSessionId()))
+				subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
+		else
+			for (SubjectArea subject: SubjectArea.getAllSubjectAreas(context.getUser().getCurrentAcademicSessionId()))
+				subjectArea.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation());
+		
 		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.ClassAssignmentsSubjectAreas));
 		if (subjectArea.getDefaultValue() == null)
 			subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));

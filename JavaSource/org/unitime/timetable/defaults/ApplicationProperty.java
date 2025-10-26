@@ -3799,6 +3799,12 @@ public enum ApplicationProperty {
 	@Since(4.9)
 	@Description("Class Assignment: refresh class during the assignment/unassignment. An experimental setting trying to speed up the Assign action by not calling the hibSession.refresh(..) on the class after an assignment change.")
 	ClassAssignmentRefreshClass("tmtbl.classAssign.refreshClass"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Instructional Offerings: show subject area titles in the Subject filter")
+	@Since(4.9)
+	OfferingsFilterSubjectTitle("unitime.offering.subjectFilterShowTitles"),
 	;
 
 	String iKey;

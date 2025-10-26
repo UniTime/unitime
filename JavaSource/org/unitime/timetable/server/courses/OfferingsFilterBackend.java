@@ -123,8 +123,12 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
 		subjectArea.setLabel(MESSAGES.filterSubject());
-		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
-			subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
+		if (ApplicationProperty.OfferingsFilterSubjectTitle.isTrue())
+			for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
+				subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
+		else
+			for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
+				subjectArea.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation());
 		subjectArea.setDefaultValue((String)context.getAttribute(SessionAttribute.OfferingsSubjectArea));
 		subjectArea.setEnterToSubmit(true);
 		filter.addParameter(subjectArea);
