@@ -76,7 +76,7 @@ public abstract class BaseSubjectArea implements Serializable {
 	public String getExternalUniqueId() { return iExternalUniqueId; }
 	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
-	@Column(name = "subject_area_abbreviation", nullable = false, length = 20)
+	@Column(name = "subject_area_abbreviation", nullable = false, length = 40)
 	public String getSubjectAreaAbbreviation() { return iSubjectAreaAbbreviation; }
 	public void setSubjectAreaAbbreviation(String subjectAreaAbbreviation) { iSubjectAreaAbbreviation = subjectAreaAbbreviation; }
 
