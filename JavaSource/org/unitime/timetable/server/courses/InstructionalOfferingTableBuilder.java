@@ -2515,7 +2515,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
 		if (filter.hasParameter("timetable"))
 			setShowTimetable("1".equals(filter.getParameterValue("timetable", "1")));
 		else
-			setShowTimetable(true);
+			setShowTimetable(false);
 		setShowCredit("1".equals(filter.getParameterValue("credit", "0")));
 		setShowSubpartCredit("1".equals(filter.getParameterValue("subpartCredit", "0")));
 		setShowSchedulePrintNote("1".equals(filter.getParameterValue("schedulePrintNote", "0")));
@@ -2525,7 +2525,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
 		if (filter.hasParameter("exams")) {
 		    setShowExam("1".equals(filter.getParameterValue("exams", "1")));
 		} else {
-		    setShowExam(true);
+		    setShowExam(false);
 		}
 		if (filter.hasParameter("instructorAssignment")) {
 			setShowInstructorAssignment("1".equals(filter.getParameterValue("instructorAssignment", "1")));

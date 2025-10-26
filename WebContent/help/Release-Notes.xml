@@ -36,6 +36,12 @@
 				<line>Corrected the label for the instructor email field.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offerings, Classes</name>
+			<description>
+				<line>Do not show examination columns when there are no examination periods defined (Examinations do not show up in the Filter).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
