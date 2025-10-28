@@ -479,11 +479,18 @@ public class Department extends BaseDepartment implements Comparable<Department>
 	}
 	
 	public static TreeSet<Department> getUserDepartments(UserContext user) {
+		return getUserDepartments(user, true);
+	}
+	
+	public static TreeSet<Department> getUserDepartments(UserContext user, boolean usedOnly) {
 		TreeSet<Department> departments = new TreeSet<Department>();
 		if (user == null || user.getCurrentAuthority() == null) return departments;
-		if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-			departments.addAll(Department.findAllBeingUsed(user.getCurrentAcademicSessionId()));
-		else
+		if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
+			if (usedOnly)
+				departments.addAll(Department.findAllBeingUsed(user.getCurrentAcademicSessionId()));
+			else
+				departments.addAll(Department.findAll(user.getCurrentAcademicSessionId()));
+		} else
 			for (UserQualifier q: user.getCurrentAuthority().getQualifiers("Department"))
 				departments.add(DepartmentDAO.getInstance().get((Long)q.getQualifierId()));
 		return departments;
