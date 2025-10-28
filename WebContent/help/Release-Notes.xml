@@ -53,6 +53,17 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Add/Edit Subject Area</name>
+			<description>
+				<line>List all available departments (excluding externally managed ones) for a subject area.
+					<line>Instead of those that are being used (have a manager, a room, or another subject).</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

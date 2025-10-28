@@ -101,7 +101,7 @@ public class SubjectAreas implements AdminTable {
 		List<ListItem> depts = new ArrayList<ListItem>();
 		List<ListItem> fundDepts = new ArrayList<ListItem>();
 
-		for (Department dept: Department.getUserDepartments(context.getUser())) {
+		for (Department dept: Department.getUserDepartments(context.getUser(), false)) {
 			if (dept.isExternalManager() == null || !dept.isExternalManager()) {
 				depts.add(new ListItem(dept.getUniqueId().toString(), dept.getLabel()));
 			}
