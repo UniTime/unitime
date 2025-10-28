@@ -43,6 +43,14 @@
 				<line>Added an ability to not show the subject area titles in the filter (when unitime.offering.subjectFilterShowTitles is set to false).</line>
 			</description>
 		</item>
+		<item>
+			<name>Add/Edit Room: Room Sharing</name>
+			<description>
+				<line>Added an ability to list all departments as available for room sharing (instead of those that are being used, i.e., departments that have a manager, a subject area, or another room).
+					<line>Set unitime.roomDepts.usedDepartmentsOnly to false to enable (defaults to true, only show departments that are being used).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

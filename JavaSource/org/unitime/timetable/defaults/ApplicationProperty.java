@@ -3805,6 +3805,12 @@ public enum ApplicationProperty {
 	@Description("Instructional Offerings: show subject area titles in the Subject filter")
 	@Since(4.9)
 	OfferingsFilterSubjectTitle("unitime.offering.subjectFilterShowTitles"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Rooms: list only used departments as available for room sharing (i.e., departments that have a manager, a subject area, or another room).")
+	@Since(4.9)
+	RoomDeptUsedDeptsOnly("unitime.roomDepts.usedDepartmentsOnly"),
 	;
 
 	String iKey;

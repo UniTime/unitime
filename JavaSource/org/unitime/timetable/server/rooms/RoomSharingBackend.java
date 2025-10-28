@@ -136,9 +136,10 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		}
 
 		boolean deptIndependent = context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+		boolean usedOnly = ApplicationProperty.RoomDeptUsedDeptsOnly.isTrue();
 		if (location == null) {
 			Long neutralId = (includeRoomPreferences ? PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId() : null);
-			for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId())) {
+			for (Department d: (usedOnly ? Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId()) : Department.findAll(context.getUser().getCurrentAcademicSessionId()))) {
 				Long prefId = null;
 				if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d)))
 					prefId = neutralId;
@@ -168,7 +169,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 					d.getDeptCode(), d.getName() + (d.isExternalManager() ? " (EXT: " + d.getExternalMgrLabel() + ")" : ""), editable, prefId));
 		}
 		
-		for (Department d: Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId())) {
+		for (Department d: (usedOnly ? Department.findAllBeingUsed(context.getUser().getCurrentAcademicSessionId()) : Department.findAll(context.getUser().getCurrentAcademicSessionId()))) {
 			Long prefId = null;
 			if (includeRoomPreferences && (deptIndependent || context.getUser().getCurrentAuthority().hasQualifier(d))) {
 				prefId = neutralId;
