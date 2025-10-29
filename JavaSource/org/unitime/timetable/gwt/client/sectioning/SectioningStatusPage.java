@@ -1864,6 +1864,29 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public void execute() {
+					boolean allMine = true;
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null) {
+							Widget w = iStudentTable.getWidget(row, 0);
+							if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+								if (!i.isMyStudent()) { allMine = false; break; } 
+							}
+						}
+					}
+					if (!allMine) {
+						UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmReleasePIN(iSelectedStudentIds.size()), new Command() {
+							@Override
+							public void execute() {
+								releasePins();
+							}
+						});
+					} else {
+						releasePins();
+					}
+				}
+				
+				protected void releasePins() {
 					LoadingWidget.getInstance().show(MESSAGES.releasingStudentPins());
 					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 					iSectioningService.releasePins(studentIds, true, new AsyncCallback<Map<Long,String>>() {
@@ -1926,6 +1949,29 @@ public class SectioningStatusPage extends Composite {
 				}
 				@Override
 				public void execute() {
+					boolean allMine = true;
+					for (int row = 0; row < iStudentTable.getRowCount(); row++) {
+						StudentInfo i = iStudentTable.getData(row);
+						if (i != null && i.getStudent() != null) {
+							Widget w = iStudentTable.getWidget(row, 0);
+							if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+								if (!i.isMyStudent()) { allMine = false; break; } 
+							}
+						}
+					}
+					if (!allMine) {
+						UniTimeConfirmationDialog.confirmFocusNo(MESSAGES.confirmSuppressPIN(iSelectedStudentIds.size()), new Command() {
+							@Override
+							public void execute() {
+								suppressPins();
+							}
+						});
+					} else {
+						suppressPins();
+					}
+				}
+				
+				protected void suppressPins() {
 					LoadingWidget.getInstance().show(MESSAGES.supressingStudentPins());
 					List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 					iSectioningService.releasePins(studentIds, false, new AsyncCallback<Map<Long,String>>() {

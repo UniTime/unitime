@@ -69,6 +69,12 @@
 				<line>Corrected the can leave unassigned check for branch&amp;bound.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling Dashboard: Release/Suppress PIN</name>
+			<description>
+				<line>Display a confirmation dialog when students not advised by the user are involved in the PIN release change.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

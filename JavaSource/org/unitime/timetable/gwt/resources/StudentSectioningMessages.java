@@ -2908,6 +2908,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Do you really want to change note and set status to {0} for {1}\u00a0students?")
 	String confirmStatusNoteChange(String newStatus, int studentCount);
 	
+	@DefaultMessage("Do you really want to release PIN for {0}\u00a0students?")
+	String confirmReleasePIN(int studentCount);
+	
+	@DefaultMessage("Do you really want to suppress PIN for {0}\u00a0students?")
+	String confirmSuppressPIN(int studentCount);
+	
 	@DefaultMessage("<u>L</u>ookup Student")
 	String buttonLookupStudent();
 	
