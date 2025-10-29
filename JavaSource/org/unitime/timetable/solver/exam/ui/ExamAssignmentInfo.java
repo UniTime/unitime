@@ -966,7 +966,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	if (dc.getOtherExam() == null) {
                 if (dc.getOtherEventName() != null) {
                 	line.addCell().setText(dc.getOtherEventName());
-                	line.addCell().setText(dc.getOtherEventDate() + dc.getOtherEventTime());
+                	line.addCell().setText(dc.getOtherEventDate() + " " + dc.getOtherEventTime());
                 	line.addCell().setText(dc.getOtherEventRoom());
                 } else {
                 	line.addCell().setText(MSG.infoNotAvailableForUnknownReason()).setColSpan(3);
@@ -1227,7 +1227,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	if (dc.getOtherExam() == null) {
                 if (dc.getOtherEventName() != null) {
                 	line.addCell().setText(dc.getOtherEventName());
-                	line.addCell().setText(dc.getOtherEventDate() + dc.getOtherEventTime());
+                	line.addCell().setText(dc.getOtherEventDate() + " " + dc.getOtherEventTime());
                 	line.addCell().setText(dc.getOtherEventRoom());
                 } else {
                 	line.addCell().setText(MSG.infoNotAvailableForUnknownReason()).setColSpan(3);
