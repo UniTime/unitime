@@ -135,7 +135,7 @@
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.jgroups.SolverServerImplementation" />
 				<attribute name="Class-Path" value="angus-activation-2.0.2.jar antlr4-runtime-4.13.0.jar biweekly-0.6.8.jar byte-buddy-1.15.11.jar c3p0-0.9.5.5.jar classmate-1.5.1.jar
-					commons-lang3-3.18.0.jar commons-logging-1.3.5.jar commons-text-1.14.0.jar cpsolver-1.4.82.jar dom4j-2.1.5.jar freemarker-2.3.34.jar gson-2.13.2.jar
+					commons-lang3-3.18.0.jar commons-logging-1.3.5.jar commons-text-1.14.0.jar cpsolver-1.4.83.jar dom4j-2.1.5.jar freemarker-2.3.34.jar gson-2.13.2.jar
 					gwt-servlet-jakarta-2.12.2.jar hibernate-c3p0-6.6.29.Final.jar hibernate-commons-annotations-7.0.3.Final.jar hibernate-core-6.6.29.Final.jar istack-commons-runtime-4.1.1.jar
 					itext-2.1.7.jar jackson-core-2.20.0.jar jakarta.activation-api-2.1.3.jar jakarta.mail-2.0.4.jar jakarta.mail-api-2.1.3.jar jakarta.persistence-api-3.1.0.jar
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar jakarta.servlet-api-6.0.0.jar jakarta.servlet.jsp-api-3.1.1.jar
@@ -291,7 +291,7 @@
 			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<tarfileset dir="${lib.dir}" prefix="solver">
 				<include name="commons-logging-1.3.5.jar"/>
-				<include name="cpsolver-1.4.82.jar"/>
+				<include name="cpsolver-1.4.83.jar"/>
 				<include name="dom4j-2.1.5.jar"/>
 				<include name="gwt-servlet-jakarta-2.12.2.jar"/>
 				<include name="javassist-3.30.2-GA.jar"/>
@@ -359,7 +359,7 @@
 			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<zipfileset dir="${lib.dir}" prefix="solver">
 				<include name="commons-logging-1.3.5.jar"/>
-				<include name="cpsolver-1.4.82.jar"/>
+				<include name="cpsolver-1.4.83.jar"/>
 				<include name="dom4j-2.1.5.jar"/>
 				<include name="gwt-servlet-jakarta-2.12.2.jar"/>
 				<include name="javassist-3.30.2-GA.jar"/>

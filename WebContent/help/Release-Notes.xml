@@ -62,6 +62,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Solver: Dependent Courses</name>
+			<description>
+				<line>Corrected the can leave unassigned check for branch&amp;bound.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Add/Edit Subject Area</name>
