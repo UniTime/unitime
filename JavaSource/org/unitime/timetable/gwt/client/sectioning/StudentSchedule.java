@@ -139,7 +139,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				new WebTable.Cell(MESSAGES.colCourse(), 1, "75px"),
 				new WebTable.Cell(MESSAGES.colTitle(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colCredit(), 1, "20px"),
-				new WebTable.Cell(MESSAGES.colPreferences(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colPreferences(), 1, "300px"),
 				new WebTable.Cell(MESSAGES.colWarnings(), 1, "200px"),
 				new WebTable.Cell(MESSAGES.colStatus(), 1, "20px"),
 				new WebTable.Cell(MESSAGES.colCritical(), 1, "20px"),
@@ -767,7 +767,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit, 
-								new WebTable.Cell(ToolBox.toString(prefs)),
+								new WebTable.Cell(ToolBox.toString(prefs), true),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical()) :
@@ -898,7 +898,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(rc.getCourseName()),
 								new WebTable.Cell(rc.hasCourseTitle() ? rc.getCourseTitle() : ""),
 								credit,
-								new WebTable.Cell(ToolBox.toString(prefs)),
+								new WebTable.Cell(ToolBox.toString(prefs), true),
 								new WebTable.NoteCell(note, noteTitle),
 								(icon == null ? new WebTable.Cell(status) : new WebTable.IconCell(icon, iconText, status)),
 								(first && iAssignment.isCanSetCriticalOverrides() ? new CriticalCell(request) : first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical()) :
