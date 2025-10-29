@@ -67,6 +67,7 @@
 			<name>Student Scheduling Solver: Dependent Courses</name>
 			<description>
 				<line>Corrected the can leave unassigned check for branch&amp;bound.</line>
+				<line>When the associated course is to be moved up during solver load, swap the associated and the dependent courses instead of adjusting the comparator (to avoid transitivity issues with the comparator).</line>
 			</description>
 		</item>
 		<item>

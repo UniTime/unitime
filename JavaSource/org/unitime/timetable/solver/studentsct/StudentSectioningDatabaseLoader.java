@@ -2113,12 +2113,20 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		for (Request r1: student.getRequests()) {
         		if (r1 instanceof CourseRequest && r1.hasChildren()) {
         			for (Request r2: student.getRequests()) {
-        				if (isParent(r1, r2) && !r1.getRequestPriority().isSame(r2)) {
-        					CourseRequest cr1 = (CourseRequest)r1;
-        					CourseRequest cr2 = (CourseRequest)r2;
-        					RequestPriority rp = (cr1.getRequestPriority().isHigher(r2) ? cr1.getRequestPriority() : cr2.getRequestPriority());
-        					cr1.setRequestPriority(rp);
-        					cr2.setRequestPriority(rp);
+        				if (isParent(r1, r2)) {
+        					if (!r1.getRequestPriority().isSame(r2)) {
+            					CourseRequest cr1 = (CourseRequest)r1;
+            					CourseRequest cr2 = (CourseRequest)r2;
+            					RequestPriority rp = (cr1.getRequestPriority().isHigher(r2) ? cr1.getRequestPriority() : cr2.getRequestPriority());
+            					cr1.setRequestPriority(rp);
+            					cr2.setRequestPriority(rp);
+        					}
+        					if (r1.isAlternative() == r2.isAlternative() && r1.getPriority() > r2.getPriority() && !isParent(r2, r1)) {
+        						// priority swap
+        						int p = r1.getPriority();
+        						r1.setPriority(r2.getPriority());
+        						r2.setPriority(p);
+        					}
         				}
         			}
         		}
@@ -2139,12 +2147,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						boolean a1 = (r1 instanceof CourseRequest && r1.getInitialAssignment() != null && getAssignment().getValue(r1) != null);
 						boolean a2 = (r2 instanceof CourseRequest && r2.getInitialAssignment() != null && getAssignment().getValue(r2) != null);
 						if (a1 != a2) return a1 ? -1 : 1;
-					}
-					if (iMoveParentCoursesUp) {
-						boolean p1 = isParent(r1, r2);
-						boolean p2 = isParent(r2, r1);
-						if (p1 && !p2) return -1;
-						if (p2 && !p1) return 1;
 					}
 					if (iMoveCriticalCoursesUp) {
 						RequestPriority p1 = r1.getRequestPriority();
