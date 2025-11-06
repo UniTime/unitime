@@ -55,6 +55,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -434,6 +435,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
         ss.setAutoSpreadInTime(ApplicationProperty.SchedulingSubpartAutoSpreadInTimeDefault.isTrue());
         ss.setStudentAllowOverlap(ApplicationProperty.SchedulingSubpartStudentOverlapsDefault.isTrue());
         ss.setChildSubparts(new HashSet<SchedulingSubpart>());
+        ss.setPreferences(new HashSet<Preference>());
         hibSession.persist(ss);
         
         return ss;
@@ -464,6 +466,7 @@ public class VariableTitleCourseConnector extends ApiConnector {
         clazz.setNbrRooms(0);
         clazz.setSchedulingSubpart(ss);
         clazz.setRoomRatio(Float.valueOf(0));
+        clazz.setPreferences(new HashSet<Preference>());
         ss.addToClasses(clazz);
         hibSession.persist(clazz);
         
