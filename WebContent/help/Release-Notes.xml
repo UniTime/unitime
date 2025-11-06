@@ -37,6 +37,13 @@
 				<line>This makes the Classes and Class Assignments links on the Not-Assigned Classes page point to the correct versions of the two pages.</line>
 			</description>
 		</item>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>Compute and populate conflicting constraints when a placement with conflicts is selected from the Suggestions table in the Placements mode.</line>
+				<line>Fixed a problem when an invalid placement is selected for the 2nd or later class from the Selected Assignment, which was causing conflicting placements to get unassigned.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
