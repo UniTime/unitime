@@ -29,6 +29,16 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>Compute and populate conflicting constraints when a placement with conflicts is selected from the Suggestions table in the Placements mode.</line>
+				<line>Fixed a problem when an invalid placement is selected for the 2nd or later class from the Selected Assignment, which was causing conflicting placements to get unassigned.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Subject Areas: Delete</name>

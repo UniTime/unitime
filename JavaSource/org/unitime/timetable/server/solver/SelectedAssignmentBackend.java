@@ -228,7 +228,21 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
     	if (unresolvedConflicts != null) {
     		for (Placement p: unresolvedConflicts) {
-    			suggestion.addUnresolvedConflict(createClassAssignmentDetails(context, solver, p.variable(), p, null));
+    			ClassAssignmentDetails d = createClassAssignmentDetails(context, solver, p.variable(), p, null);
+    			for (Constraint constraint: p.variable().hardConstraints()) {
+    				if (constraint.inConflict(assignment, p)) {
+    					d.setConflict(TimetableSolver.getConstraintName(constraint));
+    					break;
+    				}
+    			}
+    			if (!d.hasConflict())
+    				for (GlobalConstraint constraint: p.variable().getModel().globalConstraints()) {
+    					if (constraint.inConflict(assignment, p)) {
+    						d.setConflict(TimetableSolver.getConstraintName(constraint));
+    						break;
+    					}
+    				}
+    			suggestion.addUnresolvedConflict(d);
     		}
     	}
         if (initialAssignments != null) {
@@ -438,6 +452,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         List<Placement> hints = new ArrayList<Placement>();
         Map<Long, String> descriptions = new HashMap<Long, String>();
         if (assignments != null) {
+        	List<Placement> placements = new ArrayList<Placement>(assignments.size());
         	for (SelectedAssignment a: assignments) {
         		Placement plac = getPlacement(model, a, false);
         		if (plac == null) continue;
@@ -445,6 +460,9 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         			String reason = TimetableSolver.getNotValidReason(plac, assignment, solver.getProperties().getPropertyBoolean("General.UseAmPm", true));
         			throw new GwtRpcException(reason == null ? MSG.reasonNotKnown() : reason);
         		}
+        		placements.add(plac);
+        	}
+        	for (Placement plac: placements) {
         		Lecture lect = (Lecture)plac.variable();
                 if (placement != null && placement.variable().equals(lect)) continue;
                 hints.add(plac);
