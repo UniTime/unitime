@@ -5971,7 +5971,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-DataTable .collection .item {
-	display: inline;
+	display: inline-block;
 	white-space: nowrap;
 	padding-right: 3px;
 }
