@@ -154,7 +154,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				if (e.hasCause())
 					sLog.warn("Seen server exception: " + e.getMessage(), e.getCause());
 				else
-					sLog.info("Seen server exception: " + e.getMessage());
+					sLog.info("Seen server exception: " + e.getMessage(), e);
 				throw e;
 			}
 			if (t instanceof IsSerializable) {
@@ -204,7 +204,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				if (e.hasCause())
 					sLog.warn("Seen server exception: " + e.getMessage(), e);
 				else
-					sLog.info("Seen server exception: " + e.getMessage());
+					sLog.info("Seen server exception: " + e.getMessage(), e);
 				throw e;
 			}
 			if (t instanceof AccessDeniedException)
@@ -384,7 +384,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 					if (iException.hasCause())
 						sLog.warn("Seen server exception: " + t.getMessage(), t.getCause());
 					else
-						sLog.info("Seen server exception: " + t.getMessage());
+						sLog.info("Seen server exception: " + t.getMessage(), t);
 				} else if (t instanceof IsSerializable) {
 					if (t.getCause() != null)
 						sLog.error("Seen server exception: " + t.getMessage(), t);
