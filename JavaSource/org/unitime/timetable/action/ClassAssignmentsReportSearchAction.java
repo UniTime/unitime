@@ -20,8 +20,10 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -82,6 +84,17 @@ public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssig
 	public void setShowTable(boolean showTable) { this.showTable = showTable; }	
 	
 	public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyClassAssignments.isFalse()) {
+    		String url = "classAssignments";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (form == null)
 			form = new ClassAssignmentsReportForm();
 		

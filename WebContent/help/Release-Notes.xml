@@ -31,6 +31,21 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Instructional Offerings, Classes, Class Assignments: Legacy Check</name>
+			<description>
+				<line>When an old (Struts-based) page URL is used, but the configuration does not enable the legacy version of the page, redirect to the new (GWT-based) page.</line>
+				<line>This makes the Classes and Class Assignments links on the Not-Assigned Classes page point to the correct versions of the two pages.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.93</version>
+	<release-date>Thu, 30 Oct 2025</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Add/Edit Instructor</name>
 			<description>
 				<line>Corrected the label for the instructor email field.</line>
