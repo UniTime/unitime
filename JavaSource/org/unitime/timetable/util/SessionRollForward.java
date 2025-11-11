@@ -1923,7 +1923,7 @@ public class SessionRollForward {
 				toExam.addToOwners(toOwner);
 			}
 		}
-		if (toExam.getOwners() != null || toExam.getOwners().size() > 0){
+		if (toExam.getOwners() != null && toExam.getOwners().size() > 0){
 			getHibSession().persist(toExam);
 			if (EXAMS_ROOM_PREFS.equals(prefOption) || EXAMS_ALL_PREF.equals(prefOption)) {
 				rollForwardBuildingPrefs(fromExam, toExam, toSession);
