@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<script name="Distribution Types: Create Max Days Range Constraint" engine="ECMAScript" created="Wed Nov 12 18:13:41 CET 2025">
+  <description><![CDATA[The Max Days Range constraint limits the number of consecutive days between the first and last meeting. It can either consider all days or only workdays (excluding holidays and weekends).]]></description>
+  <parameter name="workdays" label="Consider only workdays" type="boolean" default="true"/>
+  <parameter name="days" label="Max number of days" type="integer" default="6"/>
+  <body><![CDATA[var reqId = hibSession.createQuery('select max(requirementId) from DistributionType').uniqueResult();
+var reference = 'MAX_DAYS_RANGE(' + days + ')';
+if (workdays) reference = 'MAX_WORKDAYS(' + days + ')';
+var type = hibSession.createQuery('from DistributionType where reference = :reference').setParameter('reference', reference).uniqueResult();
+var abbv = 'Span Max ' + days + ' Days';
+var label = 'At Most ' + days + ' Consecutive Days';
+if (workdays) {
+  abbv = 'Span Max ' + days + ' Work Days';
+  label = 'At Most ' + days + ' Consecutive Work Days';
+}
+var desc = 'Given classes must be taught within ' + days + ' consecutive ' + (workdays ? 'work days' : 'days') + '.';
+desc = desc + ' This means that between the first and last meeting of all classes in the constraint, ' +
+  'there cannot be more than ' + days + ' consecutive ' + (workdays ? 'work days' : 'days') + ', including the first and last day.';
+if (workdays)
+  desc = desc + ' Weekends, holidays, and breaks are ignored.';
+if (type == null) {
+  type = new org.unitime.timetable.model.DistributionType();
+  type.setReference(reference);
+  log.info('Creating ' + label + ' constraint...');
+} else {
+  log.warn('Constraint ' + label + ' already exists.');
+}
+type.setLabel(label);
+type.setSequencingRequired(false);
+type.setRequirementId(++reqId);
+type.setAllowedPref('210R');
+type.setDescr(desc);
+type.setAbbreviation(abbv);
+type.setInstructorPref(false);
+type.setExamPref(false);
+type.setVisible(true);
+hibSession.saveOrUpdate(type);
+log.info('All done.');]]></body>
+</script>

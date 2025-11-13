@@ -2997,6 +2997,16 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 			getModel().getProperties().setProperty("DatePattern.Default", patternStr);
 		}
 		
+		if (iSession.getHolidays() != null) {
+			int offset = DateUtils.getDayOfYear(1, iSession.getStartMonth(), iSession.getSessionStartYear())
+					- DateUtils.getDayOfYear(1, iSession.getPatternStartMonth(), iSession.getSessionStartYear());
+			String holidays = "";
+			for (int i = 0; i < offset; i++) holidays += "0";
+			holidays += iSession.getHolidays();
+			getModel().getProperties().setProperty("DatePattern.Holidays", holidays);
+		}
+		
+		
 		iAllClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 		for (int i=0;i<iSolverGroup.length;i++) {
 			for (Iterator j=iSolverGroup[i].getDepartments().iterator();j.hasNext();) {

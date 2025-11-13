@@ -44,6 +44,14 @@
 				<line>Fixed a problem when an invalid placement is selected for the 2nd or later class from the Selected Assignment, which was causing conflicting placements to get unassigned.</line>
 			</description>
 		</item>
+		<item>
+			<name>Max (Work) Days Range Distributions</name>
+			<description>
+				<line>Given classes must be taught within the number of consecutive days or work days.</line>
+				<line>This means that between the first and last meeting of all classes in the constraint, there cannot be more than the given number of consecutive days or work days, including the first and last day.</line>
+				<line>When work days are used: Weekends, holidays, and breaks are ignored.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
