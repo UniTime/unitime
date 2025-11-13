@@ -562,7 +562,7 @@ spring-security-web (spring-security-web-6.5.4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://spring.io/projects/spring-security
 
-CPSolver (cpsolver-1.4.83.jar)
+CPSolver (cpsolver-1.4.86.jar)
 	under GNU Lesser General Public License (LGPL), Version 3
 	http://www.cpsolver.org
 
