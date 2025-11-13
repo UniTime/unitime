@@ -88,7 +88,7 @@ public class Reservations extends AbstractStudentSectioningReport {
 				Set<Long> studentIds = new HashSet<Long>();
 				for (Course course: r.getOffering().getCourses())
 					for (CourseRequest cr: course.getRequests())
-						if (r.isApplicable(cr.getStudent()) && matches(cr) && matches(offering.getCourse(cr.getStudent())))
+						if (r.isApplicable(cr.getStudent(), course) && matches(cr) && matches(offering.getCourse(cr.getStudent())))
 							studentIds.add(cr.getStudent().getId());
 				if (studentIds != null && !studentIds.isEmpty()) {
 					int assigned = 0, total = 0;

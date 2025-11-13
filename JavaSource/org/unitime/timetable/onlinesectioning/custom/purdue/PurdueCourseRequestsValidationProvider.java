@@ -558,7 +558,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					for (Course course: cr.getCourses()) {
 						if (course.getOffering().hasRestrictions()) {
 							for (Restriction res: course.getOffering().getRestrictions()) {
-								if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
+								if (res.isApplicable(student, course) && res.getConfigs().isEmpty()) {
 									boolean confirm = (original.getRequestForCourse(course.getId()) == null);
 									response.addMessage(course.getId(), course.getName(), "NOT-RULE",
 											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")
@@ -585,7 +585,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					for (Course course: cr.getCourses()) {
 						if (course.getOffering().hasRestrictions()) {
 							for (Restriction res: course.getOffering().getRestrictions()) {
-								if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
+								if (res.isApplicable(student, course) && res.getConfigs().isEmpty()) {
 									boolean confirm = (original.getRequestForCourse(course.getId()) == null);
 									if (onlineOnly)
 										response.addMessage(course.getId(), course.getName(), "NOT-ONLINE",
@@ -2763,7 +2763,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						if (clonnedCourse.getOffering().hasReservations()) {
 							boolean hasMustUse = false;
 							for (Reservation reservation: clonnedCourse.getOffering().getReservations()) {
-								if (reservation.isApplicable(s) && reservation.mustBeUsed())
+								if (reservation.isApplicable(s, clonnedCourse) && reservation.mustBeUsed())
 									hasMustUse = true;
 							}
 							Reservation reservation = new OnlineReservation(XReservationType.Dummy.ordinal(), -original.getStudentId(), clonnedCourse.getOffering(), 1000, false, 1, true, hasMustUse, false, true, true);
@@ -3709,7 +3709,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				for (Course course: cr.getCourses()) {
 					if (course.getOffering().hasRestrictions()) {
 						for (Restriction res: course.getOffering().getRestrictions()) {
-							if (res.isApplicable(student) && res.getConfigs().isEmpty()) {
+							if (res.isApplicable(student, course) && res.getConfigs().isEmpty()) {
 								if (rule != null)
 									response.addMessage(course.getId(), course.getName(), "NOT-RULE",
 											ApplicationProperties.getProperty("purdue.specreg.messages.notMatchingRuleCourse", "No {rule} option.")

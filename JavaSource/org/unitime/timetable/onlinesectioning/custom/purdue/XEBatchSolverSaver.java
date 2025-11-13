@@ -47,6 +47,7 @@ import org.cpsolver.ifs.util.CSVFile.CSVField;
 import org.cpsolver.studentsct.StudentSectioningSaver;
 import org.cpsolver.studentsct.model.AreaClassificationMajor;
 import org.cpsolver.studentsct.model.Config;
+import org.cpsolver.studentsct.model.Course;
 import org.cpsolver.studentsct.model.CourseRequest;
 import org.cpsolver.studentsct.model.Enrollment;
 import org.cpsolver.studentsct.model.Instructor;
@@ -1229,6 +1230,15 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
             } else if ("primary-campus".equals(attr)) {
                 AreaClassificationMajor acm = student().getPrimaryMajor();
                 if (acm != null && like(acm.getCampus(), term)) return true;
+            } else if ("course".equals(attr)) {
+            	for (Request r: student().getRequests()) {
+                    if (r instanceof CourseRequest) {
+                        for (Course course: ((CourseRequest) r).getCourses()) {
+                            if (like(course.getName(), term)) return true;
+                        }
+                    }
+                }
+                return false;
 			} else if ("credit".equals(attr)) {
 				float min = 0, max = Float.MAX_VALUE;
 				Credit prefix = Credit.eq;

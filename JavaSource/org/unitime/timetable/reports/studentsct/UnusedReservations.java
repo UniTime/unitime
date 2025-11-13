@@ -164,7 +164,7 @@ public class UnusedReservations extends AbstractStudentSectioningReport {
 					studentIds = new HashSet<Long>();
 					for (Course course: reservation.getOffering().getCourses())
 						for (CourseRequest cr: course.getRequests())
-							if (reservation.isApplicable(cr.getStudent()) && matches(cr) && matches(offering.getCourse(cr.getStudent())))
+							if (reservation.isApplicable(cr.getStudent(), course) && matches(cr) && matches(offering.getCourse(cr.getStudent())))
 								studentIds.add(cr.getStudent().getId());
 				}
 				if (studentIds != null && !studentIds.isEmpty()) {

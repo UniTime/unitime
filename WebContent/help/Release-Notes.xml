@@ -53,6 +53,24 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Course Reservations</name>
+			<description>
+				<line>Improved course checking for course-related reservations.
+					<line>Check the course of the enrollment/request rather than all courses that the student is requesting.</line>
+					<line>This can make a difference when a student requests multiple cross-listed courses from the same instructional offering.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Universal Reservations</name>
+			<description>
+				<line>Added an ability to filter by requested course using the course: tag.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

@@ -502,7 +502,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		}
 	}
 	
-	public static enum Alignment {
+	public static enum Alignment implements IsSerializable {
 		LEFT, CENTER, RIGHT;
 	}
 

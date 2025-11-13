@@ -1929,7 +1929,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     			iProgress.info("There was a problem assigning " + cr.getName() + " to " + student.getName() + " (" + student.getExternalId() + ") ");
     			boolean hasMustUse = false;
 				for (Reservation reservation: enrl.getOffering().getReservations()) {
-					if (reservation.isApplicable(student) && reservation.mustBeUsed())
+					if (reservation.isApplicable(student, enrl.getCourse()) && reservation.mustBeUsed())
 						hasMustUse = true;
 				}
 				boolean hasLimit = false, hasOverlap = false, hasDisabled = false, hasLinked = false;
