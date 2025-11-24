@@ -628,7 +628,9 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         	CourseOffering co = (CourseOffering) i.next();
         	Event.deleteFromEvents(hibSession, co);
             Exam.deleteFromExams(hibSession, co);
+            co.getSubjectArea().getCourseOfferings().remove(co);
         	hibSession.remove(co);
+        	i.remove();
         }
 	}
 	
