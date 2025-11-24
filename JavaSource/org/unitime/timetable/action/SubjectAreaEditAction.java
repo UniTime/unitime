@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -177,7 +178,7 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
     	        }   		
         	}
 
-			for (CourseOffering co: sa.getCourseOfferings()) {
+			for (CourseOffering co: new ArrayList<CourseOffering>(sa.getCourseOfferings())) {
 				if (!co.isIsControl()) continue;
 				InstructionalOffering io = co.getInstructionalOffering();
 				io.deleteAllDistributionPreferences(hibSession);
