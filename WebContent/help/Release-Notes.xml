@@ -80,6 +80,12 @@
 				<line>Caused by the latest Hibernate upgrade (to version 6.6).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student &amp; Instructor Name Format</name>
+			<description>
+				<line>Fixed an exception that was thrown when a first name or a last name is just a single space for name formats using initials.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
