@@ -2118,8 +2118,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             					CourseRequest cr1 = (CourseRequest)r1;
             					CourseRequest cr2 = (CourseRequest)r2;
             					RequestPriority rp = (cr1.getRequestPriority().isHigher(r2) ? cr1.getRequestPriority() : cr2.getRequestPriority());
-            					cr1.setRequestPriority(rp);
-            					cr2.setRequestPriority(rp);
+            					getModel().setCourseRequestPriority(cr1, rp);
+            					getModel().setCourseRequestPriority(cr2, rp);
         					}
         					if (r1.isAlternative() == r2.isAlternative() && r1.getPriority() > r2.getPriority() && !isParent(r2, r1)) {
         						// priority swap
