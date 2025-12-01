@@ -339,6 +339,7 @@ public class CopyBetweenSessionHelper {
 				}
 			}
 		}
+		getHibSession().flush();
 	}
 
 	
@@ -670,6 +671,35 @@ public class CopyBetweenSessionHelper {
 		}
 		return rf;
 	}
+
+//TODO: look at external room features	
+//	private void rollRoomFeaturesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
+//		if (sessionHasExternalRoomFeatureList(toSession)){
+//			GlobalRoomFeature grf = null;
+//			List<Object[]> newGlobalFeatures = getHibSession().createQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
+//				" where erf.room.building.session.uniqueId=:sessionId", Object[].class)
+//				.setParameter("sessionId", toSession.getUniqueId())
+//				.list();
+//			if (newGlobalFeatures != null){
+//				String newLabel = null;
+//				String newSisReference = null;
+//				for (Iterator<Object[]> nrfIt = newGlobalFeatures.iterator(); nrfIt.hasNext();){
+//					Object[] o = nrfIt.next();
+//					newLabel = (String)o[0];
+//					if (globalFeatures.contains(newLabel)) continue;
+//					newSisReference = (String)o[1];
+//					grf = new GlobalRoomFeature();
+//					grf.setLabel(newLabel);
+//					grf.setSisReference(newSisReference);
+//					grf.setSisValue(null);
+//					grf.setSession(toSession);
+//					getHibSession().persist(grf);
+//				}
+//			}
+//		}
+//		getHibSession().flush();
+//	}
+	
 	
 	public void copyMergeRoomFeaturesToSession(Session fromSession, String defaultPrefix) {
 
@@ -707,6 +737,7 @@ public class CopyBetweenSessionHelper {
 	
 	}
 
+
 	public void copyMergeRoomGroupsToSession(Session fromSession, String defaultPrefix) {
 
 		RoomGroup toRoomGroup = null;
@@ -738,7 +769,6 @@ public class CopyBetweenSessionHelper {
 		}
 	
 	}
-	
 	
 	public void copyMergeBuildingsToSession(Session fromSession){
 
@@ -816,10 +846,7 @@ public class CopyBetweenSessionHelper {
 					if (toFeature != null){
 						roomFeatureCache.put(fromFeature, toFeature);
 						toLocation.addTofeatures(toFeature);
-						if (toFeature.getRooms() == null){
-							toFeature.setRooms(new java.util.HashSet<Location>());
-						}
-						toFeature.getRooms().add(toLocation);
+						toFeature.addToRooms(toLocation);
 					}
 				}
 			}
@@ -828,7 +855,7 @@ public class CopyBetweenSessionHelper {
 			for (RoomDept rd : fromLocation.getRoomDepts()) {
 				String prefix = findPrefix(rd.getDepartment().getDeptCode(), defaultPrefix);
 				if (prefix != null) {
-					toLocation.addTofeatures(getCampusRoomFeature(prefix));
+					toLocation.addToFeatures(getCampusRoomFeature(prefix));
 				}
 			}
 		}	
@@ -843,12 +870,8 @@ public class CopyBetweenSessionHelper {
 					toRoomGroup = fromRoomGroup.findSameRoomGroupInSession(iMergedSession);
 				if (toRoomGroup != null) {
 					roomGroupCache.put(fromRoomGroup, toRoomGroup);
-					if (toLocation.getRoomGroups() == null)
-						toLocation.setRoomGroups(new java.util.HashSet<RoomGroup>());
-					toLocation.getRoomGroups().add(toRoomGroup);
-					if (toRoomGroup.getRooms() == null)
-						toRoomGroup.setRooms(new java.util.HashSet<Location>());
-					toRoomGroup.getRooms().add(toLocation);
+					toLocation.addToRoomGroups(toRoomGroup);
+					toRoomGroup.addToRooms(toLocation);
 				}
 			}
 		}
@@ -932,7 +955,7 @@ public class CopyBetweenSessionHelper {
 				toRoomPref.setPrefLevel(fromRoomPrefLevel);
 				toRoomPref.setRoom(toLocation);
 				toDept.addToPreferences(toRoomPref);
-				getHibSession().merge(toDept);
+				getHibSession().persist(toDept);
 			}
 		}
 	}
@@ -1181,8 +1204,8 @@ public class CopyBetweenSessionHelper {
 	private Location findLocation(Long locationId, Long sessionId) {		
 		Room room = getHibSession().createQuery(
 				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
-				"((r1.externalUniqueId is not null and r1.externalUniqueId = r2.externalUniqueId) or " +
-				"(r1.externalUniqueId is null and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
+				"((r1.externalUniqueId is not null and length(r1.externalUniqueId) > 0 and r1.externalUniqueId = r2.externalUniqueId) or " +
+				"((r1.externalUniqueId is null or length(r1.externalUniqueId) = 0) and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))", Room.class)
 				.setParameter("sessionId", sessionId)
 				.setParameter("locationId", locationId)
 				.setCacheable(true)
@@ -1251,13 +1274,7 @@ public class CopyBetweenSessionHelper {
 			for(Department fromDept : fromDatePattern.getDepartments()){
 				Department toDepartment = findToDepartment(fromDept, defaultPrefix);
 				if (toDepartment != null){
-					if (null == toDepartment.getDatePatterns()){
-						toDepartment.setDatePatterns(new java.util.HashSet<DatePattern>());
-					}
-					toDepartment.getDatePatterns().add(toDatePattern);
-					if (null == toDatePattern.getDepartments()){
-						toDatePattern.addToDepartments(toDepartment);
-					}
+					toDepartment.addToDatePatterns(toDatePattern);
 					toDatePattern.addToDepartments(toDepartment);
 //					DepartmentDAO.getInstance().getSession().merge(toDepartment);
 				}
@@ -1351,7 +1368,7 @@ public class CopyBetweenSessionHelper {
 			iLog.error("Failed to merge all time patterns to session.", e);
 		}		
 	}
-
+	
 	public void copyMergeLearningManagementSystemInfoToSession(Session fromSession) {
 		List<LearningManagementSystemInfo> fromLearningManagementSystems = LearningManagementSystemInfo.findAll(fromSession.getUniqueId());
 		LearningManagementSystemInfo toLms = null;
@@ -1783,6 +1800,7 @@ public class CopyBetweenSessionHelper {
 				}
 			}
 		}
+		getHibSession().flush();
 	}
 	
 	public HashSet<Department> findToDepartmentsForInstructor(DepartmentalInstructor fromDepartmentalInstructor, String defaultPrefix){
@@ -2815,7 +2833,6 @@ public class CopyBetweenSessionHelper {
 		}
 		if (fromPrefGroup instanceof SchedulingSubpart && isClassPrefsPushUp && (toPrefGroup.getDatePatternPreferences() == null || toPrefGroup.getDatePatternPreferences().isEmpty())) {
 			SchedulingSubpart ss = (SchedulingSubpart) fromPrefGroup;
-			Class_DAO cDao = Class_DAO.getInstance();
 			if (ss.getClasses() != null && !ss.getClasses().isEmpty()){
 				HashMap<String, DatePatternPref> prefMap = new HashMap<String, DatePatternPref>();
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
@@ -3405,6 +3422,7 @@ public class CopyBetweenSessionHelper {
 				}
 			}	
 		}
+		getHibSession().flush();				
 	}
 
 	private void initDbColumnLengths() {
