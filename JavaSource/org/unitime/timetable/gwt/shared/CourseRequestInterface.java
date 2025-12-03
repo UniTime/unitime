@@ -1296,6 +1296,16 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 			return false;
 		}
+		
+		public boolean isAssigned(Set<Long> assignedCourseIds) {
+			if (iRequestedCourse == null) return false;
+			for (RequestedCourse rc: iRequestedCourse) {
+				if (rc.hasCourseId() && assignedCourseIds.contains(rc.getCourseId())) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		public RequestedCourse getCourse(Long courseId) {
 			if (iRequestedCourse == null || courseId == null) return null;
@@ -1991,7 +2001,7 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 			}
 		}
 	}
-	
+
 	public boolean removeDuplicates() {
 		Set<RequestedCourse> courses = new HashSet<RequestedCourse>();
 		boolean deleted = false;

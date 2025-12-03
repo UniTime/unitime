@@ -168,7 +168,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					offeringIds.add(course.getOfferingId());
 				}
 			}
-		
+
 		OnlineSectioningServer.ServerCallback<Boolean> offeringChecked = new OnlineSectioningServer.ServerCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable exception) {
@@ -292,6 +292,26 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						ca.setCourseId(f.getCourse().getCourseId());
 						getAssignment().add(ca);
 					}
+				}
+				
+				// ensure that there are enough primary course requests (desired number of courses) to cover all the registered courses
+				Set<Long> assignedCourses = new HashSet<Long>();
+				for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
+					if (ca != null && !ca.isFreeTime() && !ca.isDummy() && !ca.isTeachingAssignment() && ca.getClassId() != null)
+						assignedCourses.add(ca.getCourseId());
+				int sub = 0;
+				for (CourseRequestInterface.Request request: getRequest().getCourses())
+					if (request.hasCourseId() && !request.isWaitList() && !request.isAssigned(assignedCourses))
+						sub ++; // not assigned && not wait-listed course request (can be replaced by a substitute)
+				for (CourseRequestInterface.Request request: getRequest().getAlternatives())
+					if (request.hasCourseId() && request.isAssigned(assignedCourses))
+						sub --; // assigned substitute
+				for (Iterator<CourseRequestInterface.Request> i = getRequest().getAlternatives().iterator(); i.hasNext() && sub < 0; ) {
+					CourseRequestInterface.Request request = i.next();
+					getRequest().getCourses().add(request);
+					i.remove();
+					includeRequestInTheReturnMessage = true;
+					sub ++;
 				}
 				
 				Map<IdPair, StudentClassEnrollment> oldEnrollments = new HashMap<IdPair, StudentClassEnrollment>();

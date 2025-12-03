@@ -862,6 +862,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iFilter.setText("");
 		iQuickDrop.setVisible(false); iQuickDrop.setEnabled(false);
 		iWaitList.setVisible(false); iWaitList.setEnabled(false);
+		request.moveActiveSubstitutionsUp();
 		request.dropCourse(course);
 		request.addCourse(course);
 		iCustomCallback = callback;
