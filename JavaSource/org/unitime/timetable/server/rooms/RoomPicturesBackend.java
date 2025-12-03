@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.rooms;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,168 +73,172 @@ public class RoomPicturesBackend implements GwtRpcImplementation<RoomPictureRequ
 	
 	@Override
 	public RoomPictureResponse execute(RoomPictureRequest request, SessionContext context) {
-		if (request.hasSessionId())
-			context = new EventContext(context, request.getSessionId());
+		try {
+			if (request.hasSessionId())
+				context = new EventContext(context, request.getSessionId());
 
-		RoomPictureResponse response = new RoomPictureResponse();
-		Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
+			RoomPictureResponse response = new RoomPictureResponse();
+			Map<Long, LocationPicture> temp = (Map<Long, LocationPicture>)context.getAttribute(SessionAttribute.RoomPictures);
 
-		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
-		if (request.getOperation() == RoomPictureRequest.Operation.UPLOAD && request.getLocationId() == null) {
-			final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
-			if (file != null) {
-				if (temp == null) {
-					temp = new HashMap<Long, LocationPicture>();
-					context.setAttribute(SessionAttribute.RoomPictures, temp);
-				}
-				LocationPicture picture = new RoomPicture();
-				picture.setDataFile(file.get());
-				String name = file.getName();
-				if (name.indexOf('.') >= 0)
-					name = name.substring(0, name.lastIndexOf('.'));
-				picture.setFileName(name);
-				picture.setContentType(file.getContentType());
-				picture.setTimeStamp(new Date());
-				temp.put(- picture.getTimeStamp().getTime(), picture);
-				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), null));
-			}
-			return response;
-		}
-		
-		Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
-		if (location == null)
-			throw new GwtRpcException(MESSAGES.errorRoomDoesNotExist(request.getLocationId().toString()));
-		response.setName(location.getLabel());
-		
-		context.checkPermission(location, Right.RoomEditChangePicture);
-
-		switch (request.getOperation()) {
-		case LOAD:
-			for (LocationPicture p: new TreeSet<LocationPicture>(location.getRoomPictures()))
-				response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime(), getPictureType(p.getType())));
-
-			boolean samePast = true, sameFuture = true;
-			for (Location other: hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId", Location.class)
-					.setParameter("uniqueId", location.getUniqueId()).setParameter("permanentId", location.getPermanentId()).list()) {
-				if (!samePictures(location, other)) {
-					if (other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime())) {
-						samePast = false;
-					} else {
-						sameFuture = false;
+			org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
+			if (request.getOperation() == RoomPictureRequest.Operation.UPLOAD && request.getLocationId() == null) {
+				final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
+				if (file != null) {
+					if (temp == null) {
+						temp = new HashMap<Long, LocationPicture>();
+						context.setAttribute(SessionAttribute.RoomPictures, temp);
 					}
+					LocationPicture picture = new RoomPicture();
+					picture.setDataFile(file.get());
+					String name = file.getName();
+					if (name.indexOf('.') >= 0)
+						name = name.substring(0, name.lastIndexOf('.'));
+					picture.setFileName(name);
+					picture.setContentType(file.getContentType());
+					picture.setTimeStamp(new Date());
+					temp.put(- picture.getTimeStamp().getTime(), picture);
+					response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), null));
 				}
-				if (!sameFuture) break;
-			}
-			if (samePast && sameFuture)
-				response.setApply(Apply.ALL_SESSIONS);
-			else if (sameFuture)
-				response.setApply(Apply.ALL_FUTURE_SESSIONS);
-			else
-				response.setApply(Apply.THIS_SESSION_ONLY);
-			
-			for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
-				response.addPictureType(RoomPicturesBackend.getPictureType(type));
+				return response;
 			}
 			
-			context.setAttribute(SessionAttribute.RoomPictures, null);
-			break;
-		case SAVE:
-			Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
-			for (LocationPicture p: location.getRoomPictures())
-				pictures.put(p.getUniqueId(), p);
-			for (RoomPictureInterface p: request.getPictures()) {
-				LocationPicture picture = pictures.remove(p.getUniqueId());
-				if (picture == null && temp != null) {
-					picture = temp.get(p.getUniqueId());
-					if (picture != null) {
-						if (location instanceof Room) {
-							((RoomPicture)picture).setLocation((Room)location);
-							((Room)location).getPictures().add((RoomPicture)picture);
-						} else {
-							((NonUniversityLocationPicture)picture).setLocation((NonUniversityLocation)location);
-							((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
-						}
-						if (p.getPictureType() != null)
-							picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-						hibSession.persist(picture);
-					}
-				} else if (picture != null) {
-					if (p.getPictureType() != null)
-						picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
-					hibSession.merge(picture);
-				}
-			}
-			for (LocationPicture picture: pictures.values()) {
-				location.getRoomPictures().remove(picture);
-				hibSession.remove(picture);
-			}
-			hibSession.merge(location);
-			if (request.getApply() != Apply.THIS_SESSION_ONLY) {
+			Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
+			if (location == null)
+				throw new GwtRpcException(MESSAGES.errorRoomDoesNotExist(request.getLocationId().toString()));
+			response.setName(location.getLabel());
+			
+			context.checkPermission(location, Right.RoomEditChangePicture);
+
+			switch (request.getOperation()) {
+			case LOAD:
+				for (LocationPicture p: new TreeSet<LocationPicture>(location.getRoomPictures()))
+					response.addPicture(new RoomPictureInterface(p.getUniqueId(), p.getFileName(), p.getContentType(), p.getTimeStamp().getTime(), getPictureType(p.getType())));
+
+				boolean samePast = true, sameFuture = true;
 				for (Location other: hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId", Location.class)
 						.setParameter("uniqueId", location.getUniqueId()).setParameter("permanentId", location.getPermanentId()).list()) {
-					
-					if (request.getApply() == Apply.ALL_FUTURE_SESSIONS && other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime()))
-						continue;
-					
-					Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(other.getRoomPictures());
-					p1: for (LocationPicture p1: location.getRoomPictures()) {
-						for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
-							LocationPicture p2 = i.next();
-							if (samePicture(p1, p2)) {
-								i.remove();
-								continue p1;
+					if (!samePictures(location, other)) {
+						if (other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime())) {
+							samePast = false;
+						} else {
+							sameFuture = false;
+						}
+					}
+					if (!sameFuture) break;
+				}
+				if (samePast && sameFuture)
+					response.setApply(Apply.ALL_SESSIONS);
+				else if (sameFuture)
+					response.setApply(Apply.ALL_FUTURE_SESSIONS);
+				else
+					response.setApply(Apply.THIS_SESSION_ONLY);
+				
+				for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
+					response.addPictureType(RoomPicturesBackend.getPictureType(type));
+				}
+				
+				context.setAttribute(SessionAttribute.RoomPictures, null);
+				break;
+			case SAVE:
+				Map<Long, LocationPicture> pictures = new HashMap<Long, LocationPicture>();
+				for (LocationPicture p: location.getRoomPictures())
+					pictures.put(p.getUniqueId(), p);
+				for (RoomPictureInterface p: request.getPictures()) {
+					LocationPicture picture = pictures.remove(p.getUniqueId());
+					if (picture == null && temp != null) {
+						picture = temp.get(p.getUniqueId());
+						if (picture != null) {
+							if (location instanceof Room) {
+								((RoomPicture)picture).setLocation((Room)location);
+								((Room)location).getPictures().add((RoomPicture)picture);
+							} else {
+								((NonUniversityLocationPicture)picture).setLocation((NonUniversityLocation)location);
+								((NonUniversityLocation)location).getPictures().add((NonUniversityLocationPicture)picture);
+							}
+							if (p.getPictureType() != null)
+								picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+							hibSession.persist(picture);
+						}
+					} else if (picture != null) {
+						if (p.getPictureType() != null)
+							picture.setType(AttachmentTypeDAO.getInstance().get(p.getPictureType().getId(), hibSession));
+						hibSession.merge(picture);
+					}
+				}
+				for (LocationPicture picture: pictures.values()) {
+					location.getRoomPictures().remove(picture);
+					hibSession.remove(picture);
+				}
+				hibSession.merge(location);
+				if (request.getApply() != Apply.THIS_SESSION_ONLY) {
+					for (Location other: hibSession.createQuery("from Location loc where permanentId = :permanentId and not uniqueId = :uniqueId", Location.class)
+							.setParameter("uniqueId", location.getUniqueId()).setParameter("permanentId", location.getPermanentId()).list()) {
+						
+						if (request.getApply() == Apply.ALL_FUTURE_SESSIONS && other.getSession().getSessionBeginDateTime().before(location.getSession().getSessionBeginDateTime()))
+							continue;
+						
+						Set<LocationPicture> otherPictures = new HashSet<LocationPicture>(other.getRoomPictures());
+						p1: for (LocationPicture p1: location.getRoomPictures()) {
+							for (Iterator<LocationPicture> i = otherPictures.iterator(); i.hasNext(); ) {
+								LocationPicture p2 = i.next();
+								if (samePicture(p1, p2)) {
+									i.remove();
+									continue p1;
+								}
+							}
+							if (location instanceof Room) {
+								RoomPicture p2 = ((RoomPicture)p1).clonePicture();
+								p2.setLocation(other);
+								((Room)other).getPictures().add(p2);
+								hibSession.persist(p2);
+							} else {
+								NonUniversityLocationPicture p2 = ((NonUniversityLocationPicture)p1).clonePicture();
+								p2.setLocation(other);
+								((NonUniversityLocation)other).getPictures().add(p2);
+								hibSession.persist(p2);
 							}
 						}
-						if (location instanceof Room) {
-							RoomPicture p2 = ((RoomPicture)p1).clonePicture();
-							p2.setLocation(other);
-							((Room)other).getPictures().add(p2);
-							hibSession.persist(p2);
-						} else {
-							NonUniversityLocationPicture p2 = ((NonUniversityLocationPicture)p1).clonePicture();
-							p2.setLocation(other);
-							((NonUniversityLocation)other).getPictures().add(p2);
-							hibSession.persist(p2);
+						
+						for (LocationPicture picture: otherPictures) {
+							other.getRoomPictures().remove(picture);
+							hibSession.remove(picture);
 						}
+						
+						hibSession.merge(other);
 					}
-					
-					for (LocationPicture picture: otherPictures) {
-						other.getRoomPictures().remove(picture);
-						hibSession.remove(picture);
+				}
+				hibSession.flush();
+				context.setAttribute(SessionAttribute.RoomPictures, null);
+				break;
+			case UPLOAD:
+				final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
+				if (file != null) {
+					if (temp == null) {
+						temp = new HashMap<Long, LocationPicture>();
+						context.setAttribute(SessionAttribute.RoomPictures, temp);
 					}
-					
-					hibSession.merge(other);
+					LocationPicture picture = null;
+					if (location instanceof Room)
+						picture = new RoomPicture();
+					else
+						picture = new NonUniversityLocationPicture();
+					picture.setDataFile(file.get());
+					String name = file.getName();
+					if (name.indexOf('.') >= 0)
+						name = name.substring(0, name.lastIndexOf('.'));
+					picture.setFileName(name);
+					picture.setContentType(file.getContentType());
+					picture.setTimeStamp(new Date());
+					temp.put(- picture.getTimeStamp().getTime(), picture);
+					response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), null));
 				}
+				break;
 			}
-			hibSession.flush();
-			context.setAttribute(SessionAttribute.RoomPictures, null);
-			break;
-		case UPLOAD:
-			final FileItem file = (FileItem)context.getAttribute(SessionAttribute.LastUploadedFile);
-			if (file != null) {
-				if (temp == null) {
-					temp = new HashMap<Long, LocationPicture>();
-					context.setAttribute(SessionAttribute.RoomPictures, temp);
-				}
-				LocationPicture picture = null;
-				if (location instanceof Room)
-					picture = new RoomPicture();
-				else
-					picture = new NonUniversityLocationPicture();
-				picture.setDataFile(file.get());
-				String name = file.getName();
-				if (name.indexOf('.') >= 0)
-					name = name.substring(0, name.lastIndexOf('.'));
-				picture.setFileName(name);
-				picture.setContentType(file.getContentType());
-				picture.setTimeStamp(new Date());
-				temp.put(- picture.getTimeStamp().getTime(), picture);
-				response.addPicture(new RoomPictureInterface(- picture.getTimeStamp().getTime(), picture.getFileName(), picture.getContentType(), picture.getTimeStamp().getTime(), null));
-			}
-			break;
+			
+			return response;
+		} catch (IOException e) {
+			throw new GwtRpcException(e.getMessage(), e);
 		}
-		
-		return response;
 	}
 	
 	private boolean samePictures(Location l1, Location l2) {

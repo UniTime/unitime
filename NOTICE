@@ -42,7 +42,7 @@ jackson-databind (jackson-databind-2.16.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/FasterXML/jackson
 
-Caffeine cache (caffeine-3.1.8.jar)
+Caffeine cache (caffeine-3.2.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/ben-manes/caffeine
 
@@ -206,11 +206,11 @@ Apache Commons Digester (commons-digester3-3.2.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://commons.apache.org/digester/
 
-Apache Commons FileUpload Core (commons-fileupload2-core-2.0.0-M2.jar)
+Apache Commons FileUpload Core (commons-fileupload2-core-2.0.0-M4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-fileupload/commons-fileupload2-core/
 
-Apache Commons FileUpload Jakarta Servlet 6 (commons-fileupload2-jakarta-servlet6-2.0.0-M2.jar)
+Apache Commons FileUpload Jakarta Servlet 6 (commons-fileupload2-jakarta-servlet6-2.0.0-M4.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-fileupload/commons-fileupload2-jakarta-servlet6/
 
@@ -250,17 +250,17 @@ Apache POI - Common (poi-5.4.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://poi.apache.org/
 
-Struts 2 Convention Plugin (struts2-convention-plugin-7.0.3.jar)
+Struts 2 Convention Plugin (struts2-convention-plugin-7.1.1.jar)
 	under Apache Software License (ASL), Version 2.0
-	https://struts.apache.org/struts2-plugins/struts2-convention-plugin/
+	https://struts.apache.org/struts2-bom/struts2-parent/struts2-plugins/struts2-convention-plugin/
 
-Struts 2 Core (struts2-core-7.0.3.jar)
+Struts 2 Core (struts2-core-7.1.1.jar)
 	under Apache Software License (ASL), Version 2.0
-	https://struts.apache.org/struts2-core/
+	https://struts.apache.org/struts2-bom/struts2-parent/struts2-core/
 
-Struts 2 Tiles Plugin (struts2-tiles-plugin-7.0.3.jar)
+Struts 2 Tiles Plugin (struts2-tiles-plugin-7.1.1.jar)
 	under Apache Software License (ASL), Version 2.0
-	https://struts.apache.org/struts2-plugins/struts2-tiles-plugin/
+	https://struts.apache.org/struts2-bom/struts2-parent/struts2-plugins/struts2-tiles-plugin/
 
 Apereo CAS Client for Java - Core (cas-client-core-4.0.4.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -281,10 +281,6 @@ Bouncy Castle Provider (bcprov-jdk15on-1.70.jar)
 Bouncy Castle ASN.1 Extension and Utility APIs (bcutil-jdk15on-1.70.jar)
 	under Bouncy Castle Licence
 	https://www.bouncycastle.org/java.html
-
-Checker Qual (checker-qual-3.37.0.jar)
-	under The MIT License
-	https://checkerframework.org/
 
 dom4j (dom4j-2.1.5.jar)
 	under Plexus
@@ -409,6 +405,10 @@ JBoss Threads (jboss-threads-3.6.1.Final.jar)
 JGroups (jgroups-5.4.11.Final.jar)
 	under Apache Software License (ASL), Version 2.0
 	http://www.jgroups.org
+
+JSpecify annotations (jspecify-1.0.0.jar)
+	under The Apache License, Version 2.0
+	http://jspecify.org/
 
 OpenJDK Nashorn (nashorn-core-15.7.jar)
 	under GNU General Public License v2.0 w/Classpath exception

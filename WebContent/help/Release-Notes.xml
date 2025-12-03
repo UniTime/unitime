@@ -93,6 +93,14 @@
 				<line>Fixed an exception that was thrown when a first name or a last name is just a single space for name formats using initials.</line>
 			</description>
 		</item>
+		<item>
+			<name>Technology Update</name>
+			<description>
+				<line>The following dependencies have been updated:
+					<line>Apache Struts2 to 7.1.1 to fix CVE-2025-64775 vulnerability.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
