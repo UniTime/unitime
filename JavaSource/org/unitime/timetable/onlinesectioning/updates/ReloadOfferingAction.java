@@ -416,15 +416,17 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 							}
 						}
 						action.setEndTime(System.currentTimeMillis());
-						NotifyStudentAction notifyAction = server.createAction(NotifyStudentAction.class)
-								.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
-								.fromAction(name())
-								.withType(NotificationType.CourseChangeEnrollment)
-								.oldEnrollment(oldOffering, course, oldEnrollment)
-								.rescheduling(ReschedulingReason.NO_REQUEST);
-						if (exception != null)
-							notifyAction.failedEnrollment(oldOffering, course, null, exception);
-						server.execute(notifyAction, helper.getUser());
+						if (oldEnrollment != null) {
+							NotifyStudentAction notifyAction = server.createAction(NotifyStudentAction.class)
+									.forStudent(server.getStudent(oldStudent == null ? newStudent.getStudentId() : oldStudent.getStudentId()))
+									.fromAction(name())
+									.withType(NotificationType.CourseChangeEnrollment)
+									.oldEnrollment(oldOffering, course, oldEnrollment)
+									.rescheduling(ReschedulingReason.NO_REQUEST);
+							if (exception != null)
+								notifyAction.failedEnrollment(oldOffering, course, null, exception);
+							server.execute(notifyAction, helper.getUser());
+						}
 						continue;
 					}
 					

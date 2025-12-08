@@ -77,6 +77,12 @@
 				<line>This change fixes an issue where a student may end up in a state where a substitute course is enrolled without a matching not-assigned course request that it is substituting.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Notifications: Course is no longer requested</name>
+			<description>
+				<line>When a course is made not offered, only send a notification when the student was initially enrolled in the course.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
