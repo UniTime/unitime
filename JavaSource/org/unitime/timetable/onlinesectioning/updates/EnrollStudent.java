@@ -364,6 +364,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 										cd = new CourseDemand();
 										cd.setTimestamp(ts);
 										cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+										cd.setCourseRequests(new HashSet<CourseRequest>());
 										student.getCourseDemands().add(cd);
 										cd.setStudent(student);
 									}
@@ -540,6 +541,7 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 										cd = new CourseDemand();
 										cd.setTimestamp(ts);
 										cd.setChangedBy(helper.getUser() == null ? null : helper.getUser().getExternalId());
+										cd.setCourseRequests(new HashSet<CourseRequest>());
 										student.getCourseDemands().add(cd);
 										cd.setStudent(student);
 									}
