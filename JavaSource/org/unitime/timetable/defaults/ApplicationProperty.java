@@ -195,7 +195,7 @@ public enum ApplicationProperty {
 
 	@Description("All Pages: a custom style sheet can be provided too, the changes are applied on top of the existing styles")
 	CustomStyleSheet("tmtbl.custom.css"),
-
+	
 	/**
 	 * Default application menu style. Values:<ul>
 	 * <li>Static On Top ... Horizontal menu bar on the top of the page (takes 100% width of the page, does not move with the page)
@@ -3811,6 +3811,10 @@ public enum ApplicationProperty {
 	@Description("Rooms: list only used departments as available for room sharing (i.e., departments that have a manager, a subject area, or another room).")
 	@Since(4.9)
 	RoomDeptUsedDeptsOnly("unitime.roomDepts.usedDepartmentsOnly"),
+	
+	@Description("UniTime Add-Ons: a custom style sheet to be provided by a UniTime Add-On")
+	@Since(4.9)
+	AddOnCustomStyleSheet("tmtbl.addon.css"),
 	;
 
 	String iKey;
