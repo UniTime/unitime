@@ -18,7 +18,7 @@
  * 
 */
 
-create index IDX_STUDENT_ENRL_STUDENT on STUDENT_ENRL(STUDENT_ID);
+create index idx_student_enrl_student on student_enrl(student_id);
 
 /*
  * Update database version

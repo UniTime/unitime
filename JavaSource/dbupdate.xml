@@ -15726,8 +15726,8 @@
 		</sql>
 	</update>
 	<update version="274" date="13-Oct-2025" comment="Student Enrollments Index">
-		<plsql onFail="next">create index %SCHEMA%.IDX_STUDENT_ENRL_STUDENT on %SCHEMA%.STUDENT_ENRL(STUDENT_ID)</plsql>
-		<mysql onFail="next">create index IDX_STUDENT_ENRL_STUDENT on %SCHEMA%.STUDENT_ENRL(STUDENT_ID)</mysql>
-		<pgsql onFail="next">create index IDX_STUDENT_ENRL_STUDENT on %SCHEMA%.STUDENT_ENRL(STUDENT_ID)</pgsql>
+		<plsql onFail="next">create index %SCHEMA%.idx_student_enrl_student on %SCHEMA%.student_enrl(student_id)</plsql>
+		<mysql onFail="next">create index idx_student_enrl_student on %SCHEMA%.student_enrl(student_id)</mysql>
+		<pgsql onFail="next">create index idx_student_enrl_student on %SCHEMA%.student_enrl(student_id)</pgsql>
 	</update>
 </dbupdate>
