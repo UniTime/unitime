@@ -1346,7 +1346,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 				if (status == null) return false;
 				// if (student().getMaxCreditOverride() != null && student().getMaxCreditOverride().getStatus() == status.ordinal()) return true;
 				XOverride o = request().getOverride(info());
-				return (o != null && o.getStatus() == status.ordinal());
+				return (o != null && o.getStatus() != null && o.getStatus() == status.ordinal());
 			}
 			
 			if ("prefer".equals(attr)) {
@@ -1889,13 +1889,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (s.name().equalsIgnoreCase(term)) { status = s; break; }
 				}
 				if (status == null) return false;
-				if (student().getMaxCreditOverride() != null && student().getMaxCreditOverride().getStatus() == status.ordinal()) return true;
+				if (student().getMaxCreditOverride() != null && student().getMaxCreditOverride().getStatus() != null && student().getMaxCreditOverride().getStatus() == status.ordinal()) return true;
 				for (XRequest request: student().getRequests()) {
 					if (request instanceof XCourseRequest) {
 						XCourseRequest cr = (XCourseRequest)request;
 						for (XCourseId course: cr.getCourseIds()) {
 							XOverride o = cr.getOverride(course);
-							if (o != null && o.getStatus() == status.ordinal()) return true;
+							if (o != null && o.getStatus() != null && o.getStatus() == status.ordinal()) return true;
 						}
 					}
 				}

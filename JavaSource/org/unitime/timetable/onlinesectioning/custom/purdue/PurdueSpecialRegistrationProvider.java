@@ -2078,7 +2078,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								}
 							}
 						// check student status
-						if (student.getMaxCreditOverride() != null && r.regRequestId.equals(student.getMaxCreditOverride().getExternalId()) && student.getMaxCreditOverride().getStatus() != (maxiStatus != null ? toStatus(maxiStatus) : toStatus(r))) {
+						if (student.getMaxCreditOverride() != null && r.regRequestId.equals(student.getMaxCreditOverride().getExternalId()) && (student.getMaxCreditOverride().getStatus() == null || student.getMaxCreditOverride().getStatus() != (maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)))) {
 							student.getMaxCreditOverride().setStatus(maxiStatus != null ?toStatus(maxiStatus) : toStatus(r));
 							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
@@ -2111,7 +2111,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							if (cr != null) {
 								XCourseId id = cr.getCourseName(e.getKey());
 								XOverride override = cr.getOverride(id);
-								if (override != null && r.regRequestId.equals(override.getExternalId()) && toStatus(e.getValue()) != override.getStatus()) {
+								if (override != null && r.regRequestId.equals(override.getExternalId()) && (override.getStatus() == null || override.getStatus() != toStatus(e.getValue()))) {
 									override.setStatus(toStatus(e.getValue()));
 									CourseDemand dbCourseDemand = CourseDemandDAO.getInstance().get(cr.getRequestId(), helper.getHibSession());
 									if (dbCourseDemand != null) {
