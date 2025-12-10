@@ -3815,6 +3815,13 @@ public enum ApplicationProperty {
 	@Description("UniTime Add-Ons: a custom style sheet to be provided by a UniTime Add-On")
 	@Since(4.9)
 	AddOnCustomStyleSheet("tmtbl.addon.css"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Enrollment: ensure that there are enough primary course requests to cover all enrolled and wait-listed courses " +
+	"(this optional check fixes an issue where a student may end up in a state where a substitute course is enrolled without a matching not-assigned course request that it is substituting)")
+	@Since(4.9)
+	EnrollmentCheckSubstitutes("unitime.enrollment.checkSubstitutes"),
 	;
 
 	String iKey;
