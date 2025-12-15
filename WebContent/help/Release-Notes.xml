@@ -101,6 +101,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Data Exchange: Examination XML</name>
+			<description>
+				<line>Examination XML Export: added the following examination attributes:
+					<line>enrollment: number of students enrolled in the classes/courses of the exam</line>
+					<line>limit: total limit of the classes/courses of the exam</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Technology Update</name>
 			<description>
 				<line>The following dependencies have been updated:

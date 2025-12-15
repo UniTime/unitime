@@ -132,6 +132,8 @@
 <!ATTLIST exam id CDATA #IMPLIED >
 <!ATTLIST exam name CDATA #REQUIRED >
 <!ATTLIST exam size NMTOKEN #IMPLIED >
+<!ATTLIST exam enrollment NMTOKEN #IMPLIED >
+<!ATTLIST exam limit NMTOKEN #IMPLIED >
 <!ATTLIST exam note CDATA #IMPLIED >
 <!ATTLIST exam length NMTOKEN #REQUIRED >
 <!ATTLIST exam seatingType ( normal | exam) #IMPLIED >
