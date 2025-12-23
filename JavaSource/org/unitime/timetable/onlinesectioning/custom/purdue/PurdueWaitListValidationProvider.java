@@ -1512,6 +1512,9 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					
 					// skip cases where the wait-list request was cancelled
 					if ("TBD".equals(cr.getOverrideExternalId())) continue;
+					
+					// skip course if it was made not offered
+					if (server.getCourse(cr.getCourseOffering().getUniqueId()) == null) continue;
 
 					// when enrolled (section swap), check if active
 					if (enrolledCourse != null) {

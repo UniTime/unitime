@@ -29,6 +29,20 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Wait-Listing: Custom Validation</name>
+			<description>
+				<line>Skip revalidation for a course that was made not offered (avoid null exception).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.102</version>
+	<release-date>Tue, 16 Dec 2025</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offerings, Classes, Class Assignments: Legacy Check</name>
