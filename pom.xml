@@ -773,7 +773,7 @@
 		<angus-mail.version>2.0.4</angus-mail.version>
 		<io.version>2.20.0</io.version>
 		<restlet.version>2.4.4</restlet.version>
-		<log4j.version>2.25.1</log4j.version>
+		<log4j.version>2.25.3</log4j.version>
 		<javassist.version>3.30.2-GA</javassist.version>
 		<mysql.version>8.0.33</mysql.version>
 		<jstl.version>3.0.1</jstl.version>

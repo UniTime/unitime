@@ -226,23 +226,23 @@ Apache Commons Text (commons-text-1.14.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-text
 
-Apache Log4j API (log4j-api-2.25.1.jar)
+Apache Log4j API (log4j-api-2.25.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/
 
-Apache Log4j Core (log4j-core-2.25.1.jar)
+Apache Log4j Core (log4j-core-2.25.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/
 
-Apache Log4j Jakarta Web (log4j-jakarta-web-2.25.1.jar)
+Apache Log4j Jakarta Web (log4j-jakarta-web-2.25.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/
 
-Apache Log4j Commons Logging Bridge (log4j-jcl-2.25.1.jar)
+Apache Log4j Commons Logging Bridge (log4j-jcl-2.25.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/
 
-SLF4J 1 Binding for Log4j API (log4j-slf4j-impl-2.25.1.jar)
+SLF4J 1 Binding for Log4j API (log4j-slf4j-impl-2.25.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://logging.apache.org/log4j/2.x/
 

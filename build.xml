@@ -139,8 +139,8 @@
 					gwt-servlet-jakarta-2.12.2.jar hibernate-c3p0-6.6.29.Final.jar hibernate-commons-annotations-7.0.3.Final.jar hibernate-core-6.6.29.Final.jar istack-commons-runtime-4.1.1.jar
 					itext-2.1.7.jar jackson-core-2.20.0.jar jakarta.activation-api-2.1.3.jar jakarta.mail-2.0.4.jar jakarta.mail-api-2.1.3.jar jakarta.persistence-api-3.1.0.jar
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar jakarta.servlet-api-6.0.0.jar jakarta.servlet.jsp-api-3.1.1.jar
-					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.6.1.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.4.11.Final.jar joda-time-2.14.0.jar log4j-api-2.25.1.jar
-					log4j-core-2.25.1.jar log4j-jcl-2.25.1.jar log4j-slf4j-impl-2.25.1.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.32.1.jar
+					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.6.1.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.4.11.Final.jar joda-time-2.14.0.jar log4j-api-2.25.3.jar
+					log4j-core-2.25.3.jar log4j-jcl-2.25.3.jar log4j-slf4j-impl-2.25.3.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.32.1.jar
 					slf4j-api-1.7.36.jar spring-beans-6.2.11.jar spring-context-6.2.11.jar spring-core-6.2.11.jar spring-security-core-6.5.4.jar spring-web-6.2.11.jar
 					vinnie-2.0.2.jar mysql-connector-java.jar ojdbc8.jar ojdbc8-23.2.0.0.jar mysql-connector-j-8.0.33.jar hibernate-community-dialects-6.6.29.Final.jar"/>
 				<attribute name="Timetabling-Version" value="4.9_bld${build.number}"/>
@@ -297,14 +297,14 @@
 				<include name="javassist-3.30.2-GA.jar"/>
 				<include name="jboss-logging-3.6.1.Final.jar"/>
 				<include name="jgroups-5.4.11.Final.jar"/>
-				<include name="log4j-api-2.25.1.jar"/>
-				<include name="log4j-core-2.25.1.jar"/>
-				<include name="log4j-jcl-2.25.1.jar"/>
+				<include name="log4j-api-2.25.3.jar"/>
+				<include name="log4j-core-2.25.3.jar"/>
+				<include name="log4j-jcl-2.25.3.jar"/>
 				<include name="jakarta.mail-api-2.1.3.jar"/>
 				<include name="jakarta.mail-2.0.4.jar"/>
 				<include name="protobuf-java-4.32.1.jar"/>
 				<include name="slf4j-api-1.7.36.jar"/>
-				<include name="log4j-slf4j-impl-2.25.1.jar"/>
+				<include name="log4j-slf4j-impl-2.25.3.jar"/>
 				<include name="spring-security-core-6.5.4.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.4.jar"/>
@@ -365,14 +365,14 @@
 				<include name="javassist-3.30.2-GA.jar"/>
 				<include name="jboss-logging-3.6.1.Final.jar"/>
 				<include name="jgroups-5.4.11.Final.jar"/>
-				<include name="log4j-api-2.25.1.jar"/>
-				<include name="log4j-core-2.25.1.jar"/>
-				<include name="log4j-jcl-2.25.1.jar"/>
+				<include name="log4j-api-2.25.3.jar"/>
+				<include name="log4j-core-2.25.3.jar"/>
+				<include name="log4j-jcl-2.25.3.jar"/>
 				<include name="jakarta.mail-api-2.1.3.jar"/>
 				<include name="jakarta.mail-2.0.4.jar"/>
 				<include name="protobuf-java-4.32.1.jar"/>
 				<include name="slf4j-api-1.7.36.jar"/>
-				<include name="log4j-slf4j-impl-2.25.1.jar"/>
+				<include name="log4j-slf4j-impl-2.25.3.jar"/>
 				<include name="spring-security-core-6.5.4.jar"/>
 				<include name="jbossjta-4.16.6.Final.jar"/>
 				<include name="org.restlet-2.4.4.jar"/>
