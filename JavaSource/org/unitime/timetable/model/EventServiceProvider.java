@@ -142,7 +142,7 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 			if (isAllRooms()) {
 				return new HashSet<Long>(
 						EventServiceProviderDAO.getInstance().getSession().createQuery(
-						"select l.uniqueId from Location l where l.eventdepartment.uniqueId = :departmentId", Long.class)
+						"select l.uniqueId from Location l where l.eventDepartment.uniqueId = :departmentId", Long.class)
 						.setParameter("departmentId", getDepartment().getUniqueId()).setCacheable(true).list());
 			} else {
 				HashSet<Long> ids = new HashSet<Long>(EventServiceProviderDAO.getInstance().getSession().createQuery(
