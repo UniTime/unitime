@@ -37,6 +37,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Event Management</title>
+		<item>
+			<name>Service Providers: HQL Bug Fix</name>
+			<description>
+				<line>Fixed a query that loads all rooms for a service provider associated with a department, applying to all the department's event rooms.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
