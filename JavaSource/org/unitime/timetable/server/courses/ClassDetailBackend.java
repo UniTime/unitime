@@ -309,7 +309,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
     		response.addOperation("next");
     	if (context.hasPermission(Right.ExaminationAdd))
     		response.addOperation("add-exam");
-    	if (context.hasPermission(clazz.getManagingDept(), Right.DistributionPreferenceAdd) && context.hasPermission(clazz, Right.DistributionPreferenceClass)) {
+    	if (context.hasPermission(Right.DistributionPreferenceAdd) && context.hasPermission(clazz, Right.DistributionPreferenceClass)) {
     		if (ApplicationProperty.LegacyDistributions.isTrue())
     			response.addOperation("add-distribution-legacy");
     		else

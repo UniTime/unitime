@@ -122,7 +122,7 @@ public class ExamDistributionsFilterBackend implements GwtRpcImplementation<Exam
 		
 		filter.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		filter.setMaxSubjectsToSearchAutomatically(ApplicationProperty.MaxSubjectsToSearchAutomatically.intValue());
-		filter.setCanAdd(context.hasPermission(Right.DistributionPreferenceAdd));
+		filter.setCanAdd(context.hasPermission(Right.ExaminationDistributionPreferenceAdd));
 		filter.setSessionId(context.getUser().getCurrentAcademicSessionId());
 		
 		BackTracker.markForBack(context, null, null, false, true); //clear back list
