@@ -449,12 +449,31 @@ public class StudentSchedulingSolutionStatisticsReport extends AbstractStudentSe
         		},
         		new Statistic() {
             String[] sComCourses = new String[] {
-                    "AMST 10100", "CLCS 23100", "CLCS 23700", "CLCS 33900",
-                    "COM 11400", "COM 20400", "COM 21700", "EDCI 20500",
-                    "EDPS 31500", "ENGL 10600", "ENGL 10800", "HONR 19903",
-                    "PHIL 26000", "SCLA 10100", "SCLA 10200", "SPAN 33000",
-                    "EDCI 49600", "EDCI 49800",  "EDPS 49800", "ENGL 30400",
-                    "ENGL 38000", "HDFS 45000",
+            		"AMST 10100", //start: 202220
+            		"COM 11400" , //start: 202610
+            		"COM 20400" , //start: 202220
+            		"COM 21700" , //start: 202610
+            		"EDCI 20500", //start: 201410
+            		"EDCI 49600", //start: 202210
+            		"EDCI 49800", //start: 202210
+            		"EDPS 31500", //start: 202220
+            		"EDPS 49800", //start: 202210
+            		"ENGL 10400", //start: 201910
+            		"ENGL 10500", //start: 202010
+            		"ENGL 10600", //start: 201910
+            		"ENGL 10800", //start: 201910
+            		"ENGL 12900", //start: 201910
+            		"ENGL 30400", //start: 202610
+            		"ENGL 38000", //start: 202220
+            		"FIS 14000" , //start: 201620
+            		"HDFS 45000", //start: 202210
+            		"HONR 11100", //start: 201710
+            		"HONR 11200", //start: 201920
+            		"HONR 19903", //start: 201410
+            		"MGMT 33500", //start: 202310
+            		"OBHR 33500", //start: 202710
+            		"SCLA 10100", //start: 202610
+            		"SCLA 10200", //start: 202610
             };
             private boolean isComCourse(Course course) {
                 for (String c: sComCourses) {
