@@ -32,10 +32,12 @@
 			<td>${msg.colConsent()}:</td><td>${course.consentType.label}</td>
 		</tr>
 	</#if>
-	<#if course.instructionalOffering.credit??>
-		<tr>
-			<td>${msg.colCredit()}:</td><td>${course.instructionalOffering.credit.creditText()}</td>
-		</tr>
+	<#if course.creditConfigs??>
+		<#list course.creditConfigs as cc>
+			<tr>
+				<td>${msg.colCredit()}:</td><td>${cc.creditText()}</td>
+			</tr>
+		</#list>
 	</#if>
 	<#if course.instructionalOffering.offeringCoordinators?size != 0>
 		<tr>
@@ -54,5 +56,8 @@
 		<tr>
 			<td>${cmsg.propertyCourseCatalog()}</td><td><a href='${url}' target='_blank'>${gmsg.courseCatalogLink()}</a></td>
 		</tr>
+	</#if>
+	<#if course.instructionalOffering.effectiveWaitList()>
+		<tr><td>${cmsg.propertyWaitListing()}</td><td>${cmsg.descWaitListEnabled()}</td></tr>
 	</#if>
 </table>
