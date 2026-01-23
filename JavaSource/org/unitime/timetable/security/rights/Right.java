@@ -337,6 +337,7 @@ public enum Right {
     StudentSectioningSolverLog(Session.class),
     StudentSectioningSolverDashboard(Session.class),
     StudentSectioningSolverReports(Session.class),
+    StudentSectioningSolverAdminReports(Session.class),
     StudentSectioningSolutionExportXml(Session.class),
     StudentSectioningSolverPublish(Session.class),
     

@@ -353,7 +353,7 @@ public class AdvisorGetCourseRequests implements OnlineSectioningAction<CourseRe
 		return request;
 	}
 	
-	protected static void fillCourseRequests(CourseRequestInterface request, List<AdvisorCourseRequest> acrs) {
+	public static void fillCourseRequests(CourseRequestInterface request, List<AdvisorCourseRequest> acrs) {
 		int last = -1;
 		CourseRequestInterface.Request r = null;
 		Set<Integer> skip = new HashSet<Integer>();
