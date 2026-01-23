@@ -45,6 +45,13 @@
 				<line>Skip revalidation for a course that was made not offered (avoid null exception).</line>
 			</description>
 		</item>
+		<item>
+			<name>Solver Reports: Course Request Alternatives Statistics</name>
+			<description>
+				<line>Added Course Request Alternatives Statistics report, an experimental report comparing course requests and advisor recommendations with and without alternatives.</line>
+				<line>Only available to user roles with Student Sectioning Solver Admin Reports role.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

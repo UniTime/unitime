@@ -3812,4 +3812,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Not-Assigned Associated Course Issues")
 	String reportDependentCourseIssues();
+	
+	@DefaultMessage("Course Request Alternatives Statistics")
+	String reportCourseRequestAltStats();
 }

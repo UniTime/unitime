@@ -47,6 +47,7 @@ import org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts;
 import org.unitime.timetable.reports.studentsct.UnasignedCourseRequests;
 import org.unitime.timetable.reports.studentsct.UnusedReservations;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
@@ -102,17 +103,23 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 		SECTIONING_ISSUES_ALL(SCT_MSG.reportSectioningIssuesAllCourses(), SectioningIssuesReport.class.getName(), "all", "true"),
 		RESERVATIONS(SCT_MSG.reportReservations(), Reservations.class.getName()),
 		DEPENDENT_OFFERINGS_ISSUES(SCT_MSG.reportDependentCourseIssues(), DependentCourseIssues.class.getName()),
+		CRS_ALTS(true, SCT_MSG.reportCourseRequestAltStats(), CourseRequestAltStats.class.getName()),
 		;
 		
 		String iName, iImplementation;
 		String[] iParameters;
+		boolean iAdmin;
+		ReportType(boolean admin, String name, String implementation, String... params) {
+			iAdmin = admin; iName = name; iImplementation = implementation; iParameters = params;
+		}
 		ReportType(String name, String implementation, String... params) {
-			iName = name; iImplementation = implementation; iParameters = params;
+			this(false, name, implementation, params);
 		}
 		
 		public String getName() { return iName; }
 		public String getImplementation() { return iImplementation; }
 		public String[] getParameters() { return iParameters; }
+		public boolean isAdmin() { return iAdmin; }
 		public ReportTypeInterface toReportTypeInterface() {
 			return new ReportTypeInterface(name(), iName, iImplementation, true, iParameters);
 		}
@@ -121,8 +128,10 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 	@Override
 	public GwtRpcResponseList<ReportTypeInterface> execute(SectioningReportTypesRpcRequest request, SessionContext context) {
 		GwtRpcResponseList<ReportTypeInterface> ret = new GwtRpcResponseList<ReportTypeInterface>();
+		boolean includeAdmins = context.hasPermission(Right.StudentSectioningSolverAdminReports);
 		for (ReportType type: ReportType.values())
-			ret.add(type.toReportTypeInterface());
+			if (!type.isAdmin() || includeAdmins)
+				ret.add(type.toReportTypeInterface());
 
 		if (!request.isOnline()) {
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver();
