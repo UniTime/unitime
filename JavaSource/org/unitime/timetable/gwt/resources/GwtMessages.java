@@ -4040,6 +4040,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Class Assignment")
 	@DoNotTranslate
 	String pageClassAssignment();
+	
+	@DefaultMessage("Course Catalog")
+	@DoNotTranslate
+	String pageCourseCatalog();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

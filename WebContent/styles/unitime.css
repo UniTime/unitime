@@ -8292,3 +8292,153 @@ unitime-RoomSharingWidget .legend .blank {
 	padding-left: 20px;
 	font-style: italic;
 }
+
+.unitime-CourseCatalogDetails {
+	padding: 4px;
+}
+
+.unitime-CourseCatalogDetails .section {
+	border-bottom: 1px solid #9CB0CE;
+	padding-top: 5px;
+	font-size: large;
+	font-weight: bold;
+	color: black;
+	text-align: left;	
+}
+
+.unitime-CourseCatalogDetails .text {
+	white-space: pre-wrap;
+	max-width: 800px;
+	padding: 2px;
+}
+
+.unitime-CourseCatalogDetails .table {
+	display: table;
+	width: 100%;
+}
+
+.unitime-CourseCatalogDetails .row {
+	display: table-row;
+}
+
+.unitime-CourseCatalogDetails .key {
+	font-weight: bold;
+	display: table-cell;
+	padding: 2px 5px 2px 2px;
+}
+
+.unitime-CourseCatalogDetails .value {
+	display: table-cell;
+	white-space: normal;
+}
+
+.unitime-CourseCatalogDetails .item {
+	display: inline-block;
+	width: 33%;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.unitime-CourseCatalogDetails .shortitem {
+	display: inline-block;
+	width: 50%;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.unitime-CourseCatalogDetails .restrictions .row {
+	display: block;
+	width: 100%;
+}
+
+.unitime-CourseCatalogDetails .restrictions .key {
+	display: block;	
+}
+
+.unitime-CourseCatalogDetails .restrictions .value {
+	display: block;	
+	padding-left: 20px;
+	width: 100%;
+}
+
+.unitime-CourseCatalogDetails .configuration th {
+	padding-top: 10px;
+}
+
+.unitime-CourseCatalogDetails .configurations tr:first-child th {
+	padding-top: 0px !important;
+	
+}
+
+.unitime-CourseCatalogDetails table {
+	border-spacing: 0px;
+	padding: 2px;
+}
+
+.unitime-CourseCatalogDetails th {
+	text-align: left;
+	padding-top: 5px;
+	padding-left: 2px;
+	padding-right: 5px;
+}
+
+.unitime-CourseCatalogDetails tr:hover {
+	background-color: #DDD;
+	cursor: default;
+}
+
+.unitime-CourseCatalogDetails .header th {
+	font-family: sans-serif, verdana, arial;
+	font-weight: bold;
+	color: #666666;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+  	background-color: #e3e8f3;
+  	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-CourseCatalogDetails .catalog-section h3 {
+	display: none;
+}
+
+.unitime-CourseCatalogDetails .catalog-section th {
+	font-family: sans-serif, verdana, arial;
+	font-weight: bold;
+	color: #666666;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+  	background-color: #e3e8f3;
+  	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-CourseCatalogDetails .disclaimer {
+	text-align: center;
+	padding-top: 10px;
+	display: block;
+}

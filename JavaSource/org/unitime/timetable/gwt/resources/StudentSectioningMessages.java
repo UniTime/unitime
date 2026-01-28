@@ -3815,4 +3815,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course Request Alternatives Statistics")
 	String reportCourseRequestAltStats();
+	
+	@DefaultMessage("Course {0} {1} does not exist in the catalog.")
+	String catalogCourseNotInCatalog(String subject, String course);
 }
