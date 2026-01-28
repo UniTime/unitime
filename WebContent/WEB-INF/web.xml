@@ -263,6 +263,7 @@
     	<url-pattern>/examDistributionEdit</url-pattern>
     	<url-pattern>/examEdit</url-pattern>
     	<url-pattern>/examAdd</url-pattern>
+    	<url-pattern>/catalog</url-pattern>
     </servlet-mapping>
 	
 	<filter>
