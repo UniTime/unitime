@@ -18,35 +18,37 @@
  -->
  <div class='unitime-CourseCatalogDetails'>
 <div class='section'>${base.subject} ${base.courseNumber} - ${descriptors.longTitleAndUrl.courseTitle}</div>
-<div class='text'>${descriptors.courseDescription.description}</div>
+<#if descriptors.courseDescription??>
+	<div class='text'>${descriptors.courseDescription.description}</div>
+</#if>
 <div class='table'>
-	<span class='row'><span class='key'>Short Title:</span><span class='value'>${base.courseDetail.shortTitle}</span></span>
-	<span class='row'><span class='key'>College:</span><span class='value'>${base.courseDetail.college} - ${base.courseDetail.collegeDescription}</span></span>
-	<span class='row'><span class='key'>Department:</span><span class='value'>${base.courseDetail.department} - ${base.courseDetail.departmentDescription}</span></span>
+	<span class='row'><span class='key'>Short Title:</span><span class='value'><@longitem base.courseDetail.shortTitle/></span></span>
+	<span class='row'><span class='key'>College:</span><span class='value'><@longitem (base.courseDetail.collegeDescription + ' (' + base.courseDetail.college + ')')/></span></span>
+	<span class='row'><span class='key'>Department:</span><span class='value'><@longitem (base.courseDetail.departmentDescription + ' (' + base.courseDetail.department + ')')/></span></span>
 	<#if base.courseDetail.creditCeuHoursMaximum??>
-		<span class='row'><span class='key'>Credit Hours:</span><span class='value'>${base.courseDetail.creditCeuHoursMinimum} ${base.courseDetail.creditCeuHoursConnector?lower_case} ${base.courseDetail.creditCeuHoursMaximum}</span></span>
+		<span class='row'><span class='key'>Credit Hours:</span><span class='value'><@longitem (base.courseDetail.creditCeuHoursMinimum + ' ' + base.courseDetail.creditCeuHoursConnector?lower_case + ' ' + base.courseDetail.creditCeuHoursMaximum)/></span></span>
 	<#elseif base.courseDetail.creditCeuHoursMinimum??>
-		<span class='row'><span class='key'>Credit Hours:</span><span class='value'>${base.courseDetail.creditCeuHoursMinimum}</span></span>
+		<span class='row'><span class='key'>Credit Hours:</span><span class='value'><@longitem base.courseDetail.creditCeuHoursMinimum/></span></span>
 	</#if>
 	<@section 'Levels' base.levelDetail 'level'/>
 	<@section 'Grading Modes' base.gradingModeDetail 'gradingMode'/>
 	<@section 'Schedule Types' base.scheduleDetail 'scheduleType' 'schedules'/>
 	<#if base.courseDetail.repeatStatus??>
 		<span class='row'><span class='key'>Repeatable:</span><span class='value'>
-			${base.courseDetail.repeatStatusDescription} (${base.courseDetail.repeatStatus})
+			<@longitem (base.courseDetail.repeatStatusDescription + ' (' + base.courseDetail.repeatStatus + ')')/>
 		</span></span>
 	</#if>
-	<#if details??>
+	<#if details?? && details.attributeDetails??>
 		<@section 'Attributes' details.attributeDetails 'attribute'/>
 	</#if>
 	<#if fees?? && fees.SCRFEES?? && (fees.SCRFEES?size > 0)>
 		<span class='row'><span class='key'>Fees:</span><span class='value'><#list fees.SCRFEES as fee>
-			<#if (fee?index > 0)><br></#if>${fee.feesDescription} $${fee.feeAmount}
+			<#if (fee?index > 0)></#if><@longitem (fee.feesDescription + ' $' + fee.feeAmount)/>
 		</#list></span></span>
 	</#if>
 	<#if base.courseDetail.status??>
 		<span class='row'><span class='key'>Status:</span><span class='value'>
-			${base.courseDetail.statusDescription} (${base.courseDetail.status})
+			<@longitem (base.courseDetail.statusDescription + ' (' + base.courseDetail.status + ')')/>
 		</span></span>
 	</#if>
 	<#if restrictions?? && restrictions.campusScheduleRestriction?? && restrictions.campusScheduleRestriction.restrictionType = 'includeRestriction'>
@@ -54,7 +56,7 @@
 	</#if>
 </div>
 
-<#if descriptors.learningObjectives??>
+<#if descriptors.learningObjectives?? && descriptors.learningObjectives.objectives??>
 	<div class='section'>Learning Objectives</div>
 	<div class='text'>${descriptors.learningObjectives.objectives}</div>
 </#if>
@@ -68,42 +70,44 @@
 <div class='section'>Restrictions</div>
 <#assign hasRestriction = false>
 <span class='restrictions'>
-<#if restrictions.collegeRegistrationRestriction?? && (restrictions.collegeRegistrationRestriction.colleges?size > 1)>
+<#if restrictions.levelRegistrationRestriction?? && (restrictions.levelRegistrationRestriction.levels?filter(x -> x.level??)?size > 0)>
+	<@rsection 'Levels' restrictions.levelRegistrationRestriction 'level'/>
+	<#assign hasRestriction = true>
+</#if>
+<#if restrictions.degreeRegistrationRestriction?? && (restrictions.degreeRegistrationRestriction.degrees?filter(x -> x.degree??)?size > 0)>
+	<@rsection 'Degrees' restrictions.degreeRegistrationRestriction 'degree'/>
+	<#assign hasRestriction = true>
+</#if>
+<#if restrictions.collegeRegistrationRestriction?? && (restrictions.collegeRegistrationRestriction.colleges?filter(x -> x.college??)?size > 0)>
 	<@rsection 'Colleges' restrictions.collegeRegistrationRestriction 'college'/>
 	<#assign hasRestriction = true>
 </#if>
-<#if restrictions.programRegistrationRestriction?? && (restrictions.programRegistrationRestriction.programs?size > 1)>
+<#if restrictions.programRegistrationRestriction?? && (restrictions.programRegistrationRestriction.programs?filter(x -> x.program??)?size > 0)>
 	<@rsection 'Programs' restrictions.programRegistrationRestriction 'program'/>
 	<#assign hasRestriction = true>
 </#if>
 <#if restrictions.fieldOfStudyRegistrationRestrictions??>
 	<#list restrictions.fieldOfStudyRegistrationRestrictions?filter(r -> r.fieldsOfStudy??) as r>
-		<#if r.fieldOfStudyTypeDescription??>
-			<@rsection (r.fieldOfStudyTypeDescription + 's') r 'fieldOfStudy' 'fieldsOfStudy'/>
-		<#else>
-			<@rsection 'Fields of Study (Major, Minor, or Concentration)' r 'fieldOfStudy' 'fieldsOfStudy'/>
+		<#if (r.fieldsOfStudy?filter(x -> x.fieldOfStudy??)?size > 0)>
+			<#if r.fieldOfStudyTypeDescription??>
+				<@rsection (r.fieldOfStudyTypeDescription + 's') r 'fieldOfStudy' 'fieldsOfStudy'/>
+			<#else>
+				<@rsection 'Fields of Study (Major, Minor, or Concentration)' r 'fieldOfStudy' 'fieldsOfStudy'/>
+			</#if>
 		</#if>
 		<#assign hasRestriction = true>
 		<#break/>
 	</#list>
 </#if>
-<#if restrictions.classRegistrationRestriction?? && (restrictions.classRegistrationRestriction.classes?size > 1)>
-	<@rsection 'Classes' restrictions.classRegistrationRestriction 'classes' 'classes' 'classDescription'/>
-	<#assign hasRestriction = true>
-</#if>
-<#if restrictions.levelRegistrationRestriction?? && (restrictions.levelRegistrationRestriction.levels?size > 1)>
-	<@rsection 'Levels' restrictions.levelRegistrationRestriction 'level'/>
-	<#assign hasRestriction = true>
-</#if>
-<#if restrictions.degreeRegistrationRestriction?? && (restrictions.degreeRegistrationRestriction.degrees?size > 1)>
-	<@rsection 'Degrees' restrictions.degreeRegistrationRestriction 'degree'/>
-	<#assign hasRestriction = true>
-</#if>
-<#if restrictions.cohortRegistrationRestriction?? && (restrictions.cohortRegistrationRestriction.cohorts?size > 1)>
+<#if restrictions.cohortRegistrationRestriction?? && (restrictions.cohortRegistrationRestriction.cohorts?filter(x -> x.cohort??)?size > 0)>
 	<@rsection 'Cohorts' restrictions.cohortRegistrationRestriction 'cohort'/>
 	<#assign hasRestriction = true>
 </#if>
-<#if restrictions.campusRegistrationRestriction?? && (restrictions.campusRegistrationRestriction.campuses?size > 1)>
+<#if restrictions.classRegistrationRestriction?? && (restrictions.classRegistrationRestriction.classes?filter(x -> x.classes??)?size > 0)>
+	<@rsection 'Classes' restrictions.classRegistrationRestriction 'classes' 'classes' 'classDescription'/>
+	<#assign hasRestriction = true>
+</#if>
+<#if restrictions.campusRegistrationRestriction?? && (restrictions.campusRegistrationRestriction.campuses?filter(x -> x.campus??)?size > 0)>
 	<@rsection 'Campuses' restrictions.campusRegistrationRestriction 'campus' 'campuses'/>
 	<#assign hasRestriction = true>
 </#if>
@@ -112,13 +116,13 @@
 </span>
 
 </#if>
-<#if prerequisites?? && prerequisites.courseCorequisite?? && prerequisites.courseCorequisite.corequisites??>
+<#if prerequisites?? && prerequisites.courseCorequisite?? && prerequisites.courseCorequisite.corequisites?? && (prerequisites.courseCorequisite.corequisites?filter(x -> x.courseSubject??)?size > 0) >
 <div class='section'>Corequisites</div>
 <table class='corequisites'>
 	<tr class='header'><th>Subject</th><th>Course</th></tr>
-	<#list prerequisites.courseCorequisite.corequisites as line>
-		<tr><td>${line.courseSubject}</td>
-			<td>${line.courseNumber}</td>
+	<#list prerequisites.courseCorequisite.corequisites?filter(x -> x.courseSubject??) as line>
+		<tr><td>${line.courseSubject!'-'}</td>
+			<td>${line.courseNumber!'-'}</td>
 		</tr>
 	</#list>
 </table>
@@ -178,8 +182,9 @@
 <div class='disclaimer'>${disclaimer}</div>
 </#if>
 
-<#macro shortitem code desc><span class='shortitem' title='${code} - ${desc}'>${desc} (${code})</span></#macro>
-<#macro item code desc><span class='item' title='${code} - ${desc}'>${desc} (${code})</span></#macro>
+<#macro shortitem code desc><span class='shortitem' title='${code?xhtml} - ${desc?xhtml}'>${desc} (${code})</span></#macro>
+<#macro longitem text><span class='longitem' title='${text?xhtml}'>${text}</span></#macro>
+<#macro item code desc><span class='item' title='${code?xhtml} - ${desc?xhtml}'>${desc} (${code})</span></#macro>
 <#macro section sectionLabel items vname vnames = (vname + 's') vdesc = (vname + 'Description')>
 	<#if items?? && items[vnames]??>
 		<span class='row'><span class='key'><#if adjustedSectionLabel??>${adjustedSectionLabel}<#else>${sectionLabel}</#if>:</span><span class='value'>
@@ -195,7 +200,7 @@
  	</#if>
 	<#if items?? && items[vnames]??>
 		<span class='row'><span class='key'><#if adjustedSectionLabel??>${adjustedSectionLabel}<#else>${sectionLabel}</#if>:</span><span class='value'>
-			<#list items[vnames]?filter(x -> x[vname]?? && x[vdesc]??)?sort_by(vdesc) as x><@item x[vname] x[vdesc]/></#list>
+			<#list items[vnames]?filter(x -> x[vname]?? && x[vdesc]??)?sort_by(vname) as x><@item x[vname] x[vdesc]/></#list>
 		</span></span>
 	</#if>
 </#macro>

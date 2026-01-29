@@ -8293,6 +8293,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 }
 
+.unitime-CourseCatalogPage {
+	max-width: 800px;
+}
+
 .unitime-CourseCatalogDetails {
 	padding: 4px;
 }
@@ -8320,6 +8324,10 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseCatalogDetails .row {
 	display: table-row;
 }
+.unitime-CourseCatalogDetails .row:hover {
+	background-color: #DDD;
+	cursor: default;
+}
 
 .unitime-CourseCatalogDetails .key {
 	font-weight: bold;
@@ -8345,6 +8353,15 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 50%;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	overflow: hidden;
+	
+}
+
+.unitime-CourseCatalogDetails .longitem {
+	display: inline-block;
+	width: 50%;
+	text-overflow: ellipsis;
+	white-space: pre-wrap;
 	overflow: hidden;
 }
 
