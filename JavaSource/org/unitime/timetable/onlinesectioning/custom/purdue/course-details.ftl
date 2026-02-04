@@ -23,8 +23,12 @@
 </#if>
 <div class='table'>
 	<span class='row'><span class='key'>Short Title:</span><span class='value'><@longitem base.courseDetail.shortTitle/></span></span>
+	<#if base.courseDetail.college??>
 	<span class='row'><span class='key'>College:</span><span class='value'><@longitem (base.courseDetail.collegeDescription + ' (' + base.courseDetail.college + ')')/></span></span>
+	</#if>
+	<#if base.courseDetail.department??>
 	<span class='row'><span class='key'>Department:</span><span class='value'><@longitem (base.courseDetail.departmentDescription + ' (' + base.courseDetail.department + ')')/></span></span>
+	</#if>
 	<#if base.courseDetail.creditCeuHoursMaximum??>
 		<span class='row'><span class='key'>Credit Hours:</span><span class='value'><@longitem (base.courseDetail.creditCeuHoursMinimum + ' ' + base.courseDetail.creditCeuHoursConnector?lower_case + ' ' + base.courseDetail.creditCeuHoursMaximum)/></span></span>
 	<#elseif base.courseDetail.creditCeuHoursMinimum??>
@@ -57,8 +61,8 @@
 </div>
 
 <#if descriptors.learningObjectives?? && descriptors.learningObjectives.objectives??>
-	<div class='section'>Learning Objectives</div>
-	<div class='text'>${descriptors.learningObjectives.objectives}</div>
+	<@header 'Learning Objectives' 'LearnObj'/>
+	<div class='text' id='LearnObj'>${descriptors.learningObjectives.objectives}</div>
 </#if>
 
 <#if restrictions?? && 
@@ -67,9 +71,9 @@
 	|| restrictions.levelRegistrationRestriction?? || restrictions.degreeRegistrationRestriction??
 	|| restrictions.cohortRegistrationRestriction?? || restrictions.campusRegistrationRestriction??
 	)>
-<div class='section'>Restrictions</div>
+<@header 'Restrictions' 'Restrictions'/>
 <#assign hasRestriction = false>
-<span class='restrictions'>
+<span class='restrictions' id='Restrictions'>
 <#if restrictions.levelRegistrationRestriction?? && (restrictions.levelRegistrationRestriction.levels?filter(x -> x.level??)?size > 0)>
 	<@rsection 'Levels' restrictions.levelRegistrationRestriction 'level'/>
 	<#assign hasRestriction = true>
@@ -117,8 +121,8 @@
 
 </#if>
 <#if prerequisites?? && prerequisites.courseCorequisite?? && prerequisites.courseCorequisite.corequisites?? && (prerequisites.courseCorequisite.corequisites?filter(x -> x.courseSubject??)?size > 0) >
-<div class='section'>Corequisites</div>
-<table class='corequisites'>
+<@header 'Corequisites' 'Corequisites'/>
+<table class='corequisites' id='Corequisites'>
 	<tr class='header'><th>Subject</th><th>Course</th></tr>
 	<#list prerequisites.courseCorequisite.corequisites?filter(x -> x.courseSubject??) as line>
 		<tr><td>${line.courseSubject!'-'}</td>
@@ -130,8 +134,8 @@
 
 
 <#if prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisites?? && prerequisites.coursePrerequisite.prerequisites.basic??>
-<div class='section'>Prerequisites</div>
-<table class='prerequisites'>
+<@header 'Prerequisites' 'Prerequisites'/>
+<table class='prerequisites' id='Prerequisites'>
 	<tr class='header'><th>And/Or</th><th></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th></th></tr>
 	<#list prerequisites.coursePrerequisite.prerequisites.basic?filter(r -> r.lineOrderSequence??)?sort_by("lineOrderSequence") as line>
 		<tr><td><#if line.logicalOperator??>${line.logicalOperator?capitalize}</#if></td>
@@ -148,14 +152,14 @@
 	prerequisites.coursePrerequisite.checkMethodDetails.checkMethod?? && prerequisites.coursePrerequisite.checkMethodDetails.checkMethod != 'basic'>
 	<#assign prereqs = lookup.getPrereqsFromCatalog()/>
 	<#if (prereqs?? && prereqs?length > 0) >
-		<div class='section'>Prerequisites</div>
-		<div class='catalog-section'>${prereqs}</div>		
+		<@header 'Prerequisites' 'Prerequisites'/>
+		<div class='catalog-section' id='Prerequisites'>${prereqs}</div>
 	</#if>
 </#if>
 
 <#if restrictions?? && restrictions.mutualCourseExclusion?? && restrictions.mutualCourseExclusion.courseExclusions?? && (restrictions.mutualCourseExclusion.courseExclusions?size>1) >
-<div class='section'>Mutual Exclusions</div>
-<table class='mutual-exclusions'>
+<@header 'Mutual Exclusions' 'Exclusions'/>
+<table class='mutual-exclusions' id='Exclusions'>
 	<tr class='header'><th>Subject</th><th>Course</th><th>Level</th><th>Min Grade</th></tr>
 	<#list restrictions.mutualCourseExclusion.courseExclusions?filter(x -> x.subject??) as line>
 		<tr><td>${line.subject}</td>
@@ -168,8 +172,8 @@
 </#if>
 
 <#if descriptors?? && descriptors.courseText??>
-<div class='section'>Course Configurations</div>
-<table class='configurations'>
+<@header 'Course Configurations' 'Configurations'/>
+<table class='configurations' id='Configurations'>
 <#list descriptors.courseText.textLines?sort_by("sequenceNumber") as line><#list line.text?split('|') as x>
 	<#if x?index = 0><tr class='configuration'><th colspan='3'>Configuration ${line.sequenceNumber}: ${x} Credits</td></tr>
 	<tr class='header'><th>Schedule Type</th><th>Weekly Contact Hours</th><th>Instructional Credit Distribution</th></tr>
@@ -213,4 +217,19 @@
 	<#if base.levelDetail?? && base.levelDetail.levels??>
 		<#list base.levelDetail.levels as level><#if level.level = ref>${level.levelDescription}<#return/></#if></#list>
 	</#if>${ref}	
+</#macro>
+<#macro header name id>
+<div class='section'>
+	<img alt='Open ${name?xhtml}' src='images/expand_node_btn.gif' onClick="document.getElementById('${id}').style.display='block';this.style.display='none';document.getElementById('${id}-close').style.display='inline-block';localStorage.setItem('UniTime:CourseCatalog${id}', '1');" id='${id}-open' style='display:none;'/>
+	<img alt='Close ${name?xhtml}' src='images/collapse_node_btn.gif' onClick="document.getElementById('${id}').style.display='none';this.style.display='none';document.getElementById('${id}-open').style.display='inline-block';localStorage.setItem('UniTime:CourseCatalog${id}', '0');" id='${id}-close' style='display:none;'/>
+	${name}</div>
+	<script>
+		if ('0' == localStorage.getItem('UniTime:CourseCatalog${id}')) {
+			$doc.getElementById('${id}').style.display='none';
+			$doc.getElementById('${id}-open').style.display='inline-block';
+			$doc.getElementById('${id}-close').style.display='none';
+		} else {
+			$doc.getElementById('${id}-close').style.display='inline-block';
+		}
+	</script>
 </#macro>

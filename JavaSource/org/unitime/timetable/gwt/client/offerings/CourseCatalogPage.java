@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.offerings;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -28,6 +29,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
@@ -47,6 +50,10 @@ public class CourseCatalogPage extends HTML {
 					public void onSuccess(CatalogResponse response) {
 						LoadingWidget.getInstance().hide();
 						setHTML(response.getContent());
+						NodeList<Element> scripts = getElement().getElementsByTagName("script");
+						if (scripts != null)
+							for (int i = 0; i < scripts.getLength(); i++)
+								ToolBox.eval(scripts.getItem(i).getInnerHTML());
 					}
 					
 					@Override
