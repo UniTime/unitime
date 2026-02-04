@@ -153,6 +153,9 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
         form.setCheckLimits(ApplicationProperty.ConfigEditCheckLimits.isTrue());
         form.setMaxNumberOfClasses(ApplicationProperty.SubpartMaxNumClasses.intValue());
         
+        form.setSchedulingDisclaimer(ioc == null ? null : ioc.getSchedulingDisclaimer());
+        form.setCanEditSchedulingDisclaimer(context.hasPermission(io, Right.InstrOfferingConfigEditDisclaimer));
+        
         Department contrDept = io.getControllingCourseOffering().getSubjectArea().getDepartment();
         form.addDepartment(-1l, "-", MSG.subpartMultipleManagers(), false);
         form.addDepartment(contrDept.getUniqueId(), contrDept.getDeptCode(), MSG.dropDeptDepartment());
@@ -314,6 +317,9 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
 	        	ioc.setClassDurationType(form.getDurationTypeId() == null || form.getDurationTypeId() < 0l ? null : ClassDurationTypeDAO.getInstance().get(form.getDurationTypeId(), hibSession));
 	        if (form.isInstructionalMethodEditable())
 	        	ioc.setInstructionalMethod(form.getInstructionalMethodId() == null || form.getInstructionalMethodId() < 0l ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethodId(), hibSession));
+
+	        if (context.hasPermission(io, Right.InstrOfferingConfigEditDisclaimer))
+	        	ioc.setSchedulingDisclaimer(form.getSchedulingDisclaimer());
 	        
 	        if (ioc.getUniqueId() == null)
 	        	hibSession.persist(ioc);

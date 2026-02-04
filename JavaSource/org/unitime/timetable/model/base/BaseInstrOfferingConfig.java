@@ -55,6 +55,7 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 	private Boolean iUnlimitedEnrollment;
 	private String iName;
 	private Long iUniqueIdRolledForwardFrom;
+	private String iSchedulingDisclaimer;
 
 	private InstructionalOffering iInstructionalOffering;
 	private ClassDurationType iClassDurationType;
@@ -92,6 +93,10 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 	@Column(name = "uid_rolled_fwd_from", nullable = true, length = 20)
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
+
+	@Column(name = "sched_disclaimer", nullable = true, length = 2000)
+	public String getSchedulingDisclaimer() { return iSchedulingDisclaimer; }
+	public void setSchedulingDisclaimer(String schedulingDisclaimer) { iSchedulingDisclaimer = schedulingDisclaimer; }
 
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "instr_offr_id", nullable = false)
@@ -146,6 +151,7 @@ public abstract class BaseInstrOfferingConfig implements Serializable {
 			"\n	InstructionalOffering: " + getInstructionalOffering() +
 			"\n	Limit: " + getLimit() +
 			"\n	Name: " + getName() +
+			"\n	SchedulingDisclaimer: " + getSchedulingDisclaimer() +
 			"\n	UniqueId: " + getUniqueId() +
 			"\n	UniqueIdRolledForwardFrom: " + getUniqueIdRolledForwardFrom() +
 			"\n	UnlimitedEnrollment: " + getUnlimitedEnrollment() +

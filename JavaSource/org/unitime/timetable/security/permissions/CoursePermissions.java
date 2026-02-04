@@ -388,6 +388,9 @@ public class CoursePermissions {
 		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
 	}
 	
+	@PermissionForRight(Right.InstrOfferingConfigEditDisclaimer)
+	public static class InstrOfferingConfigEditDisclaimer extends InstrOfferingConfigAdd {}
+	
 	@PermissionForRight(Right.InstrOfferingConfigAdd)
 	public static class InstrOfferingConfigAdd implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;

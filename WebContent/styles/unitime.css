@@ -7926,6 +7926,14 @@ unitime-RoomSharingWidget .legend .blank {
 	margin: 2px;
 }
 
+.unitime-MultipleClassSetup .note {
+	white-space: pre-wrap;
+}
+
+.unitime-OfferingDetailPage .note {
+	white-space: pre-wrap;
+}
+
 .unitime-InstrOfferingConfig .instructional-type-selection {
 	display: inline-block;
 	vertical-align: middle;
@@ -8017,6 +8025,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-size: inherit;
 	font-family: inherit;
 	font-weight: inherit;
+}
+
+.unitime-InstrOfferingConfig .note {
+	white-space: pre-wrap;
 }
 
 .unitime-InstructionalOfferingsPage .unitime-PageFilter .unitime-HeaderPanel {

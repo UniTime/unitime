@@ -231,6 +231,7 @@ public class OfferingsInterface {
 	public static class OfferingConfigInterface extends TableInterface {
 		private Set<String> iOperations;
 		private Long iConfigId;
+		private String iSchedulingDisclaimer;
 		
 		public Long getConfigId() { return iConfigId; }
 		public void setConfigId(Long configId) { iConfigId = configId; }
@@ -240,6 +241,10 @@ public class OfferingsInterface {
 			if (iOperations == null) iOperations = new HashSet<String>();
 			iOperations.add(operation);
 		}
+		
+		public String getSchedulingDisclaimer() { return iSchedulingDisclaimer; }
+		public void setSchedulingDisclaimer(String schedulingDisclaimer) { iSchedulingDisclaimer = schedulingDisclaimer; }
+		public boolean hasSchedulingDisclaimer() { return iSchedulingDisclaimer != null && !iSchedulingDisclaimer.isEmpty(); }
 	}
 	
 	public static class SubpartDetailRequest implements GwtRpcRequest<SubpartDetailReponse> {

@@ -55,6 +55,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 public class OfferingDetailPage extends Composite {
@@ -278,6 +279,11 @@ public class OfferingDetailPage extends Composite {
 					for (final OfferingConfigInterface config: response.getConfigs()) {
 						UniTimeHeaderPanel hp = new UniTimeHeaderPanel(config.getName());
 						iPanel.addHeaderRow(hp);
+						if (config.hasSchedulingDisclaimer()) {
+							Label disclaimer = new Label(config.getSchedulingDisclaimer());
+							disclaimer.addStyleName("note");
+							iPanel.addRow(COURSE.propertySchedulingDisclaimer(), disclaimer);
+						}
 						iPanel.addRow(new TableWidget(config));
 						if (config.hasAnchor()) {
 							Anchor a = new Anchor(); a.setName(config.getAnchor()); a.getElement().setId(config.getAnchor());

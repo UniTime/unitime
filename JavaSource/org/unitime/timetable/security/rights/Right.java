@@ -123,6 +123,7 @@ public enum Right {
 	InstrOfferingConfigEdit(InstrOfferingConfig.class),
 	InstrOfferingConfigEditDepartment(Department.class),
 	InstrOfferingConfigEditSubpart(SchedulingSubpart.class),
+	InstrOfferingConfigEditDisclaimer(InstructionalOffering.class),
 	InstrOfferingConfigDelete(InstrOfferingConfig.class),
 
 	MultipleClassSetup(InstrOfferingConfig.class),
