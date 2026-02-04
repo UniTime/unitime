@@ -66,6 +66,9 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	private Boolean iHasTimeRooms;
 	private Boolean iHasInstructors;
 	
+	public String iSchedulingDisclaimer;
+	private Boolean iCanEditSchedulingDisclaimer;
+	
 	public static enum Operation implements IsSerializable, Serializable {
 		LOAD,
 		SAVE,
@@ -218,6 +221,12 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	
 	public void setInstructionalMethodId(Long instructionalMethodId) { iInstructionalMethodId = instructionalMethodId; }
 	public Long getInstructionalMethodId() { return iInstructionalMethodId; }
+	
+	public String getSchedulingDisclaimer() { return iSchedulingDisclaimer; }
+	public void setSchedulingDisclaimer(String schedulingDisclaimer) { iSchedulingDisclaimer = schedulingDisclaimer; }
+	public boolean hasSchedulingDisclaimer() { return iSchedulingDisclaimer != null && !iSchedulingDisclaimer.isEmpty(); }
+	public boolean isCanEditSchedulingDisclaimer() { return iCanEditSchedulingDisclaimer != null && iCanEditSchedulingDisclaimer.booleanValue(); }
+	public void setCanEditSchedulingDisclaimer(boolean canEditSchedulingDisclaimer) { iCanEditSchedulingDisclaimer = canEditSchedulingDisclaimer; }
 	
 	protected boolean canCancelChildren(ClassLine line) {
 		if (line == null || !line.isEditable() || !line.isCanCancel()) return false;

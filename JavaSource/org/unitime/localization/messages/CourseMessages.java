@@ -6084,4 +6084,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No Associated Course")
 	String itemNoParentCourse();
+	
+	@DefaultMessage("Student Scheduling Disclaimer:")
+	String propertySchedulingDisclaimer();
 }

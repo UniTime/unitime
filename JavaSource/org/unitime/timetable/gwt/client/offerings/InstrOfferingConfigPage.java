@@ -62,6 +62,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -310,6 +311,24 @@ public class InstrOfferingConfigPage extends Composite {
 			}
 		});
 		iLimitRow = iForm.addRow(MESSAGES.propertyConfigurationLimit(), iLimit);
+		
+		if (iData.isCanEditSchedulingDisclaimer()) {
+			TextArea disclaimer = new TextArea();
+			disclaimer.setHeight("66px");
+			disclaimer.setWidth("100%");
+			if (iData.hasSchedulingDisclaimer()) disclaimer.setText(iData.getSchedulingDisclaimer());
+			iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimer);
+			disclaimer.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					iData.setSchedulingDisclaimer(event.getValue());
+				}
+			});
+		} else if (iData.hasSchedulingDisclaimer()) {
+			Label disclaimer = new Label(iData.getSchedulingDisclaimer());
+			disclaimer.addStyleName("note");
+			iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimer);
+		}
 		
 		if (iData.isDisplayCourseLink()) {
 			CourseDetailsWidget link = new CourseDetailsWidget(true);

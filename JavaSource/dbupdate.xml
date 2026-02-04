@@ -15730,4 +15730,20 @@
 		<mysql onFail="next">create index idx_student_enrl_student on %SCHEMA%.student_enrl(student_id)</mysql>
 		<pgsql onFail="next">create index idx_student_enrl_student on %SCHEMA%.student_enrl(student_id)</pgsql>
 	</update>
+	<update version="275" date="3-Feb-2026" comment="Student Scheduling Disclaimer">
+		<mysql>
+			alter table %SCHEMA%.instr_offering_config add sched_disclaimer varchar(2000) null
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.instr_offering_config add sched_disclaimer varchar2(2000 char)
+		</plsql>
+		<pgsql>
+			alter table %SCHEMA%.instr_offering_config add sched_disclaimer varchar(2000)
+		</pgsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstrOfferingConfigEditDisclaimer'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstrOfferingConfigEdit'
+		</sql>
+	</update>
 </dbupdate>

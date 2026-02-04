@@ -132,6 +132,8 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 		form.setDisplayLms(Boolean.valueOf(LearningManagementSystemInfo.isLmsInfoDefinedForSession(context.getUser().getCurrentAcademicSessionId())));
 		form.setDisplaySnapshotLimit(io.getSnapshotLimitDate() != null);
 		form.setValidateLimits(ApplicationProperty.ConfigEditCheckLimits.isTrue());
+		form.setSchedulingDisclaimer(ioc.getSchedulingDisclaimer());
+		form.setCanEditSchedulingDisclaimer(context.hasPermission(io, Right.InstrOfferingConfigEditDisclaimer));
 		
 		String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {
@@ -295,6 +297,12 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 	        	ioc.setInstructionalMethod(imeth);
 	        	hibSession.merge(ioc);
 	        }
+	        
+	        if (!ToolBox.equals(ioc.getSchedulingDisclaimer(), form.getSchedulingDisclaimer()) && context.hasPermission(ioc.getInstructionalOffering(), Right.InstrOfferingConfigEditDisclaimer)) {
+	        	ioc.setSchedulingDisclaimer(form.getSchedulingDisclaimer());
+	        	hibSession.merge(ioc);
+	        }
+
 	        
 	        // Get map of subpart ownership so that after the classes have changed it is possible to see if the ownership for a subparts has changed
 	        Map<Long, Department> origSubpartManagingDept = new HashMap<>();

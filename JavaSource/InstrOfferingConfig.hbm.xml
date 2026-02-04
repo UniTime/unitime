@@ -85,6 +85,13 @@
             type="java.lang.Long"
             not-null="false"
             length="20"/>
+            
+		<property
+            name="schedulingDisclaimer"
+            column="sched_disclaimer"
+            type="java.lang.String"
+            not-null="false"
+            length="2000"/>
 
 		<many-to-one
 			name="classDurationType"
