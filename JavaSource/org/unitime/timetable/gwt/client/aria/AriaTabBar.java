@@ -43,6 +43,7 @@ public class AriaTabBar extends TabBar {
 	public AriaTabBar() {
 		super();
 		getElement().setId(DOM.createUniqueId());
+		Roles.getPresentationRole().set(getElement().getFirstChildElement()); //tbody
 	}
 	
 	public Element getTabElement(int index) {

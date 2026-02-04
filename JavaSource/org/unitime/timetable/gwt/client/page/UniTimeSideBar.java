@@ -33,11 +33,13 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -83,6 +85,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	private Timer iScrollTimer = null;
 
@@ -107,6 +110,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		menuLabel.setStyleName("unitime-MenuHeaderLabel");
 		header.add(menuLabel);
 		final Image menuImage = new Image(RESOURCES.menu_closed());
+		menuImage.setAltText(ARIA.iconMenuClosed());
 		header.add(menuImage);
 		header.setCellHorizontalAlignment(menuImage, HasHorizontalAlignment.ALIGN_RIGHT);
 		header.setCellVerticalAlignment(menuImage, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -114,6 +118,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		
 		iDisclosurePanel = new DisclosurePanel();
 		iDisclosurePanel.setHeader(header);
+		Roles.getLinkRole().setAriaLabelProperty(header.getParent().getElement(), ARIA.iconMenuClosed());
 
 		menuImage.addMouseOverHandler(new MouseOverHandler() {
 			@Override
@@ -134,6 +139,8 @@ public class UniTimeSideBar extends UniTimeMenu {
 			@Override
 			public void onOpen(OpenEvent<DisclosurePanel> event) {
 				menuImage.setResource(iDisclosurePanel.isOpen() ? RESOURCES.menu_opened() : RESOURCES.menu_closed());
+				menuImage.setAltText(iDisclosurePanel.isOpen() ? ARIA.iconMenuOpened() : ARIA.iconMenuClosed());
+				Roles.getLinkRole().setAriaLabelProperty(iDisclosurePanel.getHeader().getParent().getElement(), iDisclosurePanel.isOpen() ? ARIA.iconMenuOpened() : ARIA.iconMenuClosed());
 				menuLabel.setVisible(iDisclosurePanel.isOpen());
 				header.setStyleName("unitime-MenuHeader" + (iDisclosurePanel.isOpen() ? "Open" : "Close"));
 				saveState();
@@ -144,6 +151,8 @@ public class UniTimeSideBar extends UniTimeMenu {
 			@Override
 			public void onClose(CloseEvent<DisclosurePanel> event) {
 				menuImage.setResource(iDisclosurePanel.isOpen() ? RESOURCES.menu_opened() : RESOURCES.menu_closed());
+				menuImage.setAltText(iDisclosurePanel.isOpen() ? ARIA.iconMenuOpened() : ARIA.iconMenuClosed());
+				Roles.getLinkRole().setAriaLabelProperty(iDisclosurePanel.getHeader().getParent().getElement(), iDisclosurePanel.isOpen() ? ARIA.iconMenuOpened() : ARIA.iconMenuClosed());
 				menuLabel.setVisible(iDisclosurePanel.isOpen());
 				header.setStyleName("unitime-MenuHeader" + (iDisclosurePanel.isOpen() ? "Open" : "Close"));
 				saveState();

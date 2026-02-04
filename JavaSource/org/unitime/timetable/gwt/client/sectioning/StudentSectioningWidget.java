@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDockPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
@@ -1138,7 +1139,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			}
 		});
 		
-		iAssignmentDock = new DockPanel();
+		iAssignmentDock = new UniTimeDockPanel();
 		iAssignmentDock.setStyleName("unitime-ClassSchedulePanel");
 		iAssignmentDock.setSpacing(0);
 		iAssignmentDock.add(iAssignmentPanel, DockPanel.SOUTH);

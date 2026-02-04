@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.URL;
@@ -402,5 +403,15 @@ public class ToolBox {
 		} else {
 			Cookies.setCookie(key, value);
 		}
+	}
+	
+	public static Element firstInputElement(Element e) {
+		NodeList<Element> inputs = e.getElementsByTagName("input");
+		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
+		inputs = e.getElementsByTagName("select");
+		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
+		inputs = e.getElementsByTagName("textarea");
+		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
+		return e;
 	}
 }

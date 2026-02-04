@@ -423,6 +423,7 @@ public class TimeGrid extends Composite {
 					String email = (row.hasInstructorEmails() && i < row.getInstructorEmails().size() ? row.getInstructorEmails().get(i) : null);
 					if (email != null && !email.isEmpty()) {
 						ImageLink il = new ImageLink(new Image(RESOURCES.email()), "mailto:" + email);
+						il.setAriaLabel(MESSAGES.sendEmail(row.getInstructors().get(i)));
 						il.setTitle(MESSAGES.sendEmail(row.getInstructors().get(i)));
 						il.setStyleName("A.unitime-SimpleLink");
 						il.getElement().getStyle().setMarginRight(1, Unit.PX);

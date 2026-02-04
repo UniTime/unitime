@@ -43,6 +43,8 @@ public class AriaCheckBox extends CheckBox implements HasAriaLabel {
 		iAriaLabel.setClassName("unitime-AriaLabel");
 		DOM.appendChild(getElement(), iAriaLabel);
 		Roles.getCheckboxRole().setAriaLabelledbyProperty(elem, Id.of(iAriaLabel));
+		
+		setStyleName("gwt-CheckBox");
 	}
 	
 	@Override

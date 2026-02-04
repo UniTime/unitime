@@ -24,12 +24,13 @@
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib uri="http://www.unitime.org/tags-localization" prefix="loc" %>
 <loc:bundle name="CourseMessages">
-<html>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtAriaMessages" id="ARIA">
+<html lang='<%=Localization.getLanguage()%>'>
   <head>
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2.0, user-scalable=yes">
     <link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
@@ -122,7 +123,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.action' tabIndex="-1" class="logo"></a>
+    			<a href='main.action' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"></span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
@@ -156,4 +157,4 @@
     <script type="text/javascript" src="unitime/unitime.nocache.js"></script>
   </body>
 </html>
-</loc:bundle>
+</loc:bundle></loc:bundle>

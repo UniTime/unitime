@@ -686,6 +686,18 @@
 	.unitime-WaitListedRequestPreferences {
 		width: calc(90vw + 20px);
 	}
+	
+	.unitime-WaitListedRequestPreferences .course-table {
+		width: 90vw;
+	}
+	
+	.unitime-WaitListedRequestPreferences .course-details {
+		width: 90vw;
+	}
+	
+	.unitime-WaitListedRequestPreferences .widget-td {
+		width: 90vw;
+	}
 }
 
 @media all and (max-width: 400px) {

@@ -132,6 +132,7 @@ public class CourseFinderCourses extends P implements CourseFinder.CourseFinderT
 		iCoursesPanel = new ScrollPanel(iCourses);
 		iCoursesPanel.setStyleName("unitime-ScrollPanel");
 		iCoursesPanel.addStyleName("course-table");
+		iCoursesPanel.getElement().setTabIndex(0);
 		
 		iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iCoursesTip.setStyleName("unitime-Hint");

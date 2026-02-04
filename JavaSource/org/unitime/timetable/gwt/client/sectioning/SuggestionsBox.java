@@ -140,9 +140,12 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		P label = new P("label");
 		label.setText(MESSAGES.filter());
 		iFilterPanel.add(label);
+		label.getElement().setId(DOM.createUniqueId());
 		
 		iFilter = new AriaTextBox();
 		iFilter.setStyleName("gwt-SuggestBox");
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iFilter.getElement(), Id.of(label.getElement()));
+		
 		
 		HTML ariaDescription = new HTML(MESSAGES.suggestionsFilterHint(), false);
 		ariaDescription.setStyleName("unitime-AriaHiddenLabel");
@@ -227,6 +230,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
 		iSuggestionsScroll = new ScrollPanel(iSuggestions);
 		iSuggestionsScroll.setStyleName("unitime-ScrollPanel");
+		iSuggestionsScroll.getElement().setTabIndex(0);
 		panel.add(iSuggestionsScroll);
 		
 		if (iSpecReg != null) {

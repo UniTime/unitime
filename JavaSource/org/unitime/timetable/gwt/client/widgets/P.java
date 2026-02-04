@@ -38,6 +38,7 @@ import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.HasHTML;
@@ -46,16 +47,21 @@ import com.google.gwt.user.client.ui.HasHTML;
  * @author Tomas Muller
  */
 public class P extends AbsolutePanel implements HasAllMouseHandlers, HasHTML, HasClickHandlers {
+	
+	public P() {
+		this(DOM.createDiv());
+	}
 
 	public P(Element element, String... styles) {
-		super(element);
+		setElement(element);
 		addStyleNames(styles);
 		sinkAllMouseEvents();
+		
+		getElement().getStyle().setProperty("position", "relative");
 	}
 	
 	public P(String... styles) {
-		addStyleNames(styles);
-		sinkAllMouseEvents();
+		this(DOM.createDiv(), styles);
 	}
 	
 	private void sinkAllMouseEvents() {

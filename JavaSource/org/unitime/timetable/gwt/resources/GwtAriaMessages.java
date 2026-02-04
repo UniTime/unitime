@@ -307,6 +307,15 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Check to prefer {0}")
 	String courseFinderPreferClass(String clazz);
 	
+	@DefaultMessage("Check to select {0}")
+	String courseFinderSelectCourse(String course);
+	
+	@DefaultMessage("Selected {0} as the first choice")
+	String courseFinderSelectedAsFirstChice(String course);
+	
+	@DefaultMessage("Selected {0} as the {1}. alternative")
+	String courseFinderSelectedAsAlt(String course, int alt);
+	
 	@DefaultMessage("Showing List of Classes. Use Alt + Up and Alt + Down to navigate, Alt + Enter to open Suggestions for the selected class.")
 	String listOfClasses();
 	
@@ -553,4 +562,24 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Class end date")
 	String studentPrefClassEndDate();
 
+	@DefaultMessage("UniTime logo, goes to the UniTime''s main page.")
+	String pageUniTimeLogo();
+	
+	@DefaultMessage("Help page for {0}. Click the link to open the help page in a separate tab.")
+	String pageHelp(String pageName);
+	
+	@DefaultMessage("Questionmark")
+	String iconHelp();
+	
+	@DefaultMessage("Page navigation is closed. Click this line to open the navigation.")
+	String iconMenuClosed();
+	
+	@DefaultMessage("Page navigation is opened. Click this line to close the navigation.")
+	String iconMenuOpened();
+	
+	@DefaultMessage("Section opened. Click to close the section.")
+	String iconSectionOpened();
+	
+	@DefaultMessage("Section closed. Click to open the section.")
+	String iconSectionClosed();
 }
