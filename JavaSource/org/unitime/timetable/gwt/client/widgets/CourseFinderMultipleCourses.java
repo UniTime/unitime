@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
@@ -141,6 +142,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		iCoursesPanel = new ScrollPanel(iCourses);
 		iCoursesPanel.setStyleName("unitime-ScrollPanel");
 		iCoursesPanel.addStyleName("course-table");
+		iCoursesPanel.getElement().setTabIndex(0);
 		
 		iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iCoursesTip.setStyleName("unitime-Hint");
@@ -317,7 +319,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 					boolean hasCredit = false, hasNote = false, hasWaitList = false;
 					for (final CourseAssignment record: result) {
 						List<Widget> line = new ArrayList<Widget>();
-						final CheckBox ch = new CheckBox() {
+						final AriaCheckBox ch = new AriaCheckBox() {
 							@Override
 							  protected void onAttach() {
 								super.onAttach();
@@ -335,6 +337,7 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 										
 							}
 						});
+						ch.setAriaLabel(ARIA.courseFinderSelectCourse(MESSAGES.course(record.getSubject(), record.getCourseNbr())));
 						ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<Boolean> event) {
@@ -355,8 +358,17 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 								for (int r = 0; r < iCourses.getRowCount(); r++) {
 									CourseAssignment ca = iCourses.getData(r);
 									if (iCourses.getWidget(r, 0) instanceof CheckBox && ca != null) {
-										CheckBox c = (CheckBox)iCourses.getWidget(r, 0);
+										AriaCheckBox c = (AriaCheckBox)iCourses.getWidget(r, 0);
 										c.setText(c.getValue() ? String.valueOf(iCheckedCourses.indexOf(new RequestedCourse(ca, CONSTANTS.showCourseTitle())) + 1) : "");
+										if (c.getValue()) {
+											int index = iCheckedCourses.indexOf(new RequestedCourse(ca, CONSTANTS.showCourseTitle()));
+											if (index <= 0)
+												c.setAriaLabel(ARIA.courseFinderSelectedAsFirstChice(MESSAGES.course(record.getSubject(), record.getCourseNbr())));
+											else
+												c.setAriaLabel(ARIA.courseFinderSelectedAsAlt(MESSAGES.course(record.getSubject(), record.getCourseNbr()), index));
+										} else {
+											c.setAriaLabel(ARIA.courseFinderSelectCourse(MESSAGES.course(record.getSubject(), record.getCourseNbr())));
+										}
 									}
 								}
 							}

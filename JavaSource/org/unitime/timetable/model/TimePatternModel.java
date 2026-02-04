@@ -592,7 +592,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
                       sb.append(Constants.toTime(iMinutes[endTime] + getSlotsPerMtg()*Constants.SLOT_LENGTH_MIN - iBreakTime));
              	  }
                 }
-    		return sb.toString();
+    		return (sb.isEmpty() ? "-" : sb.toString());
     	}
     }
     

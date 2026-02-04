@@ -120,9 +120,12 @@ public class ImageLink extends Widget implements HasAriaLabel {
 
 	@Override
 	public void setAriaLabel(String text) {
-		if (text == null || text.isEmpty())
-			Roles.getLinkRole().removeAriaLabelledbyProperty(iElement);
-		else
-			Roles.getLinkRole().setAriaLabelProperty(iElement, text);
+		if (text == null || text.isEmpty()) {
+			Roles.getLinkRole().removeAriaLabelledbyProperty(iAnchor);
+			if (iImage != null) iImage.setAltText("");
+		} else {
+			Roles.getLinkRole().setAriaLabelProperty(iAnchor, text);
+			if (iImage != null) iImage.setAltText("");
+		}
 	}
 } 

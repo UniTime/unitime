@@ -100,6 +100,10 @@ public class Localization {
 		return locale.trim();
 	}
 	
+	public static String getLanguage() {
+		return getJavaLocale().getLanguage();
+	}
+	
 	private static Locale guessJavaLocale(String locale) {
 		for (StringTokenizer s = new StringTokenizer(locale, ",;"); s.hasMoreTokens(); ) {
 			String lang = s.nextToken();

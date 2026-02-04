@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.ToolBox;
+
 import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
@@ -96,10 +98,13 @@ public class FlowForm extends P {
 			}
 		}
 		if (widgets.length > 0) {
-			if (widgets[0] instanceof UniTimeWidget)
-				Roles.getTextboxRole().setAriaLabelledbyProperty(((UniTimeWidget)widgets[0]).getWidget().getElement(), Id.of(header.getElement()));
-			else
-				Roles.getTextboxRole().setAriaLabelledbyProperty(widgets[0].getElement(), Id.of(header.getElement()));			
+			for (Widget w: widgets) {
+				Element e = ToolBox.firstInputElement(w.getElement());
+				if (e != null) {
+					Roles.getTextboxRole().setAriaLabelledbyProperty(e, Id.of(header.getElement()));
+					break;
+				}
+			}
 		}
 		return getWidgetCount() - widgets.length;
 	}

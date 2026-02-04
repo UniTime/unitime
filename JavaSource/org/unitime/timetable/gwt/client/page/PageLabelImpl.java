@@ -20,16 +20,19 @@
 package org.unitime.timetable.gwt.client.page;
 
 import org.unitime.timetable.gwt.client.widgets.P;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.MenuInterface.PageNameInterface;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.ImageResourceRenderer;
+import com.google.gwt.user.client.ui.Image;
 
 /**
  * @author Tomas Muller
@@ -37,17 +40,22 @@ import com.google.gwt.user.client.ui.ImageResourceRenderer;
 public class PageLabelImpl extends P implements PageLabelDisplay {
 	private static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	private P iName;
 	private Anchor iHelp;
 	private String iUrl = null;
 	
 	public PageLabelImpl() {
-        iName = new P("text");
+        iName = new P(DOM.createDiv(), "text");
+        Image image = new Image(RESOURCES.help());
+        image.setAltText(ARIA.iconHelp());
         
-		iHelp = new Anchor(new ImageResourceRenderer().render(RESOURCES.help()), "", "_blank");
+		iHelp = new Anchor();
+		iHelp.setTarget("_blank");
 		iHelp.addStyleName("icon");
 		iHelp.setVisible(false);
+		iHelp.getElement().appendChild(image.getElement());
 		
 		add(iName);
 		add(iHelp);
@@ -62,6 +70,7 @@ public class PageLabelImpl extends P implements PageLabelDisplay {
 	public void setText(String text) {
 		iName.setText(text);
 		iHelp.setTitle(MESSAGES.pageHelp(text));
+		Roles.getLinkRole().setAriaLabelProperty(iHelp.getElement(), ARIA.pageHelp(text));
 	}
 
 	@Override

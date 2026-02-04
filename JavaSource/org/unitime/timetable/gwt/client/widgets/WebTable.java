@@ -779,6 +779,7 @@ public class WebTable extends Composite implements HasMobileScroll {
 		public IconsCell() {
 			super(null);
 			iPanel = new HorizontalPanel();
+			Roles.getPresentationRole().set(iPanel.getElement());
 			iPanel.setStyleName("icons");
 		}
 		
@@ -966,7 +967,9 @@ public class WebTable extends Composite implements HasMobileScroll {
 						p.setStyleName("instructor");
 						Anchor a = new Anchor();
 						a.setHref("mailto:" + email);
-						a.setHTML(new Image(RESOURCES.email()).getElement().getString());
+						Image image = new Image(RESOURCES.email());
+						image.setAltText(MESSAGES.sendEmail(names.get(i)));
+						a.setHTML(image.getElement().getString());
 						a.setTitle(MESSAGES.sendEmail(names.get(i)));
 						a.setStyleName("unitime-SimpleLink");
 						a.addClickHandler(new ClickHandler() {

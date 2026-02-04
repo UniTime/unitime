@@ -25,7 +25,7 @@
 <%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles" %>
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization"%>
-
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtAriaMessages" id="ARIA">
 <tiles:importAttribute name="showMenu" scope="request"/>
 <tiles:importAttribute name="checkLogin" scope="request"/>
 <s:if test="#request.checkLogin">
@@ -35,13 +35,13 @@
 <s:if test="#request.checkRole">
 	<%@ include file="/checkRole.jspf"%>
 </s:if>
-<html>
+<html lang='<%=Localization.getLanguage()%>'>
 <head>
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
 	<meta http-equiv="expires" content="0">
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2.0, user-scalable=yes">
     <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
@@ -161,7 +161,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.action' tabIndex="-1" class="logo"></a>
+    			<a href='main.action' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"><tiles:getAsString name="title" /></span>
 					<s:if test="#request.showMenu">
@@ -211,3 +211,4 @@
 	
 </body>
 </html>
+</loc:bundle>

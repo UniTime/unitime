@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 
 import com.google.gwt.aria.client.Id;
@@ -55,6 +56,7 @@ public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 		else
 			iHint.setHTML(hint);
 		add(iHint);
+		iHint.getElement().setId(DOM.createUniqueId());
 	}
 	
 	@Override
@@ -67,7 +69,11 @@ public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 				iAriaLabel.setId(DOM.createUniqueId());
 				iAriaLabel.setClassName("hidden-label");
 				DOM.appendChild(getElement(), iAriaLabel);
-				Roles.getCheckboxRole().setAriaLabelledbyProperty(iWidget.getElement(), Id.of(iAriaLabel));
+				Element e = ToolBox.firstInputElement(iWidget.getElement());
+				if (e != null)
+					Roles.getCheckboxRole().setAriaLabelledbyProperty(e, Id.of(iAriaLabel));
+				else
+					Roles.getCheckboxRole().setAriaLabelledbyProperty(iWidget.getElement(), Id.of(iAriaLabel));
 			}
 			iAriaLabel.setInnerText(text);
 		}
@@ -140,7 +146,7 @@ public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 	public void clearHint() {
 		iHint.setHTML("");
 		iHint.setVisible(false);
-		setAriaLabel("");
+		Roles.getTextboxRole().removeAriaDescribedbyProperty(iWidget.getElement());
 	}
 	
 	public void setErrorHint(String error) {
@@ -150,7 +156,7 @@ public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 			iHint.setStyleName("error-hint");
 			iHint.setHTML(error);
 			iHint.setVisible(true);
-			setAriaLabel(error);
+			Roles.getTextboxRole().setAriaDescribedbyProperty(iWidget.getElement(), Id.of(iHint.getElement()));
 		}
 	}
 
@@ -161,7 +167,7 @@ public class UniTimeWidget<T extends Widget> extends P implements HasAriaLabel {
 			iHint.setStyleName("hint");
 			iHint.setHTML(hint);
 			iHint.setVisible(true);
-			setAriaLabel(hint);
+			Roles.getTextboxRole().setAriaDescribedbyProperty(iWidget.getElement(), Id.of(iHint.getElement()));
 		}
 	}
 	
