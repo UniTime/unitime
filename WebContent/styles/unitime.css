@@ -8329,7 +8329,9 @@ unitime-RoomSharingWidget .legend .blank {
 	font-size: large;
 	font-weight: bold;
 	color: black;
-	text-align: left;	
+	text-align: left;
+	display: inline-block;	
+	width: 100%;
 }
 
 .unitime-CourseCatalogDetails .text {
@@ -8346,6 +8348,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseCatalogDetails .row {
 	display: table-row;
 }
+
 .unitime-CourseCatalogDetails .row:hover {
 	background-color: #DDD;
 	cursor: default;
@@ -8360,6 +8363,10 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseCatalogDetails .value {
 	display: table-cell;
 	white-space: normal;
+}
+
+.unitime-CourseCatalogDetails .row:not(:last-child) .value {
+	border-bottom: 1px dotted #9CB0CE;
 }
 
 .unitime-CourseCatalogDetails .item {
