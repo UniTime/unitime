@@ -380,7 +380,7 @@ public class PreferencesImport  extends BaseImport {
     	if (iLocations == null) {
     		iLocations = new HashMap<String, Location>();
     		for (Location location: getHibSession().createQuery(
-    				"from NonUniversityLocation where session.uniqueId = :sessionId",
+    				"from Location where session.uniqueId = :sessionId",
     				Location.class).setParameter("sessionId", iSession.getUniqueId()).list())
     			for (RoomDept rd: location.getRoomDepts()) {
     				iLocations.put(location.getLabel() + "|" + rd.getDepartment().getDeptCode(), location);
@@ -563,6 +563,7 @@ public class PreferencesImport  extends BaseImport {
     		BuildingPref pref = new BuildingPref();
     		pref.setBuilding(building);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setRoomIndex(getOptionalIntegerAttribute(element, "roomIndex"));
     		pref.setNote(getNote(element));
     		return pref;
     	}
@@ -576,6 +577,7 @@ public class PreferencesImport  extends BaseImport {
     			RoomPref pref = new RoomPref();
     			pref.setRoom(room);
     			pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    			pref.setRoomIndex(getOptionalIntegerAttribute(element, "roomIndex"));
     			pref.setNote(getNote(element));
         		return pref;
     		} else if (label != null) {
@@ -584,6 +586,7 @@ public class PreferencesImport  extends BaseImport {
     			RoomPref pref = new RoomPref();
     			pref.setRoom(location);
     			pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    			pref.setRoomIndex(getOptionalIntegerAttribute(element, "roomIndex"));
     			pref.setNote(getNote(element));
         		return pref;
     		} else {
@@ -596,6 +599,7 @@ public class PreferencesImport  extends BaseImport {
     		RoomGroupPref pref = new RoomGroupPref();
     		pref.setRoomGroup(rg);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setRoomIndex(getOptionalIntegerAttribute(element, "roomIndex"));
     		pref.setNote(getNote(element));
     		return pref;
     	}
@@ -605,6 +609,7 @@ public class PreferencesImport  extends BaseImport {
     		RoomFeaturePref pref = new RoomFeaturePref();
     		pref.setRoomFeature(feature);
     		pref.setPrefLevel(PreferenceLevel.getPreferenceLevel(element.attributeValue("level", PreferenceLevel.sRequired)));
+    		pref.setRoomIndex(getOptionalIntegerAttribute(element, "roomIndex"));
     		pref.setNote(getNote(element));
     		return pref;
     	}

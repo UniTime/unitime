@@ -400,6 +400,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nbp.setPrefLevel(bp.getPrefLevel());
 								nbp.setBuilding(bp.getBuilding());
 								nbp.setDistanceFrom(bp.getDistanceFrom());
+								nbp.setRoomIndex(bp.getRoomIndex());
 								c.addToPreferences(nbp);
 								classChanged = true;
 							}
@@ -413,6 +414,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nrp.setOwner(c);
 								nrp.setPrefLevel(rp.getPrefLevel());
 								nrp.setRoom(rp.getRoom());
+								nrp.setRoomIndex(rp.getRoomIndex());
 								c.addToPreferences(nrp);
 								classChanged = true;
 							}
@@ -426,6 +428,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nrfp.setOwner(c);
 								nrfp.setPrefLevel(rfp.getPrefLevel());
 								nrfp.setRoomFeature(rfp.getRoomFeature());
+								nrfp.setRoomIndex(rfp.getRoomIndex());
 								c.addToPreferences(nrfp);
 								classChanged = true;
 							}
@@ -439,6 +442,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nrgp.setOwner(c);
 								nrgp.setPrefLevel(rgp.getPrefLevel());
 								nrgp.setRoomGroup(rgp.getRoomGroup());
+								nrgp.setRoomIndex(rgp.getRoomIndex());
 								c.addToPreferences(nrgp);
 								classChanged = true;
 							}
@@ -489,6 +493,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nbp.setPrefLevel(bp.getPrefLevel());
 								nbp.setBuilding(bp.getBuilding());
 								nbp.setDistanceFrom(bp.getDistanceFrom());
+								nbp.setRoomIndex(bp.getRoomIndex());
 								c.addToPreferences(nbp);
 								classChanged = true;
 							}
@@ -504,6 +509,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nrp.setOwner(c);
 								nrp.setPrefLevel(rp.getPrefLevel());
 								nrp.setRoom(rp.getRoom());
+								nrp.setRoomIndex(rp.getRoomIndex());
 								c.addToPreferences(nrp);
 								classChanged = true;
 							}
@@ -519,6 +525,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nrfp.setOwner(c);
 								nrfp.setPrefLevel(rfp.getPrefLevel());
 								nrfp.setRoomFeature(rfp.getRoomFeature());
+								nrfp.setRoomIndex(rfp.getRoomIndex());
 								c.addToPreferences(nrfp);
 								classChanged = true;
 							}
@@ -534,6 +541,7 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 								nrgp.setOwner(c);
 								nrgp.setPrefLevel(rgp.getPrefLevel());
 								nrgp.setRoomGroup(rgp.getRoomGroup());
+								nrgp.setRoomIndex(rgp.getRoomIndex());
 								c.addToPreferences(nrgp);
 								classChanged = true;
 							}

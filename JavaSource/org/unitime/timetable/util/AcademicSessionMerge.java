@@ -1825,6 +1825,7 @@ public class AcademicSessionMerge {
 			if (isExamPref || deptHasRoomInBuilding){
 				toBuildingPref = new BuildingPref();
 				toBuildingPref.setBuilding(toBuilding);
+				toBuildingPref.setRoomIndex(fromBuildingPref.getRoomIndex());
 				toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
 				toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
 				toBuildingPref.setOwner(toPrefGroup);
@@ -1950,6 +1951,7 @@ public class AcademicSessionMerge {
 	private void createToRoomPref(RoomPref fromRoomPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Set<Location> locations, boolean isClassMerge){
 		if (fromPrefGroup instanceof Class_ && !isClassMerge) return;
 		RoomPref toRoomPref = new RoomPref();
+		toRoomPref.setRoomIndex(fromRoomPref.getRoomIndex());
 		if (fromRoomPref.getRoom() instanceof Room) {
 			Room fromRoom = (Room) fromRoomPref.getRoom();
 			Room toRoom = null;
@@ -2049,6 +2051,7 @@ public class AcademicSessionMerge {
 			boolean isClassMerge, String defaultPrefix){
 		if (fromPrefGroup instanceof Class_ && !isClassMerge) return;
 		RoomFeaturePref toRoomFeaturePref = new RoomFeaturePref();
+		toRoomFeaturePref.setRoomIndex(fromRoomFeaturePref.getRoomIndex());
 		if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
 			GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(iMergedSession, fromRoomFeaturePref.getRoomFeature().getLabel());
 			if (grf != null) {
@@ -2133,6 +2136,7 @@ public class AcademicSessionMerge {
 			boolean isClassMerge, String defaultPrefix){
 		if (fromPrefGroup instanceof Class_ && !isClassMerge) return;
 		RoomGroupPref toRoomGroupPref = new RoomGroupPref();
+		toRoomGroupPref.setRoomIndex(fromRoomGroupPref.getRoomIndex());
 		RoomGroup toDefaultRoomGroup = RoomGroup.getGlobalDefaultRoomGroup(iMergedSession);
 		if (fromRoomGroupPref.getRoomGroup().isDefaultGroup() && toDefaultRoomGroup != null){
 			toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);
