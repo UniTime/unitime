@@ -187,6 +187,8 @@ public enum Right {
     InstructorSurvey(Department.class),
     InstructorSurveyAdmin(Department.class),
     
+    CourseCatalog(Session.class),
+    
 	Rooms(Session.class),
 	RoomsExportPdf(Session.class),
 	RoomsExportCsv(Session.class),

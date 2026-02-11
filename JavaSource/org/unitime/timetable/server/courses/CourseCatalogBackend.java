@@ -38,6 +38,7 @@ import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @GwtRpcImplements(CatalogRequest.class)
 public class CourseCatalogBackend implements GwtRpcImplementation<CatalogRequest, CatalogResponse>, CourseUrlProvider {
@@ -58,6 +59,9 @@ public class CourseCatalogBackend implements GwtRpcImplementation<CatalogRequest
 		}
 		if (session == null)
 			throw new GwtRpcException(MSG.authenticationNoSession());
+		
+		context.checkPermissionAnyAuthority(session, Right.CourseCatalog);
+		
 		CourseDetailsProvider provider = Customization.CourseDetailsProvider.getProvider();
 		if (provider == null)
 			throw new GwtRpcException("Course details provider not configured.");

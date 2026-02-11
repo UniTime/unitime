@@ -44,6 +44,18 @@
 				<line>Multiple Class Setup: Copy room index when room-related preferences are being moved pushed to the class level due to the change of the subpart's managing department.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Catalog</name>
+			<description>
+				<line>Create a simple page that shows information provided by the custom CourseDetailsProvider.</line>
+				<line>To enable:
+					<line>Configure unitime.custom.CourseDetailsProvider (returning an HTML snippet)</line>
+					<line>Set unitime.custom.CourseUrlProvider to org.unitime.timetable.server.courses.CourseCatalogBackend.</line>
+					<line>Set the Course Catalog permission for all the roles that should be able to see the catalog page.</line>
+					<line>Possibly adjust the custom CSS to improve catalog page formatting.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
