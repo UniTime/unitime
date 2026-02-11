@@ -36,6 +36,14 @@
 				<line>Corrected the permission checking for the Add Distribution Preference button so that a Department Schedule Manager would see the button on an externally managed class or scheduling subpart.</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Preference Index: Various Fixes</name>
+			<description>
+				<line>Session Roll Forward: Copy room index for room-related preferences (room, room feature, room group, and building preferences).</line>
+				<line>Preferences XML: Include roomIndex attribute for room-related preferences.</line>
+				<line>Multiple Class Setup: Copy room index when room-related preferences are being moved pushed to the class level due to the change of the subpart's managing department.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>

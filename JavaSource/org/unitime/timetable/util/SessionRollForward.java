@@ -1077,6 +1077,7 @@ public class SessionRollForward {
 			
 			if (isExamPref || deptHasRoomInBuilding){
 				toBuildingPref = new BuildingPref();
+				toBuildingPref.setRoomIndex(fromBuildingPref.getRoomIndex());
 				toBuildingPref.setBuilding(toBuilding);
 				toBuildingPref.setPrefLevel(fromBuildingPref.getPrefLevel());
 				toBuildingPref.setDistanceFrom(fromBuildingPref.getDistanceFrom());
@@ -1144,6 +1145,7 @@ public class SessionRollForward {
 	private void createToRoomPref(RoomPref fromRoomPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations){
 		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomPref toRoomPref = new RoomPref();
+		toRoomPref.setRoomIndex(fromRoomPref.getRoomIndex());
 		if (fromRoomPref.getRoom() instanceof Room) {
 			Room fromRoom = (Room) fromRoomPref.getRoom();
 			Location loc = null;
@@ -1276,6 +1278,7 @@ public class SessionRollForward {
 	private void createToRoomFeaturePref(RoomFeaturePref fromRoomFeaturePref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomFeaturePref toRoomFeaturePref = new RoomFeaturePref();
+		toRoomFeaturePref.setRoomIndex(fromRoomFeaturePref.getRoomIndex());
 		if (fromRoomFeaturePref.getRoomFeature() instanceof GlobalRoomFeature) {
 			GlobalRoomFeature grf = GlobalRoomFeature.findGlobalRoomFeatureForLabel(toSession, fromRoomFeaturePref.getRoomFeature().getLabel());
 			if (grf != null) {
@@ -1356,6 +1359,7 @@ public class SessionRollForward {
 	private void createToRoomGroupPref(RoomGroupPref fromRoomGroupPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomGroupPref toRoomGroupPref = new RoomGroupPref();
+		toRoomGroupPref.setRoomIndex(fromRoomGroupPref.getRoomIndex());
 		RoomGroup toDefaultRoomGroup = RoomGroup.getGlobalDefaultRoomGroup(toSession);
 		if (fromRoomGroupPref.getRoomGroup().isDefaultGroup() && toDefaultRoomGroup != null){
 			toRoomGroupPref.setRoomGroup(toDefaultRoomGroup);

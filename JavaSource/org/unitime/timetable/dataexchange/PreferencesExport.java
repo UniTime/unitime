@@ -46,6 +46,7 @@ import org.unitime.timetable.model.InstructorAttributePref;
 import org.unitime.timetable.model.InstructorCoursePref;
 import org.unitime.timetable.model.InstructorPref;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -60,6 +61,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
@@ -220,25 +222,41 @@ public class PreferencesExport extends BaseExport{
 			if (location instanceof Room) {
 				el.addAttribute("building", ((Room)location).getBuildingAbbv());
 				el.addAttribute("room", ((Room)location).getRoomNumber());
-			} else {
+			} else if (location instanceof NonUniversityLocation) {
 				el.addAttribute("location", location.getLabel());
+			} else {
+				Room room = RoomDAO.getInstance().get(location.getUniqueId(), getHibSession());
+				if (room != null) {
+					el.addAttribute("building", room.getBuildingAbbv());
+					el.addAttribute("room", room.getRoomNumber());
+				} else {
+					el.addAttribute("location", location.getLabel());
+				}
 			}
+			Integer roomIndex = ((RoomPref)preference).getRoomIndex();
+			if (roomIndex != null) el.addAttribute("roomIndex", roomIndex.toString());
 		} else if (preference instanceof RoomGroupPref) {
 			RoomGroup group = ((RoomGroupPref)preference).getRoomGroup();
 			el = parent.addElement("groupPref");
 			el.addAttribute("group", group.getAbbv());
 			if (group.getDepartment() != null)
 				el.addAttribute("department", group.getDepartment().getDeptCode());
+			Integer roomIndex = ((RoomGroupPref)preference).getRoomIndex();
+			if (roomIndex != null) el.addAttribute("roomIndex", roomIndex.toString());
 		} else if (preference instanceof RoomFeaturePref) {
 			RoomFeature feature = ((RoomFeaturePref)preference).getRoomFeature();
 			el = parent.addElement("featurePref");
 			el.addAttribute("feature", feature.getAbbv());
 			if (feature instanceof DepartmentRoomFeature)
 				el.addAttribute("department", ((DepartmentRoomFeature)feature).getDepartment().getDeptCode());
+			Integer roomIndex = ((RoomFeaturePref)preference).getRoomIndex();
+			if (roomIndex != null) el.addAttribute("roomIndex", roomIndex.toString());
 		} else if (preference instanceof BuildingPref) {
 			Building building = ((BuildingPref)preference).getBuilding();
 			el = parent.addElement("buildingPref");
 			el.addAttribute("building", building.getAbbreviation());
+			Integer roomIndex = ((BuildingPref)preference).getRoomIndex();
+			if (roomIndex != null) el.addAttribute("roomIndex", roomIndex.toString());
 		} else if (preference instanceof TimePref) {
 			el = parent.addElement("timePref");
 			TimePattern pattern = ((TimePref)preference).getTimePattern();
