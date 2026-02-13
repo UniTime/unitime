@@ -78,7 +78,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerContext;
-import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -364,9 +363,9 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 	public AcademicSessionInfo getAcademicSession() { return getProperty("AcademicSession", null); }
 	
 	@Override
-	public String getCourseDetails(Long courseId, CourseDetailsProvider provider) {
+	public String getCourseDetails(Long courseId) {
 		XCourse course = getCourse(courseId);
-		return course == null ? null : course.getDetails(getAcademicSession(), provider);
+		return course == null ? null : course.getDetails(getAcademicSession());
 	}
 	
 	protected OnlineSectioningHelper getCurrentHelper() {

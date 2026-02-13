@@ -129,7 +129,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Entity;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment.CourseSection;
-import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XClassEnrollment;
@@ -917,9 +916,9 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 	}
 
 	@Override
-	public String getCourseDetails(Long courseId, CourseDetailsProvider provider) {
+	public String getCourseDetails(Long courseId) {
 		XCourse course = getCourse(courseId);
-		return course == null ? null : course.getDetails(getAcademicSession(), provider);
+		return course == null ? null : course.getDetails(getAcademicSession());
 	}
 
 	@Override

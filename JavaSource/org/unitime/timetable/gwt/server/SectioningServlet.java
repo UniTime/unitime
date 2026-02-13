@@ -926,7 +926,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 				throw new SectioningException(MSG.exceptionCourseDoesNotExist(course));
 			}
-			return server.getCourseDetails(c.getCourseId(), getCourseDetailsProvider());
+			return server.getCourseDetails(c.getCourseId());
 		}
 	}
 	

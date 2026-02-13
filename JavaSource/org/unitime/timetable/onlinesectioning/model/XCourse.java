@@ -33,6 +33,7 @@ import org.unitime.timetable.model.OverrideType;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.Customization;
 
 /**
  * @author Tomas Muller
@@ -137,9 +138,12 @@ public class XCourse extends XCourseId {
     /** Course note */
     public String getNote() { return iNote; }
     
-	public String getDetails(AcademicSessionInfo session, CourseDetailsProvider provider) throws SectioningException {
-		if (iDetails == null && provider != null)
-			iDetails = provider.getDetails(session, getSubjectArea(), getCourseNumber());
+	public String getDetails(AcademicSessionInfo session) throws SectioningException {
+		if (iDetails == null) {
+			CourseDetailsProvider provider = Customization.CourseDetailsProvider.getProvider();
+			if (provider != null)
+				iDetails = provider.getDetails(session, getSubjectArea(), getCourseNumber());
+		}
 		return iDetails;
 	}
 	
