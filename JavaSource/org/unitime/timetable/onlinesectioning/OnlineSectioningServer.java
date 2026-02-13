@@ -31,7 +31,6 @@ import org.cpsolver.studentsct.online.expectations.OverExpectedCriterion;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.StudentSchedulingRule;
-import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.match.CourseMatcher;
 import org.unitime.timetable.onlinesectioning.match.StudentMatcher;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
@@ -69,7 +68,7 @@ public interface OnlineSectioningServer {
 	public XCourse getCourse(Long courseId);
 	public XCourseId getCourse(String course);
 	public XCourseId getCourse(Long courseId, String courseName);
-	public String getCourseDetails(Long courseId, CourseDetailsProvider provider);
+	public String getCourseDetails(Long courseId);
 	
 	public XStudent getStudent(Long studentId);
 	public XOffering getOffering(Long offeringId);
