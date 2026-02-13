@@ -23,10 +23,6 @@
 	<menu name="Courses" title="Course Timetabling">
 		<condition>
 			<or>
-				<propertyEquals name="tmtbl.menu.display_course_timetabling" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
-			<or>
 				<hasPermission name="InstructionalOfferings"/>
 				<hasPermission name="Classes"/>
 				<hasPermission name="HQLReportsCourses"/>
@@ -285,10 +281,6 @@
 	</menu>
 	<menu name="Curricula" title="Curriculum Timetabling">
 		<condition>
-			<or>
-				<propertyEquals name="tmtbl.menu.display_course_timetabling" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
 			<hasPermission name="CurriculumView"/>
 			<not>
 				<hasPermission name="Classes"/>
@@ -308,10 +300,6 @@
 	</menu>
 	<menu name="Students">
 		<condition>
-			<or>
-				<propertyEquals name="tmtbl.menu.display_student_sectioning" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
 			<or>
 				<hasPermission name="StudentScheduling"/>
 				<hasPermission name="HQLReportsStudents"/>
@@ -409,10 +397,6 @@
 	</menu>
 	<menu name="Examinations">
 		<condition>
-			<or>
-				<propertyEquals name="tmtbl.menu.display_exam_timetabling" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
 			<or>
 				<hasPermission name="Examinations"/>
 				<hasPermission name="HQLReportsExaminations"/>
@@ -574,18 +558,12 @@
 	</item>
 	<item name="Personal Schedule" page="personal" type="gwt">
 		<condition>
-			<or>
-				<hasPermission name="PersonalScheduleLookup"/>
-				<and>
-					<propertyEquals name="tmtbl.menu.display_personal_schedule" value="true" defaultValue="true"/>
-					<hasPermission name="PersonalSchedule"/>
-				</and>
-			</or>
+			<hasPermission name="PersonalSchedule"/>
 		</condition>
 	</item>
 	<item name="Lookup Classes" page="classes" type="gwt">
 		<condition>
-			<isAuthenticated/>
+			<hasPermission name="Events" authority="any"/>
 			<not>
 				<hasPermission name="HasRole"/>
 			</not>
@@ -593,7 +571,7 @@
 	</item>
 	<item name="Lookup Examinations" page="exams" type="gwt">
 		<condition>
-			<isAuthenticated/>
+			<hasPermission name="Events" authority="any"/>
 			<not>
 				<hasPermission name="HasRole"/>
 			</not>
@@ -601,29 +579,12 @@
 	</item>
 	<item name="Timetable" page="timetable" type="gwt">
 		<condition>
-			<or>
-				<hasRole name="Anonymous"/>
-				<and>
-					<isAuthenticated/>
-					<not>
-						<and>
-							<or>
-								<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
-								<hasPermission name="IsAdmin"/>
-							</or>
-							<hasPermission name="Events" authority="any"/>
-						</and>
-					</not>
-				</and>
-			</or>
+			<hasPermission name="Events" authority="any"/>
+			<hasRole name="Anonymous"/>
 		</condition>
 	</item>
 	<menu name="Events">
 		<condition>
-			<or>
-				<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
 			<or>
 				<hasPermission name="Events" authority="any"/>
 				<hasPermission name="HQLReportsEvents"/>
@@ -675,25 +636,6 @@
 			</condition>
 		</item>
 	</menu>
-	<!-- 
-	<menu name="OLD Events">
-		<condition>
-			<or>
-				<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
-				<hasPermission name="IsAdmin"/>
-			</or>
-			<hasPermission name="Events" authority="any"/>
-		</condition>
-		<item name="Events" page="eventList.do"/>
-		<item name="Meetings" page="meetingList.do"/>
-		<item name="Add Event" page="eventAdd.do">
-			<condition>
-				<hasPermission name="EventAddSpecial" authority="any"/>
-			</condition>
-		</item>
-		<item name="Room Availability" page="eventGrid.do"/>
-	</menu>
-	-->
 	<separator/>
 	<menu name="Administration">
 		<condition>
