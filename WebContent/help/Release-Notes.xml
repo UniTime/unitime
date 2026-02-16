@@ -72,6 +72,14 @@
 				<line>Only available to user roles with Student Sectioning Solver Admin Reports role.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant: Custom Enrollment Provider</name>
+			<description>
+				<line>Fixed an issue that occurs when a student is enrolled in the same class multiple times (under different courses), tries to drop a class, and the drop is not allowed/fails due to the external system.
+					<line>The student was removed from the section in UniTime, and Special Registration did not get triggered.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
