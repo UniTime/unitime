@@ -277,7 +277,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 						ClassAssignmentInterface.ClassAssignment ca = i.next();
 						if (ca == null || ca.isFreeTime() || ca.getClassId() == null || ca.isDummy() || ca.isTeachingAssignment()) continue;
 						for (EnrollmentFailure f: failures) {
-							if (!f.isEnrolled() && f.getSection().getSectionId().equals(ca.getClassId())) {
+							if (!f.isEnrolled() && f.getSection().getSectionId().equals(ca.getClassId()) &&
+									f.getCourse().getCourseId().equals(ca.getCourseId())) {
 								i.remove();
 								break;
 							}
@@ -286,7 +287,8 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					failures: for (EnrollmentFailure f: failures) {
 						if (!f.isEnrolled()) continue;
 						for (ClassAssignmentInterface.ClassAssignment ca: getAssignment())
-							if (ca != null && f.getSection().getSectionId().equals(ca.getClassId())) continue failures;
+							if (ca != null && f.getSection().getSectionId().equals(ca.getClassId()) &&
+									f.getCourse().getCourseId().equals(ca.getCourseId())) continue failures;
 						ClassAssignment ca = new ClassAssignment();
 						ca.setClassId(f.getSection().getSectionId());
 						ca.setCourseId(f.getCourse().getCourseId());
