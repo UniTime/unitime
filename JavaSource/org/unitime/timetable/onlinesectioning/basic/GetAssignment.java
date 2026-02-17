@@ -763,6 +763,8 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 							for (Request q: enrl.getStudent().getRequests()) {
 								if (q.equals(enrl.getRequest())) continue;
 								Enrollment x = assignment.getValue(q);
+								if (x == null && q instanceof FreeTimeRequest && q.getPriority() < request.getPriority())
+									x = ((FreeTimeRequest)q).createEnrollment();
 								if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 						        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 						        	SctAssignment a = i.next();
@@ -1169,6 +1171,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						lastRequest = r;
 						lastRequestPriority = cd.getPriority();
 						rc.setStatus(RequestedCourseStatus.SAVED);
+						r.setCritical(cd.getCritical());
 					}
 				} else if (cd instanceof XCourseRequest) {
 					r = new CourseRequestInterface.Request();

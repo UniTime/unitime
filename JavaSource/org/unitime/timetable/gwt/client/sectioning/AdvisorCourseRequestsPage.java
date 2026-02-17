@@ -1383,7 +1383,11 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								new WebTable.Cell(""),
 								new WebTable.NoteCell(note, noteTitle),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
-								new WebTable.Cell(""),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
+									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") :
+									first && request.isLC() ? new WebTable.Cell(MESSAGES.opSetLC(), MESSAGES.descriptionRequestLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) : new WebTable.Cell("")),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (priority > 1 && first)
@@ -1505,7 +1509,11 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
-								new WebTable.Cell(""),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), "") :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), "") :
+									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), "") :
+									first && request.isLC() ? new WebTable.Cell(MESSAGES.opSetLC(), MESSAGES.descriptionRequestLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) : new WebTable.Cell("")),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (first)

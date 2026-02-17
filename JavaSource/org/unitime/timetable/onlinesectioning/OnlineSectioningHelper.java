@@ -776,10 +776,10 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
     			request.setWaitlistedTimeStamp(cr.getWaitListedTimeStamp().getTime());
         	request.setWaitList(cr.isWaitlist());
         	request.setNoSubs(cr.isNoSub());
-        	request.setCritical(cr.getCritical() == CourseDemand.Critical.CRITICAL.ordinal());
-        	request.setImportant(cr.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal());
-        	request.setVital(cr.getCritical() == CourseDemand.Critical.VITAL.ordinal());
     	}
+    	request.setCritical(r.getCritical() == CourseDemand.Critical.CRITICAL.ordinal());
+    	request.setImportant(r.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal());
+    	request.setVital(r.getCritical() == CourseDemand.Critical.VITAL.ordinal());
     	return request;
     }
     

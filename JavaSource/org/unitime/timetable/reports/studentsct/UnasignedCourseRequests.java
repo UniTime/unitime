@@ -526,6 +526,8 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 						for (Request q: enrl.getStudent().getRequests()) {
 							if (q.equals(request)) continue;
 							Enrollment x = assignment.getValue(q);
+							if (x == null && q instanceof FreeTimeRequest && q.getPriority() < request.getPriority())
+								x = ((FreeTimeRequest)q).createEnrollment();
 							if (x == null || x.getAssignments() == null || x.getAssignments().isEmpty()) continue;
 					        for (Iterator<SctAssignment> i = x.getAssignments().iterator(); i.hasNext();) {
 					        	SctAssignment a = i.next();
@@ -603,9 +605,9 @@ public class UnasignedCourseRequests extends AbstractStudentSectioningReport {
 										if (i.hasNext()) ov += ",";
 									}
 								ts.add(ov);
-								if (cr.getRequestPriority() != null && (conflictPriority == null || conflictPriority.ordinal() > cr.getRequestPriority().ordinal()))
-									conflictPriority = cr.getRequestPriority();
 							}
+							if (q.getRequest().getRequestPriority() != null && (conflictPriority == null || conflictPriority.ordinal() > q.getRequest().getRequestPriority().ordinal()))
+								conflictPriority = q.getRequest().getRequestPriority();
 						}
 						String message = "";
 						for (Iterator<String> i = ts.iterator(); i.hasNext();) {

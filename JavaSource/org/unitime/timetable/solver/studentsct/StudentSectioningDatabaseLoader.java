@@ -279,6 +279,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     private boolean iReplacePendingWithAlternative = false;
     private boolean iReplaceCancelledWitAlternative = false;
     private boolean iReplaceNotOfferedWithAlternative = false;
+    private String iFreeTimeAccommodationReference = "FT";
+    private RequestPriority iFreeTimeAccRequestPriority = null;
     
     public StudentSectioningDatabaseLoader(StudentSolver solver, StudentSectioningModel model, org.cpsolver.ifs.assignment.Assignment<Request, Enrollment> assignment) {
         super(model, assignment);
@@ -464,6 +466,16 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iReplacePendingWithAlternative = model.getProperties().getPropertyBoolean("Load.ReplacePendingWithSubstitute", iReplacePendingWithAlternative);
         iReplaceCancelledWitAlternative = model.getProperties().getPropertyBoolean("Load.ReplaceCancelledWithSubstitute", iReplaceCancelledWitAlternative);
         iReplaceNotOfferedWithAlternative = model.getProperties().getPropertyBoolean("Load.ReplaceNotOfferedWithSubstitute", iReplaceNotOfferedWithAlternative);
+        
+        iFreeTimeAccommodationReference = model.getProperties().getProperty("Accommodations.FreeTimeReference", iFreeTimeAccommodationReference);
+        String ftAccPriority = model.getProperties().getProperty("Load.FreeTimeAccRequestPriority");
+        if (ftAccPriority != null && !ftAccPriority.isEmpty()) {
+        	try {
+        		iFreeTimeAccRequestPriority = RequestPriority.valueOf(ftAccPriority);
+        	} catch (Exception e) {
+        		iProgress.warn("Failed to parse free-time accommodation request priority " + ftAccPriority + ".");
+        	}
+        }
     }
     
     public void load() {
@@ -1527,6 +1539,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         	for (StudentAccomodation ac: s.getAccomodations())
         		if (iShortDistanceAccomodationReference.equals(ac.getAbbreviation()))
         			student.setNeedShortDistances(true);
+        boolean isFreeTimeAcc = false;
+        if (iFreeTimeAccommodationReference != null && iFreeTimeAccRequestPriority != null)
+        	for (StudentAccomodation ac: s.getAccomodations())
+        		if (iFreeTimeAccommodationReference.equals(ac.getAbbreviation()))
+        			isFreeTimeAcc = true;
+
         for (StudentGroup g: s.getGroups()) {
         	StudentGroupType type = g.getType();
         	if (type != null && type.getAllowDisabledSection() == StudentGroupType.AllowDisabledSection.AlwaysAllowed) {
@@ -1571,11 +1589,13 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                         cd.getFreeTime().getStartSlot(),
                         cd.getFreeTime().getLength(),
                         0, 0, -1l, "", iFreeTimePattern, 0);
-                new FreeTimeRequest(
+            	FreeTimeRequest ftr = new FreeTimeRequest(
                         cd.getUniqueId(),
                         cd.getPriority(),
                         cd.isAlternative(),
                         student, ft);
+            	if (isFreeTimeAcc)
+            		ftr.setRequestPriority(iFreeTimeAccRequestPriority);
             } else if (!cd.getCourseRequests().isEmpty()) {
                 Vector<Course> courses = new Vector<Course>();
                 HashSet<Choice> selChoices = new HashSet<Choice>();
@@ -2099,7 +2119,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		if (r instanceof CourseRequest) {
     			if (r.getInitialAssignment() != null && getAssignment().getValue(r) != null)
     				assigned ++;
-    			if (r.isCritical() && !r.isAlternative())
+    			if (r.getRequestPriority() != RequestPriority.Normal && !r.isAlternative())
     				critical ++;
     			for (Course c: ((CourseRequest)r).getCourses())
     				if (c.hasParent()) {
@@ -2107,6 +2127,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     				}
     		} else if (r instanceof FreeTimeRequest) {
     			freetime ++;
+    			if (r.getRequestPriority() != RequestPriority.Normal) critical ++;
     		}
     	}
     	if (iMoveParentCoursesUp && dependents > 0) {
@@ -2156,8 +2177,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						}
 					}
 					if (iMoveFreeTimesDown) {
-						boolean f1 = (r1 instanceof FreeTimeRequest);
-						boolean f2 = (r2 instanceof FreeTimeRequest);
+						boolean f1 = (r1 instanceof FreeTimeRequest) && r1.getRequestPriority() == RequestPriority.Normal;
+						boolean f2 = (r2 instanceof FreeTimeRequest) && r2.getRequestPriority() == RequestPriority.Normal;
 						if (f1 != f2) return f1 ? 1 : -1;
 					}
 					return r1.getPriority() < r2.getPriority() ? -1 : 1;

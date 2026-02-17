@@ -229,6 +229,7 @@ public class GetRequest extends WaitlistedOnlineSectioningAction<CourseRequestIn
 							request.getCourses().add(r);
 						lastRequest = r;
 						lastRequestPriority = cd.getPriority();
+						r.setCritical(cd.getCritical());
 						rc.setStatus(RequestedCourseStatus.SAVED);
 					}
 				} else if (cd instanceof XCourseRequest) {
