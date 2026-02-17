@@ -801,7 +801,12 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(""),
 								new WebTable.NoteCell(note, noteTitle),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
-								new WebTable.Cell(""),
+								first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical()) :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), MESSAGES.opSetImportant()) :
+									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), MESSAGES.opSetVital()) :
+									first && request.isLC() ? new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) :
+									new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (priority > 1 && first)
@@ -924,7 +929,11 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 								new WebTable.Cell(""),
 								new WebTable.Cell(""),
 								new WebTable.IconCell(RESOURCES.requestSaved(), MESSAGES.requested(free), MESSAGES.reqStatusRegistered()),
-								new WebTable.Cell(""),
+								(first && request.isCritical() ? new WebTable.IconCell(RESOURCES.requestsCritical(), MESSAGES.descriptionRequestCritical(), MESSAGES.opSetCritical()) :
+									first && request.isImportant() ? new WebTable.IconCell(RESOURCES.requestsImportant(), MESSAGES.descriptionRequestImportant(), MESSAGES.opSetImportant()) :
+									first && request.isVital() ? new WebTable.IconCell(RESOURCES.requestsVital(), MESSAGES.descriptionRequestVital(), MESSAGES.opSetVital()) :
+									first && request.isLC() ? new WebTable.IconCell(RESOURCES.requestsLC(), MESSAGES.descriptionRequestLC(), MESSAGES.opSetLC()) :
+									first && request.isVisitingF2F() ? new WebTable.IconCell(RESOURCES.requestsVisitingF2F(), MESSAGES.descriptionRequestVisitingF2F(), MESSAGES.opSetVisitingF2F()) : new WebTable.Cell("")),
 								new WebTable.Cell(""),
 								new WebTable.Cell(first && request.hasTimeStamp() ? sDF.format(request.getTimeStamp()) : ""));
 						if (first)

@@ -80,7 +80,6 @@ public class XCourseRequest extends XRequest {
     private Map<XCourseId, List<XPreference>> iPreferences = null;
     private String iMessage = null;
     private Map<XCourseId, XOverride> iOverrides = null;
-    private int iCritical = 0;
     private Date iWaitListedTimeStamp = null;
     private XCourseId iWaitListSwapWithCourseOffering = null;
 
@@ -153,7 +152,6 @@ public class XCourseRequest extends XRequest {
         }
         iWaitlist = (demand.isWaitlist() != null && demand.isWaitlist());
         iNoSub = (demand.isNoSub() != null && demand.isNoSub().booleanValue());
-        iCritical = demand.getEffectiveCritical().ordinal();
         iTimeStamp = (demand.getTimestamp() == null ? new Date() : demand.getTimestamp());
         iWaitListedTimeStamp = demand.getWaitlistedTimeStamp();
         for (CourseRequest cr: crs) {
@@ -186,7 +184,6 @@ public class XCourseRequest extends XRequest {
     	iCourseIds.add(new XCourseId(course));
         iWaitlist = false;
         iNoSub = false;
-        iCritical = 0;
         if (classes != null && !classes.isEmpty())
         	iEnrollment = new XEnrollment(student, course, helper, classes);
         if (iEnrollment != null)
@@ -215,7 +212,6 @@ public class XCourseRequest extends XRequest {
     	iCourseIds.add(course);
         iWaitlist = false;
         iNoSub = false;
-        iCritical = 0;
         iEnrollment = enrollment;
         if (iEnrollment != null)
         	iTimeStamp = iEnrollment.getTimeStamp();
@@ -232,7 +228,6 @@ public class XCourseRequest extends XRequest {
     	iCourseIds.add(course);
         iWaitlist = false;
         iNoSub = false;
-        iCritical = 0;
         iTimeStamp = new Date();
         if (rc != null) {
         	List<XPreference> prefs = new ArrayList<XPreference>();
@@ -254,7 +249,6 @@ public class XCourseRequest extends XRequest {
     	iCourseIds.addAll(request.getCourseIds());
     	iWaitlist = request.isWaitlist();
     	iNoSub = request.isNoSub();
-    	iCritical = request.getCritical();
     	iTimeStamp = request.getTimeStamp();
     	iWaitListedTimeStamp = request.getWaitListedTimeStamp();
     	iEnrollment = enrollment;
@@ -275,7 +269,6 @@ public class XCourseRequest extends XRequest {
     		iCourseIds.add(new XCourseId(course));
     	iWaitlist = request.isWaitlist();
     	iNoSub = request.isWaitlist();
-    	iCritical = CourseDemand.Critical.fromRequestPriority(request.getRequestPriority()).ordinal();
     	iTimeStamp = request.getTimeStamp() == null ? null : new Date(request.getTimeStamp());
     	iWaitListedTimeStamp = (request.isWaitlist() ? new Date() : null);
     	iEnrollment = enrollment == null ? null : new XEnrollment(enrollment);
@@ -441,13 +434,6 @@ public class XCourseRequest extends XRequest {
     	}
     	return false;
     }
-    
-    public int getCritical() {
-    	return iCritical;
-    }
-    public boolean isCritical() {
-    	return iCritical > 0 && iCritical != 5;
-    }
         
     /**
      * Time stamp of the request
@@ -471,8 +457,6 @@ public class XCourseRequest extends XRequest {
     public void setWaitlist(boolean waitlist) { iWaitlist = waitlist; }
     
     public void setNoSub(boolean noSub) { iNoSub = noSub; }
-    
-    public void setCritical(int critical) { iCritical = critical; }
     
     public boolean hasSectionWaitlist(XCourseId courseId) {
     	List<XWaitListedSection> sections = getSectionWaitlist(courseId);
@@ -795,7 +779,6 @@ public class XCourseRequest extends XRequest {
         	}
         }
         
-        iCritical = in.readInt();
         iWaitListSwapWithCourseOffering = null;
         if (in.readBoolean())
         	iWaitListSwapWithCourseOffering = new XCourseId(in);
@@ -861,7 +844,6 @@ public class XCourseRequest extends XRequest {
 				entry.getValue().writeExternal(out);
 			}
 		
-		out.writeInt(iCritical);
 		out.writeBoolean(iWaitListSwapWithCourseOffering != null);
 		if (iWaitListSwapWithCourseOffering != null)
 			iWaitListSwapWithCourseOffering.writeExternal(out);

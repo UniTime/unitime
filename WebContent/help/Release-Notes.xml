@@ -86,6 +86,18 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Batch Student Scheduling: Free Times</name>
+			<description>
+				<line>For students with FT (need free-time) accommodation: added an ability to mark the free-time requests as higher priority.
+					<line>Using solver parameter Load.FreeTimeAccRequestPriority set to Normal, Important, Vital, or Critical</line>
+				</line>
+				<line>Added an ability to make sure that low-priority course requests do not overlap with a higher-priority free time request, even when it is not assigned.
+					<line>Using solver parameter Sectioning.FreeTimeConflict is set to true; set to false by default.</line>
+				</line>
+				<line>A few changes in the user interface to show free time request priority and free time conflicts.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>

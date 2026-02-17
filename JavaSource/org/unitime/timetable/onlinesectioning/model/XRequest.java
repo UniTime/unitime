@@ -27,6 +27,7 @@ import java.io.Serializable;
 
 
 import org.cpsolver.studentsct.model.Request;
+import org.cpsolver.studentsct.model.Request.RequestPriority;
 import org.unitime.timetable.model.CourseDemand;
 
 /**
@@ -38,6 +39,7 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
 	protected int iPriority = 0;
 	protected boolean iAlternative = false;
 	protected Long iStudentId;
+	protected int iCritical = 0;
     
     public XRequest() {}
     
@@ -46,6 +48,7 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
     	iPriority = demand.getPriority();
     	iAlternative = demand.isAlternative();
     	iStudentId = demand.getStudent().getUniqueId();
+        iCritical = demand.getEffectiveCritical().ordinal();
     }
     
     public XRequest(Request request) {
@@ -53,6 +56,7 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
     	iPriority = request.getPriority();
     	iAlternative = request.isAlternative();
     	iStudentId = request.getStudent().getId();
+    	iCritical = CourseDemand.Critical.fromRequestPriority(request.getRequestPriority()).ordinal();
     }
     
     public XRequest(XRequest request) {
@@ -60,6 +64,7 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
     	iPriority = request.getPriority();
     	iAlternative = request.isAlternative();
     	iStudentId = request.getStudentId();
+    	iCritical = request.getCritical();
     }
 
     /** Request id */
@@ -82,6 +87,18 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
     }
     public void setPriority(int priority) {
     	iPriority = priority;
+    }
+    
+    public void setCritical(int critical) { iCritical = critical; }
+    
+    public int getCritical() {
+    	return iCritical;
+    }
+    public boolean isCritical() {
+    	return iCritical > 0 && iCritical != 5;
+    }
+    public RequestPriority getRequestPriority() {
+    	return CourseDemand.Critical.values()[iCritical].toRequestPriority();
     }
 
     /** Student to which this request belongs */
@@ -114,6 +131,7 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
 		iPriority = in.readInt();
 		iAlternative = in.readBoolean();
 		iStudentId = in.readLong();
+        iCritical = in.readInt();
 	}
 
 	@Override
@@ -122,5 +140,6 @@ public abstract class XRequest implements Serializable, Comparable<XRequest>, Ex
 		out.writeInt(iPriority);
 		out.writeBoolean(iAlternative);
 		out.writeLong(iStudentId);
+		out.writeInt(iCritical);
 	}
 }

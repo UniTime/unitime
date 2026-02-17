@@ -374,9 +374,10 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 					for (XRequest r: student.getRequests()) {
 						if (r instanceof XFreeTimeRequest) {
 							XFreeTimeRequest ft = (XFreeTimeRequest)r;
-							new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
+							FreeTimeRequest ftr = new FreeTimeRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent,
 									new TimeLocation(ft.getTime().getDays(), ft.getTime().getSlot(), ft.getTime().getLength(), 0, 0.0,
 											-1l, "Free Time", server.getAcademicSession().getFreeTimePattern(), 0));
+							ftr.setRequestPriority(r.getRequestPriority());
 						} else {
 							XCourseRequest cr = (XCourseRequest)r;
 							List<Course> req = new ArrayList<Course>();
@@ -386,18 +387,7 @@ public class GenerateSectioningReport implements OnlineSectioningAction<CSVFile>
 							}
 							if (!req.isEmpty()) {
 								CourseRequest clonnedRequest = new CourseRequest(r.getRequestId(), r.getPriority(), r.isAlternative(), clonnedStudent, req, cr.isWaitListOrNoSub(wl), cr.getTimeStamp() == null ? null : cr.getTimeStamp().getTime());
-								if (cr.isCritical()) {
-									if (cr.getCritical() == CourseDemand.Critical.CRITICAL.ordinal())
-										clonnedRequest.setRequestPriority(RequestPriority.Critical);
-									else if (cr.getCritical() == CourseDemand.Critical.IMPORTANT.ordinal())
-										clonnedRequest.setRequestPriority(RequestPriority.Important);
-									else if (cr.getCritical() == CourseDemand.Critical.VITAL.ordinal())
-										clonnedRequest.setRequestPriority(RequestPriority.Vital);
-									else if (cr.getCritical() == CourseDemand.Critical.LC.ordinal())
-										clonnedRequest.setRequestPriority(RequestPriority.LC);
-									else if (cr.getCritical() == CourseDemand.Critical.VISITING_F2F.ordinal())
-										clonnedRequest.setRequestPriority(RequestPriority.VisitingF2F);
-								}
+								clonnedRequest.setRequestPriority(cr.getRequestPriority());
 								cr.fillChoicesIn(clonnedRequest);
 								XEnrollment enrollment = cr.getEnrollment();
 								if (enrollment != null) {
