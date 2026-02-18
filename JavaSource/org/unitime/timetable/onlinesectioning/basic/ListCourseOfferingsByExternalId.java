@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignmen
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XInstructor;
@@ -85,6 +86,9 @@ public class ListCourseOfferingsByExternalId extends ListCourseOfferings {
 							a.setCancelled(section.isCancelled());
 							a.addNote(course.getNote());
 							a.addNote(section.getNote());
+							XConfig config = offering.getConfig(subpart.getConfigId());
+							a.setDisclaimer(config.getSchedulingDisclaimer());
+							a.addNote(config.getSchedulingDisclaimer());
 							a.setCredit(subpart.getCredit(courseId));
 							a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 							Float creditOverride = section.getCreditOverride(courseId);

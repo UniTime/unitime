@@ -723,6 +723,8 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					a.setExternalId(clazz.getSchedulingSubpart().getItypeDesc().trim() + " " + clazz.getSectionNumberString());
 				a.setClassNumber(clazz.getSectionNumberString(hibSession));
 				a.addNote(clazz.getSchedulePrintNote());
+				a.setDisclaimer(clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingDisclaimer());
+				a.addNote(clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingDisclaimer());
 
 				Assignment ass = clazz.getCommittedAssignment();
 				Placement p = (ass == null ? null : ass.getPlacement());
@@ -1764,12 +1766,16 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								if (clazz.getParentSection() == null)
 									clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(hibSession));
 							}
-							if (enrollment.getCourseOffering().getScheduleBookNote() != null)
+							if (enrollment.getCourseOffering().getScheduleBookNote() != null && course.getClassAssignments().size() == 1)
 								clazz.addNote(enrollment.getCourseOffering().getScheduleBookNote());
 							if (enrollment.getClazz().getSchedulePrintNote() != null)
 								clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
 							if (attendance != null)
 								clazz.addNote(attendance.getClassNote(clazz.getExternalId()));
+							if (course.getClassAssignments().size() == 1) {
+								clazz.setDisclaimer(enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getSchedulingDisclaimer());
+								clazz.addNote(enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getSchedulingDisclaimer());
+							}
 							Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
 							int minLimit = enrollment.getClazz().getExpectedCapacity();
 		                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();

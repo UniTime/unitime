@@ -318,7 +318,7 @@ public class StudentScheduleTable extends Composite {
 							new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getDatePattern()),
 							new WebTable.Cell(unassignedMessage, 3, null),
-							clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""),
+							clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") :  new WebTable.Cell(""),
 							new WebTable.AbbvTextCell(clazz.getCredit()));
 					break;
 				}

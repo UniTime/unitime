@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,6 +47,7 @@ import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
@@ -3144,63 +3146,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return null;
 	}
 	
-	public List<String> getCoursesToDrop() {
-		if (iLastAssignment != null && iSavedAssignment != null) {
-			List<String> ret = new ArrayList<String>();
-			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
-					if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
-						continue courses;
-				ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
-			}
-			return ret;
-		}
-		return null;
-	}
-	
-	public List<String> getCourseChangesWithHonorsGradeMode() {
-		if (iLastAssignment != null && iSavedAssignment != null) {
-			List<String> ret = new ArrayList<String>();
-			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				classes: for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
-					if (ca.getGradeMode() != null && ca.getGradeMode().isHonor()) {
-						for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
-							if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
-								for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
-									if (ca.getClassId().equals(y.getClassId())) continue classes;
-						ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
-						continue courses;
-					}
-				}
-			}
-			return ret;
-		}
-		return null;
-	}
-	
-	public List<String> getCourseChangesWithVarbiableCredit() {
-		if (iLastAssignment != null && iSavedAssignment != null) {
-			List<String> ret = new ArrayList<String>();
-			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				classes: for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
-					if (ca.getCreditHour() != null && ca.hasVariableCredit() && ca.getCreditMin() < ca.getCreditHour()) {
-						for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
-							if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
-								for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
-									if (ca.getClassId().equals(y.getClassId())) continue classes;
-						ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
-						continue courses;
-					}
-				}
-			}
-			return ret;
-		}
-		return null;
-	}
-	
 	public boolean useDefaultConfirmDialog() {
 		return iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.GWT_CONFIRMATIONS);
 	}
@@ -3210,31 +3155,172 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	}
 	
 	protected Command confirmEnrollment(final Command callback) {
-		return confirmEnrollmentDrop(confirmWaitListDrop(confirmEnrollmentHonors(confirmEnrollmentVariableCredits(confirmSectionSwapNoPref(confirmLongTravel(callback))))));
+		final List<Confirmation> confirmations = new ArrayList<Confirmation>();
+		confirmEnrollmentDrop(confirmations);
+		confirmWaitListDrop(confirmations);
+		confirmEnrollmentHonors(confirmations);
+		confirmEnrollmentVariableCredits(confirmations);
+		confirmSectionSwapNoPref(confirmations);
+		confirmLongTravel(confirmations);
+		confirmCoursesDisclaimers(confirmations);
+		Collections.sort(confirmations, new Comparator<Confirmation>() {
+			private Integer position(String course) {
+				int idx = 0;
+				if (iLastAssignment != null) {
+					for (ClassAssignmentInterface.CourseAssignment c: iLastAssignment.getCourseAssignments()) {
+						if (course.equals(c.getCourseName())) return idx;
+						idx++;
+					}
+				}
+				if (iSavedAssignment != null) {
+					for (ClassAssignmentInterface.CourseAssignment c: iSavedAssignment.getCourseAssignments()) {
+						if (course.equals(c.getCourseName())) return idx;
+						idx++;
+					}
+				}
+				if (iSavedRequest != null) {
+					for (Request r: iSavedRequest.getCourses()) {
+						if (r.hasRequestedCourse())
+							for (RequestedCourse rc: r.getRequestedCourse()) {
+								if (course.equals(rc.getCourseName())) return idx;
+								idx++;
+							}
+					}
+					for (Request r: iSavedRequest.getAlternatives()) {
+						if (r.hasRequestedCourse())
+							for (RequestedCourse rc: r.getRequestedCourse()) {
+								if (course.equals(rc.getCourseName())) return idx;
+								idx++;
+							}
+					}
+				}
+				return idx;
+			}
+
+			@Override
+			public int compare(Confirmation c1, Confirmation c2) {
+				return position(c1.getCourse()).compareTo(position(c2.getCourse()));
+			}
+		});
+		if (!confirmations.isEmpty()) {
+			return new Command() {
+				@Override
+				public void execute() {
+					final UniTimeDialogBox d = new UniTimeDialogBox(iScheduleChanged, iInRestore);
+					d.addStyleName("unitime-CourseRequestsConfirmationDialog");
+					d.setText(GWT_MESSAGES.dialogConfirmation());
+					d.setEscapeToHide(true);
+					d.setEnterToSubmit(new Command() {
+						@Override
+						public void execute() {
+							d.hide();
+							callback.execute();
+						}
+					});
+					
+					P panel = new P("unitime-ConfirmationPanel");
+					P bd = new P("body-panel");
+					panel.add(bd);
+
+					P ic = new P("icon-panel");
+					bd.add(ic);
+					ic.add(new Image(RESOURCES.statusInfo()));
+
+					P cp = new P("content-panel");
+					bd.add(cp);
+					P mp = new P("message-panel");
+					cp.add(mp);
+					
+					P m = new P("message"); m.setHTML(MESSAGES.confirmHeader());
+					mp.add(m);
+					
+					P ctab = null;
+					String last = null;
+					for (Confirmation cm: confirmations) {
+						if (ctab == null) { ctab = new P("course-table"); last = null; }
+						P cn = new P("course-name");
+						if (last == null || !last.equals(cm.getCourse())) cn.setText(cm.getCourse());
+						m = new P("course-message"); m.setText(MESSAGES.courseMessage(cm.getMessage()));
+						P crow = new P("course-row");
+						if (last == null || !last.equals(cm.getCourse())) crow.addStyleName("first-course-line");
+						crow.add(cn); crow.add(m);
+						ctab.add(crow);
+						last = cm.getCourse();
+					}
+					if (ctab != null) { mp.add(ctab); ctab = null; }
+					m = new P("message"); m.setHTML(MESSAGES.confirmQuestion());
+					mp.add(m);
+					
+					P bp = new P("buttons-panel");
+					panel.add(bp);
+					AriaButton yes = new AriaButton(GWT_MESSAGES.buttonConfirmYes());
+					yes.addStyleName("yes");
+					bp.add(yes);
+					yes.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							d.hide();
+							callback.execute();
+						}
+					});
+					
+					AriaButton no = new AriaButton(GWT_MESSAGES.buttonConfirmNo());
+					no.addStyleName("no");
+					bp.add(no);
+					no.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							d.hide();
+						}
+					});	
+					
+					d.setWidget(panel);
+
+					d.center();
+				}
+			};
+		} else {
+			return callback;
+		}
 	}
 
-	protected Command confirmEnrollmentDrop(final Command callback) {
+	protected void confirmEnrollmentDrop(List<Confirmation> confirmations) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
-			final String critical = getCriticalCoursesToDrop();
-			if (critical != null) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), critical, callback);
+			Set<String> dropped = new HashSet<String>();
+			if (iLastAssignment != null && iSavedAssignment != null && iSavedRequest != null) {
+				for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					RequestPriority rp = iSavedRequest.getRequestPriority(course);
+					if (rp == null || rp.isAlternative() || !rp.getRequest().isImportantOrMore()) continue;
+					boolean hasCourse = false;
+					for (RequestedCourse alt: rp.getRequest().getRequestedCourse()) {
+						if (alt.getCourseId() == null) continue;
+						for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+							if (alt.getCourseId().equals(x.getCourseId()) && x.isAssigned()) {
+								hasCourse = true; break;
+							}
 					}
-				};
+					if (!hasCourse) {
+						if (rp.getRequest().isCritical() && dropped.add(course.getCourseName()))
+							confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmEnrollmentCriticalCourseDrop(course.getCourseName())));
+						else if (rp.getRequest().isImportant() && dropped.add(course.getCourseName()))
+							confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmEnrollmentImportantCourseDrop(course.getCourseName())));
+						else if (rp.getRequest().isVital() && dropped.add(course.getCourseName()))
+							confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmEnrollmentVitalCourseDrop(course.getCourseName())));
+					}
+				}
 			}
-			final List<String> drops = getCoursesToDrop();
-			if (drops != null && !drops.isEmpty()) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentCourseDrop(ToolBox.toString(drops)), callback);
-					}
-				};
+			if (iLastAssignment != null && iSavedAssignment != null) {
+				courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+						if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+							continue courses;
+					if (dropped.add(course.getCourseName()))
+						confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmEnrollmentCourseDrop(course.getCourseName())));
+				}
 			}
 		}
-		return callback;
 	}
 	
 	public List<String> getCoursesToDropWaitList() {
@@ -3258,49 +3344,64 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		return null;
 	}
 	
-	public Command confirmWaitListDrop(final Command callback) {
+	public void confirmWaitListDrop(List<Confirmation> confirmations) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_DROP)) {
-			final List<String> wl = getCoursesToDropWaitList();
-			if (wl != null && !wl.isEmpty()) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmCourseDropFromWaitList(ToolBox.toString(wl)), callback);
+			if (iSavedRequest != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+				r: for (Request r: iSavedRequest.getCourses()) {
+					if (r.isWaitList() && r.hasRequestedCourse()) {
+						for (RequestedCourse rc: r.getRequestedCourse())
+							if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue r; 
+						for (RequestedCourse rc: r.getRequestedCourse()) {
+							if (rc.isCanWaitList() && rc.hasCourseId() && !Boolean.TRUE.equals(iCourseRequests.getWaitList(rc.getCourseId()))) {
+								if (rc.getStatus() == RequestedCourseStatus.SAVED || rc.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED) {
+									confirmations.add(new Confirmation(rc.getCourseName(), MESSAGES.confirmCourseDropFromWaitList(rc.getCourseName())));
+								}
+							}
+						}
 					}
-				};
+				}
 			}
 		}
-		return callback;
 	}
 	
-	protected Command confirmEnrollmentHonors(final Command callback) {
+	protected void confirmEnrollmentHonors(List<Confirmation> confirmations) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasGradeModes()) {
-			final List<String> changes = getCourseChangesWithHonorsGradeMode();
-			if (changes != null && !changes.isEmpty()) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentHonorsGradeModeChange(ToolBox.toString(changes)), callback);
+			if (iLastAssignment != null && iSavedAssignment != null) {
+				courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					classes: for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+						if (ca.getGradeMode() != null && ca.getGradeMode().isHonor()) {
+							for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+								if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+									for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
+										if (ca.getClassId().equals(y.getClassId())) continue classes;
+							confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmEnrollmentHonorsGradeModeChange(course.getCourseName())));
+							continue courses;
+						}
 					}
-				};
+				}
 			}
 		}
-		return callback;
 	}
 	
-	protected Command confirmEnrollmentVariableCredits(final Command callback) {
+	protected void confirmEnrollmentVariableCredits(List<Confirmation> confirmations) {
 		if (iEligibilityCheck != null && iEligibilityCheck.hasGradeModes()) {
-			final List<String> changes = getCourseChangesWithVarbiableCredit();
-			if (changes != null && !changes.isEmpty()) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmEnrollmentVariableCreditChange(ToolBox.toString(changes)), callback);
+			if (iLastAssignment != null && iSavedAssignment != null) {
+				courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					classes: for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+						if (ca.getCreditHour() != null && ca.hasVariableCredit() && ca.getCreditMin() < ca.getCreditHour()) {
+							for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+								if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+									for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
+										if (ca.getClassId().equals(y.getClassId())) continue classes;
+							confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmEnrollmentVariableCreditChange(course.getCourseName())));
+							continue courses;
+						}
 					}
-				};
+				}
 			}
 		}
-		return callback;
 	}
 
 	protected CourseFinder getQuickAddFinder() {
@@ -4139,83 +4240,107 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		return iWaitListedRequestPreferences;
 	}
-	
-	public List<String> getSectionSwapsNoPrefs() {
-		if (iLastAssignment != null) {
-			List<String> ret = new ArrayList<String>();
-			courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || !course.isCanWaitList() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				CourseRequestLine line = iCourseRequests.getWaitListedLine(course.getCourseId());
-				Request r = (line == null ? null : line.getValue());
-				if (r != null && r.isWaitList() && course.getCourseId().equals(r.getWaitListSwapWithCourseOfferingId())) {
-					for (RequestedCourse rc: r.getRequestedCourse()) {
-						if (!course.getCourseId().equals(rc.getCourseId())) continue courses; // has higher priority course
-						if (rc.getRequiredPreferences().isEmpty()) {
-							ret.add(course.getCourseName());
+
+	protected void confirmSectionSwapNoPref(List<Confirmation> confirmations) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
+			if (iLastAssignment != null) {
+				courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || !course.isCanWaitList() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					CourseRequestLine line = iCourseRequests.getWaitListedLine(course.getCourseId());
+					Request r = (line == null ? null : line.getValue());
+					if (r != null && r.isWaitList() && course.getCourseId().equals(r.getWaitListSwapWithCourseOfferingId())) {
+						for (RequestedCourse rc: r.getRequestedCourse()) {
+							if (!course.getCourseId().equals(rc.getCourseId())) continue courses; // has higher priority course
+							if (rc.getRequiredPreferences().isEmpty()) {
+								confirmations.add(new Confirmation(course.getCourseName(), 
+										MESSAGES.confirmSectionSwapNoPrefs(course.getCourseName())));
+							}
+							break;
 						}
+					}
+				}
+			}
+		}
+	}
+
+	protected void confirmLongTravel(List<Confirmation> confirmations) {
+		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_LONG_TRAVEL)) {
+			if (iLastAssignment != null) {
+				for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+					if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+					for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
+						if (ca.hasLongDistanceConflict()) {
+							boolean hadBefore = false;
+							if (iSavedAssignment != null)
+								x: for (ClassAssignmentInterface.CourseAssignment x: iSavedAssignment.getCourseAssignments())
+									if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+										for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
+											if (ca.getClassId().equals(y.getClassId()) && ca.hasLongDistanceConflict()) {
+												hadBefore = true; break x;
+											}
+							if (!hadBefore)
+								confirmations.add(new Confirmation(course.getCourseName(), MESSAGES.confirmLongTravel(course.getCourseName())));
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	protected void confirmCoursesDisclaimers(List<Confirmation> confirmations) {
+		if (iLastAssignment != null) {
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				String disclaimer = null;
+				for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+					if (clazz.hasDisclaimer()) {
+						disclaimer = clazz.getDisclaimer();
 						break;
 					}
 				}
-			}
-			return ret;
-		}
-		return null;
-	}
-	
-	protected Command confirmSectionSwapNoPref(final Command callback) {
-		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
-			final List<String> changes = getSectionSwapsNoPrefs();
-			if (changes != null && !changes.isEmpty()) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmSectionSwapNoPrefs(ToolBox.toString(changes)), callback);
-					}
-				};
-			}
-		}
-		return callback;
-	}
-	
-	public Set<String> getCoursesWithLongTravel() {
-		if (iLastAssignment != null) {
-			Set<String> ret = new TreeSet<String>();
-			for (ClassAssignmentInterface.CourseAssignment course: iLastAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				for (ClassAssignmentInterface.ClassAssignment ca: course.getClassAssignments()) {
-					if (ca.hasLongDistanceConflict()) {
-						boolean hadBefore = false;
-						if (iSavedAssignment != null)
-							x: for (ClassAssignmentInterface.CourseAssignment x: iSavedAssignment.getCourseAssignments())
-								if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
-									for (ClassAssignmentInterface.ClassAssignment y: x.getClassAssignments())
-										if (ca.getClassId().equals(y.getClassId()) && ca.hasLongDistanceConflict()) {
-											hadBefore = true; break x;
-										}
-						if (!hadBefore)
-							ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+				if (disclaimer == null) continue courses;
+				// assigned course that has a disclaimer
+				if (iSavedAssignment != null) {
+					for (ClassAssignmentInterface.CourseAssignment saved: iSavedAssignment.getCourseAssignments()) {
+						if (!saved.isAssigned() || saved.isFreeTime() || saved.isTeachingAssignment()) continue;
+						if (course.getCourseId().equals(saved.getCourseId())) {
+							// same course -- check if same disclaimer
+							for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
+								if (disclaimer.equalsIgnoreCase(clazz.getDisclaimer())) continue courses;
+							}
+						}
 					}
 				}
+				confirmations.add(new Confirmation(course.getCourseName(), disclaimer));
 			}
-			return ret;
 		}
-		return null;
+		
+		if (iLastAssignment != null && iSavedAssignment != null) {
+			List<String> ret = new ArrayList<String>();
+			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
+				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
+				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
+					if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
+						continue courses;
+				ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
+			}
+		}
 	}
 	
-	protected Command confirmLongTravel(final Command callback) {
-		if (iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CONFIRM_LONG_TRAVEL)) {
-			final Set<String> travels = getCoursesWithLongTravel();
-			if (travels != null && !travels.isEmpty()) {
-				return new Command() {
-					@Override
-					public void execute() {
-						UniTimeConfirmationDialog.confirm(useDefaultConfirmDialog(), MESSAGES.confirmLongTravel(ToolBox.toString(travels)), callback);
-					}
-				};
-			}
+	protected static class Confirmation {
+		private String iCourse;
+		private String iMessage;
+		
+		Confirmation(String course, String message) {
+			iCourse = course;
+			iMessage = message;
 		}
-		return callback;
+		
+		public String getCourse() { return iCourse; }
+		public String getMessage() { return iMessage; }
+		@Override
+		public String toString() {
+			return getCourse() + " - " + getMessage();
+		}
 	}
-				
-				
 }
