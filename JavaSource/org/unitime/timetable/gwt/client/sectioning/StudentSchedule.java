@@ -1134,7 +1134,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 							new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 							new WebTable.Cell(clazz.getDatePattern()),
 							new WebTable.PreCell(unassignedMessage, 3),
-							clazz.getNote() == null ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), ""),
+							clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""),
 							new WebTable.AbbvTextCell(clazz.getCredit()),
 							new WebTable.Cell(clazz.getEnrolledDate() != null ? sDF.format(clazz.getEnrolledDate()) : course.getRequestedDate() == null ? "" : sDF.format(course.getRequestedDate())));
 					break;

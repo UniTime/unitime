@@ -1799,13 +1799,19 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("This schedule only displays classes with assigned time. To see your full list of classes, please open the List of classes tab.")
 	String timeGridNotAssignedTimes();
 	
-	@DefaultMessage("Together with other registration changes, the course {0} will be dropped. Do you want to proceed?")
+	@DefaultMessage("Course {0} will be dropped.")
 	String confirmEnrollmentCourseDrop(String course);
+	
+	@DefaultMessage("Together with other registration changes, there are the following warnings:")
+	String confirmHeader();
+	
+	@DefaultMessage("Do you want to proceed?")
+	String confirmQuestion();
 		
-	@DefaultMessage("Together with other registration changes, the critical course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	@DefaultMessage("Critical course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor.")
 	String confirmEnrollmentCriticalCourseDrop(String course);
 	
-	@DefaultMessage("Together with other registration changes, the course {0} will have a long travel time. Do you want to proceed?")
+	@DefaultMessage("Course {0} will have a long travel time.")
 	String confirmLongTravel(String course);
 	
 	@DefaultMessage("<u>N</u>ew Course")
@@ -2836,10 +2842,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("{0} (Mixed)")
 	String gradeModeItemNotSame(String gm);
 	
-	@DefaultMessage("You are making changes to {0} that has an honors grade mode. This will change the grade mode back to the regular grade mode for this course. Do you want to proceed?")
+	@DefaultMessage("You are making changes to {0} that has an honors grade mode. This will change the grade mode back to the regular grade mode for this course.")
     String confirmEnrollmentHonorsGradeModeChange(String course);
 	
-	@DefaultMessage("You are making changes to {0} that has variable credit hours. This will change the credit hours back to the minimum for this course. Do you want to proceed?")
+	@DefaultMessage("You are making changes to {0} that has variable credit hours. This will change the credit hours back to the minimum for this course.")
     String confirmEnrollmentVariableCreditChange(String course);
 	
 	@DefaultMessage("Requested classes do not match your current schedule. The honors grade mode change cannot be processed. Please request a new grade mode change.")
@@ -3313,7 +3319,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Wait-Listed Courses")
 	String panelWaitListedCourses();
 	
-	@DefaultMessage("Course {0} will no longer be wait-listed. Do you want to proceed?")
+	@DefaultMessage("Course {0} will no longer be wait-listed.")
 	String confirmCourseDropFromWaitList(String course);
 	
 	@DefaultMessage("Course {0} cannot be wait-listed as there is a pending approval requested already.")
@@ -3457,10 +3463,10 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Between {0} and {1}")
 	String schedulingPrefClassesBetween(String fromDate, String toDate);
 
-	@DefaultMessage("Together with other registration changes, the vital course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	@DefaultMessage("Vital course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor.")
 	String confirmEnrollmentVitalCourseDrop(String course);
 	
-	@DefaultMessage("Together with other registration changes, the important course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor. Do you want to proceed?")
+	@DefaultMessage("Important course {0} will be dropped. This may prohibit progress towards degree. Please consult with your academic advisor.")
 	String confirmEnrollmentImportantCourseDrop(String course);
 
 	@DefaultMessage("Missing vital course {0}.")
@@ -3549,7 +3555,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DoNotTranslate
 	String advisedNotAssignedImportant(int important);
 	
-	@DefaultMessage("You are trying to wait-list for a different section of {0} without indicating which section(s) you need. The wait-list for {0} will not be active. Do you want to proceed?")
+	@DefaultMessage("You are trying to wait-list for a different section of {0} without indicating which section(s) you need. The wait-list for {0} will not be active.")
     String confirmSectionSwapNoPrefs(String course);
 	
 	@DefaultMessage("Max Credit")

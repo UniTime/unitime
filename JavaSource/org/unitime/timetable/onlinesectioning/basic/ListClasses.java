@@ -231,6 +231,8 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 						if (!a.isSaved() && checkAvailability)
 							a.setAvailable(imAvailable && isAvailable(enrollments, student, offering, c, config, section, enrollment));
 						a.addNote(section.getNote());
+						a.setDisclaimer(config.getSchedulingDisclaimer());
+						a.addNote(config.getSchedulingDisclaimer());
 						a.setCredit(subpart.getCredit(c.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(c.getCourseId()), subpart.getCreditMax(c.getCourseId()));
 						Float creditOverride = section.getCreditOverride(c.getCourseId());

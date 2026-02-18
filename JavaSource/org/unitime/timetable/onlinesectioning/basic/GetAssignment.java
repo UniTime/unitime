@@ -329,8 +329,13 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 											a.setParentSection(offering.getSection(section.getParentId()).getName(course.getCourseId()));
 										a.setSubpartId(section.getSubpartId());
 										a.setHasAlternatives(false);
-										a.addNote(course.getNote());
+										if (ca.getClassAssignments().size() == 1)
+											a.addNote(course.getNote());
 										a.addNote(section.getNote());
+										if (ca.getClassAssignments().size() == 1) {
+											a.setDisclaimer(config.getSchedulingDisclaimer());
+											a.addNote(config.getSchedulingDisclaimer());
+										}
 										a.setCredit(subpart.getCredit(course.getCourseId()));
 										a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 										Float creditOverride = section.getCreditOverride(course.getCourseId());
@@ -487,10 +492,15 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						if (clazz.getParentSection() == null)
 							clazz.setParentSection(enrollment.getClazz().getParentClass().getSectionNumberString(helper.getHibSession()));
 					}
-					if (enrollment.getCourseOffering().getScheduleBookNote() != null)
+					if (course.getClassAssignments().size() == 1 && enrollment.getCourseOffering().getScheduleBookNote() != null)
 						clazz.addNote(enrollment.getCourseOffering().getScheduleBookNote());
 					if (enrollment.getClazz().getSchedulePrintNote() != null)
 						clazz.addNote(enrollment.getClazz().getSchedulePrintNote());
+					if (course.getClassAssignments().size() == 1) {
+						clazz.setDisclaimer(enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getSchedulingDisclaimer());
+						clazz.addNote(enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getSchedulingDisclaimer());
+					}
+					
 					Placement placement = enrollment.getClazz().getCommittedAssignment() == null ? null : enrollment.getClazz().getCommittedAssignment().getPlacement();
 					int minLimit = enrollment.getClazz().getExpectedCapacity();
 	            	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();
@@ -869,6 +879,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						}
 					}
 				} else {
+					XConfig config = offering.getConfig(enrollment.getConfigId());
 					List<XSection> sections = offering.getSections(enrollment);
 					boolean hasAlt = false;
 					if (r.getCourseIds().size() > 1) {
@@ -914,10 +925,15 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 							a.setParentSection(offering.getSection(section.getParentId()).getName(course.getCourseId()));
 						a.setSubpartId(section.getSubpartId());
 						a.setHasAlternatives(hasAlt);
-						a.addNote(course.getNote());
+						if (ca.getClassAssignments().size() == 1)
+							a.addNote(course.getNote());
 						a.addNote(section.getNote());
 						if (attendance != null)
 							a.addNote(attendance.getClassNote(section.getExternalId(course.getCourseId())));
+						if (ca.getClassAssignments().size() == 1) {
+							a.setDisclaimer(config.getSchedulingDisclaimer());
+							a.addNote(config.getSchedulingDisclaimer());
+						}
 						a.setCredit(subpart.getCredit(course.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 						Float creditOverride = section.getCreditOverride(course.getCourseId());
@@ -943,7 +959,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 									}
 									if (otherSection.isDistanceConflict(student, section, m)) {
 										a.setDistanceConflict(true);
-										a.setLongDistanceConflict(otherSection.isLongDistanceConflict(student, otherSection, m));
+										a.setLongDistanceConflict(otherSection.isLongDistanceConflict(student, section, m));
 									}
 									if (section.getTime() != null && section.getTime().hasIntersection(otherSection.getTime()) && !section.isToIgnoreStudentConflictsWith(offering.getDistributions(), otherSection.getSectionId())) {
 										XCourse otherCourse = otherOffering.getCourse(otherEnrollment.getCourseId());
@@ -1014,6 +1030,7 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						a.setAlternative(r.isAlternative());
 						a.setClassId(section.getSectionId());
 						XSubpart subpart = offering.getSubpart(section.getSubpartId());
+						XConfig config = offering.getConfig(subpart.getConfigId());
 						a.setSubpart(subpart.getName());
 						a.setClassNumber(section.getName(-1l));
 						a.setSection(section.getName(course.getCourseId()));
@@ -1040,10 +1057,15 @@ public class GetAssignment extends WaitlistedOnlineSectioningAction<ClassAssignm
 						if (section.getParentId() != null)
 							a.setParentSection(offering.getSection(section.getParentId()).getName(course.getCourseId()));
 						a.setSubpartId(section.getSubpartId());
-						a.addNote(course.getNote());
+						if (ca.getClassAssignments().size() == 1)
+							a.addNote(course.getNote());
 						a.addNote(section.getNote());
 						if (attendance != null)
 							a.addNote(attendance.getClassNote(section.getExternalId(course.getCourseId())));
+						if (ca.getClassAssignments().size() == 1) {
+							a.setDisclaimer(config.getSchedulingDisclaimer());
+							a.addNote(config.getSchedulingDisclaimer());
+						}
 						a.setCredit(subpart.getCredit(course.getCourseId()));
 						a.setCreditRange(subpart.getCreditMin(course.getCourseId()), subpart.getCreditMax(course.getCourseId()));
 						Float creditOverride = section.getCreditOverride(course.getCourseId());

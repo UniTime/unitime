@@ -439,6 +439,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private Float iCreditHour = null, iCreditMin = null, iCreditMax = null;
 		private Boolean iCanWaitList = null;
 		private boolean iLongDistanceConflict = false;
+		private String iDisclaimer = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -728,6 +729,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getClassNumber() { return iNumber; }
 		public void setClassNumber(String number) { iNumber = number; }
+		
+		public String getDisclaimer() { return iDisclaimer; }
+		public void setDisclaimer(String disclaimner) { iDisclaimer = disclaimner; }
+		public boolean hasDisclaimer() { return iDisclaimer != null && !iDisclaimer.isEmpty(); }
 		
 		public boolean hasNote() {
 			return iNote != null && !iNote.isEmpty();
