@@ -98,6 +98,35 @@
 				<line>A few changes in the user interface to show free time request priority and free time conflicts.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Disclaimer</name>
+			<description>
+				<line>A new optional text field is available on the instructional offering configuration level called Student Scheduling Disclaimer.</line>
+				<line>It is editable with Instructional Offering Edit Disclaimer permission using Instructional Offering Configuration or the Multiple Class Setup page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant: Submit Schedule Confirmations</name>
+			<description>
+				<line>All Submit Schedule confirmations are now present in a single Confirmation dialog.</line>
+				<line>Display scheduling disclaimers in Course Finder and in the class schedule.</line>
+				<line>When adding a new course or switching to a different config that has a different scheduling disclaimer, display the disclaimer in the Confirmation dialog.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Course Requests and Advisor Course Recommendations: Validation</name>
+			<description>
+				<item>Created a new default Student Course Request Validation and Advisor Course Recommendations Validator that only does the UniTime-related checks,
+				which include: no alternative course provided, associated course checks (associated course on the same request line,
+				associated course requested as substitute, parent course not present), high-priority free time, min/max credit checks,
+				scheduling rules check, single-section time conflict check, inconsistent student preferences check, and the new student scheduling disclaimer.</item>
+				<item>Also include the new student scheduling disclaimer in the course validation.
+					<item>When a course has only a single configuration or multiple configurations with the same disclaimer, just display the disclaimer for the course.</item>
+					<item>When there are multiple disclaimers, prefix the disclaimer with the instructional method of the configuration with the disclaimer.
+						Reservations and scheduling rules are checked, and configurations that the student cannot take are ignored.</item>
+				</item>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Management</title>
