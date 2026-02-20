@@ -1865,7 +1865,9 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 				cmp = getCourse().compareTo(m.getCourse());
 				if (cmp != 0) return cmp;
 			}
-			return getCode().compareTo(m.getCode());
+			cmp = getCode().compareTo(m.getCode());
+			if (cmp != 0) return cmp;
+			return getMessage().compareTo(m.getMessage());
 		}
 	}
 	

@@ -145,7 +145,7 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     }
     
     public String getSchedulingDisclaimer() { return iSchedulingDisclaimer; }
-    public boolean hasSchedulingDislaimer() { return iSchedulingDisclaimer != null && !iSchedulingDisclaimer.isEmpty(); }
+    public boolean hasSchedulingDisclaimer() { return iSchedulingDisclaimer != null && !iSchedulingDisclaimer.isEmpty(); }
     
 
     @Override

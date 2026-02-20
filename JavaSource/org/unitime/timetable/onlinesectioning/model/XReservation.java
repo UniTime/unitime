@@ -469,6 +469,14 @@ public abstract class XReservation extends XReservationId implements Comparable<
     		// Configuration match >> true
     		if (iConfigs.contains(configId)) return true;
     		
+    		if (section == null) {
+    			// no section provided, check that there is at least one for this config
+    			for (Long subpartId: iSections.keySet()) {
+    				XSubpart subpart = offering.getSubpart(subpartId);
+    				if (subpart != null && subpart.getConfigId().equals(configId)) return true;
+    			}
+    		}
+    		
     		// Section match >> true
     		XSection s = section;
         	while (s != null) {
@@ -554,14 +562,14 @@ public abstract class XReservation extends XReservationId implements Comparable<
         // Unlimited
         if (getLimit() < 0) return Integer.MAX_VALUE;
         
-        return getLimit() - enrollments.countEnrollmentsForReservation(getReservationId());
+        return getLimit() - (enrollments == null ? 0 : enrollments.countEnrollmentsForReservation(getReservationId()));
     }
     
     public int getReservedAvailableSpace(XEnrollments enrollments, Long configId) {
         // Unlimited
         if (getLimit(configId) < 0) return Integer.MAX_VALUE;
         
-        return getLimit(configId) - enrollments.countEnrollmentsForReservation(getReservationId(), configId);
+        return getLimit(configId) - (enrollments == null ? 0 : enrollments.countEnrollmentsForReservation(getReservationId(), configId));
     }
     
     @Override

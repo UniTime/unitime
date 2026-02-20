@@ -210,6 +210,38 @@ public class XOffering implements Serializable, Externalizable {
     public List<XConfig> getConfigs() {
         return iConfigs;
     }
+    
+    public boolean hasMultipleInstructionalMethods() {
+    	if (iConfigs.size() <= 1) return false;
+    	Long last = null;
+    	for (XConfig config: iConfigs) {
+    		Long im = (config.getInstructionalMethod() == null ? -1l : config.getInstructionalMethod().getUniqueId());
+    		if (last != null && !last.equals(im)) return true;
+    		last = im;
+    	}
+    	return false;
+    }
+    
+    public boolean hasSchedulingDisclaimer() {
+    	for (XConfig config: iConfigs)
+    		if (config.hasSchedulingDisclaimer()) return true;
+    	return false;
+    }
+    public String getFirstSchedulingDisclaimer() {
+    	for (XConfig config: iConfigs)
+    		if (config.hasSchedulingDisclaimer()) return config.getSchedulingDisclaimer();
+    	return null;
+    }
+    public boolean hasMultipleSchedulingDisclaimers() {
+    	String last = null;
+    	for (XConfig config: iConfigs) {
+    		String disc = (config.hasSchedulingDisclaimer() ? config.getSchedulingDisclaimer() : "");
+    		if (last != null && !last.equals(disc)) return true;
+    		last = disc;
+    	}
+    	return false;
+    }
+    
 
     /**
      * List of courses. One instructional offering can contain multiple courses
@@ -443,7 +475,7 @@ public class XOffering implements Serializable, Externalizable {
             return Integer.MAX_VALUE;
         }
         
-        int available = config.getLimit() - enrollments.countEnrollmentsForConfig(configId);
+        int available = config.getLimit() - (enrollments == null ? 0 : enrollments.countEnrollmentsForConfig(configId));
         // exclude reservations that are not directly set on this section
         for (XReservation r: getConfigReservations(configId)) {
             // ignore expired reservations
@@ -465,7 +497,7 @@ public class XOffering implements Serializable, Externalizable {
         // compute available space
         int available = 0;
         for (XConfig config: getConfigs()) {
-            available += config.getLimit() - enrollments.countEnrollmentsForConfig(config.getConfigId());
+            available += config.getLimit() - (enrollments == null ? 0 : enrollments.countEnrollmentsForConfig(config.getConfigId()));
             // offering is unlimited -> there is unreserved space unless there is an unlimited reservation too 
             // (in which case there is no unreserved space)
             if (config.getLimit() < 0) {

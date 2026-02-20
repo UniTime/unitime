@@ -1258,11 +1258,13 @@ public enum ApplicationProperty {
 	@Type(Class.class)
 	@Implements(CourseRequestsValidationProvider.class)
 	@Description("Customization: student course requests validation provider (interface CourseRequestsValidationProvider, used by Student Course Requests when the entered data are being validated)")
+	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultCourseRequestValidator")
 	CustomizationCourseRequestsValidation("unitime.custom.CourseRequestsValidationProvider"),
 	
 	@Type(Class.class)
 	@Implements(AdvisorCourseRequestsValidationProvider.class)
 	@Description("Customization: advisor course requests validation provider (interface AdvisorCourseRequestsValidationProvider, used by Advisor Course Recommendations when the entered data are being validated)")
+	@DefaultValue("org.unitime.timetable.onlinesectioning.custom.DefaultCourseRequestValidator")
 	CustomizationAdvisorsCourseRequestsValidation("unitime.custom.AdvisorCourseRequestsValidationProvider"),
 	
 	@Type(Class.class)
