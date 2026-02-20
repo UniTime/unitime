@@ -386,15 +386,20 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 		CellInterface c = new CellInterface();
 		c.add(other.getClazz().getName()).setUrl("clazz?id=" + other.getClazz().getClassId()).setClassName("link");
 		c.add(" ");
-		c.addItem(other.getTime().toCell());
-		c.add(" ");
-		c.add(other.getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(other.getTime().getDatePatternPreference()));
-        for (int i=0;i<other.getRoom().length;i++) {
-        	if (i>0) c.add(", ");
-        	else c.add(" ");
-        	RoomInfo room = other.getRoom()[i];
-        	c.addItem(room.toCell());
-        }
+		if (other.getTime() == null)
+			c.add(MSG.messageNotAssigned()).addStyle("font-style: italic;");
+		else { 
+			c.addItem(other.getTime().toCell());
+			c.add(" ");
+			c.add(other.getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(other.getTime().getDatePatternPreference()));
+		}
+		if (other.getRoom() != null)
+	        for (int i=0;i<other.getRoom().length;i++) {
+	        	if (i>0) c.add(", ");
+	        	else c.add(" ");
+	        	RoomInfo room = other.getRoom()[i];
+	        	c.addItem(room.toCell());
+	        }
 		return c;
 	}
 	
@@ -490,7 +495,8 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 				for (Enumeration f=gc.getClassIds().elements();f.hasMoreElements();) {
 					Long classId = (Long)f.nextElement();
 					ClassAssignmentDetails other = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, classId, false);
-					g.addItem(toCell(other).setInline(false));
+					if (other.getTime() != null)
+						g.addItem(toCell(other).setInline(false));
 				}
 			}
 		}

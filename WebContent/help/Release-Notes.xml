@@ -56,6 +56,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Detail: Timetable</name>
+			<description>
+				<line>Fixed an exception thrown when showing an in-memory assignment with a partially-assigned violated distribution preference.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
