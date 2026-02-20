@@ -117,7 +117,7 @@ public class ListClasses implements OnlineSectioningAction<Collection<ClassAssig
 			if (!hasCourse && course.getLimit() >= 0 && enrollments.countEnrollmentsForCourse(course.getCourseId()) >= course.getLimit()) return false;
 		}
 		if (hasReservation) return true;
-		if (hasMustBeUsed) return true;
+		if (hasMustBeUsed) return false;
 		if (!hasCourse && offering.getUnreservedSpace(enrollments) <= 0) return false;
 		if (!hasConfig && offering.getUnreservedConfigSpace(config.getConfigId(), enrollments) <= 0) return false;
 		if (!hasSection && offering.getUnreservedSectionSpace(section.getSectionId(), enrollments) <= 0) return false;
