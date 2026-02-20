@@ -479,10 +479,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						if (rule.isDisjunctive()) {
 							if (rule.hasCourseName() && rule.matchesCourseName(c.getCourseName())) {
 							} else if (rule.hasCourseType() && rule.matchesCourseType(c.getCourseType())) {
-							} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+							} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) {
 							} else { imAvailable = false; }
 						} else {
-							if (!rule.matchesInstructionalMethod(config.getInstructionalMethod())) { imAvailable = false; }
+							if (!rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) { imAvailable = false; }
 						}
 					}
 					if (imAvailable) {
@@ -658,10 +658,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (rule.isDisjunctive()) {
 						if (rule.hasCourseName() && rule.matchesCourseName(courseOffering.getCourseName())) {
 						} else if (rule.hasCourseType() && rule.matchesCourseType(courseOffering.getCourseType())) {
-						} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getInstructionalMethod())) {
+						} else if (rule.hasInstructionalMethod() && rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) {
 						} else { imAvailable = false; }
 					} else {
-						if (!rule.matchesInstructionalMethod(config.getInstructionalMethod())) { imAvailable = false; }
+						if (!rule.matchesInstructionalMethod(config.getEffectiveInstructionalMethod())) { imAvailable = false; }
 					}
 				}
 				if (imAvailable)
