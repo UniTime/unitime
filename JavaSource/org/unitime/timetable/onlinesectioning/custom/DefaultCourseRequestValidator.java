@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.FreeTime;
+import org.unitime.timetable.gwt.shared.CourseRequestInterface.Preference;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestPriority;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.RequestedCourseStatus;
@@ -574,7 +575,7 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									request.addConfirmationMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -604,7 +605,7 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									request.addConfirmationMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -633,27 +634,56 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 	public boolean revalidateStudent(OnlineSectioningServer server, OnlineSectioningHelper helper, Student student, Builder action) throws SectioningException {
 		return false;
 	}
+	
+	protected static boolean isEnabledForStudentScheduling(XConfig config) {
+		if (config.getSubparts().isEmpty()) return false;
+		for (XSubpart subpart: config.getSubparts()) {
+			if (!isEnabledForStudentScheduling(subpart)) return false;
+		}
+		return true;
+	}
+	
+	protected static boolean isEnabledForStudentScheduling(XSubpart subpart) {
+		for (XSection section: subpart.getSections()) {
+			if (section.isEnabledForScheduling() && !section.isCancelled()) return true;
+		}
+		return false;
+	}
+	
+	protected static boolean meetsRequiredPrefs(XConfig config, RequestedCourse rc) {
+		if (rc == null || (!rc.hasRequiredIntructionalMethods() && !rc.hasRequiredClasses())) return true;
+		if (rc.hasRequiredIntructionalMethods() && config.getInstructionalMethod() != null && 
+				rc.isSelectedIntructionalMethod(config.getInstructionalMethod().getUniqueId(), true)) return true;
+		if (rc.hasRequiredClasses()) {
+			for (Preference p: rc.getSelectedClasses())
+				if (p.isRequired() && config.getSection(p.getId()) != null) return true;
+		}
+		return false;
+	}
 
-	protected boolean isAvailable(XStudent student, XOffering offering, XCourse course, XConfig config, XEnrollment enrollment) {
+	public static boolean isAvailable(XStudent student, XOffering offering, XCourse course, XConfig config, XEnrollment enrollment, RequestedCourse rc) {
 		boolean hasMustBeUsed = false;
 		boolean hasReservation = false;
+		boolean allowDisabled = false;
 		for (XReservation r: offering.getReservations()) {
 			if (student != null && !r.isApplicable(student, course)) continue; // reservation does not apply to this student
 			boolean mustBeUsed = (r.mustBeUsed() && (r.isAlwaysExpired() || !r.isExpired()));
 			if (mustBeUsed && !hasMustBeUsed) {
-				hasReservation = false; hasMustBeUsed = true;
+				hasReservation = false; hasMustBeUsed = true; allowDisabled = false;
 			}
 			if (hasMustBeUsed && !mustBeUsed) continue; // student must use a reservation, but this one is not it
 			if (r.isIncluded(offering, config.getConfigId(), null)) {
 				hasReservation = true;
+				if (r.isAllowDisabled()) allowDisabled = true;
 			}
 		}
-		if (hasReservation) return true;
-		if (hasMustBeUsed) return false;
+		if (hasMustBeUsed && !hasReservation) return false;
 		boolean hasConfig = (enrollment != null && config.getConfigId().equals(enrollment.getConfigId()));
 		boolean hasCourse = (enrollment != null && course.getCourseId().equals(enrollment.getCourseId()));
-		if (!hasCourse && offering.getUnreservedSpace(null) <= 0) return false;
-		if (!hasConfig && offering.getUnreservedConfigSpace(config.getConfigId(), null) <= 0) return false;
+		if (!hasCourse && !hasReservation && offering.getUnreservedSpace(null) <= 0) return false;
+		if (!hasConfig && !hasReservation && offering.getUnreservedConfigSpace(config.getConfigId(), null) <= 0) return false;
+		if (!hasConfig && !allowDisabled && !isEnabledForStudentScheduling(config)) return false;
+		if (!hasConfig && !meetsRequiredPrefs(config, rc)) return false;
 		return true;
 	}
 
@@ -1302,7 +1332,7 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									response.addMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -1336,7 +1366,7 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									response.addMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -2039,7 +2069,7 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									response.addMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -2071,7 +2101,7 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									response.addMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",

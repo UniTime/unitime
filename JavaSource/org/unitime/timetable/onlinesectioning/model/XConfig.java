@@ -111,6 +111,15 @@ public class XConfig implements Serializable, Comparable<XConfig>, Externalizabl
     	return null;
     }
     
+    public XSection getSection(Long sectionId) {
+    	if (sectionId == null) return null;
+    	for (XSubpart subpart: iSubparts)
+    		for (XSection section: subpart.getSections())
+    			if (section.getSectionId().equals(sectionId))
+    				return section;
+    	return null;
+    }
+    
     /**
      * Configuration limit. This is defines the maximal number of students that can be
      * enrolled into this configuration at the same time. It is -1 in the case of an

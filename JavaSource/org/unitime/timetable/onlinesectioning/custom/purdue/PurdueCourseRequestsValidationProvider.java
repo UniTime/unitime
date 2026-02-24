@@ -112,6 +112,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.basic.GetInfo;
 import org.unitime.timetable.onlinesectioning.custom.AdvisorCourseRequestsValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseRequestsValidationProvider;
+import org.unitime.timetable.onlinesectioning.custom.DefaultCourseRequestValidator;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Change;
@@ -147,7 +148,6 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XFreeTimeRequest;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
-import org.unitime.timetable.onlinesectioning.model.XReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservationType;
 import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSection;
@@ -1237,7 +1237,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (XConfig config: offering.getConfigs()) {
 								if (!config.hasSchedulingDisclaimer()) continue;
 								if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-								if (!isAvailable(original, offering, course, config, enrollment)) continue;
+								if (!DefaultCourseRequestValidator.isAvailable(original, offering, course, config, enrollment, rc)) continue;
 								response.addMessage(rc.getCourseId(),
 										rc.getCourseName(),
 										"DISCLAIMER",
@@ -1271,7 +1271,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 							for (XConfig config: offering.getConfigs()) {
 								if (!config.hasSchedulingDisclaimer()) continue;
 								if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-								if (!isAvailable(original, offering, course, config, enrollment)) continue;
+								if (!DefaultCourseRequestValidator.isAvailable(original, offering, course, config, enrollment, rc)) continue;
 								response.addMessage(rc.getCourseId(),
 										rc.getCourseName(),
 										"DISCLAIMER",
@@ -2499,7 +2499,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!DefaultCourseRequestValidator.isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									request.addConfirmationMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -2529,7 +2529,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!DefaultCourseRequestValidator.isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									request.addConfirmationMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -4031,7 +4031,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!DefaultCourseRequestValidator.isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									response.addMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -4063,7 +4063,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 								for (XConfig config: offering.getConfigs()) {
 									if (!config.hasSchedulingDisclaimer()) continue;
 									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
-									if (!isAvailable(original, offering, course, config, enrollment)) continue;
+									if (!DefaultCourseRequestValidator.isAvailable(original, offering, course, config, enrollment, rc)) continue;
 									response.addMessage(rc.getCourseId(),
 											rc.getCourseName(),
 											"DISCLAIMER",
@@ -4588,28 +4588,5 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					ApplicationProperties.getProperty("purdue.specreg.confirm.acr.bannerYesButtonTitle", "Accept the above warning(s) and submit the Advisor Course Recommendations"),
 					ApplicationProperties.getProperty("purdue.specreg.confirm.acr.bannerNoButtonTitle", "Go back to editing your Advisor Course Recommendations"));
 		}
-	}
-
-	protected boolean isAvailable(XStudent student, XOffering offering, XCourse course, XConfig config, XEnrollment enrollment) {
-		boolean hasMustBeUsed = false;
-		boolean hasReservation = false;
-		for (XReservation r: offering.getReservations()) {
-			if (student != null && !r.isApplicable(student, course)) continue; // reservation does not apply to this student
-			boolean mustBeUsed = (r.mustBeUsed() && (r.isAlwaysExpired() || !r.isExpired()));
-			if (mustBeUsed && !hasMustBeUsed) {
-				hasReservation = false; hasMustBeUsed = true;
-			}
-			if (hasMustBeUsed && !mustBeUsed) continue; // student must use a reservation, but this one is not it
-			if (r.isIncluded(offering, config.getConfigId(), null)) {
-				hasReservation = true;
-			}
-		}
-		if (hasReservation) return true;
-		if (hasMustBeUsed) return false;
-		boolean hasConfig = (enrollment != null && config.getConfigId().equals(enrollment.getConfigId()));
-		boolean hasCourse = (enrollment != null && course.getCourseId().equals(enrollment.getCourseId()));
-		if (!hasCourse && offering.getUnreservedSpace(null) <= 0) return false;
-		if (!hasConfig && offering.getUnreservedConfigSpace(config.getConfigId(), null) <= 0) return false;
-		return true;
 	}
 }
