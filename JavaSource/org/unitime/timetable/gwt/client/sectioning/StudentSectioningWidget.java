@@ -661,6 +661,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if ("WL-OVERLAP".equals(m.getCode())) continue;
 						if ("WL-INACTIVE".equals(m.getCode())) continue;
 						if ("WL-CREDIT".equals(m.getCode())) continue;
+						if ("WL-DISCLAIMER".equals(m.getCode())) continue;
 						if (message == null)
 							message = MESSAGES.courseMessage(m.getMessage());
 						else
@@ -675,6 +676,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if ("WL-OVERLAP".equals(m.getCode())) continue;
 						if ("WL-INACTIVE".equals(m.getCode())) continue;
 						if ("WL-CREDIT".equals(m.getCode())) continue;
+						if ("WL-DISCLAIMER".equals(m.getCode())) continue;
 						if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 							if (message == null)
 								message = MESSAGES.courseMessage(m.getMessage());
@@ -3111,41 +3113,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		return false;
 	}
-	
-	public String getCriticalCoursesToDrop() {
-		if (iLastAssignment != null && iSavedAssignment != null && iSavedRequest != null) {
-			boolean hasCrit = false, hasImp = false, hasVital = false;
-			List<String> ret = new ArrayList<String>();
-			for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				RequestPriority rp = iSavedRequest.getRequestPriority(course);
-				if (rp == null || rp.isAlternative() || !rp.getRequest().isImportantOrMore()) continue;
-				boolean hasCourse = false;
-				for (RequestedCourse alt: rp.getRequest().getRequestedCourse()) {
-					if (alt.getCourseId() == null) continue;
-					for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
-						if (alt.getCourseId().equals(x.getCourseId()) && x.isAssigned()) {
-							hasCourse = true; break;
-						}
-				}
-				if (!hasCourse) {
-					if (rp.getRequest().isCritical()) hasCrit = true;
-					if (rp.getRequest().isImportant()) hasImp = true;
-					if (rp.getRequest().isVital()) hasVital = true;
-					ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
-				}
-			}
-			if (hasCrit)
-				return MESSAGES.confirmEnrollmentCriticalCourseDrop(ToolBox.toString(ret));
-			if (hasVital)
-				return MESSAGES.confirmEnrollmentVitalCourseDrop(ToolBox.toString(ret));
-			if (hasImp)
-				return MESSAGES.confirmEnrollmentImportantCourseDrop(ToolBox.toString(ret));
-			return null;
-		}
-		return null;
-	}
-	
+
 	public boolean useDefaultConfirmDialog() {
 		return iEligibilityCheck == null || !iEligibilityCheck.hasFlag(EligibilityFlag.GWT_CONFIRMATIONS);
 	}
@@ -3321,27 +3289,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				}
 			}
 		}
-	}
-	
-	public List<String> getCoursesToDropWaitList() {
-		if (iSavedRequest != null && iEligibilityCheck != null && iEligibilityCheck.hasFlag(EligibilityFlag.CAN_WAITLIST)) {
-			List<String> ret = new ArrayList<String>();
-			r: for (Request r: iSavedRequest.getCourses()) {
-				if (r.isWaitList() && r.hasRequestedCourse()) {
-					for (RequestedCourse rc: r.getRequestedCourse())
-						if (rc.getStatus() == RequestedCourseStatus.ENROLLED) continue r; 
-					for (RequestedCourse rc: r.getRequestedCourse()) {
-						if (rc.isCanWaitList() && rc.hasCourseId() && !Boolean.TRUE.equals(iCourseRequests.getWaitList(rc.getCourseId()))) {
-							if (rc.getStatus() == RequestedCourseStatus.SAVED || rc.getStatus() == RequestedCourseStatus.OVERRIDE_APPROVED) {
-								ret.add(rc.getCourseName());
-							}
-						}
-					}
-				}
-			}
-			return ret;
-		}
-		return null;
 	}
 	
 	public void confirmWaitListDrop(List<Confirmation> confirmations) {
@@ -4312,17 +4259,6 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 				}
 				confirmations.add(new Confirmation(course.getCourseName(), disclaimer));
-			}
-		}
-		
-		if (iLastAssignment != null && iSavedAssignment != null) {
-			List<String> ret = new ArrayList<String>();
-			courses: for (ClassAssignmentInterface.CourseAssignment course: iSavedAssignment.getCourseAssignments()) {
-				if (!course.isAssigned() || course.isFreeTime() || course.isTeachingAssignment()) continue;
-				for (ClassAssignmentInterface.CourseAssignment x: iLastAssignment.getCourseAssignments())
-					if (course.getCourseId().equals(x.getCourseId()) && x.isAssigned())
-						continue courses;
-				ret.add(MESSAGES.course(course.getSubject(), course.getCourseNbr()));
 			}
 		}
 	}

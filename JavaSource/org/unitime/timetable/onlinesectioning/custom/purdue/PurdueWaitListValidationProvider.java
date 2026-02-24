@@ -1,5 +1,5 @@
 /*
-urse * Licensed to The Apereo Foundation under one or more contributor license
+ * Licensed to The Apereo Foundation under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for
  * additional information regarding copyright ownership.
  *
@@ -71,6 +71,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.CourseDemandDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -81,6 +82,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Action.Builder;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.custom.DefaultCourseRequestValidator;
 import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 import org.unitime.timetable.onlinesectioning.custom.WaitListValidationProvider;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.ApiMode;
@@ -104,6 +106,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationResponseList;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatus;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.SpecialRegistrationStatusResponse;
+import org.unitime.timetable.onlinesectioning.model.XConfig;
 import org.unitime.timetable.onlinesectioning.model.XCourse;
 import org.unitime.timetable.onlinesectioning.model.XCourseId;
 import org.unitime.timetable.onlinesectioning.model.XCourseRequest;
@@ -111,6 +114,7 @@ import org.unitime.timetable.onlinesectioning.model.XEnrollment;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XOverride;
 import org.unitime.timetable.onlinesectioning.model.XRequest;
+import org.unitime.timetable.onlinesectioning.model.XSchedulingRule;
 import org.unitime.timetable.onlinesectioning.model.XSection;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
@@ -378,9 +382,15 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		if (!isValidationEnabled(server, helper, original)) return;
 		
 		Integer CONF_NONE = null;
+		Integer CONF_UNITIME = 0;
 		Integer CONF_BANNER = 1;
 		String creditError = null;
 		Float maxCreditNeeded = null;
+		
+		XSchedulingRule rule = server.getSchedulingRule(original,
+				StudentSchedulingRule.Mode.Online,
+				helper.hasAvisorPermission(),
+				helper.hasAdminPermission());
 		
 		for (CourseRequestInterface.Request line: request.getCourses()) {
 			// only for wait-listed course requests
@@ -426,6 +436,30 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						
 						// when enrolled, skip the enrolled course if the enrollment matches the requirements
 						if (enrolled != null && enrolled.getCourseId().equals(rc.getCourseId()) && enrolled.isRequired(rc, offering)) continue;
+						
+						// disclaimer -- only check newly wait-listed requests
+						if ("TBD".equals(rc.getOverrideExternalId())) {
+							if (offering.hasMultipleSchedulingDisclaimers()) {
+								XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
+								XEnrollment enrollment = (cr == null ? null : cr.getEnrollment());
+								for (XConfig config: offering.getConfigs()) {
+									if (!config.hasSchedulingDisclaimer()) continue;
+									if (rule != null && !rule.matchesInstructionalMethod(config.getInstructionalMethod())) continue;
+									if (!DefaultCourseRequestValidator.isAvailable(original, offering, xcourse, config, enrollment, rc)) continue;
+									response.addMessage(rc.getCourseId(),
+											rc.getCourseName(),
+											"WL-DISCLAIMER",
+											(config.getInstructionalMethod() == null ? "" : config.getInstructionalMethod().getLabel() + ": ") + config.getSchedulingDisclaimer(),
+											CONF_UNITIME);
+								}
+							} else {
+								response.addMessage(rc.getCourseId(),
+										rc.getCourseName(),
+										"WL-DISCLAIMER",
+										offering.getFirstSchedulingDisclaimer(),
+										CONF_UNITIME);
+							}
+						}
 						
 						// get possible enrollments into the course
 						Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
@@ -674,6 +708,19 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			}
 		}
 		
+		if (response.getConfirms().contains(CONF_UNITIME)) {
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.unitimeProblemsFound", "The following issues have been detected:"),
+					CONF_UNITIME, -1);
+			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.confirmation", "\nDo you want to proceed?"), CONF_UNITIME, 1);
+			response.setConfirmation(CONF_UNITIME, ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeDialogName","Warning Confirmations"),
+					(response.getConfirms().contains(CONF_BANNER) ? ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeContinueButton", "Accept & Continue") :
+						ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeYesButton", "Accept & Submit")),
+					ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeNoButton", "Cancel Submit"),
+					(response.getConfirms().contains(CONF_BANNER) ? ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeContinueButtonTitle", "Accept the above warning(s) and continue to review the registration errors") :
+						ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeYesButtonTitle", "Accept the above warning(s)")),
+					ApplicationProperties.getProperty("purdue.specreg.confirm.waitlist.unitimeNoButtonTitle", "Go back to Scheduling Assistant"));
+		}
+		
 		if (response.getConfirms().contains(CONF_BANNER)) {
 			response.addConfirmation(ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.bannerProblemsFound", "The following registration errors for the wait-listed courses have been detected:"), CONF_BANNER, -1);
 			String note = ApplicationProperties.getProperty("purdue.specreg.messages.waitlist.courseRequestNote", "<b>Request Note:</b>");
@@ -821,6 +868,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					req.maxCreditRequestorNotes = m.getMessage();
 				}
 			}
+			for (Iterator<CourseMessage> i = request.getConfirmations().iterator(); i.hasNext(); ) {
+				CourseMessage m = i.next();
+				if ("WL-DISCLAIMER".equals(m.getCode())) i.remove();
+			}
 			for (CourseRequestInterface.Request c: request.getCourses())
 				if (c.hasRequestedCourse() && c.isWaitList()) {
 					for (CourseRequestInterface.RequestedCourse rc: c.getRequestedCourse()) {
@@ -840,6 +891,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if ("NOT-ONLINE".equals(m.getCode())) continue;
 							if ("NOT-RESIDENTIAL".equals(m.getCode())) continue;
 							if ("REQUEST_NOTE".equals(m.getCode())) continue;
+							if ("WL-DISCLAIMER".equals(m.getCode())) continue;
 							if (!m.hasCourse()) continue;
 							if (!m.isError() && (course.getCourseId().equals(m.getCourseId()) || course.getCourseName().equals(m.getCourse()))) {
 								ChangeError e = new ChangeError();
@@ -2174,5 +2226,4 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			}
 		}
 	}
-
 }
