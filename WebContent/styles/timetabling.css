@@ -778,7 +778,7 @@ A.submenuLink {
 .WebTableHeader {
 	padding-top: 5px;
 	font-weight: bold;
-	color: #666666;
+	color: #555;
   	background: #e3e8f3 url(../images/header.png) repeat-x left top;
   	border-bottom: 1px dashed #9CB0CE;
 }
@@ -786,14 +786,14 @@ A.submenuLink {
 .WebTableHeaderFirstRow {
 	padding-top: 5px;
 	font-weight: bold;
-	color: #666666;
+	color: #555;
   	background: #e3e8f3 url(../images/header.png) repeat-x left top;
 }
 
 .WebTableHeaderSecondRow {
 	padding-top: 5px;
 	font-weight: bold;
-	color: #666666;
+	color: #555;
   	background-color: #e3e8f3;
   	border-bottom: 1px dashed #9CB0CE;
 }
@@ -1298,7 +1298,7 @@ A.noFancyLinks:link,A.noFancyLinks:visited,A.noFancyLinks:active,A.noFancyLinks:
 
 A.sortHeader:link,A.sortHeader:visited,A.sortHeader,A.sortHeader:active,A.sortHeader:hover {
 	text-decoration: none;
-	color: #666666;
+	color: #555;
 }
 
 .errorMessage {
