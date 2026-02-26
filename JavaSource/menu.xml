@@ -931,6 +931,12 @@
 					<hasPermission name="InstructorAttributeTypes"/>
 				</condition>
 			</item>
+			<item name="Scheduling Disclaimers" page="admin" type="gwt">
+				<parameter name="type">stdSchdDisclaimers</parameter>
+				<condition>
+					<hasPermission name="SchedulingDisclaimers"/>
+				</condition>
+			</item>
 			<item name="Sponsoring Organizations" page="admin" type="gwt">
 				<parameter name="type">sponsoringOrganizations</parameter>
 				<condition>

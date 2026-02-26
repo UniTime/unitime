@@ -75,6 +75,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StandardSchedulingDisclaimer;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -155,6 +156,15 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
         
         form.setSchedulingDisclaimer(ioc == null ? null : ioc.getSchedulingDisclaimer());
         form.setCanEditSchedulingDisclaimer(context.hasPermission(io, Right.InstrOfferingConfigEditDisclaimer));
+        if (form.isCanEditSchedulingDisclaimer()) {
+			List<StandardSchedulingDisclaimer> discs = StandardSchedulingDisclaimer.findAll();
+			if (!discs.isEmpty()) {
+				form.addStdSchedDisclaimer(-1l, MSG.itemNoSchedulingDisclaimer(), "");
+				for (StandardSchedulingDisclaimer disc: discs)
+					form.addStdSchedDisclaimer(disc.getUniqueId(), disc.getLabel(), disc.getDisclaimer());
+				form.addStdSchedDisclaimer(-2l, MSG.itemCustomSchedulingDisclaimer(), "");
+			}
+		}
         
         Department contrDept = io.getControllingCourseOffering().getSubjectArea().getDepartment();
         form.addDepartment(-1l, "-", MSG.subpartMultipleManagers(), false);

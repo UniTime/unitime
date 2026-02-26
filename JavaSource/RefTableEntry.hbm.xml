@@ -543,5 +543,14 @@
                 type="java.lang.Integer"
                 not-null="true"/>
         </union-subclass>
+        
+        <union-subclass name="StandardSchedulingDisclaimer" table="std_schd_disclaimer" abstract="false">
+        	<property
+            	name="disclaimer"
+            	column="disclaimer"
+            	type="java.lang.String"
+            	not-null="false"
+            	length="2000"/>
+        </union-subclass>
     </class>
 </hibernate-mapping>

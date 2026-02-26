@@ -312,24 +312,6 @@ public class InstrOfferingConfigPage extends Composite {
 		});
 		iLimitRow = iForm.addRow(MESSAGES.propertyConfigurationLimit(), iLimit);
 		
-		if (iData.isCanEditSchedulingDisclaimer()) {
-			TextArea disclaimer = new TextArea();
-			disclaimer.setHeight("66px");
-			disclaimer.setWidth("100%");
-			if (iData.hasSchedulingDisclaimer()) disclaimer.setText(iData.getSchedulingDisclaimer());
-			iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimer);
-			disclaimer.addValueChangeHandler(new ValueChangeHandler<String>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<String> event) {
-					iData.setSchedulingDisclaimer(event.getValue());
-				}
-			});
-		} else if (iData.hasSchedulingDisclaimer()) {
-			Label disclaimer = new Label(iData.getSchedulingDisclaimer());
-			disclaimer.addStyleName("note");
-			iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimer);
-		}
-		
 		if (iData.isDisplayCourseLink()) {
 			CourseDetailsWidget link = new CourseDetailsWidget(true);
 			link.reload(iData.getCourseId());
@@ -387,6 +369,68 @@ public class InstrOfferingConfigPage extends Composite {
 				if (im != null)
 					iForm.addRow(MESSAGES.propertyInstructionalMethod(), new Label(im.getLabel()));	
 			}
+		}
+		
+		if (iData.isCanEditSchedulingDisclaimer()) {
+			P disclaimerPanel = null;
+			final TextArea disclaimer = new TextArea();
+			disclaimer.setHeight("66px");
+			disclaimer.setWidth("100%");
+			if (iData.hasStdSchedDisclaimers()) {
+				disclaimerPanel = new P("scheduling-disclaimer");
+				ListBox box = new ListBox();
+				for (final Reference r: iData.getStdSchedDisclaimers()) {
+					box.addItem(r.getReference(), r.getId().toString());
+					if (iData.hasSchedulingDisclaimer() && iData.getSchedulingDisclaimer().equals(r.getLabel()))
+						box.setSelectedIndex(box.getItemCount() - 1);
+				}
+				if (box.getSelectedIndex() <= 0) {
+					if (iData.hasSchedulingDisclaimer()) {
+						box.setSelectedIndex(box.getItemCount() - 1);
+					} else {
+						disclaimer.setEnabled(false); disclaimer.setVisible(false);
+					}
+				} else {
+					disclaimer.setEnabled(false);
+				}
+				box.addChangeHandler(new ChangeHandler() {
+					@Override
+					public void onChange(ChangeEvent event) {
+						Reference disc = iData.getStdSchedDisclaimer(Long.valueOf(box.getSelectedValue()));
+						if (disc.getId() == -1l) {
+							disclaimer.setEnabled(false); disclaimer.setVisible(false);
+							disclaimer.setText("");
+							iData.setSchedulingDisclaimer(null);
+						} else if (disc.getId() == -2l) {
+							disclaimer.setEnabled(true); disclaimer.setVisible(true);
+						} else {
+							disclaimer.setEnabled(false); disclaimer.setVisible(true);
+							disclaimer.setText(disc.getLabel());
+							iData.setSchedulingDisclaimer(disc.getLabel());
+						}
+					}
+				});
+				disclaimerPanel.add(box);
+			}
+			disclaimer.setHeight("66px");
+			disclaimer.setWidth("100%");
+			if (iData.hasSchedulingDisclaimer()) disclaimer.setText(iData.getSchedulingDisclaimer());
+			if (disclaimerPanel == null)
+				iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimer);
+			else {
+				disclaimerPanel.add(disclaimer);
+				iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimerPanel);
+			}
+			disclaimer.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					iData.setSchedulingDisclaimer(event.getValue());
+				}
+			});
+		} else if (iData.hasSchedulingDisclaimer()) {
+			Label disclaimer = new Label(iData.getSchedulingDisclaimer());
+			disclaimer.addStyleName("note");
+			iForm.addRow(MESSAGES.propertySchedulingDisclaimer(), disclaimer);
 		}
 		
 		iInstructionalType = new ListBox();

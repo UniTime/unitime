@@ -103,6 +103,7 @@
 			<description>
 				<line>A new optional text field is available on the instructional offering configuration level called Student Scheduling Disclaimer.</line>
 				<line>It is editable with Instructional Offering Edit Disclaimer permission using Instructional Offering Configuration or the Multiple Class Setup page.</line>
+				<line>Default scheduling disclaimers can be defined using the Default Scheduling Disclaimers administrative page.</line>
 			</description>
 		</item>
 		<item>

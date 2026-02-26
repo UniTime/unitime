@@ -93,6 +93,7 @@ public class StudentGroupCourseDemands implements StudentCourseDemands, NeedsStu
 				weight = g.getExpectedSize().floatValue() / (realStudents + madeupStudents);
 			for (Student s: g.getStudents()) {
 				WeightedStudentId ws = new WeightedStudentId(s);
+				ws.getGroups().add(new Group(g.getUniqueId(), g.getGroupAbbreviation(), g.getType() == null || g.getType().isKeepTogether()));
 				ws.setWeight(weight);
 				demands.add(ws);
 			}
