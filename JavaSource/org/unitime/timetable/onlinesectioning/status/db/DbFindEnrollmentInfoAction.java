@@ -1488,6 +1488,38 @@ public class DbFindEnrollmentInfoAction extends FindEnrollmentInfoAction {
 				return !request().getCourseDemand().isAlternative() && min <= request().getCourseDemand().getPriority() + 1 && request().getCourseDemand().getPriority() + 1 <= max;
 			}
 			
+			if ("ft".equals(attr) || "free-time".equals(attr)) {
+				int min = 0, max = Integer.MAX_VALUE;
+				Credit prefix = Credit.eq;
+				String number = term;
+				if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+				else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+				else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+				else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+				else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+				try {
+					int a = Integer.parseInt(number);
+					switch (prefix) {
+						case eq: min = max = a; break; // = a
+						case le: max = a; break; // <= a
+						case ge: min = a; break; // >= a
+						case lt: max = a - 1; break; // < a
+						case gt: min = a + 1; break; // > a
+					}
+				} catch (NumberFormatException e) {}
+				if (term.contains("..")) {
+					try {
+						String a = term.substring(0, term.indexOf('.'));
+						String b = term.substring(term.indexOf("..") + 2);
+						min = Integer.parseInt(a); max = Integer.parseInt(b);
+					} catch (NumberFormatException e) {}
+				}
+				if (min == 0 && max == Integer.MAX_VALUE) return true;
+				for (CourseDemand cd: student().getCourseDemands())
+					if (cd.getFreeTime() != null && min <= cd.getPriority() + 1 && cd.getPriority() + 1 <= max) return true;
+				return false;
+			}
+			
 			if ("choice".equals(attr) || "ch".equals(attr)) {
 				int min = 0, max = Integer.MAX_VALUE;
 				Credit prefix = Credit.eq;
