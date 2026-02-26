@@ -70,6 +70,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StandardSchedulingDisclaimer;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -134,6 +135,15 @@ public class ClassSetupBackend implements GwtRpcImplementation<ClassSetupInterfa
 		form.setValidateLimits(ApplicationProperty.ConfigEditCheckLimits.isTrue());
 		form.setSchedulingDisclaimer(ioc.getSchedulingDisclaimer());
 		form.setCanEditSchedulingDisclaimer(context.hasPermission(io, Right.InstrOfferingConfigEditDisclaimer));
+		if (form.isCanEditSchedulingDisclaimer()) {
+			List<StandardSchedulingDisclaimer> discs = StandardSchedulingDisclaimer.findAll();
+			if (!discs.isEmpty()) {
+				form.addStdSchedDisclaimer(-1l, MSG.itemNoSchedulingDisclaimer(), "");
+				for (StandardSchedulingDisclaimer disc: discs)
+					form.addStdSchedDisclaimer(disc.getUniqueId(), disc.getLabel(), disc.getDisclaimer());
+				form.addStdSchedDisclaimer(-2l, MSG.itemCustomSchedulingDisclaimer(), "");
+			}
+		}
 		
 		String name = io.getCourseNameWithTitle();
         if (io.hasMultipleConfigurations()) {

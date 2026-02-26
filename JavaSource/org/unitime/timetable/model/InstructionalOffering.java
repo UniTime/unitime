@@ -844,7 +844,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		return ret;
     }
 	
-	@Transient
 	public boolean hasSchedulingDisclaimer() {
     	for (InstrOfferingConfig config: getInstrOfferingConfigs())
     		if (config.hasSchedulingDisclaimer()) return true;
@@ -858,7 +857,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	return null;
     }
 	
-	@Transient
     public boolean hasMultipleSchedulingDisclaimers() {
     	String last = null;
     	for (InstrOfferingConfig config: getInstrOfferingConfigs()) {

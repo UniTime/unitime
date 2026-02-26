@@ -618,6 +618,9 @@ public enum Right {
 	EventServiceProviderEditGlobal,
 	EventServiceProviderEditSession(Session.class),
 	EventServiceProviderEditDepartment(Department.class),
+	
+	SchedulingDisclaimers,
+	SchedulingDisclaimerEdit,
 
 	/** Point In Time Data */
 	

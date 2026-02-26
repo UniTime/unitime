@@ -7889,6 +7889,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-weight: inherit;
 }
 
+.unitime-MultipleClassSetup .scheduling-disclaimer textarea {
+	margin-top: 2px;
+}
+
 .unitime-MultipleClassSetup .bad-limit .gwt-SuggestBox {
 	background-color: #FFD7D7;
 }
@@ -8043,6 +8047,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-InstructionalOfferingsPage .unitime-PageFilter .unitime-HeaderPanel {
 	max-width: calc(99vw - 220px);
+}
+
+.unitime-InstrOfferingConfig .scheduling-disclaimer textarea {
+	margin-top: 2px;
 }
 
 .unitime-DayCodeSector .bit {

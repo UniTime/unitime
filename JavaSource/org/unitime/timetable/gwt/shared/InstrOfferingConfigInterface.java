@@ -42,6 +42,7 @@ public class InstrOfferingConfigInterface implements IsSerializable, Serializabl
 	private List<Reference> iDurationTypes;
 	private List<Reference> iInstructionalTypes;
 	private List<Reference> iConfigs;
+	private List<Reference> iStdSchedDisclaimers;
 
 	private Long iOfferingId;
 	private Long iCourseId;
@@ -159,6 +160,18 @@ public class InstrOfferingConfigInterface implements IsSerializable, Serializabl
 	public boolean hasSchedulingDisclaimer() { return iSchedulingDisclaimer != null && !iSchedulingDisclaimer.isEmpty(); }
 	public boolean isCanEditSchedulingDisclaimer() { return iCanEditSchedulingDisclaimer != null && iCanEditSchedulingDisclaimer.booleanValue(); }
 	public void setCanEditSchedulingDisclaimer(boolean canEditSchedulingDisclaimer) { iCanEditSchedulingDisclaimer = canEditSchedulingDisclaimer; }
+	public void addStdSchedDisclaimer(Long id, String ref, String label) {
+		if (iStdSchedDisclaimers == null) iStdSchedDisclaimers = new ArrayList<Reference>();
+		iStdSchedDisclaimers.add(new Reference(id, ref, label, true));
+	}
+	public boolean hasStdSchedDisclaimers() { return iStdSchedDisclaimers != null && !iStdSchedDisclaimers.isEmpty(); }
+	public List<Reference> getStdSchedDisclaimers() { return iStdSchedDisclaimers; }
+	public Reference getStdSchedDisclaimer(Long id) {
+		if (iStdSchedDisclaimers == null || id == null) return null;
+		for (Reference ref: iStdSchedDisclaimers)
+			if (ref.getId().equals(id)) return ref;
+		return null;
+	}
 	
 	public void addDepartment(Long id, String ref, String label, boolean selectable) {
 		if (iDepartments == null) iDepartments = new ArrayList<Reference>();

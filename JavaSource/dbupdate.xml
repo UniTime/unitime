@@ -15746,4 +15746,42 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'InstrOfferingConfigEdit'
 		</sql>
 	</update>
+	<update version="276" date="26-Feb-2026" comment="Default Scheduling Disclaimers">
+		<plsql>
+			create table %SCHEMA%.std_schd_disclaimer (
+				uniqueid number(20,0) constraint nn_std_schd_disclaimer_id not null,
+				reference varchar2(20 char) constraint nn_std_schd_disclaimer_ref not null,
+				label varchar2(60 char) constraint nn_std_schd_disclaimer_label not null,
+				disclaimer varchar2(2000 char) constraint nn_std_schd_disclaimer_disc not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.std_schd_disclaimer add constraint pk_std_schd_disclaimer primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.std_schd_disclaimer (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				disclaimer varchar(2000) not null
+			) engine = INNODB
+		</mysql>
+		<pgsql>
+			create table %SCHEMA%.std_schd_disclaimer (
+				uniqueid bigint not null,
+			    reference varchar(20) not null,
+			    label varchar(60) not null,
+			    disclaimer varchar(2000) not null
+			)
+		</pgsql>
+		<pgsql>alter table %SCHEMA%.std_schd_disclaimer add constraint pk_std_schd_disclaimer primary key (uniqueid)</pgsql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'SchedulingDisclaimers'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'SchedulingDisclaimerEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
+		</sql>
+	</update>
 </dbupdate>

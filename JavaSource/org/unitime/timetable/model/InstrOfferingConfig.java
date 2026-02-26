@@ -359,7 +359,6 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		return deptSet;
 	}
 	
-	@Transient
 	public boolean hasSchedulingDisclaimer() {
 		return getSchedulingDisclaimer() != null && !getSchedulingDisclaimer().isEmpty();
 	}

@@ -6087,4 +6087,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Student Scheduling Disclaimer:")
 	String propertySchedulingDisclaimer();
+	
+	@DefaultMessage("No Disclaimer")
+	String itemNoSchedulingDisclaimer();
+	
+	@DefaultMessage("Other Disclaimer")
+	String itemCustomSchedulingDisclaimer();
 }

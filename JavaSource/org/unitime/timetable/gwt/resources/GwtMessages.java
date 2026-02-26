@@ -4044,6 +4044,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course Catalog")
 	@DoNotTranslate
 	String pageCourseCatalog();
+	
+	@DefaultMessage("Standard Scheduling Disclaimer")
+	@DoNotTranslate
+	String pageStandardSchedulingDisclaimer();
+	
+	@DefaultMessage("Standard Scheduling Disclaimers")
+	@DoNotTranslate
+	String pageStandardSchedulingDisclaimers();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -8081,4 +8089,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("\u2026 {0} more")
 	String moreItems(int count);
+	
+	@DefaultMessage("Disclaimer")
+	String fieldDisclaimer();
 }

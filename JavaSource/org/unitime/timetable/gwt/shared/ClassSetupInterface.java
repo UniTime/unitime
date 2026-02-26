@@ -40,6 +40,7 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	private List<Reference> iInstructionalMethods;
 	private List<Reference> iLMSs;
 	private List<Reference> iDatePatterns;
+	private List<Reference> iStdSchedDisclaimers;
 	private List<Subpart> iSubparts;
 	
 	private Long iConfigId;
@@ -138,6 +139,19 @@ public class ClassSetupInterface implements IsSerializable, Serializable, GwtRpc
 	public Reference getLMS(Long id) {
 		if (iLMSs == null || id == null) return null;
 		for (Reference ref: iLMSs)
+			if (ref.getId().equals(id)) return ref;
+		return null;
+	}
+	
+	public void addStdSchedDisclaimer(Long id, String ref, String label) {
+		if (iStdSchedDisclaimers == null) iStdSchedDisclaimers = new ArrayList<Reference>();
+		iStdSchedDisclaimers.add(new Reference(id, ref, label, true));
+	}
+	public boolean hasStdSchedDisclaimers() { return iStdSchedDisclaimers != null && !iStdSchedDisclaimers.isEmpty(); }
+	public List<Reference> getStdSchedDisclaimers() { return iStdSchedDisclaimers; }
+	public Reference getStdSchedDisclaimer(Long id) {
+		if (iStdSchedDisclaimers == null || id == null) return null;
+		for (Reference ref: iStdSchedDisclaimers)
 			if (ref.getId().equals(id)) return ref;
 		return null;
 	}
