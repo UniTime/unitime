@@ -314,9 +314,9 @@ Jakarta Standard Tag Library Implementation (jakarta.servlet.jsp.jstl-3.0.1.jar)
 	under EPL 2.0
 	https://projects.eclipse.org/projects/ee4j.jstl
 
-gwt-servlet-jakarta (gwt-servlet-jakarta-2.12.2.jar)
+GWT RPC/RF jakarta.servlet implementation (gwt-servlet-jakarta-2.13.0.jar)
 	under Apache Software License (ASL), Version 2.0
-	http://www.gwtproject.org/gwt-servlet-jakarta/
+	https://www.gwtproject.org/gwt-servlet-jakarta/
 
 Hibernate Commons Annotations (hibernate-commons-annotations-7.0.3.Final.jar)
 	under Apache Software License (ASL), Version 2.0
