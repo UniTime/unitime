@@ -582,4 +582,13 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Section closed. Click to open the section.")
 	String iconSectionClosed();
+	
+	@DefaultMessage("Tree item colapsed")
+	String iconTreeClosed();
+	
+	@DefaultMessage("Tree item expanded")
+	String iconTreeOpened();
+	
+	@DefaultMessage("Tree leaf item")
+	String iconTreeLeaf();
 }

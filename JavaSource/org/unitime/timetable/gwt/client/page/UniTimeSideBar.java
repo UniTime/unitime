@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
+import org.unitime.timetable.gwt.client.aria.AriaTree;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -160,7 +161,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		});
 		
 		iStackPanel = new MyStackPanel();
-		iTree = new Tree(RESOURCES, true);
+		iTree = new AriaTree();
 		iTree.addOpenHandler(new OpenHandler<TreeItem>() {
 			@Override
 			public void onOpen(OpenEvent<TreeItem> event) {
@@ -416,7 +417,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 			if (item.isSeparator()) continue;
 			iTree.addItem(generateItem(item));
 			if (item.hasSubMenus()) {
-				Tree tree = new Tree(RESOURCES, true);
+				Tree tree = new AriaTree();
 				for (MenuInterface subItem: item.getSubMenus())
 					if (!subItem.isSeparator())
 						tree.addItem(generateItem(subItem));

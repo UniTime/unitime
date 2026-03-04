@@ -33,6 +33,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Image;
 
@@ -50,7 +51,7 @@ public class MobilePageLabelImpl extends P implements PageLabelDisplay {
 	private String iUrl = null;
 	
 	public MobilePageLabelImpl() {
-        iName = new P("text");
+        iName = new P(DOM.createElement("H1"), "text");
         Image image = new Image(RESOURCES.help());
         image.setAltText(ARIA.iconHelp());
         

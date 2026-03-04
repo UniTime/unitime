@@ -47,7 +47,7 @@ public class PageLabelImpl extends P implements PageLabelDisplay {
 	private String iUrl = null;
 	
 	public PageLabelImpl() {
-        iName = new P(DOM.createDiv(), "text");
+        iName = new P(DOM.createElement("H1"), "text");
         Image image = new Image(RESOURCES.help());
         image.setAltText(ARIA.iconHelp());
         

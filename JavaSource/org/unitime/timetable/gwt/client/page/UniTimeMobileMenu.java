@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaTree;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -249,7 +250,7 @@ public class UniTimeMobileMenu extends UniTimeMenu {
 		for (final MenuInterface item: items) {
 			if (item.isSeparator()) continue;
 			if (item.hasSubMenus()) {
-				Tree tree = new Tree(RESOURCES, true);
+				Tree tree = new AriaTree();
 				for (MenuInterface subItem: item.getSubMenus())
 					if (!subItem.isSeparator())
 						tree.addItem(generateItem(subItem));
