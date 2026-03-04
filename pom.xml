@@ -763,7 +763,7 @@
 		<itext.version>2.1.7</itext.version>
 		<struts2.version>7.1.1</struts2.version>
 		<protobuf.version>4.32.1</protobuf.version>
-		<gwt.version>2.12.2</gwt.version>
+		<gwt.version>2.13.0</gwt.version>
 		<spring.version>6.2.11</spring.version>
 		<spring-security.version>6.5.4</spring-security.version>
 		<spring-integration.version>6.5.1</spring-integration.version>
