@@ -229,7 +229,7 @@ public class ExportTimetablePDF extends TableExporter {
 			return false;
 		}
 		
-		protected void print(PdfContentByte canvas, int x, int y, int pageHeight, P parent) throws DocumentException {
+		public void print(PdfContentByte canvas, int x, int y, int pageHeight, P parent) throws DocumentException {
 			if (isStyle("unitime-TimetableGrid")) {
 				setHeight(getHeight() - 2);
 				setWidth(getWidth() - 1);
@@ -355,10 +355,14 @@ public class ExportTimetablePDF extends TableExporter {
 		}
 	}
 	
-	protected static class TimetableGrid extends P {
+	public static class TimetableGrid extends P {
 		private List<Meeting> iMeetings = new ArrayList<Meeting>();
 		private List<Background> iBackbrounds = new ArrayList<Background>();
 		private int iCellWidth;
+		
+		public TimetableGrid(FilterInterface filter, final TimetableGridModel model, int index, int weekOffset, boolean showHeader) {
+			this(filter, model, index, pageWidth(filter, model, weekOffset), weekOffset, showHeader);
+		}
 		
 		public TimetableGrid(FilterInterface filter, final TimetableGridModel model, int index, int pageWidth, int weekOffset, boolean showHeader) {
 			super("unitime-TimetableGrid");
@@ -854,6 +858,8 @@ public class ExportTimetablePDF extends TableExporter {
 		        }
 			}
 		}
+		
+		public boolean hasMeetings() { return !iMeetings.isEmpty(); }
 	}
 	
 	protected static float textWidth(Font font, TimetableGridCell cell, boolean showRoom, boolean showInstructor, boolean showTime, boolean showPreference, boolean showDate) {
@@ -875,7 +881,7 @@ public class ExportTimetablePDF extends TableExporter {
         return width;
 	}
 	
-	protected int pageWidth(FilterInterface filter, final TimetableGridModel model, int weekOffset) {
+	public static int pageWidth(FilterInterface filter, final TimetableGridModel model, int weekOffset) {
 		int displayMode = Integer.valueOf(filter.getParameterValue("dispMode", "0"));
 		boolean hasDay[] = { true, true, true, true, true, false, false };
 		String days = filter.getParameterValue("days");
@@ -934,7 +940,7 @@ public class ExportTimetablePDF extends TableExporter {
 		}
 	}
 	
-	protected int pageHeight(FilterInterface filter, final TimetableGridModel model, int weekOffset, boolean showHeader) {
+	public static int pageHeight(FilterInterface filter, final TimetableGridModel model, int weekOffset, boolean showHeader) {
 		int displayMode = Integer.valueOf(filter.getParameterValue("dispMode", "0"));
 		boolean hasDay[] = { true, true, true, true, true, false, false };
 		String days = filter.getParameterValue("days");
