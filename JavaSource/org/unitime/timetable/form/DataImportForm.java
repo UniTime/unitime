@@ -81,6 +81,7 @@ public class DataImportForm implements UniTimeForm {
     	STUDENT_ADVISORS("studentAdvisors", "Student Advisors"),
     	STUDENT_STATUSES("studentStatuses", "Student Scheduling Statuses"),
     	INSTRUCTOR_SURVEYS("instructorSurveys", "Instructor Surveys"),
+    	LAST_LIKE_COURSE_DEMANDS("lastLikeCourseDemand", "Last-Like Student Course Demands"),
     	SCRIPTS("scripts", "Scripts"),
     	REPORTS("reports", "Reports"),
     	;
