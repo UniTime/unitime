@@ -1437,7 +1437,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				ToolBox.print((allSaved && !isChanged() ? MESSAGES.studentSchedule() : MESSAGES.studentScheduleNotEnrolled()),
 						(CONSTANTS.printReportShowUserName() ? iUserAuthentication.getUser() : ""),
 						iSessionSelector.getAcademicSessionName(),
-						iAssignmentGrid.getPrintWidget(900),
+						iAssignmentGrid.getPrintWidget(1000),
 						w,
 						iStatus);
 			}

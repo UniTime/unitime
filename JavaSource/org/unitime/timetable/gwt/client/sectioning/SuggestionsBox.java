@@ -705,7 +705,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 							}
 						}
 					}
-					TimeGrid w = (TimeGrid)iGrid.getPrintWidget(Math.min(900, Window.getClientWidth()));
+					TimeGrid w = (TimeGrid)iGrid.getPrintWidget(Math.min(1000, Window.getClientWidth()));
 					w.addStyleName("unitime-SuggestionsHintWidget");
 					iHint.setWidget(new SimplePanel(w));
 					iHint.setSize((w.getWidth() / 2) + "px", (w.getHeight() / 2) + "px");
