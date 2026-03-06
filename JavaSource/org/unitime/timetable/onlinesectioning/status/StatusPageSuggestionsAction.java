@@ -1519,19 +1519,19 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 					if (attr == null || attr.equals("time")) {
 						if (section.getTime() == null && term.equalsIgnoreCase("none")) return true;
-						if (section.getTime() != null) {
+						if (section.getTime() != null && section.getTime().getDays() != 0) {
 							int start = parseStart(term);
 							if (start >= 0 && section.getTime().getSlot() == start) return true;
 						}
 					}
 					if (attr != null && attr.equals("before")) {
-						if (section.getTime() != null) {
+						if (section.getTime() != null && section.getTime().getDays() != 0) {
 							int end = parseStart(term);
 							if (end >= 0 && section.getTime().getSlot() + section.getTime().getLength() - section.getTime().getBreakTime() / 5 <= end) return true;
 						}
 					}
 					if (attr != null && attr.equals("after")) {
-						if (section.getTime() != null) {
+						if (section.getTime() != null && section.getTime().getDays() != 0) {
 							int start = parseStart(term);
 							if (start >= 0 && section.getTime().getSlot() >= start) return true;
 						}
