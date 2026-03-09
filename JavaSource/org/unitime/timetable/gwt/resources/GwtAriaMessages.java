@@ -591,4 +591,19 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Tree leaf item")
 	String iconTreeLeaf();
+	
+	@DefaultMessage("Warning")
+	String iconWarning();
+	
+	@DefaultMessage("Information")
+	String iconInfo();
+	
+	@DefaultMessage("Error")
+	String iconError();
+	
+	@DefaultMessage("Confirmation")
+	String iconConfirm();
+	
+	@DefaultMessage("Preferences")
+	String iconPreferences();
 }

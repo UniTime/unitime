@@ -21,9 +21,12 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
@@ -34,6 +37,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Image;
 
@@ -43,18 +47,21 @@ import com.google.gwt.user.client.ui.Image;
 public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static GwtResources RESOURCES = GWT.create(GwtResources.class);
+	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	public static enum Type {
-		ALERT(MESSAGES.dialogAlert(), RESOURCES.alert()),
-		CONFIRM(MESSAGES.dialogConfirmation(), RESOURCES.confirm()),
-		INFO(MESSAGES.dialogInfo(), RESOURCES.info()),
+		ALERT(MESSAGES.dialogAlert(), RESOURCES.alert(), ARIA.iconWarning()),
+		CONFIRM(MESSAGES.dialogConfirmation(), RESOURCES.confirm(), ARIA.iconConfirm()),
+		INFO(MESSAGES.dialogInfo(), RESOURCES.info(), ARIA.iconInfo()),
 		;
 		private String iTitle;
 		private ImageResource iIcon;
-		Type(String title, ImageResource icon) {
-			iTitle = title; iIcon = icon;
+		private String iAlt;
+		Type(String title, ImageResource icon, String alt) {
+			iTitle = title; iIcon = icon; iAlt = alt;
 		}
 		public String getTitle() { return iTitle; }
 		public ImageResource getIcon() { return iIcon; }
+		public String getIconAltText() { return iAlt; }
 	}
 	
 	private String iAnswer = null;
@@ -103,7 +110,10 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 
 		P ic = new P("icon-panel");
 		bd.add(ic);
-		ic.add(new Image(icon));
+		Image img = new Image(icon);
+		img.setAltText(type.getIconAltText());
+		ic.add(img);
+		
 
 		P cp = new P("content-panel");
 		bd.add(cp);
@@ -125,10 +135,12 @@ public class UniTimeConfirmationDialog extends UniTimeDialogBox {
 			P q = new P("question");
 			q.setText(question);
 			qp.add(q);
+			q.getElement().setId(DOM.createUniqueId());
 			
 			iError = new P("error");
 			
 			iTextBox = new UniTimeTextBox();
+	    	Roles.getTextboxRole().setAriaLabelledbyProperty(getElement(), Id.of(q.getElement()));
 			iTextBox.addChangeHandler(new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent event) {

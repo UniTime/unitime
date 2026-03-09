@@ -560,7 +560,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-FreeTimePicker .slot {
 	font-size: x-small;
 	text-align: center;
-	color: graytext;
+	color: #767676;
 	border-bottom: 1px solid #9CB0CE;
 	border-right: 1px solid #9CB0CE;
 	cursor: pointer;
@@ -2088,7 +2088,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-FilterBoxPopup .item-hint {
 	padding-left: 5px;
-	color: #909090;
+	color: #767676;
 	vertical-align: top;
 	font-size: xx-small;
 }

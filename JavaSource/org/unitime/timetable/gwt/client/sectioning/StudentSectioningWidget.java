@@ -699,7 +699,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						note.addSuggestion(suggestion);
 				if (rc.hasStatusNote())
 					confirm.addConfirmation("\n" + MESSAGES.overrideNote(rc.getStatusNote()), 0, 4);
-				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
+				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), ARIA.iconInfo(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if (result) {
@@ -755,7 +755,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						note.addSuggestion(suggestion);
 				if (request.hasCreditNote())
 					confirm.addConfirmation("\n" + MESSAGES.overrideNote(request.getCreditNote()), 0, 4);
-				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
+				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), ARIA.iconInfo(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if (result) {
@@ -812,7 +812,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (reg.hasSuggestions())
 					for (String suggestion: reg.getSuggestions())
 						note.addSuggestion(suggestion);
-				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), new AsyncCallback<Boolean>() {
+				CourseRequestsConfirmationDialog.confirm(confirm, 0, RESOURCES.statusInfo(), ARIA.iconInfo(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						if (result) {
@@ -3193,7 +3193,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 
 					P ic = new P("icon-panel");
 					bd.add(ic);
-					ic.add(new Image(RESOURCES.statusInfo()));
+					Image im = new Image(RESOURCES.statusInfo());
+					im.setAltText(ARIA.iconInfo());
+					ic.add(im);
 
 					P cp = new P("content-panel");
 					bd.add(cp);

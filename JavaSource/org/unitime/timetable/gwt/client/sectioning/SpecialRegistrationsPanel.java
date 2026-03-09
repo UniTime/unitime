@@ -782,7 +782,7 @@ public class SpecialRegistrationsPanel extends P {
 				for (ErrorMessage e: reg.getErrors())
 					confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 3);
 			}
-			CourseRequestsConfirmationDialog.confirm(confirm, 0, GWT_RESOURCES.confirm(), new AsyncCallback<Boolean>() {
+			CourseRequestsConfirmationDialog.confirm(confirm, 0, GWT_RESOURCES.confirm(), ARIA.iconConfirm() , new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
 				}
