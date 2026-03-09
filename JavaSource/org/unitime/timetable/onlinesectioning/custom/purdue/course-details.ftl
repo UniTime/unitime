@@ -136,7 +136,7 @@
 <#if prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisites?? && prerequisites.coursePrerequisite.prerequisites.basic??>
 <@header 'Prerequisites' 'Prerequisites'/>
 <table class='prerequisites' id='Prerequisites'>
-	<tr class='header'><th>And/Or</th><th></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th></th></tr>
+	<tr class='header'><th>And/Or</th><th><span style='display:none;'>Left Parenthesis</span></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th><span style='display:none;'>Right Parenthesis</span></th></tr>
 	<#list prerequisites.coursePrerequisite.prerequisites.basic?filter(r -> r.lineOrderSequence??)?sort_by("lineOrderSequence") as line>
 		<tr><td><#if line.logicalOperator??>${line.logicalOperator?capitalize}</#if></td>
 		<td><#if line.leftParenthesis?? && line.leftParenthesis>(</#if></td>
@@ -173,13 +173,14 @@
 
 <#if descriptors?? && descriptors.courseText??>
 <@header 'Course Configurations' 'Configurations'/>
-<table class='configurations' id='Configurations'>
+<div class='configurations' id='Configurations'>
 <#list descriptors.courseText.textLines?sort_by("sequenceNumber") as line><#list line.text?split('|') as x>
-	<#if x?index = 0><tr class='configuration'><th colspan='3'>Configuration ${line.sequenceNumber}: ${x} Credits</td></tr>
+	<#if x?index = 0><div class='text'>Configuration ${line.sequenceNumber}: ${x} Credits</div>
+	<table class='configuration'>
 	<tr class='header'><th>Schedule Type</th><th>Weekly Contact Hours</th><th>Instructional Credit Distribution</th></tr>
-	<#elseif (x?length > 0)><tr><#list x?trim?split(' ') as z><td><#if z?index=0><@scheduleType z/><#else>${z}</#if></td></#list></tr></#if>
-</#list></#list>
-</table>
+	<#elseif (x?length > 0)><tr><#list x?trim?split(' ') as z><#if z?index=0><td><#else><td align='center'></#if><#if z?index=0><@scheduleType z/><#else>${z}</#if></td></#list></tr></#if>
+</#list></table></#list>
+</div>
 </#if>
 
 <#if disclaimer??>
