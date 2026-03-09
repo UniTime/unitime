@@ -37,6 +37,8 @@ import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CheckCoursesResponse;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.CourseMessage;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -52,11 +54,13 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -95,6 +99,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		P ic = new P("icon-panel");
 		bd.add(ic);
 		iImage = new Image(RESOURCES.statusWarning());
+		iImage.setAltText(ARIA.iconWarning());
 		ic.add(iImage);
 
 		P cp = new P("content-panel");
@@ -192,6 +197,11 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 				iNote.setStyleName("unitime-TextArea"); iNote.addStyleName("request-note");
 				iNote.setVisibleLines(5);
 				iNote.setCharacterWidth(80);
+				if (mp.getWidgetCount() > 0) {
+					Widget caption = mp.getWidget(mp.getWidgetCount() - 1);
+					caption.getElement().setId(DOM.createUniqueId());
+			    	Roles.getTextboxRole().setAriaLabelledbyProperty(iNote.getElement(), Id.of(caption.getElement()));
+				}
 				if (cm.getMessage() != null) iNote.setText(cm.getMessage());
 				iNote.addValueChangeHandler(new ValueChangeHandler<String>() {
 					@Override
@@ -282,9 +292,11 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		setWidget(panel);
 	}
 	
-	public CourseRequestsConfirmationDialog withImage(ImageResource image) {
-		if (image != null) 
+	public CourseRequestsConfirmationDialog withImage(ImageResource image, String alt) {
+		if (image != null) {
 			iImage.setResource(image);
+			iImage.setAltText(alt);
+		}
 		return this;
 	}
 	
@@ -317,7 +329,7 @@ public class CourseRequestsConfirmationDialog extends UniTimeDialogBox {
 		new CourseRequestsConfirmationDialog(response, confirm, callback).center();
 	}
 	
-	public static void confirm(CheckCoursesResponse response, int confirm, ImageResource image, AsyncCallback<Boolean> callback) {
-		new CourseRequestsConfirmationDialog(response, confirm, callback).withImage(image).center();
+	public static void confirm(CheckCoursesResponse response, int confirm, ImageResource image, String alt, AsyncCallback<Boolean> callback) {
+		new CourseRequestsConfirmationDialog(response, confirm, callback).withImage(image, alt).center();
 	}
 }

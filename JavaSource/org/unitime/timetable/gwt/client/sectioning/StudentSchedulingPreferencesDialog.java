@@ -39,6 +39,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -65,7 +66,7 @@ public class StudentSchedulingPreferencesDialog extends UniTimeDialogBox impleme
 		super(true, false);
 		setEscapeToHide(true);
 		addStyleName("unitime-StudentSchedulingPreferencesDialog");
-		setHTML("<img src='" + RESOURCES.preferences().getSafeUri().asString() + "' class='gwt-Image'></img><span class='gwt-Label' style='padding-left: 5px; vertical-align: top;'>" + MESSAGES.dialogStudentSchedulingPreferences() + "</span>");
+		setHTML("<img src='" + RESOURCES.preferences().getSafeUri().asString() + "' alt='" + SafeHtmlUtils.htmlEscape(ARIA.iconPreferences()) + "' class='gwt-Image'></img><span class='gwt-Label' style='padding-left: 5px; vertical-align: top;'>" + MESSAGES.dialogStudentSchedulingPreferences() + "</span>");
 		iForm = new SimpleForm();
 		
 		iModality = new AriaListBox();

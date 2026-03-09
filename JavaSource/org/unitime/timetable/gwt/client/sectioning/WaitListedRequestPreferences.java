@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderDetails;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
+import org.unitime.timetable.gwt.client.widgets.FocusableScrollPanel;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -180,7 +181,7 @@ public class WaitListedRequestPreferences extends UniTimeDialogBox implements Ha
 		
 		iCourseDetailsTabBar = new AriaTabBar();
 		iCourseDetailsTabBar.addStyleName("course-details-tabs");
-		iCourseDetailsPanel = new ScrollPanel();
+		iCourseDetailsPanel = new FocusableScrollPanel();
 		iCourseDetailsPanel.addStyleName("course-details");
 		iCourseDetailsTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
