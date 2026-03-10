@@ -1569,7 +1569,8 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		public boolean hasMessages() { return iMessages != null && !iMessages.isEmpty(); }
 		public Set<CourseMessage> getMessages() { return iMessages; }
 		public void addMessage(CourseMessage message) {
-			iMessages.add(message);
+			if (message.getMessage() != null)
+				iMessages.add(message);
 		}
 		
 		public CourseMessage addMessage(Long courseId, String course, String code, String message, Integer confirm, int order) {
