@@ -438,7 +438,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						if (enrolled != null && enrolled.getCourseId().equals(rc.getCourseId()) && enrolled.isRequired(rc, offering)) continue;
 						
 						// disclaimer -- only check newly wait-listed requests
-						if ("TBD".equals(rc.getOverrideExternalId())) {
+						if ("TBD".equals(rc.getOverrideExternalId()) && offering.hasSchedulingDisclaimer()) {
 							if (offering.hasMultipleSchedulingDisclaimers()) {
 								XCourseRequest cr = original.getRequestForCourse(rc.getCourseId());
 								XEnrollment enrollment = (cr == null ? null : cr.getEnrollment());
