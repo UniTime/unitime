@@ -32,7 +32,6 @@ import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.CourseFinderCourseDetails;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseEvent;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder.ResponseHandler;
@@ -589,7 +588,6 @@ public class CourseFinderMultipleCourses extends P implements CourseFinder.Cours
 		if (event.getTypeInt() == Event.ONKEYDOWN) {
 			if (iCourses.getRowCount() < 2 || iCourses.getData(1) == null) return;
 			if (iCourseDetailsPanel != null && iCourseDetailsPanel.isFocused()) return;
-			UniTimeNotifications.info("key down: " + iCourseDetailsPanel.isFocused());
 			int row = iCourses.getSelectedRow();
 			if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN && isEnabled() && !iFilter.isPopupShowing()) {
 				if (row < 0 || iCourses.getSelectedRow() + 1 >= iCourses.getRowCount())
