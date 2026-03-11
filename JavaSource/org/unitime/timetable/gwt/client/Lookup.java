@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.widgets.FocusableScrollPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -111,7 +112,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 		iPanel.add(queryPanel);
 		iPanel.setCellHorizontalAlignment(queryPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		iTable = new UniTimeTable<PersonInterface>();
-		iScroll = new ScrollPanel(iTable);
+		iScroll = new FocusableScrollPanel(iTable);
 		iScroll.setStyleName("unitime-ScrollPanel");
 		iPanel.add(iScroll);
 		setWidget(iPanel);

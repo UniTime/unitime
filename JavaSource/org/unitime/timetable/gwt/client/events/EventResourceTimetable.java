@@ -52,6 +52,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDockPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
@@ -433,6 +434,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iHeader = new UniTimeHeaderPanel();
 		iPanel.addHeaderRow(iHeader);
 		iWeekPanel = new WeekSelector(iSession);
+		iWeekPanel.setAriaLabel(ARIA.inputWeekSelector());
 		iWeekPanel.addValueChangeHandler(new ValueChangeHandler<WeekSelector.Interval>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
@@ -451,6 +453,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		});
 		iRoomPanel = new RoomSelector();
+		iRoomPanel.setAriaLabel(ARIA.inputRoomSelector());
 		iRoomPanel.setFilter(new WeekSelector.Filter<ResourceInterface>() {
 			@Override
 			public boolean filter(ResourceInterface room) {
@@ -505,7 +508,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}, KeyUpEvent.getType());
 		}
 		
-		iDockPanel = new DockPanel();
+		iDockPanel = new UniTimeDockPanel();
 		iDockPanel.setStyleName("unitime-EventResults");
 		iDockPanel.setSpacing(0);
 		iDockPanel.add(iGridOrTablePanel, DockPanel.SOUTH);
@@ -917,6 +920,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 				for (MeetingInterface meeting: event.getMeetings()) {
 					if (filterEvent(event, meeting)) continue;
+					if (meeting.getDayOfWeek() == 0) continue;
 					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 					if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 					if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
@@ -1485,6 +1489,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				ta.setCharacterWidth(80);
 				ta.setText(GWT.getHostPageBaseURL() + (result.hasHash() ? "export?x=" + result.getHash() : "export?q=" + result.getQuery()));
 				UniTimeWidget<TextArea> w = new UniTimeWidget<TextArea>(ta);
+				Roles.getTextboxRole().setAriaLabelProperty(ta.getElement(), MESSAGES.opExportICalendar());
 				w.setHint(MESSAGES.hintCtrlCToCopy());
 				form.addRow(w);
 				w.getElement().getStyle().setMarginBottom(5, Unit.PX);

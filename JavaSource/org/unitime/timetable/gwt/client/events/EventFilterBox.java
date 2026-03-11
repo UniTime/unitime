@@ -44,6 +44,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -67,6 +69,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -117,6 +120,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		iSponsors = new ListBox();
 		iSponsors.setMultipleSelect(true);
 		iSponsors.setWidth("100%"); iSponsors.setVisibleItemCount(3);
+		Roles.getListboxRole().setAriaLabelProperty(iSponsors.getElement(), MESSAGES.tagSponsor());
 		
 		addFilter(new FilterBox.CustomFilter("sponsor", MESSAGES.tagSponsor(), iSponsors) {
 			@Override
@@ -216,6 +220,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		iServices = new ListBox();
 		iServices.setMultipleSelect(false);
 		iServices.setWidth("100%");
+		Roles.getListboxRole().setAriaLabelProperty(iServices.getElement(), MESSAGES.tagService());
 		
 		addFilter(new FilterBox.CustomFilter("service", MESSAGES.tagService(), iServices) {
 			@Override
@@ -263,10 +268,12 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		});
 		
 		Label reqLab = new Label(MESSAGES.propRequestedBy());
+		reqLab.getElement().setId(DOM.createUniqueId());
 
 		iRequested = new AriaSuggestBox(new RequestedByOracle());
 		iRequested.setStyleName("unitime-TextArea");
 		iRequested.setWidth("200px");
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iRequested.getValueBox().getElement(), Id.of(reqLab.getElement()));
 		
 		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);

@@ -2308,14 +2308,6 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			showLine(0, false);
 		}
 		
-		public MultiLinePCell(P... values) {
-			super("multiple-lines");
-			iValue = new ArrayList<P>();
-			for (P value: values)
-				iValue.add(value);
-			showLine(0, false);
-		}
-		
 		public void showLine(int line, boolean hasNext) {
 			clear();
 			add(line >= 0 && line < iValue.size() ? iValue.get(line) : new P("blank-line"));

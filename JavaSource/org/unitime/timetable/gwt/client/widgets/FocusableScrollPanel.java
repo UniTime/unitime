@@ -29,11 +29,17 @@ import com.google.gwt.event.dom.client.HasFocusHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 public class FocusableScrollPanel extends ScrollPanel implements Focusable, HasFocusHandlers, HasBlurHandlers {
 	public FocusableScrollPanel() {
 		super();
+		setTabIndex(0);
+	}
+	
+	public FocusableScrollPanel(Widget child) {
+		super(child);
 		setTabIndex(0);
 	}
 

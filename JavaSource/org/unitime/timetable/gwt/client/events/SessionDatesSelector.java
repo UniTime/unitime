@@ -519,6 +519,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			P box = new P(null, "box");
 			add(box);
 			P header = new P(null, "row");
+			Roles.getRowRole().set(header.getElement());
 			box.add(header);
 			iCorner = new P(null, new int[] {index, -1, -1}, "cell", "corner", "clickable");
 			iCorner.setAriaLabel(SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1));
@@ -538,6 +539,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			}
 
 			P line = new P(null, "row");
+			Roles.getRowRole().set(line.getElement());
 			box.add(line);
 			P week = new P(String.valueOf(weekNumber++), new int[] {index, -1, iWeeks.size()}, "cell", "week", "clickable");
 			Roles.getRowheaderRole().set(week.getElement());
@@ -575,6 +577,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				if (i > 0 && idx % 7 == 0) {
 					if (idx == 7 && iSessionMonth.getMonth() == 0 && weekNumber > 50) weekNumber = 1;
 					line = new P(null, "row");
+					Roles.getRowRole().set(line.getElement());
 					box.add(line);
 					week = new P(String.valueOf(weekNumber ++), new int[] {index, -1, iWeeks.size()}, "cell", "week", "clickable");
 					Roles.getRowheaderRole().set(week.getElement());

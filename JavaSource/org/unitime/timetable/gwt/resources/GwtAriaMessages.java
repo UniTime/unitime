@@ -606,4 +606,13 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Preferences")
 	String iconPreferences();
+	
+	@DefaultMessage("Week selection")
+	String inputWeekSelector();
+	
+	@DefaultMessage("Room selection")
+	String inputRoomSelector();
+	
+	@DefaultMessage("Click to delete this line.")
+	String buttonDeleteThisLine();
 }
