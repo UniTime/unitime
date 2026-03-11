@@ -1175,16 +1175,16 @@ public interface StudentSectioningMessages extends Messages {
 			"<br><br>Example: day: monday and (time: 730 or time: 830)")
 	String suggestionsFilterHint();
 	
-	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected free time {0} are in blue,</span><span class='item' style='color:red;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other classes or free times are in black.</span>")
+	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected free time {0} are in blue,</span><span class='item' style='color:#e00;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other classes or free times are in black.</span>")
 	String suggestionsLegendOnFreeTime(String freeTime);
 
-	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected class {0} are in blue,</span><span class='item' style='color:red;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other classes or free times are in black.</span>")
+	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected class {0} are in blue,</span><span class='item' style='color:#e00;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other classes or free times are in black.</span>")
 	String suggestionsLegendOnClass(String clazz);
 	
-	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected course {0} are in blue,</span><span class='item' style='color:red;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other courses or free times are in black.</span>")
+	@DefaultMessage("<span class='item' style='color:blue;'>Changes to the selected course {0} are in blue,</span><span class='item' style='color:#e00;'> classes to be removed from the schedule are in red.</span><span class='item'> Changes to other courses or free times are in black.</span>")
 	String suggestionsLegendOnCourse(String course);
 	
-	@DefaultMessage("<span class='item' style='color:blue;'>Choices for the new course {0} are in blue.</span><span class='item' style='color:red;'> Courses to be removed from the schedule are in red.</span><span class='item'> Changes to other courses or free times are in black.</span>")
+	@DefaultMessage("<span class='item' style='color:blue;'>Choices for the new course {0} are in blue.</span><span class='item' style='color:#e00;'> Courses to be removed from the schedule are in red.</span><span class='item'> Changes to other courses or free times are in black.</span>")
 	String suggestionsLegendOnNewCourse(String course);
 
 	@DefaultMessage("<u>S</u>earch")
@@ -3145,11 +3145,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Missing {0} primary course(s).")
 	String hintAdvisedMissingOther(int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> cr</sup></span> + {1}")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> cr</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedMissingCriticalOther(int critical, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> critical</sup></span>")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> critical</sup></span>")
 	@DoNotTranslate
 	String advisedMissingCritical(int critical);
 	
@@ -3166,11 +3166,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not enrolled {0} primary course(s).")
 	String hintAdvisedNotAssignedOther(int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> cr</sup></span> + {1}")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> cr</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedNotAssignedCriticalOther(int critical, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> critical</sup></span>")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> critical</sup></span>")
 	@DoNotTranslate
 	String advisedNotAssignedCritical(int critical);
 	
@@ -3490,11 +3490,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Missing {0} vital course(s).")
 	String hintAdvisedMissingVital(int vital);
 
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedMissingVitalOther(int vital, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vital</sup></span>")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> vital</sup></span>")
 	@DoNotTranslate
 	String advisedMissingVital(int vital);
 	
@@ -3504,11 +3504,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not enrolled {0} vital course(s).")
 	String hintAdvisedNotAssignedVital(int vital);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> vt</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedNotAssignedVitalOther(int vital, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> vital</sup></span>")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> vital</sup></span>")
 	@DoNotTranslate
 	String advisedNotAssignedVital(int vital);
 	
@@ -3533,11 +3533,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Missing {0} important course(s).")
 	String hintAdvisedMissingImportant(int important);
 
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedMissingImportantOther(int important, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> important</sup></span>")
 	@DoNotTranslate
 	String advisedMissingImportant(int important);
 	
@@ -3547,11 +3547,11 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Not enrolled {0} important course(s).")
 	String hintAdvisedNotAssignedImportant(int important);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> im</sup></span> + {1}")
 	@DoNotTranslate
 	String advisedNotAssignedImportantOther(int important, int other);
 	
-	@DefaultMessage("<span style='color:red;font-weight:bold;'>{0}<sup> important</sup></span>")
+	@DefaultMessage("<span style='color:#c00;font-weight:bold;'>{0}<sup> important</sup></span>")
 	@DoNotTranslate
 	String advisedNotAssignedImportant(int important);
 	

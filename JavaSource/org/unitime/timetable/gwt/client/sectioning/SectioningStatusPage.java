@@ -60,6 +60,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -151,6 +152,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class SectioningStatusPage extends Composite {
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -1083,6 +1085,7 @@ public class SectioningStatusPage extends Composite {
 		if (e.getConfigId() == null) {
 			if (e.getCourseId() != null) {
 				final Image showDetails = new Image(iClassInfos.containsKey(e.getCourseId()) && iSelectedCourseIds.contains(e.getCourseId()) ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+				showDetails.setAltText(iClassInfos.containsKey(e.getCourseId()) && iSelectedCourseIds.contains(e.getCourseId()) ? ARIA.iconTreeOpened() : ARIA.iconTreeClosed());
 				showDetails.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -1104,6 +1107,7 @@ public class SectioningStatusPage extends Composite {
 								setLoading(true);
 								iError.setVisible(false);
 								showDetails.setResource(RESOURCES.treeOpen());
+								showDetails.setAltText(ARIA.iconTreeOpened());
 								iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, iCourseFilterRequest, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
 									@Override
 									public void onFailure(Throwable caught) {
@@ -1136,9 +1140,11 @@ public class SectioningStatusPage extends Composite {
 							}
 							if (iSelectedCourseIds.remove(e.getCourseId())) {
 								showDetails.setResource(RESOURCES.treeClosed());
+								showDetails.setAltText(ARIA.iconTreeClosed());
 							} else {
 								iSelectedCourseIds.add(e.getCourseId());
 								showDetails.setResource(RESOURCES.treeOpen());
+								showDetails.setAltText(ARIA.iconTreeOpened());
 							}
 						}
 						event.getNativeEvent().stopPropagation();
@@ -2556,6 +2562,7 @@ public class SectioningStatusPage extends Composite {
 			if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
 				if (info.getStudent().isCanSelect()) {
 					CheckBox ch = new CheckBox();
+					Roles.getCheckboxRole().setAriaLabelProperty(ch.getElement().getFirstChildElement(), info.getStudent().getName());
 					ch.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
