@@ -34,6 +34,8 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -56,6 +58,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
@@ -209,9 +212,11 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		});
 		
 		Label courseLab = new Label(MESSAGES.propCourse());
+		courseLab.getElement().setId(DOM.createUniqueId());
 		iCourse = new AriaSuggestBox(new CourseOracle());
 		iCourse.setStyleName("unitime-TextArea");
 		iCourse.setWidth("200px");
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iCourse.getValueBox().getElement(), Id.of(courseLab.getElement()));
 		FilterBox.StaticSimpleFilter courseFilter = new FilterBox.StaticSimpleFilter("course", GWT_MESSAGES.tagCourse());
 		courseFilter.setMultipleSelection(true);
 		addFilter(courseFilter);
@@ -260,9 +265,11 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		
 		Label studentLab = new Label(MESSAGES.propStudent());
 		studentLab.getElement().getStyle().setMarginLeft(10, Unit.PX);
+		studentLab.getElement().setId(DOM.createUniqueId());
 		iStudent = new AriaSuggestBox(new StudentOracle());
 		iStudent.setStyleName("unitime-TextArea");
 		iStudent.setWidth("200px");
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iStudent.getValueBox().getElement(), Id.of(studentLab.getElement()));
 		addFilter(new FilterBox.StaticSimpleFilter("student", GWT_MESSAGES.tagStudent()));
 		iStudent.getValueBox().addChangeHandler(new ChangeHandler() {
 			@Override
