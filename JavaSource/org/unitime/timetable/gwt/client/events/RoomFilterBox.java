@@ -32,6 +32,8 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -52,6 +54,7 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
@@ -79,6 +82,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		iDepartments = new ListBox();
 		iDepartments.setMultipleSelect(false);
 		iDepartments.setWidth("100%");
+		Roles.getListboxRole().setAriaLabelProperty(iDepartments.getElement(), MESSAGES.tagDepartment());
 		
 		iDepartmentFilter = new FilterBox.CustomFilter("department", MESSAGES.tagDepartment(), iDepartments) {
 			@Override
@@ -161,6 +165,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		iBuildings = new ListBox();
 		iBuildings.setMultipleSelect(true);
 		iBuildings.setWidth("100%"); iBuildings.setVisibleItemCount(3);
+		Roles.getListboxRole().setAriaLabelProperty(iBuildings.getElement(), MESSAGES.tagBuilding());
 		
 		addFilter(new FilterBox.CustomFilter("building", MESSAGES.tagBuilding(), iBuildings) {
 			@Override
@@ -215,17 +220,21 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		});
 		
 		Label l1 = new Label(MESSAGES.propMin());
+		l1.getElement().setId(DOM.createUniqueId());
 
 		iMin = new TextBox();
 		iMin.setStyleName("unitime-TextArea");
 		iMin.setMaxLength(10); iMin.getElement().getStyle().setWidth(50, Unit.PX);
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iMin.getElement(), Id.of(l1.getElement()));
 		
 		Label l2 = new Label(MESSAGES.propMax());
+		l2.getElement().setId(DOM.createUniqueId());
 		l2.getElement().getStyle().setMarginLeft(10, Unit.PX);
 
 		iMax = new TextBox();
 		iMax.setMaxLength(10); iMax.getElement().getStyle().setWidth(50, Unit.PX);
 		iMax.setStyleName("unitime-TextArea");
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iMax.getElement(), Id.of(l2.getElement()));
 		
 		final CheckBox events = new CheckBox(MESSAGES.checkOnlyEventLocations());
 		events.getElement().getStyle().setMarginLeft(10, Unit.PX);

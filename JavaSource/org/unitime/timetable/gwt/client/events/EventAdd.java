@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
@@ -47,6 +48,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -105,7 +107,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -120,6 +121,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class EventAdd extends Composite implements EventMeetingTable.Implementation, AcademicSessionSelectionBox.AcademicSessionFilter {
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -206,7 +208,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					row.add(new Label(contact.getName(MESSAGES), false));
 					row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
 					row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
-					Image remove = new Image(RESOURCES.delete());
+					ImageButton remove = new ImageButton(RESOURCES.delete());
+					remove.setAriaLabel(ARIA.buttonDeleteThisLine());
 					remove.addStyleName("remove");
 					remove.addClickHandler(new ClickHandler() {
 						@Override
@@ -634,6 +637,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iStandardNotesBox.addStyleName("unitime-StandardNotesBox");
 		iStandardNotesBox.setText(MESSAGES.dialogStandardNotes());
 		iStandardNotesBox.setWidget(standardNotesForm);
+		Roles.getListboxRole().setAriaLabelledbyProperty(iStandardNotes.getElement(), Id.of(iStandardNotesBox.getCaption().asWidget().getElement()));
 		standardNotesFooter.addButton("select", MESSAGES.buttonSelect(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -1295,7 +1299,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				row.add(new Label(contact.getName(MESSAGES), false));
 				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
 				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
-				Image remove = new Image(RESOURCES.delete());
+				ImageButton remove = new ImageButton(RESOURCES.delete());
+				remove.setAriaLabel(ARIA.buttonDeleteThisLine());
 				remove.addStyleName("remove");
 				remove.addClickHandler(new ClickHandler() {
 					@Override
@@ -1487,6 +1492,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			final CourseRelatedObjectLine line = new CourseRelatedObjectLine();
 			
 			final ListBox subject = new ListBox();
+			Roles.getListboxRole().setAriaLabelProperty(subject.getElement(), MESSAGES.colSubject());
 			subject.addStyleName("subject");
 			subject.addItem("-", "");
 			subject.setSelectedIndex(0);
@@ -1515,6 +1521,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			row.add(subject);
 			
 			final ListBox course = new ListBox();
+			Roles.getListboxRole().setAriaLabelProperty(course.getElement(), MESSAGES.colCourseNumber());
 			course.addStyleName("course");
 			course.addItem(MESSAGES.itemNotApplicable(), "");
 			course.setSelectedIndex(0);
@@ -1564,6 +1571,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			row.add(course);
 			
 			final ListBox subpart = new ListBox();
+			Roles.getListboxRole().setAriaLabelProperty(subpart.getElement(), MESSAGES.colConfigOrSubpart());
 			subpart.addStyleName("subpart");
 			subpart.addItem(MESSAGES.itemNotApplicable(), "");
 			subpart.setSelectedIndex(0);
@@ -1631,6 +1639,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			row.add(subpart);
 			
 			final ListBox clazz = new ListBox();
+			Roles.getListboxRole().setAriaLabelProperty(clazz.getElement(), MESSAGES.colClassNumber());
 			clazz.addStyleName("class");
 			clazz.addItem(MESSAGES.itemNotApplicable(), "");
 			clazz.setSelectedIndex(0);
@@ -1686,8 +1695,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			
 			row.add(clazz);
 			
-			Image remove = new Image(RESOURCES.delete());
-			remove.addStyleName("remove");
+			ImageButton remove = new ImageButton(RESOURCES.delete());
+			remove.setAriaLabel(ARIA.buttonDeleteThisLine());
 			remove.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {

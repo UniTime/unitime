@@ -851,14 +851,17 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iPanels.clear();
 		
 		P box = new P("box"); iRoomAvailability.add(box);
+		Roles.getGridRole().set(box.getElement());
 		
 		P row = new P("row"); box.add(row);
-		
+		Roles.getRowRole().set(row.getElement());
+				
 		row.add(new P("corner"));
 		
 		for (int i = iIndex; i < iIndex + iStep && i < getRooms().size(); i++) {
 			final Entity room = getRooms().get(i);
 			final P p = new P("room");
+			Roles.getColumnheaderRole().set(p.getElement());
 			String displayName = room.getProperty("display", null);
 			p.setHTML(MESSAGES.singleRoomSelection(room.getName() + (displayName != null && !displayName.isEmpty() ? "<br>" + displayName : ""), room.getProperty("type", null), room.getProperty("capacity", null)));
 			if ("1".equals(room.getProperty("ignoreRoomCheck", "0")))
@@ -906,8 +909,10 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		
 		for (final Integer date: getDates()) {
 			row = new P("row"); box.add(row);
+			Roles.getRowRole().set(row.getElement());
 			
 			final P day = new P("date");
+			Roles.getRowheaderRole().set(day.getElement());
 			final Date d = iDates.getDate(date);
 			day.setHTML(MESSAGES.dateTimeHeader(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())));
 			row.add(day);
@@ -955,6 +960,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				final Set<MeetingConflictInterface> conflicts = getConflicts(date, room);
 				
 				final P p = new P("cell");
+				Roles.getGridcellRole().set(p.getElement());
 				
 				if (conflicts == null || conflicts.isEmpty()) {
 					p.addStyleName("free");
@@ -1032,14 +1038,17 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iPanels.clear();
 		
 		P box = new P("box"); iRoomAvailability.add(box);
+		Roles.getGridRole().set(box.getElement());
 		
 		P row = new P("row"); box.add(row);
+		Roles.getRowRole().set(row.getElement());
 		
 		row.add(new P("corner"));
 		
 		for (int i = iIndex; i < iIndex + iStep && i < getDates().size(); i++) {
 			final Integer date = getDates().get(i);
 			final P day = new P("room");
+			Roles.getColumnheaderRole().set(day.getElement());
 			final Date d = iDates.getDate(date);
 			day.setHTML(MESSAGES.dateTimeHeader(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())));
 			row.add(day);
@@ -1083,9 +1092,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		
 		for (int ri = 0; ri < getRooms().size(); ri++) {
 			row = new P("row"); box.add(row);
+			Roles.getRowRole().set(row.getElement());
 			
 			final Entity room = getRooms().get(ri);
 			final P prm = new P("date");
+			Roles.getRowheaderRole().set(prm.getElement());
 			String displayName = room.getProperty("display", null);
 			prm.setHTML(MESSAGES.singleRoomSelection(room.getName() + (displayName != null && !displayName.isEmpty() ? "<br>" + displayName : ""), room.getProperty("type", null), room.getProperty("capacity", null)));
 			if ("1".equals(room.getProperty("ignoreRoomCheck", "0")))
@@ -1138,6 +1149,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				final Date d = iDates.getDate(date);
 				
 				final P p = new P("cell");
+				Roles.getGridcellRole().set(p.getElement());
 				
 				if (conflicts == null || conflicts.isEmpty()) {
 					p.addStyleName("free");

@@ -406,12 +406,14 @@ public class ToolBox {
 	}
 	
 	public static Element firstInputElement(Element e) {
+		if ("input".equalsIgnoreCase(e.getTagName()) || "select".equalsIgnoreCase(e.getTagName()) || "textarea".equalsIgnoreCase(e.getTagName()))
+			return e;
 		NodeList<Element> inputs = e.getElementsByTagName("input");
 		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
 		inputs = e.getElementsByTagName("select");
 		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
 		inputs = e.getElementsByTagName("textarea");
 		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
-		return e;
+		return null;
 	}
 }
