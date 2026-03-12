@@ -118,7 +118,7 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<CourseRequestInterface> {
+public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<CourseRequestInterface>, AdvisorCourseRequestLine.NameProvider {
 	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
@@ -164,6 +164,8 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	private AdvisorNotesTable iLastNotesTable = null;
 	private ScrollPanel iLastNotesScroll = null;
 	private UniTimeDialogBox iLastNotesDialog = null;
+	
+	private String iWlName = "", iCritName = "";
 	
 	public AdvisorCourseRequestsPage() {
 		super(7);
@@ -255,20 +257,27 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 						iStudentExternalId.setText(result.getStudentExternalId());
 						iAdvisorRequests.setMode(result.getWaitListMode());
 						String wlHeader = null;
+						iWlName = "";
 						switch (result.getWaitListMode()) {
 						case NoSubs:
 							wlHeader = MESSAGES.headNoSubs();
+							iWlName = MESSAGES.headNoSubs();
 							break;
 						case WaitList:
 							wlHeader = MESSAGES.headWaitList();
+							iWlName = MESSAGES.headNoSubs(); 
 							break;
 						}
+						iCritName = "";
 						if (result.isCriticalCheckCritical()) {
 							wlHeader = (wlHeader == null ? MESSAGES.opSetCritical() : MESSAGES.opSetCritical() + "&nbsp;&nbsp;" + wlHeader);
+							iCritName = MESSAGES.opSetCritical();
 						} else if (result.isCriticalCheckImportant()) {
 							wlHeader = (wlHeader == null ? MESSAGES.opSetImportant() : MESSAGES.opSetImportant() + "&nbsp;&nbsp;" + wlHeader);
+							iCritName = MESSAGES.opSetImportant();
 						} else if (result.isCriticalCheckVital()) {
 							wlHeader = (wlHeader == null ? MESSAGES.opSetVital() : MESSAGES.opSetVital() + "&nbsp;&nbsp;" + wlHeader);
+							iCritName = MESSAGES.opSetVital();
 						}
 						iWaitListHeader.setHTML(wlHeader == null ? "&nbsp;" : wlHeader);
 						if (result.hasCriticalCheck() && result.getWaitListMode() != WaitListMode.None) {
@@ -429,7 +438,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		addHeaderRow(requests);
 		
 		for (int i = 0; i < 9; i++) {
-			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx);
+			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx, this);
 			line.insert(this, getRowCount());
 			iCourses.add(line);
 			if (i > 0) {
@@ -457,7 +466,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		alternatives.setMessage(MESSAGES.courseRequestsAlternativesNote());
 		addHeaderRow(alternatives);
 		for (int i = 0; i < 2; i++) {
-			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, true, null, iSpecRegCx);
+			final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, true, null, iSpecRegCx, this);
 			line.insert(this, getRowCount());
 			iAlternatives.add(line);
 			if (i == 0) {
@@ -874,7 +883,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private void addCourseLine() {
 		int i = iCourses.size();
-		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx);
+		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, false, null, iSpecRegCx, this);
 		line.setWaitListMode(iDetails == null ? WaitListMode.None : iDetails.getWaitListMode());
 		line.setCriticalCheck(iDetails == null ? null : iDetails.getCriticalCheck());
 		iCourses.add(line);
@@ -899,7 +908,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private void addAlternativeLine() {
 		int i = iAlternatives.size();
-		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, true, null, iSpecRegCx);
+		final AdvisorCourseRequestLine line = new AdvisorCourseRequestLine(iContext, i, true, null, iSpecRegCx, this);
 		iAlternatives.add(line);
 		AdvisorCourseRequestLine prev = (i == 0 ? iCourses.get(iCourses.size() - 1) : iAlternatives.get(i - 1));
 		if (prev != null) {
@@ -1035,6 +1044,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				resizeNotes();
 			}
 		}
+		for (AdvisorCourseRequestLine line: iCourses) line.fixTitles();
 		updateTotalCredits();
 	}
 	
@@ -1732,5 +1742,15 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 		public static enum Column {
 			DATE, NOTE, COUNT
 		}
+	}
+
+	@Override
+	public String getWlName() {
+		return iWlName;
+	}
+
+	@Override
+	public String getCritName() {
+		return iCritName;
 	}
 }

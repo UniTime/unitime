@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
@@ -2561,8 +2562,8 @@ public class SectioningStatusPage extends Composite {
 		if (info.getStudent() != null) {
 			if (iOnline && iProperties != null && iProperties.isCanSelectStudent()) {
 				if (info.getStudent().isCanSelect()) {
-					CheckBox ch = new CheckBox();
-					Roles.getCheckboxRole().setAriaLabelProperty(ch.getElement().getFirstChildElement(), info.getStudent().getName());
+					AriaCheckBox ch = new AriaCheckBox();
+					ch.setAriaLabel(info.getStudent().getName());
 					ch.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {

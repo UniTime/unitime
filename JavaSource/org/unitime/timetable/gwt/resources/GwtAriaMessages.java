@@ -106,6 +106,24 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Priority {0, number} course or free time request.")
 	String titleRequestedCourse(int priority);
 	
+	@DefaultMessage("Priority {0, number} credit hours.")
+	String titleAcrCreditHours(int priority);
+	
+	@DefaultMessage("Priority {0, number} notes.")
+	String titleAcrNotes(int priority);
+	
+	@DefaultMessage("Priority {0, number} {1}.")
+	String titleAcrWaitList(int priority, String wlName);
+	
+	@DefaultMessage("Priority {0, number} {1}.")
+	String titleAcrCritical(int priority, String critName);
+	
+	@DefaultMessage("Substitute {0, number} credit hours.")
+	String titleAcrSubstituteCreditHours(int priority);
+	
+	@DefaultMessage("Substitute {0, number} notes.")
+	String titleAcrSubstituteNotes(int priority);
+	
 	@DefaultMessage("First alternative to the priority {0, number} course request.")
 	String titleRequestedCourseFirstAlternative(int priority);
 
