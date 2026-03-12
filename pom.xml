@@ -787,7 +787,7 @@
 		<biweekly.version>0.6.8</biweekly.version>
 		<poi.version>5.4.1</poi.version>
 		<dom4j.version>2.1.5</dom4j.version>
-		<jackson.version>2.20.0</jackson.version>
+		<jackson.version>2.21.1</jackson.version>
 		<text.version>1.14.0</text.version>
 		<lang3.version>3.18.0</lang3.version>
 		<asm.version>9.8</asm.version>

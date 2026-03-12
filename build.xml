@@ -137,7 +137,7 @@
 				<attribute name="Class-Path" value="angus-activation-2.0.2.jar antlr4-runtime-4.13.0.jar biweekly-0.6.8.jar byte-buddy-1.15.11.jar c3p0-0.9.5.5.jar classmate-1.5.1.jar
 					commons-lang3-3.18.0.jar commons-logging-1.3.5.jar commons-text-1.14.0.jar cpsolver-1.4.89.jar dom4j-2.1.5.jar freemarker-2.3.34.jar gson-2.13.2.jar
 					gwt-servlet-jakarta-2.13.0.jar hibernate-c3p0-6.6.29.Final.jar hibernate-commons-annotations-7.0.3.Final.jar hibernate-core-6.6.29.Final.jar istack-commons-runtime-4.1.1.jar
-					itext-2.1.7.jar jackson-core-2.20.0.jar jakarta.activation-api-2.1.3.jar jakarta.mail-2.0.4.jar jakarta.mail-api-2.1.3.jar jakarta.persistence-api-3.1.0.jar
+					itext-2.1.7.jar jackson-core-2.21.1.jar jakarta.activation-api-2.1.3.jar jakarta.mail-2.0.4.jar jakarta.mail-api-2.1.3.jar jakarta.persistence-api-3.1.0.jar
 					jakarta.transaction-api-2.0.1.jar jakarta.xml.bind-api-4.0.0.jar javassist-3.30.2-GA.jar jakarta.servlet-api-6.0.0.jar jakarta.servlet.jsp-api-3.1.1.jar
 					jaxb-core-4.0.2.jar jaxb-runtime-4.0.2.jar jboss-logging-3.6.1.Final.jar jbossjta-4.16.6.Final.jar jgroups-5.4.11.Final.jar joda-time-2.14.0.jar log4j-api-2.25.3.jar
 					log4j-core-2.25.3.jar log4j-jcl-2.25.3.jar log4j-slf4j-impl-2.25.3.jar mchange-commons-java-0.2.19.jar org.restlet-2.4.4.jar protobuf-java-4.32.1.jar
@@ -315,7 +315,7 @@
 				<include name="freemarker-2.3.34.jar"/>
 				<include name="biweekly-0.6.8.jar"/>
 				<include name="vinnie-2.0.2.jar"/>
-				<include name="jackson-core-2.20.0.jar"/>
+				<include name="jackson-core-2.21.1.jar"/>
 				<include name="commons-lang3-3.18.0.jar"/>
 				<include name="commons-text-1.14.0.jar"/>
 				<include name="itext-2.1.7.jar"/>
@@ -383,7 +383,7 @@
 				<include name="freemarker-2.3.34.jar"/>
 				<include name="biweekly-0.6.8.jar"/>
 				<include name="vinnie-2.0.2.jar"/>
-				<include name="jackson-core-2.20.0.jar"/>
+				<include name="jackson-core-2.21.1.jar"/>
 				<include name="commons-lang3-3.18.0.jar"/>
 				<include name="commons-text-1.14.0.jar"/>
 				<include name="itext-2.1.7.jar"/>
