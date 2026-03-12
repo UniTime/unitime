@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
+import org.unitime.timetable.gwt.client.aria.AriaTextArea;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.CourseFinder;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderClasses;
@@ -75,10 +77,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.TextArea;
 
 /**
  * @author Tomas Muller
@@ -101,20 +101,22 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	private SpecialRegistrationContext iSpecReg;
 	private ImageButton iDelete;
 	private UniTimeTextBox iCredit;
-	private CheckBox iWaitList;
-	private CheckBox iCritical;
+	private AriaCheckBox iWaitList;
+	private AriaCheckBox iCritical;
 	private WaitListMode iWaitListMode = WaitListMode.None;
-	private TextArea iNotes;
+	private AriaTextArea iNotes;
 	private Timer iTimer;
 	private Integer iCriticalCheck = null;
+	private NameProvider iNameProvider = null;
 	
-	public AdvisorCourseRequestLine(StudentSectioningContext context, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg) {
+	public AdvisorCourseRequestLine(StudentSectioningContext context, int priority, boolean alternate, Validator<CourseSelection> validator, SpecialRegistrationContext specreg, NameProvider np) {
 		iP = new P("unitime-AdvisorCourseRequestLine");
 		iContext = context;
 		iValidator = validator;
 		iPriority = priority;
 		iAlternate = alternate;
 		iSpecReg = specreg;
+		iNameProvider = np;
 		
 		P line = new P("line");
 		P title = new P("title"); title.setText(alternate ? MESSAGES.courseRequestsAlternate(priority + 1) : MESSAGES.courseRequestsPriority(priority + 1));
@@ -164,11 +166,13 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			}
 		});
 		iCredit.setMaxLength(10);
-		iNotes = new TextArea();
+		iCredit.setAriaLabel(alternate ? ARIA.titleAcrSubstituteCreditHours(priority + 1) : ARIA.titleAcrCreditHours(priority + 1));
+		iNotes = new AriaTextArea();
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.setText("");
 		iNotes.setHeight(23 + "px");
 		iNotes.getElement().setAttribute("maxlength", "2048");
+		iNotes.setAriaLabel(alternate ? ARIA.titleAcrSubstituteNotes(priority + 1) : ARIA.titleAcrNotes(priority + 1));
 		iTimer = new Timer() {
 			@Override
 			public void run() {
@@ -189,7 +193,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		});
 		
 		if (!alternate) {
-			iCritical = new CheckBox(); iCritical.addStyleName("critical");
+			iCritical = new AriaCheckBox(); iCritical.addStyleName("critical");
 			iCritical.setEnabled(false);
 			box.addCourseSelectionHandler(new CourseSelectionHandler() {
 				@Override
@@ -199,10 +203,11 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 						iCritical.setValue(false);
 				}
 			});
+			iCritical.setAriaLabel(ARIA.titleAcrCritical(priority + 1, iNameProvider.getCritName()));
 		}
 		
 		if (!alternate) {
-			iWaitList = new CheckBox(); iWaitList.addStyleName("waitlist");
+			iWaitList = new AriaCheckBox(); iWaitList.addStyleName("waitlist");
 			iWaitList.setEnabled(false);
 			iNotes.addStyleName("notes-with-critical-and-waitlist");
 			box.addCourseSelectionHandler(new CourseSelectionHandler() {
@@ -219,6 +224,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 					if (!canSet) iWaitList.setValue(false);
 				}
 			});
+			iWaitList.setAriaLabel(ARIA.titleAcrWaitList(priority + 1, iNameProvider.getWlName()));
 		} else {
 			iNotes.addStyleName("notes-no-waitlist");
 		}
@@ -490,6 +496,12 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 			}
 			box.resizeFilterIfNeeded();
 			CourseSelectionEvent.fire(box, box.getValue());
+			iNotes.setAriaLabel(isAlternate() ? ARIA.titleAcrSubstituteNotes(getPriority() + 1) : ARIA.titleAcrNotes(getPriority() + 1));
+			iNotes.setAriaLabel(isAlternate() ? ARIA.titleAcrSubstituteNotes(getPriority() + 1) : ARIA.titleAcrNotes(getPriority() + 1));
+			if (iCritical != null)
+				iCritical.setAriaLabel(ARIA.titleAcrCritical(getPriority() + 1, iNameProvider.getCritName()));
+			if (iWaitList != null)
+				iWaitList.setAriaLabel(ARIA.titleAcrWaitList(getPriority() + 1, iNameProvider.getWlName()));
 		}
 		resizeNotes();
 	}
@@ -1151,5 +1163,10 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 		setValue(null);
 		for (CourseSelectionBox course: iCourses)
 			course.clear();
+	}
+	
+	public static interface NameProvider {
+		public String getWlName();
+		public String getCritName();
 	}
 }

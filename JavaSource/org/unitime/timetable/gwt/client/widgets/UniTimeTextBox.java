@@ -19,15 +19,17 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 
 /**
  * @author Tomas Muller
  */
-public class UniTimeTextBox extends TextBox implements HasFocus {
+public class UniTimeTextBox extends TextBox implements HasFocus, HasAriaLabel {
 	
 	public UniTimeTextBox() {
 		super();
@@ -89,5 +91,18 @@ public class UniTimeTextBox extends TextBox implements HasFocus {
 		setFocus(true);
 		selectAll();
 		return true;
+	}
+	
+	@Override
+	public void setAriaLabel(String text) {
+		if (text == null || text.isEmpty())
+			Roles.getTextboxRole().removeAriaLabelProperty(getElement());
+		else
+			Roles.getTextboxRole().setAriaLabelProperty(getElement(), text);
+	}
+
+	@Override
+	public String getAriaLabel() {
+		return Roles.getTextboxRole().getAriaLabelProperty(getElement());
 	}
 }

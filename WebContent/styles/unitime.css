@@ -7106,6 +7106,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-AdvisorCourseRequestButtons {
 	white-space: nowrap;
+	display: inline-block;
 }
 
 .unitime-AdvisorCourseRequestButtons .blank {
