@@ -34,7 +34,7 @@ Jackson-annotations (jackson-annotations-2.16.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/FasterXML/jackson
 
-Jackson-core (jackson-core-2.20.0.jar)
+Jackson-core (jackson-core-2.21.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/FasterXML/jackson-core
 
