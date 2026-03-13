@@ -37,8 +37,10 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.util.Formats.Format;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
+import org.unitime.timetable.util.PdfWriter;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -54,7 +56,6 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPCellEvent;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
 
 /**
  * @author Tomas Muller
@@ -354,6 +355,8 @@ public class PDFPrinter implements Printer {
 				iWriter = PdfWriter.getInstance(iDocument, iOutput);
 				iWriter.setPageEvent(new PdfEventHandler());
 				iDocument.open();
+				iDocument.addTitle(tableName);
+				iDocument.addAuthor("UniTime "+Constants.getVersion());
 			} else {
 				iDocument.newPage();
 				iDocument.setPageSize(new Rectangle(60f + width, 60f + width * 0.75f));
@@ -383,6 +386,7 @@ public class PDFPrinter implements Printer {
 				PdfWriter writer = PdfWriter.getInstance(document, iOutput);
 				writer.setPageEvent(new PdfEventHandler());
 				document.open();
+				document.addAuthor("UniTime "+Constants.getVersion());
 				iTable.setWidths(w);
 				document.add(iTable);
 				document.close();				

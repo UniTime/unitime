@@ -70,7 +70,7 @@ public class PdfEventHandler extends PdfPageEventHelper {
     public static PdfWriter initFooter(Document document, OutputStream outputStream) 
     		throws DocumentException, IOException {
     	
-		PdfWriter iWriter = PdfWriter.getInstance(document, outputStream);
+		PdfWriter iWriter = org.unitime.timetable.util.PdfWriter.getInstance(document, outputStream);
 		iWriter.setPageEvent(new PdfEventHandler());
     	
 		return iWriter;

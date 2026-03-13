@@ -43,10 +43,12 @@ import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridFilt
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridRequest;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridResponse;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
+import org.unitime.timetable.util.PdfWriter;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -56,7 +58,6 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfWriter;
 
 /**
  * @author Tomas Muller
@@ -109,6 +110,8 @@ public class ExportTimetablePDF extends TableExporter {
 			document.setPageSize(new Rectangle(width + 2*margin, height + 2*margin));
 			document.setMargins(margin, margin, margin, margin);
 			document.open();
+			document.addAuthor("UniTime "+Constants.getVersion());
+			document.addTitle(MESSAGES.pageTimetableGrid());
 			int used = 0;
 			if (Integer.valueOf(filter.getParameterValue("dispMode", "0")) == 0) {
 				boolean hasDay[] = { true, true, true, true, true, false, false};

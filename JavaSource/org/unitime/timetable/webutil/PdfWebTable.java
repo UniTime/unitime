@@ -26,8 +26,10 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
+import org.unitime.timetable.util.PdfWriter;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -39,7 +41,6 @@ import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
 
 
 /**
@@ -425,6 +426,8 @@ public class PdfWebTable extends WebTable {
 		PdfWriter iWriter = PdfWriter.getInstance(doc, out);
 		iWriter.setPageEvent(new PdfEventHandler());
 		doc.open();
+		doc.addTitle(getName());
+		doc.addAuthor("UniTime "+Constants.getVersion());
 	
 		if (iName!=null)
 			doc.add(new Paragraph(iName, PdfFont.getBigFont(true)));

@@ -151,7 +151,7 @@ public class PdfReportWriter implements ReportWriter {
 	@Override
 	public void open(OutputStream out) throws DocumentException, IOException {
 		iDocument = new Document(PageSize.LETTER.rotate(), 36, 36, 60, 48);
-		iWriter = PdfWriter.getInstance(iDocument, out);
+		iWriter = org.unitime.timetable.util.PdfWriter.getInstance(iDocument, out);
 		iWriter.setPageEvent(new PdfEventHandler() {
 			@Override
 			public void onEndPage(PdfWriter writer, Document document) {
@@ -170,11 +170,10 @@ public class PdfReportWriter implements ReportWriter {
 				}
 			}
 		});
-		iDocument.addTitle(iTitle);
-		iDocument.addAuthor("UniTime "+Constants.getVersion()+", www.unitime.org");
+		iDocument.addTitle(iTitle2 + ": " + iTitle);
+		iDocument.addAuthor("UniTime "+Constants.getVersion());
 		if (iSubject != null)
 			iDocument.addSubject(iSubject);
-		iDocument.addCreator("UniTime "+Constants.getVersion()+", www.unitime.org");
 		iDocument.open();
 	}
 	

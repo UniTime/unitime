@@ -151,7 +151,7 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
     
     public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
         super(Mode.values()[mode], out, title,
-        		ApplicationProperty.ExaminationPdfReportTitle.value(examType == null ? "all" : examType.getReference(), examType == null ? MSG.legacyReportExaminations() : MSG.legacyReportExaminationsOfType(examType.getLabel().toUpperCase())),
+        		ApplicationProperty.ExaminationPdfReportTitle.value(examType == null ? "all" : examType.getReference(), examType == null ? MSG.legacyReportExaminations() : MSG.legacyReportExaminationsOfType(examType.getLabel())),
                 title + " -- " + session.getLabel(), session.getLabel());
         if (subjectAreas!=null && subjectAreas.size() == 1) setFooter(subjectAreas.iterator().next().getSubjectAreaAbbreviation());
         iExams = exams;

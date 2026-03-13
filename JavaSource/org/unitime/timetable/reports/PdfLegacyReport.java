@@ -32,12 +32,12 @@ import org.unitime.timetable.reports.AbstractReport.Line;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfFont;
+import org.unitime.timetable.util.PdfWriter;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
 
 /**
  * @author Tomas Muller
@@ -69,8 +69,8 @@ public class PdfLegacyReport implements ReportWriter {
     public static final int sModeText   = 2;
     
     public PdfLegacyReport(int mode, File file, String title, String title2, String subject, String session) throws IOException, DocumentException{
-        iTitle = title;
-        iTitle2 = title2;
+        iTitle = title.toUpperCase();
+        iTitle2 = title2.toUpperCase();
         iSubject = subject;
         iSession = session;
         iMode = mode;
@@ -79,8 +79,8 @@ public class PdfLegacyReport implements ReportWriter {
     }
     
     public PdfLegacyReport(int mode, OutputStream out, String title, String title2, String subject, String session) throws IOException, DocumentException{
-        iTitle = title;
-        iTitle2 = title2;
+        iTitle = title.toUpperCase();
+        iTitle2 = title2.toUpperCase();
         iSubject = subject;
         iSession = session;
         iMode = mode;
@@ -108,10 +108,9 @@ public class PdfLegacyReport implements ReportWriter {
 
             PdfWriter.getInstance(iDoc, iOut);
 
-            iDoc.addTitle(iTitle);
-            iDoc.addAuthor("UniTime "+Constants.getVersion()+", www.unitime.org");
+            iDoc.addTitle(iTitle2 + ": " + iTitle);
+            iDoc.addAuthor("UniTime "+Constants.getVersion());
             iDoc.addSubject(iSubject);
-            iDoc.addCreator("UniTime "+Constants.getVersion()+", www.unitime.org");
 
             iDoc.open();
         }

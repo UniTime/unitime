@@ -35,9 +35,11 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisingStuden
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseDemand.Critical;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
+import org.unitime.timetable.util.PdfWriter;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -49,7 +51,6 @@ import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
 
 /**
  * @author Tomas Muller
@@ -70,6 +71,9 @@ public class AdvisorConfirmationPDF {
 		PdfWriter writer = PdfWriter.getInstance(document, out);
 		writer.setPageEvent(new PdfEventHandler());
 		document.open();
+		document.addTitle(MSG.pdfHeaderAdvisorCourseRequests());
+		document.addAuthor("UniTime "+Constants.getVersion());
+
 		Critical critical = Critical.fromText(ApplicationProperty.AdvisorCourseRequestsAllowCritical.valueOfSession(iDetails.getSessionId()));
 		
 		Image image = null; 
