@@ -1404,37 +1404,37 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Process failed: {0}")
 	String errorTaskFailedWithMessage(String message);
 	
-	@DefaultMessage("EXAMINATIONS")
+	@DefaultMessage("Examinations")
 	String legacyReportExaminations();
 	
-	@DefaultMessage("{0} EXAMINATIONS")
+	@DefaultMessage("{0} Examinations")
 	String legacyReportExaminationsOfType(String type);
 	
-	@DefaultMessage("SCHEDULE BY COURSE")
+	@DefaultMessage("Schedule by Course")
 	String legacyReportScheduleByCourse();
 	
-	@DefaultMessage("CONFLICTS BY COURSE AND INSTRUCTOR")
+	@DefaultMessage("Instructor Conflicts")
 	String legacyReportConflictsByCourseAndInstructor();
 	
-	@DefaultMessage("CONFLICTS BY COURSE AND STUDENT")
+	@DefaultMessage("Student Conflicts")
 	String legacyReportConflictsByCourseAndStudent();
 	
-	@DefaultMessage("PERIOD ASSIGNMENT")
+	@DefaultMessage("Period Chart")
 	String legacyReportPeriodAssignment();
 	
-	@DefaultMessage("SCHEDULE BY PERIOD")
+	@DefaultMessage("Schedule by Period")
 	String legacyReportScheduleByPeriod();
 	
-	@DefaultMessage("SCHEDULE BY ROOM")
+	@DefaultMessage("Schedule by Room")
 	String legacyReportScheduleByRoom();
 	
-	@DefaultMessage("EXAMINATION VERIFICATION REPORT")
+	@DefaultMessage("Verification Report")
 	String legacyReportExaminationVerificationReport();
 	
-	@DefaultMessage("INSTRUCTOR EXAMINATION SCHEDULE")
+	@DefaultMessage("Instructor Schedule")
 	String legactReportInstructorExaminationSchedule();
 	
-	@DefaultMessage("STUDENT EXAMINATION SCHEDULE")
+	@DefaultMessage("Student Schedule")
 	String legactReportStudentExaminationSchedule();
 	
 	@DefaultMessage("ALL")
