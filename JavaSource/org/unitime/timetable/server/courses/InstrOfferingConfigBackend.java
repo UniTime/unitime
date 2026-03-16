@@ -823,6 +823,7 @@ public class InstrOfferingConfigBackend implements GwtRpcImplementation<InstrOff
             
             for (DistributionPref dp: distPrefs) {
             	if (dp.getDistributionObjects().isEmpty())  {
+            		dp.getOwner().getPreferences().remove(dp);
             		hibSession.remove(dp);	
             	} else {
             		int sequenceNumber = 1;
