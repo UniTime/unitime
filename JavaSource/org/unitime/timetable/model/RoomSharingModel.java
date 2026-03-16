@@ -430,7 +430,7 @@ public class RoomSharingModel extends org.cpsolver.coursett.model.RoomSharingMod
 	}
 	
     @Override
-    public CellInterface toCell() {
+    public CellInterface toCell(boolean prefStyles) {
     	CellInterface cell = new CellInterface();
     	StringBuffer sb = new StringBuffer();
 		boolean out[][] = new boolean [getNrDays()][getNrTimes()];

@@ -154,7 +154,8 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
         	if (dp.getDatePatternType() != DatePatternType.PatternSet) {
         		c.addClick().setTitle(MSG.sectPreviewOfDatePattern(dp.getName()))
         			.addWidget().setId("UniTimeGWT:DatePattern").setContent(dp.getPatternText());
-        		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+        		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;")
+        			.setAlt(MSG.sectPreviewOfDatePattern(dp.getName()));
         	}
         } else {
         	dp = ss.effectiveDatePattern();
@@ -163,7 +164,8 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
             	if (dp.getDatePatternType() != DatePatternType.PatternSet) {
             		c.addClick().setTitle(MSG.sectPreviewOfDatePattern(dp.getName()))
             			.addWidget().setId("UniTimeGWT:DatePattern").setContent(dp.getPatternText());
-            		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+            		c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;")
+            			.setAlt(MSG.sectPreviewOfDatePattern(dp.getName()));
             	}
         	}
         }
@@ -230,6 +232,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 		boolean hasNotAvailable = false;
 		boolean multipleRooms = false;
 		boolean excap = (pg instanceof Exam && ((Exam)pg).getSeatingType() == Exam.sSeatingTypeExam);
+		boolean prefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
 		DurationModel dm = null;
 		int minutes = 0;
 		if (pg instanceof Class_) {
@@ -294,7 +297,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 							if (req) continue;
 						}
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (!pref.getPrefProlog().equals(PreferenceLevel.sNeutral))
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(pref.getPrefProlog()));
+						else if (!pref.getPrefProlog().equals(PreferenceLevel.sNeutral))
 							cell.setColor(PreferenceLevel.prolog2color(pref.getPrefProlog()));
 						cell.setAria(pref.getPrefAbbv() + " " + child.getName());
 						if (child.getDatePatternType() != DatePatternType.Alternate) {
@@ -321,7 +326,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					CellInterface rpCell = table.addProperty(MSG.propertyRoomGroups());
 					for (RoomGroupPref rp: roomGrouPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+						else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getRoomGroup().getNameWithTitle() + (multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
 						String hint = HtmlUtils.htmlEscape(MSG.prefTitleRoomGroup(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -337,7 +344,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					CellInterface rpCell = table.addProperty(MSG.propertyRooms());
 					for (RoomPref rp: roomPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+						else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText((excap ? rp.getRoom().getLabelWithExamCapacity() : rp.getRoom().getLabelWithCapacity()) +
 						(multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
@@ -353,7 +362,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					CellInterface rpCell = table.addProperty(MSG.propertyBuildings());
 					for (BuildingPref rp: buildingPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+						else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getBuilding().getAbbrName() + (multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
 						cell.setAria(MSG.prefTitleBuilding(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -368,7 +379,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					CellInterface rpCell = table.addProperty(MSG.propertyRoomFeatures());
 					for (RoomFeaturePref rp: roomFeaturePrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+						else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getRoomFeature().getLabelWithType() + (multipleRooms ? rp.getRoomIndex() == null ? " (" + MSG.itemAllRooms() + ")" : " (" + MSG.itemOnlyRoom(rp.getRoomIndex() + 1) + ")" : ""));
 						cell.setAria(MSG.prefTitleRoomFeature(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -384,7 +397,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					CellInterface rpCell = table.addProperty(MSG.propertyCoursePrefs());
 					for (InstructorCoursePref rp: coursePrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+						else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getCourse().getCourseNameWithTitle());
 						cell.setAria(MSG.prefTitleRoomFeature(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -401,7 +416,9 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 					CellInterface rpCell = table.addProperty(MSG.propertyDistribution());
 					for (DistributionPref rp: distPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+							cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+						else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getDistributionType().getLabel());
 						cell.setAria(MSG.prefTitleDistribution(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -429,7 +446,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
         			"from PreferenceLevel order by prefId", PreferenceLevel.class).setCacheable(true).list()) {
 			if (!hasNotAvailable && pref.getPrefProlog().equals(PreferenceLevel.sNotAvailable)) continue;
 			CellInterface c = cell.add(null).setNoWrap(false);
-			c.addImage().setSource("images/pref" + pref.getPrefId() + ".png").addStyle("padding-top: 1px;");
+			c.addImage().setSource("images/pref" + pref.getPrefId() + ".png").addStyle("padding-top: 1px;").setAlt(pref.getPrefName());
 			c.add(pref.getPrefName()).addStyle("padding-left: 10px;");
 			c.addStyle("padding-right: 20px;");
 		}

@@ -91,7 +91,8 @@ public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 		cell.add(getName()).setColor(PreferenceLevel.int2color(getPreference()));
 		CellInterface icon = cell.add("");
 		icon.addClick().setTitle(MSG.sectPreviewOfDatePattern(getName())).addWidget().setId("UniTimeGWT:DatePattern").setContent(getPatternText());
-		icon.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+		icon.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;")
+			.setAlt(MSG.sectPreviewOfDatePattern(getName()));
 		return cell;
 	}
 

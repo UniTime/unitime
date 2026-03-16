@@ -639,4 +639,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Credit for {0}")
 	String labelCreditForCourse(String course);
+
+	@DefaultMessage("Mode selection")
+	String inputModeSelection();
 }

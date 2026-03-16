@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.aria.AriaListBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -32,6 +33,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -89,8 +91,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private AbsolutePanel iPanel;
-	private ListBox iModeSelection;
+	private AriaListBox iModeSelection;
 	private RoomSharingDisplayMode iMode = null;
 	private CheckBox iHorizontal;
 	private RoomSharingOption iOption = null;
@@ -112,8 +115,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		
 		HorizontalPanel hp = new HorizontalPanel();
 		
-		iModeSelection = new ListBox();
+		iModeSelection = new AriaListBox();
 		iModeSelection.setStyleName("unitime-TextBox");
+		iModeSelection.setAriaLabel(ARIA.inputModeSelection());
 		hp.add(iModeSelection);
 		hp.setCellHorizontalAlignment(iModeSelection, HasHorizontalAlignment.ALIGN_LEFT);
 		

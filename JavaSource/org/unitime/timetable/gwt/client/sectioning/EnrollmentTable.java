@@ -66,6 +66,8 @@ import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
@@ -87,6 +89,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
@@ -121,6 +124,7 @@ public class EnrollmentTable extends Composite {
 	
 	private SimpleForm iEnrollmentPanel;
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;
+	private int iEnrollmentsLine = 0;
 	private UniTimeHeaderPanel iHeader;
 	private Operation iApprove, iReject;
 	private StudentSchedule iStudentSchedule;
@@ -171,7 +175,8 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		iEnrollments = new UniTimeTable<ClassAssignmentInterface.Enrollment>();
-		iEnrollmentPanel.addRow(iEnrollments);
+		iEnrollmentsLine = iEnrollmentPanel.addRow(iEnrollments);
+		iEnrollmentPanel.getRowFormatter().setVisible(iEnrollmentsLine, false);
 		
 		if (!showHeader)
 			iEnrollmentPanel.addBottomRow(iHeader);
@@ -1548,8 +1553,11 @@ public class EnrollmentTable extends Composite {
 		
 		if (showFilter) {
 			FilterRow filter = new FilterRow(header.size());
-			filter.add(new Label(MESSAGES.filter()));
+			Label label = new Label(MESSAGES.filter());
+			filter.add(label);
 			final ListBox box = new ListBox();
+			label.getElement().setId(DOM.createUniqueId());
+			Roles.getListboxRole().setAriaLabelledbyProperty(box.getElement(), Id.of(label.getElement()));
 			for (int i = 0; i < SectioningCookie.EnrollmentFilter.values().length; i++) {
 				SectioningCookie.EnrollmentFilter x = SectioningCookie.EnrollmentFilter.values()[i];
 				box.addItem(CONSTANTS.enrollmentFilterValues()[i], x.name());
@@ -1673,6 +1681,8 @@ public class EnrollmentTable extends Composite {
 					iEnrollments.sort(h, new EnrollmentComparator(asc ? subpart : subpart.substring(1), SectioningCookie.getInstance().getShowClassNumbers()), asc);
 			}
 		}
+		
+		iEnrollmentPanel.getRowFormatter().setVisible(iEnrollmentsLine, true);
 	}
 	
 	private static interface SetColSpan extends HasColSpan {

@@ -190,6 +190,7 @@ public class CourseCurriculaTable extends Composite {
 		
 		iCurricula = new MyFlexTable();
 		tableAndHint.add(iCurricula);
+		iCurricula.setVisible(false);
 		
 		iHint = new Label(MESSAGES.hintEnrollmentOfType(CurriculumCookie.getInstance().getCourseCurriculaTableType().getName()));
 		iHint.setStyleName("unitime-Hint");
@@ -1066,6 +1067,7 @@ public class CourseCurriculaTable extends Composite {
 		iHeader.setEnabled("operations", true);
 		
 		iHint.setVisible(true);
+		iCurricula.setVisible(true);
 	}
 	
 	private int getHeaderCols(int row) {

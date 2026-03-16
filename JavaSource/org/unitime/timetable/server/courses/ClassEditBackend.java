@@ -389,6 +389,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		for (PreferenceLevel pref: preferences) {
 			response.addPrefLevel(new PrefLevel(
 					pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolor(),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
 					PreferenceLevel.prolog2char(pref.getPrefProlog())));
 		}
 	}
@@ -437,6 +438,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 		for (PreferenceLevel pref: preferences) {
 			model.addPrefLevel(new PrefLevel(
 					pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolor(),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
 					PreferenceLevel.prolog2char(pref.getPrefProlog())));
 		}
 		model.setHorizontal(!CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(context.getUser())));

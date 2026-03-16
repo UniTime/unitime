@@ -437,15 +437,15 @@ h1 {
 }
 
 .unitime-TableRowSelected {
-	background-color: #92c1f0;
+	background-color: #b7d4fb;
 }
 
 .unitime-TableRowProblem {
-	background-color: #f09292;
+	background-color: #f8d3d9;
 }
 
 .unitime-TableRowSelectedHover {
-	background-color: #92c1f0;
+	background-color: #b7d4fb;
 }
 
 .unitime-TableRowHover {
@@ -2166,7 +2166,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-size: 8pt;
 	font-weight: 400;
 	font-style: normal;
-	color: #333333;
+	color: #000;
 }
 
 .unitime-DateSelectorFocus {
@@ -8507,4 +8507,84 @@ unitime-RoomSharingWidget .legend .blank {
 
 .gwt-Tree .gwt-TreeItem-selected .gwt-Label {
 	background: inherit;
+}
+
+.pref-R {
+	background-color: #5050C8;
+	color: white;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-0 {
+	background-color: #1EA03C;
+	color: black;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-1 {
+	background-color: #46E61E;
+	color: black;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-2 {
+	background-color: white;
+	color: #0a0a0a;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-3 {
+	background-color: #DCB43C;
+	color: black;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-4 {
+	background-color: #F0783C;
+	color: black;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-P {
+	background-color: #DC3228;
+	color: white;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.pref-N {
+	background-color: white;
+	color: #696969;
+	margin: 1px;
+	padding: 2px 5px 2px 5px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
 }

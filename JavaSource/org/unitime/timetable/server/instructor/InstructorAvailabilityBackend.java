@@ -61,7 +61,8 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 		model.setDefaultEditable(true);
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(request.isIncludeNotAvailable())) {
 			if (PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
-			RoomSharingOption option = new RoomSharingOption(model.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())), pref.prefcolor(), "", pref.getPrefName(), true); 
+			RoomSharingOption option = new RoomSharingOption(model.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), "", pref.getPrefName(), true); 
 			model.addOption(option);
 			if (PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
 				model.setDefaultOption(option);		

@@ -309,7 +309,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			
 			final P icon = new P("cell", isEditable() && iModel.isAllowedPref(option.getTpCode()) ? "clickable" : null);
 			if (box.getWidgetCount() == 0) icon.addStyleName("first");
-			icon.getElement().getStyle().setBackgroundColor(option.getColor());
+			icon.getElement().getStyle().setBackgroundColor(option.getBgColor());
 			line.add(icon);
 			
 			final P title = new P("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getTitle());
@@ -390,7 +390,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			super("cell", "item", isEditable() ? "clickable" : null);
 			iDay = day; iSlot = slot;
 			PrefLevel option = getPreference(day, slot);
-			getElement().getStyle().setBackgroundColor(option.getColor());
+			getElement().getStyle().setBackgroundColor(option.getBgColor());
 			setTitle(iModel.getDaysLabel(iDay, CONSTANTS) + " " + iModel.getStartTime(iSlot, CONSTANTS) + " - " + iModel.getEndTime(iSlot, CONSTANTS) + ": " + option.getTitle());
 			if (isEditable())
 				addMouseDownHandler(new MouseDownHandler() {
@@ -403,7 +403,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 		
 		public void setOption(PrefLevel option) {
 			iModel.setPreference(iDay, iSlot, option.getTpCode());
-			getElement().getStyle().setBackgroundColor(option.getColor());
+			getElement().getStyle().setBackgroundColor(option.getBgColor());
 			setTitle(iModel.getDaysLabel(iDay, CONSTANTS) + " " + iModel.getStartTime(iSlot, CONSTANTS) + " - " + iModel.getEndTime(iSlot, CONSTANTS) + ": " + option.getTitle());
 			ValueChangeEvent.fire(TimePreferenceWidget.this, getValue());
 			if ("R".equals(option.getCode()) && iModel.hasPreference()) {
