@@ -633,4 +633,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Click to delete this line.")
 	String buttonDeleteThisLine();
+	
+	@DefaultMessage("Mode selection")
+	String inputModeSelection();
 }

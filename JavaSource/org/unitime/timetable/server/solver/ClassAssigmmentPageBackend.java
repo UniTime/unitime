@@ -353,7 +353,8 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
             	if (datePattern.getDatePatternType() != DatePatternType.PatternSet) {
                 	c.addClick().setTitle(MSG.sectPreviewOfDatePattern(datePattern.getName()))
             			.addWidget().setId("UniTimeGWT:DatePattern").setContent(datePattern.getPatternText());
-                	c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;");
+                	c.setImage().setSource("images/calendar.png").addStyle("cursor: pointer; padding-left: 5px; vertical-align: bottom;")
+                		.setAlt(MSG.sectPreviewOfDatePattern(datePattern.getName()));
             	}
             }
         }

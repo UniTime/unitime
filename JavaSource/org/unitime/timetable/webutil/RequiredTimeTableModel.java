@@ -86,5 +86,5 @@ public interface RequiredTimeTableModel {
 	
 	public String getPreferenceCheck();
 	
-	public CellInterface toCell();
+	public CellInterface toCell(boolean prefStyles);
 }

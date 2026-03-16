@@ -329,10 +329,11 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
     
     @Override
-    public CellInterface toCell() {
+    public CellInterface toCell(boolean prefStyles) {
     	CellInterface cell = new CellInterface();
     	StringBuffer sb = new StringBuffer();
     	String prefColor = null;
+    	Character prefChar = null;
         int ld = -1;
         for (int d=0;d<getNrDays();d++) {
             String pref = null; int a = 0, b = 0;
@@ -341,12 +342,17 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
                 if (pref==null || !pref.equals(p)) {
                     if (pref!=null && !"@".equals(pref) && !PreferenceLevel.sNeutral.equals(pref)) {
                         if (sb.length()>0) {
-                        	cell.add(sb.toString()).setColor(prefColor).setInline(false);
-                        	sb = new StringBuffer(); prefColor = null;
+                        	if (prefStyles) {
+                        		cell.add(sb.toString()).setClassName("pref-" + prefChar);
+                        	} else {
+                        		cell.add(sb.toString()).setColor(prefColor).setInline(false);
+                        	}
+                        	sb = new StringBuffer(); prefColor = null; prefChar = null;
                         }
                         if (ld!=d) { sb.append(getDayHeader(d).replaceAll("<br>", " ")+" "); ld = d; }
                         sb.append(PreferenceLevel.prolog2abbv(pref)+" ");
                         prefColor = PreferenceLevel.prolog2color(pref);
+                        prefChar = PreferenceLevel.prolog2char(pref);
                         sb.append(getStartTime(a)+" - "+getEndTime(b));
                         ld = d;
                     }
@@ -357,17 +363,26 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
             }
             if (pref!=null && !"@".equals(pref) && !PreferenceLevel.sNeutral.equals(pref)) {
             	if (sb.length()>0) {
-                	cell.add(sb.toString()).setColor(prefColor).setInline(false);
-                	sb = new StringBuffer(); prefColor = null;
+            		if (prefStyles) {
+                		cell.add(sb.toString()).setClassName("pref-" + prefChar);
+                	} else {
+                		cell.add(sb.toString()).setColor(prefColor).setInline(false);
+                	}
+                	sb = new StringBuffer(); prefColor = null; prefChar = null;
                 }
                 if (ld!=d) { sb.append(getDayHeader(d)+" "); ld = d; }
                 sb.append(PreferenceLevel.prolog2abbv(pref)+" ");
                 prefColor = PreferenceLevel.prolog2color(pref);
+                prefChar = PreferenceLevel.prolog2char(pref);
                 sb.append(getStartTime(a)+" - "+getEndTime(b));
             }
         }
         if (sb.length()>0) {
-        	cell.add(sb.toString()).setColor(prefColor).setInline(false);
+        	if (prefStyles) {
+        		cell.add(sb.toString()).setClassName("pref-" + prefChar);
+        	} else {
+        		cell.add(sb.toString()).setColor(prefColor).setInline(false);
+        	}
         	sb = new StringBuffer(); prefColor = null;
         }
         return cell;

@@ -53,6 +53,7 @@ public class TableBuilder {
     private String iBackType = null;
     private String iBackId = null;
     protected boolean iSticky = false;
+    protected boolean iPrefStyles = false;
 	
 	public TableBuilder(SessionContext context, String backType, String backId) {
 		setSessionContext(context);
@@ -70,6 +71,9 @@ public class TableBuilder {
     protected boolean iSimple = false;
 	public void setSimple(boolean simple) { iSimple = simple; }
 	public boolean isSimple() { return iSimple; }
+	
+	public void setUsePrefStyles(boolean prefStyles) { iPrefStyles = prefStyles; }
+	public boolean isUsePrefStyles() { return iPrefStyles && !iSimple; }
 	
     public String iInstructorNameFormat = "last-first";
     public void setInstructorNameFormat(String instructorNameFormat) {
@@ -136,13 +140,17 @@ public class TableBuilder {
 			setHighlightClassPrefs(false);
 		else
 			setHighlightClassPrefs(ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
+		setUsePrefStyles(CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(user)));
     }
 
     protected CellInterface preferenceCell(Preference p) {
 		CellInterface cell = new CellInterface();
 		if (!isSimple()) cell.addStyle("font-weight: bold;");
-		if (p.getPrefLevel().getPrefId().intValue() != 4)
+		if (isUsePrefStyles()) {
+			cell.setClassName("pref-" + PreferenceLevel.prolog2char(p.getPrefLevel().getPrefProlog()));
+		} else if (p.getPrefLevel().getPrefId().intValue() != 4) {
 			cell.setColor(PreferenceLevel.prolog2color(p.getPrefLevel().getPrefProlog()));
+		}
 		String owner = "";
 		if (p.getOwner() != null && p.getOwner() instanceof Class_) {
 			owner = " (" + MSG.prefOwnerClass() + ")";
@@ -163,12 +171,18 @@ public class TableBuilder {
 			hint += "<br>" + HtmlUtils.htmlEscape(description.replace("\'", "\\\'")).replace("\n", "<br>");
 		//cell.setTitle(hint);
 		cell.setAria(p.getPrefLevel().getPrefAbbv() + " " + p.preferenceAbbv(getInstructorNameFormat()));
-		if (p.getOwner() != null && p.getOwner() instanceof Class_ && isHighlightClassPrefs())
-			cell.add(p.preferenceAbbv(getInstructorNameFormat()))
+		if (isUsePrefStyles()) {
+			cell.setText(p.preferenceAbbv(getInstructorNameFormat()));
+			if (p.getOwner() != null && p.getOwner() instanceof Class_ && isHighlightClassPrefs())
+				cell.addStyle("border: 3px solid #ff0;");
+		} else {
+			if (p.getOwner() != null && p.getOwner() instanceof Class_ && isHighlightClassPrefs())
+				cell.add(p.preferenceAbbv(getInstructorNameFormat()))
 				.addStyle("background: #ffa;")
 				.setAria("");
-		else
-			cell.setText(p.preferenceAbbv(getInstructorNameFormat()));
+			else
+				cell.setText(p.preferenceAbbv(getInstructorNameFormat()));
+		}
 		cell.setInline(false);
 		if (p instanceof RoomPref) {
 			RoomPref rp = (RoomPref) p;

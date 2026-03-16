@@ -111,7 +111,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
 	protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	protected static DecimalFormat sRoomRatioFormat = new DecimalFormat("0.00");
 	
-    protected String disabledColor = "gray";
+    protected String disabledColor = "#6f6f6f";
     
     private boolean showLabel;
     private boolean showDivSec;
@@ -744,7 +744,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     
     protected CellInterface cellForTimePrefs(AssignmentInfo assignment, Set<TimePref> timePrefList, final boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
     	CellInterface cell = new CellInterface();
-    	cell.setNoWrap(true);
+    	if (!isUsePrefStyles()) cell.setNoWrap(true);
     	for (TimePref tp: timePrefList) {
     		final RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
     		String owner = "";
@@ -765,11 +765,18 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		}
         	if (gridAsText || rtt.getModel().isExactTime()) {
         		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-        		cell.addItem(rtt.getModel().toCell()
-        			.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, $wnd." + hint + ");")
-        			.setMouseOut("$wnd.hideGwtHint();")
-        			.addStyle(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? "background: #ffa;" : "")
-        			.setInline(false));
+        		CellInterface c = rtt.getModel().toCell(isUsePrefStyles())
+    			.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, $wnd." + hint + ");")
+    			.setMouseOut("$wnd.hideGwtHint();");
+        		cell.addItem(c);
+        		if (isUsePrefStyles()) {
+        			if (tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs && c.hasItems())
+        				for (CellInterface i: c.getItems())
+        					i.addStyle("border: 3px solid #ff0;");
+        		} else {
+        			c.addStyle(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? "background: #ffa;" : "")
+        				.setInline(false);;
+        		}
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
         		TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, getSessionContext());
@@ -821,7 +828,10 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		CellInterface cell = initNormalCell("", isEditable); cell.setInline(false);
     		for (Object pref: prefGroup.effectivePreferences(prefType))
     			cell.addItem(preferenceCell((Preference)pref));
-    		if (!isSimple()) cell.setNoWrap(true);
+    		if (isUsePrefStyles())
+    			cell.setInline(true);
+    		else if (!isSimple())
+    			cell.setNoWrap(true);
     		return(cell);
     	}
     	
@@ -850,7 +860,10 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	}
     	if (noRoomPrefs && ! cell.hasItems())
     		cell.setText(MSG.notApplicable()).addStyle("font-style: italic;");
-    	cell.setNoWrap(true);
+    	if (isUsePrefStyles())
+    		cell.setInline(true);
+    	else
+    		cell.setNoWrap(true);
     	return(cell);
     }
 
@@ -1944,7 +1957,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		} else {
 		        cell = initNormalCell((io.getDemand() != null?io.getDemand().toString(): "0"), isEditable && co.isIsControl().booleanValue());
 	    		if (co.isIsControl().booleanValue() && !io.isNotOffered().booleanValue() && (io.getDemand()==null || io.getDemand().intValue()==0)) {
-	    			cell.setColor("red");
+	    			cell.setColor("#e00");
 	    			cell.addStyle("='font-weight: bold;");
 	    		}
     		}

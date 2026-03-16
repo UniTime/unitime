@@ -131,6 +131,7 @@ public class ReservationTable extends Composite {
 		
 		iReservations = new UniTimeTable<ReservationInterface>();
 		iReservationPanel.addRow(iReservations);
+		iReservations.setVisible(false);
 		
 
 		if (!showHeader)
@@ -522,6 +523,8 @@ public class ReservationTable extends Composite {
 				iReservations.sort(h, cmp, asc);
 			}
 		}
+		
+		iReservations.setVisible(true);
 	}
 	
 	private static class Number extends HTML implements HasCellAlignment {

@@ -183,7 +183,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	                }
 	                if (reservationSet && io.getLimit()!=null && lim < io.getLimit().intValue()) {
 	            		c.addImage().setSource("images/cancel.png").setAlt(MSG.altLimitsDoNotMatch()).setTitle(MSG.titleLimitsDoNotMatch());
-	            		c.add(MSG.errorReservedSpacesForOfferingsTotal(String.valueOf(lim))).setColor("#FF0000");
+	            		c.add(MSG.errorReservedSpacesForOfferingsTotal(String.valueOf(lim))).setColor("#EE0000");
 	                }
 	            }
 	            // Check configuration limits
@@ -204,7 +204,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	            if (!configsWithTooHighLimit.isEmpty()) {
 	            	if (configsWithTooHighLimit.size() == 1) {
 	            		c.addImage().setSource("images/cancel.png").setAlt(MSG.altLimitsDoNotMatch()).setTitle(MSG.titleLimitsDoNotMatch());
-	            		c.add(MSG.errorConfigWithTooHighLimit(configsWithTooHighLimit.first().getName())).setColor("#FF0000");
+	            		c.add(MSG.errorConfigWithTooHighLimit(configsWithTooHighLimit.first().getName())).setColor("#EE0000");
 	            	} else {
 	            		String names = "";
 	            		for (InstrOfferingConfig config: configsWithTooHighLimit) {
@@ -212,7 +212,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	            			names += config.getName();
 	            		}
 	            		c.addImage().setSource("images/cancel.png").setAlt(MSG.altLimitsDoNotMatch()).setTitle(MSG.titleLimitsDoNotMatch());
-	            		c.add(MSG.errorConfigsWithTooHighLimit(names)).setColor("#FF0000");
+	            		c.add(MSG.errorConfigsWithTooHighLimit(names)).setColor("#EE0000");
 	            	}
 	            }
 	        	if (c.hasItems()) {
@@ -278,7 +278,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	    				if (message != null) {
 	    					CellInterface d = c.add(null).setInline(false);
 	    					d.addImage().setSource("images/cancel.png").setTitle(message);
-	    	        		d.add(message).setColor("#FF0000").addStyle("white-space: pre;");
+	    	        		d.add(message).setColor("#EE0000").addStyle("white-space: pre;");
 	    				}
 	    			}
 	    		}
@@ -314,7 +314,7 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 				if (proxy != null && proxy.hasConflicts(io.getUniqueId())) {
 					CellInterface c = response.addProperty("");
 					c.addImage().setSource("images/warning.png").setTitle(MSG.warnOfferingHasConflictingClasses());
-	        		c.add(MSG.warnOfferingHasConflictingClasses()).setColor("#FF0000").addStyle("padding-left: 2px;");
+	        		c.add(MSG.warnOfferingHasConflictingClasses()).setColor("#EE0000").addStyle("padding-left: 2px;");
 				}
 			} catch (Exception e) {}
 			

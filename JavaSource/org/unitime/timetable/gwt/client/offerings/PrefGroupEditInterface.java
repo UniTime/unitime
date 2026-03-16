@@ -625,12 +625,13 @@ public class PrefGroupEditInterface {
 		private String iLabel;
 		private String iTitle;
 		private String iColor;
+		private String iBgColor;
 		private String iCode;
 		private Character iTpCode;
 		
 		public PrefLevel() {}
-		public PrefLevel(Long id, String code, String label, String title, String color, char tpCode) {
-			iId = id; iCode = code; iLabel = label; iTitle = title; iColor = color; iTpCode = tpCode;
+		public PrefLevel(Long id, String code, String label, String title, String color, String bgColor, char tpCode) {
+			iId = id; iCode = code; iLabel = label; iTitle = title; iColor = color; iBgColor = bgColor; iTpCode = tpCode;
 		}
 		
 		public Long getId() { return iId; }
@@ -643,6 +644,8 @@ public class PrefGroupEditInterface {
 		public void setTitle(String title) { iTitle = title; }
 		public String getColor() { return iColor; }
 		public void setColor(String color) { iColor = color; }
+		public String getBgColor() { return iBgColor; }
+		public void setBgColor(String color) { iBgColor = color; }
 		public boolean isHard() { return "R".equals(iCode) || "P".equals(iCode); }
 		public void setTpCode(Character tpCode) { iTpCode = tpCode; }
 		public Character getTpCode() { return iTpCode; }

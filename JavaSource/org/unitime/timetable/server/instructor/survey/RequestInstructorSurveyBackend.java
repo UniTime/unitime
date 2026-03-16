@@ -309,7 +309,8 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		timePref.setDefaultEditable(editable);
 		boolean noProhobitedTimes = false;
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
-			RoomSharingOption option = new RoomSharingOption(timePref.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())), pref.prefcolor(), "", pref.getPrefName(), true);
+			RoomSharingOption option = new RoomSharingOption(timePref.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), "", pref.getPrefName(), true);
 			if (instructor == null && editable && PreferenceLevel.sProhibited.equals(pref.getPrefProlog()) && !isAllowed(survey, ApplicationProperty.InstructorSurveyTimePreferencesDeptHard, ApplicationProperty.InstructorSurveyTimePreferencesHard)) {
 				noProhobitedTimes = true;
 				continue;
