@@ -62,6 +62,18 @@
 				<line>Fixed an exception thrown when showing an in-memory assignment with a partially-assigned violated distribution preference.</line>
 			</description>
 		</item>
+		<item>
+			<name>Distribution Types: Custom Back-To-Backs</name>
+			<description>
+				<line>Added the ability to parametrize Back-To-Back and Back-To-Back &amp; Same Room distribution constraints.</line>
+				<line>Back-To-Back can now have a reference BTB_TIME(min,max), where min and max are the bounds on the gap between two consecutive classes in time slots.
+					<line>For example, BTB_TIME(0,3) will allow a gap of at most 15 minutes (3 time slots) between consecutive classes.</line>
+				</line>
+				<line>Back-To-Back &amp; Same Room can now have a reference BTB(min,max), where min and max are the bounds on the gap between two consecutive classes in time slots.
+					<line>For example, BTB(6,6) will require a gap of exactly six time slots (30 minutes) between any consecutive classes.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Student Scheduling</title>
