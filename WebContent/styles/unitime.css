@@ -2679,11 +2679,11 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventMeetings .past-meeting {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .f2f-meeting {
-	color: blue;
+	color: #0000ff;
 }
 
 .unitime-EventMeetings .online-meeting {
@@ -2692,22 +2692,22 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventMeetings .not-approved {
 	font-style: italic;
-	color: #ee0000;
+	color: #cc0000;
 }
 
 .unitime-EventMeetings .not-approved-past {
 	font-style: italic;
-	color: #b85c00;
+	color: #9e4f00;
 }
 
 .unitime-EventMeetings .new-meeting {
 	font-style: italic;
-	color: blue;
+	color: #0000ff;
 }
 
 .unitime-EventMeetings .new-approved-meeting {
 	font-style: italic;
-	color: green;
+	color: #007500;
 }
 
 .unitime-EventMeetings .conflict-row {
@@ -2724,39 +2724,39 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventMeetings .deleted-row {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .deleted-meeting {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .cancelled-row {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .cancelled-meeting {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .rejected-row {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .rejected-meeting {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .event-cancelled-row {
 	page-break-inside: avoid;
 	vertical-align: top;
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-EventMeetings .indent {
@@ -2771,32 +2771,32 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-EventMeetings .finals {
-	color: green;
+	color: #007500;
 	font-weight: bold;
 }
 
 .unitime-EventMeetings .midterms {
-	color: #0066CC;
+	color: #0061c2;
 	font-weight: bold;
 }
 
 .unitime-EventMeetings .holiday {
-	color: #ee0000;
+	color: #cc0000;
 	font-weight: bold;
 }
 
 .unitime-EventMeetings .break {
-	color: purple;
+	color: #800080;
 	font-weight: bold;
 }
 
 .unitime-EventMeetings .weekend {
-	color: graytext;
+	color: #646464;
 	font-weight: bold;
 }
 
 .unitime-EventMeetings .early {
-	color: #b85c00;
+	color: #9e4f00;
 	font-weight: bold;
 }
 
@@ -2819,7 +2819,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-EventMeetings .no-control {
-	color: graytext;
+	color: #646464;
 	padding-left: 5px;
 }
 
@@ -2890,15 +2890,15 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-EventOwners .conflict .dc {
-	color: #c81e14;
+	color: #bd1c14;
 }
 
 .unitime-EventOwners .conflict .m2d {
-	color: #f06428;
+	color: #a0441c;
 }
 
 .unitime-EventOwners .conflict .b2b {
-	color: #dcb414;
+	color: #755e00;
 }
 
 .unitime-Enrollments {
@@ -2906,19 +2906,19 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-Enrollments .conflict {
-	color: #ee0000;
+	color: #bd1c14;
 }
 
 .unitime-Enrollments .conflict .dc {
-	color: #c81e14;
+	color: #bd1c14;
 }
 
 .unitime-Enrollments .conflict .m2d {
-	color: #f06428;
+	color: #a0441c;
 }
 
 .unitime-Enrollments .conflict .b2b {
-	color: #dcb414;
+	color: #755e00;
 }
 
 .unitime-MeetingSelection {
