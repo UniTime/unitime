@@ -85,37 +85,39 @@ public class PreferenceLevel extends BasePreferenceLevel {
     
     public static enum PrefColor {
     	Required(Constants.sPreferenceRequired, 'R', Constants.sPreferenceLevelRequired,
-    			0x3c3cb4, 0x3c3cb4, 0x3c3cb4),
-    	StringlyPreferred(Constants.sPreferenceStronglyPreferred, '0', Constants.sPreferenceLevelStronglyPreferred,
-        		0x0f821e, 0x195820, 0x0e771c),
+    			0x3c3cb4, 0x3c3cb4, 0x3c3cb4, 0x7a7aff),
+    	StronglyPreferred(Constants.sPreferenceStronglyPreferred, '0', Constants.sPreferenceLevelStronglyPreferred,
+        		0x0f821e, 0x195820, 0x0e771c, 0x1ea03c),
     	Preferred(Constants.sPreferencePreferred, '1', Constants.sPreferenceLevelPreferred,
-        		0x32c814, 0x1e7000, 0x32c814),
+        		0x32c814, 0x1e7000, 0x32c814, 0x46e61e),
     	Neutral(Constants.sPreferenceNeutral, '2', Constants.sPreferenceLevelNeutral,
-        		0x0a0a0a, 0x0a0a0a, 0xf0f0f0),
+        		0x0a0a0a, 0x0a0a0a, 0xf0f0f0, 0xf0f0f0),
     	Disouraged(Constants.sPreferenceDiscouraged, '3', Constants.sPreferenceLevelDiscouraged,
-        		0xdcb414, 0x755e00, 0xdcb414),
+        		0xdcb414, 0x755e00, 0xdcb414, 0xdcb43c),
     	StronglyDiscouraged(Constants.sPreferenceStronglyDiscouraged, '4', Constants.sPreferenceLevelStronglyDiscouraged,
-        		0xf06428, 0xa0441c, 0xf06428),
+        		0xf06428, 0xa0441c, 0xf06428, 0xf0783c),
     	Prohibited(Constants.sPreferenceProhibited, 'P', Constants.sPreferenceLevelProhibited,
-        		0xc81e14, 0xbd1c14, 0xc81e14),
+        		0xc81e14, 0xbd1c14, 0xc81e14, 0xff4040),
     	NotAvailable("N", 'N', Constants.sPreferenceLevelProhibited,
-        		0x696969, 0x616161, 0x969696),
+        		0x696969, 0x616161, 0x969696, 0x9f9f9f),
     	;
         
     	private String iProlog;
     	private char iChar;
     	private int iLevel;
     	private int iBgColor;
+    	private int iLightBgColor;
     	private int iColor;
     	private int iAdaColor;
     	
-    	PrefColor(String prolog, char prefChar, int level, int color, int adaColor, int bgColor) {
+    	PrefColor(String prolog, char prefChar, int level, int color, int adaColor, int bgColor, int lightBgColor) {
     		iProlog = prolog;
     		iChar = prefChar;
     		iLevel = level;
     		iBgColor = bgColor;
     		iColor = color;
     		iAdaColor = adaColor;
+    		iLightBgColor = lightBgColor;
     	}
     	
     	public String getProlog() { return iProlog; }
@@ -124,6 +126,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     	public int getColor() { return iColor; }
     	public int getAdaColor() { return iAdaColor; }
     	public int getBgColor() { return iBgColor; }
+    	public int getLightBgColor() { return iLightBgColor; }
     	
     	public static Color toAwtColor(int color) {
     		return new Color(color);
@@ -361,6 +364,16 @@ public class PreferenceLevel extends BasePreferenceLevel {
 		PrefColor color = PrefColor.fromProlog(prologPref);
 		if (color == null) color = PrefColor.fromProlog(sNeutral);
 		return PrefColor.toRGB(color.getBgColor());
+    }
+	
+	public static String int2bgLightColor(int intPref) {
+		return prolog2bgLightColor(int2prolog(intPref));
+	}
+
+	public static String prolog2bgLightColor(String prologPref) {
+		PrefColor color = PrefColor.fromProlog(prologPref);
+		if (color == null) color = PrefColor.fromProlog(sNeutral);
+		return PrefColor.toRGB(color.getLightBgColor());
     }
 
 	public static String prolog2string(String prologPref) {

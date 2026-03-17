@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridBack
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridCell;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridModel;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.PreferenceLevel.PrefColor;
 
 /**
  * @author Tomas Muller
@@ -82,44 +83,44 @@ public class TimetableGridHelper {
 	}
 	
 	public static String sBgColorEmpty = "rgb(255,255,255)";
-	public static String sBgColorRequired = "rgb(80,80,200)";
-	public static String sBgColorStronglyPreferred = "rgb(40,180,60)"; 
-	public static String sBgColorPreferred = "rgb(170,240,60)";
-	public static String sBgColorNeutral = "rgb(240,240,240)";
-	public static String sBgColorDiscouraged = "rgb(240,210,60)";
-	public static String sBgColorStronglyDiscouraged = "rgb(240,120,60)";
-	public static String sBgColorProhibited = "rgb(220,50,40)";
-	public static String sBgColorNotAvailable = "rgb(200,200,200)";
+	public static String sBgColorRequired = PrefColor.toRGB(PrefColor.Required.getLightBgColor());
+	public static String sBgColorStronglyPreferred = PrefColor.toRGB(PrefColor.StronglyPreferred.getLightBgColor()); 
+	public static String sBgColorPreferred = PrefColor.toRGB(PrefColor.Preferred.getLightBgColor());
+	public static String sBgColorNeutral = PrefColor.toRGB(PrefColor.Neutral.getLightBgColor());
+	public static String sBgColorDiscouraged = PrefColor.toRGB(PrefColor.Disouraged.getLightBgColor());
+	public static String sBgColorStronglyDiscouraged = PrefColor.toRGB(PrefColor.StronglyDiscouraged.getLightBgColor());
+	public static String sBgColorProhibited = PrefColor.toRGB(PrefColor.Prohibited.getLightBgColor());
+	public static String sBgColorNotAvailable = PrefColor.toRGB(PrefColor.NotAvailable.getLightBgColor());
 	public static String sBgColorNotAvailableButAssigned = sBgColorProhibited;
 	
     public static String pref2color(String pref) {
-    	return PreferenceLevel.prolog2bgColor(pref);
+    	return PreferenceLevel.prolog2bgLightColor(pref);
     }
     
     public static String pref2color(int pref) {
-    	return PreferenceLevel.prolog2bgColor(PreferenceLevel.int2prolog(pref));
+    	return PreferenceLevel.prolog2bgLightColor(PreferenceLevel.int2prolog(pref));
     }
 
-    public static String conflicts2color(int nrConflicts) {
-        if (nrConflicts>15) nrConflicts = 15;
-        String color = null;
-        if (nrConflicts==0) {
-            color = "rgb(240,240,240)";
-        } else if (nrConflicts<5) {
-            color = "rgb(240,"+(240-(30*nrConflicts/5))+","+(240-(180*nrConflicts/5))+")";
-        } else if (nrConflicts<10) {
-            color = "rgb(240,"+(210-(90*(nrConflicts-5)/5))+",60)";
-        } else {
-            color = "rgb("+(240-(20*(nrConflicts-10)/5))+","+(120-(70*(nrConflicts-10)/5))+","+(60-(20*(nrConflicts-10)/5))+")";
-        }
-        return color;
+    public static String conflicts2color(int p) {
+    	int[] points = new int[] {   0,   5,  10,  15 };
+    	int[] r = new int[] {      240, 240, 240, 240 };
+    	int[] g = new int[] {      240, 180, 120, 60 };
+    	int[] b = new int[] {      240,  60,  60, 60 };
+    	for (int i = 1; i < points.length; i++) {
+    		if (p <= points[i])
+    			return
+    				"rgb(" + gradient(points[i-1], r[i-1], points[i], r[i], p) + "," +
+    				gradient(points[i-1], g[i-1], points[i], g[i], p) + "," +
+    				gradient(points[i-1], b[i-1], points[i], b[i], p) + ")";
+    	}
+    	return "rgb(" + r[points.length - 1] + "," + g[points.length - 1] + "," + b[points.length - 1] + ")";
     }
     
     public static String conflicts2colorFast(int nrConflicts) {
         if (nrConflicts==0) return "rgb(240,240,240)";
-        if (nrConflicts==1) return "rgb(240,210,60)";
+        if (nrConflicts==1) return "rgb(240,180,60)";
         if (nrConflicts==2) return "rgb(240,120,60)";
-        return "rgb(220,50,40)";
+        return "rgb(240,60,60)";
     }
     
 	private static int gradient(int min, int v1, int max, int v2, int value) {
@@ -128,9 +129,9 @@ public class TimetableGridHelper {
     
     public static String percentage2color(int p) {
     	int[] points = new int[] {   0,  20,  40,  60,  80, 100 };
-    	int[] r = new int[] {      220, 240, 240, 240,  70,  30 };
-    	int[] g = new int[] {       50, 120, 210, 240, 230, 160 };
-    	int[] b = new int[] {       40,  60,  60, 240,  30,  60 };
+    	int[] r = new int[] {      240, 240, 240, 240,  70,  30 };
+    	int[] g = new int[] {       60, 120, 210, 240, 230, 160 };
+    	int[] b = new int[] {       60,  60,  60, 240,  30,  60 };
     	for (int i = 1; i < points.length; i++) {
     		if (p <= points[i])
     			return
