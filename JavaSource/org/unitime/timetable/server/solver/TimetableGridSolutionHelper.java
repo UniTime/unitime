@@ -909,7 +909,7 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		if (classIds.isEmpty()) return null;
 		
 		Query<Assignment> q = hibSession.createQuery(
-				"select distinct a from Assignment a where a.solution.uniqueId in ("+solutionIdsStr+") and a.classId in (:classIds)", Assignment.class);
+				"select distinct a from Assignment a where a.solution.uniqueId in ("+solutionIdsStr+") and a.clazz.uniqueId in (:classIds)", Assignment.class);
 		q.setParameterList("classIds", classIds, Long.class);
 		q.setCacheable(true);
 		List assignments = q.list();
