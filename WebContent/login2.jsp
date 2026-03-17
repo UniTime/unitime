@@ -86,7 +86,7 @@
 			<span class='h2'><loc:message name="pageLogInH2"/></span>
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
-		<s:if test="errorMsg != null"><div class='error'><s:property value="errorMsg"/></div></s:if>
+		<s:if test="errorMsg != null"><div class='error'><s:property value="errorMsg" escapeHtml="true"/></div></s:if>
 		<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
 			<div class='error'><loc:message name="errorAuthenticationFailedWithReason"><c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/></loc:message></div>
 		</c:if>
