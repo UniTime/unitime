@@ -633,4 +633,10 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Click to delete this line.")
 	String buttonDeleteThisLine();
+	
+	@DefaultMessage("Grade mode for {0}")
+	String labelGradeModeForCourse(String course);
+	
+	@DefaultMessage("Credit for {0}")
+	String labelCreditForCourse(String course);
 }

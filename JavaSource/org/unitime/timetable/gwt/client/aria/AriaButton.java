@@ -110,7 +110,7 @@ public class AriaButton extends Button implements HasAriaLabel {
 	@Override
 	public void setHTML(String html) {
 		super.setHTML(html);
-		setAriaLabel(UniTimeHeaderPanel.stripAccessKey(html));
+		setAriaLabel(UniTimeHeaderPanel.stripAccessKey(html).replace("&amp;", "&"));
 		Character accessKey = UniTimeHeaderPanel.guessAccessKey(html);
 		if (accessKey != null)
 			setAccessKey(accessKey);

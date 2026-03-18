@@ -48,6 +48,8 @@ import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTit
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.VariableTitleCourseResponse;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -58,6 +60,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -191,10 +194,14 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		AbsolutePanel m = new AbsolutePanel();
 		m.setStyleName("dates");
 		P from = new P("from"); from.setText(MESSAGES.propReqVTCourseDatesFrom()); m.add(from);
+		from.getElement().setId(DOM.createUniqueId());
 		iDateFrom = new SingleDateSelector();
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iDateFrom.getWidget().getElement(), Id.of(from.getElement()));
 		m.add(iDateFrom);
 		P to = new P("to"); to.setText(MESSAGES.propReqVTCourseDatesTo()); m.add(to);
+		to.getElement().setId(DOM.createUniqueId());
 		iDateTo = new SingleDateSelector();
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iDateTo.getWidget().getElement(), Id.of(to.getElement()));
 		m.add(iDateTo);
 		iForm.addRow(MESSAGES.propReqVTCourseDates(), m);
 		iDateFrom.setEnabled(false);
