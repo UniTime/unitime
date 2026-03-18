@@ -489,11 +489,11 @@ public class ListSolutionsPage extends SimpleForm {
 		public static String toString(ProgressMessage m) {
 			switch (m.getLevel()) {
 			case WARN:
-				return "<span style='color:orange;font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
+				return "<span class='unitime-WarningText' style='font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
 			case ERROR:
-				return "<span style='color:red;font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
+				return "<span class='unitime-ErrorText' style='font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
 			case FATAL:
-				return "<span style='color:red;font-weight:bold;'>&gt;&gt;&gt;" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ": " + m.getMessage() + " &lt;&lt;&lt;</span>" + htmlTraceLog(m);
+				return "<span class='unitime-ErrorText' style='font-weight:bold;'>&gt;&gt;&gt;" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ": " + m.getMessage() + " &lt;&lt;&lt;</span>" + htmlTraceLog(m);
 			default:
 				return null;
 			}

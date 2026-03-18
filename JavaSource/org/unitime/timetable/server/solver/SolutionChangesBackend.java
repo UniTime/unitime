@@ -30,7 +30,9 @@ import java.util.StringTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -81,6 +83,8 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 		
 		context.getUser().setProperty("SolutionChanges.reversedMode", request.getFilter().getParameterValue("reversedMode"));
 		boolean reversed = "1".equals(request.getFilter().getParameterValue("reversedMode"));
+		
+		boolean usePrefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		
@@ -135,14 +139,20 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
     	    	ClassAssignmentDetails ca = (after==null?before:after);
     	    	
     	    	TableCellChange date = new TableCellChange(
-    	    			before == null || before.getTime() == null ? null : new TableCellInterface(before.getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(before.getTime().getDatePatternPreference())),
-    	    			after == null || after.getTime() == null ? null : new TableCellInterface(after.getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(after.getTime().getDatePatternPreference())));
+    	    			before == null || before.getTime() == null ? null : new TableCellInterface(before.getTime().getDatePatternName())
+    	    					.setColor(PreferenceLevel.int2color(before.getTime().getDatePatternPreference()))
+    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(before.getTime().getDatePatternPreference()) : ""),
+    	    			after == null || after.getTime() == null ? null : new TableCellInterface(after.getTime().getDatePatternName())
+    	    					.setColor(PreferenceLevel.int2color(after.getTime().getDatePatternPreference()))
+    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(after.getTime().getDatePatternPreference()) : ""));
     	    	
     	    	TableCellChange time = new TableCellChange(
     	    			before == null || before.getTime() == null ? null : new TableInterface.TableCellTime(before.getTime().getDaysName() + " " + before.getTime().getStartTime() + " - " + before.getTime().getEndTime())
-    	    	    			.setId(before.getClazz().getClassId() + "," + before.getTime().getDays() + "," + before.getTime().getStartSlot()).setColor(PreferenceLevel.int2color(before.getTime().getPref())),
+    	    	    			.setId(before.getClazz().getClassId() + "," + before.getTime().getDays() + "," + before.getTime().getStartSlot()).setColor(PreferenceLevel.int2color(before.getTime().getPref()))
+    	    	    			.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(before.getTime().getPref()) : ""),
     	    	    	after == null || after.getTime() == null ? null : new TableInterface.TableCellTime(after.getTime().getDaysName() + " " + after.getTime().getStartTime() + " - " + after.getTime().getEndTime())
-    	    	    	    	.setId(after.getClazz().getClassId() + "," + after.getTime().getDays() + "," + after.getTime().getStartSlot()).setColor(PreferenceLevel.int2color(after.getTime().getPref())));
+    	    	    	    	.setId(after.getClazz().getClassId() + "," + after.getTime().getDays() + "," + after.getTime().getStartSlot()).setColor(PreferenceLevel.int2color(after.getTime().getPref()))
+    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(after.getTime().getPref()) : ""));
     	    	
     	    	String link = "id=" + ca.getClazz().getClassId();
     	    	if (before != null)
@@ -158,7 +168,8 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	    				before.getRoom()[i].getName(),
         	    				before.getRoom()[i].getColor(),
         	    				before.getRoom()[i].getId(),
-        	    				PreferenceLevel.int2string(before.getRoom()[i].getPref()));
+        	    				PreferenceLevel.int2string(before.getRoom()[i].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(before.getRoom()[i].getPref()) : null);
         	    	}
         	    	room.setFirst(beforeRooms);
         	    	link += "&room=" + rid;
@@ -172,7 +183,8 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
     	    					after.getRoom()[i].getName(),
     	    					after.getRoom()[i].getColor(),
     	    					after.getRoom()[i].getId(),
-        	    				PreferenceLevel.int2string(after.getRoom()[i].getPref()));
+        	    				PreferenceLevel.int2string(after.getRoom()[i].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(after.getRoom()[i].getPref()) : null);
         	    	}
         	    	room.setSecond(afterRooms);
         	    	if (after.getRoom().length == 0 && before == null)
@@ -269,11 +281,13 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 	}
 	
 	public TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value))
+				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
 	public TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value))
+				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
 	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix, boolean showConfigNames) {

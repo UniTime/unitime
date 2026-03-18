@@ -25,7 +25,9 @@ import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -71,6 +73,8 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 			context.getUser().setProperty("Cbs.limit", String.valueOf(request.getLimit()));
 		}
 		
+		boolean usePrefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
+		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		ConflictStatisticsInfo info = null;
 		if (solver != null) {
@@ -94,10 +98,10 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 		}
 		
 		if (info == null || info.getCBS().isEmpty()) return null;
-		return convert(info.getCBS(), request.getClassId(), request.isVariableOriented(), request.getLimit() / 100.0);
+		return convert(info.getCBS(), request.getClassId(), request.isVariableOriented(), request.getLimit() / 100.0, usePrefStyles);
 	}
 	
-	protected GwtRpcResponseList<CBSNode> convert(Collection<ConflictStatisticsInfo.CBSVariable> variables, Long classId, boolean variableOriented, double limit) {
+	protected GwtRpcResponseList<CBSNode> convert(Collection<ConflictStatisticsInfo.CBSVariable> variables, Long classId, boolean variableOriented, double limit, boolean usePrefStyles) {
 		GwtRpcResponseList<CBSNode> response = new GwtRpcResponseList<CBSNode>();
 		if (variableOriented) {
 			variables = ConflictStatisticsInfo.filter(variables, limit);
@@ -110,7 +114,7 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 					continue;
 				}
 				for (ConflictStatisticsInfo.CBSValue val: ConflictStatisticsInfo.filter(var.values(), limit)) {
-					CBSNode valNode = valueNode(val);
+					CBSNode valNode = valueNode(val, usePrefStyles);
 					if (varNode != null)
 						varNode.addNode(valNode);
 					else
@@ -119,7 +123,7 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 						CBSNode conNode = constraintNode(con);
 						valNode.addNode(conNode);
 						for (ConflictStatisticsInfo.CBSAssignment ass: ConflictStatisticsInfo.filter(con.assignments(), limit))
-							conNode.addNode(assignmentNode(ass));
+							conNode.addNode(assignmentNode(ass, usePrefStyles));
 					}
 				}
 				
@@ -136,13 +140,13 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 						conNode.addNode(varNode);
 					}
 					for (ConflictStatisticsInfo.CBSValue value: ConflictStatisticsInfo.filter(variable.values(), limit)) {
-						CBSNode valNode = valueNode(value);
+						CBSNode valNode = valueNode(value, usePrefStyles);
 						if (varNode != null)
 							varNode.addNode(valNode);
 						else
 							conNode.addNode(valNode);
 						for (ConflictStatisticsInfo.CBSAssignment ass: ConflictStatisticsInfo.filter(value.assignments(), limit))
-							valNode.addNode(assignmentNode(ass));
+							valNode.addNode(assignmentNode(ass, usePrefStyles));
 					}
 				}
             }
@@ -159,7 +163,7 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 		return node;
 	}
 	
-	private CBSNode valueNode(ConflictStatisticsInfo.CBSValue value) {
+	private CBSNode valueNode(ConflictStatisticsInfo.CBSValue value, boolean usePrefStyles) {
 		CBSNode node = new CBSNode();
 		node.setCount(value.getCounter());
 		SelectedAssignment sa = new SelectedAssignment();
@@ -169,13 +173,22 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 		sa.setPatternId(value.getPatternId());
 		sa.setStartSlot(value.getStartSlot());
 		sa.setRoomIds(value.getRoomIds());
-		String html = 
-	    		"<font color='"+PreferenceLevel.int2color(value.getTimePref())+"'>"+
-	    		value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName()+
-	    		"</font> ";
+		String html = null;
+		if (usePrefStyles) {
+			html = "<span class='pref-"+PreferenceLevel.int2char(value.getTimePref())+"'>"+
+		    	value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName()+
+		    	"</span> ";
+		} else {
+			html = "<font color='"+PreferenceLevel.int2color(value.getTimePref())+"'>"+
+		    	value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName()+
+		    	"</font> ";
+		}
 		String name = value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName();
 		for (int i=0;i<value.getRoomIds().size();i++) {
-			html += (i > 0 ? ", " : "") + "<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</font>";
+			if (usePrefStyles)
+				html += (i > 0 ? ", " : "") + "<span class='pref-"+PreferenceLevel.int2char(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</span>";
+			else
+				html += (i > 0 ? ", " : "") + "<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</font>";
 			name += (i > 0 ? ", " : "") + value.getRoomNames().get(i);
 		}
 		if (value.getInstructorName() != null) {
@@ -222,7 +235,7 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
     	return node;
 	}
 	
-	private CBSNode assignmentNode(ConflictStatisticsInfo.CBSAssignment assignment) {
+	private CBSNode assignmentNode(ConflictStatisticsInfo.CBSAssignment assignment, boolean usePrefStyles) {
 		CBSNode node = new CBSNode();
 		node.setCount(assignment.getCounter());
 		SelectedAssignment sa = new SelectedAssignment();
@@ -234,12 +247,21 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 		sa.setRoomIds(assignment.getRoomIds());
 		String name =
 				assignment.getVariableName() + " " + assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName();
-		String html = 
-				"<font color='"+PreferenceLevel.prolog2color(assignment.getPref())+"'>"+
-				assignment.getVariableName()+ "</font> &larr; <font color='"+PreferenceLevel.int2color(assignment.getTimePref())+"'>"+
-				assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName()+"</font> ";
+		String html = null;
+		if (usePrefStyles) {
+				html = "<span style='color:"+PreferenceLevel.prolog2color(assignment.getPref())+";'>"+
+				assignment.getVariableName()+ "</span> &larr; <span class='pref-"+PreferenceLevel.int2char(assignment.getTimePref())+"'>"+
+				assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName()+"</span> ";
+		} else {
+			html = "<font color='"+PreferenceLevel.prolog2color(assignment.getPref())+"'>"+
+					assignment.getVariableName()+ "</font> &larr; <font color='"+PreferenceLevel.int2color(assignment.getTimePref())+"'>"+
+					assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName()+"</font> ";
+		}
     	for (int i = 0; i < assignment.getRoomIds().size(); i++) {
-    		html += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</font>";
+    		if (usePrefStyles)
+    			html += (i>0?", ":"")+"<span class='pref-"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</span>";
+    		else
+    			html += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</font>";
     		name += (i>0?", ":"")+assignment.getRoomNames().get(i);
     	}
     	if (assignment.getInstructorName()!=null) {

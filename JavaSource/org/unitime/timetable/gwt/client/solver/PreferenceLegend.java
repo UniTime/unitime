@@ -40,7 +40,7 @@ public class PreferenceLegend extends P {
 		
 		public PreferenceCell(PreferenceInterface pref) {
 			super("legend-line");
-			P box = new P("box"); box.getElement().getStyle().setBackgroundColor(pref.getColor());
+			P box = new P("box"); box.getElement().getStyle().setBackgroundColor(pref.getBgColor());
 			add(box);
 			P text = new P("text"); text.setText(pref.getName());
 			add(text);

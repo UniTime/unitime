@@ -117,11 +117,11 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		addHeaderRow(iHeader);
 		if (details.getTime() != null) {
 			 if (details.getTime().hasDatePattern()) {
-				 addRow(MESSAGES.propAssignedDate(), iContext.createDateLabel(details.getTime().getDatePattern()));
+				 addRow(MESSAGES.propAssignedDate(), iContext.createDateLabel(details.getTime().getDatePattern(), true));
 			 }
-			 addRow(MESSAGES.propAssignedTime(), iContext.createTimeLabel(details.getTime(), details.getClazz().getClassId(), true));
+			 addRow(MESSAGES.propAssignedTime(), iContext.createTimeLabel(details.getTime(), details.getClazz().getClassId(), true, true));
 			 if (details.getRoom() != null)
-				 addRow(MESSAGES.propAssignedRooms(), iContext.createRoomsLabel(details.getRoom()));
+				 addRow(MESSAGES.propAssignedRooms(), iContext.createRoomsLabel(details.getRoom(), true));
 		} else {
 			Label notAssigned = new Label(MESSAGES.classNotAssigned());
 			notAssigned.addStyleName("not-assigned");
@@ -130,13 +130,13 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		if (details.getInstructor() != null)
 			addRow(MESSAGES.propInstructor(), iContext.createInstructorsLabel(details.getInstructor()));
 		if (details.getInitialTime() != null) {
-			addRow(MESSAGES.propInitialAssignment(), iContext.createAssignmentLabel(details.getInitialTime(), details.getInitialRoom(), details.getClazz().getClassId(), details.getNrDates() > 1));
+			addRow(MESSAGES.propInitialAssignment(), iContext.createAssignmentLabel(details.getInitialTime(), details.getInitialRoom(), details.getClazz().getClassId(), details.getNrDates() > 1, true));
 		}
 		if (details.hasStudentConflicts()) {
 			addRow(MESSAGES.propStudentConflicts(), iContext.createStudentConflicts(details.getStudentConflicts()));
 		}
 		if (details.hasViolatedDistributionConflicts() || details.hasBtbInstructorConflicts()) {
-			addRow(MESSAGES.propViolatedConstraints(), iContext.createViolatedConstraints(details.getDistributionConflicts(), details.getBtbInstructorConflicts()));
+			addRow(MESSAGES.propViolatedConstraints(), iContext.createViolatedConstraints(details.getDistributionConflicts(), details.getBtbInstructorConflicts(), false));
 		}
 		if (details.hasTimes() && details.getNrDates() > 1) {
 			iDates = iContext.createDateLocations(details.getTimes());

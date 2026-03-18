@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.RoomInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.Suggestion;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionProperties;
@@ -214,8 +215,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 			if (details.getTime() != null) {
 				P current = new P("old");
 				current.setText(details.getTime().getDatePatternName());
-				if (details.getTime().getDatePatternPreference() != 0)
-					current.getElement().getStyle().setColor(iProperties.getPreference(details.getTime().getDatePatternPreference()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(details.getTime().getDatePatternPreference());
+				if (pref.hasStyle())
+					current.addStyleName(pref.getStyle());
+				else if (details.getTime().getDatePatternPreference() != 0)
+					current.getElement().getStyle().setColor(pref.getColor());
 				if (details.getTime().isStriked())
 					current.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 				date.add(current);
@@ -225,16 +229,22 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 				} else if (!details.getAssignedTime().getDatePatternName().equals(details.getTime().getDatePatternName())) {
 					P arrow = new P("arrow"); arrow.setHTML(MESSAGES.assignmentArrow()); date.add(arrow);
 					P other = new P("new"); other.setText(details.getAssignedTime().getDatePatternName());
-					if (details.getAssignedTime().getDatePatternPreference() != 0)
-						other.getElement().getStyle().setColor(iProperties.getPreference(details.getAssignedTime().getDatePatternPreference()).getColor());
+					pref = iProperties.getPreference(details.getAssignedTime().getDatePatternPreference());
+					if (pref.hasStyle())
+						other.addStyleName(pref.getStyle());
+					else if (details.getAssignedTime().getDatePatternPreference() != 0)
+						other.getElement().getStyle().setColor(pref.getColor());
 					if (details.getAssignedTime().isStriked())
 						other.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 					date.add(other);
 				}
 			} else if (details.getAssignedTime() != null) {
 				P other = new P("new"); other.setText(details.getAssignedTime().getDatePatternName());
-				if (details.getAssignedTime().getDatePatternPreference() != 0)
-					other.getElement().getStyle().setColor(iProperties.getPreference(details.getAssignedTime().getDatePatternPreference()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(details.getAssignedTime().getDatePatternPreference());
+				if (pref.hasStyle())
+					other.addStyleName(pref.getStyle());
+				else if (details.getAssignedTime().getDatePatternPreference() != 0)
+					other.getElement().getStyle().setColor(pref.getColor());
 				if (details.getAssignedTime().isStriked())
 					other.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 				date.add(other);
@@ -245,8 +255,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 			if (details.getTime() != null) {
 				final P current = new P("old");
 				current.setText(details.getTime().getName(iProperties.getFirstDay(), false, CONSTANTS));
-				if (details.getTime().getPref() != 0)
-					current.getElement().getStyle().setColor(iProperties.getPreference(details.getTime().getPref()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(details.getTime().getPref());
+				if (pref.hasStyle())
+					current.addStyleName(pref.getStyle());
+				else if (details.getTime().getPref() != 0)
+					current.getElement().getStyle().setColor(pref.getColor());
 				if (details.getTime().isStriked())
 					current.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 				final String timeHint = details.getClazz().getClassId() + "," + details.getTime().getDays() + "," + details.getTime().getStartSlot();
@@ -269,8 +282,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 				} else if (details.getAssignedTime().getStartSlot() != details.getTime().getStartSlot() || details.getAssignedTime().getDays() != details.getTime().getDays() || !details.getAssignedTime().getPatternId().equals(details.getTime().getPatternId())) {
 					P arrow = new P("arrow"); arrow.setHTML(MESSAGES.assignmentArrow()); time.add(arrow);
 					final P other = new P("new"); other.setText(details.getAssignedTime().getName(iProperties.getFirstDay(), false, CONSTANTS));
-					if (details.getAssignedTime().getPref() != 0)
-						other.getElement().getStyle().setColor(iProperties.getPreference(details.getAssignedTime().getPref()).getColor());
+					pref = iProperties.getPreference(details.getAssignedTime().getPref());
+					if (pref.hasStyle())
+						other.addStyleName(pref.getStyle());
+					else if (details.getAssignedTime().getPref() != 0)
+						other.getElement().getStyle().setColor(pref.getColor());
 					if (details.getAssignedTime().isStriked())
 						other.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 					final String otherTimeHint = details.getClazz().getClassId() + "," + details.getAssignedTime().getDays() + "," + details.getAssignedTime().getStartSlot();
@@ -290,8 +306,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 				}
 			} else if (details.getAssignedTime() != null) {
 				final P other = new P("new"); other.setText(details.getAssignedTime().getName(iProperties.getFirstDay(), false, CONSTANTS));
-				if (details.getAssignedTime().getPref() != 0)
-					other.getElement().getStyle().setColor(iProperties.getPreference(details.getAssignedTime().getPref()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(details.getAssignedTime().getPref());
+				if (pref.hasStyle())
+					other.addStyleName(pref.getStyle());
+				else if (details.getAssignedTime().getPref() != 0)
+					other.getElement().getStyle().setColor(pref.getColor());
 				if (details.getAssignedTime().isStriked())
 					other.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 				final String otherTimeHint = details.getClazz().getClassId() + "," + details.getAssignedTime().getDays() + "," + details.getAssignedTime().getStartSlot();
@@ -318,8 +337,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 					P room = new P("room");
 					final P current = new P("old");
 					current.setText(r.getName());
-					if (r.getPref() != 0)
-						current.getElement().getStyle().setColor(iProperties.getPreference(r.getPref()).getColor());
+					PreferenceInterface pref = iProperties.getPreference(r.getPref());
+					if (pref.hasStyle())
+						current.addStyleName(pref.getStyle());
+					else if (r.getPref() != 0)
+						current.getElement().getStyle().setColor(pref.getColor());
 					if (r.isStriked())
 						current.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 					if (r.getId() != null) {
@@ -342,8 +364,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 						if (!q.getId().equals(r.getId())) {
 							P arrow = new P("arrow"); arrow.setHTML(MESSAGES.assignmentArrow()); room.add(arrow);
 							final P other = new P("new"); other.setText(q.getName());
-							if (q.getPref() != 0)
-								other.getElement().getStyle().setColor(iProperties.getPreference(q.getPref()).getColor());
+							pref = iProperties.getPreference(q.getPref());
+							if (pref.hasStyle())
+								other.addStyleName(pref.getStyle());
+							else if (q.getPref() != 0)
+								other.getElement().getStyle().setColor(pref.getColor());
 							if (q.isStriked())
 								other.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 							if (q.getId() != null) {
@@ -377,8 +402,11 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 					final RoomInfo q = details.getAssignedRoom().get(i);
 					P room = new P("room");
 					final P other = new P("new"); other.setText(q.getName());
-					if (q.getPref() != 0)
-						other.getElement().getStyle().setColor(iProperties.getPreference(q.getPref()).getColor());
+					PreferenceInterface pref = iProperties.getPreference(q.getPref());
+					if (pref.hasStyle())
+						other.addStyleName(pref.getStyle());
+					else if (q.getPref() != 0)
+						other.getElement().getStyle().setColor(pref.getColor());
 					if (q.isStriked())
 						other.getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 					if (q.getId() != null) {
@@ -450,26 +478,27 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 		}
 	}
 	
-	public int addRow(final Suggestion suggestion) {
-		List<Widget> widgets = new ArrayList<Widget>();
-		
-		for (SuggestionColumn column: SuggestionColumn.values()) {
-			int nbrCells = getNbrCells(column);
-			for (int idx = 0; idx < nbrCells; idx ++) {
-				Widget cell = getCell(suggestion, column, idx);
-				if (cell == null)
-					cell = new P();
-				widgets.add(cell);
-			}
-		}
-		
-		int row = addRow(suggestion, widgets);
-		getRowFormatter().setStyleName(row, "row");
-		for (int col = 0; col < getCellCount(row); col++)
-			getCellFormatter().setStyleName(row, col, "cell");
-		
-		return row;
-	}
+    public int addRow(final Suggestion suggestion) {
+    	List<Widget> widgets = new ArrayList<Widget>();
+    	
+    	for (SuggestionColumn column: SuggestionColumn.values()) {
+    		int nbrCells = getNbrCells(column);
+    		for (int idx = 0; idx < nbrCells; idx ++) {
+    			Widget cell = getCell(suggestion, column, idx);
+    			if (cell == null)
+    				cell = new P();
+    			widgets.add(cell);
+    		}
+    	}
+    	
+    	int row = addRow(suggestion, widgets);
+    	getRowFormatter().setStyleName(row, "row");
+    	for (int col = 0; col < getCellCount(row); col++)
+    		getCellFormatter().setStyleName(row, col, "cell");
+    	
+    	return row;
+    }
+
 	
 	public static class SuggestionsComparator implements Comparator<Suggestion> {
 		private Integer iFirstDay;
@@ -599,55 +628,13 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 	}
 	
 	public static interface SortOperation extends Operation, HasColumnName {}
-	
-	public static String dispNumber(int number) {
-		return dispNumber("",number);
-	}
-	
-	public static String dispNumber(String prefix, int number) {
-		if (number>0) return "<font color='red'>"+prefix+"+"+number+"</font>";
-	    if (number<0) return "<font color='green'>"+prefix+number+"</font>";
-	    return prefix+"0";
-	}
-	
-	public static String dispNumberShort(boolean rem, int n1, int n2) {
-		if (n1==0 && n2==0) return "";
-		if (rem) return dispNumber(-n1);
-		int dif = n2-n1;
-		if (dif==0)
-			return n1+"&rarr;"+n2;
-		else if (dif<0)
-			return "<font color='green'>"+n1+"&rarr;"+n2+"</font>";
-		else
-			return "<font color='red'>"+n1+"&rarr;"+n2+"</font>";
-	}
-	
+		
 	public static String dispNumber(String prefix, double number) {
-		if (number>0) return "<font color='red'>"+prefix+"+"+sDF.format(number)+"</font>";
-	    if (number<0) return "<font color='green'>"+prefix+sDF.format(number)+"</font>";
+		if (number>0) return "<span style='color:#bd1c14;'>"+prefix+"+"+sDF.format(number)+"</span>";
+		if (number<0) return "<span style='color:#195820;'>"+prefix+sDF.format(number)+"</span>";
 	    return prefix+"0";
 	}
-	
-	public static String dispNumberShort(boolean rem, double n1, double n2) {
-		return dispNumberShort(rem,"",n1,n2);
-	}
-	
-	public static String dispNumberShort(boolean rem, String prefix, double n1, double n2) {
-		if (n1==0 && n2==0) return "";
-		if (rem) return dispNumber(prefix,-n1);
-		double dif = n2-n1;
-		if (dif==0)
-			return prefix+sDF.format(n1)+"&rarr;"+sDF.format(n2);
-		else if (dif<0)
-			return "<font color='green'>"+prefix+sDF.format(n1)+"&rarr;"+sDF.format(n2)+"</font>";
-		else
-			return "<font color='red'>"+prefix+sDF.format(n1)+"&rarr;"+sDF.format(n2)+"</font>";
-	}
-	
-	public static String dispNumber(int n1, int n2) {
-		return dispNumber(n1-n2);//+" ("+n2+(n1==n2?"":" &rarr; "+n1)+")";
-	}
-	
+		
 	public static String dispNumber(double n1, double n2) {
 		return dispNumber(n1-n2);//+" ("+sDF.format(n2)+(n1==n2?"":" &rarr; "+sDF.format(n1))+")";
 	}

@@ -29,6 +29,8 @@ import java.util.TreeSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -75,6 +77,7 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));
+		boolean usePrefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		
@@ -103,20 +106,29 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 	    	    	if (classId == null) classId = ca.getClazz().getClassId();
 	    	    	
 	    	    	TableCellChange date = new TableCellChange(
-	    	    			before == null || before.getAssignedTime() == null ? null : new TableCellInterface(before.getAssignedTime().getDatePatternName()).setColor(PreferenceLevel.int2color(before.getAssignedTime().getDatePatternPreference())),
-	    	    			after == null || after.getAssignedTime() == null ? null : new TableCellInterface(after.getAssignedTime().getDatePatternName()).setColor(PreferenceLevel.int2color(after.getAssignedTime().getDatePatternPreference())));
+	    	    			before == null || before.getAssignedTime() == null ? null : new TableCellInterface(before.getAssignedTime().getDatePatternName())
+	    	    					.setColor(PreferenceLevel.int2color(before.getAssignedTime().getDatePatternPreference()))
+	    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(before.getAssignedTime().getDatePatternPreference()) : ""),
+	    	    			after == null || after.getAssignedTime() == null ? null : new TableCellInterface(after.getAssignedTime().getDatePatternName())
+	    	    					.setColor(PreferenceLevel.int2color(after.getAssignedTime().getDatePatternPreference()))
+	    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(after.getAssignedTime().getDatePatternPreference()) : ""));
 	    	    	
 	    	    	TableCellChange time = new TableCellChange(
 	    	    			before == null || before.getAssignedTime() == null ? null : new TableInterface.TableCellTime(before.getAssignedTime().getDaysName() + " " + before.getAssignedTime().getStartTime())
-	    	    	    			.setId(before.getClazz().getClassId() + "," + before.getAssignedTime().getDays() + "," + before.getAssignedTime().getStartSlot()).setColor(PreferenceLevel.int2color(before.getAssignedTime().getPref())),
+	    	    	    			.setId(before.getClazz().getClassId() + "," + before.getAssignedTime().getDays() + "," + before.getAssignedTime().getStartSlot())
+	    	    	    			.setColor(PreferenceLevel.int2color(before.getAssignedTime().getPref()))
+	    	    	    			.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(before.getAssignedTime().getPref()) : null),
 	    	    	    	after == null || after.getAssignedTime() == null ? null : new TableInterface.TableCellTime(after.getAssignedTime().getDaysName() + " " + after.getAssignedTime().getStartTime())
-	    	    	    	    	.setId(after.getClazz().getClassId() + "," + after.getAssignedTime().getDays() + "," + after.getAssignedTime().getStartSlot()).setColor(PreferenceLevel.int2color(after.getAssignedTime().getPref())));
+	    	    	    	    	.setId(after.getClazz().getClassId() + "," + after.getAssignedTime().getDays() + "," + after.getAssignedTime().getStartSlot())
+	    	    	    	    	.setColor(PreferenceLevel.int2color(after.getAssignedTime().getPref()))
+	    	    	    	    	.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(after.getAssignedTime().getPref()) : null));
 	    	    	
 	    	    	TableCellChange room = new TableCellChange();
 	    	    	if (before != null && before.getAssignedRoom() != null) {
 	    	    		TableCellRooms beforeRooms = new TableCellRooms();
 	    	    		for (RoomInfo r: new TreeSet<RoomInfo>(Arrays.asList(before.getAssignedRoom())))
-	        	    		beforeRooms.add(r.getName(), r.getColor(), r.getId(), PreferenceLevel.int2string(r.getPref()));
+	        	    		beforeRooms.add(r.getName(), r.getColor(), r.getId(), PreferenceLevel.int2string(r.getPref()),
+	        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(r.getPref()) : null);
 	        	    	room.setFirst(beforeRooms);
 	        	    	if (before.getAssignedRoom().length == 0 && after == null)
 	        	    		room.setSecond(new TableCellRooms());
@@ -124,7 +136,8 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 	    	    	if (after != null && after.getAssignedRoom() != null) {
 	    	    		TableCellRooms afterRooms = new TableCellRooms();
 	    	    		for (RoomInfo r: new TreeSet<RoomInfo>(Arrays.asList(after.getAssignedRoom())))
-	    	    			afterRooms.add(r.getName(), r.getColor(), r.getId(), PreferenceLevel.int2string(r.getPref()));
+	    	    			afterRooms.add(r.getName(), r.getColor(), r.getId(), PreferenceLevel.int2string(r.getPref()),
+	    	    					usePrefStyles ? "pref-" + PreferenceLevel.int2char(r.getPref()) : null);
 	        	    	room.setSecond(afterRooms);
 	        	    	if (after.getAssignedRoom().length == 0 && before == null)
 	        	    		room.setFirst(new TableCellRooms());	        	    	
@@ -228,11 +241,13 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 	}
 	
 	public TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value))
+				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
 	public TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value))
+				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 
 }

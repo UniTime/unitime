@@ -31,6 +31,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -97,6 +98,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));
+		boolean usePrefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		String subjects = request.getFilter().getParameterValue("subjectArea");
@@ -195,7 +197,9 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    				ca.getAssignedRoom()[i].getName(),
     	    				ca.getAssignedRoom()[i].getColor(),
     	    				ca.getAssignedRoom()[i].getId(),
-    	    				PreferenceLevel.int2string(ca.getAssignedRoom()[i].getPref()));
+    	    				PreferenceLevel.int2string(ca.getAssignedRoom()[i].getPref()),
+    	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(ca.getAssignedRoom()[i].getPref()) : null
+    	    				);
     	    	}
     	    } else if (ca.getRoom()!=null) {
     	    	for (int i=0;i<ca.getRoom().length;i++) {
@@ -203,7 +207,9 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    				ca.getRoom()[i].getName(),
     	    				ca.getRoom()[i].getColor(),
     	    				ca.getRoom()[i].getId(),
-    	    				PreferenceLevel.int2string(ca.getRoom()[i].getPref()));
+    	    				PreferenceLevel.int2string(ca.getRoom()[i].getPref()),
+    	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(ca.getRoom()[i].getPref()) : null
+    	    				);
     	    	}
     	    }
     	    TableInterface.TableCellItems instructors = new TableInterface.TableCellItems();
@@ -220,10 +226,15 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    			ca.getClazz().getClassId(),
     	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId()),
     	    			(showClassDetail ? null : MESSAGES.dialogSuggestions()),
-    	    			new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
-    	    			new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
+    	    			new TableInterface.TableCellClassName(ca.getClazz().getName())
+    	    				.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
+    	    			new TableCellInterface(time.getDatePatternName())
+    	    				.setColor(PreferenceLevel.int2color(time.getDatePatternPreference()))
+    	    				.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getDatePatternPreference()) : null),
     	    			new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime()).setOrder(getOrder(time))
-    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot()).setColor(PreferenceLevel.int2color(time.getPref())),
+    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot())
+    	    				.setColor(PreferenceLevel.int2color(time.getPref()))
+    	    				.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null),
     	    			rooms,
     	    			instructors,
     	    			studentConfs
@@ -234,9 +245,13 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId()),
         	    		(showClassDetail ? null : MESSAGES.dialogSuggestions()),
         	    		new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
-        	    		new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())),
+        	    		new TableCellInterface(time.getDatePatternName())
+        	    			.setColor(PreferenceLevel.int2color(time.getDatePatternPreference()))
+        	    			.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getDatePatternPreference()) : null),
         	    		new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime()).setOrder(getOrder(time))
-    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot()).setColor(PreferenceLevel.int2color(time.getPref())),
+    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot())
+    	    				.setColor(PreferenceLevel.int2color(time.getPref()))
+    	    				.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null),
         	    		rooms,
         	    		instructors,
         	    		studentConfs,
@@ -288,11 +303,13 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 	}
 	
 	public TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Integer>(value)
+				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
 	public TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Double>(value, sDF.format(value))
+				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
 	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix, boolean showConfigNames) {

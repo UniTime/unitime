@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -69,7 +70,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.ImageResourceRenderer;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -83,6 +84,7 @@ public class SolverPage extends SimpleForm {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	protected static DateTimeFormat sLoadDateFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private Map<String, SolverConfiguration> iConfigurations;
@@ -510,8 +512,12 @@ public class SolverPage extends SimpleForm {
 		public SolverStatus() {
 			super("unitime-SolverStatus");
 			iStatus = new P("status-label");
-			iIcon = new Anchor(new ImageResourceRenderer().render(RESOURCES.helpIcon()), "", "_blank"); iIcon.addStyleName("status-icon");
+			Image image = new Image(RESOURCES.helpIcon());
+	        image.setAltText(ARIA.iconHelp());
+			iIcon = new Anchor();
+			iIcon.addStyleName("status-icon");
 			iIcon.setVisible(false);
+			iIcon.getElement().appendChild(image.getElement());
 			add(iStatus); add(iIcon);
 			RPC.execute(new PageNameRpcRequest("Solver Status"), new AsyncCallback<PageNameInterface>() {
 				@Override
