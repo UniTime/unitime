@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaListBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestArea;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
@@ -626,14 +627,15 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	}
 	
 	public class GradeModeChange extends Cell implements HasAriaLabel {
-		private ListBox iList;
+		private AriaListBox iList;
 		private List<SpecialRegistrationGradeModeChanges> iGradeMode;
 		private List<ClassAssignmentInterface.ClassAssignment> iClasses;
 		
 		public GradeModeChange(ClassAssignmentInterface.ClassAssignment ca, SpecialRegistrationGradeModeChanges gradeMode) {
 			super(null);
-			iList = new ListBox();
+			iList = new AriaListBox();
 			iList.addStyleName("grade-mode-list");
+			iList.setAriaLabel(ARIA.labelGradeModeForCourse(ca.getCourseName()));
 			iClasses = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 			iClasses.add(ca);
 			iGradeMode = new ArrayList<SpecialRegistrationGradeModeChanges>();
@@ -758,14 +760,15 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	}
 	
 	public class VariableCreditChange extends Cell implements HasAriaLabel {
-		private ListBox iList;
+		private AriaListBox iList;
 		private SpecialRegistrationVariableCreditChange iVarCredit;
 		private ClassAssignmentInterface.ClassAssignment iClass;
 		
 		public VariableCreditChange(ClassAssignmentInterface.ClassAssignment ca, SpecialRegistrationVariableCreditChange vcc) {
 			super(null);
-			iList = new ListBox();
+			iList = new AriaListBox();
 			iList.addStyleName("variable-credit-list");
+			iList.setAriaLabel(ARIA.labelCreditForCourse(ca.getCourseName()));
 			iClass = ca;
 			iVarCredit = vcc;
 			iList.addChangeHandler(new ChangeHandler() {
