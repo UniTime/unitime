@@ -642,4 +642,10 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Mode selection")
 	String inputModeSelection();
+	
+	@DefaultMessage("Grade mode for {0}")
+	String labelGradeModeForCourse(String course);
+	
+	@DefaultMessage("Credit for {0}")
+	String labelCreditForCourse(String course);
 }
