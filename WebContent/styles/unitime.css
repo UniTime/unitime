@@ -8586,3 +8586,30 @@ unitime-RoomSharingWidget .legend .blank {
 	display: inline-block;
 	white-space: nowrap;
 }
+
+.bg-B {
+	background-color: #5050C8;
+	color: white;
+	padding: 1px 3px 1px 3px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.bg-G {
+	background-color: #1c8735;
+	color: white;
+	padding: 1px 3px 1px 3px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.bg-R {
+	background-color: #DC3228;
+	color: white;
+	padding: 1px 3px 1px 3px;
+	border-radius: 2px;
+	display: inline-block;
+	white-space: nowrap;
+}

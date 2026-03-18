@@ -630,9 +630,9 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 			} catch (NullPointerException e) {}
 			if (!cell.hasPreference()) {
 				cell.setPreference(
-					(lecture.getBestTimePreference()<placement.getTimeLocation().getNormalizedPreference()?"<span style='color:red'>"+(int)(placement.getTimeLocation().getNormalizedPreference()-lecture.getBestTimePreference())+"</span>":""+(int)(placement.getTimeLocation().getNormalizedPreference()-lecture.getBestTimePreference())) + ", " +
-					(studConf>0?"<span style='color:rgb(20,130,10)'>"+studConf+"</span>":""+studConf) + ", " +
-					(lecture.getBestRoomPreference()<roomPref?"<span style='color:blue'>"+(roomPref-lecture.getBestRoomPreference())+"</span>":""+(roomPref-lecture.getBestRoomPreference()))
+					(lecture.getBestTimePreference()<placement.getTimeLocation().getNormalizedPreference()?"<span class='bg-B'>"+(int)(placement.getTimeLocation().getNormalizedPreference()-lecture.getBestTimePreference())+"</span>":""+(int)(placement.getTimeLocation().getNormalizedPreference()-lecture.getBestTimePreference())) + ", " +
+					(studConf>0?"<span class='bg-G'>"+studConf+"</span>":""+studConf) + ", " +
+					(lecture.getBestRoomPreference()<roomPref?"<span class='bg-R'>"+(roomPref-lecture.getBestRoomPreference())+"</span>":""+(roomPref-lecture.getBestRoomPreference()))
 				);
 			}
 			

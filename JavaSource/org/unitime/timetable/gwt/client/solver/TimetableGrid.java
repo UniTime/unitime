@@ -685,7 +685,7 @@ public class TimetableGrid extends Composite {
 	        if (showDate && cell.hasDate()) notes += (notes.isEmpty() ? "" : "<br>") + cell.getDate();
 	        if (showRoom && cell.getNrRooms() > 0) notes += (notes.isEmpty() ? "" : "<br>") + cell.getRoom("<br>");
 	        if (showInstructor && cell.getNrInstructors() > 0) notes += (notes.isEmpty() ? "" : "<br>") + cell.getInstructor("<br>");
-	        if (showPreference && cell.hasPreference()) notes += (notes.isEmpty() ? "" : "<br>") + "<span style='color:rgb(200,200,200)'>" + cell.getPreference() + "</span>";
+	        if (showPreference && cell.hasPreference()) notes += (notes.isEmpty() ? "" : "<br>") + "<span style='color:#222222'>" + cell.getPreference() + "</span>";
 	        footer.setHTML(notes);
 	        footer.getElement().getStyle().setWhiteSpace(WhiteSpace.NOWRAP);
 	        add(footer);
