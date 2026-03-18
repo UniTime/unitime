@@ -21,6 +21,8 @@ package org.unitime.timetable.server.solver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.PreferenceInterface;
@@ -48,17 +50,22 @@ public class SuggestionPropertiesBackend implements GwtRpcImplementation<Suggest
 	public SuggestionProperties execute(SuggestionPropertiesRequest request, SessionContext context) {
 		SuggestionProperties response = new SuggestionProperties();
 		
+		boolean usePrefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
+		
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			response.addPreference(new PreferenceInterface(
 					pref.getUniqueId(),
 					PreferenceLevel.prolog2color(pref.getPrefProlog()),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
 					pref.getPrefProlog(),
 					pref.getPrefName(),
 					pref.getAbbreviation(),
-					Constants.preference2preferenceLevel(pref.getPrefProlog())));
+					Constants.preference2preferenceLevel(pref.getPrefProlog()),
+					usePrefStyles ? "pref-" + PreferenceLevel.prolog2char(pref.getPrefProlog()) : null));
 		}
 		response.setSolver(courseTimetablingSolverService.getSolver() != null);
 		response.setFirstDay(ApplicationProperty.TimePatternFirstDayOfWeek.intValue());
+		//response.setUsePrefStyle(usePrefStyles);
 		
 		if (request.getHistoryId() != null) {
 			try {

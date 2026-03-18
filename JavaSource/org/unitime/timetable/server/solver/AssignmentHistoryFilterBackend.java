@@ -51,7 +51,9 @@ public class AssignmentHistoryFilterBackend implements GwtRpcImplementation<Assi
 		response.addParameter(simplifiedMode);
 		
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(true))
-			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), false));
+			response.addPreference(new PreferenceInterface(pref.getUniqueId(),
+					PreferenceLevel.prolog2color(pref.getPrefProlog()), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
+					pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), false));
 		
 		return response;
 	}

@@ -554,7 +554,7 @@ public class ClassAssigmmentPageBackend implements GwtRpcImplementation<ClassAss
                 if (assignment.getClassId().equals(proposed.getSelectedClassId()))
                 	r.add(MSG.assignmentRoomSelectBelow()).addStyle("font-style: italic;");
                 else
-                	r.add(MSG.assignmentRoomNotSelected()).setColor("red").addStyle("font-style: italic;");
+                	r.add(MSG.assignmentRoomNotSelected()).setColor("#ee0000").addStyle("font-style: italic;");
 			}
 			if (assignment.getNumberOfRooms() == 0)
 				r.add(MSG.notApplicable()).addStyle("font-style: italic;");

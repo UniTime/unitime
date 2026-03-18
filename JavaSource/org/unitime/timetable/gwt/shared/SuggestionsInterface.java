@@ -811,15 +811,21 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 	public static class PreferenceInterface extends RoomInterface.PreferenceInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private int iPreference;
+		private String iStyle;
 		
 		public PreferenceInterface() {}
-		public PreferenceInterface(Long id, String color, String code, String name, String abbv, int preference) {
-			super(id, color, code, name, abbv, true);
+		public PreferenceInterface(Long id, String color, String bgColor, String code, String name, String abbv, int preference, String style) {
+			super(id, color, bgColor, code, name, abbv, true);
 			iPreference = preference;
+			iStyle = style;
 		}
 		
 		public int getPreference() { return iPreference; }
 		public void setPreference(int preference) { iPreference = preference; }
+		
+		public boolean hasStyle() { return iStyle != null && !iStyle.isEmpty(); }
+		public String getStyle() { return iStyle; }
+		public void setStyle(String style) { iStyle = style; }
 	}
 	
 	public static class SuggestionProperties implements GwtRpcResponse, Serializable {

@@ -194,11 +194,11 @@ public class SolverLogPage extends SimpleForm {
 			case STAGE:
 				return "<br>" + sLogDateFormat.format(m.getDate()) + " <span style='font-weight:bold;'>" + m.getMessage() + "</span>" + htmlTraceLog(m);
 			case WARN:
-				return sLogDateFormat.format(m.getDate()) + " <span style='color:orange;font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
+				return sLogDateFormat.format(m.getDate()) + " <span class='unitime-WarningText' style='font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
 			case ERROR:
-				return sLogDateFormat.format(m.getDate()) + " <span style='color:red;font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
+				return sLogDateFormat.format(m.getDate()) + " <span class='unitime-ErrorText' style='font-weight:bold;'>" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ":</span> " + m.getMessage() + htmlTraceLog(m);
 			case FATAL:
-				return sLogDateFormat.format(m.getDate()) + " <span style='color:red;font-weight:bold;'>&gt;&gt;&gt;" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ": " + m.getMessage() + " &lt;&lt;&lt;</span>" + htmlTraceLog(m);
+				return sLogDateFormat.format(m.getDate()) + " <span class='unitime-ErrorText' style='font-weight:bold;'>&gt;&gt;&gt;" + CONSTANTS.progressLogLevel()[m.getLevel().ordinal()].toUpperCase() + ": " + m.getMessage() + " &lt;&lt;&lt;</span>" + htmlTraceLog(m);
 			default:
 				return sLogDateFormat.format(m.getDate()) + " " + m.getMessage() + htmlTraceLog(m);
 			}

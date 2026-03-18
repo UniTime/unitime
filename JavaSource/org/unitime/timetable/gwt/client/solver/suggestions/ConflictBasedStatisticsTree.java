@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.solver.suggestions;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaTree;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
@@ -38,20 +39,19 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 
 /**
  * @author Tomas Muller
  */
-public class ConflictBasedStatisticsTree extends Tree implements TakesValue<List<CBSNode>>, HasMobileScroll {
+public class ConflictBasedStatisticsTree extends AriaTree implements TakesValue<List<CBSNode>>, HasMobileScroll {
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static final GwtMessages MESSAGES =  GWT.create(GwtMessages.class);
 	private List<CBSNode> iValue = null;
 	private SuggestionProperties iProperties;
 	
 	public ConflictBasedStatisticsTree(SuggestionProperties properties) {
-		super(RESOURCES, true);
+		super();
 		iProperties = properties;
 		addStyleName("unitime-ConflictBasedStatistics");
 	}
@@ -90,8 +90,9 @@ public class ConflictBasedStatisticsTree extends Tree implements TakesValue<List
 			Label name = new Label(); name.setText(node.getName());
 			if (node.getPref() != null && iProperties != null) {
 				PreferenceInterface pref = iProperties.getPreference(node.getPref());
-				if (pref != null)
+				if (pref != null) {
 					name.getElement().getStyle().setColor(pref.getColor());
+				}
 			}
 			widget.add(name);
 		}

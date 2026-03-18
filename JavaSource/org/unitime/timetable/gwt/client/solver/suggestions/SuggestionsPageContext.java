@@ -82,29 +82,35 @@ public abstract class SuggestionsPageContext {
 	
 	public abstract void assign(List<SelectedAssignment> assignment, UniTimeHeaderPanel panel);
 	
-	public DateLabel createDateLabel(DateInfo date) {
-		return new DateLabel(date);
+	public DateLabel createDateLabel(DateInfo date, boolean showStyle) {
+		return new DateLabel(date, showStyle);
 	}
 	
 	protected class DateLabel extends P {
-		public DateLabel(DateInfo date) {
+		public DateLabel(DateInfo date, boolean showStyle) {
 			super("date");
 			setText(date.getDatePatternName());
-			if (date.getDatePatternPreference() != 0)
-				getElement().getStyle().setColor(iProperties.getPreference(date.getDatePatternPreference()).getColor());
+			PreferenceInterface pref = iProperties.getPreference(date.getDatePatternPreference());
+			if (pref.hasStyle() && showStyle)
+				addStyleName(pref.getStyle());
+			else if (date.getDatePatternPreference() != 0)
+				getElement().getStyle().setColor(pref.getColor());
 		}
 	}
 	
-	public TimeLabel createTimeLabel(TimeInfo time, Long classId, boolean endTime) {
-		return new TimeLabel(time, classId, endTime);
+	public TimeLabel createTimeLabel(TimeInfo time, Long classId, boolean endTime, boolean showStyle) {
+		return new TimeLabel(time, classId, endTime, showStyle);
 	}
 	
 	protected class TimeLabel extends P {
-		public TimeLabel(TimeInfo time, Long classId, boolean endTime) {
+		public TimeLabel(TimeInfo time, Long classId, boolean endTime, boolean showStyle) {
 			super("time");
 			setText(time.getName(iProperties.getFirstDay(), endTime, CONSTANTS));
-			if (time.getPref() != 0)
-				getElement().getStyle().setColor(iProperties.getPreference(time.getPref()).getColor());
+			PreferenceInterface pref = iProperties.getPreference(time.getPref());
+			if (pref.hasStyle() && showStyle)
+				addStyleName(pref.getStyle());
+			else if (time.getPref() != 0)
+				getElement().getStyle().setColor(pref.getColor());
 			if (time.isStriked())
 				getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 			final String timeHint = classId + "," + time.getDays() + "," + time.getStartSlot();
@@ -123,42 +129,45 @@ public abstract class SuggestionsPageContext {
 		}
 	}
 	
-	public RoomsLabel createRoomsLabel(List<RoomInfo> rooms) {
-		return new RoomsLabel(rooms);
+	public RoomsLabel createRoomsLabel(List<RoomInfo> rooms, boolean showStyle) {
+		return new RoomsLabel(rooms, showStyle);
 	}
 	
 	protected class RoomsLabel extends P {
-		public RoomsLabel(List<RoomInfo> rooms) {
+		public RoomsLabel(List<RoomInfo> rooms, boolean showStyle) {
 			super("rooms");
 			for (Iterator<RoomInfo> i = rooms.iterator(); i.hasNext(); ) {
-				add(withSeparator(new RoomLabel(i.next()), i.hasNext()));
+				add(withSeparator(new RoomLabel(i.next(), showStyle), i.hasNext()));
 			}
 		}
 	}
 	
-	public AssignmentLabel createAssignmentLabel(TimeInfo time, List<RoomInfo> rooms, Long classId, boolean showDate) {
-		return new AssignmentLabel(time, rooms, classId, showDate);
+	public AssignmentLabel createAssignmentLabel(TimeInfo time, List<RoomInfo> rooms, Long classId, boolean showDate, boolean showStyle) {
+		return new AssignmentLabel(time, rooms, classId, showDate, showStyle);
 	}
 	
 	protected class AssignmentLabel extends P {
-		public AssignmentLabel(TimeInfo time, List<RoomInfo> rooms, Long classId, boolean showDate) {
+		public AssignmentLabel(TimeInfo time, List<RoomInfo> rooms, Long classId, boolean showDate, boolean showStyle) {
 			super("assignment");
 			if (showDate && time.hasDatePattern())
-				add(new DateLabel(time.getDatePattern()));
-			add(new TimeLabel(time, classId, true));
+				add(new DateLabel(time.getDatePattern(), showStyle));
+			add(new TimeLabel(time, classId, true, showStyle));
 			if (rooms != null)
 				for (Iterator<RoomInfo> i = rooms.iterator(); i.hasNext(); ) {
-					add(withSeparator(new RoomLabel(i.next()), i.hasNext()));
+					add(withSeparator(new RoomLabel(i.next(), showStyle), i.hasNext()));
 				}
 		}
 	}
 	
 	protected class RoomLabel extends P {
-		public RoomLabel(final RoomInfo room) {
+		public RoomLabel(final RoomInfo room, boolean showStyle) {
 			super("room");
 			setText(room.getName());
-			if (room.getPref() != 0)
-				getElement().getStyle().setColor(iProperties.getPreference(room.getPref()).getColor());
+			PreferenceInterface pref = iProperties.getPreference(room.getPref());
+			if (pref.hasStyle() && showStyle)
+				addStyleName(pref.getStyle());
+			else if (room.getPref() != 0)
+				getElement().getStyle().setColor(pref.getColor());
 			if (room.isStriked())
 				getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 			if (room.getId() != null) {
@@ -249,10 +258,10 @@ public abstract class SuggestionsPageContext {
 	        	conflict.getOther().getClazz().setPref("R");
 	        clazz.add(new ClassLabel(conflict.getOther().getClazz()));
 			if (conflict.getOther().getTime() != null)
-				clazz.add(new TimeLabel(conflict.getOther().getTime(), conflict.getOther().getClazz().getClassId(), true));
+				clazz.add(new TimeLabel(conflict.getOther().getTime(), conflict.getOther().getClazz().getClassId(), true, false));
 			if (conflict.getOther().getRoom() != null)
 				for (Iterator<RoomInfo> i = conflict.getOther().getRoom().iterator(); i.hasNext(); ) {
-					clazz.add(withSeparator(new RoomLabel(i.next()), i.hasNext()));
+					clazz.add(withSeparator(new RoomLabel(i.next(), false), i.hasNext()));
 				}
 			setWidget(0, col++, clazz);
 			getFlexCellFormatter().setStyleName(0, col - 1, "class-assignment");
@@ -260,10 +269,10 @@ public abstract class SuggestionsPageContext {
 				P another = new P();
 				another.add(new ClassLabel(conflict.getAnother().getClazz()));
 				if (conflict.getAnother().getTime() != null)
-					another.add(new TimeLabel(conflict.getAnother().getTime(), conflict.getAnother().getClazz().getClassId(), true));
+					another.add(new TimeLabel(conflict.getAnother().getTime(), conflict.getAnother().getClazz().getClassId(), true, false));
 				if (conflict.getAnother().getRoom() != null)
 					for (Iterator<RoomInfo> i = conflict.getAnother().getRoom().iterator(); i.hasNext(); ) {
-						another.add(withSeparator(new RoomLabel(i.next()), i.hasNext()));
+						another.add(withSeparator(new RoomLabel(i.next(), false), i.hasNext()));
 					}
 				setWidget(1, 0, another);
 				getFlexCellFormatter().setStyleName(1, 0, "class-assignment");
@@ -311,32 +320,35 @@ public abstract class SuggestionsPageContext {
 		}
 	}
 	
-	public ViolatedConstraints createViolatedConstraints(List<DistributionInfo> conflicts, List<BtbInstructorInfo> btbConflicts) {
-		return new ViolatedConstraints(conflicts, btbConflicts);
+	public ViolatedConstraints createViolatedConstraints(List<DistributionInfo> conflicts, List<BtbInstructorInfo> btbConflicts, boolean showStyle) {
+		return new ViolatedConstraints(conflicts, btbConflicts, showStyle);
 	}
 	
 	protected class ViolatedConstraints extends P {
-		public ViolatedConstraints(List<DistributionInfo> conflicts, List<BtbInstructorInfo> btbConflicts) {
+		public ViolatedConstraints(List<DistributionInfo> conflicts, List<BtbInstructorInfo> btbConflicts, boolean showStyle) {
 			super("constraints");
 			if (conflicts != null)
 				for (DistributionInfo conflict: conflicts) {
 					if (!conflict.getInfo().isSatisfied())
-						add(new ViolatedConstraint(conflict));
+						add(new ViolatedConstraint(conflict, showStyle));
 				}
 			if (btbConflicts != null)
 				for (BtbInstructorInfo conflict: btbConflicts) 
-					add(new ViolatedConstraint(conflict));
+					add(new ViolatedConstraint(conflict, showStyle));
 		}
 	}
 	
 	protected class ViolatedConstraint extends P {
-		public ViolatedConstraint(DistributionInfo conflict) {
+		public ViolatedConstraint(DistributionInfo conflict, boolean showStyle) {
 			super("constraint");
 			P h = new P("header");
 			P pref = new P("preference");
 			PreferenceInterface preference = iProperties.getPreference(conflict.getInfo().getPreference());
 			pref.setText(preference.getName());
-			pref.getElement().getStyle().setColor(preference.getColor());
+			if (preference.hasStyle() && showStyle)
+				pref.addStyleName(preference.getStyle());
+			else
+				pref.getElement().getStyle().setColor(preference.getColor());
 			h.add(pref);
 			P name = new P("name");
 			name.setText(conflict.getInfo().getName());
@@ -346,22 +358,25 @@ public abstract class SuggestionsPageContext {
 				P p = new P("other");
 				p.add(new ClassLabel(other.getClazz()));
 				if (other.getTime() != null)
-					p.add(new TimeLabel(other.getTime(), other.getClazz().getClassId(), true));
+					p.add(new TimeLabel(other.getTime(), other.getClazz().getClassId(), true, showStyle));
 				if (other.getRoom() != null)
 					for (Iterator<RoomInfo> i = other.getRoom().iterator(); i.hasNext(); ) {
-						p.add(withSeparator(new RoomLabel(i.next()), i.hasNext()));
+						p.add(withSeparator(new RoomLabel(i.next(), showStyle), i.hasNext()));
 					}
 				add(p);
 			}
 		}
 		
-		public ViolatedConstraint(BtbInstructorInfo conflict) {
+		public ViolatedConstraint(BtbInstructorInfo conflict, boolean showStyle) {
 			super("constraint");
 			P h = new P("header");
 			P pref = new P("preference");
 			PreferenceInterface preference = iProperties.getPreference(conflict.getPreference());
 			pref.setText(preference.getName());
-			pref.getElement().getStyle().setColor(preference.getColor());
+			if (preference.hasStyle() && showStyle)
+				pref.addStyleName(preference.getStyle());
+			else
+				pref.getElement().getStyle().setColor(preference.getColor());
 			h.add(pref);
 			P name = new P("name");
 			name.setText(MESSAGES.btbInstructorConflictConstraint());
@@ -371,10 +386,10 @@ public abstract class SuggestionsPageContext {
 			P p = new P("other");
 			p.add(new ClassLabel(other.getClazz()));
 			if (other.getTime() != null)
-				p.add(new TimeLabel(other.getTime(), other.getClazz().getClassId(), true));
+				p.add(new TimeLabel(other.getTime(), other.getClazz().getClassId(), true, showStyle));
 			if (other.getRoom() != null)
 				for (Iterator<RoomInfo> i = other.getRoom().iterator(); i.hasNext(); ) {
-					p.add(withSeparator(new RoomLabel(i.next()), i.hasNext()));
+					p.add(withSeparator(new RoomLabel(i.next(), showStyle), i.hasNext()));
 				}
 			add(p);
 		}
@@ -408,8 +423,11 @@ public abstract class SuggestionsPageContext {
 				super("date", "item");
 				iDate = date;
 				setText(date.getDatePatternName());
-				if (date.getDatePatternPreference() != 0)
-					getElement().getStyle().setColor(iProperties.getPreference(date.getDatePatternPreference()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(date.getDatePatternPreference());
+				if (pref.hasStyle())
+					addStyleName(pref.getStyle());
+				else if (date.getDatePatternPreference() != 0)
+					getElement().getStyle().setColor(pref.getColor());
 				addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent e) {
@@ -512,8 +530,11 @@ public abstract class SuggestionsPageContext {
 				super("time", "item");
 				iTime = time;
 				setText(time.getName(iProperties.getFirstDay(), false, CONSTANTS));
-				if (time.getPref() != 0)
-					getElement().getStyle().setColor(iProperties.getPreference(time.getPref()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(time.getPref());
+				if (pref.hasStyle())
+					addStyleName(pref.getStyle());
+				else if (time.getPref() != 0)
+					getElement().getStyle().setColor(pref.getColor());
 				if (time.isStriked())
 					getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 				final String timeHint = classId + "," + time.getDays() + "," + time.getStartSlot();
@@ -628,8 +649,11 @@ public abstract class SuggestionsPageContext {
 				super("room", "item");
 				iRoom = room;
 				setText(room.getName());
-				if (room.getPref() != 0)
-					getElement().getStyle().setColor(iProperties.getPreference(room.getPref()).getColor());
+				PreferenceInterface pref = iProperties.getPreference(room.getPref());
+				if (pref.hasStyle())
+					addStyleName(pref.getStyle());
+				else if (room.getPref() != 0)
+					getElement().getStyle().setColor(pref.getColor());
 				if (room.isStriked())
 					getElement().getStyle().setTextDecoration(TextDecoration.LINE_THROUGH);
 				addMouseOverHandler(new MouseOverHandler() {
@@ -735,31 +759,31 @@ public abstract class SuggestionsPageContext {
 			return new Composite(item);
 	}
 	
-	public static String dispNumber(int number) {
+	public String dispNumber(int number) {
 		return dispNumber("",number);
 	}
 	
-	public static String dispNumber(String prefix, int number) {
-		if (number>0) return "<font color='red'>"+prefix+"+"+number+"</font>";
-	    if (number<0) return "<font color='green'>"+prefix+number+"</font>";
+	public String dispNumber(String prefix, int number) {
+		if (number>0) return "<span style='color:#bd1c14;'>"+prefix+"+"+number+"</span>";
+		if (number<0) return "<span style='color:#195820;'>"+prefix+number+"</span>";
 	    return prefix+"0";
 	}
 	
-	public static String dispNumber(int n1, int n2) {
+	public String dispNumber(int n1, int n2) {
 		return dispNumber(n1-n2)+" ("+n2+(n1==n2?"":" &rarr; "+n1)+")";
 	}
 	
-	public static String dispNumber(double n1, double n2) {
+	public String dispNumber(double n1, double n2) {
 		return dispNumber(n1-n2)+" ("+sDF.format(n2)+(n1==n2?"":" &rarr; "+sDF.format(n1))+")";
 	}
 	
-	public static String dispNumber(double number) {
+	public String dispNumber(double number) {
 		return dispNumber("",number);
 	}
 	
-	public static String dispNumber(String prefix, double number) {
-		if (number>0) return "<font color='red'>"+prefix+"+"+sDF.format(number)+"</font>";
-	    if (number<0) return "<font color='green'>"+prefix+sDF.format(number)+"</font>";
+	public String dispNumber(String prefix, double number) {
+		if (number>0) return "<span style='color:#bd1c14;'>"+prefix+"+"+sDF.format(number)+"</span>";
+		if (number<0) return "<span style='color:#195820;'>"+prefix+sDF.format(number)+"</span>";
 	    return prefix+"0";
 	}
 }

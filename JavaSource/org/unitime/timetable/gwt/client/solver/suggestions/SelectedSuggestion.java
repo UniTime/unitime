@@ -104,12 +104,12 @@ public class SelectedSuggestion extends SimpleForm implements TakesValue<Suggest
 			});
 		}
 		if (suggestion.getUnassignedVariables() != suggestion.getBaseUnassignedVariables())
-			addRow(MESSAGES.propNotAssignedClasses(), new HTML(SuggestionsPageContext.dispNumber(suggestion.getUnassignedVariables(),suggestion.getBaseUnassignedVariables()), false));
+			addRow(MESSAGES.propNotAssignedClasses(), new HTML(iContext.dispNumber(suggestion.getUnassignedVariables(),suggestion.getBaseUnassignedVariables()), false));
 		for (String criterion: new TreeSet<String>(suggestion.getCriteria().keySet())) {
 			double value = suggestion.getCriterion(criterion);
 			double base = suggestion.getBaseCriterion(criterion);
 			if (value != base)
-				addRow(criterion + ":",new HTML(SuggestionsPageContext.dispNumber(value, base), false));
+				addRow(criterion + ":",new HTML(iContext.dispNumber(value, base), false));
 		}
 		/*
 		if (suggestion.getViolatedStudentConflicts() != suggestion.getBaseViolatedStudentConflicts())
@@ -137,11 +137,11 @@ public class SelectedSuggestion extends SimpleForm implements TakesValue<Suggest
 		if (suggestion.getPerturbationPenalty() != suggestion.getBasePerturbationPenalty())
 			addRow(MESSAGES.propPerturbationPenalty(), new HTML(SuggestionsPageContext.dispNumber(suggestion.getPerturbationPenalty(),suggestion.getBasePerturbationPenalty()), false));
 		*/
-		addRow(MESSAGES.propOverallSolutionValue(), new HTML(SuggestionsPageContext.dispNumber(suggestion.getValue(),suggestion.getBaseValue()), false));
+		addRow(MESSAGES.propOverallSolutionValue(), new HTML(iContext.dispNumber(suggestion.getValue(),suggestion.getBaseValue()), false));
 		if (suggestion.hasStudentConflicts())
 			addRow(MESSAGES.propStudentConflicts(), iContext.createStudentConflicts(suggestion.getStudentConflicts()));
 		if (suggestion.hasViolatedDistributionConflicts() || suggestion.hasBtbInstructorConflicts())
-			addRow(MESSAGES.propViolatedConstraints(), iContext.createViolatedConstraints(suggestion.getDistributionConflicts(), suggestion.getBtbInstructorConflicts()));
+			addRow(MESSAGES.propViolatedConstraints(), iContext.createViolatedConstraints(suggestion.getDistributionConflicts(), suggestion.getBtbInstructorConflicts(), false));
 		iFooter.setEnabled("assign", iSuggestion.isCanAssign());
 		iFooter.clearMessage();
 		addBottomRow(iFooter);

@@ -233,18 +233,18 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 	protected Widget getCell(final ClassAssignmentDetails conflict, final ConflictColum column, final int idx) {
 		switch (column) {
 		case DATE:
-			return iContext.createDateLabel(conflict.getTime().getDatePattern());
+			return iContext.createDateLabel(conflict.getTime().getDatePattern(), true);
 		case TIME:
-			return iContext.createTimeLabel(conflict.getTime(), conflict.getClazz().getClassId(), true);
+			return iContext.createTimeLabel(conflict.getTime(), conflict.getClazz().getClassId(), true, true);
 		case STUDENT_CONFLICTS:
 			if (conflict.hasStudentConflicts()) {
-				return new ConflictCell(SuggestionsPageContext.dispNumber(conflict.countStudentConflicts()), iContext.createStudentConflicts(conflict.getStudentConflicts()), SolverCookie.getInstance().isShowAllStudentConflicts());
+				return new ConflictCell(iContext.dispNumber(conflict.countStudentConflicts()), iContext.createStudentConflicts(conflict.getStudentConflicts()), SolverCookie.getInstance().isShowAllStudentConflicts());
 			} else {
 				return null;
 			}
 		case DISTRIBUTION_CONFLICTS:
 			if (conflict.hasDistributionConflicts()) {
-				return new ConflictCell(SuggestionsPageContext.dispNumber(conflict.countDistributionConflicts()), iContext.createViolatedConstraints(conflict.getDistributionConflicts(), null), SolverCookie.getInstance().isShowAllDistributionConflicts());
+				return new ConflictCell(iContext.dispNumber(conflict.countDistributionConflicts()), iContext.createViolatedConstraints(conflict.getDistributionConflicts(), null, false), SolverCookie.getInstance().isShowAllDistributionConflicts());
 			} else {
 				return null;
 			}

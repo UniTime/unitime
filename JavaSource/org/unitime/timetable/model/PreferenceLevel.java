@@ -144,7 +144,9 @@ public class PreferenceLevel extends BasePreferenceLevel {
     		return "rgb(" + toR(color) + "," + toG(color) + "," + toB(color) + ")";
     	}
     	public static String toHex(int color) {
-    		return "#" + Integer.toString(color, 16);
+    		String hex = Integer.toString(color, 16);
+    		while (hex.length() < 6) hex = "0" + hex;
+    		return "#" + hex;
     	}
     	
     	public static PrefColor fromProlog(String prolog) {
@@ -322,6 +324,10 @@ public class PreferenceLevel extends BasePreferenceLevel {
 
 	public static String int2color(int intPref) {
 		return prolog2color(int2prolog(intPref));
+	}
+	
+	public static char int2char(int intPref) {
+		return prolog2char(int2prolog(intPref));
 	}
 	
 	public static int prolog2int(String prologPref) {

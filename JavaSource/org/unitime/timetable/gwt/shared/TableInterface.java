@@ -315,8 +315,8 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		
 		public TableCellRooms() { super(); }
 		
-		public void add(String name, String color, Long id, String preference) {
-			iRooms.add(new String[] {name, color, id.toString(), preference});
+		public void add(String name, String color, Long id, String preference, String style) {
+			iRooms.add(new String[] {name, color, id.toString(), preference, style});
 		}
 		
 		public int getNrRooms() { return iRooms.size(); }
@@ -324,6 +324,10 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public String getColor(int index) { return iRooms.get(index)[1]; }
 		public String getId(int index) { return iRooms.get(index)[2]; }
 		public String getPreference(int index) { return iRooms.get(index)[3]; }
+		public String getStyleName(int index) { return iRooms.get(index)[4]; }
+		public boolean hasStyleName(int index) {
+			return iRooms.get(index).length > 4 && iRooms.get(index)[4] != null && !iRooms.get(index)[4].isEmpty();
+		}
 		
 		public String getValue(String separator) {
 			String ret = "";

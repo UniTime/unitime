@@ -147,6 +147,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 						}
 					}
 				}
+				iPanel.getWidget().iText.setVisible(editable);
 			}
 		});
 		return this;

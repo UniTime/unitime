@@ -147,7 +147,7 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 			iHeader = header;
 			if (cell.hasStyleName()) addStyleName(cell.getStyleName());
 			if (cell.isUnderlined()) addStyleName("underlined");
-			if (cell.hasColor()) getElement().getStyle().setColor(cell.getColor());
+			if (cell.hasColor() && !cell.hasStyleName()) getElement().getStyle().setColor(cell.getColor());
 			if (cell instanceof TableInterface.TableCellTime) {
 				final TableInterface.TableCellTime time = (TableInterface.TableCellTime)cell;
 				if (time.hasId()) {
@@ -171,7 +171,11 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 				for (int index = 0; index < rooms.getNrRooms(); index++) {
 					final P room = new P("item");
 					room.setText(rooms.getName(index) + (index + 1 < rooms.getNrRooms() ? "," : ""));
-					room.getElement().getStyle().setColor(rooms.getColor(index));
+					if (rooms.hasStyleName(index)) {
+						room.addStyleName(rooms.getStyleName(index));
+					} else {
+						room.getElement().getStyle().setColor(rooms.getColor(index));
+					}
 					final String id = rooms.getId(index);
 					final String preference = rooms.getPreference(index);
 					if (id != null) {
@@ -219,7 +223,7 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 					final P chunk = new P("chunk");
 					TableCellInterface<?> m = multi.get(index);
 					if (m.hasStyleName()) chunk.addStyleName(m.getStyleName());
-					if (m.hasColor()) chunk.getElement().getStyle().setColor(m.getColor());
+					else if (m.hasColor()) chunk.getElement().getStyle().setColor(m.getColor());
 					chunk.setText(m.getFormattedValue());
 					add(chunk);
 				}

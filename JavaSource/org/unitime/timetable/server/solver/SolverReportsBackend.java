@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -101,6 +103,8 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 				nrWeeks = dp.getEffectiveNumberOfWeeks();
 		}
 		
+		boolean usePrefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
+		
 		SolverReportsResponse response = new SolverReportsResponse();
 		
 		for (RoomType type : RoomType.findAll()) {
@@ -122,15 +126,15 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         
 		ViolatedDistrPreferencesReport violatedDistrPreferencesReport = solver.getViolatedDistrPreferencesReport();
 		if (violatedDistrPreferencesReport != null && !violatedDistrPreferencesReport.getGroups().isEmpty())
-			response.addTable(getViolatedDistrPreferencesReportTable(violatedDistrPreferencesReport));
+			response.addTable(getViolatedDistrPreferencesReportTable(violatedDistrPreferencesReport, false));
 			
 		DiscouragedInstructorBtbReport discouragedInstructorBtbReportReport = solver.getDiscouragedInstructorBtbReport();
 		if (discouragedInstructorBtbReportReport!=null && !discouragedInstructorBtbReportReport.getGroups().isEmpty())
-			response.addTable(getDiscouragedInstructorBtbReportReportTable(discouragedInstructorBtbReportReport));
+			response.addTable(getDiscouragedInstructorBtbReportReportTable(discouragedInstructorBtbReportReport, false));
         
 		StudentConflictsReport studentConflictsReport = solver.getStudentConflictsReport();
 		if (studentConflictsReport!=null && !studentConflictsReport.getGroups().isEmpty())
-			response.addTable(getStudentConflictsReportTable(studentConflictsReport));
+			response.addTable(getStudentConflictsReportTable(studentConflictsReport, false));
         
 		DeptBalancingReport deptBalancingReport = solver.getDeptBalancingReport();
 		if (deptBalancingReport != null && !deptBalancingReport.getGroups().isEmpty())
@@ -142,10 +146,12 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 
 		PerturbationReport perturbationReport = solver.getPerturbationReport();
 		if (perturbationReport!=null && !perturbationReport.getGroups().isEmpty())
-			response.addTable(getPerturbationReportTable(perturbationReport));
+			response.addTable(getPerturbationReportTable(perturbationReport, usePrefStyles));
 		
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(true))
-			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), false));
+			response.addPreference(new PreferenceInterface(pref.getUniqueId(),
+					PreferenceLevel.prolog2color(pref.getPrefProlog()), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
+					pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), false));
 		
 		return response;
 	}
@@ -264,11 +270,11 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				cell.add(x);
         			}
         			TableCellInterface h = new TableCellInterface(limit == 0 ? "" : usage + " / " + limit);
-        			if (usage > limit) h.setColor("red");
+        			if (usage > limit) h.setColor("#bd1c14");
         			cell.getChunks().add(0, h);
         			line[i + 2] = cell;
         		}
-        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("red");
+        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#bd1c14");
         		table.addRow(new TableRowInterface(line));
         	}
         } catch (Exception e) {
@@ -285,7 +291,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         return table;
 	}
 	
-	public static TableInterface getViolatedDistrPreferencesReportTable(ViolatedDistrPreferencesReport report) {
+	public static TableInterface getViolatedDistrPreferencesReportTable(ViolatedDistrPreferencesReport report, boolean usePrefStyles) {
 		TableInterface table = new TableInterface("dist-pref", MESSAGES.reportViolatedDistributionPreferences());
 		table.setHeader(
 				new TableHeaderIterface(MESSAGES.colDistrubutionType()),
@@ -316,14 +322,19 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
             	    				ca.getRoom()[j].getName(),
             	    				ca.getRoom()[j].getColor(),
             	    				ca.getRoom()[j].getId(),
-            	    				PreferenceLevel.int2string(ca.getRoom()[j].getPref()));
+            	    				PreferenceLevel.int2string(ca.getRoom()[j].getPref()),
+            	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(ca.getRoom()[j].getPref()) : null);
             	    	}
             	    }
         			
         			classes.add(new TableInterface.TableCellClickableClassName(ca.getClazz().getClassId(), ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())));
-        			dates.add(new TableCellInterface(time.getDatePatternName()).setColor(PreferenceLevel.int2color(time.getDatePatternPreference())));
+        			dates.add(new TableCellInterface(time.getDatePatternName())
+        					.setColor(PreferenceLevel.int2color(time.getDatePatternPreference()))
+        					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getDatePatternPreference()) : null));
         			times.add(new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime())
-        					.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot()).setColor(PreferenceLevel.int2color(time.getPref())));
+        					.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot())
+        					.setColor(PreferenceLevel.int2color(time.getPref()))
+        					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null));
         			rooms.add(room);
         		}
         		
@@ -350,7 +361,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         return table;
 	}
 	
-	public static TableInterface getDiscouragedInstructorBtbReportReportTable(DiscouragedInstructorBtbReport report) {
+	public static TableInterface getDiscouragedInstructorBtbReportReportTable(DiscouragedInstructorBtbReport report, boolean usePrefStyles) {
 		TableInterface table = new TableInterface("instructor-btb", MESSAGES.reportInstructorBackToBackPreferences());
 		table.setHeader(
 				new TableHeaderIterface(MESSAGES.colInstructor()),
@@ -372,9 +383,13 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         		TableCellMultiLine rooms = new TableCellMultiLine();
         		
     			classes.add(new TableInterface.TableCellClickableClassName(g.getFirst().getClazz().getClassId(), g.getFirst().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getFirst().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getFirst().getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(g.getFirst().getTime().getDatePatternPreference())));
+    			dates.add(new TableCellInterface(g.getFirst().getTime().getDatePatternName())
+    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getDatePatternPreference()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getDatePatternPreference()) : null));
     			times.add(new TableInterface.TableCellTime(g.getFirst().getTime().getDaysName() + " " + g.getFirst().getTime().getStartTime() + " - " + g.getFirst().getTime().getEndTime())
-    					.setId(g.getFirst().getClazz().getClassId() + "," + g.getFirst().getTime().getDays() + "," + g.getFirst().getTime().getStartSlot()).setColor(PreferenceLevel.int2color(g.getFirst().getTime().getPref())));
+    					.setId(g.getFirst().getClazz().getClassId() + "," + g.getFirst().getTime().getDays() + "," + g.getFirst().getTime().getStartSlot())
+    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getPref()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getPref()) : null));
     			TableInterface.TableCellRooms froom = new TableInterface.TableCellRooms();
     			if (g.getFirst().getRoom() != null) {
         	    	for (int j = 0; j<g.getFirst().getRoom().length; j++) {
@@ -382,15 +397,20 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         	    				g.getFirst().getRoom()[j].getName(),
         	    				g.getFirst().getRoom()[j].getColor(),
         	    				g.getFirst().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getFirst().getRoom()[j].getPref()));
+        	    				PreferenceLevel.int2string(g.getFirst().getRoom()[j].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getRoom()[j].getPref()) : null);
         	    	}
         	    }
     			rooms.add(froom);
     			
     			classes.add(new TableInterface.TableCellClickableClassName(g.getSecond().getClazz().getClassId(), g.getSecond().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getSecond().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getSecond().getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(g.getSecond().getTime().getDatePatternPreference())));
+    			dates.add(new TableCellInterface(g.getSecond().getTime().getDatePatternName())
+    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getDatePatternPreference()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getDatePatternPreference()) : null));
     			times.add(new TableInterface.TableCellTime(g.getSecond().getTime().getDaysName() + " " + g.getSecond().getTime().getStartTime() + " - " + g.getSecond().getTime().getEndTime())
-    					.setId(g.getSecond().getClazz().getClassId() + "," + g.getSecond().getTime().getDays() + "," + g.getSecond().getTime().getStartSlot()).setColor(PreferenceLevel.int2color(g.getSecond().getTime().getPref())));
+    					.setId(g.getSecond().getClazz().getClassId() + "," + g.getSecond().getTime().getDays() + "," + g.getSecond().getTime().getStartSlot())
+    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getPref()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getPref()) : null));
     			TableInterface.TableCellRooms sroom = new TableInterface.TableCellRooms();
     			if (g.getSecond().getRoom() != null) {
         	    	for (int j = 0; j<g.getSecond().getRoom().length; j++) {
@@ -398,7 +418,8 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         	    				g.getSecond().getRoom()[j].getName(),
         	    				g.getSecond().getRoom()[j].getColor(),
         	    				g.getSecond().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getSecond().getRoom()[j].getPref()));
+        	    				PreferenceLevel.int2string(g.getSecond().getRoom()[j].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getRoom()[j].getPref()) : null);
         	    	}
         	    }
     			rooms.add(sroom);
@@ -426,7 +447,7 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         return table;
 	}
 
-	public static TableInterface getStudentConflictsReportTable(StudentConflictsReport report) {
+	public static TableInterface getStudentConflictsReportTable(StudentConflictsReport report, boolean usePrefStyles) {
 		boolean hasHard = false;
 		boolean hasDistance = false;
 		boolean hasFixed = false;
@@ -472,9 +493,13 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         		TableCellMultiLine rooms = new TableCellMultiLine();
         		
     			classes.add(new TableInterface.TableCellClickableClassName(g.getFirst().getClazz().getClassId(), g.getFirst().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getFirst().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getFirst().getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(g.getFirst().getTime().getDatePatternPreference())));
+    			dates.add(new TableCellInterface(g.getFirst().getTime().getDatePatternName())
+    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getDatePatternPreference()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getDatePatternPreference()) : null));
     			times.add(new TableInterface.TableCellTime(g.getFirst().getTime().getDaysName() + " " + g.getFirst().getTime().getStartTime() + " - " + g.getFirst().getTime().getEndTime())
-    					.setId(g.getFirst().getClazz().getClassId() + "," + g.getFirst().getTime().getDays() + "," + g.getFirst().getTime().getStartSlot()).setColor(PreferenceLevel.int2color(g.getFirst().getTime().getPref())));
+    					.setId(g.getFirst().getClazz().getClassId() + "," + g.getFirst().getTime().getDays() + "," + g.getFirst().getTime().getStartSlot())
+    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getPref()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getPref()) : null));
     			TableInterface.TableCellRooms froom = new TableInterface.TableCellRooms();
     			if (g.getFirst().getRoom() != null) {
         	    	for (int j = 0; j<g.getFirst().getRoom().length; j++) {
@@ -482,15 +507,20 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         	    				g.getFirst().getRoom()[j].getName(),
         	    				g.getFirst().getRoom()[j].getColor(),
         	    				g.getFirst().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getFirst().getRoom()[j].getPref()));
+        	    				PreferenceLevel.int2string(g.getFirst().getRoom()[j].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getRoom()[j].getPref()) : null);
         	    	}
         	    }
     			rooms.add(froom);
     			
     			classes.add(new TableInterface.TableCellClickableClassName(g.getSecond().getClazz().getClassId(), g.getSecond().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getSecond().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getSecond().getTime().getDatePatternName()).setColor(PreferenceLevel.int2color(g.getSecond().getTime().getDatePatternPreference())));
+    			dates.add(new TableCellInterface(g.getSecond().getTime().getDatePatternName())
+    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getDatePatternPreference()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getDatePatternPreference()) : null));
     			times.add(new TableInterface.TableCellTime(g.getSecond().getTime().getDaysName() + " " + g.getSecond().getTime().getStartTime() + " - " + g.getSecond().getTime().getEndTime())
-    					.setId(g.getSecond().getClazz().getClassId() + "," + g.getSecond().getTime().getDays() + "," + g.getSecond().getTime().getStartSlot()).setColor(PreferenceLevel.int2color(g.getSecond().getTime().getPref())));
+    					.setId(g.getSecond().getClazz().getClassId() + "," + g.getSecond().getTime().getDays() + "," + g.getSecond().getTime().getStartSlot())
+    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getPref()))
+    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getPref()) : null));
     			TableInterface.TableCellRooms sroom = new TableInterface.TableCellRooms();
     			if (g.getSecond().getRoom() != null) {
         	    	for (int j = 0; j<g.getSecond().getRoom().length; j++) {
@@ -498,7 +528,8 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         	    				g.getSecond().getRoom()[j].getName(),
         	    				g.getSecond().getRoom()[j].getColor(),
         	    				g.getSecond().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getSecond().getRoom()[j].getPref()));
+        	    				PreferenceLevel.int2string(g.getSecond().getRoom()[j].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getRoom()[j].getPref()) : null);
         	    	}
         	    }
     			rooms.add(sroom);
@@ -601,11 +632,11 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				cell.add(x);
         			}
         			TableCellInterface h = new TableCellInterface(limit == 0 ? "" : usage + " / " + limit);
-        			if (usage > limit) h.setColor("red");
+        			if (usage > limit) h.setColor("#bd1c14");
         			cell.getChunks().add(0, h);
         			line[i + 2] = cell;
         		}
-        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("red");
+        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#bd1c14");
         		table.addRow(new TableRowInterface(line));
         	}
         } catch (Exception e) {
@@ -623,14 +654,14 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 	}
 	
 	public static TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
 	public static TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "green" : value > 0 ? "red" : null);
+		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
 	}
 	
-	public static TableInterface getPerturbationReportTable(PerturbationReport report) {
+	public static TableInterface getPerturbationReportTable(PerturbationReport report, boolean usePrefStyles) {
 		TableInterface table = new TableInterface("perturbations", MESSAGES.reportPerturbations());
 		table.setHeader(
 				new TableHeaderIterface(MESSAGES.colClass()).setDescription(MESSAGES.reportPertClass()),
@@ -670,14 +701,22 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         		ClassAssignmentDetails.TimeInfo timeAfter = ca.getAssignedTime();
         		
     	    	TableCellChange date = new TableCellChange(
-    	    			timeBefore == null ? null : new TableCellInterface(timeBefore.getDatePatternName()).setColor(PreferenceLevel.int2color(timeBefore.getDatePatternPreference())),
-    	    			timeAfter == null ? null : new TableCellInterface(timeAfter.getDatePatternName()).setColor(PreferenceLevel.int2color(timeAfter.getDatePatternPreference())));
+    	    			timeBefore == null ? null : new TableCellInterface(timeBefore.getDatePatternName())
+    	    					.setColor(PreferenceLevel.int2color(timeBefore.getDatePatternPreference()))
+    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeBefore.getDatePatternPreference()) : null),
+    	    			timeAfter == null ? null : new TableCellInterface(timeAfter.getDatePatternName())
+    	    					.setColor(PreferenceLevel.int2color(timeAfter.getDatePatternPreference()))
+    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeAfter.getDatePatternPreference()) : null));
     	    	
     	    	TableCellChange time = new TableCellChange(
     	    			timeBefore == null ? null : new TableInterface.TableCellTime(timeBefore.getDaysName() + " " + timeBefore.getStartTime() + " - " + timeBefore.getEndTime())
-    	    	    			.setId(clazz.getClassId() + "," + timeBefore.getDays() + "," + timeBefore.getStartSlot()).setColor(PreferenceLevel.int2color(timeBefore.getPref())),
+    	    	    			.setId(clazz.getClassId() + "," + timeBefore.getDays() + "," + timeBefore.getStartSlot())
+    	    	    			.setColor(PreferenceLevel.int2color(timeBefore.getPref()))
+    	    	    			.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeBefore.getPref()) : null),
     	    	    	timeAfter == null ? null : new TableInterface.TableCellTime(timeAfter.getDaysName() + " " + timeAfter.getStartTime() + " - " + timeAfter.getEndTime())
-    	    	    	    	.setId(clazz.getClassId() + "," + timeAfter.getDays() + "," + timeAfter.getStartSlot()).setColor(PreferenceLevel.int2color(timeAfter.getPref())));
+    	    	    	    	.setId(clazz.getClassId() + "," + timeAfter.getDays() + "," + timeAfter.getStartSlot())
+    	    	    	    	.setColor(PreferenceLevel.int2color(timeAfter.getPref()))
+    	    	    	    	.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeAfter.getPref()) : null));
     	    	
     	    	ClassAssignmentDetails.RoomInfo[] roomBefore = ca.getRoom();
     	    	ClassAssignmentDetails.RoomInfo[] roomAfter = ca.getAssignedRoom();
@@ -689,7 +728,8 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         	    				roomBefore[j].getName(),
         	    				roomBefore[j].getColor(),
         	    				roomBefore[j].getId(),
-        	    				PreferenceLevel.int2string(roomBefore[j].getPref()));
+        	    				PreferenceLevel.int2string(roomBefore[j].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(roomBefore[j].getPref()) : null);
         	    	}
         	    	room.setFirst(beforeRooms);
         	    }
@@ -700,7 +740,8 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
     	    					roomAfter[j].getName(),
     	    					roomAfter[j].getColor(),
     	    					roomAfter[j].getId(),
-        	    				PreferenceLevel.int2string(roomAfter[j].getPref()));
+        	    				PreferenceLevel.int2string(roomAfter[j].getPref()),
+        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(roomAfter[j].getPref()) : null);
         	    	}
         	    	room.setSecond(afterRooms);
         	    	if (roomAfter.length == 0 && roomBefore == null)
