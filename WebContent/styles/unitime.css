@@ -6786,7 +6786,8 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-toggle {
-	float: right;
+	text-align: end;
+	display: block;
 }
 
 .unitime-SpecialRegistrationsPanel .date-and-note {
