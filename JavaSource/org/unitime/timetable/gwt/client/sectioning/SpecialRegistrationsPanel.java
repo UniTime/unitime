@@ -125,10 +125,11 @@ public class SpecialRegistrationsPanel extends P {
 		iPanel.addStyleName("registrations-panel");
 		add(iPanel);
 		
+		P p = new P("registrations-toggle");
 		iShowAllChanges = new CheckBox(MESSAGES.checkOverridesShowAllChanges());
 		iShowAllChanges.setValue(SectioningCookie.getInstance().isShowAllChanges());
-		iShowAllChanges.addStyleName("registrations-toggle");
-		add(iShowAllChanges);
+		p.add(iShowAllChanges);
+		add(p);
 		
 		iPanel.addKeyUpHandler(new KeyUpHandler() {
 			@Override
