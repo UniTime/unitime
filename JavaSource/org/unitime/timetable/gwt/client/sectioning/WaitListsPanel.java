@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.ClickableLabel;
 import org.unitime.timetable.gwt.client.widgets.OpenCloseSectionImage;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
@@ -215,9 +216,9 @@ public class WaitListsPanel extends P {
 							String reqNote = rc.getRequestorNote();
 							if ((reqNote == null || reqNote.isEmpty()) && iSpecReg.isAllowChangeRequestNote() && rc.getStatus() == RequestedCourseStatus.OVERRIDE_PENDING)
 								reqNote = MESSAGES.noRequestNoteClickToChange();
-							DateAndNoteCell date = new DateAndNoteCell(firstLine ? request.getWaitListedTimeStamp() : null, reqNote); 
+							Label date = new DateAndNoteCell(firstLine ? request.getWaitListedTimeStamp() : null, reqNote); 
 							if (iSpecReg.isAllowChangeRequestNote() && rc.getStatus() == RequestedCourseStatus.OVERRIDE_PENDING) {
-								date.getElement().getStyle().setCursor(Cursor.POINTER);
+								date = new DateAndNoteClickableCell(firstLine ? request.getWaitListedTimeStamp() : null, reqNote);
 								date.addClickHandler(new ClickHandler() {
 									@Override
 									public void onClick(ClickEvent event) {
@@ -396,6 +397,13 @@ public class WaitListsPanel extends P {
 	
 	protected class DateAndNoteCell extends Label {
 		public DateAndNoteCell(Date date, String note) {
+			super(date == null ? note == null ? "" : note : sModifiedDateFormat.format(date) + (note == null || note.isEmpty() ? "" : "\n" + note));
+			addStyleName("date-and-note");
+		}
+	}
+	
+	protected class DateAndNoteClickableCell extends ClickableLabel {
+		public DateAndNoteClickableCell(Date date, String note) {
 			super(date == null ? note == null ? "" : note : sModifiedDateFormat.format(date) + (note == null || note.isEmpty() ? "" : "\n" + note));
 			addStyleName("date-and-note");
 		}
