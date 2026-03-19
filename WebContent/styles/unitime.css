@@ -6746,7 +6746,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SpecialRegistrationsPanel .registrations-header .open-close-icon {
 	display: inline-block;
-	margin: 0px 1px 2px 1px;
+	margin: 0px 1px -1px 1px;
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-header .title {
@@ -7364,7 +7364,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-WaitListsPanel .waitlists-header .open-close-icon {
 	display: inline-block;
-	margin: 0px 1px 2px 1px;
+	margin: 0px 1px -1px 1px;
 }
 
 .unitime-WaitListsPanel .waitlists-header .title {
