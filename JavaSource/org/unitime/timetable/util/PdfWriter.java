@@ -25,6 +25,7 @@ import org.unitime.localization.impl.Localization;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.PdfBoolean;
 import com.lowagie.text.pdf.PdfDictionary;
 import com.lowagie.text.pdf.PdfDocument;
 import com.lowagie.text.pdf.PdfIndirectReference;
@@ -43,6 +44,7 @@ public class PdfWriter extends com.lowagie.text.pdf.PdfWriter {
 		document.addDocListener(pdf);
         PdfWriter writer = new PdfWriter(pdf, os);
         pdf.addWriter(writer);
+        writer.addViewerPreference(PdfName.DISPLAYDOCTITLE, new PdfBoolean(true));
         return writer;
 	}
 	
