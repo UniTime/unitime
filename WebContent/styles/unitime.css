@@ -827,6 +827,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-TimeGrid .calendar-panel {
 	position: absolute;
 	border-bottom: 1px solid #DDDDDD;
+	overflow: hidden;
 }
 
 .unitime-TimeGrid .calendar-grid {
