@@ -625,6 +625,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Preferences")
 	String iconPreferences();
 	
+	@DefaultMessage("Indentation")
+	String iconIndentation();
+	
 	@DefaultMessage("Week selection")
 	String inputWeekSelector();
 	
@@ -642,4 +645,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Credit for {0}")
 	String labelCreditForCourse(String course);
+	
+	@DefaultMessage("Opens Course Finder dialog.")
+	String openCourseFinder();
 }

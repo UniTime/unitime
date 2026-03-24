@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface;
 import org.unitime.timetable.gwt.shared.ClassSetupInterface.ClassLine;
@@ -72,6 +73,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class ClassSetupTable extends UniTimeTable<ClassLine> {
 	protected static final CourseMessages MESSAGES = GWT.create(CourseMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private ClassSetupInterface iData;
 	private NumberFormat sRoomRatioFormat = NumberFormat.getFormat("##0.0##");
 	
@@ -890,7 +892,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		
 		private Operation(ClassLine line, ImageResource image, String title, int buttonIndex, ClickHandler click, Check check) {
 			iButton = new ImageButton(image);
-			iButton.setTitle(title);
+			iButton.setTitle(title); iButton.setAltText(title);
 			iButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -898,7 +900,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 						iClickHandler.onClick(event);
 				}
 			});
-			iBlank = new Image(RESOURCES.blank());
+			iBlank = new Image(RESOURCES.blank()); iBlank.setAltText("-");
 			iLine = line; iClickHandler = click; iCheck = check;
 			iButtonIndex = buttonIndex;
 			add(iBlank);
@@ -959,11 +961,12 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 		protected int iLastCheck = -1;
 		
 		private MultiOperation(ClassLine line, ImageResource[] image, String[] title, int buttonIndex, ClickHandler[] click, MultiCheck check) {
-			iBlank = new Image(RESOURCES.blank());
+			iBlank = new Image(RESOURCES.blank()); iBlank.setAltText("-");
 			iButton = new ImageButton[image.length];
 			for (int i = 0; i < image.length; i++) {
 				iButton[i] = new ImageButton(image[i]);
 				iButton[i].setTitle(title[i]);
+				iButton[i].setAltText(title[i]);
 				iButton[i].addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -1072,6 +1075,7 @@ public class ClassSetupTable extends UniTimeTable<ClassLine> {
 			super("class-error");
 			iLine = line;
 			iError = new Image(RESOURCES.attention());
+			iError.setAltText(ARIA.iconError());
 			iError.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {

@@ -26,10 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 
+import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -157,6 +159,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				Roles.getRowheaderRole().set(getCellFormatter().getElement(row, col));
 			} else if (widget instanceof UniTimeTableHeader) {
 				Roles.getColumnheaderRole().set(getCellFormatter().getElement(row, col));
+				getCellFormatter().getElement(row, col).setId(DOM.createUniqueId());
 			} else {
 				Roles.getGridcellRole().set(getCellFormatter().getElement(row, col));
 			}
@@ -170,6 +173,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 						if (isColumnVisible(h)) span ++;
 					getCellFormatter().setVisible(row, col, span > 0);
 					getFlexCellFormatter().setColSpan(row, col, Math.max(1, span));
+				}
+				Element inputElement = ToolBox.firstInputElement(widget.getElement());
+				if (inputElement != null) {
+					String id = getHeaderId(col);
+					if (id != null && !id.isEmpty())
+						Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(id));
 				}
 			}
 			col++;
@@ -189,6 +198,18 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			if (col < 0) return getCellFormatter().isVisible(0, c);
 		}
 		return true;
+	}
+	
+	public String getHeaderId(int col) {
+		if (getRowCount() <= 0) return null;
+		for (int c = 0; c < getCellCount(0); c++) {
+			col -= getFlexCellFormatter().getColSpan(0, c);
+			if (col < 0) {
+				Element e = getCellFormatter().getElement(0, c);
+				return (e == null ? null : e.getId());
+			}
+		}
+		return null;
 	}
 	
 	public void setColumnVisible(int col, boolean visible) {

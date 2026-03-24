@@ -1386,7 +1386,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		if (aClass.getNbrRooms()!=null && aClass.getNbrRooms().intValue()!=1) {
     			if (aClass.getNbrRooms().intValue()==0) {
     				cell = initNormalCell(MSG.notApplicable(), isEditable);
-    				cell.addStyle("color: gray; font-style: italic;");
+    				cell.addStyle("color: #767676; font-style: italic;");
     			} else if (Boolean.TRUE.equals(aClass.isRoomsSplitAttendance())) {
     				cell = initNormalCell(MSG.cellNbrRoomsAndRoomRatioSlitAttendance(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio())), isEditable);
     				cell.setTitle(MSG.titleNbrRoomsAndRoomRatioSlitAttendance(aClass.getNbrRooms(), aClass.getRoomRatio() == null ? "0" : sRoomRatioFormat.format(aClass.getRoomRatio()))); 
@@ -1682,7 +1682,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         	row.setURL("clazz?id=" + aClass.getUniqueId().toString());
 
         if (aClass.isCancelled()) {
-        	row.setStyle("color: gray; font-style: italic;");
+        	row.setStyle("color: graytext; font-style: italic;");
         	row.setTitle(MSG.classNoteCancelled(aClass.getClassLabel(co)));
         }
 
