@@ -65,6 +65,7 @@ public class CourseDetailsWidget extends Composite {
 		iPanel = new FlowPanel();
 		
 		iLoadingImage = new Image(RESOURCES.loading_small());
+		iLoadingImage.setAltText(MESSAGES.waitLoadingData());
 		iLoadingImage.setVisible(false);
 		iPanel.add(iLoadingImage);
 		

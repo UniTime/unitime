@@ -7859,7 +7859,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-MultipleClassSetup .class-cancelled {
 	font-style: italic;
-	color: gray !important;
+	color: #646464 !important;
 }
 
 .unitime-MultipleClassSetup .class-snapshot {
@@ -7938,7 +7938,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-MultipleClassSetup .class-buttons img {
-	margin: 2px;
+	margin: 2px 6px 2px 6px;
+}
+
+.unitime-MultipleClassSetup .subpart-limits .gwt-CheckBox label {
+	float: left;
 }
 
 .unitime-MultipleClassSetup .note {
@@ -7994,7 +7998,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-InstrOfferingConfig .subpart-buttons img {
-	margin: 2px;
+	margin: 2px 6px 2px 6px;
 }
 
 .unitime-InstrOfferingConfig .error-table {

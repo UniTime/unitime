@@ -24,11 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
@@ -52,7 +54,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -62,6 +63,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private UniTimeWidget<UniTimeTextBox> iLimit;
 	private Offering iOffering = null;
 	private Map<Long, Node> iConfigs = new HashMap<Long, Node>();
@@ -193,7 +195,7 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 	}
 
 	public class Node extends P implements HasValue<Boolean>, HasEnabled {
-		private Image iImage;
+		private ImageButton iImage;
 		private IdName iItem;
 		private CheckBox iCheck;
 		private Node iParent = null;
@@ -203,7 +205,8 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 		
 		public Node(Node parent, String name, IdName item) {
 			super("unitime-RestrictionsNode");
-			iImage = new Image();
+			iImage = new ImageButton(RESOURCES.treeLeaf());
+			iImage.setTabIndex(-1);
 			iImage.addStyleName("tree-icon");
 			iItem = item;
 			iParent = parent;
@@ -295,6 +298,7 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 			iChildren.add(node);
 			update();
 			if (iChildren.size() == 1) {
+				iImage.setTabIndex(0);
 				iImage.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
@@ -329,12 +333,16 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 		}
 		
 		protected void update() {
-			if (iChildren.isEmpty())
-				iImage.setResource(RESOURCES.treeLeaf());
-			else if (iOpened)
-				iImage.setResource(RESOURCES.treeOpen());
-			else
-				iImage.setResource(RESOURCES.treeClosed());
+			if (iChildren.isEmpty()) {
+				iImage.setImage(RESOURCES.treeLeaf());
+				iImage.setAltText(ARIA.iconTreeLeaf());
+			} else if (iOpened) {
+				iImage.setImage(RESOURCES.treeOpen());
+				iImage.setAltText(ARIA.iconTreeOpened());
+			} else {
+				iImage.setImage(RESOURCES.treeClosed());
+				iImage.setAltText(ARIA.iconTreeClosed());
+			}
 			if (iRow >= 0)
 				getRowFormatter().setVisible(iRow, isNodeVisible());
 			for (Node child: iChildren)

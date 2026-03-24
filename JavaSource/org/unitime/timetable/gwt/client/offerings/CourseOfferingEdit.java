@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -508,7 +509,7 @@ public class CourseOfferingEdit extends Composite {
 		indentedForm.addRow(MESSAGES.propFractional(), iFractional);
 		iFractional.setEnabled(false);
 		
-		iCreditSectionLine = iPanel.addRow(MESSAGES.propCredit(), indentedForm);
+		iCreditSectionLine = iPanel.addRow(MESSAGES.propCredit(), indentedForm, iCredit.getWidget().getElement());
 		
 		indentedForm.getElement().getParentElement().setAttribute("class", "courseOfferingEditPadding");
 		
@@ -611,23 +612,11 @@ public class CourseOfferingEdit extends Composite {
 		
 		iInstructorsTable = new UniTimeTable();
 		
-		List<Widget> instructorHeader = new ArrayList<Widget>();
-		P nameColumnHeader = new P();
-		nameColumnHeader.setText(MESSAGES.colNamePerson());
-		instructorHeader.add(nameColumnHeader);
-		
-		P shareColumnHeader = new P();
-		shareColumnHeader.setText(MESSAGES.colPercentShareInstructor());
-		instructorHeader.add(shareColumnHeader);
-		
-		P responsibilityColumnHeader = new P();
-		responsibilityColumnHeader.setText(MESSAGES.colTeachingResponsibility());
-		instructorHeader.add(responsibilityColumnHeader);
-		
-		P emptyColumnHeader = new P();
-		emptyColumnHeader.setText("");
-		instructorHeader.add(emptyColumnHeader);
-
+		List<UniTimeTableHeader> instructorHeader = new ArrayList<UniTimeTableHeader>();
+		instructorHeader.add(new UniTimeTableHeader(MESSAGES.colNamePerson()));
+		instructorHeader.add(new UniTimeTableHeader(MESSAGES.colPercentShareInstructor()));
+		instructorHeader.add(new UniTimeTableHeader(MESSAGES.colTeachingResponsibility()));
+		instructorHeader.add(new UniTimeTableHeader(""));
 		iInstructorsTable.addRow(null, instructorHeader);
 
 		iAddCoordinatorButton = new AriaButton(MESSAGES.buttonAddCoordinator());
