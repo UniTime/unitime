@@ -106,7 +106,7 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 		}
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(model.getPeriods().size() < model.getDays().size() * model.getSlots().size())) {
 			PreferenceInterface p = new PreferenceInterface(pref.getUniqueId(),
-					PreferenceLevel.prolog2color(pref.getPrefProlog()), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
 					pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true);
 			if (PreferenceLevel.sRequired.equals(pref.getPrefProlog()) && roomPref)
 				continue;

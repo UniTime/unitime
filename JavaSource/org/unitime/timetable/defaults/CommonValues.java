@@ -50,6 +50,8 @@ public enum CommonValues {
 	
 	UseSystemDefault("not set"),
 	
+	Legacy("legacy"),
+	
 	;
 
 	String iValue;

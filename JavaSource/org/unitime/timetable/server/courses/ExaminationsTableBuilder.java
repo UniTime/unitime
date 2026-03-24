@@ -76,7 +76,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
         if (exam.getExamType().getType() == ExamType.sExamTypeMidterm) {
             MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
             epx.load(exam);
-            CellInterface cell = epx.toCellInterface();
+            CellInterface cell = epx.toCellInterface(isUsePrefStyles());
         	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
         		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + ",-1');");
         		cell.setMouseOut("$wnd.hideGwtTimeHint();");
