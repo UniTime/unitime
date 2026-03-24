@@ -32,7 +32,8 @@ import java.awt.Color;
 import java.util.Iterator;
 import java.util.List;
 
-import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.base.BasePreferenceLevel;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.util.Constants;
@@ -296,10 +297,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     
     /** preference to color conversion */
     public String prefcolor() {
-    	PrefColor color = PrefColor.fromProlog(getPrefProlog());
-    	if (color != null) return PrefColor.toRGB(color.getAdaColor());
-    	Debug.log("Unknown color for preference " + getPrefName() + ".");
-    	return "rgb(200,200,200)";
+    	return PreferenceLevel.prolog2color(getPrefProlog());
     }
     
 	@Transient
@@ -314,12 +312,7 @@ public class PreferenceLevel extends BasePreferenceLevel {
     
     /** preference to color conversion */
     public Color awtPrefcolor() {
-    	Color color = PreferenceLevel.prolog2awtColor(this.getPrefProlog());
-    	if (color == null) {
-            Debug.log("Unknown color for preference "+this.getPrefName()+".");
-            return new Color(200,200,200);
-        }
-    	return color;
+    	return PreferenceLevel.prolog2awtColor(this.getPrefProlog());
     }
 
 	public static String int2color(int intPref) {
@@ -337,7 +330,10 @@ public class PreferenceLevel extends BasePreferenceLevel {
 	public static String prolog2color(String prologPref) {
 		PrefColor color = PrefColor.fromProlog(prologPref);
 		if (color == null) color = PrefColor.fromProlog(sNeutral);
-		return PrefColor.toHex(color.getAdaColor());
+		if (CommonValues.Legacy.eq(UserProperty.HighContrastPreferences.get()))
+			return PrefColor.toHex(color.getColor());
+		else
+			return PrefColor.toHex(color.getAdaColor());
 	}
 
 	public static String prolog2abbv(String prologPref) {

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.defaults;
 
+import org.unitime.timetable.filter.UserSettingsFilter;
 import org.unitime.timetable.security.UserContext;
 
 /**
@@ -67,5 +68,8 @@ public enum UserProperty {
 	
 	public String get(UserContext user) {
 		return user == null ? defaultValue() : user.getProperty(this);
+	}
+	public String get() {
+		return UserSettingsFilter.getUserSetting(this);
 	}
 }
