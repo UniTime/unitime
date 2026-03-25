@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.widgets.DayCodeSelector;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -58,6 +59,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 	private static final CourseMessages CMSG = GWT.create(CourseMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private TimePatternModel iModel;
 	private List<PrefLevel> iPreferences;
 	private AbsolutePanel iPanel;
@@ -136,6 +138,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				ImageButton delete = new ImageButton(RESOURCES.delete());
 				delete.addClickHandler(iRemove);
 				delete.addStyleName("delete");
+				delete.setAltText(ARIA.iconRemoveItem(iModel.getName()));
 				header.add(delete);
 			}
 			if (!model.isValid()) {
@@ -494,6 +497,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				
 				iButton = new ImageButton(RESOURCES.delete());
 				iButton.setTitle(MESSAGES.titleDeleteRow());
+				iButton.setAltText(MESSAGES.titleDeleteRow());
 				iButton.addStyleName("preference-cell");
 				iButton.getElement().getStyle().setCursor(Cursor.POINTER);
 				iButton.addClickHandler(new ClickHandler() {
@@ -520,9 +524,11 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				if (add) {
 					iButton.setImage(RESOURCES.add());
 					iButton.setTitle(MESSAGES.titleAddRow());
+					iButton.setAltText(MESSAGES.titleAddRow());
 				} else {
 					iButton.setImage(RESOURCES.delete());
 					iButton.setTitle(MESSAGES.titleDeleteRow());
+					iButton.setAltText(MESSAGES.titleDeleteRow());
 				}
 			}
 

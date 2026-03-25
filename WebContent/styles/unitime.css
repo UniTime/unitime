@@ -8112,6 +8112,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-PreferenceEdit .preference-line {
 	display: block;
 	min-width: 640px;
+	padding-top: 1px;
 }
 
 .unitime-PreferenceEdit .preference-cell {
@@ -8130,6 +8131,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-PreferenceEdit .preference-line img {
 	vertical-align: text-top;
+	margin: 1px 5px 0px 5px;
 }
 
 .unitime-PreferenceEdit .preference-line .first {
@@ -8227,6 +8229,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-PreferenceEdit .pattern-selection img {
 	vertical-align: text-top;
+	margin: 1px 0px 0px 5px;
 }
 
 .unitime-PreferenceEdit .unitime-RoomSharingWidget:not(:last-child) {
@@ -8240,7 +8243,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 .unitime-PreferenceEdit .unitime-RoomSharingWidget .header .delete {
 	display: inline-block;
-	margin-right: 5px;
+	margin: 5px 0px 0px 5px;
 	vertical-align: baseline;
 }
 .unitime-PreferenceEdit .unitime-RoomSharingWidget .header .warning {
@@ -8257,7 +8260,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ClassEditPage .date-pattern img {
-	margin-left: 3px;
+	margin-left: 6px;
 	vertical-align: middle;
 }
 
