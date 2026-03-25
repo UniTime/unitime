@@ -51,9 +51,11 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -78,6 +80,7 @@ public class ClassEditPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimplePanel iRootPanel;
@@ -236,6 +239,7 @@ public class ClassEditPage extends Composite {
 						datePatternPanel.add(iDatePattern);
 					}
 					final ImageButton cal = new ImageButton(RESOURCES.datepattern());
+					cal.setAltText(ARIA.iconDatePatternPreview());
 					iDatePattern.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
@@ -314,6 +318,7 @@ public class ClassEditPage extends Composite {
 				TextArea reqestNotes = new TextArea();
 				reqestNotes.setHeight("66px");
 				reqestNotes.setWidth("100%");
+				Roles.getTextboxRole().setAriaLabelProperty(reqestNotes.getElement(), COURSE.sectionTitleNotesToScheduleManager());
 				if (response.hasRequestNote()) reqestNotes.setText(response.getRequestNote());
 				iPanel.addRow(reqestNotes);
 				reqestNotes.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -485,6 +490,8 @@ public class ClassEditPage extends Composite {
 		ret.add(conflict);
 		conflict.setEnabled(ci.getInstructorId() != null);
 		final ImageButton delete = new ImageButton(RESOURCES.delete());
+		delete.setAltText(MESSAGES.titleDeleteRow());
+		delete.setTitle(MESSAGES.titleDeleteRow());
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {

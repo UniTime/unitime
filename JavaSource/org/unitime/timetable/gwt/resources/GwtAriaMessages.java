@@ -654,4 +654,16 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Opens Course Finder dialog.")
 	String openCourseFinder();
+	
+	@DefaultMessage("Preview Date Pattern")
+	String iconDatePatternPreview();
+	
+	@DefaultMessage("Add Selected Item")
+	String iconAddSelectedItem();
+	
+	@DefaultMessage("Remove {0}")
+	String iconRemoveItem(String name);
+
+	@DefaultMessage("Applies To")
+	String listApplesTo();
 }

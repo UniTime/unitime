@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
@@ -63,6 +64,7 @@ public class SubpartEditPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimplePanel iRootPanel;
@@ -265,6 +267,7 @@ public class SubpartEditPage extends Composite {
 						datePatternPanel.add(iDatePattern);
 					}
 					final ImageButton cal = new ImageButton(RESOURCES.datepattern());
+					cal.setAltText(ARIA.iconDatePatternPreview());
 					iDatePattern.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
@@ -323,7 +326,7 @@ public class SubpartEditPage extends Composite {
 				
 				if (response.hasCreditFormats()) {
 					iCredits = new CreditTable(response);
-					iPanel.addRow(COURSE.propertySubpartCredit(), iCredits);
+					iPanel.addRow(COURSE.propertySubpartCredit(), iCredits, iCredits.getFormat().getElement());
 				} else {
 					iCredits = null;
 				}
@@ -408,6 +411,8 @@ public class SubpartEditPage extends Composite {
 			addRow(MESSAGES.propMaxUnits(), iFractions);
 			formatChanged();
 		}
+		
+		protected ListBox getFormat() { return iFormat; }
 		
 		protected void formatChanged() {
 			String format = iFormat.getSelectedValue();

@@ -576,7 +576,7 @@ public class ClassAssignmentPage extends Composite {
 					extra.getElement().getStyle().setTextDecoration(TextDecoration.UNDERLINE);
 			}
 			if (iItem.isSelected())
-				getElement().getStyle().setBackgroundColor("#92c1f0");
+				getElement().getStyle().setBackgroundColor("#b7d4fb");
 			addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent e) {
@@ -587,7 +587,7 @@ public class ClassAssignmentPage extends Composite {
 				@Override
 				public void onMouseOut(MouseOutEvent e) {
 					if (iItem.isSelected())
-						getElement().getStyle().setBackgroundColor("#92c1f0");
+						getElement().getStyle().setBackgroundColor("#b7d4fb");
 					else
 						getElement().getStyle().clearBackgroundColor();
 				}
@@ -599,9 +599,9 @@ public class ClassAssignmentPage extends Composite {
 		public boolean isSelected() { return iItem.isSelected(); }
 		public void setSelected(boolean selected) {
 			iItem.setSelected(selected);
-			if (!"#92c1f0".equals(getElement().getStyle().getBackgroundColor())) {
+			if (!"#d0e4f6".equals(getElement().getStyle().getBackgroundColor())) {
 				if (iItem.isSelected())
-					getElement().getStyle().setBackgroundColor("#92c1f0");
+					getElement().getStyle().setBackgroundColor("#b7d4fb");
 				else
 					getElement().getStyle().clearBackgroundColor();
 			}

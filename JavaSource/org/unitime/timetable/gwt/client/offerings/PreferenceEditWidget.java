@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
@@ -45,9 +44,11 @@ import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -67,6 +68,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	private static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	private UniTimeHeaderPanel iHeader;
 	
@@ -206,6 +208,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 			tpSelection.add(iTimePatterns);
 			ImageButton img = new ImageButton(RESOURCES.add());
 			tpSelection.add(img);
+			img.setAltText(ARIA.iconAddSelectedItem());
 			iTimePrefs = new HashMap<Long, TimePreferenceWidget>();
 			add(tpSelection);
 			if (timePrefs.hasSelections()) {
@@ -313,7 +316,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 			iPreferences = preferences;
 			if (preferences.hasSelections()) {
 				for (Selection selection: preferences.getSelections()) {
-					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), response, preferences.isAllowHard(), nbrRooms);
+					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), response, preferences.isAllowHard(), nbrRooms, preferences.getType());
 					IdLabel item = preferences.getItem(selection.getItem());
 					PrefLevel level = response.getPrefLevel(selection.getLevel());
 					if (item != null && level != null && !preferences.isAllowHard()) {
@@ -324,13 +327,13 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 					add(p);
 				}
 			}
-			add(new PreferenceLine(iPreferences.getItems(), response, preferences.isAllowHard(), nbrRooms));
+			add(new PreferenceLine(iPreferences.getItems(), response, preferences.isAllowHard(), nbrRooms, preferences.getType()));
 			
 			iChangeHandler = new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent e) {
 					if (((PreferenceLine)getWidget(getWidgetCount() - 1)).hasSelection()) {
-						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), response, preferences.isAllowHard(), nbrRooms);
+						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), response, preferences.isAllowHard(), nbrRooms, preferences.getType());
 						add(p);
 						iHandlerRegistration.removeHandler();
 						iHandlerRegistration = p.addChangeHandler(iChangeHandler);
@@ -410,7 +413,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 			boolean iEditable;
 			PrefLevel iNeutral = null;
 			
-			PreferenceLine(Collection<IdLabel> items, final PrefGroupEditResponse response, final boolean allowHard, final Integer nbrRooms) {
+			PreferenceLine(Collection<IdLabel> items, final PrefGroupEditResponse response, final boolean allowHard, final Integer nbrRooms, final PreferenceType type) {
 				super("preference-line");
 				P line1 = new P("first-line");
 				P line2 = new P("second-line");
@@ -424,6 +427,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				iList.addItem("-", "");
 				for (IdLabel item: items)
 					iList.addItem(item.getLabel(), item.getId().toString());
+				Roles.getListboxRole().setAriaLabelProperty(iList.getElement(), getName(type));
 				iList.addStyleName("preference-cell");
 				iList.addChangeHandler(new ChangeHandler() {
 					@Override
@@ -458,6 +462,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				
 				if (nbrRooms != null && nbrRooms > 1) {
 					iRoomIndex = new ListBox();
+					Roles.getListboxRole().setAriaLabelProperty(iRoomIndex.getElement(), ARIA.listApplesTo());
 					iRoomIndex.addItem(COURSE.itemAllRooms(), "");
 					for (int i = 0; i < nbrRooms; i++)
 						iRoomIndex.addItem(COURSE.itemOnlyRoom(1 + i), String.valueOf(i));	
@@ -475,13 +480,14 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				
 				iButton = new ImageButton(RESOURCES.delete());
 				iButton.setTitle(MESSAGES.titleDeleteRow());
+				iButton.setAltText(MESSAGES.titleDeleteRow());
 				iButton.addStyleName("preference-cell");
 				iButton.getElement().getStyle().setCursor(Cursor.POINTER);
 				iButton.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						if (iButtonAdd) {
-							PreferencesTable.this.add(new PreferenceLine(iItems, response, iAllowHard, nbrRooms));
+							PreferencesTable.this.add(new PreferenceLine(iItems, response, iAllowHard, nbrRooms, type));
 						} else {
 							PreferencesTable.this.remove(PreferenceLine.this);
 						}
@@ -591,9 +597,11 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 				if (add) {
 					iButton.setImage(RESOURCES.add());
 					iButton.setTitle(MESSAGES.titleAddRow());
+					iButton.setAltText(MESSAGES.titleAddRow());
 				} else {
 					iButton.setImage(RESOURCES.delete());
 					iButton.setTitle(MESSAGES.titleDeleteRow());
+					iButton.setAltText(MESSAGES.titleDeleteRow());
 				}
 			}
 
