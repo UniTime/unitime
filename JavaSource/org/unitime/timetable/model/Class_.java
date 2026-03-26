@@ -1263,6 +1263,7 @@ public class Class_ extends BaseClass_ {
 		newClass.setManagingDept(getManagingDept());
 		newClass.setMaxExpectedCapacity(getMaxExpectedCapacity());
 		newClass.setNbrRooms(getNbrRooms());
+		newClass.setRoomsSplitAttendance(getRoomsSplitAttendance());
 		newClass.setNotes(getNotes());
 		newClass.setRoomRatio(getRoomRatio());
 		newClass.setSchedulePrintNote(getSchedulePrintNote());

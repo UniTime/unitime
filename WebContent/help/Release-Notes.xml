@@ -29,6 +29,20 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Administration</title>
+		<item>
+			<name>Session Roll Forward: Room Split Attendance</name>
+			<description>
+				<line>Include the split attendance flag (set on individual classes) in the roll forward.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.116</version>
+	<release-date>Sat, 21 Mar 2026</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Class/Scheduling Subpart Detail: Distribution Preferences</name>
@@ -129,15 +143,15 @@
 		<item>
 			<name>Student Course Requests and Advisor Course Recommendations: Validation</name>
 			<description>
-				<item>Created a new default Student Course Request Validation and Advisor Course Recommendations Validator that only does the UniTime-related checks,
+				<line>Created a new default Student Course Request Validation and Advisor Course Recommendations Validator that only does the UniTime-related checks,
 				which include: no alternative course provided, associated course checks (associated course on the same request line,
 				associated course requested as substitute, parent course not present), high-priority free time, min/max credit checks,
-				scheduling rules check, single-section time conflict check, inconsistent student preferences check, and the new student scheduling disclaimer.</item>
-				<item>Also include the new student scheduling disclaimer in the course validation.
-					<item>When a course has only a single configuration or multiple configurations with the same disclaimer, just display the disclaimer for the course.</item>
-					<item>When there are multiple disclaimers, prefix the disclaimer with the instructional method of the configuration with the disclaimer.
-						Reservations and scheduling rules are checked, and configurations that the student cannot take are ignored.</item>
-				</item>
+				scheduling rules check, single-section time conflict check, inconsistent student preferences check, and the new student scheduling disclaimer.</line>
+				<line>Also include the new student scheduling disclaimer in the course validation.
+					<line>When a course has only a single configuration or multiple configurations with the same disclaimer, just display the disclaimer for the course.</line>
+					<line>When there are multiple disclaimers, prefix the disclaimer with the instructional method of the configuration with the disclaimer.
+						Reservations and scheduling rules are checked, and configurations that the student cannot take are ignored.</line>
+				</line>
 			</description>
 		</item>
 	</category>
