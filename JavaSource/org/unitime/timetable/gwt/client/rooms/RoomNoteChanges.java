@@ -98,6 +98,7 @@ public class RoomNoteChanges extends Composite implements HasMobileScroll {
 		
 		iChanges = new UniTimeTable<ChangeLogInterface>();
 		iChanges.setWidth("100%");
+		iChanges.setVisible(false);
 		iChangesPanel.addRow(iChanges);
 		
 		iMultiSessionToggle = new CheckBox(MESSAGES.checkAllSessions());
@@ -263,6 +264,7 @@ public class RoomNoteChanges extends Composite implements HasMobileScroll {
 		}
 		
 		iChanges.setColumnVisible(1, iMultiSessionToggle.getValue());
+		iChanges.setVisible(iChanges.getRowCount() > 0);
 	}
 	
 	public void insert(final RootPanel panel) {

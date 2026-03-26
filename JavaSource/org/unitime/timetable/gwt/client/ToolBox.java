@@ -417,4 +417,75 @@ public class ToolBox {
 		if (inputs != null && inputs.getLength() > 0) return inputs.getItem(0);
 		return null;
 	}
+	
+	public static int red(String color) {
+		if (color.startsWith("#")) {
+			if (color.length() == 7)
+				return Integer.valueOf(color.substring(1, 3), 16);
+			if (color.length() == 4)
+				return Integer.valueOf(color.substring(1, 2) + color.substring(1, 2), 16);
+			return 0;
+		} else {
+			return 0;
+		}
+	}
+	
+	public static int green(String color) {
+		if (color.startsWith("#")) {
+			if (color.length() == 7)
+				return Integer.valueOf(color.substring(3, 5), 16);
+			if (color.length() == 4)
+				return Integer.valueOf(color.substring(2, 3) + color.substring(2, 3), 16);
+			return 0;
+		} else {
+			return 0;
+		}
+	}
+	
+	public static int blue(String color) {
+		if (color.startsWith("#")) {
+			if (color.length() == 7)
+				return Integer.valueOf(color.substring(5, 7), 16);
+			if (color.length() == 4)
+				return Integer.valueOf(color.substring(3, 4) + color.substring(3, 4), 16);
+			return 0;
+		} else {
+			return 0;
+		}
+	}
+	
+	static double RED = 0.2126;
+	static double GREEN = 0.7152;
+	static double BLUE = 0.0722;
+
+	static double luminance(double r, double g, double b) {
+		double vR = r / 255.0;
+		double vG = g / 255.0;
+		double vB = b / 255.0;
+		if (vR <= 0.03928)
+			vR = vR / 12.92;
+		else
+			vR = Math.pow((vR + 0.055) / 1.055, 2.4);
+		if (vB <= 0.03928)
+			vB = vB / 12.92;
+		else
+			vB = Math.pow((vB + 0.055) / 1.055, 2.4);
+		if (vG <= 0.03928)
+			vG = vG / 12.92;
+		else
+			vG = Math.pow((vG + 0.055) / 1.055, 2.4);
+		return vR * 0.2126 + vG * 0.7152 + vB * 0.0722;
+	}
+	
+	static double luminance(String color) {
+		return luminance(red(color), green(color), blue(color));
+	}
+	
+	public static double contrast(String color1, String color2) {
+		double lum1 = luminance(color1);
+		double lum2 = luminance(color2);
+		double brightest = Math.max(lum1, lum2);
+		double darkest = Math.min(lum1, lum2);
+		return (brightest + 0.05) / (darkest + 0.05);
+	}
 }

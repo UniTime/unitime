@@ -159,7 +159,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		response.setNrDepartments(usedOnly ? Department.findAllBeingUsed(response.getAcademicSessionId()).size() : Department.findAll(response.getAcademicSessionId()).size());
 		
 		response.setHorizontal(context.getUser() == null ? false : CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
-		response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+		response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+		response.setHighContrastColors(context.getUser() == null ? false : CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.HighContrastPreferences)));
 		
 		for (int i = 0; true; i++) {
 			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
