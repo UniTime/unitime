@@ -1662,12 +1662,16 @@ public class RoomInterface implements IsSerializable {
 	public static class PreferenceInterface implements IsSerializable {
 		private String iCode, iName, iAbbv;
 		private String iColor, iBgColor;
+		private String iStyle;
 		private Long iId;
 		private boolean iEditable;
 		
 		public PreferenceInterface() {}
+		public PreferenceInterface(Long id, String color, String bgColor, String code, String name, String abbv, boolean editable, String style) {
+			iId = id; iColor = color; iBgColor = bgColor; iCode = code; iName = name; iAbbv = abbv; iEditable = editable; iStyle = style;
+		}
 		public PreferenceInterface(Long id, String color, String bgColor, String code, String name, String abbv, boolean editable) {
-			iId = id; iColor = color; iBgColor = bgColor; iCode = code; iName = name; iAbbv = abbv; iEditable = editable;
+			this(id, color, bgColor, code, name, abbv, editable, null);
 		}
 		
 		public String getColor() { return iColor; }
@@ -1690,6 +1694,10 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setEditable(boolean editable) { iEditable = editable; }
 		public boolean isEditable() { return iEditable; }
+		
+		public boolean hasStyle() { return iStyle != null && !iStyle.isEmpty(); }
+		public void setStyle(String style) { iStyle = style; }
+		public String getStyle() { return iStyle; }
 
 		@Override
 		public boolean equals(Object o) {

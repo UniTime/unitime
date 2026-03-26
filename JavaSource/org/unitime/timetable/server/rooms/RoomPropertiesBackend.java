@@ -160,7 +160,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		
 		response.setHorizontal(context.getUser() == null ? false : CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
 		response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));response.setGridAsText(context.getUser() == null ? false : CommonValues.TextGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
-		response.setHighContrastColors(context.getUser() == null ? false : CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.HighContrastPreferences)));
+		response.setHighContrastColors(context.getUser() == null || !CommonValues.Legacy.eq(context.getUser().getProperty(UserProperty.HighContrastPreferences)));
 		
 		for (int i = 0; true; i++) {
 			String mode = ApplicationProperty.RoomSharingMode.value(String.valueOf(1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
@@ -171,6 +171,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		boolean filterDepartments = context.getUser() != null && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 		boolean includeGlobalGroups = context.getUser() != null && context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGlobalGroups);
 		boolean includeDeptGroups = context.getUser() != null && context.getUser().getCurrentAuthority().hasRight(Right.RoomEditGroups);
+		boolean prefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
 
 		for (RoomGroup g: RoomGroup.getAllRoomGroupsForSession(context.getUser().getCurrentAcademicSessionId())) {
 			GroupInterface group = new GroupInterface(g.getUniqueId(), g.getAbbv(), g.getName());
@@ -212,7 +213,8 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(false)) {
 			response.addPreference(new PreferenceInterface(pref.getUniqueId(),
 					PreferenceLevel.prolog2color(pref.getPrefProlog()), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
-					pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
+					pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true,
+					prefStyles ? "pref-" + PreferenceLevel.prolog2char(pref.getPrefProlog()) : null));
 		}
 
 		for (AttachmentType type: AttachmentType.listTypes(AttachmentType.VisibilityFlag.ROOM_PICTURE_TYPE)) {
