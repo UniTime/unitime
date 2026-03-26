@@ -49,6 +49,8 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
 import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
 import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -597,6 +599,18 @@ public class CurriculumProjectionRulesPage extends Composite {
 		iTable.setVisible(true);
 		if (!iHeader.isEnabled("close")) {
 			iHeader.setEnabled("print", true);
+		}
+		
+		if (iTable.getRowCount() > 0) {
+			for (int col = 0; col < iTable.getCellCount(0); col++) {
+				Element e = iTable.getCellFormatter().getElement(0, col);
+				e.setId(DOM.createUniqueId());
+				for (int r = 1; r < iTable.getRowCount(); r++) {
+					Element ie = ToolBox.firstInputElement(iTable.getCellFormatter().getElement(r, col));
+					if (ie != null)
+						Roles.getTextboxRole().setAriaLabelledbyProperty(ie, Id.of(e));
+				}
+			}
 		}
 	}
 	

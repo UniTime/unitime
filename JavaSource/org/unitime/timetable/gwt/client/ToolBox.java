@@ -406,6 +406,7 @@ public class ToolBox {
 	}
 	
 	public static Element firstInputElement(Element e) {
+		if (e == null) return null;
 		if ("input".equalsIgnoreCase(e.getTagName()) || "select".equalsIgnoreCase(e.getTagName()) || "textarea".equalsIgnoreCase(e.getTagName()))
 			return e;
 		NodeList<Element> inputs = e.getElementsByTagName("input");

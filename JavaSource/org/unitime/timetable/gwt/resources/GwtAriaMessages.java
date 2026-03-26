@@ -669,4 +669,10 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Select instructor")
 	String listSelectInstructor();
+	
+	@DefaultMessage("Checked")
+	String iconChecked();
+	
+	@DefaultMessage("Not Checked")
+	String iconNotChecked();
 }

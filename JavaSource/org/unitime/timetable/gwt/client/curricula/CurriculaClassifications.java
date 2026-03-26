@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -30,9 +31,13 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -81,6 +86,10 @@ public class CurriculaClassifications extends Composite {
 		iTable.getCellFormatter().setWordWrap(7, 0, false);
 		iTable.setText(8, 0, MESSAGES.propSnapshotProjectedByRule());
 		iTable.getCellFormatter().setWordWrap(8, 0, false);
+		for (int i = 0; i <= 8; i++) {
+			Roles.getRowheaderRole().set(iTable.getCellFormatter().getElement(i, 0));
+			iTable.getCellFormatter().getElement(i, 0).setId(DOM.createUniqueId());
+		}
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications) {
 			col ++;
@@ -150,6 +159,11 @@ public class CurriculaClassifications extends Composite {
 			UniTimeTextBox ssProj = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, false);
 			iTable.setWidget(8, col, ssProj);
 			iTable.getCellFormatter().setHorizontalAlignment(8, col, HasHorizontalAlignment.ALIGN_CENTER);
+			for (int i = 0; i <= 8; i++) {
+				Element inputElement = ToolBox.firstInputElement(iTable.getWidget(i, col).getElement());
+				if (inputElement != null)
+					Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(iTable.getCellFormatter().getElement(i, 0)));
+			}
 		}
 	}
 	
