@@ -22,8 +22,10 @@ package org.unitime.timetable.gwt.client.rooms;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.ScriptInjector;
@@ -42,6 +44,7 @@ import com.google.gwt.user.client.ui.TextBox;
  */
 public class GoogleMap extends MapWidget {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private String iApiKey = null;
 	
 	public GoogleMap(TextBox x, TextBox y, String apiKey) {
@@ -54,6 +57,7 @@ public class GoogleMap extends MapWidget {
 		searchBox.setStyleName("unitime-TextBox"); searchBox.addStyleName("searchBox");
 		searchBox.getElement().setId("mapSearchBox");
 		searchBox.setTabIndex(-1);
+		Roles.getTextboxRole().setAriaLabelProperty(searchBox.getElement(), ARIA.mapAddressToGeocode());
 		iMapControl.add(searchBox);
 		Button button = new Button(MESSAGES.buttonGeocode(), new ClickHandler() {
 			@Override

@@ -143,7 +143,7 @@ public class SimpleForm extends FlexTable {
 			getFlexCellFormatter().setColSpan(row, 1, colSpan);
 		if (header.getElement().getId() == null || header.getElement().getId().isEmpty())
 			header.getElement().setId(DOM.createUniqueId());
-		if (inputElement != null)
+		if (inputElement != null && Roles.getTextboxRole().getAriaLabelProperty(inputElement).isEmpty())
 			Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(header.getElement()));
 		return row;
 	}

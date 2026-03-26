@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -70,6 +71,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomUpdateRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomsPageMode;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -104,6 +106,7 @@ public class RoomEdit extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter;
@@ -342,6 +345,8 @@ public class RoomEdit extends Composite {
 		iY.addStyleName("number");
 		iX.getElement().setId("coordX");
 		iY.getElement().setId("coordY");
+		Roles.getTextboxRole().setAriaLabelProperty(iX.getElement(), MESSAGES.colCoordinateX());
+		Roles.getTextboxRole().setAriaLabelProperty(iY.getElement(), MESSAGES.colCoordinateY());
 		iCoordinates = new UniTimeWidget<P>(new P("coordinates"));
 		iCoordinates.getWidget().add(iX);
 		P comma = new P("comma"); comma.setText(", ");
@@ -512,7 +517,7 @@ public class RoomEdit extends Composite {
 		iApplyTo = new UniTimeTable<FutureRoomInterface>();
 		iApplyTo.setStyleName("unitime-RoomApplyTo");
 		List<UniTimeTableHeader> ah = new ArrayList<UniTimeTableHeader>();
-		ah.add(new UniTimeTableHeader("&nbsp;"));
+		ah.add(new UniTimeTableHeader(MESSAGES.colUpdate()));
 		ah.add(new UniTimeTableHeader(MESSAGES.colName()));
 		ah.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
 		ah.add(new UniTimeTableHeader(MESSAGES.colType()));
@@ -1293,11 +1298,14 @@ public class RoomEdit extends Composite {
 		Image image = null;
 		if (picture.getPictureType() == null || picture.getPictureType().isImage()) {
 			image = new Image(GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+			image.setAltText(picture.getName());
 			image.addStyleName("image");
 		} else {
 			image = new Image(RESOURCES.download());
+			image.setAltText(ARIA.iconDownload(picture.getName()));
 		}
 		final ImageLink link = new ImageLink(image, GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+		link.setAriaLabel(ARIA.iconDownload(picture.getName()));
 		if (picture.getPictureType() != null && !picture.getPictureType().isImage())
 			link.setText(MESSAGES.roomPictureLink());
 		link.setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));

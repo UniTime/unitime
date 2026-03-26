@@ -8098,4 +8098,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Include")
 	String colInclude();
+	
+	@DefaultMessage("Update")
+	String colUpdate();
 }

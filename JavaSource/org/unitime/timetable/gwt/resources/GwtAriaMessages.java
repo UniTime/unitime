@@ -663,6 +663,9 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Remove {0}")
 	String iconRemoveItem(String name);
+	
+	@DefaultMessage("Add {0}")
+	String iconAddItem(String name);
 
 	@DefaultMessage("Applies To")
 	String listApplesTo();
@@ -672,6 +675,9 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Select preference level")
 	String listSelectPreferenceLevel();
+	
+	@DefaultMessage("Select preference level for {0}")
+	String listSelectPreferenceLevelFor(String item);
 	
 	@DefaultMessage("Select instructor")
 	String listSelectInstructor();
@@ -690,4 +696,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Download {0}")
 	String iconDownload(String file);
+	
+	@DefaultMessage("Enter address to geocode")
+	String mapAddressToGeocode();
 }
