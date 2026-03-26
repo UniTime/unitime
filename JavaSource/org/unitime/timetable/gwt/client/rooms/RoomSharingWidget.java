@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
@@ -76,7 +77,6 @@ import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -151,6 +151,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		if (iEditable && includeNote) {
 			iNote = new TextArea();
 			iNote.setStyleName("unitime-TextArea");
+			Roles.getTextboxRole().setAriaLabelProperty(iNote.getElement(), MESSAGES.propRoomAvailabilityNote());
 			iNote.setVisibleLines(10);
 			iNote.setCharacterWidth(50);
 			iNote.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -310,9 +311,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	
 	protected void addPreferenceIfNeeded(P line, final RoomSharingOption option) {
 		if (option.hasPreference() && iModel.getPreferences() != null) {
-			final ListBox pref = new ListBox();
+			final AriaListBox pref = new AriaListBox();
 			pref.setStyleName("unitime-TextBox");
 			pref.addStyleName("preference");
+			pref.setAriaLabel(ARIA.listSelectPreferenceLevelFor(option.getName()));
 			for (PreferenceInterface p: iModel.getPreferences()) {
 				pref.addItem(p.getName(), p.getId().toString());
 			}
@@ -521,6 +523,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			
 			if (option.getId() >= 0 && isDeletable(option)) {
 				Image remove = new Image(RESOURCES.delete());
+				remove.setAltText(ARIA.iconRemoveItem(option.getName()));
 				remove.addStyleName("remove");
 				line.add(remove);
 				remove.addClickHandler(new ClickHandler() {
@@ -609,6 +612,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 					line.add(title);
 					
 					Image add = new Image(RESOURCES.add());
+					add.setAltText(ARIA.iconAddItem(option.getName()));
 					add.addStyleName("remove");
 					line.add(add);
 					add.addClickHandler(new ClickHandler() {

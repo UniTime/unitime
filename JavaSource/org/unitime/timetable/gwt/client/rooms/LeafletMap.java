@@ -24,10 +24,12 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.GeocodeRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.GeocodeResponse;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -51,6 +53,7 @@ import com.google.gwt.user.client.ui.TextBox;
 public class LeafletMap extends MapWidget {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private String iTileUrl, iTileAttribution;
 	private AbsolutePanel iMap;
 	private TextBox iMapSearchBox;
@@ -69,6 +72,7 @@ public class LeafletMap extends MapWidget {
 		iMapSearchBox = new TextBox();
 		iMapSearchBox.setStyleName("unitime-TextBox"); iMapSearchBox.addStyleName("searchBox");
 		iMapSearchBox.setTabIndex(-1);
+		Roles.getTextboxRole().setAriaLabelProperty(iMapSearchBox.getElement(), ARIA.mapAddressToGeocode());
 		iMapControl.add(iMapSearchBox);
 		add(iMapControl);
 		Button button = new Button(MESSAGES.buttonGeocode(), new ClickHandler() {
