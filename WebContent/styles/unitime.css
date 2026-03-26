@@ -7584,6 +7584,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-InstructorSurveyPage .preference-line {
 	display: block;
+	padding-top: 2px;
 }
 
 .unitime-InstructorSurveyPage .preference-cell {
