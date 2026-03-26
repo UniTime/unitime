@@ -57,7 +57,8 @@ public class InstructorNameCell extends P {
 				PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 				if (pref != null) {
 					setTitle(pref.getName() + " " + instructor.getInstructorName());
-					getElement().getStyle().setColor(pref.getColor());
+					if (!pref.hasStyle())
+						getElement().getStyle().setColor(pref.getColor());
 				}
 			}
 		}

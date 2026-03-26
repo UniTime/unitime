@@ -285,12 +285,13 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private static final long serialVersionUID = 1L;
 		private String iCode, iName, iAbbv;
 		private String iColor;
+		private String iStyle;
 		private Long iId;
 		private boolean iEditable;
 		
 		public PreferenceInterface() {}
-		public PreferenceInterface(Long id, String color, String code, String name, String abbv, boolean editable) {
-			iId = id; iColor = color; iCode = code; iName = name; iAbbv = abbv; iEditable = editable;
+		public PreferenceInterface(Long id, String color, String code, String name, String abbv, boolean editable, String style) {
+			iId = id; iColor = color; iCode = code; iName = name; iAbbv = abbv; iEditable = editable; iStyle = style;
 		}
 		
 		public String getColor() { return iColor; }
@@ -310,6 +311,10 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public void setEditable(boolean editable) { iEditable = editable; }
 		public boolean isEditable() { return iEditable; }
+		
+		public String getStyle() { return iStyle; }
+		public void setStyle(String style) { iStyle = style; }
+		public boolean hasStyle() { return iStyle != null && !iStyle.isEmpty(); }
 
 		@Override
 		public boolean equals(Object o) {

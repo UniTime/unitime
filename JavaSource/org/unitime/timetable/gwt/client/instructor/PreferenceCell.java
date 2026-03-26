@@ -65,7 +65,11 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 				PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 				if (preference != null) {
 					prf.setTitle(preference.getName() + " " + p.getOwnerName());
-					prf.getElement().getStyle().setColor(preference.getColor());
+					if (preference.hasStyle()) {
+						prf.addStyleName(preference.getStyle());
+						prf.setText(p.getOwnerName());
+					} else
+						prf.getElement().getStyle().setColor(preference.getColor());
 				}
 				add(prf);
 			}
@@ -87,7 +91,10 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 								PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 								if (preference != null) {
 									prf.setTitle(preference.getName() + " " + p.getOwnerName());
-									prf.getElement().getStyle().setColor(preference.getColor());
+									if (preference.hasStyle())
+										prf.addStyleName(preference.getStyle());
+									else
+										prf.getElement().getStyle().setColor(preference.getColor());
 								}
 								add(prf);
 							} else {
@@ -97,7 +104,10 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 								PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 								if (preference != null) {
 									p1.setTitle(preference.getName() + " " + p.getOwnerName());
-									p1.getElement().getStyle().setColor(preference.getColor());
+									if (preference.hasStyle())
+										p1.addStyleName(preference.getStyle());
+									else
+										p1.getElement().getStyle().setColor(preference.getColor());
 								}
 								cmp.add(p1);
 								P a = new P("arrow"); a.setHTML("&rarr;"); cmp.add(a);
@@ -107,7 +117,10 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 								preference = iProperties.getPreference(p.getPreference());
 								if (preference != null) {
 									p2.setTitle(preference.getName() + " " + p.getOwnerName());
-									p2.getElement().getStyle().setColor(preference.getColor());
+									if (preference.hasStyle())
+										p2.addStyleName(preference.getStyle());
+									else
+										p2.getElement().getStyle().setColor(preference.getColor());
 								}
 								cmp.add(p2);
 								add(cmp);
@@ -121,7 +134,10 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 					PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 					if (preference != null) {
 						prf.setTitle(preference.getName() + " " + p.getOwnerName());
-						prf.getElement().getStyle().setColor(preference.getColor());
+						if (preference.hasStyle())
+							prf.addStyleName(preference.getStyle());
+						else
+							prf.getElement().getStyle().setColor(preference.getColor());
 					}
 					add(prf);
 				}
@@ -135,7 +151,10 @@ public class PreferenceCell extends P implements TakesValue<List<PreferenceInfo>
 				PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 				if (preference != null) {
 					prf.setTitle(preference.getName() + " " + p.getOwnerName());
-					prf.getElement().getStyle().setColor(preference.getColor());
+					if (preference.hasStyle())
+						prf.addStyleName(preference.getStyle());
+					else
+						prf.getElement().getStyle().setColor(preference.getColor());
 				}
 				add(prf);
 			}

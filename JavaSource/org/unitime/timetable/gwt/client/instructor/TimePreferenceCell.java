@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.rooms.RoomCookie;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInfo;
 import org.unitime.timetable.gwt.shared.InstructorInterface.PreferenceInterface;
@@ -38,6 +39,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.ui.Image;
 
 public class TimePreferenceCell extends P implements UniTimeTable.HasRefresh {
+	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private TeachingRequestsPagePropertiesResponse iProperties;
 	private String iPattern = null;
 	private List<PreferenceInfo> iPreferences = null;
@@ -82,6 +84,7 @@ public class TimePreferenceCell extends P implements UniTimeTable.HasRefresh {
 		if (iPattern != null && !iPattern.isEmpty() && !cookie.isGridAsText()) {
 			final Image availability = new Image(GWT.getHostPageBaseURL() + "pattern?pref=" + iPattern + "&v=" + (cookie.areRoomsHorizontal() ? "0" : "1") + (cookie.hasMode() ? "&s=" + cookie.getMode() : ""));
 			availability.setStyleName("grid");
+			availability.setAltText(ARIA.iconInstructorAvailability());
 			add(availability);
 		} else {
 			for (PreferenceInfo p: iPreferences) {
@@ -89,7 +92,10 @@ public class TimePreferenceCell extends P implements UniTimeTable.HasRefresh {
 				prf.setText(p.getOwnerName());
 				PreferenceInterface preference = iProperties.getPreference(p.getPreference());
 				if (preference != null) {
-					prf.getElement().getStyle().setColor(preference.getColor());
+					if (preference.hasStyle())
+						prf.addStyleName(preference.getStyle());
+					else
+						prf.getElement().getStyle().setColor(preference.getColor());
 					prf.setTitle(preference.getName() + " " + p.getOwnerName());
 				}
 				add(prf);

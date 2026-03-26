@@ -681,4 +681,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Not Checked")
 	String iconNotChecked();
+	
+	@DefaultMessage("Instructor Availability")
+	String iconInstructorAvailability();
 }
