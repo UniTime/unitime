@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
@@ -52,6 +53,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class UniTimeHeaderPanel extends P {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static RegExp sAcessKeyRegExp = RegExp.compile("<u>(\\w)</u>", "i");
 	private static RegExp sStripAcessKeyRegExp = RegExp.compile("(.*)<u>(\\w)</u>(.*)", "i");
 
@@ -92,6 +94,7 @@ public class UniTimeHeaderPanel extends P {
 		iLoadingImage.addStyleName("loading");
 		iLoadingImage.addStyleName("unitime-NoPrint");
 		iLoadingImage.setVisible(false);
+		iLoadingImage.setAltText(MESSAGES.waitLoadingData());
 		iLeft.add(iLoadingImage);
 
 		iTitle = new P("title");

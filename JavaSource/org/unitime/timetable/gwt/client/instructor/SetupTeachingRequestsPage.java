@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -59,6 +60,7 @@ import org.unitime.timetable.gwt.shared.TeachingRequestInterface.Responsibility;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.SaveRequestsRpcRequest;
 import org.unitime.timetable.gwt.shared.TeachingRequestInterface.SingleRequest;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -84,6 +86,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class SetupTeachingRequestsPage extends SimpleForm {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static final StudentSectioningMessages SECTMSG = GWT.create(StudentSectioningMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
@@ -319,7 +322,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 			iClasses = new UniTimeTable<Clazz>();
 			iClasses.getElement().getStyle().setWidth(100, Unit.PCT);
 			List<UniTimeTableHeader> classesHeader = new ArrayList<UniTimeTableHeader>();
-			classesHeader.add(new UniTimeTableHeader("&nbsp;"));
+			classesHeader.add(new UniTimeTableHeader(MESSAGES.colNbrInstr()));
 			classesHeader.add(new UniTimeTableHeader(MESSAGES.colClass()));
 			classesHeader.add(new UniTimeTableHeader(MESSAGES.colExternalId()));
 			classesHeader.add(new UniTimeTableHeader(MESSAGES.colEnrollment()));
@@ -339,7 +342,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				iSubparts = new UniTimeTable<Subpart>();
 				iSubparts.getElement().getStyle().setWidth(100, Unit.PCT);
 				List<UniTimeTableHeader> subpartsHeader = new ArrayList<UniTimeTableHeader>();
-				subpartsHeader.add(new UniTimeTableHeader("&nbsp;"));
+				subpartsHeader.add(new UniTimeTableHeader(MESSAGES.colInclude()));
 				subpartsHeader.add(new UniTimeTableHeader(MESSAGES.colInstructionalType()));
 				subpartsHeader.add(new UniTimeTableHeader(MESSAGES.colAssignInstructor()));
 				subpartsHeader.add(new UniTimeTableHeader(MESSAGES.colPercentShare()));
@@ -427,6 +430,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					attribute.setSelectedIndex(attribute.getItemCount() - 1);
 			}
 			line.add(attribute);
+			Roles.getListboxRole().setAriaLabelProperty(attribute.getElement(), ARIA.listSelectItem(type));
 			final ListBox preference = new ListBox();
 			for (PreferenceInterface x: iProperties.getPreferences()) {
 				preference.addItem(x.getName(), x.getId().toString());
@@ -434,8 +438,10 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					preference.setSelectedIndex(preference.getItemCount() - 1);
 			}
 			line.add(preference);
+			Roles.getListboxRole().setAriaLabelProperty(preference.getElement(), ARIA.listSelectPreferenceLevel());
 			Image delete = new Image(RESOURCES.delete());
 			delete.setTitle(MESSAGES.titleDeleteRow());
+			delete.setAltText(MESSAGES.titleDeleteRow());
 			delete.getElement().getStyle().setCursor(Cursor.POINTER);
 			delete.addClickHandler(new ClickHandler() {
 				@Override
@@ -472,6 +478,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				if (p != null && p.getOwnerId().equals(a.getId()))
 					instructor.setSelectedIndex(instructor.getItemCount() - 1);
 			}
+			Roles.getListboxRole().setAriaLabelProperty(instructor.getElement(), ARIA.listSelectInstructor());
 			line.add(instructor);
 			final ListBox preference = new ListBox();
 			for (PreferenceInterface x: iProperties.getPreferences()) {
@@ -480,8 +487,10 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 					preference.setSelectedIndex(preference.getItemCount() - 1);
 			}
 			line.add(preference);
+			Roles.getListboxRole().setAriaLabelProperty(preference.getElement(), ARIA.listSelectPreferenceLevel());
 			Image delete = new Image(RESOURCES.delete());
 			delete.setTitle(MESSAGES.titleDeleteRow());
+			delete.setAltText(MESSAGES.titleDeleteRow());
 			delete.getElement().getStyle().setCursor(Cursor.POINTER);
 			delete.addClickHandler(new ClickHandler() {
 				@Override
@@ -542,7 +551,9 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 				if (iSubpart != null) getRowFormatter().setVisible(iSubpartRow, true);
 				if (iSubparts != null) getRowFormatter().setVisible(iSubpartsLine, true);
 				subpartChanged();
+				((UniTimeTableHeader)iClasses.getWidget(0, 0)).setText(MESSAGES.colNbrInstr());
 			} else {
+				((UniTimeTableHeader)iClasses.getWidget(0, 0)).setText(MESSAGES.colInclude());
 				getRowFormatter().setVisible(iCoordinatorRow, true);
 				getRowFormatter().setVisible(iNbrInstructorsRow, true);
 				if (iSubpart != null) getRowFormatter().setVisible(iSubpartRow, false);
