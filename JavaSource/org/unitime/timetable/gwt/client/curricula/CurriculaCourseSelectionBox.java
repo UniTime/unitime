@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.client.widgets.CourseFinderDialog;
 import org.unitime.timetable.gwt.client.widgets.CourseFinderFactory;
 import org.unitime.timetable.gwt.client.widgets.CourseSelectionSuggestBox;
 import org.unitime.timetable.gwt.client.widgets.DataProvider;
-import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
@@ -47,7 +46,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  */
 public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
-	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	public CurriculaCourseSelectionBox() {
 		this(true, false);
@@ -107,7 +105,6 @@ public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
 		if (enabled) {
 			iFinderButton.setTabIndex(0);
 			iFinderButton.setVisible(true);
-			iFinderButton.setAltText(ARIA.openCourseFinder());
 			iSuggest.getElement().getStyle().clearBackgroundColor();
 			iSuggest.getElement().getStyle().clearBorderColor();
 		} else {
