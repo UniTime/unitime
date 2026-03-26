@@ -660,4 +660,13 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Applies To")
 	String listApplesTo();
+	
+	@DefaultMessage("Select {0}")
+	String listSelectItem(String itemType);
+	
+	@DefaultMessage("Select preference level")
+	String listSelectPreferenceLevel();
+	
+	@DefaultMessage("Select instructor")
+	String listSelectInstructor();
 }
