@@ -939,7 +939,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			if (iDepartment != null && iProperties != null && iProperties.isCanSeeCourses()) {
 				for (DepartmentInterface d: room.getDepartments()) {
 					if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
-						getElement().getStyle().setColor(d.getPreference().getColor());
+						if (d.getPreference().hasStyle())
+							addStyleName(d.getPreference().getStyle());
+						else
+							getElement().getStyle().setColor(d.getPreference().getColor());
 						room.setPrefix(d.getPreference().getName());
 					}
 				}
@@ -973,7 +976,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			if (iDepartment != null && iProperties != null && iProperties.isCanSeeCourses()) {
 				for (DepartmentInterface d: room.getDepartments()) {
 					if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
-						getElement().getStyle().setColor(d.getPreference().getColor());
+						if (d.getPreference().hasStyle())
+							addStyleName(d.getPreference().getStyle());
+						else
+							getElement().getStyle().setColor(d.getPreference().getColor());
 						room.setPrefix(d.getPreference().getName());
 					}
 				}
@@ -1012,7 +1018,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			if (iDepartment != null && iProperties != null && iProperties.isCanSeeCourses()) {
 				for (DepartmentInterface d: room.getDepartments()) {
 					if (iDepartment.equals(d.getDeptCode()) && d.getPreference() != null) {
-						getElement().getStyle().setColor(d.getPreference().getColor());
+						if (d.getPreference().hasStyle())
+							addStyleName(d.getPreference().getStyle());
+						else
+							getElement().getStyle().setColor(d.getPreference().getColor());
 						room.setPrefix(d.getPreference().getName());
 					}
 				}
@@ -1259,7 +1268,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 					p.setText(MESSAGES.roomPreference(RoomsTable.toString(department, iExt), department.getPreference().getName()));
 				}
 				p.setTitle(department.getPreference().getName() + " " + department.getLabel());
-				p.getElement().getStyle().setColor(department.getPreference().getColor());
+				if (department.getPreference().hasStyle())
+					p.addStyleName(department.getPreference().getStyle());
+				else
+					p.getElement().getStyle().setColor(department.getPreference().getColor());
 				iP.put(department, p);
 				add(p);
 			}
@@ -1269,7 +1281,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 			super(true, props);
 			setText(department.getPreference().getName());
 			setTitle(department.getPreference().getName() + " " + department.getLabel());
-			getElement().getStyle().setColor(department.getPreference().getColor());
+			if (department.getPreference().hasStyle())
+				addStyleName(department.getPreference().getStyle());
+			else
+				getElement().getStyle().setColor(department.getPreference().getColor());
 		}
 		
 		@Override
