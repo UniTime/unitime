@@ -69,9 +69,9 @@
 							<B><loc:message name="propertyFilterDisplay"/></B>
 						</TD>
 						<TD>
-							<s:radio name="form.displayListType" list="#{'assigned':''}"/><loc:message name="filterDisplayDepartmentAssignedInstructorsOnly"/><br>
-							<s:radio name="form.displayListType" list="#{'available':''}"/><loc:message name="filterDisplayAvailableInstructorsOnly"/><br>
-							<s:radio name="form.displayListType" list="#{'both':''}"/><loc:message name="filterDisplayBothDepartmentAssignedAndAvailableInstructors"/><br>
+							<s:radio name="form.displayListType" list="#{'assigned':''}" aria-label='${MSG.filterDisplayDepartmentAssignedInstructorsOnly()}'/><loc:message name="filterDisplayDepartmentAssignedInstructorsOnly"/><br>
+							<s:radio name="form.displayListType" list="#{'available':''}" aria-label='${MSG.filterDisplayAvailableInstructorsOnly()}'/><loc:message name="filterDisplayAvailableInstructorsOnly"/><br>
+							<s:radio name="form.displayListType" list="#{'both':''}" aria-label='${MSG.filterDisplayBothDepartmentAssignedAndAvailableInstructors()}'/><loc:message name="filterDisplayBothDepartmentAssignedAndAvailableInstructors"/><br>
 						</TD>
 					</TR>
 					<TR>
@@ -79,14 +79,12 @@
 							<B><loc:message name="propertyFilterIgorePositions"/></B> *
 						</TD>
 						<TD>
-							<table>
-								<s:iterator value="#request.posTypeList" var="type">
-									<span style="width:25%; display:inline-block;">
-										<s:checkboxlist name="form.displayPosType" list="#{#type.reference:''}"/>
-										<s:property value="#type.label"/>
-									</span>
-								</s:iterator>
-							 </table>
+							<s:iterator value="#request.posTypeList" var="type">
+								<span style="width:25%; display:inline-block;">
+									<s:checkboxlist name="form.displayPosType" list="#{#type.reference:''}" aria-label='${type.label}'/>
+									<s:property value="#type.label"/>
+								</span>
+							</s:iterator>
 						</TD>
 					</TR>
 					<TR>
@@ -164,7 +162,9 @@
 							</s:if>
 							<TR align="center">
 								<TD class="BottomBorderGray">
-									<s:checkboxlist name="form.assignedSelected" list="#{#instr.uniqueId:''}" id="as-%{#posId}-%{#idx}" disabled="%{!#canDelete}"/>
+									<s:checkboxlist name="form.assignedSelected" list="#{#instr.uniqueId:''}" id="as-%{#posId}-%{#idx}" disabled="%{!#canDelete}"
+										aria-label='${instr.externalUniqueId} - ${instr.getName(form.nameFormat)}'
+									/>
 								</TD>
 								<TD align="left" class="BottomBorderGray">
 									<s:if test="#instr.externalUniqueId != null">

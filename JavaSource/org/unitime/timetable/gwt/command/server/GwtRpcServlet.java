@@ -43,6 +43,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.filter.QueryLogFilter;
+import org.unitime.timetable.filter.UserSettingsFilter;
 import org.unitime.timetable.gwt.command.client.GwtRpcCancelledException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -359,6 +360,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			iRunning = true;
 			Localization.setLocale(iLocale);
 			ApplicationProperties.setSessionId(iContext.getUser() == null ? null : iContext.getUser().getCurrentAcademicSessionId());
+			UserSettingsFilter.enableUserSettings(iContext.getUser());
 			// start time
 			long t0 = JProf.currentTimeMillis();
 			GwtRpcLogging logging = null;
@@ -403,6 +405,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				Formats.removeFormats();
 				ApplicationProperties.setSessionId(null);
 				HibernateUtil.closeCurrentThreadSessions();
+				UserSettingsFilter.releaseUserSettings();
 			}
 			synchronized (this) {
 				iWaitingThread = null;
