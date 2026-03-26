@@ -52,6 +52,14 @@ public class UserSettingsFilter implements Filter {
 		}
 	}
 	
+	public static void enableUserSettings(UserContext context) {
+		sCachedUserSettings.set(new CachedUserSettings(context));
+	}
+	
+	public static void releaseUserSettings() {
+		sCachedUserSettings.remove();
+	}
+	
 	public static String getUserSetting(UserProperty property) {
 		CachedUserSettings cache = sCachedUserSettings.get();
 		if (cache == null) {
@@ -64,6 +72,10 @@ public class UserSettingsFilter implements Filter {
 	private static class CachedUserSettings implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private Map<UserProperty, String> iCache;
+		private transient UserContext iUserContext;
+		
+		public CachedUserSettings() {}
+		public CachedUserSettings(UserContext context) { iUserContext = context; }
 		
 		public String get(UserProperty property) {
 			if (iCache == null) iCache = new HashMap<UserProperty, String>();
@@ -76,6 +88,7 @@ public class UserSettingsFilter implements Filter {
 		}
 		
 		private UserContext getUser() {
+			if (iUserContext != null) return iUserContext;
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
 				return (UserContext)authentication.getPrincipal();

@@ -50,12 +50,15 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorAttributeP
 import org.unitime.timetable.gwt.shared.InstructorInterface.InstructorAttributePropertiesRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.SetLastDepartmentRequest;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -111,6 +114,7 @@ public class InstructorAttributesPage extends Composite {
 		iInstructorAttributeEdit = null;
 		
 		iFilterPanel = new UniTimeHeaderPanel(MESSAGES.propDepartment());
+		iFilterPanel.getHeaderTitlePanel().getElement().setId(DOM.createUniqueId());
 		
 		iFilter = new ListBox();
 		iFilter.setStyleName("unitime-TextBox");
@@ -124,6 +128,7 @@ public class InstructorAttributesPage extends Composite {
 			}
 		});
 		iFilter.getElement().getStyle().setMarginLeft(5, Unit.PX);
+		Roles.getListboxRole().setAriaLabelledbyProperty(iFilter.getElement(), Id.of(iFilterPanel.getHeaderTitlePanel().getElement()));
 		
 		iFilterPanel.addButton("search", MESSAGES.buttonSearch(), clickSearch);
 		iFilterPanel.addButton("new", MESSAGES.buttonAddNewInstructorAttribute(), clickNew);
