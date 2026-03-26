@@ -2071,6 +2071,7 @@ public class RoomInterface implements IsSerializable {
 		private List<AttachmentTypeInterface> iPictureTypes = new ArrayList<AttachmentTypeInterface>();
 		private boolean iCanSeeCourses = false, iCanSeeExams = false, iCanSeeEvents = false;
 		private boolean iGridAsText = false, iHorizontal = false;
+		private boolean iHighContrastColors = false;
 		private List<RoomSharingDisplayMode> iModes;
 		private String iEllipsoid = null;
 		private boolean iCanChangeAvailability = false, iCanChangeControll = false, iCanChangeExternalId = false, iCanChangeExamStatus = false,
@@ -2206,6 +2207,9 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isGridAsText() { return iGridAsText; }
 		public void setGridAsText(boolean gridAsText) { iGridAsText = gridAsText; }
+		
+		public boolean isHighContrastColors() { return iHighContrastColors; }
+		public void setHighContrastColors(boolean highContrastColors) { iHighContrastColors = highContrastColors; }
 		
 		public boolean isHorizontal() { return iHorizontal; }
 		public void setHorizontal(boolean horizontal) { iHorizontal = horizontal; }

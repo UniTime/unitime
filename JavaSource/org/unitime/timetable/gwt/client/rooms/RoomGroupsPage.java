@@ -426,6 +426,8 @@ public class RoomGroupsPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
 				iRoomGroupEdit.setProperties(iProperties);
+				iGlobalGroupsTable.setProperties(iProperties);
+				iDepartmentalGroupsTable.setProperties(iProperties);
 				
 				if (iProperties.isCanSaveFilterDefaults()) {
 					iHistoryToken.setDefaultParameter("q", result.getFilterDefault("filter"));

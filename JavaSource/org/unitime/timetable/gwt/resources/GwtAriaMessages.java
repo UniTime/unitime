@@ -678,4 +678,10 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Instructor Availability")
 	String iconInstructorAvailability();
+	
+	@DefaultMessage("Campus Map")
+	String imageCampusMap();
+	
+	@DefaultMessage("Download {0}")
+	String iconDownload(String file);
 }

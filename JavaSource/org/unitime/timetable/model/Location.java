@@ -49,6 +49,8 @@ import org.hibernate.query.Query;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
@@ -593,16 +595,24 @@ public abstract class Location extends BaseLocation implements Comparable {
             return epx.toString(true).replaceAll(", ", "<br>");
         }
         StringBuffer ret = new StringBuffer();
+        boolean prefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get());
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
             if (!examType.equals(pref.getExamPeriod().getExamType())) continue;
             if(ret.length()>0){
             	ret.append("<br>");
             }
-            ret.append(
+            if (prefStyles) {
+            	ret.append(
+                        "<span title='"+pref.getPrefLevel().getPrefName()+" "+pref.getExamPeriod().getName()+"' class='pref-"+PreferenceLevel.prolog2char(pref.getPrefLevel().getPrefProlog())+"'>"+
+                        pref.getExamPeriod().getAbbreviation()+
+                        "</span>");
+            } else {
+            	ret.append(
                     "<span title='"+pref.getPrefLevel().getPrefName()+" "+pref.getExamPeriod().getName()+"' style='color:"+PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog())+";'>"+
                     pref.getExamPeriod().getAbbreviation()+
                     "</span>");
+            }
         }
         return ret.toString();
     }

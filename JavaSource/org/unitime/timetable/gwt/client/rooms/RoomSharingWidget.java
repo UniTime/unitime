@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaListBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -268,6 +269,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				setTitle("");
 			} else {
 				getElement().getStyle().setBackgroundColor(option.getColor());
+				if (ToolBox.contrast("#000000", option.getColor()) > ToolBox.contrast("#ffffff", option.getColor()))
+					getElement().getStyle().setColor("#000000");
+				else
+					getElement().getStyle().setColor("#ffffff");
 				setHTML(option.getCode() == null ? "" : option.getCode());
 				setTitle(CONSTANTS.longDays()[day] + " " + slot2short(slot) + " - " + slot2short(slot + iMode.getStep()) + ": " + option.getName());
 			}
@@ -289,6 +294,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				setTitle("");
 			} else {
 				getElement().getStyle().setBackgroundColor(option.getColor());
+				if (ToolBox.contrast("#000000", option.getColor()) > ToolBox.contrast("#ffffff", option.getColor()))
+					getElement().getStyle().setColor("#000000");
+				else
+					getElement().getStyle().setColor("#ffffff");
 				setHTML(option.getCode() == null ? "" : option.getCode());
 				setTitle(CONSTANTS.longDays()[iDay] + " " + slot2short(iSlot) + " - " + slot2short(iSlot + iMode.getStep()) + ": " + option.getName());
 			}
@@ -311,8 +320,13 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			NodeList<OptionElement> items = selectElement.getOptions();
 			for (int i = 0; i < items.getLength(); i++) {
 				PreferenceInterface p = iModel.getPreferences().get(i);
-				if (p.getColor() != null)
+				if (p.getColor() != null) {
 					items.getItem(i).getStyle().setBackgroundColor(p.getColor());
+					if (ToolBox.contrast("#000000", option.getColor()) > ToolBox.contrast("#ffffff", option.getColor()))
+						items.getItem(i).getStyle().setColor("#000000");
+					else
+						items.getItem(i).getStyle().setColor("#ffffff");
+				}
 				if (items.getItem(i).getValue().equals(option.getPreference().toString())) pref.setSelectedIndex(i);
 			}
 			pref.addChangeHandler(new ChangeHandler() {
@@ -494,6 +508,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			if (box.getWidgetCount() == 0) icon.addStyleName("first");
 			if (option.getCode() != null && !option.getCode().isEmpty()) icon.setHTML(option.getCode());
 			icon.getElement().getStyle().setBackgroundColor(option.getColor());
+			if (ToolBox.contrast("#000000", option.getColor()) > ToolBox.contrast("#ffffff", option.getColor()))
+				icon.getElement().getStyle().setColor("#000000");
+			else
+				icon.getElement().getStyle().setColor("#ffffff");
 			line.add(icon);
 			
 			final P title = new P("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getName());
@@ -581,6 +599,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 					if (first) icon.addStyleName("first");
 					first = false;
 					icon.getElement().getStyle().setBackgroundColor(option.getColor());
+					if (ToolBox.contrast("#000000", option.getColor()) > ToolBox.contrast("#ffffff", option.getColor()))
+						icon.getElement().getStyle().setColor("#000000");
+					else
+						icon.getElement().getStyle().setColor("#ffffff");
 					line.add(icon);
 					
 					final P title = new P("title", "editable-title"); title.setHTML(option.getName());
@@ -684,6 +706,10 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 								if (option.getCode() != null && !option.getCode().isEmpty()) icon.setHTML(option.getCode());
 								if (box.getWidgetCount() == 0) icon.addStyleName("first");
 								icon.getElement().getStyle().setBackgroundColor(option.getColor());
+								if (ToolBox.contrast("#000000", option.getColor()) > ToolBox.contrast("#ffffff", option.getColor()))
+									icon.getElement().getStyle().setColor("#000000");
+								else
+									icon.getElement().getStyle().setColor("#ffffff");
 								line.add(icon);
 								
 								final P title = new P("title", "editable-title"); title.setHTML(option.getName());

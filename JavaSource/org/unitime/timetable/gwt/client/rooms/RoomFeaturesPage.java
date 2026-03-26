@@ -427,6 +427,8 @@ public class RoomFeaturesPage extends Composite {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
 				iRoomFeatureEdit.setProperties(iProperties);
+				iGlobalFeaturesTable.setProperties(iProperties);
+				iDepartmentalFeaturesTable.setProperties(iProperties);
 				
 				if (iProperties.isCanSaveFilterDefaults()) {
 					iHistoryToken.setDefaultParameter("q", result.getFilterDefault("filter"));

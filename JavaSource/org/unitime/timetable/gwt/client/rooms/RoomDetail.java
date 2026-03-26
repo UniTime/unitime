@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -74,6 +75,7 @@ public class RoomDetail extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter;
@@ -267,7 +269,7 @@ public class RoomDetail extends Composite {
 			iForm.addRow(MESSAGES.propAvailableServices(), new ServicesCell(iRoom.getServices(), iRoom.getEventDepartment()));
 		}
 		if (courses && iRoom.hasPreference())
-			iForm.addRow(MESSAGES.propPreference(), new PreferenceCell(iRoom.getDepartments()), 1);
+			iForm.addRow(MESSAGES.propPreference(), new PreferenceCell(iRoom.getDepartments(), iProperties), 1);
 		List<GroupInterface> globalGroups = iRoom.getGlobalGroups();
 		if (!globalGroups.isEmpty())
 			iForm.addRow(MESSAGES.propGlobalGroups(), new GroupsCell(globalGroups), 1);
@@ -289,6 +291,7 @@ public class RoomDetail extends Composite {
 		
 		if (iRoom.hasMapUrl()) {
 			Image image = new Image(iRoom.getMapUrl()); image.setStyleName("map");
+			image.setAltText(ARIA.imageCampusMap());
 			if (Window.getClientWidth() <= 800) {
 				iForm.addRow(image);
 			} else {
@@ -452,8 +455,8 @@ public class RoomDetail extends Composite {
 	}
 	
 	static class PreferenceCell extends DepartmentCell {
-		PreferenceCell(List<DepartmentInterface> departments) {
-			super(true);
+		PreferenceCell(List<DepartmentInterface> departments, RoomPropertiesInterface props) {
+			super(true, props);
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
@@ -518,6 +521,7 @@ public class RoomDetail extends Composite {
 	static class LinkCell extends ImageLink {
 		LinkCell(RoomPictureInterface picture) {
 			super(new Image(RESOURCES.download()), GWT.getHostPageBaseURL() + "picture?id=" + picture.getUniqueId());
+			getImage().setAltText(ARIA.iconDownload(picture.getName()));
 			setStyleName("link");
 			setTitle(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getLabel() + ")"));
 			setText(picture.getName() + (picture.getPictureType() == null ? "" : " (" + picture.getPictureType().getAbbreviation() + ")"));
@@ -538,6 +542,7 @@ public class RoomDetail extends Composite {
 	static class Check extends P {
 		Check(boolean value, String onMessage, String offMessage) {
 			Image image = new Image(value ? RESOURCES.on() : RESOURCES.off());
+			image.setAltText(value ? ARIA.iconChecked() : ARIA.iconNotChecked());
 			image.addStyleName("image");
 			add(image);
 			InlineHTML text = new InlineHTML(value ? onMessage : offMessage);
