@@ -335,6 +335,14 @@ public class PreferenceLevel extends BasePreferenceLevel {
 		else
 			return PrefColor.toHex(color.getAdaColor());
 	}
+	
+	public static String prolog2style(String prologPref) {
+		if (CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get())) {
+			return "pref-" + PreferenceLevel.prolog2char(prologPref);
+		} else {
+			return null;
+		}
+	}
 
 	public static String prolog2abbv(String prologPref) {
 		PreferenceLevel pref = getPreferenceLevel(prologPref);

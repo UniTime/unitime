@@ -102,7 +102,9 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 			ret.addDepartment(department);
 		}
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
-			ret.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
+			ret.addPreference(new PreferenceInterface(pref.getUniqueId(),
+					PreferenceLevel.prolog2color(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true,
+					PreferenceLevel.prolog2style(pref.getPrefProlog())));
 		}
 		String sa = (String)context.getAttribute(SessionAttribute.OfferingsSubjectArea);
 		if (Constants.ALL_OPTION_VALUE.equals(sa))
@@ -145,7 +147,8 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 		model.setDefaultEditable(true);
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList(true)) {
 			if (PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
-			RoomSharingOption option = new RoomSharingOption(model.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())), pref.prefcolor(), "", pref.getPrefName(), true); 
+			RoomSharingOption option = new RoomSharingOption(model.char2id(PreferenceLevel.prolog2char(pref.getPrefProlog())),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), "", pref.getPrefName(), true); 
 			model.addOption(option);
 			if (PreferenceLevel.sNeutral.equals(pref.getPrefProlog()))
 				model.setDefaultOption(option);		

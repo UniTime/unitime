@@ -524,7 +524,10 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 						PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 						if (pref != null) {
 							extId.setTitle(pref.getName() + " " + instructor.getExternalId());
-							extId.getElement().getStyle().setColor(pref.getColor());
+							if (pref.hasStyle())
+								extId.addStyleName(pref.getStyle());
+							else
+								extId.getElement().getStyle().setColor(pref.getColor());
 						}
 					}
 					line.add(extId);
@@ -533,7 +536,8 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 						PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 						if (pref != null) {
 							name.setTitle(pref.getName() + " " + instructor.getInstructorName());
-							name.getElement().getStyle().setColor(pref.getColor());
+							if (!pref.hasStyle())
+								name.getElement().getStyle().setColor(pref.getColor());
 						}
 					}
 					line.add(name);
