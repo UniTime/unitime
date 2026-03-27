@@ -2523,12 +2523,28 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-TravelTimes .horizontal-header {
 	width: 30px;
-	font-size: x-small;
+	font-size: small;
 	vertical-align: bottom;
+	writing-mode: sideways-lr;
+	padding-bottom: 2px;
+	max-height: 150px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.unitime-TravelTimes .horizontal-header-bottom {
+	width: 30px;
+	font-size: small;
+	vertical-align: bottom;
+	writing-mode: sideways-rl;
+	padding-top: 2px;
+	max-height: 150px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .unitime-TravelTimes .vertical-header {
-	max-width: 100px;
+	max-width: 150px;
 	padding-right: 2px;
 	font-size: small;
 	white-space: nowrap;
