@@ -457,6 +457,7 @@ public class PublishedSectioningSolutionsTable extends UniTimeTable<PublishedSec
 		for (int i = 1; i < getRowCount(); i++) {
 			if (solutionId.equals(getData(i).getUniqueId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}

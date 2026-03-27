@@ -411,7 +411,9 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 	    	if (back != null) {
 	    		response.addOperation("back");
 	    		response.setBackTitle(back.getTitle());
-	    		response.setBackUrl(back.getUrl());
+	    		response.setBackUrl(back.getUrl() +
+	    				(back.getUrl().indexOf('?') >= 0 ? "&" : "?") +
+	    				"backId=" + io.getUniqueId() + "&backType=InstructionalOffering");
 	    	}
 	    	if (response.getPreviousId() != null && context.hasPermission(response.getPreviousId(), "InstructionalOffering", Right.InstructionalOfferingDetail))
 	    		response.addOperation("previous");

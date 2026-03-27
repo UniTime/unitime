@@ -395,6 +395,7 @@ public class InstructorsTable extends UniTimeTable<InstructorInterface>  {
 		for (int i = 1; i < getRowCount(); i++) {
 			if (instructorId.equals(getData(i).getId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}

@@ -281,6 +281,7 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 		for (int i = 1; i < getRowCount(); i++) {
 			if (groupId.equals(getData(i).getId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}
