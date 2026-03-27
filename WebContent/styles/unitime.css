@@ -3182,6 +3182,12 @@ div.gwt-MenuBarPopup {
 	border-spacing: 0px;
 }
 
+.unitime-RoomSharingWidget .cursor {
+	-moz-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	box-shadow: inset 0 0 3px 2px #7ba7d4;
+}
+
 .unitime-RoomSharingWidget .table {
 	display: -moz-inline-box;
 	display: inline-block;
@@ -3193,6 +3199,10 @@ div.gwt-MenuBarPopup {
 .unitime-RoomSharingWidget .box {
 	display: table;
 	overflow: hidden;
+}
+
+.unitime-RoomSharingWidget .box:focus {
+	outline: none !important;
 }
 
 .unitime-RoomSharingWidget .box .row {
