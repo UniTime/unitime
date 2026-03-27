@@ -260,11 +260,16 @@ public class InstructorDetailPage extends Composite {
 						String token = Window.Location.getHash();
 						if (token != null && (token.startsWith("#A") || token.equals("#back")) || token.startsWith("#ioc")) {
 							Element e = Document.get().getElementById(token.substring(1));
-							if (e != null) ToolBox.scrollToElement(e);
+							if (e != null) {
+								ToolBox.scrollToElement(e);
+								ToolBox.focusOnRow(e);
+							}
 						}
 						Element e = Document.get().getElementById("back");
-						if (e != null)
+						if (e != null) {
 							ToolBox.scrollToElement(e);
+							ToolBox.focusOnRow(e);
+						}
 					}
 				});
 				

@@ -442,6 +442,7 @@ public class SimpleEditPage extends Composite {
 							if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
 								iTable.setSelected(r, true);
 								ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
+								ToolBox.focusOnRow(iTable.getRowFormatter().getElement(r - 1));
 								break;
 							}
 						}
@@ -574,6 +575,7 @@ public class SimpleEditPage extends Composite {
 								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
 									iTable.setSelected(r, true);
 									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
+									ToolBox.focusOnRow(iTable.getRowFormatter().getElement(r - 1));
 									break;
 								}
 							}

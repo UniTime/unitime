@@ -258,6 +258,7 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 		for (int i = 1; i < getRowCount(); i++) {
 			if (featureId.equals(getData(i).getId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}

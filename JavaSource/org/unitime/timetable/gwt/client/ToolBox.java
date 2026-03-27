@@ -310,6 +310,14 @@ public class ToolBox {
 		element.scrollIntoView();
 	}-*/;
 	
+	public static void focusOnRow(Element tr) {
+		while (tr != null) {
+			if (tr.getPropertyString("tagName").equalsIgnoreCase("tr")) break;
+			tr = tr.getParentElement();
+		}
+		if (tr != null && tr.getTabIndex() >= 0) tr.focus();
+	}
+	
 	public native static boolean hasParent()/*-{
 		if ($wnd.parent && $wnd.parent !== $wnd.self) return true;
 		return false;

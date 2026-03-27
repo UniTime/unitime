@@ -1564,6 +1564,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		for (int i = 1; i < getRowCount(); i++) {
 			if (roomId.equals(getData(i).getUniqueId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 			}
 		}
 	}
