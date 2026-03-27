@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget.Box;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget.FP;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm.HasMobileScroll;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
@@ -42,8 +44,8 @@ import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -189,9 +191,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 					setTitle(DateTimeFormat.getFormat(CONSTANTS.examPeriodDateFormat()).format(date) + " " + slot2short(slot) + (period == null ? "" : " - " + slot2short(slot + period.getLength())) + ": " + preference.getName());
 				}
 				if (isEditable())
-					addMouseDownHandler(new MouseDownHandler() {
+					addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							setOption(iPreference);
 						}
 					});				
@@ -264,9 +266,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 					setTitle(DateTimeFormat.getFormat(CONSTANTS.examPeriodDateFormat()).format(date) + " " + slot2short(slot) + (period == null ? "" : " - " + slot2short(slot + period.getLength())) + ": " + preference.getName());
 				}
 				if (isEditable())
-					addMouseDownHandler(new MouseDownHandler() {
+					addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							setOption(iPreference);
 						}
 					});				
@@ -328,7 +330,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 				add(p);
 			}
 			
-			P box = new P("box");
+			P box = new Box();
 			add(box);
 
 			P header = new P("row");
@@ -428,7 +430,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 				} else {
 					iPanel.add(table);
 				}
-				P box = new P("box");
+				P box = new Box();
 				table.add(box);
 				P header = new P("row");
 				box.add(header);
@@ -449,9 +451,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 						thisSlot.put(slot, t);
 						header.add(p);
 						if (isEditable())
-							p.addMouseDownHandler(new MouseDownHandler() {
+							p.addClickHandler(new ClickHandler() {
 								@Override
-								public void onMouseDown(MouseDownEvent event) {
+								public void onClick(ClickEvent event) {
 									for (Cell d: t)
 										d.setOption(iPreference);
 								}
@@ -474,9 +476,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 							iCells.add(p);
 						}
 						if (isEditable())
-							d.addMouseDownHandler(new MouseDownHandler() {
+							d.addClickHandler(new ClickHandler() {
 								@Override
-								public void onMouseDown(MouseDownEvent event) {
+								public void onClick(ClickEvent event) {
 									for (Cell d: thisDay)
 										d.setOption(iPreference);
 								}
@@ -495,9 +497,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 						thisDay.put(day, t);
 						header.add(p);
 						if (isEditable())
-							p.addMouseDownHandler(new MouseDownHandler() {
+							p.addClickHandler(new ClickHandler() {
 								@Override
-								public void onMouseDown(MouseDownEvent event) {
+								public void onClick(ClickEvent event) {
 									for (Cell d: t)
 										d.setOption(iPreference);
 								}
@@ -521,9 +523,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 							iCells.add(p);
 						}
 						if (isEditable())
-							d.addMouseDownHandler(new MouseDownHandler() {
+							d.addClickHandler(new ClickHandler() {
 								@Override
-								public void onMouseDown(MouseDownEvent event) {
+								public void onClick(ClickEvent event) {
 									for (Cell d: thisSlot)
 										d.setOption(iPreference);
 								}
@@ -533,9 +535,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 
 				
 				if (isEditable())
-					corner.addMouseDownHandler(new MouseDownHandler() {
+					corner.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: thisPage)
 								d.setOption(iPreference);
 						}
@@ -573,6 +575,7 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 		legend.add(box);
 		
 		iSelectedIcon = null; iSelectedTitle = null;
+		FP last = null;
 		for (final PreferenceInterface option: iModel.getPreferences()) {
 			final P line = new P("row");
 			
@@ -581,7 +584,15 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 			icon.getElement().getStyle().setBackgroundColor(option.getColor());
 			line.add(icon);
 			
-			final P title = new P("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getName());
+			final FP title = new FP("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getName());
+			if (isEditable(option)) {
+				if (last != null) {
+					last.setNext(title); title.setPrevious(last);
+				}
+				last = title;
+			} else {
+				title.setTabIndex(-1);
+			}
 			line.add(title);
 			
 			if (isEditable(option) && option.equals(iPreference)) {
@@ -592,9 +603,9 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 			}
 
 			if (isEditable(option)) {
-				MouseDownHandler md = new MouseDownHandler() {
+				ClickHandler md = new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						if (iModel.isReqConfirmation()) {
 							if (option.getCode().equals("R")) {
 								if (iModel.hasPreference())
@@ -617,8 +628,8 @@ public class PeriodPreferencesWidget extends Composite implements HasValue<Perio
 					}
 				};
 				
-				icon.addMouseDownHandler(md);
-				title.addMouseDownHandler(md);
+				icon.addClickHandler(md);
+				title.addClickHandler(md);
 			}
 			
 			box.add(line);

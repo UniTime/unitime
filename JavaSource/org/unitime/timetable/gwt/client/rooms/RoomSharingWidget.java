@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaListBox;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -46,32 +47,39 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -83,6 +91,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 /**
  * @author Tomas Muller
@@ -98,7 +107,8 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	private RoomSharingDisplayMode iMode = null;
 	private CheckBox iHorizontal;
 	private RoomSharingOption iOption = null;
-	private P iSelectedIcon = null, iSelectedTitle = null;
+	private P iSelectedIcon = null; FP iSelectedTitle = null;
+	private FP iLast = null, iSelected = null;
 	private RoomSharingModel iModel;
 	protected boolean iEditable = true;
 	private TextArea iNote = null;
@@ -278,9 +288,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				setTitle(CONSTANTS.longDays()[day] + " " + slot2short(slot) + " - " + slot2short(slot + iMode.getStep()) + ": " + option.getName());
 			}
 			if (isEditable(day, slot))
-				addMouseDownHandler(new MouseDownHandler() {
+				addClickHandler(new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						setOption(iOption);
 					}
 				});
@@ -351,7 +361,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			for (int page = 0; page == 0 || (iSplit > 0 && iMode.getFirstSlot() + iSplit * page * iMode.getStep() < iMode.getLastSlot()); page++) {
 				P table = new P("table");
 				iPanel.add(table);
-				P box = new P("box");
+				P box = new Box();
 				table.add(box);
 				P header = new P("row");
 				box.add(header);
@@ -376,13 +386,14 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 					thisTime.add(t);
 					header.add(p);
 					if (isEditable())
-						p.addMouseDownHandler(new MouseDownHandler() {
+						p.addClickHandler(new ClickHandler() {
 							@Override
-							public void onMouseDown(MouseDownEvent event) {
+							public void onClick(ClickEvent event) {
 								for (Cell d: t)
 									d.setOption(iOption);
 							}
 						});
+
 				}
 				
 				final List<Cell> thisPage = new ArrayList<Cell>();
@@ -402,9 +413,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 						thisTime.get((slot - first) / iMode.getStep()).add(p);
 					}
 					if (isEditable())
-						d.addMouseDownHandler(new MouseDownHandler() {
+						d.addClickHandler(new ClickHandler() {
 							@Override
-							public void onMouseDown(MouseDownEvent event) {
+							public void onClick(ClickEvent event) {
 								for (Cell d: thisDay)
 									d.setOption(iOption);
 							}
@@ -414,9 +425,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				}
 				
 				if (isEditable())
-					corner.addMouseDownHandler(new MouseDownHandler() {
+					corner.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: thisPage)
 								d.setOption(iOption);
 						}
@@ -425,7 +436,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		} else {
 			P table = new P("table");
 			iPanel.add(table);
-			P box = new P("box");
+			P box = new Box();
 			table.add(box);
 			P header = new P("row");
 			box.add(header);
@@ -442,9 +453,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				thisDay.add(t);
 				header.add(p);
 				if (isEditable())
-					p.addMouseDownHandler(new MouseDownHandler() {
+					p.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: t)
 								d.setOption(iOption);
 						}
@@ -475,9 +486,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 					idx ++;
 				}
 				if (isEditable())
-					d.addMouseDownHandler(new MouseDownHandler() {
+					d.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: thisSlot)
 								d.setOption(iOption);
 						}
@@ -485,9 +496,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			}
 			
 			if (isEditable())
-				corner.addMouseDownHandler(new MouseDownHandler() {
+				corner.addClickHandler(new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						for (Cell d: thisPage)
 							d.setOption(iOption);
 					}
@@ -516,13 +527,22 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 				icon.getElement().getStyle().setColor("#ffffff");
 			line.add(icon);
 			
-			final P title = new P("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getName());
+			final FP title = new FP("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getName());
+			if (isEditable(option)) {
+				if (iLast != null) {
+					iLast.setNext(title);
+					title.setPrevious(iLast);
+				}
+				iLast = title;
+			} else {
+				title.setTabIndex(-1);
+			}
 			line.add(title);
 			
 			addPreferenceIfNeeded(line, option);
 			
 			if (option.getId() >= 0 && isDeletable(option)) {
-				Image remove = new Image(RESOURCES.delete());
+				Image remove = new ImageButton(RESOURCES.delete());
 				remove.setAltText(ARIA.iconRemoveItem(option.getName()));
 				remove.addStyleName("remove");
 				line.add(remove);
@@ -533,6 +553,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 						box.remove(line);
 						iModel.getOptions().remove(option);
 						setMode(mode, horizontal);
+						if (iSelectedTitle != null) iSelectedTitle.setFocus(true);
 					}
 				});
 			}
@@ -545,9 +566,9 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 			}
 
 			if (isEditable(option)) {
-				MouseDownHandler md = new MouseDownHandler() {
+				ClickHandler md = new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						iOption = option;
 						if (iSelectedIcon != null)
 							iSelectedIcon.removeStyleName("selected");
@@ -557,11 +578,12 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 						title.addStyleName("selected-title");
 						iSelectedIcon = icon;
 						iSelectedTitle = title;
+						iSelectedTitle.setFocus(true);
 					}
 				};
 				
-				icon.addMouseDownHandler(md);
-				title.addMouseDownHandler(md);
+				icon.addClickHandler(md);
+				title.addClickHandler(md);
 			}
 			
 			box.add(line);
@@ -608,10 +630,15 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 						icon.getElement().getStyle().setColor("#ffffff");
 					line.add(icon);
 					
-					final P title = new P("title", "editable-title"); title.setHTML(option.getName());
+					final FP title = new FP("title", "editable-title"); title.setHTML(option.getName());
+					if (iLast != null) {
+						iLast.setNext(title);
+						title.setPrevious(iLast);
+					}
+					iLast = title;
 					line.add(title);
 					
-					Image add = new Image(RESOURCES.add());
+					Image add = new ImageButton(RESOURCES.add());
 					add.setAltText(ARIA.iconAddItem(option.getName()));
 					add.addStyleName("remove");
 					line.add(add);
@@ -621,20 +648,22 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 							iModel.getOptions().add(option);
 							iOption = option;
 							setMode(mode, horizontal);
+							if (iSelectedTitle != null) iSelectedTitle.setFocus(true);
 						}
 					});
 					
-					MouseDownHandler md = new MouseDownHandler() {
+					ClickHandler md = new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							iModel.getOptions().add(option);
 							iOption = option;
 							setMode(mode, horizontal);
+							if (iSelectedTitle != null) iSelectedTitle.setFocus(true);
 						}
 					};
 					
-					icon.addMouseDownHandler(md);
-					title.addMouseDownHandler(md);
+					icon.addClickHandler(md);
+					title.addClickHandler(md);
 					
 					box.add(line);
 				}
@@ -697,12 +726,13 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 										return;
 									} else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
 										dialog.hide();
-										return;
+											return;
 									}
 								}
 							});
 							P legend = new P("legend");
 							legend.add(box);
+							FP last = null;
 							for (final RoomSharingOption option: other) {
 								final P line = new P("row");
 								
@@ -716,7 +746,13 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 									icon.getElement().getStyle().setColor("#ffffff");
 								line.add(icon);
 								
-								final P title = new P("title", "editable-title"); title.setHTML(option.getName());
+								final FP title = new FP("title", "editable-title"); title.setHTML(option.getName());
+								if (last != null) {
+									last.setNext(title);
+									title.setPrevious(last);
+								}
+								last = title;
+								title.getElement().setTabIndex(0);
 								line.add(title);
 								
 								ClickHandler md = new ClickHandler() {
@@ -726,6 +762,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 										dialog.hide();
 										iOption = option;
 										setMode(mode, horizontal);
+										if (iSelectedTitle != null) iSelectedTitle.setFocus(true);
 									}
 								};								
 								icon.addClickHandler(md);
@@ -756,6 +793,7 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 					            	}
 									dialog.hide();
 									setMode(mode, horizontal);
+									if (iSelectedTitle != null) iSelectedTitle.setFocus(true);
 								}
 							});
 							footer.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
@@ -858,4 +896,216 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 		}
 		return false;
 	}
+	
+	public static class FP extends P implements Focusable{
+		FP iPrevious, iNext;
+		
+		FP(String... styles) {
+			super(styles);
+			getElement().setTabIndex(0);
+			sinkEvents(Event.ONKEYDOWN);
+		}
+		
+		void setPrevious(FP prev) { iPrevious = prev; }
+		void setNext(FP next) { iNext = next; }
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+			case Event.ONKEYDOWN:
+				if (event.getKeyCode() == KeyCodes.KEY_ENTER || event.getKeyCode() == KeyCodes.KEY_SPACE) {
+					clickElement(getElement());
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP) {
+					if (iPrevious != null) iPrevious.setFocus(true);
+					else if (iNext != null) {
+						FP next = iNext;
+						while (next.iNext != null)
+							next = next.iNext;
+						next.setFocus(true);
+					}
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN) {
+					if (iNext != null) iNext.setFocus(true);
+					else if (iPrevious != null) {
+						FP prev = iPrevious;
+						while (prev.iPrevious != null)
+							prev = prev.iPrevious;
+						prev.setFocus(true);
+					}
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				break;
+			}
+			super.onBrowserEvent(event);
+		}
+		
+		@Override
+		public int getTabIndex() {
+			return getElement().getTabIndex();
+		}
+
+		@Override
+		public void setTabIndex(int index) {
+			getElement().setTabIndex(index);
+		}
+
+		@Override
+		public void setAccessKey(char key) {
+			FocusImpl.getFocusImplForWidget().setAccessKey(getElement(), key);
+		}
+
+		@Override
+		public void setFocus(boolean focused) {
+			if (focused)
+				getElement().focus();
+			else
+				getElement().blur();
+		}
+	}
+
+	public static class Box extends P implements Focusable, HasAllFocusHandlers {
+		int iRow = -1, iCol = -1;
+		
+		public Box() {
+			super("box");
+			getElement().setTabIndex(0);
+			sinkEvents(Event.ONKEYDOWN);	
+			addFocusHandler(new FocusHandler() {
+				@Override
+				public void onFocus(FocusEvent event) {
+					P cell = getSelectedCell();
+					if (cell != null)
+						cell.addStyleName("cursor");
+					else
+						setCursor(0, 0);
+				}
+			});
+			addBlurHandler(new BlurHandler() {
+				@Override
+				public void onBlur(BlurEvent event) {
+					P cell = getSelectedCell();
+					if (cell != null)
+						cell.removeStyleName("cursor");
+				}
+			});
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+			case Event.ONKEYDOWN:
+				if (event.getKeyCode() == KeyCodes.KEY_ENTER || event.getKeyCode() == KeyCodes.KEY_SPACE) {
+					click();
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP) {
+					setCursor(iRow - 1, iCol);
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN) {
+					setCursor(iRow + 1, iCol);
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_LEFT) {
+					setCursor(iRow, iCol - 1);
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_RIGHT) {
+					setCursor(iRow, iCol + 1);
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+		    	break;
+			case Event.ONCLICK:
+				Element cell = DOM.eventGetTarget(event);
+				while (cell != null) {
+					if (cell.getPropertyString("tagName").equalsIgnoreCase("div")) break;
+					cell = cell.getParentElement();
+				}
+				if (cell != null) {
+					Element row = DOM.getParent(cell);
+					setCursor(DOM.getChildIndex(getElement(), row), DOM.getChildIndex(row, cell));
+				}
+				break;
+			}
+			super.onBrowserEvent(event);
+		}
+		
+		@Override
+		public void clear() {
+			super.clear();
+			iRow = -1; iCol = -1;
+		}
+		
+		public P getSelectedCell() {
+			if (iRow < 0 || getWidgetCount() <= iRow) return null;
+			P r = (P)getWidget(iRow);
+			if (iCol < 0 || r.getWidgetCount() <= iCol) return null;
+			return (P)r.getWidget(iCol);
+		}
+		
+		public void setCursor(int row, int col) {
+			P old = getSelectedCell();
+			if (old != null) old.removeStyleName("cursor");
+			iRow = row % getWidgetCount();
+			P r = (P)getWidget(iRow);
+			iCol = col % r.getWidgetCount();
+			P c = (P)r.getWidget(iCol);
+			c.addStyleName("cursor");
+		}
+		
+		@Override
+		public int getTabIndex() {
+			return getElement().getTabIndex();
+		}
+
+		@Override
+		public void setTabIndex(int index) {
+			getElement().setTabIndex(index);
+		}
+
+		@Override
+		public void setAccessKey(char key) {
+			FocusImpl.getFocusImplForWidget().setAccessKey(getElement(), key);
+		}
+		
+		@Override
+		public HandlerRegistration addFocusHandler(FocusHandler handler) {
+			return addDomHandler(handler, FocusEvent.getType());
+		}
+
+		@Override
+		public HandlerRegistration addBlurHandler(BlurHandler handler) {
+			return addDomHandler(handler, BlurEvent.getType());
+		}
+
+		@Override
+		public void setFocus(boolean focused) {
+			if (focused)
+				getElement().focus();
+			else
+				getElement().blur();
+		}
+		
+		public void click() {
+			P cell = getSelectedCell();
+			if (cell != null)
+				clickElement(cell.getElement());
+		}
+		
+	}
+
+	public static native void clickElement(Element elem) /*-{
+		elem.click();
+	}-*/;
 }
