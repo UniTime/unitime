@@ -72,6 +72,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	protected Map<Integer,String> iLastHoverBackgroundColor = new HashMap<Integer, String>();
 	private boolean iAllowSelection = false, iAllowMultiSelect= true;
 	private boolean iEnabled = true;
+	private boolean iAllowFocus = true;
 	
 	public UniTimeTable() {
 		setCellPadding(2);
@@ -81,10 +82,21 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		sinkEvents(Event.ONCLICK);
 		sinkEvents(Event.ONKEYDOWN);
 		sinkEvents(Event.ONDBLCLICK);
+		sinkEvents(Event.ONKEYPRESS);
+		sinkEvents(Event.ONKEYDOWN);
 		setStylePrimaryName("unitime-MainTable");
 		iHintPanel = new PopupPanel();
 		iHintPanel.setStyleName("unitime-PopupHint");
 		Roles.getGridRole().set(getElement());
+		if (isAllowFocus())
+			addStyleName("unitime-FocusableTable");
+	}
+	
+	@Override
+	public void setStyleName(String styleName) {
+		super.setStyleName(styleName);
+		if (isAllowFocus())
+			addStyleName("unitime-FocusableTable");
 	}
 	
 	public void setAllowSelection(boolean allow) { iAllowSelection = allow; }
@@ -94,6 +106,17 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	public boolean isAllowMultiSelect() { return iAllowMultiSelect; }
 	
 	public boolean isCanSelectRow(int row) { return true; }
+	
+	public boolean isAllowFocus() { return iAllowFocus; }
+	public void setAllowFocus(boolean allowFocus) {
+		if (iAllowFocus != allowFocus) {
+			iAllowFocus = allowFocus;
+			if (isAllowFocus())
+				addStyleName("unitime-FocusableTable");
+			else
+				removeStyleName("unitime-FocusableTable");
+		}
+	}
 
 	public void clearTable(int headerRows) {
 		for (int row = getRowCount() - 1; row >= headerRows; row--)
@@ -188,6 +211,9 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			DataChangedEvent<T> event = new DataChangedEvent<T>(data, row);
 			for (DataChangedListener<T> listener: iDataChangedListeners)
 				listener.onDataInserted(event);
+		}
+		if (isAllowFocus() && !iMouseClickListeners.isEmpty() && data != null) {
+			getRowFormatter().getElement(row).setTabIndex(0);
 		}
 	}
 	
@@ -559,6 +585,122 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	}
 	
 	public void onBrowserEvent(final Event event) {
+		if (isAllowFocus()) {
+			if (DOM.eventGetType(event) == Event.ONKEYPRESS && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+				Element tr = DOM.eventGetTarget(event);
+				while (tr != null) {
+					if (tr.getPropertyString("tagName").equalsIgnoreCase("tr")) break;
+					tr = tr.getParentElement();
+				}
+				if (tr != null) {
+					Element body = DOM.getParent(tr);
+					int row = DOM.getChildIndex(body, tr);
+					SmartTableRow<T> r = getSmartRow(row);
+				    boolean hasData = showHower(row, r == null ? null : r.getData());
+				    if (hasData) {
+				    	TableEvent<T> tableEvent = new TableEvent<T>(event, row, 0, tr, tr.getFirstChildElement(), r.getData());
+				    	for (MouseClickListener<T> listener: iMouseClickListeners)
+							listener.onMouseClick(tableEvent);
+					    event.preventDefault();
+					    event.stopPropagation();
+				    }
+				}
+			} else if (DOM.eventGetType(event) == Event.ONKEYDOWN) {
+				Element tr = DOM.eventGetTarget(event);
+				while (tr != null) {
+					if (tr.getPropertyString("tagName").equalsIgnoreCase("tr")) break;
+					tr = tr.getParentElement();
+				}
+				if (tr != null) {
+					Element body = DOM.getParent(tr);
+					int row = DOM.getChildIndex(body, tr);
+					if (event.getKeyCode() == KeyCodes.KEY_DOWN) {
+				    	while (true) {
+				    		row = row + 1;
+				    		if (row >= getRowCount()) break;
+				    		Element el = getRowFormatter().getElement(row); 
+				    		if (el.getTabIndex() >= 0) {
+				    			el.focus();
+							    break;
+				    		}
+				    	}
+					    event.preventDefault();
+					    event.stopPropagation();
+				    } else if (event.getKeyCode() == KeyCodes.KEY_UP) {
+				    	while (true) {
+				    		row = row - 1;
+				    		if (row < 0) break;
+				    		Element el = getRowFormatter().getElement(row); 
+				    		if (el.getTabIndex() >= 0) {
+				    			el.focus();
+							    break;
+				    		}
+				    	}
+					    event.preventDefault();
+					    event.stopPropagation();
+				    } else if (event.getKeyCode() == KeyCodes.KEY_PAGEDOWN) {
+				    	Element last = null;
+				    	while (true) {
+				    		row = row + 1;
+				    		if (row >= getRowCount()) break;
+				    		if (getRowFormatter().getElement(row).getTabIndex() >= 0) {
+				    			last = getRowFormatter().getElement(row);
+				    			if (!isElementInViewport(getRowFormatter().getElement(row))) break;
+				    		}
+				    	}
+				    	if (last != null) {
+				    		last.focus();
+				    		scrollToTop(last);
+				    	}
+					    event.preventDefault();
+					    event.stopPropagation();
+				    } else if (event.getKeyCode() == KeyCodes.KEY_PAGEUP) {
+				    	Element last = null;
+				    	while (true) {
+				    		row = row - 1;
+				    		if (row < 0) break;
+				    		if (getRowFormatter().getElement(row).getTabIndex() >= 0) {
+				    			last = getRowFormatter().getElement(row);
+				    			if (!isElementInViewport(getRowFormatter().getElement(row))) break;
+				    		}
+				    	}
+				    	if (last != null) {
+				    		last.focus();
+				    		scrollToBottom(last);
+				    	}
+					    event.preventDefault();
+					    event.stopPropagation();
+				    } else if (event.getKeyCode() == KeyCodes.KEY_HOME) {
+				    	row = 0;
+				    	while (true) {
+				    		if (row >= getRowCount()) break;
+				    		Element el = getRowFormatter().getElement(row); 
+				    		if (el.getTabIndex() >= 0) {
+				    			el.focus();
+							    break;
+				    		}
+				    		row = row + 1;
+				    	}
+					    event.preventDefault();
+					    event.stopPropagation();
+				    } else if (event.getKeyCode() == KeyCodes.KEY_END) {
+				    	row = getRowCount() - 1;
+				    	while (true) {
+				    		if (row < 0) break;
+				    		Element el = getRowFormatter().getElement(row); 
+				    		if (el.getTabIndex() >= 0) {
+				    			el.focus();
+							    break;
+				    		}
+				    		row = row - 1;
+				    	}
+					    event.preventDefault();
+					    event.stopPropagation();
+				    }
+				}
+			}
+		}
+		
 		Element td = getEventTargetCell(event);
 		if (td==null) return;
 	    final Element tr = DOM.getParent(td);
@@ -1127,4 +1269,26 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	public void setEnabled(boolean enabled) {
 		iEnabled = enabled;
 	}
+	
+	public static native boolean isElementInViewport(Element el) /*-{
+		var rect = el.getBoundingClientRect();
+		return (
+			rect.top >= 0 &&
+			rect.left >= 0 &&
+		    rect.bottom <= ($wnd.innerHeight || $doc.documentElement.clientHeight) &&
+		    rect.right <= ($wnd.innerWidth || $doc.documentElement.clientWidth)
+		    );
+	}-*/;
+	
+	public static native void scrollToTop(Element el) /*-{
+		el.scrollIntoView({behavior: "smooth", block: "start"});
+	}-*/;
+	
+	public static native void scrollToBottom(Element el) /*-{
+		el.scrollIntoView({behavior: "smooth", block: "end"});
+	}-*/;
+	
+	public static native void scrollToView(Element el) /*-{
+		el.scrollIntoView({behavior: "smooth"});
+	}-*/;
 }
