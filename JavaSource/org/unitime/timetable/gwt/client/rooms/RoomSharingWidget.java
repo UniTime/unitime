@@ -900,14 +900,14 @@ public class RoomSharingWidget extends Composite implements HasValue<RoomSharing
 	public static class FP extends P implements Focusable{
 		FP iPrevious, iNext;
 		
-		FP(String... styles) {
+		public FP(String... styles) {
 			super(styles);
 			getElement().setTabIndex(0);
 			sinkEvents(Event.ONKEYDOWN);
 		}
 		
-		void setPrevious(FP prev) { iPrevious = prev; }
-		void setNext(FP next) { iNext = next; }
+		public void setPrevious(FP prev) { iPrevious = prev; }
+		public void setNext(FP next) { iNext = next; }
 		
 		@Override
 		public void onBrowserEvent(Event event) {
