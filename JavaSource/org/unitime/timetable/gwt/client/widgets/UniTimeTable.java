@@ -107,6 +107,10 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	
 	public boolean isCanSelectRow(int row) { return true; }
 	
+	public boolean isCanFocusRow(T data) {
+		return data != null;
+	}
+	
 	public boolean isAllowFocus() { return iAllowFocus; }
 	public void setAllowFocus(boolean allowFocus) {
 		if (iAllowFocus != allowFocus) {
@@ -212,8 +216,9 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			for (DataChangedListener<T> listener: iDataChangedListeners)
 				listener.onDataInserted(event);
 		}
-		if (isAllowFocus() && !iMouseClickListeners.isEmpty() && data != null) {
+		if (isAllowFocus() && !iMouseClickListeners.isEmpty() && isCanFocusRow(data)) {
 			getRowFormatter().getElement(row).setTabIndex(0);
+			getRowFormatter().addStyleName(row, "focusable-row");
 		}
 	}
 	
@@ -619,7 +624,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				    		row = row + 1;
 				    		if (row >= getRowCount()) break;
 				    		Element el = getRowFormatter().getElement(row); 
-				    		if (el.getTabIndex() >= 0) {
+				    		if (el.getTabIndex() >= 0 && getRowFormatter().isVisible(row)) {
 				    			el.focus();
 							    break;
 				    		}
@@ -631,7 +636,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				    		row = row - 1;
 				    		if (row < 0) break;
 				    		Element el = getRowFormatter().getElement(row); 
-				    		if (el.getTabIndex() >= 0) {
+				    		if (el.getTabIndex() >= 0 && getRowFormatter().isVisible(row)) {
 				    			el.focus();
 							    break;
 				    		}
@@ -643,7 +648,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				    	while (true) {
 				    		row = row + 1;
 				    		if (row >= getRowCount()) break;
-				    		if (getRowFormatter().getElement(row).getTabIndex() >= 0) {
+				    		if (getRowFormatter().getElement(row).getTabIndex() >= 0 && getRowFormatter().isVisible(row)) {
 				    			last = getRowFormatter().getElement(row);
 				    			if (!isElementInViewport(getRowFormatter().getElement(row))) break;
 				    		}
@@ -659,7 +664,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				    	while (true) {
 				    		row = row - 1;
 				    		if (row < 0) break;
-				    		if (getRowFormatter().getElement(row).getTabIndex() >= 0) {
+				    		if (getRowFormatter().getElement(row).getTabIndex() >= 0 && getRowFormatter().isVisible(row)) {
 				    			last = getRowFormatter().getElement(row);
 				    			if (!isElementInViewport(getRowFormatter().getElement(row))) break;
 				    		}
@@ -675,7 +680,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				    	while (true) {
 				    		if (row >= getRowCount()) break;
 				    		Element el = getRowFormatter().getElement(row); 
-				    		if (el.getTabIndex() >= 0) {
+				    		if (el.getTabIndex() >= 0 && getRowFormatter().isVisible(row)) {
 				    			el.focus();
 							    break;
 				    		}
@@ -688,7 +693,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				    	while (true) {
 				    		if (row < 0) break;
 				    		Element el = getRowFormatter().getElement(row); 
-				    		if (el.getTabIndex() >= 0) {
+				    		if (el.getTabIndex() >= 0 && getRowFormatter().isVisible(row)) {
 				    			el.focus();
 							    break;
 				    		}

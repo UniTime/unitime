@@ -116,6 +116,11 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		return data != null && data.hasURL() && !iTable.isMultiRows();
 	}
 	
+	@Override
+	public boolean isCanFocusRow(LineInterface data) {
+		return data != null && data.hasURL();
+	}
+	
 	protected static void applyStyle(Style style, String text) {
 		if (text == null || text.isEmpty())
 			return;

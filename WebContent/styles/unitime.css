@@ -8649,6 +8649,21 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 }
 
-.unitime-FocusableTable td {
+.unitime-FocusableTable .focusable-row td {
 	height: 24px;
+}
+
+.unitime-FocusableTable .focusable-row td a {
+	display: inline-block;
+	min-height: 24px;
+	min-width: 24px;
+}	
+
+.unitime-CourseCurriculaTable {
+	width: 100%;
+}
+
+.unitime-CourseCurriculaTable .unitime-Hint {
+	margin-top: 0px;
+	min-height: 24px
 }
