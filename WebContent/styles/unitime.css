@@ -1464,6 +1464,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	white-space: nowrap;
 }
 
+.unitime-TotalRow div {
+	min-height: 22px;
+}
+
 .unitime-OtherRow {
 	color: #767676;
 }
@@ -8666,4 +8670,8 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-CourseCurriculaTable .unitime-Hint {
 	margin-top: 0px;
 	min-height: 24px
+}
+
+.gwt-CheckBox-disabled {
+	color: #767676;
 }

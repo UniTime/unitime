@@ -88,6 +88,7 @@ public class RestrictionsTable extends UniTimeTable<RestrictionsTable.Node> {
 		header.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
 		addRow(null, header);
 		setAllowSelection(true);
+		setAllowFocus(false);
 		addMouseClickListener(new UniTimeTable.MouseClickListener<Node>() {
 			@Override
 			public void onMouseClick(UniTimeTable.TableEvent<Node> event) {
