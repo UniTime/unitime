@@ -25,6 +25,7 @@ import java.util.List;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.ClickableLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomFilterBox;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
@@ -47,12 +48,14 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentPageInterface.RoomOrder;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomFilterRpcRequest;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.TextDecoration;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
@@ -60,6 +63,8 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -67,9 +72,11 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 public class ClassAssignmentPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -309,7 +316,7 @@ public class ClassAssignmentPage extends Composite {
 					iPanel.addHeaderRow(hp);
 					iPanel.addRow(new TableWidget(response.getStudentConflicts()));
 					if (response.isUseRealStudents()) {
-						Label a = new Label(COURSE.studentConflictsShowingActualConflicts());
+						Label a = new ClickableLabel(COURSE.studentConflictsShowingActualConflicts());
 						a.setStyleName("unitime-ClassAssignmentLink");
 						a.addClickHandler(new ClickHandler() {
 							@Override
@@ -321,7 +328,7 @@ public class ClassAssignmentPage extends Composite {
 						int r = iPanel.addRow(a);
 						iPanel.getRowFormatter().getElement(r).getStyle().setTextAlign(TextAlign.CENTER);
 					} else {
-						Label a = new Label(COURSE.studentConflictsShowingSolutionConflicts());
+						Label a = new ClickableLabel(COURSE.studentConflictsShowingSolutionConflicts());
 						a.setStyleName("unitime-ClassAssignmentLink");
 						a.addClickHandler(new ClickHandler() {
 							@Override
@@ -475,8 +482,13 @@ public class ClassAssignmentPage extends Composite {
 			iKey = key; iCount = count;
 			iTotal = total; iDesired = desired;
 			setStyleName("domain-items");
+			Item prev = null;
 			for (DomainItem item: items) {
 				final Item w = new Item(item);
+				if (prev != null) {
+					prev.setNext(w); w.setPrevious(prev);
+				}
+				prev = w;
 				add(w);
 				if (w.isSelected()) {
 					iSelection.add(w); 
@@ -557,8 +569,9 @@ public class ClassAssignmentPage extends Composite {
 		}
 	}
 
-	static class Item extends P {
+	static class Item extends P implements Focusable {
 		DomainItem iItem;
+		Item iPrevious, iNext;
 		
 		Item(DomainItem item) {
 			iItem = item;
@@ -592,7 +605,12 @@ public class ClassAssignmentPage extends Composite {
 						getElement().getStyle().clearBackgroundColor();
 				}
 			});
+			getElement().setTabIndex(0);
+			sinkEvents(Event.ONKEYDOWN);
 		}
+		
+		void setPrevious(Item prev) { iPrevious = prev; }
+		void setNext(Item next) { iNext = next; }
 		
 		public DomainItem getValue() { return iItem; }
 		
@@ -606,6 +624,94 @@ public class ClassAssignmentPage extends Composite {
 					getElement().getStyle().clearBackgroundColor();
 			}
 		}
+		
+		private Item next(int i, boolean rotate) {
+			Item next = iNext;
+			for (int k = 0; k < i - 1; k++)
+				if (next != null) next = next.iNext;
+			if (next == null && rotate) {
+				for (Item adept = prev(i, false); adept != null; adept = adept.prev(i, false))
+					next = adept;
+			}
+			return next;
+		}
+		
+		private Item prev(int i, boolean rotate) {
+			Item prev = iPrevious;
+			for (int k = 0; k < i - 1; k++)
+				if (prev != null) prev = prev.iPrevious;
+			if (prev == null && rotate) {
+				for (Item adept = next(i, false); adept != null; adept = adept.next(i, false))
+					prev = adept;
+			}
+			return prev;
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+			case Event.ONKEYDOWN:
+				if (event.getKeyCode() == KeyCodes.KEY_ENTER || event.getKeyCode() == KeyCodes.KEY_SPACE) {
+					clickElement(getElement());
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_LEFT) {
+					Item next = prev(1, true);
+					if (next != null) next.setFocus(true);
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_RIGHT) {
+					Item next = next(1, true);
+					if (next != null) next.setFocus(true);
+					event.stopPropagation();
+			    	event.preventDefault();
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_UP) {
+					Item next = prev(4, true);
+					if (next != null) next.setFocus(true);
+					event.stopPropagation();
+			    	event.preventDefault();
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				if (event.getKeyCode() == KeyCodes.KEY_DOWN) {
+					Item next = next(4, true);
+					if (next != null) next.setFocus(true);
+					event.stopPropagation();
+			    	event.preventDefault();
+				}
+				break;
+			}
+			super.onBrowserEvent(event);
+		}
+		
+		@Override
+		public int getTabIndex() {
+			return getElement().getTabIndex();
+		}
+
+		@Override
+		public void setTabIndex(int index) {
+			getElement().setTabIndex(index);
+		}
+
+		@Override
+		public void setAccessKey(char key) {
+			FocusImpl.getFocusImplForWidget().setAccessKey(getElement(), key);
+		}
+
+		@Override
+		public void setFocus(boolean focused) {
+			if (focused)
+				getElement().focus();
+			else
+				getElement().blur();
+		}
+
 	}
 	
 	public static native void checkParent() /*-{
@@ -622,5 +728,8 @@ public class ClassAssignmentPage extends Composite {
 	}-*/;
 	public native static void openParent(String url) /*-{
 		$wnd.parent.location = url;
-}-*/;
+	}-*/;
+	public static native void clickElement(Element elem) /*-{
+		elem.click();
+	}-*/;
 }
