@@ -11,3 +11,7 @@
 /gwt-unitCache
 /WebContent/unitime
 /WebContent/WEB-INF/deploy
+/archives/
+/logs/
+hs_err_*.log
+replay_*.log
