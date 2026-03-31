@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
@@ -67,6 +68,7 @@ public class CrossListPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	private static final GwtResources RES = GWT.create(GwtResources.class);
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimpleForm iPanel;
@@ -246,6 +248,7 @@ public class CrossListPage extends Composite {
 		line.add(lastterm);
 		
 		ImageButton delete = new ImageButton(RES.delete());
+		delete.setAltText(ARIA.buttonDeleteThisLine());
 		delete.setEnabled(clc.isCanDelete());
 		delete.addClickHandler(new ClickHandler() {
 			@Override

@@ -183,7 +183,7 @@ public class InstructorsTableBuilder extends TableBuilder{
 			for (TimePref tp: di.getTimePreferences()) {
 				RequiredTimeTable rtt = tp.getRequiredTimeTable();
 				if (getGridAsText()) {
-					timePref.add(rtt.getModel().toString().replace(", ", "\n"))
+					timePref.addItem(rtt.getModel().toCell(isUsePrefStyles()))
 						.setMouseOver("$wnd.showGwtInstructorAvailabilityHint($wnd.lastMouseOverElement, '" + di.getUniqueId() + "');")
 						.setMouseOut("$wnd.hideGwtInstructorAvailabilityHint();");
 				} else {
