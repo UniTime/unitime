@@ -117,8 +117,6 @@
     <right>RoomAvailability</right>
     <right>RoomDepartments</right>
     <right>EditRoomDepartments</right>
-    <right>AddSpecialUseRoom</right>
-    <right>AddSpecialUseRoomExternalRoom</right>
     <right>RoomDetailAvailability</right>
     <right>RoomEditAvailability</right>
     <right>RoomEditPreference</right>
@@ -221,8 +219,6 @@
     <right>RoomEditChangeType</right>
     <right>RoomEditChangeCapacity</right>
     <right>RoomEditChangeRoomProperties</right>
-    <right>AddSpecialUseRoom</right>
-    <right>AddSpecialUseRoomExternalRoom</right>
     <right>AddNonUnivLocation</right>
     <right>NonUniversityLocationEdit</right>
     <right>NonUniversityLocationDelete</right>
@@ -421,8 +417,6 @@
     <right>EditRoomDepartmentsFinalExams</right>
     <right>EditRoomDepartmentsMidtermExams</right>
     <right>AddRoom</right>
-    <right>AddSpecialUseRoom</right>
-    <right>AddSpecialUseRoomExternalRoom</right>
     <right>RoomDelete</right>
     <right>RoomDetailAvailability</right>
     <right>RoomDetailPeriodPreferences</right>
@@ -731,8 +725,6 @@
     <right>EditRoomDepartmentsFinalExams</right>
     <right>EditRoomDepartmentsMidtermExams</right>
     <right>AddRoom</right>
-    <right>AddSpecialUseRoom</right>
-    <right>AddSpecialUseRoomExternalRoom</right>
     <right>RoomDelete</right>
     <right>RoomDetailAvailability</right>
     <right>RoomDetailPeriodPreferences</right>

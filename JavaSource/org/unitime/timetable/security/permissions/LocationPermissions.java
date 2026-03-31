@@ -355,46 +355,7 @@ public class LocationPermissions {
 		@Override
 		public Class<NonUniversityLocation> type() { return NonUniversityLocation.class; }
 	}
-	
-	@PermissionForRight(Right.AddSpecialUseRoomExternalRoom)
-	public static class AddSpecialUseRoomExternalRoom implements Permission<ExternalRoom> {
 
-		@Override
-		public boolean check(UserContext user, ExternalRoom source) {
-			if (user == null || user.getCurrentAuthority() == null || source == null) return false;
-			
-			UserAuthority authority = user.getCurrentAuthority();
-			
-			if (!authority.hasRight(Right.AddSpecialUseRoom)) return false;
-			
-			if (authority.hasRight(Right.DepartmentIndependent)) {
-				return true;
-			} else {
-				for (ExternalRoomDepartment dept: source.getRoomDepartments()) {
-					if (authority.hasQualifier(new SimpleQualifier("Department", dept.getDepartmentCode())))
-						return true;
-				}
-				
-				return false;
-			}
-		}
-
-		@Override
-		public Class<ExternalRoom> type() { return ExternalRoom.class; }
-	}
-	
-	@PermissionForRight(Right.AddSpecialUseRoom)
-	public static class AddSpecialUseRoom implements Permission<Department> {
-		@Autowired PermissionDepartment permissionDepartment;
-
-		@Override
-		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source) && !ExternalRoom.findAll(source.getSessionId()).isEmpty();
-		}
-
-		@Override
-		public Class<Department> type() { return Department.class; }
-	}
 	
 	@PermissionForRight(Right.AddNonUnivLocation)
 	public static class AddNonUnivLocation implements Permission<Department> {

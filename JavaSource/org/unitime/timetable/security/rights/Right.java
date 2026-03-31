@@ -209,8 +209,6 @@ public enum Right {
 	EditRoomDepartments(Department.class),
 	EditRoomDepartmentsExams(Session.class),
 	AddRoom(Department.class),
-	AddSpecialUseRoom(Department.class),
-	AddSpecialUseRoomExternalRoom(ExternalRoom.class),
     RoomDelete(Room.class),
 	RoomDetailAvailability(Location.class),
 	RoomDetailPeriodPreferences(Location.class),
