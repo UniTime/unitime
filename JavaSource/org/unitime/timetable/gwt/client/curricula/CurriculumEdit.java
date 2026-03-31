@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -71,6 +72,7 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
 public class CurriculumEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 
 	private SimpleForm iCurriculaTable;
@@ -895,10 +897,13 @@ public class CurriculumEdit extends Composite {
 			InlineHTML text = new InlineHTML(value ? onMessage : offMessage);
 			text.addStyleName("message");
 			add(text);
-			if (value)
+			if (value) {
 				addStyleName("check-enabled");
-			else
+				image.setAltText(ARIA.iconChecked());
+			} else {
 				addStyleName("check-disabled");
+				image.setAltText(ARIA.iconNotChecked());
+			}
 		}
 	}
 }

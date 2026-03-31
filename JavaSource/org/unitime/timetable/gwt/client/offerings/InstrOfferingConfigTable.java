@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.InstrOfferingConfigInterface;
 import org.unitime.timetable.gwt.shared.InstrOfferingConfigInterface.InstrOfferingConfigColumn;
@@ -61,6 +62,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 	protected static final CourseMessages MESSAGES = GWT.create(CourseMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private InstrOfferingConfigInterface iData;
 	private NumberFormat sRoomRatioFormat = NumberFormat.getFormat("##0.0##");
 	
@@ -653,6 +655,7 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 		private Operation(SubpartLine line, ImageResource image, String title, ClickHandler click, Check check) {
 			iButton = new ImageButton(image);
 			iButton.setTitle(title);
+			iButton.setAltText(title);
 			iButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -661,6 +664,7 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 				}
 			});
 			iBlank = new Image(RESOURCES.blank());
+			iBlank.setAltText("-");
 			iLine = line; iClickHandler = click; iCheck = check;
 			add(iBlank);
 		}
@@ -719,6 +723,7 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 					UniTimeConfirmationDialog.alert(iLine.getError(), true);
 				}
 			});
+			iError.setAltText(ARIA.iconError());
 			iLock = new Image(RESOURCES.lock());
 		}
 		
@@ -745,7 +750,9 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 			if (!iLine.isEditable())
 				iLabel.addStyleName("not-editable");
 			if (iLine.getIndent() > 0) {
-				add(new Image(RESOURCES.indent()));
+				Image indent = new Image(RESOURCES.indent());
+				indent.setAltText(ARIA.iconIndentation());
+				add(indent);
 				getElement().getStyle().setPaddingLeft(20 * (iLine.getIndent() - 1), Unit.PX);
 			}
 			add(iLabel);
@@ -756,7 +763,9 @@ public class InstrOfferingConfigTable extends UniTimeTable<SubpartLine> {
 			clear();
 			iLabel.setText(iLine.getLabel());// + " [" + iLine.getSubpartId() + ":" + iLine.getParentId() + "]"
 			if (iLine.getIndent() > 0) {
-				add(new Image(RESOURCES.indent()));
+				Image indent = new Image(RESOURCES.indent());
+				indent.setAltText(ARIA.iconIndentation());
+				add(indent);
 				getElement().getStyle().setPaddingLeft(20 * (iLine.getIndent() - 1), Unit.PX);
 			} else {
 				getElement().getStyle().setPaddingLeft(0, Unit.PX);

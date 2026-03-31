@@ -4437,10 +4437,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{2}, {0} {1}")
 	String formatName(String first, String middle, String last);
 	
-	@DefaultMessage("from:<br><font color='gray'>to:</font>")
+	@DefaultMessage("from:<br><font color='#636363'>to:</font>")
 	String roomSharingCorner();
 	
-	@DefaultMessage("{0}<br><font color='gray'>{1}</font>")
+	@DefaultMessage("{0}<br><font color='#636363'>{1}</font>")
 	String roomSharingTimeHeader(String from, String to);
 	
 	@DefaultMessage("Horizontal")
@@ -8092,4 +8092,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Disclaimer")
 	String fieldDisclaimer();
+	
+	@DefaultMessage("Instructors")
+	String colNbrInstr();
+	
+	@DefaultMessage("Include")
+	String colInclude();
+	
+	@DefaultMessage("Update")
+	String colUpdate();
 }

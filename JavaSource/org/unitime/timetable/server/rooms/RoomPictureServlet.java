@@ -21,6 +21,7 @@ package org.unitime.timetable.server.rooms;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.Map;
 
 import jakarta.servlet.ServletException;
@@ -54,7 +55,7 @@ public class RoomPictureServlet extends HttpServlet {
 			}
 			if (picture != null) {
 				response.setContentType(picture.getContentType());
-				response.setHeader( "Content-Disposition", "attachment; filename=\"" + picture.getFileName() + "\"" );
+				response.setHeader( "Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(picture.getFileName(), "UTF-8").replace('+', ' ') + "\"" );
 				OutputStream out = response.getOutputStream(); 
 				out.write(picture.getDataFile());
 				out.flush();

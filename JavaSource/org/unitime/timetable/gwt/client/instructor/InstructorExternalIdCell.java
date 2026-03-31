@@ -58,7 +58,10 @@ public class InstructorExternalIdCell extends P {
 				PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 				if (pref != null) {
 					setTitle(pref.getName() + " " + instructor.getInstructorName() + (instructor.hasExternalId() ? " (" + instructor.getExternalId() + ")" : ""));
-					getElement().getStyle().setColor(pref.getColor());
+					if (pref.hasStyle())
+						addStyleName(pref.getStyle());
+					else
+						getElement().getStyle().setColor(pref.getColor());
 				}
 			}
 		}

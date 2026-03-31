@@ -298,7 +298,9 @@ public class InstructorsTable extends UniTimeTable<InstructorInterface>  {
 				return new Label("");
 			} else {
 				Label pref = new Label(instructor.getTeachingPreference().getName());
-				if (instructor.getTeachingPreference().getColor() != null)
+				if (instructor.getTeachingPreference().hasStyle())
+					pref.addStyleName(instructor.getTeachingPreference().getStyle());
+				else if (instructor.getTeachingPreference().getColor() != null)
 					pref.getElement().getStyle().setColor(instructor.getTeachingPreference().getColor());
 				return pref;
 			}
@@ -393,6 +395,7 @@ public class InstructorsTable extends UniTimeTable<InstructorInterface>  {
 		for (int i = 1; i < getRowCount(); i++) {
 			if (instructorId.equals(getData(i).getId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}

@@ -8,7 +8,6 @@
  * compliance with the License. You may obtain a copy of the License at:
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -226,7 +225,7 @@ h1 {
 	font-size: 8pt;
 	font-weight: 400;
 	font-style: normal;
-	color: #767676;
+	color: #6c6c6c;
 	line-height: 15px;
 	vertical-align: baseline;
 	height: 20px;
@@ -1465,6 +1464,10 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	white-space: nowrap;
 }
 
+.unitime-TotalRow div {
+	min-height: 22px;
+}
+
 .unitime-OtherRow {
 	color: #767676;
 }
@@ -2523,12 +2526,28 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-TravelTimes .horizontal-header {
 	width: 30px;
-	font-size: x-small;
+	font-size: small;
 	vertical-align: bottom;
+	writing-mode: sideways-lr;
+	padding-bottom: 2px;
+	max-height: 150px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.unitime-TravelTimes .horizontal-header-bottom {
+	width: 30px;
+	font-size: small;
+	vertical-align: bottom;
+	writing-mode: sideways-rl;
+	padding-top: 2px;
+	max-height: 150px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .unitime-TravelTimes .vertical-header {
-	max-width: 100px;
+	max-width: 150px;
 	padding-right: 2px;
 	font-size: small;
 	white-space: nowrap;
@@ -3182,6 +3201,12 @@ div.gwt-MenuBarPopup {
 	border-spacing: 0px;
 }
 
+.unitime-RoomSharingWidget .cursor {
+	-moz-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	box-shadow: inset 0 0 3px 2px #7ba7d4;
+}
+
 .unitime-RoomSharingWidget .table {
 	display: -moz-inline-box;
 	display: inline-block;
@@ -3193,6 +3218,10 @@ div.gwt-MenuBarPopup {
 .unitime-RoomSharingWidget .box {
 	display: table;
 	overflow: hidden;
+}
+
+.unitime-RoomSharingWidget .box:focus {
+	outline: none !important;
 }
 
 .unitime-RoomSharingWidget .box .row {
@@ -7010,6 +7039,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	text-decoration: underline;
 	cursor: pointer;
+	padding-top: 4px;
 }
 
 .unitime-AdvisorCourseRequests .label-cell {
@@ -7584,6 +7614,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-InstructorSurveyPage .preference-line {
 	display: block;
+	padding-top: 2px;
 }
 
 .unitime-InstructorSurveyPage .preference-cell {
@@ -7859,7 +7890,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-MultipleClassSetup .class-cancelled {
 	font-style: italic;
-	color: gray !important;
+	color: #646464 !important;
 }
 
 .unitime-MultipleClassSetup .class-snapshot {
@@ -7938,7 +7969,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-MultipleClassSetup .class-buttons img {
-	margin: 2px;
+	margin: 2px 6px 2px 6px;
+}
+
+.unitime-MultipleClassSetup .subpart-limits .gwt-CheckBox label {
+	float: left;
 }
 
 .unitime-MultipleClassSetup .note {
@@ -7994,7 +8029,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-InstrOfferingConfig .subpart-buttons img {
-	margin: 2px;
+	margin: 2px 6px 2px 6px;
 }
 
 .unitime-InstrOfferingConfig .error-table {
@@ -8108,6 +8143,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-PreferenceEdit .preference-line {
 	display: block;
 	min-width: 640px;
+	padding-top: 1px;
 }
 
 .unitime-PreferenceEdit .preference-cell {
@@ -8126,6 +8162,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-PreferenceEdit .preference-line img {
 	vertical-align: text-top;
+	margin: 1px 5px 0px 5px;
 }
 
 .unitime-PreferenceEdit .preference-line .first {
@@ -8223,6 +8260,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-PreferenceEdit .pattern-selection img {
 	vertical-align: text-top;
+	margin: 1px 0px 0px 5px;
 }
 
 .unitime-PreferenceEdit .unitime-RoomSharingWidget:not(:last-child) {
@@ -8236,7 +8274,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 .unitime-PreferenceEdit .unitime-RoomSharingWidget .header .delete {
 	display: inline-block;
-	margin-right: 5px;
+	margin: 5px 0px 0px 5px;
 	vertical-align: baseline;
 }
 .unitime-PreferenceEdit .unitime-RoomSharingWidget .header .warning {
@@ -8253,7 +8291,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ClassEditPage .date-pattern img {
-	margin-left: 3px;
+	margin-left: 6px;
 	vertical-align: middle;
 }
 
@@ -8613,4 +8651,27 @@ unitime-RoomSharingWidget .legend .blank {
 	border-radius: 2px;
 	display: inline-block;
 	white-space: nowrap;
+}
+
+.unitime-FocusableTable .focusable-row td {
+	height: 24px;
+}
+
+.unitime-FocusableTable .focusable-row td a {
+	display: inline-block;
+	min-height: 24px;
+	min-width: 24px;
+}	
+
+.unitime-CourseCurriculaTable {
+	width: 100%;
+}
+
+.unitime-CourseCurriculaTable .unitime-Hint {
+	margin-top: 0px;
+	min-height: 24px
+}
+
+.gwt-CheckBox-disabled {
+	color: #767676;
 }

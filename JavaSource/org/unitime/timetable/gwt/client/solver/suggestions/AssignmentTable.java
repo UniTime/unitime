@@ -150,7 +150,7 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 	public void sort() {
 		if (iSortBy == null) return;
 		if (getNbrCells(iSortBy) == 0) iSortBy = AssignmentColumn.CLASS;
-		UniTimeTableHeader header = getHeader(getCellIndex(iSortBy));
+		TableHeaderCell header = getHeader(getCellIndex(iSortBy));
 		sort(header, new AssignmentComparator(iProperties.getFirstDay(), iSortBy, true), iAsc);
 	}
 	

@@ -33,6 +33,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -376,6 +378,7 @@ public class MidtermPeriodPreferenceModel {
         String dates = df.format(getDate(fDate))+(fDate==lDate?"":" - "+df.format(getDate(lDate)));
         String lastPref = null; int fStart = -1, lStart = -1;
         String ret = "";
+        boolean prefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get());
         for (int start: iStarts) {
             String pref = prefs.get(start);
             if (pref==null) continue;
@@ -391,10 +394,17 @@ public class MidtermPeriodPreferenceModel {
                     String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
                     if (ret.length()>0) ret+=", ";
                     if (html) {
-                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
-                            "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
-                            dates+" "+startTime+" - "+endTime+
-                            "'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";
+                    	if (prefStyles) {
+                    		ret+="<span class='pref-"+PreferenceLevel.prolog2char(lastPref)+"' "+
+                        		"title='"+PreferenceLevel.prolog2string(lastPref)+" "+
+                            	dates+" "+startTime+" - "+endTime+
+                            	"'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";
+                    	} else {
+                    		ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
+                                    "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
+                                    dates+" "+startTime+" - "+endTime+
+                                    "'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";	
+                    	}
                     } else {
                     	if (color)
                     		ret += "@@COLOR " + PreferenceLevel.prolog2color(lastPref) + " ";
@@ -416,10 +426,17 @@ public class MidtermPeriodPreferenceModel {
                 String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
                 if (fStart==iStarts.first()) {
                     if (html) {
-                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
-                            "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
-                            dates+" "+startTime+" - "+endTime+
-                            "'>"+dates+"</span>";
+                    	if (prefStyles) {
+                    		ret+="<span class='pref-"+PreferenceLevel.prolog2char(lastPref)+"' "+
+                                    "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
+                                    dates+" "+startTime+" - "+endTime+
+                                    "'>"+dates+"</span>";
+                    	} else {
+                    		ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
+                                    "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
+                                    dates+" "+startTime+" - "+endTime+
+                                    "'>"+dates+"</span>";
+                    	}
                     } else {
                     	if (color)
                     		ret += "@@COLOR " + PreferenceLevel.prolog2color(lastPref) + " ";
@@ -477,7 +494,7 @@ public class MidtermPeriodPreferenceModel {
         return ret;
     }
     
-    private void addToCell(CellInterface ret, int fDate, int lDate, Hashtable<Integer,String> prefs) {
+    private void addToCell(CellInterface ret, int fDate, int lDate, Hashtable<Integer,String> prefs, boolean usePrefStyles) {
     	Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
         String dates = df.format(getDate(fDate))+(fDate==lDate?"":" - "+df.format(getDate(lDate)));
         String lastPref = null; int fStart = -1, lStart = -1;
@@ -494,9 +511,10 @@ public class MidtermPeriodPreferenceModel {
                 } else {
                     String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN);
                     String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
-                    if (ret.hasItems()) ret.add(", ");
+                    if (ret.hasItems() && !usePrefStyles) ret.add(", ");
                     ret.add(dates+" "+(iStarts.size()==2?fStart==iStarts.first()?MSG.eveningExamsEarly():MSG.eveningExamsLate():startTime)+(fStart==lStart?"":" - "+endTime))
-                    	.setColor(PreferenceLevel.prolog2color(lastPref))
+                		.setColor(usePrefStyles ? null : PreferenceLevel.prolog2color(lastPref))
+            			.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.prolog2char(lastPref) : null)
                     	.setTitle(PreferenceLevel.prolog2string(lastPref)+" "+dates+" "+startTime+" - "+endTime)
                     	.setNoWrap(true);
                 }
@@ -512,15 +530,17 @@ public class MidtermPeriodPreferenceModel {
             } else {
                 String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*fStart+Constants.FIRST_SLOT_TIME_MIN);
                 String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
-                if (ret.hasItems()) ret.add(", ");
+                if (ret.hasItems() && !usePrefStyles) ret.add(", ");
                 if (fStart==iStarts.first()) {
                     ret.add(dates)
-                    	.setColor(PreferenceLevel.prolog2color(lastPref))
+                	.setColor(usePrefStyles ? null : PreferenceLevel.prolog2color(lastPref))
+            		.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.prolog2char(lastPref) : null)
                 		.setTitle(PreferenceLevel.prolog2string(lastPref)+" "+dates+" "+startTime+" - "+endTime)
                 		.setNoWrap(true);
                 } else {
                     ret.add(dates+" "+(iStarts.size()==2?fStart==iStarts.first()?MSG.eveningExamsEarly():MSG.eveningExamsLate():startTime)+(fStart==lStart?"":" - "+endTime))
-                    	.setColor(PreferenceLevel.prolog2color(lastPref))
+                		.setColor(usePrefStyles ? null : PreferenceLevel.prolog2color(lastPref))
+                		.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.prolog2char(lastPref) : null)
             			.setTitle(PreferenceLevel.prolog2string(lastPref)+" "+dates+" "+startTime+" - "+endTime)
             			.setNoWrap(true);
                 }
@@ -528,7 +548,7 @@ public class MidtermPeriodPreferenceModel {
         }
     }
     
-    public CellInterface toCellInterface() {
+    public CellInterface toCellInterface(boolean usePrefStyles) {
     	CellInterface ret = new CellInterface();
     	if (iStarts.isEmpty()) return ret;
         Hashtable<Integer,String> fPref = null; 
@@ -538,13 +558,13 @@ public class MidtermPeriodPreferenceModel {
         	if (fPref==null) {
         	    fPref = pref; fDate = date;
         	} else if (!fPref.equals(pref)) {
-        		addToCell(ret, fDate, lDate, fPref);
+        		addToCell(ret, fDate, lDate, fPref, usePrefStyles);
         	    fPref = pref; fDate = date;
         	}
         	lDate = date;
         }
         if (fPref!=null)
-        	addToCell(ret, fDate, lDate, fPref);
+        	addToCell(ret, fDate, lDate, fPref, usePrefStyles);
         return ret;
     	
     }

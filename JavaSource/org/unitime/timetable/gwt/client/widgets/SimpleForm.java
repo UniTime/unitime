@@ -103,7 +103,7 @@ public class SimpleForm extends FlexTable {
 	public int addRow(String text, Widget widget) {
 		return addRow(text, widget, iColSpan - 1);
 	}
-
+	
 	public int addRow(String text, Widget widget, int colspan) {
 		return addRow(new Label(text), widget, colspan);
 	}
@@ -112,7 +112,19 @@ public class SimpleForm extends FlexTable {
 		return addRow(header, widget, iColSpan - 1);
 	}
 	
+	public int addRow(String text, Widget widget, Element inputElement) {
+		return addRow(new Label(text), widget, iColSpan - 1, inputElement);
+	}
+	
+	public int addRow(Widget header, Widget widget, Element inputElement) {
+		return addRow(header, widget, iColSpan - 1, inputElement);
+	}
+	
 	public int addRow(Widget header, Widget widget, int colSpan) {
+		return addRow(header, widget, colSpan, ToolBox.firstInputElement(widget.getElement()));
+	}
+	
+	public int addRow(Widget header, Widget widget, int colSpan, Element inputElement) {
 		header.addStyleName("label-cell");
 		int row = getRowCount();
 		setWidget(row, 0, header);
@@ -131,8 +143,7 @@ public class SimpleForm extends FlexTable {
 			getFlexCellFormatter().setColSpan(row, 1, colSpan);
 		if (header.getElement().getId() == null || header.getElement().getId().isEmpty())
 			header.getElement().setId(DOM.createUniqueId());
-		Element inputElement = ToolBox.firstInputElement(widget.getElement());
-		if (inputElement != null)
+		if (inputElement != null && Roles.getTextboxRole().getAriaLabelProperty(inputElement).isEmpty())
 			Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(header.getElement()));
 		return row;
 	}

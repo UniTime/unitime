@@ -159,6 +159,7 @@ public class TeachingRequestsWidget extends SimpleForm {
 						SingleTeachingAssingment a = iTable.getData(row);
 						if (a != null && a.getRequest() != null && id.equals(a.getRequest().getRequestId())) {
 							ToolBox.scrollToElement(iTable.getRowFormatter().getElement(row));
+							ToolBox.focusOnRow(iTable.getRowFormatter().getElement(row));
 							break;
 						}
 					}

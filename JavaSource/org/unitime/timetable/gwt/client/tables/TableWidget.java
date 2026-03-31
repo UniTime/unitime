@@ -58,11 +58,13 @@ import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -116,6 +118,11 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		return data != null && data.hasURL() && !iTable.isMultiRows();
 	}
 	
+	@Override
+	public boolean isCanFocusRow(LineInterface data) {
+		return data != null && data.hasURL();
+	}
+	
 	protected static void applyStyle(Style style, String text) {
 		if (text == null || text.isEmpty())
 			return;
@@ -142,7 +149,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				if (line.hasCells()) {
 					List<CellWidget> cells = new ArrayList<CellWidget>();
 					for (final CellInterface cell: line.getCells()) {
-						final CellWidget cw = new CellWidget(cell, false); 
+						final CellWidget cw = new HeaderCellWidget(cell, false); 
 						cells.add(cw);
 						if (cell.isSortable()) {
 							final int column = cells.size() - 1;
@@ -280,17 +287,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	
 	public void sort() {
 		if (iSortColumn < 0) return;
-		for (int col = 0; col < getCellCount(0); col++) {
-			CellWidget cw = (CellWidget)getWidget(0, col);
-			if (cw.getElement().getInnerHTML() != null) {
-				String old = cw.getElement().getInnerHTML();
-				if (old.startsWith("\u2193") || old.startsWith("\u2191")) {
-					old = old.substring(1);
-					cw.getElement().setInnerHTML(old);
-				}
-			}
-		}
-		sort(null, new Comparator<LineInterface>() {
+		sort((HeaderCellWidget)getWidget(0, iSortColumn), new Comparator<LineInterface>() {
 			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public int compare(LineInterface l1, LineInterface l2) {
@@ -304,11 +301,6 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					return o1.compareTo(o2);
 			}
 		}, iSortAsc);
-		CellWidget cw = (CellWidget)getWidget(0, iSortColumn);
-		if (cw.getElement().getInnerHTML() != null) {
-			String old = cw.getElement().getInnerHTML();
-			cw.getElement().setInnerHTML((iSortAsc ? "\u2191" : "\u2193") + old);
-		}
 		if (iNavigationLevel != null) {
 			List<Long> ids = new ArrayList<Long>();
 			for (int row = 0; row < getRowCount(); row++) {
@@ -328,7 +320,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	}
 	
 	public static class CellWidget extends P implements HasColSpan, HasRowSpan, HasCellAlignment, HasVerticalCellAlignment, HasStyleName {
-		private CellInterface iCell;
+		protected CellInterface iCell;
 		
 		public CellWidget(final CellInterface cell) {
 			this(cell, false);
@@ -423,6 +415,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						ToolBox.eval(iCell.getMouseClick());
 					}
 				});
+				getElement().setTabIndex(0);
 			} else if (cell.hasClick()) {
 				addClickHandler(new ClickHandler() {
 					@Override
@@ -442,6 +435,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						e.stopPropagation();
 					}
 				});
+				getElement().setTabIndex(0);
 			}
 			if (cell.hasTimePreferenceToolTip()) {
 				addMouseOverHandler(new MouseOverHandler() {
@@ -484,6 +478,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						}
 					}
 				});
+				getElement().setTabIndex(0);
+				
 			}
 			if (cell.hasButton()) {
 				AriaButton button = new AriaButton(cell.getButton().getText());
@@ -524,10 +520,13 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					@Override
 					public void onClick(ClickEvent arg0) {
 						for (int i = 0; i < getWidgetCount(); i++)
-							getWidget(i).setVisible(i != 0);		
+							getWidget(i).setVisible(i != 0);
+						getElement().setTabIndex(-1);
+						getElement().blur();
 					}
 				});
 				getWidget(0).addStyleName("link");
+				getElement().setTabIndex(0);
 			}
 			if (cell.hasTimePreference()) {
 				TimePreferenceWidget w = new TimePreferenceWidget(false, cell.getTimePreference().getPrefLevels(), cell.getTimePreference().isHorizontal());
@@ -541,6 +540,22 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				w.setShowLegend(false);
 				add(w);
 			}
+			sinkEvents(Event.ONKEYDOWN);
+		}
+		
+		public void onBrowserEvent(Event event) {
+			if (getElement().getTabIndex() >= 0) {
+				switch (DOM.eventGetType(event)) {
+				case Event.ONKEYDOWN:
+					if (event.getKeyCode() == KeyCodes.KEY_ENTER || event.getKeyCode() == KeyCodes.KEY_SPACE) {
+						clickElement(getElement());
+						event.stopPropagation();
+				    	event.preventDefault();
+					}
+					break;
+				}
+			}
+			super.onBrowserEvent(event);
 		}
 		
 		public static native void populate()/*-{
@@ -589,12 +604,58 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		}
 	}
 	
+	public static class HeaderCellWidget extends CellWidget implements TableHeaderCell {
+		Boolean iSort = null;
+
+		public HeaderCellWidget(CellInterface cell) {
+			super(cell);			
+		}
+		
+		public HeaderCellWidget(final CellInterface cell, boolean applyClass) {
+			super(cell, applyClass);
+		}
+
+		@Override
+		public boolean isCanFocus() {
+			return iCell.isSortable();
+		}
+
+		@Override
+		public Boolean getOrder() { return iSort; }
+
+		@Override
+		public void setOrder(Boolean order) {
+			iSort = order;
+			if (iSort == null) {
+				if (getElement().getInnerHTML() != null) {
+					String old = getElement().getInnerHTML();
+					if (old.startsWith("\u2193") || old.startsWith("\u2191")) {
+						old = old.substring(1);
+						getElement().setInnerHTML(old);
+					}
+				}
+			} else {
+				if (getElement().getInnerHTML() != null) {
+					String old = getElement().getInnerHTML();
+					getElement().setInnerHTML((iSort ? "\u2191" : "\u2193") + old);
+				}
+			}
+		}
+
+		@Override
+		public String getName() { return iCell.getText(); }
+	}
+	
 	public native static void setLastMouseOverElement(Element element)/*-{
 		$wnd.lastMouseOverElement = element;
 	}-*/;
 
 	public native static void executeScript(Element element, String script)/*-{
 		element.innerHTML = eval(script);
+	}-*/;
+	
+	public static native void clickElement(Element elem) /*-{
+		elem.click();
 	}-*/;
 
 }

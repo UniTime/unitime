@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionInfo;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
@@ -545,7 +546,7 @@ public class InstructorSurveyPage extends Composite {
 			iPreferences = preferences;
 			if (preferences.hasSelections()) {
 				for (Selection selection: preferences.getSelections()) {
-					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), survey);
+					PreferenceLine p = new PreferenceLine(iPreferences.getItems(), survey, iPreferences.getType());
 					IdLabel item = preferences.getItem(selection.getItem());
 					PrefLevel level = survey.getPrefLevel(selection.getLevel());
 					if (item != null && level != null && !item.isAllowedPref(level.getId())) {
@@ -558,13 +559,13 @@ public class InstructorSurveyPage extends Composite {
 					add(p);
 				}
 			}
-			add(new PreferenceLine(iPreferences.getItems(), survey));
+			add(new PreferenceLine(iPreferences.getItems(), survey, iPreferences.getType()));
 			
 			iChangeHandler = new ChangeHandler() {
 				@Override
 				public void onChange(ChangeEvent e) {
 					if (((PreferenceLine)getWidget(getWidgetCount() - 1)).getId() != null) {
-						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), survey);
+						PreferenceLine p = new PreferenceLine(iPreferences.getItems(), survey, iPreferences.getType());
 						add(p);
 						iHandlerRegistration.removeHandler();
 						iHandlerRegistration = p.addChangeHandler(iChangeHandler);
@@ -616,7 +617,7 @@ public class InstructorSurveyPage extends Composite {
 			P iDescription;
 			Note iReason;
 			
-			PreferenceLine(Collection<IdLabel> items, final InstructorSurveyData survey) {
+			PreferenceLine(Collection<IdLabel> items, final InstructorSurveyData survey, final String type) {
 				super("preference-line");
 				P line1 = new P("first-line");
 				P line2 = new P("second-line");
@@ -637,6 +638,7 @@ public class InstructorSurveyPage extends Composite {
 						PreferenceLine.this.fireEvent(event);
 					}
 				});
+				Roles.getListboxRole().setAriaLabelProperty(iList.getElement(), type);
 				line1.add(iList);
 
 				iRadios = new ArrayList<RadioButton>();
@@ -670,7 +672,7 @@ public class InstructorSurveyPage extends Composite {
 					@Override
 					public void onClick(ClickEvent event) {
 						if (iButtonAdd) {
-							PreferencesTable.this.add(new PreferenceLine(iItems, survey));
+							PreferencesTable.this.add(new PreferenceLine(iItems, survey, type));
 						} else {
 							PreferencesTable.this.remove(PreferenceLine.this);
 						}
@@ -990,6 +992,10 @@ public class InstructorSurveyPage extends Composite {
 					removeStyleName("notes-hint");
 			}
 			iHint = hint;
+			if (iHint != null && !iHint.isEmpty())
+				Roles.getTextboxRole().setAriaLabelProperty(getElement(), iHint);
+			else
+				Roles.getTextboxRole().removeAriaLabelProperty(getElement());
 		}
 		
 		public String getHint() { return iHint; }

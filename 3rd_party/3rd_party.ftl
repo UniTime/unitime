@@ -73,7 +73,7 @@ Tomcat Migration Tool for Jakarta EE (jakartaee-migration-1.0.0.jar)
 	under the Apache Software License (ASL), Version 2.0
 	https://github.com/apache/tomcat-jakartaee-migration
 
-Leaflet 1.3.1 (a JavaScript library for interactive maps)
+Leaflet 1.9.4 (a JavaScript library for interactive maps)
 	under BSD or BSD-style License
 	https://leafletjs.com/
 

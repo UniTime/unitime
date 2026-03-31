@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -339,7 +340,7 @@ public class TravelTimes extends Composite {
 			col = 1;
 			row ++;
 			for (Room room: getRooms()) {
-				setWidget(row, col, new P(room.getName(), "horizontal-header")); 
+				setWidget(row, col, new P(room.getName(), "horizontal-header-bottom"));
 				getCellFormatter().setVerticalAlignment(row, col, HasVerticalAlignment.ALIGN_TOP);
 				col++;
 			}
@@ -479,6 +480,7 @@ public class TravelTimes extends Composite {
     		setStyleName("gwt-SuggestBox");
 			addStyleName("cell");
 			addStyleName("disabled");
+			Roles.getTextboxRole().setAriaLabelProperty(getElement(), "-");
 		}
 		
 		public Time(int row, int col, Room r1, Room r2) {
@@ -521,6 +523,7 @@ public class TravelTimes extends Composite {
 			setMaxLength(3);
 			addKeyDownHandler(iKeyDownHandler);
 			addKeyPressHandler(iKeyPressHandler);
+			Roles.getTextboxRole().setAriaLabelProperty(getElement(), r1.getName() + " - " + r2.getName());
 		}
 		
 		public void onCancelChanges() {

@@ -625,6 +625,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Preferences")
 	String iconPreferences();
 	
+	@DefaultMessage("Indentation")
+	String iconIndentation();
+	
 	@DefaultMessage("Week selection")
 	String inputWeekSelector();
 	
@@ -642,4 +645,52 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Credit for {0}")
 	String labelCreditForCourse(String course);
+	
+	@DefaultMessage("Opens Course Finder dialog.")
+	String openCourseFinder();
+	
+	@DefaultMessage("Preview Date Pattern")
+	String iconDatePatternPreview();
+	
+	@DefaultMessage("Add Selected Item")
+	String iconAddSelectedItem();
+	
+	@DefaultMessage("Remove {0}")
+	String iconRemoveItem(String name);
+	
+	@DefaultMessage("Add {0}")
+	String iconAddItem(String name);
+
+	@DefaultMessage("Applies To")
+	String listApplesTo();
+	
+	@DefaultMessage("Select {0}")
+	String listSelectItem(String itemType);
+	
+	@DefaultMessage("Select preference level")
+	String listSelectPreferenceLevel();
+	
+	@DefaultMessage("Select preference level for {0}")
+	String listSelectPreferenceLevelFor(String item);
+	
+	@DefaultMessage("Select instructor")
+	String listSelectInstructor();
+	
+	@DefaultMessage("Checked")
+	String iconChecked();
+	
+	@DefaultMessage("Not Checked")
+	String iconNotChecked();
+	
+	@DefaultMessage("Instructor Availability")
+	String iconInstructorAvailability();
+	
+	@DefaultMessage("Campus Map")
+	String imageCampusMap();
+	
+	@DefaultMessage("Download {0}")
+	String iconDownload(String file);
+	
+	@DefaultMessage("Enter address to geocode")
+	String mapAddressToGeocode();
 }

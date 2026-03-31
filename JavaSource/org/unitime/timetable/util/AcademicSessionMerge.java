@@ -3127,6 +3127,7 @@ public class AcademicSessionMerge {
 		toClass.setExpectedCapacity(fromClass.getExpectedCapacity());
 		toClass.setMaxExpectedCapacity(fromClass.getMaxExpectedCapacity());
 		toClass.setNbrRooms(fromClass.getNbrRooms());
+		toClass.setRoomsSplitAttendance(fromClass.getRoomsSplitAttendance());
 		toClass.setNotes(fromClass.getNotes());
 		toClass.setRoomRatio(fromClass.getRoomRatio());
 		toClass.setSchedulePrintNote(fromClass.getSchedulePrintNote());

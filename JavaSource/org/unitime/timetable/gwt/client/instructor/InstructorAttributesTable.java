@@ -247,6 +247,7 @@ public class InstructorAttributesTable extends UniTimeTable<AttributeInterface> 
 		for (int i = 1; i < getRowCount(); i++) {
 			if (attributeId.equals(getData(i).getId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}

@@ -185,12 +185,16 @@ public class ImageButton extends Image implements HasEnabled, Focusable, HasAria
 	    	case Event.ONKEYDOWN:
 	    		if (keyCode == ' ' || keyCode == '\n' || keyCode == '\r') {
 	    			if (iDown != null) setResource(iDown);
+	    			event.stopPropagation();
+			    	event.preventDefault();
 	    		}
 	    		break;
 	        case Event.ONKEYUP:
 	        	if (keyCode == ' ' || keyCode == '\n' || keyCode == '\r') {
 	        		setResource(iUp);
 	        		onClick();
+	        		event.stopPropagation();
+			    	event.preventDefault();
 	        	}
 	        	break;
 	    	}

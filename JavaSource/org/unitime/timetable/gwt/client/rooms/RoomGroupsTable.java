@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomGroupsColumn;
+import org.unitime.timetable.gwt.shared.RoomInterface.RoomPropertiesInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.MouseOutEvent;
@@ -58,6 +59,7 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 	
 	private RoomGroupsColumn iSortBy = null;
 	private boolean iAsc = true;
+	private RoomPropertiesInterface iProperties = null;
 	
 	public RoomGroupsTable(boolean isGlobal) {
 		setStyleName("unitime-RoomGroups");
@@ -100,6 +102,8 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 		
 		setSortBy(RoomCookie.getInstance().getRoomGroupsSortBy());
 	}
+	
+	public void setProperties(RoomPropertiesInterface props) { iProperties = props; }
 	
 	protected void doSort(RoomGroupsColumn column) {
 		if (column == iSortBy) {
@@ -184,7 +188,7 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 			else
 				return null;
 		case DEPARTMENT:
-			return new DepartmentCell(true, group.getDepartment());
+			return new DepartmentCell(true, iProperties, group.getDepartment());
 		case DESCRIPTION:
 			if (group.hasDescription()) {
 				HTML html = new HTML(group.getDescription());
@@ -277,6 +281,7 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 		for (int i = 1; i < getRowCount(); i++) {
 			if (groupId.equals(getData(i).getId())) {
 				ToolBox.scrollToElement(getRowFormatter().getElement(i));
+				ToolBox.focusOnRow(getRowFormatter().getElement(i));
 				return;
 			}
 		}

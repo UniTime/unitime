@@ -20,9 +20,9 @@
 
 function blToggle(divName) {
 	if (blIsColapsed(divName)) {
-		document.writeln("<img onmouseover=\"this.style.cursor='hand';\" src='images/expand_node_btn.gif' border='0' onclick=\"blOnClick(this,'"+divName+"');\" >");
+		document.writeln("<img onmouseover=\"this.style.cursor='hand';\" src='images/expand_node_btn.gif' border='0' onclick=\"blOnClick(this,'"+divName+"');\" alt='open'>");
 	} else {
-		document.writeln("<img onmouseover=\"this.style.cursor='hand';\" src='images/collapse_node_btn.gif' border='0' onclick=\"blOnClick(this,'"+divName+"');\" >");
+		document.writeln("<img onmouseover=\"this.style.cursor='hand';\" src='images/collapse_node_btn.gif' border='0' onclick=\"blOnClick(this,'"+divName+"');\" alt='close'>");
 	}
 }
 
@@ -75,11 +75,13 @@ function blOnClick(source, divName) {
 	expand = (source.src.indexOf('expand')>=0);
 	if (expand) {
 		source.src='images/collapse_node_btn.gif';
+		source.alt='close';
 		document.getElementById(divName).style.display='block';
 		if (document.getElementById(divName+'Col')!=null)
 			document.getElementById(divName+'Col').style.display='none';
 	} else {
 		source.src='images/expand_node_btn.gif';
+		source.alt='open';
 		document.getElementById(divName).style.display='none';
 		if (document.getElementById(divName+'Col')!=null)
 			document.getElementById(divName+'Col').style.display='block';

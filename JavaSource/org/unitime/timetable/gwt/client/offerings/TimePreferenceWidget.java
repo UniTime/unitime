@@ -27,10 +27,13 @@ import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.PrefLevel;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimeSelection;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget.Box;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget.FP;
 import org.unitime.timetable.gwt.client.widgets.DayCodeSelector;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -43,8 +46,6 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -58,6 +59,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 	private static final CourseMessages CMSG = GWT.create(CourseMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private TimePatternModel iModel;
 	private List<PrefLevel> iPreferences;
 	private AbsolutePanel iPanel;
@@ -136,6 +138,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				ImageButton delete = new ImageButton(RESOURCES.delete());
 				delete.addClickHandler(iRemove);
 				delete.addStyleName("delete");
+				delete.setAltText(ARIA.iconRemoveItem(iModel.getName()));
 				header.add(delete);
 			}
 			if (!model.isValid()) {
@@ -158,7 +161,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			for (int page = 0; page == 0 || (iSplit > 0 && iSplit * page < iModel.getTimes().size()); page++) {
 				P table = new P("table");
 				iPanel.add(table);
-				P box = new P("box");
+				P box = new Box();
 				table.add(box);
 				P header = new P("row");
 				box.add(header);
@@ -184,9 +187,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 					thisTime.add(t);
 					header.add(p);
 					if (isEditable())
-						p.addMouseDownHandler(new MouseDownHandler() {
+						p.addClickHandler(new ClickHandler() {
 							@Override
-							public void onMouseDown(MouseDownEvent event) {
+							public void onClick(ClickEvent event) {
 								for (Cell d: t)
 									d.setOption(iOption);
 							}
@@ -212,9 +215,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 						iAll.add(p);
 					}
 					if (isEditable())
-						d.addMouseDownHandler(new MouseDownHandler() {
+						d.addClickHandler(new ClickHandler() {
 							@Override
-							public void onMouseDown(MouseDownEvent event) {
+							public void onClick(ClickEvent event) {
 								for (Cell d: thisDay)
 									d.setOption(iOption);
 							}
@@ -222,9 +225,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				}
 				
 				if (isEditable())
-					corner.addMouseDownHandler(new MouseDownHandler() {
+					corner.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: thisPage)
 								d.setOption(iOption);
 						}
@@ -233,7 +236,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 		} else {
 			P table = new P("table");
 			iPanel.add(table);
-			P box = new P("box");
+			P box = new Box();
 			table.add(box);
 			P header = new P("row");
 			box.add(header);
@@ -248,9 +251,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				thisDay.add(t);
 				header.add(p);
 				if (isEditable())
-					p.addMouseDownHandler(new MouseDownHandler() {
+					p.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: t)
 								d.setOption(iOption);
 						}
@@ -275,9 +278,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 					iAll.add(p);
 				}
 				if (isEditable())
-					d.addMouseDownHandler(new MouseDownHandler() {
+					d.addClickHandler(new ClickHandler() {
 						@Override
-						public void onMouseDown(MouseDownEvent event) {
+						public void onClick(ClickEvent event) {
 							for (Cell d: thisSlot)
 								d.setOption(iOption);
 						}
@@ -285,9 +288,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			}
 			
 			if (isEditable())
-				corner.addMouseDownHandler(new MouseDownHandler() {
+				corner.addClickHandler(new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						for (Cell d: thisPage)
 							d.setOption(iOption);
 					}
@@ -303,6 +306,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 		legend.add(box);
 		
 		iSelectedIcon = null; iSelectedTitle = null;
+		FP last = null;
 		for (final PrefLevel option: iPreferences) {
 			if (!iModel.isAllowedPref(option.getTpCode()) && iModel.getPreference().indexOf(option.getTpCode()) < 0) continue;
 			final P line = new P("row");
@@ -312,7 +316,16 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			icon.getElement().getStyle().setBackgroundColor(option.getBgColor());
 			line.add(icon);
 			
-			final P title = new P("title", isEditable(option) ? "editable-title" : null); title.setHTML(option.getTitle());
+			final FP title = new FP("title", isEditable(option) ? "editable-title" : null);
+			title.setHTML(option.getTitle());
+			if (isEditable(option)) {
+				if (last != null) {
+					last.setNext(title); title.setPrevious(last);
+				}
+				last = title;
+			} else {
+				title.setTabIndex(-1);
+			}
 			line.add(title);
 			
 			if (isEditable(option) && option.equals(iOption)) {
@@ -323,9 +336,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			}
 
 			if (isEditable(option)) {
-				MouseDownHandler md = new MouseDownHandler() {
+				ClickHandler md = new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						iOption = option;
 						if (iSelectedIcon != null)
 							iSelectedIcon.removeStyleName("selected");
@@ -346,8 +359,8 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 					}
 				};
 				
-				icon.addMouseDownHandler(md);
-				title.addMouseDownHandler(md);
+				icon.addClickHandler(md);
+				title.addClickHandler(md);
 			}
 			
 			box.add(line);
@@ -393,9 +406,9 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			getElement().getStyle().setBackgroundColor(option.getBgColor());
 			setTitle(iModel.getDaysLabel(iDay, CONSTANTS) + " " + iModel.getStartTime(iSlot, CONSTANTS) + " - " + iModel.getEndTime(iSlot, CONSTANTS) + ": " + option.getTitle());
 			if (isEditable())
-				addMouseDownHandler(new MouseDownHandler() {
+				addClickHandler(new ClickHandler() {
 					@Override
-					public void onMouseDown(MouseDownEvent event) {
+					public void onClick(ClickEvent event) {
 						setOption(iOption);
 					}
 				});
@@ -494,6 +507,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				
 				iButton = new ImageButton(RESOURCES.delete());
 				iButton.setTitle(MESSAGES.titleDeleteRow());
+				iButton.setAltText(MESSAGES.titleDeleteRow());
 				iButton.addStyleName("preference-cell");
 				iButton.getElement().getStyle().setCursor(Cursor.POINTER);
 				iButton.addClickHandler(new ClickHandler() {
@@ -520,9 +534,11 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 				if (add) {
 					iButton.setImage(RESOURCES.add());
 					iButton.setTitle(MESSAGES.titleAddRow());
+					iButton.setAltText(MESSAGES.titleAddRow());
 				} else {
 					iButton.setImage(RESOURCES.delete());
 					iButton.setTitle(MESSAGES.titleDeleteRow());
+					iButton.setAltText(MESSAGES.titleDeleteRow());
 				}
 			}
 

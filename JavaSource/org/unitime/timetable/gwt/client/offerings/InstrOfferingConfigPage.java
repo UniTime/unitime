@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.shared.InstrOfferingConfigInterface.Operation;
 import org.unitime.timetable.gwt.shared.InstrOfferingConfigInterface.Reference;
 import org.unitime.timetable.gwt.shared.InstrOfferingConfigInterface.SubpartLine;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -374,6 +375,7 @@ public class InstrOfferingConfigPage extends Composite {
 		if (iData.isCanEditSchedulingDisclaimer()) {
 			P disclaimerPanel = null;
 			final TextArea disclaimer = new TextArea();
+			Roles.getTextboxRole().setAriaLabelProperty(disclaimer.getElement(), MESSAGES.itemCustomSchedulingDisclaimer());
 			disclaimer.setHeight("66px");
 			disclaimer.setWidth("100%");
 			if (iData.hasStdSchedDisclaimers()) {

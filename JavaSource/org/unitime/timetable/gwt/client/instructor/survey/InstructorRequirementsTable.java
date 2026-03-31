@@ -86,8 +86,6 @@ public class InstructorRequirementsTable extends UniTimeTable<CourseRequirement>
 			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeader");
 		setSortBy(AdminCookie.getInstance().getSortCourseRequirements());
 		
-		setData(data.getInstructorRequirements());
-		
 		addMouseClickListener(new MouseClickListener<InstructorSurveyInterface.CourseRequirement>() {
 			@Override
 			public void onMouseClick(TableEvent<CourseRequirement> event) {
@@ -101,6 +99,8 @@ public class InstructorRequirementsTable extends UniTimeTable<CourseRequirement>
 					ToolBox.open("instructorDetail.action?instructorId=" + event.getData().getInstructorId());
 			}
 		});
+		
+		setData(data.getInstructorRequirements());
 	}
 	
 	public void addRow(CourseRequirement course) {

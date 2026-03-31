@@ -147,13 +147,17 @@ public class GetTeachingRequestBackend implements GwtRpcImplementation<GetReques
 			}
 			PreferenceLevel pref = instructor.getTeachingPreference();
 			if (pref == null) pref = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sProhibited);
-			i.setTeachingPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2color(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
+			i.setTeachingPreference(new PreferenceInterface(pref.getUniqueId(),
+					PreferenceLevel.prolog2color(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true,
+					PreferenceLevel.prolog2style(pref.getPrefProlog())));
 			i.setMaxLoad(instructor.getMaxLoad());
 			response.addInstructor(i);
 		}
 		
 		for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
-			response.addPreference(new PreferenceInterface(pref.getUniqueId(), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true));
+			response.addPreference(new PreferenceInterface(pref.getUniqueId(),
+					PreferenceLevel.prolog2bgColor(pref.getPrefProlog()), pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), true,
+					PreferenceLevel.prolog2style(pref.getPrefProlog())));
 		}
 		
 		Map<Long, Responsibility> responsibilities = new HashMap<Long, Responsibility>();
