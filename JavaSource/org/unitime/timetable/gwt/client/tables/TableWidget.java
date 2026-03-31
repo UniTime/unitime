@@ -149,7 +149,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				if (line.hasCells()) {
 					List<CellWidget> cells = new ArrayList<CellWidget>();
 					for (final CellInterface cell: line.getCells()) {
-						final CellWidget cw = new CellWidget(cell, false); 
+						final CellWidget cw = new HeaderCellWidget(cell, false); 
 						cells.add(cw);
 						if (cell.isSortable()) {
 							final int column = cells.size() - 1;
@@ -287,17 +287,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	
 	public void sort() {
 		if (iSortColumn < 0) return;
-		for (int col = 0; col < getCellCount(0); col++) {
-			CellWidget cw = (CellWidget)getWidget(0, col);
-			if (cw.getElement().getInnerHTML() != null) {
-				String old = cw.getElement().getInnerHTML();
-				if (old.startsWith("\u2193") || old.startsWith("\u2191")) {
-					old = old.substring(1);
-					cw.getElement().setInnerHTML(old);
-				}
-			}
-		}
-		sort(null, new Comparator<LineInterface>() {
+		sort((HeaderCellWidget)getWidget(0, iSortColumn), new Comparator<LineInterface>() {
 			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public int compare(LineInterface l1, LineInterface l2) {
@@ -311,11 +301,6 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					return o1.compareTo(o2);
 			}
 		}, iSortAsc);
-		CellWidget cw = (CellWidget)getWidget(0, iSortColumn);
-		if (cw.getElement().getInnerHTML() != null) {
-			String old = cw.getElement().getInnerHTML();
-			cw.getElement().setInnerHTML((iSortAsc ? "\u2191" : "\u2193") + old);
-		}
 		if (iNavigationLevel != null) {
 			List<Long> ids = new ArrayList<Long>();
 			for (int row = 0; row < getRowCount(); row++) {
@@ -335,7 +320,7 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	}
 	
 	public static class CellWidget extends P implements HasColSpan, HasRowSpan, HasCellAlignment, HasVerticalCellAlignment, HasStyleName {
-		private CellInterface iCell;
+		protected CellInterface iCell;
 		
 		public CellWidget(final CellInterface cell) {
 			this(cell, false);
@@ -617,6 +602,48 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		public String getStyleName() {
 			return iCell.getClassName();
 		}
+	}
+	
+	public static class HeaderCellWidget extends CellWidget implements TableHeaderCell {
+		Boolean iSort = null;
+
+		public HeaderCellWidget(CellInterface cell) {
+			super(cell);			
+		}
+		
+		public HeaderCellWidget(final CellInterface cell, boolean applyClass) {
+			super(cell, applyClass);
+		}
+
+		@Override
+		public boolean isCanFocus() {
+			return iCell.isSortable();
+		}
+
+		@Override
+		public Boolean getOrder() { return iSort; }
+
+		@Override
+		public void setOrder(Boolean order) {
+			iSort = order;
+			if (iSort == null) {
+				if (getElement().getInnerHTML() != null) {
+					String old = getElement().getInnerHTML();
+					if (old.startsWith("\u2193") || old.startsWith("\u2191")) {
+						old = old.substring(1);
+						getElement().setInnerHTML(old);
+					}
+				}
+			} else {
+				if (getElement().getInnerHTML() != null) {
+					String old = getElement().getInnerHTML();
+					getElement().setInnerHTML((iSort ? "\u2191" : "\u2193") + old);
+				}
+			}
+		}
+
+		@Override
+		public String getName() { return iCell.getText(); }
 	}
 	
 	public native static void setLastMouseOverElement(Element element)/*-{

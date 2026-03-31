@@ -184,9 +184,11 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			if (widget instanceof AriaHiddenLabel) {
 				getFlexCellFormatter().addStyleName(row, col, "rowheader");
 				Roles.getRowheaderRole().set(getCellFormatter().getElement(row, col));
-			} else if (widget instanceof UniTimeTableHeader) {
+			} else if (widget instanceof TableHeaderCell) {
 				Roles.getColumnheaderRole().set(getCellFormatter().getElement(row, col));
 				getCellFormatter().getElement(row, col).setId(DOM.createUniqueId());
+				if (((TableHeaderCell)widget).isCanFocus())
+					getCellFormatter().getElement(row, col).setTabIndex(0);
 			} else {
 				Roles.getGridcellRole().set(getCellFormatter().getElement(row, col));
 			}
@@ -411,7 +413,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		sort(getHeader(columnName), rowComparator);
 	}
 	
-	public void sort(UniTimeTableHeader header, final Comparator<T> rowComparator) {
+	public void sort(TableHeaderCell header, final Comparator<T> rowComparator) {
 		if (header != null) {
 			sort(header, rowComparator, header.getOrder() == null ? true : !header.getOrder());
 		} else {
@@ -419,12 +421,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		}
 	}
 
-	public void sort(UniTimeTableHeader header, final Comparator<T> rowComparator, boolean asc) {
+	public void sort(TableHeaderCell header, final Comparator<T> rowComparator, boolean asc) {
 		if (header != null) {
 			for (int i = 0; i < getCellCount(0); i++) {
 				Widget w = getWidget(0, i);
-				if (w != null && w instanceof UniTimeTableHeader) {
-					UniTimeTableHeader h = (UniTimeTableHeader)w;
+				if (w != null && w instanceof TableHeaderCell) {
+					TableHeaderCell h = (TableHeaderCell)w;
 					h.setOrder(null);
 				}
 			}
@@ -474,7 +476,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		sortByRow(getHeader(columnName), rowComparator);
 	}
 	
-	public void sortByRow(UniTimeTableHeader header, final Comparator<Integer> rowComparator) {
+	public void sortByRow(TableHeaderCell header, final Comparator<Integer> rowComparator) {
 		if (header != null) {
 			sortByRow(header, rowComparator, header.getOrder() == null ? true : !header.getOrder());
 		} else {
@@ -482,12 +484,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		}
 	}
 	
-	public void sortByRow(UniTimeTableHeader header, final Comparator<Integer> rowComparator, boolean asc) {
+	public void sortByRow(TableHeaderCell header, final Comparator<Integer> rowComparator, boolean asc) {
 		if (header != null) {
 			for (int i = 0; i < getCellCount(0); i++) {
 				Widget w = getWidget(0, i);
-				if (w != null && w instanceof UniTimeTableHeader) {
-					UniTimeTableHeader h = (UniTimeTableHeader)w;
+				if (w != null && w instanceof TableHeaderCell) {
+					TableHeaderCell h = (TableHeaderCell)w;
 					h.setOrder(null);
 				}
 			}
@@ -593,9 +595,16 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		if (isAllowFocus()) {
 			if (DOM.eventGetType(event) == Event.ONKEYPRESS && event.getKeyCode() == KeyCodes.KEY_ENTER) {
 				Element tr = DOM.eventGetTarget(event);
+				Element td = null;
+				if (tr.getPropertyString("tagName").equalsIgnoreCase("td")) td = tr;
 				while (tr != null) {
 					if (tr.getPropertyString("tagName").equalsIgnoreCase("tr")) break;
 					tr = tr.getParentElement();
+				}
+				if (td != null && td.getTabIndex() >= 0) {
+					clickElement(td.getFirstChildElement());
+					event.preventDefault();
+				    event.stopPropagation();
 				}
 				if (tr != null) {
 					Element body = DOM.getParent(tr);
@@ -1090,7 +1099,24 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			Widget w = getWidget(0, i);
 			if (w != null && w instanceof UniTimeTableHeader) {
 				UniTimeTableHeader h = (UniTimeTableHeader)w;
-				if (h.getHTML().equals(name)) return h;
+				if (h.getName().equals(name)) return h;
+			}
+		}
+		UniTimeNotifications.warn("Header named " + name + " does not exist!");
+		return null;
+	}
+	
+	public TableHeaderCell getHeaderCell(String name) {
+		if (getRowCount() <= 0) return null;
+		if (name == null) {
+			Widget w = getWidget(0, 0);
+			return (w != null && w instanceof TableHeaderCell ? (TableHeaderCell)w : null);
+		}
+		for (int i = 0; i < getCellCount(0); i++) {
+			Widget w = getWidget(0, i);
+			if (w != null && w instanceof TableHeaderCell) {
+				TableHeaderCell h = (TableHeaderCell)w;
+				if (h.getName().equals(name)) return h;
 			}
 		}
 		UniTimeNotifications.warn("Header named " + name + " does not exist!");
@@ -1104,6 +1130,18 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			if (col < 0) {
 				Widget w = getWidget(0, c);
 				return (w != null && w instanceof UniTimeTableHeader ? (UniTimeTableHeader)w : null);
+			}
+		}
+		return null;
+	}
+	
+	public TableHeaderCell getHeaderCell(int col) {
+		if (getRowCount() <= 0 || getCellCount(0) <= col) return null;
+		for (int c = 0; c < getCellCount(0); c++) {
+			col -= getFlexCellFormatter().getColSpan(0, c);
+			if (col < 0) {
+				Widget w = getWidget(0, c);
+				return (w != null && w instanceof TableHeaderCell ? (TableHeaderCell)w : null);
 			}
 		}
 		return null;
@@ -1227,6 +1265,13 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		public void refresh();
 	}
 	
+	public static interface TableHeaderCell {
+		public boolean isCanFocus();
+		public Boolean getOrder();
+		public void setOrder(Boolean order);
+		public String getName();
+	}
+	
 	public void refreshTable() {
 		for (int r = 1; r < getRowCount(); r++) {
 			for (int c = 0; c < getCellCount(r); c++) {
@@ -1295,5 +1340,8 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	
 	public static native void scrollToView(Element el) /*-{
 		el.scrollIntoView({behavior: "smooth"});
+	}-*/;
+	public static native void clickElement(Element elem) /*-{
+		elem.click();
 	}-*/;
 }
