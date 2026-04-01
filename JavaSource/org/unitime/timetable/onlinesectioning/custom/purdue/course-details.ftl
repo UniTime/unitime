@@ -44,6 +44,8 @@
 	</#if>
 	<#if details?? && details.attributeDetails??>
 		<@section 'Attributes' details.attributeDetails 'attribute'/>
+	<#elseif details?? && details.attributeDetail??>
+		<@section 'Attributes' details.attributeDetail 'attribute'/>
 	</#if>
 	<#if fees?? && fees.SCRFEES?? && (fees.SCRFEES?size > 0)>
 		<span class='row'><span class='key'>Fees:</span><span class='value'><#list fees.SCRFEES as fee>
@@ -63,6 +65,9 @@
 <#if descriptors.learningObjectives?? && descriptors.learningObjectives.objectives??>
 	<@header 'Learning Objectives' 'LearnObj'/>
 	<div class='text' id='LearnObj'>${descriptors.learningObjectives.objectives}</div>
+<#elseif descriptors.learningObjective?? && descriptors.learningObjective.objective??>
+	<@header 'Learning Objectives' 'LearnObj'/>
+	<div class='text' id='LearnObj'>${descriptors.learningObjective.objective}</div>
 </#if>
 
 <#if restrictions?? && 
@@ -132,6 +137,18 @@
 </table>
 </#if>
 
+<#if prerequisites?? && prerequisites.courseEquivalent?? && prerequisites.courseEquivalent.equivalents?? && (prerequisites.courseEquivalent.equivalents?filter(x -> x.courseSubject??)?size > 0) >
+<@header 'Equivalents' 'Equivalents'/>
+<table class='equivalents' id='Equivalents'>
+	<tr class='header'><th>Subject</th><th>Course</th></tr>
+	<#list prerequisites.courseEquivalent.equivalents?filter(x -> x.courseSubject??) as line>
+		<tr><td>${line.courseSubject!'-'}</td>
+			<#if line.courseNumber??><td>${line.courseNumber}</td><#else><td>${line.course!'-'}</td></#if>
+		</tr>
+	</#list>
+</table>
+</#if>
+
 
 <#if prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisites?? && prerequisites.coursePrerequisite.prerequisites.basic??>
 <@header 'Prerequisites' 'Prerequisites'/>
@@ -148,8 +165,30 @@
 		<td><#if line.rightParenthesis?? && line.rightParenthesis>)</#if></td></tr>
 	</#list>
 </table>
+<#elseif prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisite?? && prerequisites.coursePrerequisite.prerequisite.basicPrerequisites??>
+<@header 'Prerequisites' 'Prerequisites'/>
+<table class='prerequisites' id='Prerequisites'>
+	<tr class='header'><th>And/Or</th><th><span style='display:none;'>Left Parenthesis</span></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th><span style='display:none;'>Right Parenthesis</span></th></tr>
+	<#list prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.lineOrderSequence??)?sort_by("lineOrderSequence") as line>
+		<tr><td><#if line.logicalOperator??>${line.logicalOperator?capitalize}</#if></td>
+		<td><#if line.leftParenthesis?? && line.leftParenthesis>(</#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.subject??>${line.requirement.course.subject}</#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.number??>${line.requirement.course.number}</#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.academicLevel??><@studentLevel line.requirement.course.academicLevel/></#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.minimumGrade??>${line.requirement.course.minimumGrade}</#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.concurrentEnrollment?? && line.requirement.course.concurrentEnrollment == 'allowed'>Yes<#else>No</#if></td>
+		<td><#if line.rightParenthesis?? && line.rightParenthesis>)</#if></td></tr>
+	</#list>
+</table>
 <#elseif prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.checkMethodDetails?? &&
 	prerequisites.coursePrerequisite.checkMethodDetails.checkMethod?? && prerequisites.coursePrerequisite.checkMethodDetails.checkMethod != 'basic'>
+	<#assign prereqs = lookup.getPrereqsFromCatalog()/>
+	<#if (prereqs?? && prereqs?length > 0) >
+		<@header 'Prerequisites' 'Prerequisites'/>
+		<div class='catalog-section' id='Prerequisites'>${prereqs}</div>
+	</#if>
+<#elseif prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.checkMethodDetail?? &&
+	prerequisites.coursePrerequisite.checkMethodDetail.checkMethod?? && prerequisites.coursePrerequisite.checkMethodDetail.checkMethod != 'basic'>
 	<#assign prereqs = lookup.getPrereqsFromCatalog()/>
 	<#if (prereqs?? && prereqs?length > 0) >
 		<@header 'Prerequisites' 'Prerequisites'/>
