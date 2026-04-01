@@ -55,7 +55,6 @@ import org.cpsolver.studentsct.online.selection.ResectioningWeights.LastSectionP
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
-import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;

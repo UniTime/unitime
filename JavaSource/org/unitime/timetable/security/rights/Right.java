@@ -34,7 +34,6 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
