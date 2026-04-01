@@ -41,6 +41,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
@@ -51,6 +52,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -60,6 +62,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.StackPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
@@ -314,6 +317,7 @@ public class UniTimeMobileMenu extends UniTimeMenu {
 		public MyStackPanel() {
 			super();
 			body = DOM.getFirstChild(getElement());
+			sinkEvents(Event.ONKEYDOWN);
 		}
 		
 		public String getStackText(int index) {
@@ -355,5 +359,66 @@ public class UniTimeMobileMenu extends UniTimeMenu {
 				return iClickCommand;
 			}
 		}
+		
+		@Override
+		public void add(Widget w, String stackText) {
+			super.add(w, stackText);
+			int index = getWidgetCount() - 1;
+			Element tdWrapper = DOM.getChild((Element) DOM.getChild(body, index * 2), 0);
+			tdWrapper.setTabIndex(0);
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+			case Event.ONKEYDOWN:
+				Element td = DOM.eventGetTarget(event);
+				if (td != null && td.getPropertyString("tagName").equalsIgnoreCase("td") && td.getTabIndex() >= 0) {
+					if (event.getKeyCode() == KeyCodes.KEY_ENTER || event.getKeyCode() == KeyCodes.KEY_SPACE) {
+						clickElement(td);
+						event.stopPropagation();
+				    	event.preventDefault();
+					}
+					if (event.getKeyCode() == KeyCodes.KEY_DOWN) {
+						Element tr = td.getParentElement();
+						Element table = tr.getParentElement();
+						int index = DOM.getChildIndex(table, tr);
+						while (true) {
+							index = (index + 1) % DOM.getChildCount(table);
+							Element next = DOM.getChild(table, index).getFirstChildElement();
+							if (next != null && next.getTabIndex() >= 0) {
+								next.focus();
+								break;
+							}
+						}
+						event.stopPropagation();
+				    	event.preventDefault();
+					}
+					if (event.getKeyCode() == KeyCodes.KEY_UP) {
+						Element tr = td.getParentElement();
+						Element table = tr.getParentElement();
+						int index = DOM.getChildIndex(table, tr);
+						while (true) {
+							index --;
+							if (index < 0) index = DOM.getChildCount(table) - 1;
+							Element prev = DOM.getChild(table, index).getFirstChildElement();
+							if (prev != null && prev.getTabIndex() >= 0) {
+								prev.focus();
+								break;
+							}
+						}
+						event.stopPropagation();
+				    	event.preventDefault();
+					}
+				}
+				break;
+			}
+			super.onBrowserEvent(event);
+		}
 	}
+
+	public static native void clickElement(Element elem) /*-{
+		elem.click();
+	}-*/;
+	
 }

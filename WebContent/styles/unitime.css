@@ -8657,12 +8657,6 @@ unitime-RoomSharingWidget .legend .blank {
 	height: 24px;
 }
 
-.unitime-FocusableTable .focusable-row td a {
-	display: inline-block;
-	min-height: 24px;
-	min-width: 24px;
-}	
-
 .unitime-CourseCurriculaTable {
 	width: 100%;
 }
@@ -8674,4 +8668,20 @@ unitime-RoomSharingWidget .legend .blank {
 
 .gwt-CheckBox-disabled {
 	color: #767676;
+}
+
+#unitime-SideMenu .gwt-StackPanelContent:focus-within {
+	outline: 1px solid blue;
+}
+
+.mobile-menu .gwt-StackPanelContent:focus-within {
+	outline: 1px solid blue;
+} 
+
+#unitime-SideMenu .unitime-TreeMenu {
+	margin-right: 6px;
+}
+
+#unitime-SideMenu .unitime-TreeMenu:focus-within {
+	outline: 1px solid blue !important;
 }
