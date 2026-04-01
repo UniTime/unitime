@@ -24,8 +24,6 @@ import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.ExternalRoom;
-import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -34,9 +32,7 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomDAO;
-import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 /**

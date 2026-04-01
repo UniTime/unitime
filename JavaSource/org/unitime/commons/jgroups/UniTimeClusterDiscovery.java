@@ -151,7 +151,7 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
         	ClusterDiscovery cd = ClusterDiscoveryDAO.getInstance().get(new ClusterDiscoveryId(ownAddress, cluster_name), hibSession);
         	if (cd != null) {
         		if (overwrite) {
-        			cd.setPingData(serializedPingData.getBytes());
+        			cd.setPingData(serializedPingData.getArray());
         			cd.setTimeStamp(new Date());
         			hibSession.merge(cd);
         		}
@@ -159,7 +159,7 @@ public class UniTimeClusterDiscovery extends JDBC_PING {
         		cd = new ClusterDiscovery();
         		cd.setClusterName(clustername);
         		cd.setOwnAddress(ownAddress);
-        		cd.setPingData(serializedPingData.getBytes());
+        		cd.setPingData(serializedPingData.getArray());
         		cd.setTimeStamp(new Date());
         		hibSession.persist(cd);
         	}
