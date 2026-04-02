@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaAnchor;
 import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -29,6 +30,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -38,10 +40,10 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -53,7 +55,7 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private FlowPanel iContainer, iControls;
-	private Anchor iClose, iMaximize;
+	private AriaAnchor iClose, iMaximize;
 	private boolean iEscapeToHide = false;
 	private Command iSubmitHandler = null;
 	private String iWidth = null, iHeight = null;
@@ -68,8 +70,9 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
         iContainer = new FlowPanel();
         iContainer.addStyleName("dialogContainer");
         
-        iMaximize = new Anchor();
+        iMaximize = new AriaAnchor("");
         iMaximize.setTitle(MESSAGES.hintMaximizeDialog());
+        iMaximize.setAriaLabel(MESSAGES.hintMaximizeDialog());
         iMaximize.setStyleName("maximize");
         iMaximize.addClickHandler(new ClickHandler() {
         	@Override
@@ -78,9 +81,11 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
             }
         });
         iMaximize.setVisible(false);
+        iMaximize.setTabIndex(-1);
 
-        iClose = new Anchor();
+        iClose = new AriaAnchor("");
     	iClose.setTitle(MESSAGES.hintCloseDialog());
+    	iClose.setAriaLabel(MESSAGES.hintCloseDialog());
         iClose.setStyleName("close");
         iClose.addClickHandler(new ClickHandler() {
         	@Override
@@ -89,6 +94,7 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
             }
         });
         iClose.setVisible(autoHide);
+        iClose.setTabIndex(-1);
         
         iControls = new FlowPanel();
         iControls.setStyleName("dialogControls");        
@@ -219,6 +225,58 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
 				iSubmitHandler.execute();
 			}
 			break;
+	    case Event.ONKEYUP:
+	    	if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_TAB) {
+	    		Element active = getActiveElement();
+				if (active == null || !isInside(active)) {
+					final Element focus = findFirstFocusableDescendant(getWidget().getElement());
+					if (focus != null) {
+						if (focus.getId() == null || focus.getId().isEmpty()) focus.setId(DOM.createUniqueId());
+						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+							@Override
+							public void execute() {
+								focus.focus();
+							}
+						});
+						event.getNativeEvent().stopPropagation();
+						event.getNativeEvent().preventDefault();
+					}
+				}
+			}
+	    	break;
+	    	
 		}
 	}
+    
+    protected boolean isInside(Element e) {
+    	if (e == null) return false;
+    	if (e.equals(getElement())) return true;
+    	return isInside(e.getParentElement());
+    }
+    
+    public static native Element getActiveElement() /*-{
+		return $doc.activeElement;
+	}-*/;
+    
+    public static native boolean isVisible(Element element) /*-{
+    	if ($wnd.getComputedStyle)
+			return $wnd.getComputedStyle(element).display !== 'none';
+		else
+			return true;
+	}-*/;
+
+    public Element findFirstFocusableDescendant(Element element) {
+    	if (element == null) return null;
+    	if (element.equals(iControls.getElement())) return null;
+    	if (element.getTabIndex() >= 0) return element;
+    	int children = DOM.getChildCount(element);
+    	for (int i = 0; i < children; i++) {
+    		Element ch = DOM.getChild(element, i);
+    		if (isVisible(ch)) {
+    			Element focus = findFirstFocusableDescendant(ch);
+    			if (focus != null) return focus;
+    		}
+    	}
+    	return null;
+    }
 }
