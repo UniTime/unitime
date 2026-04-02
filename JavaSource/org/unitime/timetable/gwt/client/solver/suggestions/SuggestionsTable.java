@@ -630,8 +630,8 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 	public static interface SortOperation extends Operation, HasColumnName {}
 		
 	public static String dispNumber(String prefix, double number) {
-		if (number>0) return "<span style='color:#bd1c14;'>"+prefix+"+"+sDF.format(number)+"</span>";
-		if (number<0) return "<span style='color:#195820;'>"+prefix+sDF.format(number)+"</span>";
+		if (number>0) return "<span style='color:#b80000;'>"+prefix+"+"+sDF.format(number)+"</span>";
+		if (number<0) return "<span style='color:#1d6600;'>"+prefix+sDF.format(number)+"</span>";
 	    return prefix+"0";
 	}
 		

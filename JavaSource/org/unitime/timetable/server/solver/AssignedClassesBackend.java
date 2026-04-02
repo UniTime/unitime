@@ -304,12 +304,12 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 	
 	public TableCellInterface dispNumber(int value) {
 		return new TableCellInterface<Integer>(value)
-				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 	}
 	
 	public TableCellInterface dispNumber(double value) {
 		return new TableCellInterface<Double>(value, sDF.format(value))
-				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 	}
 	
 	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix, boolean showConfigNames) {

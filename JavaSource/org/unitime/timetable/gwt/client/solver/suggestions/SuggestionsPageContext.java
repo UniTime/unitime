@@ -778,8 +778,8 @@ public abstract class SuggestionsPageContext {
 	}
 	
 	public String dispNumber(String prefix, int number) {
-		if (number>0) return "<span style='color:#bd1c14;'>"+prefix+"+"+number+"</span>";
-		if (number<0) return "<span style='color:#195820;'>"+prefix+number+"</span>";
+		if (number>0) return "<span style='color:#b80000;'>"+prefix+"+"+number+"</span>";
+		if (number<0) return "<span style='color:#1d6600;'>"+prefix+number+"</span>";
 	    return prefix+"0";
 	}
 	
@@ -796,8 +796,8 @@ public abstract class SuggestionsPageContext {
 	}
 	
 	public String dispNumber(String prefix, double number) {
-		if (number>0) return "<span style='color:#bd1c14;'>"+prefix+"+"+sDF.format(number)+"</span>";
-		if (number<0) return "<span style='color:#195820;'>"+prefix+sDF.format(number)+"</span>";
+		if (number>0) return "<span style='color:#b80000;'>"+prefix+"+"+sDF.format(number)+"</span>";
+		if (number<0) return "<span style='color:#1d6600;'>"+prefix+sDF.format(number)+"</span>";
 	    return prefix+"0";
 	}
 }

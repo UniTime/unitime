@@ -55,6 +55,8 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPage
 import org.unitime.timetable.gwt.shared.InstructorInterface.TeachingRequestsPagePropertiesResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingDisplayMode;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -62,6 +64,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -87,7 +90,9 @@ public class TeachingAssignmentsChangesPage extends SimpleForm {
 	
 	public TeachingAssignmentsChangesPage() {
 		iFilterPanel = new UniTimeHeaderPanel(MESSAGES.propAssignmentChangesBase());
+		iFilterPanel.getHeaderTitlePanel().getElement().setId(DOM.createUniqueId());
 		iFilter = new ListBox();
+		Roles.getListboxRole().setAriaLabelledbyProperty(iFilter.getElement(), Id.of(iFilterPanel.getHeaderTitlePanel().getElement()));
 		iFilter.setStyleName("unitime-TextBox");
 		iFilterPanel.insertLeft(iFilter, false);
 		iFilter.getElement().getStyle().setMarginLeft(5, Unit.PX);
@@ -101,7 +106,7 @@ public class TeachingAssignmentsChangesPage extends SimpleForm {
 			}
 		});
 		iFilterPanel.setEnabled("search", false);
-		addRow(iFilterPanel);
+		addHeaderRow(iFilterPanel);
 		
 		iTable = new UniTimeTable<SingleTeachingAssingment>();
 		iTable.setVisible(false);

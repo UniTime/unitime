@@ -270,11 +270,11 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				cell.add(x);
         			}
         			TableCellInterface h = new TableCellInterface(limit == 0 ? "" : usage + " / " + limit);
-        			if (usage > limit) h.setColor("#bd1c14");
+        			if (usage > limit) h.setColor("#b80000");
         			cell.getChunks().add(0, h);
         			line[i + 2] = cell;
         		}
-        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#bd1c14");
+        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#b80000");
         		table.addRow(new TableRowInterface(line));
         	}
         } catch (Exception e) {
@@ -632,11 +632,11 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				cell.add(x);
         			}
         			TableCellInterface h = new TableCellInterface(limit == 0 ? "" : usage + " / " + limit);
-        			if (usage > limit) h.setColor("#bd1c14");
+        			if (usage > limit) h.setColor("#b80000");
         			cell.getChunks().add(0, h);
         			line[i + 2] = cell;
         		}
-        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#bd1c14");
+        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#b80000");
         		table.addRow(new TableRowInterface(line));
         	}
         } catch (Exception e) {
@@ -654,11 +654,11 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 	}
 	
 	public static TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 	}
 	
 	public static TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 	}
 	
 	public static TableInterface getPerturbationReportTable(PerturbationReport report, boolean usePrefStyles) {

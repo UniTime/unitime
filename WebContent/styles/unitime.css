@@ -2926,7 +2926,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-Enrollments .conflict {
-	color: #bd1c14;
+	color: #b80000;
 }
 
 .unitime-Enrollments .conflict .dc {
@@ -2999,7 +2999,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-MeetingSelection .conflict {
-	color: #bd0000;
+	color: #b80000;
 	text-align: left;
 }
 
@@ -4852,11 +4852,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-TeachingRequestDetail .instructors .conflict {
-	color: #ee0000;
+	color: #b80000;
 }
 
 .unitime-TeachingRequestDetail .instructors .not-assigned {
-	color: #ee0000;
+	color: #b80000;
 	font-style: italic;
 	padding-left: 50px;
 }
@@ -4874,14 +4874,14 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-TeachingRequestDetail .suggestions .not-assigned {
-	color: #ee0000;
+	color: #b80000;
 	font-style: italic;
 	padding-right: 2px;
 }
 
 .unitime-TeachingRequestDetail .no-extid {
 	font-style: italic;
-	padding-right: 2px;
+	padding-right: 4px;
 }
 
 .unitime-TeachingRequestDetail .suggestions td {
@@ -4921,7 +4921,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-TeachingRequestDetail .selected .not-assigned {
-	color: #ee0000;
+	color: #b80000;
 	font-style: italic;
 	padding-right: 2px;
 }
@@ -4944,7 +4944,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-TeachingRequestDetail .selected .conflict {
-	color:#ee0000;
+	color:#b80000;
 }
 
 .unitime-TeachingRequestDetail .enrollments {
@@ -4969,7 +4969,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-TeachingRequestDetail .domain .conflict {
-	color:#ee0000;
+	color:#b80000;
 }
 
 .unitime-TeachingRequestDetail .domain .note {
@@ -5025,7 +5025,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-TeachingAssignmentChanges .not-assigned {
-	color: #ee0000;
+	color: #b80000;
 	font-style: italic;
 	padding-right: 2px;
 }

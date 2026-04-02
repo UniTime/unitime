@@ -181,7 +181,7 @@ public class InstructorPreferencesBackend implements GwtRpcImplementation<Instru
 		distPrefs.setAllowHard(context.hasPermission(pg, Right.CanUseHardDistributionPrefs));
 		for (DistributionType type: DistributionType.findApplicable(pg.getDepartment(), true, false)) {
 			IdLabel id = distPrefs.addItem(type.getUniqueId(), type.getLabel(), type.getDescr());
-			id.setAllowedPrefs(type.getAllowedPref());
+			if (id != null) id.setAllowedPrefs(type.getAllowedPref());
 		}
 		if (fillPrefs)
 			for (DistributionPref dp: pg.effectivePreferences(DistributionPref.class)) {
