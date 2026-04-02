@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.TimeHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget.FP;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -196,7 +197,7 @@ public abstract class SuggestionsPageContext {
 			super("instructors");
 			for (Iterator<InstructorInfo> i = instructors.iterator(); i.hasNext(); ) {
 				final InstructorInfo instructor = i.next();
-				final P r = new P("instructor");
+				final P r = new FP("instructor");
 				r.setText(instructor.getName() + (i.hasNext() ? CONSTANTS.itemSeparator() : ""));
 				if (instructor.getId() != null)
 					r.addClickHandler(new ClickHandler() {
@@ -305,7 +306,7 @@ public abstract class SuggestionsPageContext {
 		}
 	}
 	
-	protected class ClassLabel extends P {
+	protected class ClassLabel extends FP {
 		public ClassLabel(final ClassInfo clazz) {
 			super("class");
 			setText(clazz.getName());
@@ -409,15 +410,18 @@ public abstract class SuggestionsPageContext {
 			for (TimeInfo time: times) {
 				if (time.hasDatePattern()) dates.add(time.getDatePattern());
 			}
+			DateLocation prev = null;
 			for (Iterator<DateInfo> i = dates.iterator(); i.hasNext(); ) {
 				DateInfo date = i.next();
 				DateLocation location = new DateLocation(date);
+				if (prev != null) { prev.setNext(location); location.setPrevious(prev); }
+				prev = location;
 				iDates.put(date.getDatePatternId(), location);
 				add(withSeparator(location, i.hasNext()));
 			}
 		}
 	
-		protected class DateLocation extends P {
+		protected class DateLocation extends FP {
 			private DateInfo iDate;
 			public DateLocation(DateInfo date) {
 				super("date", "item");
@@ -482,7 +486,7 @@ public abstract class SuggestionsPageContext {
 	protected class TimeLocations extends P {
 		Map<String, TimeLocation> iTimes = new HashMap<String, TimeLocation>();
 		TimeLocation iSelectedTime = null;
-		P iMore = null;
+		FP iMore = null;
 		
 		public TimeLocations(Long classId, List<TimeInfo> times) {
 			super("times", "selection");
@@ -500,10 +504,11 @@ public abstract class SuggestionsPageContext {
 				}
 			});
 			t.addAll(times);
+			FP prev = null;
 			for (Iterator<TimeInfo> i = t.iterator(); i.hasNext(); ) {
 				TimeInfo time = i.next();
 				if (time.isStriked() && iMore == null) {
-					iMore = new P("more");
+					iMore = new FP("more");
 					iMore.setText(CONSTANTS.selectionMore());
 					iMore.addClickHandler(new ClickHandler() {
 						@Override
@@ -515,8 +520,12 @@ public abstract class SuggestionsPageContext {
 						}
 					});
 					add(iMore);
+					if (prev != null) { prev.setNext(iMore); iMore.setPrevious(prev); }
+					prev = iMore;
 				}
 				TimeLocation location = new TimeLocation(classId, time);
+				if (prev != null) { prev.setNext(location); location.setPrevious(prev); }
+				prev = location;
 				iTimes.put(code(time), location);
 				P p = withSeparator(location, i.hasNext());
 				if (time.isStriked()) p.setVisible(false);
@@ -524,7 +533,7 @@ public abstract class SuggestionsPageContext {
 			}
 		}
 		
-		protected class TimeLocation extends P {
+		protected class TimeLocation extends FP {
 			private TimeInfo iTime;
 			public TimeLocation(Long classId, TimeInfo time) {
 				super("time", "item");
@@ -613,16 +622,17 @@ public abstract class SuggestionsPageContext {
 		Map<Long, RoomLocation> iRooms = new HashMap<Long, RoomLocation>();
 		int iNrRooms = 0;
 		List<RoomLocation> iSelectedRooms = new ArrayList<RoomLocation>();
-		P iMore = null;
+		FP iMore = null;
 		
 		public RoomLocations(int nrRooms, List<RoomInfo> rooms) {
 			super("rooms", "selection");
 			iNrRooms = nrRooms;
 			Collections.sort(rooms);
+			FP prev = null;
 			for (Iterator<RoomInfo> i = rooms.iterator(); i.hasNext(); ) {
 				RoomInfo room = i.next();
 				if (room.isStriked() && iMore == null) {
-					iMore = new P("more");
+					iMore = new FP("more");
 					iMore.setText(CONSTANTS.selectionMore());
 					iMore.addClickHandler(new ClickHandler() {
 						@Override
@@ -634,8 +644,12 @@ public abstract class SuggestionsPageContext {
 						}
 					});
 					add(iMore);
+					if (prev != null) { prev.setNext(iMore); iMore.setPrevious(prev); }
+					prev = iMore;
 				}
 				RoomLocation location = new RoomLocation(room);
+				if (prev != null) { prev.setNext(location); location.setPrevious(prev); }
+				prev = location;
 				iRooms.put(room.getId(), location);
 				P p = withSeparator(location, i.hasNext());
 				if (room.isStriked()) p.setVisible(false);
@@ -643,7 +657,7 @@ public abstract class SuggestionsPageContext {
 			}
 		}
 		
-		protected class RoomLocation extends P {
+		protected class RoomLocation extends FP {
 			private RoomInfo iRoom;
 			public RoomLocation(final RoomInfo room) {
 				super("room", "item");

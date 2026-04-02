@@ -20,6 +20,8 @@
 package org.unitime.timetable.gwt.client.solver;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -45,6 +47,7 @@ import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.WhiteSpace;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
@@ -74,9 +77,11 @@ public class TimetableGrid extends Composite {
 	private List<Meeting> iMeetings = new ArrayList<Meeting>();
 	private List<Background> iBackbrounds = new ArrayList<Background>();
 	private int iCellWidth;
+	private int iLastTabIndex = 0;
 	
-	public TimetableGrid(FilterInterface filter, final TimetableGridModel model, int index, int pageWidth, int weekOffset) {
-		int displayMode = Integer.valueOf(filter.getParameterValue("dispMode", "0"));
+	public TimetableGrid(FilterInterface filter, final TimetableGridModel model, int index, int pageWidth, final int weekOffset, int tabIndex) {
+		iLastTabIndex = tabIndex;
+		final int displayMode = Integer.valueOf(filter.getParameterValue("dispMode", "0"));
 		boolean hasDay[] = { true, true, true, true, true, false, false };
 		String days = filter.getParameterValue("days");
 		int nrDays = 0;
@@ -105,6 +110,35 @@ public class TimetableGrid extends Composite {
 		boolean showRoom = !"0".equals(filter.getParameterValue("resource"));
 		boolean showDate = "-100".equals(filter.getParameterValue("weeks"));
 		String comment = getComment(model);
+		
+		Collections.sort(model.getCells(), new Comparator<TimetableGridCell>() {
+			@Override
+			public int compare(TimetableGridCell c1, TimetableGridCell c2) {
+				int d1 = (c1.getDay() + weekOffset) % 7;
+				int d2 = (c2.getDay() + weekOffset) % 7;
+				if (displayMode <= 1) {
+					if (d1 != d2) return (d1 < d2 ? -1 : 1);
+					if (c1.getSlot() != c2.getSlot()) return (c1.getSlot() < c2.getSlot() ? -1 : 1);
+					if (c1.getIndex() != c2.getIndex()) return (c1.getIndex() < c2.getIndex() ? -1 : 1);
+				} else if (displayMode == 2) {
+					if (c1.getSlot() != c2.getSlot()) return (c1.getSlot() < c2.getSlot() ? -1 : 1);
+					if (d1 != d2) return (d1 < d2 ? -1 : 1);
+					if (c1.getIndex() != c2.getIndex()) return (c1.getIndex() < c2.getIndex() ? -1 : 1);
+				} else if (displayMode == 3) {
+					for (int d = 0; d < 365; d++) {
+		        		int date = d + model.getFirstSessionDay();
+						if (model.getFirstDay() >= 0 && (date < model.getFirstDay() || date > model.getFirstDay() + 6)) continue;
+						int day = d % 7;
+						boolean h1 = (c1.getDay() == day && c1.hasDate(date));
+						boolean h2 = (c2.getDay() == day && c2.hasDate(date));
+						if (h1 != h2) return h1 ? -1 : 0;
+					}
+					if (c1.getSlot() != c2.getSlot()) return (c1.getSlot() < c2.getSlot() ? -1 : 1);
+					if (c1.getIndex() != c2.getIndex()) return (c1.getIndex() < c2.getIndex() ? -1 : 1);
+				}	
+				return c1.getId().compareTo(c2.getId());
+			}
+		});
 		
 		if (displayMode == 0) {
 			int headerLines = 2;
@@ -239,12 +273,12 @@ public class TimetableGrid extends Composite {
 		        b.getElement().getStyle().setWidth(stop * iCellWidth / step - start * iCellWidth / step, Unit.PX);
 		        panel.add(b, dayIndex[cell.getDay()] * nrTimes * iCellWidth + (start - startSlot) * iCellWidth / step + 2 * dayIndex[cell.getDay()], 0);
 			}
-	        
 	        for (TimetableGridCell cell: model.getCells()) {
 	        	if (!hasDay[cell.getDay()]) continue;
 	        	if (cell.getSlot() + cell.getLength() <= startSlot) continue;
 	        	if (cell.getSlot() >= startSlot + step * nrTimes) continue;
 	        	Meeting m = new Meeting(cell, showRoom, showInstructors, showTimes, showPreferences, showDate);
+	        	if (iLastTabIndex >= 0) m.getElement().setTabIndex(++iLastTabIndex); 
 	        	iMeetings.add(m);
 		        int lines = cell.getNrLines();
 		        if (dayLines[cell.getDay()] < nrLines && (cell.getIndex() + cell.getNrLines() == dayLines[cell.getDay()])) {
@@ -372,6 +406,7 @@ public class TimetableGrid extends Composite {
 	        	if (cell.getSlot() + cell.getLength() <= startSlot) continue;
 	        	if (cell.getSlot() >= startSlot + step * nrTimes) continue;
 	        	Meeting m = new Meeting(cell, showRoom, showInstructors, showTimes, showPreferences, showDate);
+	        	if (iLastTabIndex >= 0) m.getElement().setTabIndex(++iLastTabIndex);
 	        	iMeetings.add(m);
 		        m.getElement().getStyle().setHeight(1 + cell.getNrLines() * sLineHeight, Unit.PX);
 		        int start = cell.getSlot();
@@ -496,6 +531,7 @@ public class TimetableGrid extends Composite {
 	        	if (cell.getSlot() + cell.getLength() <= startSlot) continue;
 	        	if (cell.getSlot() >= startSlot + step * nrTimes) continue;
 	        	Meeting m = new Meeting(cell, showRoom, showInstructors, showTimes, showPreferences, showDate);
+	        	if (iLastTabIndex >= 0) m.getElement().setTabIndex(++iLastTabIndex);
 	        	iMeetings.add(m);
 		        int start = cell.getSlot();
 		        int stop = cell.getSlot() + cell.getLength();
@@ -628,12 +664,14 @@ public class TimetableGrid extends Composite {
 	        	if (!hasDay[cell.getDay()]) continue;
 	        	if (cell.getSlot() + cell.getLength() <= startSlot) continue;
 	        	if (cell.getSlot() >= startSlot + step * nrTimes) continue;
+	        	boolean first = true;
 	        	for (int d = 0; d < 365; d++) {
 	        		int date = d + model.getFirstSessionDay();
 					if (model.getFirstDay() >= 0 && (date < model.getFirstDay() || date > model.getFirstDay() + 6)) continue;
 					int day = d % 7;
 					if (cell.getDay() == day && cell.hasDate(date)) {
 			        	Meeting m = new Meeting(cell, showRoom, showInstructors, showTimes, showPreferences, showDate);
+			        	if (first && iLastTabIndex >= 0) { m.getElement().setTabIndex(++iLastTabIndex); first = false; }
 			        	iMeetings.add(m);
 				        m.getElement().getStyle().setHeight(1 + cell.getNrLines(date) * sLineHeight, Unit.PX);
 				        int start = cell.getSlot();
@@ -649,6 +687,8 @@ public class TimetableGrid extends Composite {
 		
 		initWidget(iContainer);
 	}
+	
+	public int getLastTabIndex() { return iLastTabIndex; }
 	
 	protected int min(int a, int b) {
 		return (a < b ? a : b);
@@ -695,6 +735,7 @@ public class TimetableGrid extends Composite {
 			sinkEvents(Event.ONMOUSEOUT);
 			
 			getElement().getStyle().setPosition(Position.ABSOLUTE);
+			sinkEvents(Event.ONKEYDOWN);
 		}
 		
 		public void onBrowserEvent(Event event) {
@@ -716,8 +757,17 @@ public class TimetableGrid extends Composite {
 		        	select(false);
 		        }
 				break;
-			}
-		   
+			case Event.ONKEYDOWN:
+				Element el = DOM.eventGetTarget(event);
+				if (el != null && el.getTabIndex() >= 0) {
+					if (event.getKeyCode() == KeyCodes.KEY_ENTER || event.getKeyCode() == KeyCodes.KEY_SPACE) {
+						clickElement(el);
+						event.stopPropagation();
+				    	event.preventDefault();
+					}
+				}
+				break;
+		    }
 		    super.onBrowserEvent(event);
 		}
 		
@@ -835,4 +885,8 @@ public class TimetableGrid extends Composite {
     	ret.setDate(ret.getDate() + date);
     	return ret;
     }
+    
+    public static native void clickElement(Element elem) /*-{
+		elem.click();
+	}-*/;
 }

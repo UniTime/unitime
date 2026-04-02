@@ -133,7 +133,7 @@ public class CBSWidget extends SimpleForm implements TakesValue<Long> {
 			public void onSuccess(GwtRpcResponseList<CBSNode> result) {
 				iHeader.clearMessage();
 				iTree.setValue(result);
-				iTree.setVisible(true);
+				iTree.setVisible(!result.isEmpty());
 			}
 		});
 	}

@@ -64,8 +64,6 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 	
 	public DataTable(TableInterface table) {
 		addStyleName("unitime-DataTable");
-		if (table != null)
-			populate(table);
 		addMouseClickListener(new MouseClickListener<TableInterface.TableRowInterface>() {
 			@Override
 			public void onMouseClick(UniTimeTable.TableEvent<TableRowInterface> event) {
@@ -79,6 +77,8 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 				}
 			}
 		});
+		if (table != null)
+			populate(table);
 	}
 	
 	public void populate(TableInterface table) {

@@ -59,6 +59,7 @@ public class SelectedSuggestion extends SimpleForm implements TakesValue<Suggest
 				iContext.assign(iSuggestion.getAssignment(true), iFooter);
 			}
 		});
+		setVisible(false);
 	}
 	
 	public UniTimeHeaderPanel getFooter() { return iFooter; }
@@ -67,6 +68,7 @@ public class SelectedSuggestion extends SimpleForm implements TakesValue<Suggest
 	public void setValue(Suggestion suggestion) {
 		iSuggestion = suggestion;
 		clear();
+		setVisible(false);
 		if (suggestion == null || !suggestion.hasDifferentAssignments()) return;
 		if (suggestion.hasDifferentAssignments()) {
 			AssignmentTable at = new AssignmentTable(iContext.getProperties(), false, true) {
@@ -145,6 +147,7 @@ public class SelectedSuggestion extends SimpleForm implements TakesValue<Suggest
 		iFooter.setEnabled("assign", iSuggestion.isCanAssign());
 		iFooter.clearMessage();
 		addBottomRow(iFooter);
+		setVisible(true);
 	}
 
 	@Override
