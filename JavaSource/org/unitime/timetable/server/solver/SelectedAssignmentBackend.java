@@ -550,7 +550,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 	
 	public static TableCellInterface dispNumber(long value) {
 		TableCellInterface cell = new TableCellInterface<Long>(value)
-				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 		if (value > 0) cell.setFormattedValue("+" + value);
 		return cell;
 	}

@@ -181,6 +181,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 				}
 			}
 		});
+
 	}
 	
 	void search() {

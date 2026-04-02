@@ -120,6 +120,7 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 	public TeachingRequestDetailPage(TeachingRequestsPagePropertiesResponse properties) {
 		super(true, true);
 		setEscapeToHide(true);
+		setMaximizeEnabled(true);
 		addStyleName("unitime-TeachingRequestDetail");
 		iForm = new SimpleForm();
 		iForm.addStyleName("detail");
@@ -291,8 +292,8 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 			for (SuggestionInfo suggestion: result.getSuggestions()) {
 				List<Widget> line = new ArrayList<Widget>();
 				Label score = new Label(sSuggestionScoreFormat.format(suggestion.getValue()));
-				if (suggestion.getValue() > 0) score.getElement().getStyle().setColor("red");
-				if (suggestion.getValue() < 0) score.getElement().getStyle().setColor("green");
+				if (suggestion.getValue() > 0) score.getElement().getStyle().setColor("#b80000");
+				if (suggestion.getValue() < 0) score.getElement().getStyle().setColor("#1d6600");
 				line.add(score);
 				
 				P courses = new P();
@@ -450,8 +451,8 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 				iAssignmentTable.addRow(assignment, line);
 			}
 			iAssignmentScore.setText(sSuggestionScoreFormat.format(suggestion.getValue()));
-			if (suggestion.getValue() > 0) iAssignmentScore.getElement().getStyle().setColor("red");
-			if (suggestion.getValue() < 0) iAssignmentScore.getElement().getStyle().setColor("green");
+			if (suggestion.getValue() > 0) iAssignmentScore.getElement().getStyle().setColor("#b80000");
+			if (suggestion.getValue() < 0) iAssignmentScore.getElement().getStyle().setColor("#1d6600");
 			iAssignmentObjectives.setValue(suggestion.getValues());
 		}
 		iForm.getRowFormatter().setVisible(iAssignmentRow, iAssignmentTable.getRowCount() > 1);
@@ -519,7 +520,9 @@ public class TeachingRequestDetailPage extends UniTimeDialogBox {
 					}
 					if (instructor == null) continue;
 					List<Widget> line = new ArrayList<Widget>();
-					Label extId = new Label(instructor.getExternalId());
+					Label extId = new Label(instructor.hasExternalId() ? instructor.getExternalId() : MESSAGES.noExternalId());
+					if (!instructor.hasExternalId())
+						extId.addStyleName("");
 					if (instructor.getTeachingPreference() != null && !"0".equals(instructor.getTeachingPreference())) {
 						PreferenceInterface pref = iProperties.getPreference(instructor.getTeachingPreference());
 						if (pref != null) {

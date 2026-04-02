@@ -341,9 +341,9 @@ public class CrossListPage extends Composite {
 		}
 		if (!iCrossList.isUnlimited()) {
 			if (total >= iCrossList.getLimit())
-				totalLabel.getElement().getStyle().setColor("green");
+				totalLabel.getElement().getStyle().setColor("#1d6600");
 			else
-				totalLabel.getElement().getStyle().setColor("red");
+				totalLabel.getElement().getStyle().setColor("#b80000");
 		}
 		iTable.getRowFormatter().setVisible(iTable.getRowCount() - 1, iTable.getRowCount() > 3);
 		for (int col = 0; col < iTable.getCellCount(iTable.getRowCount() - 2); col++)

@@ -81,6 +81,7 @@ public class ObjectivesCell extends P implements TakesValue<Map<String, Double>>
 				if (value == null || Math.abs(value) < 0.001) continue;
 				P obj = new P("objective");
 				obj.setText(key + ": " + (value > 0.0 ? "+": "") + sTeachingLoadFormat.format(value));
+				/*
 				if (key.endsWith(" Preferences")) {
 					if (value <= -50.0) {
 						obj.getElement().getStyle().setColor(iProperties.getPreference("R").getColor());
@@ -95,10 +96,11 @@ public class ObjectivesCell extends P implements TakesValue<Map<String, Double>>
 					} else if (value > 0.0) {
 						obj.getElement().getStyle().setColor(iProperties.getPreference("1").getColor());
 					}
-				} else if (value < 0.0) {
-					obj.getElement().getStyle().setColor("green");
+				} else*/
+				if (value < 0.0) {
+					obj.getElement().getStyle().setColor("#1d6600");
 				} else if (value > 0.0) {
-					obj.getElement().getStyle().setColor("red");
+					obj.getElement().getStyle().setColor("#b80000");
 				}
 				add(obj);
 			}

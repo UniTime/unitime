@@ -242,12 +242,12 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 	
 	public TableCellInterface dispNumber(int value) {
 		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value))
-				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 	}
 	
 	public TableCellInterface dispNumber(double value) {
 		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value))
-				.setColor(value < 0 ? "#195820" : value > 0 ? "#bd1c14" : null);
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
 	}
 
 }
