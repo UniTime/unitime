@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget.FP;
 import org.unitime.timetable.gwt.client.solver.SolverCookie;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -401,7 +402,7 @@ public class ConflictTable extends UniTimeTable<ClassAssignmentDetails> implemen
 			super("conflicts");
 			iN = new P("number"); iN.setHTML(number);
 			add(iN);
-			iD = new P("dots"); iD.setHTML(CONSTANTS.selectionMore());
+			iD = new FP("dots"); iD.setHTML(CONSTANTS.selectionMore());
 			add(iD);
 			iL = new P("list");
 			add(iL);

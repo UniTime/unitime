@@ -215,7 +215,7 @@ public class TimetablePage extends Composite {
 		List<Page> pages = new ArrayList<Page>();
 		int index = 0;
 		for (final TimetableGridModel model: iLastResponse.getModels()) {
-			final TimetableGrid grid = new TimetableGrid(iLastFilter, model, index++, 1000, iLastResponse.getWeekOffset());
+			final TimetableGrid grid = new TimetableGrid(iLastFilter, model, index++, 1000, iLastResponse.getWeekOffset(), -1);
 			pages.add(new Page() {
 				@Override
 				public String getName() {
@@ -276,8 +276,11 @@ public class TimetablePage extends Composite {
 		int width = ToolBox.getClientWidth() - 20;
 		P timetables = new P("timetables");
 		timetables.getElement().getStyle().clearOverflow();
+		int lastTabIndex = 0;
 		for (TimetableGridModel model: response.getModels()) {
-			timetables.add(new TimetableGrid(filter, model, index++, width, response.getWeekOffset()));
+			TimetableGrid g = new TimetableGrid(filter, model, index++, width, response.getWeekOffset(), lastTabIndex); 
+			timetables.add(g);
+			lastTabIndex += g.getLastTabIndex();
 		}
 		ScrollPanel scroll = new ScrollPanel(timetables);
 		scroll.addStyleName("scroll-panel");

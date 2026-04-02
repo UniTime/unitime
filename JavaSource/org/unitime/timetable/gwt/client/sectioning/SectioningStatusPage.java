@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaTabBar;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable.ReservationColumn;
@@ -1085,7 +1086,8 @@ public class SectioningStatusPage extends Composite {
 		List<Widget> line = new ArrayList<Widget>();
 		if (e.getConfigId() == null) {
 			if (e.getCourseId() != null) {
-				final Image showDetails = new Image(iClassInfos.containsKey(e.getCourseId()) && iSelectedCourseIds.contains(e.getCourseId()) ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+				final ImageButton showDetails = new ImageButton(iClassInfos.containsKey(e.getCourseId()) && iSelectedCourseIds.contains(e.getCourseId()) ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+				Roles.getImgRole().set(showDetails.getElement());
 				showDetails.setAltText(iClassInfos.containsKey(e.getCourseId()) && iSelectedCourseIds.contains(e.getCourseId()) ? ARIA.iconTreeOpened() : ARIA.iconTreeClosed());
 				showDetails.addClickHandler(new ClickHandler() {
 					@Override
@@ -1107,7 +1109,7 @@ public class SectioningStatusPage extends Composite {
 							} else {
 								setLoading(true);
 								iError.setVisible(false);
-								showDetails.setResource(RESOURCES.treeOpen());
+								showDetails.setImage(RESOURCES.treeOpen());
 								showDetails.setAltText(ARIA.iconTreeOpened());
 								iSectioningService.findEnrollmentInfos(iOnline, iCourseFilter, iCourseFilterRequest, e.getCourseId(), new AsyncCallback<List<EnrollmentInfo>>() {
 									@Override
@@ -1140,11 +1142,11 @@ public class SectioningStatusPage extends Composite {
 								iCourseTable.getRowFormatter().setVisible(r, !iCourseTable.getRowFormatter().isVisible(r));
 							}
 							if (iSelectedCourseIds.remove(e.getCourseId())) {
-								showDetails.setResource(RESOURCES.treeClosed());
+								showDetails.setImage(RESOURCES.treeClosed());
 								showDetails.setAltText(ARIA.iconTreeClosed());
 							} else {
 								iSelectedCourseIds.add(e.getCourseId());
-								showDetails.setResource(RESOURCES.treeOpen());
+								showDetails.setImage(RESOURCES.treeOpen());
 								showDetails.setAltText(ARIA.iconTreeOpened());
 							}
 						}

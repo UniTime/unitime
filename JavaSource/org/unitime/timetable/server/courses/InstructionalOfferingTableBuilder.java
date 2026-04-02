@@ -1957,7 +1957,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		} else {
 		        cell = initNormalCell((io.getDemand() != null?io.getDemand().toString(): "0"), isEditable && co.isIsControl().booleanValue());
 	    		if (co.isIsControl().booleanValue() && !io.isNotOffered().booleanValue() && (io.getDemand()==null || io.getDemand().intValue()==0)) {
-	    			cell.setColor("#e00");
+	    			cell.setColor("#e00000");
 	    			cell.addStyle("='font-weight: bold;");
 	    		}
     		}

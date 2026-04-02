@@ -2787,7 +2787,7 @@ div.gwt-MenuBarPopup {
 	max-width: 300px;
 	white-space: pre-wrap;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: auto;
 }
 
 .unitime-EventMeetings .finals {
@@ -2902,7 +2902,7 @@ div.gwt-MenuBarPopup {
 	max-width: 100px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: auto;
 }
 
 .unitime-EventOwners .conflict {
@@ -8654,6 +8654,18 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-FocusableTable .focusable-row td {
+	height: 24px;
+}
+
+.unitime-FocusableTable tr:has(> .focusable-cell) {
+	height: 24px;
+}
+
+.unitime-FocusableTable tr:has(> .unitime-ClickableTableHeader) {
+	height: 24px;
+}
+
+.unitime-FocusableTable tr:has(> .unitime-ClickableTableHeaderNoBorderLine) {
 	height: 24px;
 }
 

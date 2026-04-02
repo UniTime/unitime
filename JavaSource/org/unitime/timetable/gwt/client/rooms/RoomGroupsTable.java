@@ -62,7 +62,7 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 	private RoomPropertiesInterface iProperties = null;
 	
 	public RoomGroupsTable(boolean isGlobal) {
-		setStyleName("unitime-RoomGroups");
+		addStyleName("unitime-RoomGroups");
 		iGlobal = isGlobal;
 		
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
@@ -220,9 +220,9 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 		}
 		
 		int row = addRow(group, widgets);
-		getRowFormatter().setStyleName(row, "row");
+		getRowFormatter().addStyleName(row, "row");
 		for (int col = 0; col < getCellCount(row); col++)
-			getCellFormatter().setStyleName(row, col, "cell");
+			getCellFormatter().addStyleName(row, col, "cell");
 		
 		return row;
 	}

@@ -57,7 +57,7 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 	private RoomPropertiesInterface iProperties = null;
 	
 	public RoomFeaturesTable(boolean isGlobal) {
-		setStyleName("unitime-RoomFeatures");
+		addStyleName("unitime-RoomFeatures");
 		iGlobal = isGlobal;
 		
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
@@ -216,9 +216,9 @@ public class RoomFeaturesTable extends UniTimeTable<FeatureInterface> {
 		}
 		
 		int row = addRow(feature, widgets);
-		getRowFormatter().setStyleName(row, "row");
+		getRowFormatter().addStyleName(row, "row");
 		for (int col = 0; col < getCellCount(row); col++)
-			getCellFormatter().setStyleName(row, col, "cell");
+			getCellFormatter().addStyleName(row, col, "cell");
 		
 		return row;
 	}
