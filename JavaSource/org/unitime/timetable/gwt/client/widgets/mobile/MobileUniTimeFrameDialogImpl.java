@@ -116,6 +116,7 @@ public class MobileUniTimeFrameDialogImpl implements UniTimeFrameDialogDisplay {
 		} else {
 			iFrame.setUrl(source);
 		}
+		iFrame.getElement().setAttribute("alt", title);
 		iCheckLoadingWidgetIsShowing.schedule(30000);
 		
 		History.newItem(title, false);

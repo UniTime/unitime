@@ -62,6 +62,7 @@ public class LoadingWidget extends Composite {
 		iPanel.setStyleName("unitime-LoadingPanel");
 		iImage = new Image(RESOURCES.loading());
 		iImage.setStyleName("unitime-LoadingIcon");
+		iImage.setAltText(MESSAGES.waitPlease());
 		initWidget(iPanel);
 		Window.addWindowScrollHandler(new Window.ScrollHandler() {
 			@Override
