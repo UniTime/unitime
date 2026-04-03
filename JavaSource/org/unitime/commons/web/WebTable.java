@@ -371,6 +371,7 @@ public class WebTable {
                     + "';\"" 
                     + (!suppressRowHighlight ? "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\"" : "")
                     + (title == null ? "" : " title='" + title + "'")
+                    + (onClick != null && !anchor ? " tabindex='0' height='24px' onkeydown='if (window.event.keyCode == 13) this.click();'": "")
                     + ">");
             boolean blank = iBlankWhenSame;
             for (int i = 0; i < line.length; i++) {
