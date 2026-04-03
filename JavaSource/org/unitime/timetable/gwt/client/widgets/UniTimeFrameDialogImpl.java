@@ -135,7 +135,7 @@ public class UniTimeFrameDialogImpl extends UniTimeDialogBox implements UniTimeF
 		} else {
 			iFrame.setUrl(source);
 		}
-		iFrame.getElement().setAttribute("alt", title);
+		iFrame.setTitle(title);
 		String w = (width == null || width.isEmpty() ? String.valueOf(Window.getClientWidth() * 3 / 4) : width);
 		String h = (height == null || height.isEmpty() ? String.valueOf(Window.getClientHeight() * 3 / 4) : height);
 		if (w.endsWith("%")) w = String.valueOf(Integer.parseInt(w.substring(0, w.length() - 1)) * Window.getClientWidth() / 100);
