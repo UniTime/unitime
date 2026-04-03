@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -43,6 +44,7 @@ import org.unitime.timetable.webutil.RequiredTimeTableModel;
  */
 public class PeriodPreferenceModel implements RequiredTimeTableModel {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
     private TreeSet iDates = new TreeSet();
     private TreeSet iStarts = new TreeSet();
     private Hashtable iPreferences = new Hashtable();
@@ -320,12 +322,12 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
             }
             if (pref!=null && !"@".equals(pref) && !PreferenceLevel.sNeutral.equals(pref)) {
                 if (sb.length()>0) sb.append(", ");
-                if (ld!=d) { sb.append(getDayHeader(d)+" "); ld = d; }
+                if (ld!=d) { sb.append(getDayHeader(d).replaceAll("<br>", " ")+" "); ld = d; }
                 sb.append(PreferenceLevel.prolog2abbv(pref)+" ");
                 sb.append(getStartTime(a)+" - "+getEndTime(b));
             }
         }
-        return sb.toString();
+        return (sb.isEmpty() ? MSG.altNoPreferences() : sb.toString());
     }
     
     @Override

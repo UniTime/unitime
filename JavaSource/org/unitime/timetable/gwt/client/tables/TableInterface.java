@@ -525,6 +525,7 @@ public class TableInterface implements IsSerializable {
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		public String getAlt() { return iAlt; }
 		public ImageInterface setAlt(String alt) { iAlt = alt; return this; }
+		public ImageInterface setAlt(String alt, String defaultMessage) { iAlt = (alt == null || alt.isEmpty() ? defaultMessage : alt); return this; }
 		public boolean hasAlt() { return iAlt != null && !iAlt.isEmpty(); }
 		
 		public ImageGenerator getGenerator() { return iGenerator; }

@@ -52,6 +52,8 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -60,6 +62,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -245,6 +248,7 @@ public class ExamEditPage extends Composite {
 						IdLabel blank = new IdLabel();
 						iInstructors.addRow(blank, toLine(blank));
 					}
+					iInstructors.setVisible(iInstructors.getRowCount() > 0);
 					return;
 				}
 				
@@ -368,13 +372,16 @@ public class ExamEditPage extends Composite {
 						iInstructors.addRow(blank, toLine(blank));
 					}
 				}
+				iInstructors.setVisible(iInstructors.getRowCount() > 0);
 				iPanel.addRow(EXAM.propExamInstructors(), iInstructors);
 				
 				UniTimeHeaderPanel notesPanel = new UniTimeHeaderPanel(EXAM.sectExamNotes());
 				iPanel.addHeaderRow(notesPanel);
+				notesPanel.getHeaderTitlePanel().getElement().setId(DOM.createUniqueId());
 				TextArea reqestNotes = new TextArea();
 				reqestNotes.setHeight("66px");
 				reqestNotes.setWidth("100%");
+				Roles.getTextboxRole().setAriaLabelledbyProperty(reqestNotes.getElement(), Id.of(notesPanel.getHeaderTitlePanel().getElement()));
 				if (response.hasNotes()) reqestNotes.setText(response.getNotes());
 				iPanel.addRow(reqestNotes);
 				reqestNotes.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -391,6 +398,7 @@ public class ExamEditPage extends Composite {
 				}
 								
 				iOwners = new UniTimeTable<ExamObjectInterface>();
+				iOwners.addStyleName("unitime-ExamOwnersTable");
 				UniTimeHeaderPanel header = new UniTimeHeaderPanel(EXAM.sectExamOwners());
 				iPanel.addHeaderRow(header);
 				header.addButton("add", EXAM.actionAddObject(), new ClickHandler() {
@@ -449,6 +457,7 @@ public class ExamEditPage extends Composite {
 			if (i.getId().equals(ci.getId()))
 				instructor.setSelectedIndex(instructor.getItemCount() - 1);
 		}
+		Roles.getListboxRole().setAriaLabelProperty(instructor.getElement(), EXAM.propExamInstructors());
 		instructor.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent e) {
@@ -469,6 +478,7 @@ public class ExamEditPage extends Composite {
 		});
 		ret.add(instructor);
 		final ImageButton delete = new ImageButton(RESOURCES.delete());
+		delete.setAltText(MESSAGES.titleDeleteRow());
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -501,7 +511,6 @@ public class ExamEditPage extends Composite {
 		if (iInstructors != null) {
 			Set<Long> instructors = new HashSet<Long>();
 			for (IdLabel ci: iInstructors.getData()) {
-				UniTimeNotifications.info("HERE " + ci);
 				if (ci.getId() == null) continue;
 				if (!instructors.add(ci.getId())) {
 					iHeader.setErrorMessage(EXAM.errorDuplicateExamInstructors());
@@ -539,17 +548,21 @@ public class ExamEditPage extends Composite {
 	protected List<Widget> toClassRow(final ExamObjectInterface doi) {
 		final List<Widget> row = new ArrayList<Widget>();
 		final ListBox subject = new ListBox();
+		Roles.getListboxRole().setAriaLabelProperty(subject.getElement(), MESSAGES.colSubject());
 		subject.addItem("-", ""); subject.setWidth("90px");
 		row.add(subject);
 		final ListBox course = new ListBox();
 		course.addItem("-", ""); course.setWidth("470px");
-		row.add(course);		
+		row.add(course);
+		Roles.getListboxRole().setAriaLabelProperty(course.getElement(), MESSAGES.colCourseNumber());
 		final ListBox subpart = new ListBox();
 		subpart.addItem("-", ""); subpart.setWidth("150px");
 		row.add(subpart);
+		Roles.getListboxRole().setAriaLabelProperty(subpart.getElement(), MESSAGES.colConfigOrSubpart());
 		final ListBox clazz = new ListBox();
 		clazz.addItem("-", ""); clazz.setWidth("150px");
 		row.add(clazz);
+		Roles.getListboxRole().setAriaLabelProperty(clazz.getElement(), MESSAGES.colClassNumber());
 		for (IdLabel s: iData.getSubjects()) {
 			subject.addItem(s.getLabel(), s.getId().toString());
 			if (s.getId().equals(doi.getSubjectId()))
@@ -606,6 +619,7 @@ public class ExamEditPage extends Composite {
 			subjectChanged(row, doi);
 		
 		ImageButton delete = new ImageButton(RESOURCES.delete());
+		delete.setAltText(MESSAGES.titleDeleteRow());
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {

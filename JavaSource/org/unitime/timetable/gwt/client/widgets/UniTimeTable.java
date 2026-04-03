@@ -597,18 +597,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		if (isAllowFocus()) {
 			if (DOM.eventGetType(event) == Event.ONKEYPRESS && event.getKeyCode() == KeyCodes.KEY_ENTER) {
 				Element tr = DOM.eventGetTarget(event);
-				Element td = null;
-				if (tr.getPropertyString("tagName").equalsIgnoreCase("td")) td = tr;
-				while (tr != null) {
-					if (tr.getPropertyString("tagName").equalsIgnoreCase("tr")) break;
-					tr = tr.getParentElement();
-				}
-				if (td != null && td.getTabIndex() >= 0) {
-					clickElement(td.getFirstChildElement());
+				if (tr != null && tr.getTabIndex() >= 0 && tr.getPropertyString("tagName").equalsIgnoreCase("td")) {
+					clickElement(tr.getFirstChildElement());
 					event.preventDefault();
 				    event.stopPropagation();
 				}
-				if (tr != null) {
+				if (tr != null && tr.getTabIndex() >= 0 && tr.getPropertyString("tagName").equalsIgnoreCase("tr")) {
 					Element body = DOM.getParent(tr);
 					int row = DOM.getChildIndex(body, tr);
 					SmartTableRow<T> r = getSmartRow(row);
@@ -623,11 +617,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 				}
 			} else if (DOM.eventGetType(event) == Event.ONKEYDOWN) {
 				Element tr = DOM.eventGetTarget(event);
-				while (tr != null) {
-					if (tr.getPropertyString("tagName").equalsIgnoreCase("tr")) break;
-					tr = tr.getParentElement();
-				}
-				if (tr != null) {
+				if (tr != null && tr.getTabIndex() >= 0 && tr.getPropertyString("tagName").equalsIgnoreCase("tr")) {
 					Element body = DOM.getParent(tr);
 					int row = DOM.getChildIndex(body, tr);
 					if (event.getKeyCode() == KeyCodes.KEY_DOWN) {

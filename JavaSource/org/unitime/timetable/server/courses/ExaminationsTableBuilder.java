@@ -114,7 +114,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
         	px.load(exam);
         	CellInterface c = new CellInterface();
         	c.setImage(new ImageInterface()
-        			.setSource("pattern?v=" + (timeVertical ? 1 : 0) + "&x=" + exam.getUniqueId()).setAlt(px.toString())
+        			.setSource("pattern?v=" + (timeVertical ? 1 : 0) + "&x=" + exam.getUniqueId()).setAlt(px.toString(), MSG.altNoPreferences())
         			.setGenerator(new ImageGenerator() {
 						public Object generate() {
 							return new RequiredTimeTable(px).createBufferedImage(timeVertical);
