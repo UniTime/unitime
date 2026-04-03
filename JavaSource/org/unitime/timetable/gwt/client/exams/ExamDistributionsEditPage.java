@@ -47,6 +47,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -347,6 +348,7 @@ public class ExamDistributionsEditPage extends Composite {
 		iPanel.addRow(EXAM.propertyDistributionPreference(), iPreference);
 		
 		iExams = new UniTimeTable<ExamDistributionObjectInterface>();
+		iExams.addStyleName("unitime-ExamsInDistributionsTable");
 		iExamsHeader = new UniTimeHeaderPanel(EXAM.sectionExaminationsInDistribution(iExamType.getSelectedItemText()));
 		iPanel.addHeaderRow(iExamsHeader);
 		iExamsHeader.addButton("add", EXAM.actionAddExamToDistribution(), new ClickHandler() {
@@ -395,12 +397,15 @@ public class ExamDistributionsEditPage extends Composite {
 		final ListBox subject = new ListBox();
 		subject.addItem("-", ""); subject.setWidth("100px");
 		row.add(subject);
+		Roles.getListboxRole().setAriaLabelProperty(subject.getElement(), MESSAGES.colSubject());
 		final ListBox course = new ListBox();
 		course.addItem("-", ""); course.setWidth("400px");
-		row.add(course);		
+		row.add(course);
+		Roles.getListboxRole().setAriaLabelProperty(course.getElement(), MESSAGES.colCourse());
 		final ListBox exam = new ListBox();
 		exam.addItem("-", ""); exam.setWidth("400px");
 		row.add(exam);
+		Roles.getListboxRole().setAriaLabelProperty(exam.getElement(), EXAM.colExamination());
 		for (IdLabel s: iData.getSubjects()) {
 			subject.addItem(s.getLabel(), s.getId().toString());
 			if (s.getId().equals(doi.getSubjectId()))
@@ -447,6 +452,7 @@ public class ExamDistributionsEditPage extends Composite {
 			subjectChanged(row, doi);
 		
 		final ImageButton up = new ImageButton(RESOURCES.orderUp());
+		up.setAltText(EXAM.titleMoveDown());
 		up.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
@@ -458,6 +464,7 @@ public class ExamDistributionsEditPage extends Composite {
 		row.add(up);
 		
 		ImageButton down = new ImageButton(RESOURCES.orderDown());
+		down.setAltText(EXAM.titleMoveUp());
 		down.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
@@ -469,6 +476,7 @@ public class ExamDistributionsEditPage extends Composite {
 		row.add(down);
 		
 		ImageButton delete = new ImageButton(RESOURCES.delete());
+		delete.setAltText(MESSAGES.titleDeleteRow());
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {

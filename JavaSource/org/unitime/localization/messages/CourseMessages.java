@@ -6093,4 +6093,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Other Disclaimer")
 	String itemCustomSchedulingDisclaimer();
+	
+	@DefaultMessage("No preferences")
+	String altNoPreferences();
 }

@@ -8697,3 +8697,13 @@ unitime-RoomSharingWidget .legend .blank {
 #unitime-SideMenu .unitime-TreeMenu:focus-within {
 	outline: 1px solid blue !important;
 }
+
+.unitime-ExamOwnersTable .unitime-ImageButton {
+	vertical-align: text-top;
+	margin: 1px 5px 0px 5px;
+}
+
+.unitime-ExamsInDistributionsTable .unitime-ImageButton {
+	vertical-align: text-top;
+	margin: 1px 5px 0px 5px;
+}
