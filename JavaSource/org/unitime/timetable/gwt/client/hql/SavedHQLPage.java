@@ -625,6 +625,7 @@ public class SavedHQLPage extends Composite {
 			}
 		});
 		
+		iTable.setVisible(false);
 		initWidget(iForm);
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -1681,6 +1682,7 @@ public class SavedHQLPage extends Composite {
 				}, iLastSort > 0);
 			}
 		}
+		iTable.setVisible(iTable.getRowCount() > 0);
 		setBack();
 	}
 	
