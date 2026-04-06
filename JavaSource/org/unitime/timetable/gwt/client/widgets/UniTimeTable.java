@@ -608,6 +608,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					SmartTableRow<T> r = getSmartRow(row);
 				    boolean hasData = showHower(row, r == null ? null : r.getData());
 				    if (hasData) {
+				    	if (isAllowSelection() && isCanSelectRow(row) && isEnabled()) {
+							if (isAllowMultiSelect())
+								setSelected(row, !isSelected(row));
+							else if (!isSelected(row))
+								setSelected(row, true);
+						}
 				    	TableEvent<T> tableEvent = new TableEvent<T>(event, row, 0, tr, tr.getFirstChildElement(), r.getData());
 				    	for (MouseClickListener<T> listener: iMouseClickListeners)
 							listener.onMouseClick(tableEvent);
@@ -729,8 +735,6 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		if (hint == null && iHintProvider != null)
 			hint = iHintProvider.getHint(tableEvent);
 
-		String style = getRowFormatter().getStyleName(row);
-
 		switch (DOM.eventGetType(event)) {
 		case Event.ONMOUSEOVER:
 			if (hasData) {
@@ -738,13 +742,14 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					getRowFormatter().getElement(row).getStyle().setCursor(Cursor.POINTER);
 				boolean selected = false;
 				if (isAllowSelection()) {
-					if ("unitime-TableRowSelectedHover".equals(style)) {
+					if (hasStyleName(row, "unitime-TableRowSelectedHover")) {
 						selected = true;
-					} else if ("unitime-TableRowSelected".equals(style)) {
-						getRowFormatter().setStyleName(row, "unitime-TableRowSelectedHover");
+					} else if (hasStyleName(row, "unitime-TableRowSelected")) {
+						getRowFormatter().removeStyleName(row, "unitime-TableRowSelected");
+						getRowFormatter().addStyleName(row, "unitime-TableRowSelectedHover");
 						selected = true;
 					} else {
-						getRowFormatter().setStyleName(row, "unitime-TableRowHover");
+						getRowFormatter().addStyleName(row, "unitime-TableRowHover");
 					}
 				} else {
 					getRowFormatter().addStyleName(row, "unitime-TableRowHover");
@@ -781,10 +786,11 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					getRowFormatter().getElement(row).getStyle().clearCursor();
 				boolean selected = false;
 				if (isAllowSelection()) {
-					if ("unitime-TableRowHover".equals(style)) {
-						getRowFormatter().setStyleName(row, null);	
-					} else if ("unitime-TableRowSelectedHover".equals(style)) {
-						getRowFormatter().setStyleName(row, "unitime-TableRowSelected");
+					if (hasStyleName(row, "unitime-TableRowHover")) {
+						getRowFormatter().removeStyleName(row, "unitime-TableRowHover");	
+					} else if (hasStyleName(row, "unitime-TableRowSelectedHover")) {
+						getRowFormatter().removeStyleName(row, "unitime-TableRowSelectedHover");
+						getRowFormatter().addStyleName(row, "unitime-TableRowSelected");
 						selected = true;
 					}
 				} else {
@@ -817,16 +823,32 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					element = DOM.getParent(element);
 				if (isAllowMultiSelect()) {
 					if (element.getPropertyString("tagName").equalsIgnoreCase("td")) {
-						boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-						boolean selected = !("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-						getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+						if (hasStyleName(row, "unitime-TableRowHover")) {
+							getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+							getRowFormatter().addStyleName(row, "unitime-TableRowSelectedHover");
+						} else if (hasStyleName(row, "unitime-TableRowSelectedHover")) {
+							getRowFormatter().removeStyleName(row, "unitime-TableRowSelectedHover");
+							getRowFormatter().addStyleName(row, "unitime-TableRowHover");
+						} else if (hasStyleName(row, "unitime-TableRowSelected")) {
+							getRowFormatter().removeStyleName(row, "unitime-TableRowSelected");
+						} else {
+							getRowFormatter().addStyleName(row, "unitime-TableRowSelected");
+						}
 					}
 				} else {
 					int old = getSelectedRow();
 					if (old != row && old >= 0)
 						setSelected(old, false);
-					boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-					getRowFormatter().setStyleName(row, "unitime-TableRowSelected" + (hover ? "Hover" : ""));
+					if (hasStyleName(row, "unitime-TableRowHover")) {
+						getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+						getRowFormatter().addStyleName(row, "unitime-TableRowSelectedHover");
+					} else if (hasStyleName(row, "unitime-TableRowSelectedHover")) {
+						// no change
+					} else if (hasStyleName(row, "unitime-TableRowSelected")) {
+						// no change
+					} else {
+						getRowFormatter().addStyleName(row, "unitime-TableRowSelected");
+					}
 				}
 			}
 			if (iHintPanel != null && iHintPanel.isShowing())
@@ -937,9 +959,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 		if (iLastHoverRow >= 0 && iLastHoverRow < getRowCount()) {
 			boolean selected = false;
 			if (isAllowSelection()) {
-				String style = getRowFormatter().getStyleName(iLastHoverRow);
-				selected = ("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-				getRowFormatter().setStyleName(iLastHoverRow, "unitime-TableRow" + (selected ? "Selected" : ""));
+				if (hasStyleName(iLastHoverRow, "unitime-TableRowSelectedHover")) {
+					getRowFormatter().removeStyleName(iLastHoverRow, "unitime-TableRowSelectedHover");
+					getRowFormatter().addStyleName(iLastHoverRow, "unitime-TableRowSelected");
+				} else {
+					getRowFormatter().removeStyleName(iLastHoverRow, "unitime-TableRowHover");
+				}
 			} else {
 				getRowFormatter().removeStyleName(iLastHoverRow, "unitime-TableRowHover");
 			}
@@ -955,8 +980,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	
 	public boolean isSelected(int row) {
 		if (isAllowSelection()) {
-			String style = getRowFormatter().getStyleName(row);
-			return "unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style);
+			return hasStyleName(row, "unitime-TableRowSelected") || hasStyleName(row, "unitime-TableRowSelectedHover");
 		} else {
 			return false;
 		}
@@ -969,10 +993,29 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			if (old >= 0 && old != row) setSelected(old, false);
 		}
 		if (isAllowSelection()) {
-			String style = getRowFormatter().getStyleName(row);
-			boolean hover = ("unitime-TableRowHover".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-			boolean wasSelected = ("unitime-TableRowSelected".equals(style) || "unitime-TableRowSelectedHover".equals(style));
-			getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
+			boolean wasSelected = false, hover = false;
+			if (hasStyleName(row, "unitime-TableRowSelected")) {
+				wasSelected = true; hover = false;
+				if (!selected)
+					getRowFormatter().removeStyleName(row, "unitime-TableRowSelected");
+			} else if (hasStyleName(row, "unitime-TableRowSelectedHover")) {
+				wasSelected = true; hover = true;
+				if (!selected) {
+					getRowFormatter().removeStyleName(row, "unitime-TableRowSelectedHover");
+					getRowFormatter().addStyleName(row, "unitime-TableRowHover");
+				}
+			} else if (hasStyleName(row, "unitime-TableRowHover")) {
+				wasSelected = false; hover = true;
+				if (selected) {
+					getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
+					getRowFormatter().addStyleName(row, "unitime-TableRowSelectedHover");
+				}
+			} else {
+				wasSelected = false; hover = false;
+				if (selected) {
+					getRowFormatter().addStyleName(row, "unitime-TableRowSelected");
+				}
+			}
 			if (!hover && wasSelected != selected) {
 				if (selected) {
 					String color = getRowFormatter().getElement(row).getStyle().getBackgroundColor();
@@ -1239,8 +1282,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	}
 	
 	public void setBackGroundColor(int row, String color) {
-		String style = getRowFormatter().getStyleName(row);
-		if (style != null && !style.isEmpty()) {
+		if (hasStyleName(row, "unitime-TableRowHover") || hasStyleName(row, "unitime-TableRowSelected") || hasStyleName(row, "unitime-TableRowSelectedHover")) {
 			if (color == null || color.isEmpty())
 				iLastHoverBackgroundColor.remove(row);
 			else
@@ -1336,4 +1378,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 	public static native void clickElement(Element elem) /*-{
 		elem.click();
 	}-*/;
+	
+	public boolean hasStyleName(int row, String style) {
+		String styles = getRowFormatter().getStyleName(row);
+		if (styles == null) return false;
+		for (String s: styles.split(" "))
+			if (s.equals(style)) return true;
+		return false;
+	}
 }
