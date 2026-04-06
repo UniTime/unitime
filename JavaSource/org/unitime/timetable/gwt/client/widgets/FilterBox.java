@@ -1223,19 +1223,35 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (iPanel == null) {
 				iPanel = new AbsolutePanel();
 				iPanel.addStyleName("filter");
+				Id commandId = null;
 				if (getLabel() != null && !getLabel().isEmpty()) {
 					Label label = new Label(getLabel(), false);
 					label.addStyleName("command");
 					iPanel.add(label);
+					label.getElement().setId(DOM.createUniqueId());
+					commandId = Id.of(label.getElement());
 				} else if (getCommand() != null && !getCommand().isEmpty()) {
 					Label label = new Label(getCommand().replace('_', ' '), false);
 					label.addStyleName("command");
 					iPanel.add(label);
+					label.getElement().setId(DOM.createUniqueId());
+					commandId = Id.of(label.getElement());
 				}
 				AbsolutePanel other = new AbsolutePanel();
 				other.addStyleName("other");
 				for (final Widget w: iWidgets) {
 					w.addStyleName("inline");
+					if (w instanceof Label || w instanceof HTML) {
+						if (w.getElement().getId() == null || w.getElement().getId().isEmpty())
+							w.getElement().setId(DOM.createUniqueId());
+						commandId = Id.of(w.getElement());
+					} else if (commandId != null) {
+						Element e = ToolBox.firstInputElement(w.getElement());
+						if (e != null && commandId != null) {
+							Roles.getTextboxRole().setAriaLabelledbyProperty(e, commandId);
+							commandId = null;
+						}
+					}
 					if (w instanceof AriaSuggestBox) {
 						fixHandlers(box, ((AriaSuggestBox)w).getValueBox());
 						fixHandlers(box, ((AriaSuggestBox)w).getSuggestionMenu());

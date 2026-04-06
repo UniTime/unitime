@@ -2067,11 +2067,11 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-size: 8pt;
 	font-weight: 400;
 	font-style: normal;
-	color: #333333;
+	color: black;
 }
 
 .unitime-FilterBoxPopup .item-selected {
-	background-color: #92c1f0;
+	background-color: #b7d4fb;
 }
 
 .unitime-FilterBoxPopup .command {
@@ -2084,7 +2084,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-FilterBoxPopup .item-command {
 	padding-left: 5px;
-	color: #767676;
+	color: #5a5a5a;
 	text-transform: capitalize;
 	font-variant: small-caps;
 	vertical-align: top;
@@ -2093,7 +2093,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-FilterBoxPopup .item-hint {
 	padding-left: 5px;
-	color: #767676;
+	color: #5a5a5a;
 	vertical-align: top;
 	font-size: xx-small;
 }
@@ -2646,18 +2646,18 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-size: 8pt;
 	font-weight: 400;
 	font-style: normal;
-	color: #333333;
+	color: black;
 }
 
 .unitime-IntervalSelectorPopup .item-hint {
 	padding-left: 5px;
-	color: #767676;
+	color: #5a5a5a;
 	vertical-align: top;
 	font-size: xx-small;
 }
 
 .unitime-IntervalSelectorPopup .item-selected {
-	background-color: #92c1f0;
+	background-color: #b7d4fb;
 }
 
 div.gwt-MenuBarPopup {
