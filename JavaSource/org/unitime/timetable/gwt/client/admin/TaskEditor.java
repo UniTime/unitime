@@ -42,7 +42,10 @@ import org.unitime.timetable.gwt.shared.TaskInterface.ExecutionStatus;
 import org.unitime.timetable.gwt.shared.TaskInterface.TaskExecutionInterface;
 import org.unitime.timetable.gwt.shared.TaskInterface.TaskOptionsInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -50,6 +53,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -427,8 +431,14 @@ public class TaskEditor extends UniTimeDialogBox {
 						widget = text;
 					}
 					int row = iForm.insertRow(iForm.getRowCount() - 1);
-					iForm.setWidget(row, 0, new Label((param.getLabel() == null || param.getLabel().isEmpty() ? param.getName() : param.getLabel()) + ":", false));
+					Label label = new Label((param.getLabel() == null || param.getLabel().isEmpty() ? param.getName() : param.getLabel()) + ":", false);
+					iForm.setWidget(row, 0, label);
 					iForm.setWidget(row, 1, widget);
+					Element inputElement = ToolBox.firstInputElement(widget.getElement());
+					if (inputElement != null) {
+						label.getElement().setId(DOM.createUniqueId());
+						Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(label.getElement()));
+					}
 				}
 			}
 		}

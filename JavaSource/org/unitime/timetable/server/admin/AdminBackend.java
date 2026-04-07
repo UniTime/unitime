@@ -272,6 +272,9 @@ public class AdminBackend {
 				AdminTable at = getTable(applicationContext, request.getType());
 				if (at instanceof HasFilter)
 					ret = ((HasFilter)at).getFilter(context, hibSession);
+				else
+					ret = new SimpleEditInterface.Filter();
+				ret.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 				
 				hibSession.flush();
 				tx.commit(); tx = null;

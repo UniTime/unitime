@@ -32,12 +32,14 @@ import java.util.Set;
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -55,6 +57,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -73,6 +76,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.UserDataInterface.GetUserDataRpcRequest;
 import org.unitime.timetable.gwt.shared.UserDataInterface.SetUserDataRpcRequest;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -117,9 +121,10 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class SimpleEditPage extends Composite {
-	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private SimpleForm iPanel;
@@ -127,8 +132,10 @@ public class SimpleEditPage extends Composite {
 	private String iType;
 	private PageName iPageName = null;
 	private UniTimeTable<Record> iTable;
+	private int iTableRow = -1;
 	private boolean iHasLazy = false;
 	private Integer iOrderColumn = null;
+	private boolean iSticky = false;
 
 	private SimpleEditInterface iData;
 	private SimplePanel iSimple;
@@ -274,8 +281,9 @@ public class SimpleEditPage extends Composite {
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
+		iTable.addStyleName("unitime-AdminTable");
 		iTable.setAllowSelection(true);
-		iPanel.addRow(iTable);
+		iTableRow = iPanel.addRow(iTable);
 		
 		iBottom = iHeader.clonePanel();
 		iPanel.addNotPrintableBottomRow(iBottom);
@@ -631,6 +639,7 @@ public class SimpleEditPage extends Composite {
 			if (r.getUniqueId().equals(recordId)) {
 				Image details = (Image)((MyCell)iTable.getWidget(i, 0)).getInnerWidget();
 				details.setResource(show ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+				details.setAltText(show ? ARIA.iconTreeOpened() : ARIA.iconTreeClosed());
 				r.setField(0, show ? "-" : "+");
 			} else if (String.valueOf(recordId).equals(r.getField(0))) {
 				iTable.getRowFormatter().setVisible(i, show);
@@ -651,7 +660,15 @@ public class SimpleEditPage extends Composite {
 
 			@Override
 			public void onSuccess(SimpleEditInterface.Filter result) {
-				if (result == null) {
+				if (result == null || !result.hasFilter()) {
+					if (result != null && result.isSticky()) {
+						P p = new P("unitime-StickyTable");
+						p.getElement().getStyle().clearPosition();
+						p.getElement().getStyle().clearOverflow();
+						p.add(iTable);
+						iPanel.setWidget(iTableRow, 0, p);
+						iSticky = true;
+					}
 					load(null);
 				} else {
 					iHeader.setEnabled("add", false);
@@ -666,7 +683,17 @@ public class SimpleEditPage extends Composite {
 						iPanel.addRow(field.getName() + ":", new MyCell(true, field, iFilter, idx, true));
 						idx ++;
 					}
-					iPanel.addRow(iTable);
+					if (result.isSticky()) {
+						P p = new P("unitime-StickyTable");
+						p.getElement().getStyle().clearPosition();
+						p.getElement().getStyle().clearOverflow();
+						p.add(iTable);
+						iTableRow = iPanel.addRow(p);
+						iSticky = true;
+					} else {
+						iTableRow = iPanel.addRow(iTable);
+						iSticky = false;
+					}
 					iPanel.addNotPrintableBottomRow(iBottom);
 					iHeader.setEnabled("search", true);
 					iHeader.setEnabled("export-csv", false);
@@ -796,6 +823,7 @@ public class SimpleEditPage extends Composite {
 							if ("+".equals(r.getField(0))) {
 								Image details = (Image)((MyCell)iTable.getWidget(row, 0)).getInnerWidget();
 								details.setResource(RESOURCES.treeOpen());
+								details.setAltText(ARIA.iconTreeOpened());
 								r.setField(0, "-");
 							} else if (!"-".equals(r.getField(0))) {
 								iTable.getRowFormatter().setVisible(row, true);
@@ -833,6 +861,7 @@ public class SimpleEditPage extends Composite {
 							if ("-".equals(r.getField(0))) {
 								Image details = (Image)((MyCell)iTable.getWidget(row, 0)).getInnerWidget();
 								details.setResource(RESOURCES.treeClosed());
+								details.setAltText(ARIA.iconTreeClosed());
 								r.setField(0, "+");
 							} else if (!"+".equals(r.getField(0))) {
 								iTable.getRowFormatter().setVisible(row, false);
@@ -1043,6 +1072,7 @@ public class SimpleEditPage extends Composite {
 		iTable.clearTable();
 		
 		iTable.setAllowSelection(!hasDetails());
+		iTable.setAllowFocus(!iEditable);
 
 		iTable.addRow(null, header(true));
 		
@@ -1059,7 +1089,7 @@ public class SimpleEditPage extends Composite {
 		for (Record r: iData.getRecords()) {
 			fillRow(r, row++);
 			empty = r.isEmpty(iData);
-			if ((row % 31) == 0 && !hasDetails() && !iData.isCanMoveUpAndDown()) { iTable.addRow(null, header(false)); row++; }
+			if (!iSticky && (row % 31) == 0 && !hasDetails() && !iData.isCanMoveUpAndDown()) { iTable.addRow(null, header(false)); row++; }
 		}
 		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
 			fillRow(iData.addRecord(null), row);
@@ -1125,9 +1155,10 @@ public class SimpleEditPage extends Composite {
 			col++;
 		}
 		if (iEditable && iData.isCanMoveUpAndDown()) {
-			final Image up = new Image(RESOURCES.orderUp());
+			final ImageButton up = new ImageButton(RESOURCES.orderUp());
 			up.getElement().getStyle().setCursor(Cursor.POINTER);
 			up.setTitle(MESSAGES.titleMoveUp());
+			up.setAltText(MESSAGES.titleMoveUp());
 			up.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -1138,9 +1169,10 @@ public class SimpleEditPage extends Composite {
 			});
 			line.add(up);
 			col++;
-			final Image down = new Image(RESOURCES.orderDown());
+			final ImageButton down = new ImageButton(RESOURCES.orderDown());
 			down.getElement().getStyle().setCursor(Cursor.POINTER);
 			down.setTitle(MESSAGES.titleMoveDown());
+			down.setAltText(MESSAGES.titleMoveDown());
 			down.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -1153,9 +1185,10 @@ public class SimpleEditPage extends Composite {
 			col++;
 		}
 		if (iData.isAddable() && iEditable) {
-			Image add = new Image(RESOURCES.add());
+			ImageButton add = new ImageButton(RESOURCES.add());
 			add.getElement().getStyle().setCursor(Cursor.POINTER);
 			add.setTitle(MESSAGES.titleInsertRowAbove());
+			add.setAltText(MESSAGES.titleInsertRowAbove());
 			add.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -1169,8 +1202,9 @@ public class SimpleEditPage extends Composite {
 			line.add(new Label());
 		}
 		if (iData.isEditable() && iEditable && record.isDeletable()) {
-			Image delete = new Image(RESOURCES.delete());
+			ImageButton delete = new ImageButton(RESOURCES.delete());
 			delete.setTitle(MESSAGES.titleDeleteRow());
+			delete.setAltText(MESSAGES.titleDeleteRow());
 			delete.getElement().getStyle().setCursor(Cursor.POINTER);
 			delete.addClickHandler(new ClickHandler() {
 				@Override
@@ -1214,9 +1248,13 @@ public class SimpleEditPage extends Composite {
 			iField = field; iRecord = record; iIndex = index; iDetail = detail;
 			if (field.getType() == FieldType.parent) {
 				if ("+".equals(record.getField(index))) {
-					initWidget(new Image(RESOURCES.treeClosed()));
+					ImageButton treeClosed = new ImageButton(RESOURCES.treeClosed());
+					treeClosed.setAltText(ARIA.iconTreeOpened());
+					initWidget(treeClosed);
 				} else if ("-".equals(record.getField(index))) {
-					initWidget(new Image(RESOURCES.treeOpen()));
+					ImageButton treeOpen = new ImageButton(RESOURCES.treeOpen());
+					treeOpen.setAltText(ARIA.iconTreeOpened());
+					initWidget(treeOpen);
 				} else {
 					initWidget(new Label());
 				}
@@ -1434,7 +1472,8 @@ public class SimpleEditPage extends Composite {
 						HorizontalPanel hp = new HorizontalPanel();
 						final Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
 						hp.add(label);
-						Image change = new Image(RESOURCES.edit());
+						ImageButton change = new ImageButton(RESOURCES.edit());
+						change.setAltText(ARIA.iconEdit(field.getName()));
 						hp.add(change);
 						hp.setCellVerticalAlignment(change, HasVerticalAlignment.ALIGN_MIDDLE);
 						label.getElement().getStyle().setPaddingRight(5, Unit.PX);
@@ -1444,6 +1483,7 @@ public class SimpleEditPage extends Composite {
 								final UniTimeDialogBox dialog = new UniTimeDialogBox(true, true);
 								SimpleForm form = new SimpleForm();
 								final TextArea text = new TextArea();
+								Roles.getTextboxRole().setAriaLabelProperty(text.getElement(), field.getName());
 								text.setValue(getValue());
 								text.setStyleName("unitime-TextArea");
 								text.setVisibleLines(10);
@@ -1487,7 +1527,8 @@ public class SimpleEditPage extends Composite {
 					final HTML label = new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name.length >= 6 && !name[6].isEmpty() ? name[6] : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
 					label.setWidth(field.getWidth() + "px");
 					hp.add(label);
-					Image change = new Image(RESOURCES.edit());
+					ImageButton change = new ImageButton(RESOURCES.edit());
+					change.setAltText(ARIA.iconEdit(field.getName()));
 					hp.add(change);
 					hp.setCellVerticalAlignment(change, HasVerticalAlignment.ALIGN_MIDDLE);
 					hp.setWidth("100%");
@@ -1578,6 +1619,7 @@ public class SimpleEditPage extends Composite {
 						initWidget(new HTML(record.getField(index), false)); break;
 					}
 					Image image = new Image((record.getField(index) == null && field.isCheckedByDefault()) || (record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index))) ? RESOURCES.on() : RESOURCES.off());
+					image.setAltText((record.getField(index) == null && field.isCheckedByDefault()) || (record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index))) ? MESSAGES.exportTrue() : MESSAGES.exportFalse());
 					initWidget(image);
 					break;
 				case students:

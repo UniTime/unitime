@@ -187,7 +187,7 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			} else if (widget instanceof TableHeaderCell) {
 				Roles.getColumnheaderRole().set(getCellFormatter().getElement(row, col));
 				getCellFormatter().getElement(row, col).setId(DOM.createUniqueId());
-				if (((TableHeaderCell)widget).isCanFocus()) {
+				if (isAllowFocus() && ((TableHeaderCell)widget).isCanFocus()) {
 					getCellFormatter().getElement(row, col).setTabIndex(0);
 					getCellFormatter().addStyleName(row, col, "focusable-cell");
 				}
