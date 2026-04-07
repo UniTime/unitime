@@ -693,4 +693,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Enter address to geocode")
 	String mapAddressToGeocode();
+	
+	@DefaultMessage("Edit {0}")
+	String iconEdit(String name);
 }

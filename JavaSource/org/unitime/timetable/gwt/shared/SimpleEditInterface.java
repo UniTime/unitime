@@ -584,6 +584,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	public static class Filter implements GwtRpcResponse {
 		Field[] iFields;
 		Record iDefaultValue;
+		boolean iSticky = false;
 		
 		public Filter() {}
 		public Filter(Field... fields) {
@@ -593,6 +594,10 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		
 		public Field[] getFields() { return iFields; }
 		public Record getDefaultValue() { return iDefaultValue; }
+		public boolean hasFilter() { return iFields != null && iFields.length > 0; }
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
 		
 		public int indexOf(String name) {
 			for (int i = 0; i < iFields.length; i++)

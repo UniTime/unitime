@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -60,7 +61,10 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.SaveOrUpdateScriptRpcReq
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptOptionsInterface;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptParameterInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -70,6 +74,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -81,7 +86,6 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
@@ -146,6 +150,7 @@ public class ScriptPage extends Composite {
 		header.add(new UniTimeTableHeader(""));
 		iQueue.addRow(null, header);
 		iQueue.setAllowSelection(true);
+		iQueue.addStyleName("unitime-QueueTable");
 		iForm.addRow(iQueue);
 		
 		iLogHeader = new UniTimeHeaderPanel();
@@ -318,8 +323,9 @@ public class ScriptPage extends Composite {
 				line.add(new Label(""));
 			}
 			if (q.isCanDelete()) {
-				Image delete = new Image(RESOURCES.delete());
+				ImageButton delete = new ImageButton(RESOURCES.delete());
 				delete.setTitle(MESSAGES.titleDeleteRow());
+				delete.setAltText(MESSAGES.titleDeleteRow());
 				delete.getElement().getStyle().setCursor(Cursor.POINTER);
 				delete.addClickHandler(new ClickHandler() {
 					@Override
@@ -550,8 +556,14 @@ public class ScriptPage extends Composite {
 						widget = text;
 					}
 					int row = iForm.insertRow(iForm.getRowCount() - 2);
-					iForm.setWidget(row, 0, new Label((param.getLabel() == null || param.getLabel().isEmpty() ? param.getName() : param.getLabel()) + ":", false));
+					Label label = new Label((param.getLabel() == null || param.getLabel().isEmpty() ? param.getName() : param.getLabel()) + ":", false);
+					iForm.setWidget(row, 0, label);
 					iForm.setWidget(row, 1, widget);
+					Element inputElement = ToolBox.firstInputElement(widget.getElement());
+					if (inputElement != null) {
+						label.getElement().setId(DOM.createUniqueId());
+						Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(label.getElement()));
+					}
 				}
 			}
 		}
@@ -673,6 +685,7 @@ public class ScriptPage extends Composite {
 			iDialogForm.addRow(MESSAGES.propScript(), iScript);
 			
 			iParams = new UniTimeTable<ScriptParameterInterface>();
+			iParams.addStyleName("unitime-ScriptParametersTable");
 			iDialogForm.addRow(MESSAGES.propParameters(), iParams);
 			
 			List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
@@ -831,8 +844,9 @@ public class ScriptPage extends Composite {
 			});
 			line.add(defaultValue);
 			
-			Image delete = new Image(RESOURCES.delete());
+			ImageButton delete = new ImageButton(RESOURCES.delete());
 			delete.setTitle(MESSAGES.titleDeleteRow());
+			delete.setAltText(MESSAGES.titleDeleteRow());
 			delete.getElement().getStyle().setCursor(Cursor.POINTER);
 			delete.addClickHandler(new ClickHandler() {
 				@Override

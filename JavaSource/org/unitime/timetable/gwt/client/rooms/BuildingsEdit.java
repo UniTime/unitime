@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.UpdateBuildingAction;
 import org.unitime.timetable.gwt.shared.RoomInterface.UpdateBuildingRequest;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -199,6 +200,8 @@ public class BuildingsEdit extends Composite implements TakesValue<BuildingInter
 		iY.addStyleName("number");
 		iX.getElement().setId("coordX");
 		iY.getElement().setId("coordY");
+		Roles.getTextboxRole().setAriaLabelProperty(iX.getElement(), MESSAGES.colCoordinateX());
+		Roles.getTextboxRole().setAriaLabelProperty(iY.getElement(), MESSAGES.colCoordinateY());
 		iCoordinates = new UniTimeWidget<P>(new P("coordinates"));
 		iCoordinates.getWidget().add(iX);
 		P comma = new P("comma"); comma.setText(", ");

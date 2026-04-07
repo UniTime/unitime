@@ -423,9 +423,9 @@ public class TasksTable extends UniTimeTable<TaskInterface> implements TakesValu
 			}
 		}
 		int row = addRow(task, widgets);
-		getRowFormatter().setStyleName(row, "row");
+		getRowFormatter().addStyleName(row, "row");
 		for (int col = 0; col < getCellCount(row); col++)
-			getCellFormatter().setStyleName(row, col, "cell");
+			getCellFormatter().addStyleName(row, col, "cell");
 		
 		return row;
 	}

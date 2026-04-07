@@ -38,6 +38,8 @@ import org.unitime.timetable.gwt.shared.DepartmentInterface.DepartmentProperties
 import org.unitime.timetable.gwt.shared.DepartmentInterface.StatusOption;
 import org.unitime.timetable.gwt.shared.DepartmentInterface.UpdateDepartmentAction;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -47,6 +49,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -435,6 +438,9 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		iCurrentDependentDepartments.clear();
 		iCurrentDependentStatuses.clear();
 		iControlDeptFlexTable.setText(0, 0, MESSAGES.colControllingDepartment());
+		iControlDeptFlexTable.setText(0, 1, "");
+		iControlDeptFlexTable.getCellFormatter().getElement(0, 0).setId(DOM.createUniqueId());
+		iControlDeptFlexTable.getCellFormatter().getElement(0, 1).setId(DOM.createUniqueId());
 		FlexCellFormatter cellFormatter = iControlDeptFlexTable.getFlexCellFormatter();
 		cellFormatter.setStyleName(0, 0, "department-StatusItalics");
 		cellFormatter.setStyleName(0, 1, "department-StatusItalics");
@@ -711,6 +717,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		statusTypeOptions.setStyleName("gwt-SuggestBox");
 		statusTypeOptions.setVisibleItemCount(1);		
 		statusTypeOptions.addItem(MESSAGES.propDefaultDependentStatus(), "");
+		Roles.getListboxRole().setAriaLabelledbyProperty(statusTypeOptions.getElement(), Id.of(iControlDeptFlexTable.getCellFormatter().getElement(0, 0)));
 
 		for (StatusOption option: iDepartmentProperties.getStatusOptions())
 			statusTypeOptions.addItem(option.getLabel(), option.getReference());
@@ -738,6 +745,7 @@ public class DepartmentsEdit extends Composite implements TakesValue<DepartmentI
 		departmentOptions.setWidth("300px");
 		departmentOptions.setStyleName("unitime-TextBox");
 		departmentOptions.setVisibleItemCount(1);
+		Roles.getListboxRole().setAriaLabelledbyProperty(departmentOptions.getElement(), Id.of(iControlDeptFlexTable.getCellFormatter().getElement(0, 1)));
 		departmentOptions.addItem(MESSAGES.propDefaultDependentDepartment(), "");
 		for (DepartmentOption dept: iDepartmentProperties.getExtDepartmentOptions()) {
 			departmentOptions.addItem(dept.getLabel(), dept.getId().toString());
