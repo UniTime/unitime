@@ -36,6 +36,12 @@
 				<line>Include the split attendance flag (set on individual classes) in the roll forward.</line>
 			</description>
 		</item>
+		<item>
+			<name>Contact Us: Attachments</name>
+			<description>
+				<line>Fixed the ability to attach files to the email inquiry.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
