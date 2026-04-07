@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,8 +36,10 @@ import java.util.Map;
 import jakarta.activation.DataSource;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.struts2.action.UploadedFilesAware;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.dispatcher.multipart.UploadedFile;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.Email;
@@ -66,7 +70,7 @@ import org.unitime.timetable.util.LookupTables;
 		@TilesPutAttribute(name = "body", value = "/user/inquiry.jsp"),
 		@TilesPutAttribute(name = "checkRole", value = "false")
 	})
-public class InquiryAction extends UniTimeAction<InquiryForm> {
+public class InquiryAction extends UniTimeAction<InquiryForm> implements UploadedFilesAware {
 	private static final long serialVersionUID = -3667385823477363659L;
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	
@@ -314,4 +318,24 @@ public class InquiryAction extends UniTimeAction<InquiryForm> {
     	if (at == null) return null;
     	return at.getSize();
     }
+	@Override
+	public void withUploadedFiles(List<UploadedFile> uploadedFiles) {
+		if (form == null)
+			form = new InquiryForm();
+		if (!uploadedFiles.isEmpty()) {
+			UploadedFile uf = uploadedFiles.get(0);
+			File uploaded = (uf == null || uf.getAbsolutePath() == null ? null : new File(uf.getAbsolutePath()));
+			if (uploaded != null && uploaded.exists()) {
+				File processed = new File(uploaded.getParentFile(), uploaded.getName() + ".locked");
+				try {
+					Files.move(uploaded.toPath(), processed.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					form.setFile(processed);
+				} catch (IOException e) {
+					form.setFile(uploaded);
+				}
+				form.setFileFileName(uf.getOriginalName());
+				form.setFileContentType(uf.getContentType());
+			}
+		}
+	}
 }
