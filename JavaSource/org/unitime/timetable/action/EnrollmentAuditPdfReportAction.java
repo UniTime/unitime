@@ -136,7 +136,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                 byte[] buffer = new byte[32*1024];
                 int len = 0;
                 if (output.isEmpty())
-                    form.log("<font color='orange'>" + MSG.warnNoReportGenerated() + "</font>");
+                    form.log("<font color='#a26a00'>" + MSG.warnNoReportGenerated() + "</font>");
                 else if (form.getEmail()) {
                     form.log(MSG.statusSendingEmails());
                     try {
@@ -157,7 +157,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                         mail.send();
                         form.log(MSG.infoEmailSent());
                     } catch (Exception e) {
-                        form.log("<font color='red'>"+MSG.errorUnableToSendEmail(e.getMessage())+"</font>");
+                        form.log("<font color='#ec0000'>"+MSG.errorUnableToSendEmail(e.getMessage())+"</font>");
                     }
                     
                 }
@@ -188,7 +188,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                 }
                 form.log(MSG.statusAllDone());
             } catch (Exception e) {
-                form.log("<font color='red'>" + MSG.errorTaskFailedWithMessage(e.getMessage())+"</font>");
+                form.log("<font color='#ec0000'>" + MSG.errorTaskFailedWithMessage(e.getMessage())+"</font>");
                 sLog.error(e.getMessage(),e);
                 addFieldError("report", MSG.errorUnableToGenerateReport(e.getMessage()));
             }

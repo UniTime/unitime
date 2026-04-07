@@ -658,7 +658,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
         out.println("<div style=\"margin-left:5px;\">");
         out.println("<A style=\"border:0;background:0\" id=\"__idMenu"+id+"\" href=\"javascript:toggle('"+id+"')\" name=\""+name+"\">");
         out.println("<img id=\"__idMenuImg"+id+"\" border=\"0\" src=\""+(isCollapsed ? IMG_EXPAND : IMG_COLLAPSE)+"\" align=\"absmiddle\"></A>");
-        out.println("&nbsp;<A class='noFancyLinks' target=\"__idContentFrame\" "+(page == null ? "" : page+" onmouseover=\"this.style.cursor='hand';this.style.cursor='pointer';\" ")+"title=\""+(description == null ? "" : description)+"\" >"+ name+(description == null?"":" <font color='gray'>[" + description + "]</font>")+"</A><br>");
+        out.println("&nbsp;<A class='noFancyLinks' target=\"__idContentFrame\" "+(page == null ? "" : page+" onmouseover=\"this.style.cursor='hand';this.style.cursor='pointer';\" ")+"title=\""+(description == null ? "" : description)+"\" >"+ name+(description == null?"":" <font color='#646464'>[" + description + "]</font>")+"</A><br>");
         out.println("</div>");
         out.println("<div ID=\"__idMenuDiv"+id+"\" style=\"display:"+(isCollapsed ? "none" : "block")+";position:relative;margin-left:18px;\">");
     }
@@ -666,7 +666,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     private void leaf_item(PrintWriter out, String name, String description, String page) {
         out.println("<div style=\"margin-left:5px;\">");
         out.println("<img border=\"0\" src=\""+IMG_LEAF+"\" align=\"absmiddle\">");
-        out.println("&nbsp;<A class='noFancyLinks' target=\"__idContentFrame\" "+(page == null ? "" : page + " onmouseover=\"this.style.cursor='hand';this.style.cursor='pointer';\" ")+"title=\""+(description == null ? "" : description)+"\" >"+name+(description == null ? "" : " <font color='gray'>[" + description + "]</font>")+"</A><br>");
+        out.println("&nbsp;<A class='noFancyLinks' target=\"__idContentFrame\" "+(page == null ? "" : page + " onmouseover=\"this.style.cursor='hand';this.style.cursor='pointer';\" ")+"title=\""+(description == null ? "" : description)+"\" >"+name+(description == null ? "" : " <font color='#646464'>[" + description + "]</font>")+"</A><br>");
         out.println("</div>");
     }
     

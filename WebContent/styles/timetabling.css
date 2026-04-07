@@ -82,7 +82,7 @@ BODY {
 	border-top: #ffffff 1px;
 	font-size: 100%;
 	border-left: #ffffff 1px;
-	color: gray;
+	color: #646464;
 	border-bottom: #ffffff 1px;
 	font-family: sans-serif, verdana, arial;
 	background-color: white;
@@ -150,7 +150,7 @@ A.l3:hover {
 
 A.l3 {
 	font-size: 80%;
-	color: gray;
+	color: #646464;
 	font-family: sans-serif, verdana, arial;
 	text-decoration: none
 }
@@ -1302,7 +1302,7 @@ A.sortHeader:link,A.sortHeader:visited,A.sortHeader,A.sortHeader:active,A.sortHe
 }
 
 .errorMessage {
-	color: red;
+	color: #ec0000;
 }
 
 .errorCell {
@@ -1437,7 +1437,7 @@ div.suggestionList_element_on {
 
 #trailCrumbs .text {
 	font-size: 75%;
-	color: gray;
+	color: #646464;
 	font-family: sans-serif, verdana, arial;
 }
 

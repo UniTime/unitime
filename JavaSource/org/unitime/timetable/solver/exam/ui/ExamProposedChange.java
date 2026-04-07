@@ -216,7 +216,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
                 if (current.getExamId().equals(iSelectedExamId))
                     ret += "<i>Select below ...</i>";
                 else
-                    ret += "<i><font color='red'>Not selected ...</font></i>";
+                    ret += "<i><font color='#ec0000'>Not selected ...</font></i>";
             }
             ret += "</td><td nowrap>";
             ret += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDirectConflicts()), current.getPlacementNrDirectConflicts());

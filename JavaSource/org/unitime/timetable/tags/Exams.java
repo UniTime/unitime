@@ -237,12 +237,12 @@ public class Exams extends BodyTagSupport {
                             perPref = (view?assignment.getPeriodAbbreviationWithPref():assignment.getPeriodAbbreviation());
                             roomPref = (view?assignment.getRoomsNameWithPref("<br>"):assignment.getRoomsName("<br>")); 
                             int dc = assignment.getNrDirectConflicts();
-                            String dcStr = (dc<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>");
+                            String dcStr = (dc<=0?"<font color='#646464'>0</font>":"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>");
                             int m2d = assignment.getNrMoreThanTwoConflicts();
-                            String m2dStr = (m2d<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>");
+                            String m2dStr = (m2d<=0?"<font color='#646464'>0</font>":"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>");
                             int btb = assignment.getNrBackToBackConflicts();
                             int dbtb = assignment.getNrDistanceBackToBackConflicts();
-                            String btbStr = (btb<=0 && dbtb<=0?"<font color='gray'>0</font>":"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>");
+                            String btbStr = (btb<=0 && dbtb<=0?"<font color='#646464'>0</font>":"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>");
                             distPref = (view?dcStr+", "+m2dStr+", "+btbStr:"<i>N/A</i>"); 
                         }
                         
@@ -354,7 +354,7 @@ public class Exams extends BodyTagSupport {
         } catch (Exception e) {
             Debug.error(e);
             try {
-                pageContext.getOut().print("<font color='red'>ERROR: "+e.getMessage()+"</font>");
+                pageContext.getOut().print("<font color='#ec0000'>ERROR: "+e.getMessage()+"</font>");
             } catch (IOException io) {}
         }
         

@@ -270,7 +270,7 @@ public class InstructorsTableBuilder extends TableBuilder{
 	    		cl.setTitle(title);
 	    		if (c.isCancelled()) {
 	    			cl.addStyle("text-decoration: line-through;");
-	    			cl.setColor("gray");
+	    			cl.setColor("#6f6f6f");
 	    		}
 	    		if (ci.isLead())
 	    			cl.addStyle("font-weight:bold;");

@@ -936,14 +936,14 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
         	boolean isUsed = used.contains(pattern) || pattern.isDefault();
         	if (hasSet)
             	webTable.addLine(onClick, new String[] {
-            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+pattern.getName().replaceAll(" ","&nbsp;")+
+            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='#646464'>")+pattern.getName().replaceAll(" ","&nbsp;")+
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
-            	        (pattern.isVisible()?"":"<font color='gray'>")+pattern.getDatePatternType().getLabel().replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
+            	        (pattern.isVisible()?"":"<font color='#646464'>")+pattern.getDatePatternType().getLabel().replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
             			(isUsed?"<IMG border='0' title='" + MSG.infoDatePatternUsed() + "' alt='Default' align='absmiddle' src='images/accept.png'>":""),
-            			(pattern.isVisible()?"":"<font color='gray'>")+nbrWeeks+(pattern.isVisible()?"":"</font>"),
-            			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
-            			(pattern.isVisible()?"":"<font color='gray'>")+datePatternStr+(pattern.isVisible()?"":"</font>"),
-            			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
+            			(pattern.isVisible()?"":"<font color='#646464'>")+nbrWeeks+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='#646464'>")+pattStr+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='#646464'>")+datePatternStr+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='#646464'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
             		},new Comparable[] {
             			pattern.getName(),
             			pattern.getType(),
@@ -955,13 +955,13 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
             		},pattern.getUniqueId().toString());
         	else
             	webTable.addLine(onClick, new String[] {
-            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='gray'>")+pattern.getName().replaceAll(" ","&nbsp;")+
+            	        (pattern.isDefault()?"<B>":"")+(pattern.isVisible()?"":"<font color='#646464'>")+pattern.getName().replaceAll(" ","&nbsp;")+
             	        (pattern.isVisible()?"":"</font>")+(pattern.isDefault()?"</B>":""),
-            	        (pattern.isVisible()?"":"<font color='gray'>")+pattern.getDatePatternType().getLabel().replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
+            	        (pattern.isVisible()?"":"<font color='#646464'>")+pattern.getDatePatternType().getLabel().replaceAll(" ","&nbsp;")+(pattern.isVisible()?"":"</font>"),
             			(isUsed?"<IMG border='0' title='" + MSG.infoDatePatternUsed() + "' alt='Default' align='absmiddle' src='images/accept.png'>":""),
-            			(pattern.isVisible()?"":"<font color='gray'>")+nbrWeeks+(pattern.isVisible()?"":"</font>"),
-            			(pattern.isVisible()?"":"<font color='gray'>")+pattStr+(pattern.isVisible()?"":"</font>"),
-            			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
+            			(pattern.isVisible()?"":"<font color='#646464'>")+nbrWeeks+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='#646464'>")+pattStr+(pattern.isVisible()?"":"</font>"),
+            			(pattern.isVisible()?"":"<font color='#646464'>")+deptStr+(pattern.isVisible()?"":"</font>")        			
             		},new Comparable[] {
             			pattern.getName(),
             			pattern.getType(),

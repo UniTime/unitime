@@ -419,7 +419,7 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
 				    			"<a id='" + (reference == null ? key : key.replace("%", "<" + reference + ">")) + "'>" +
 				    			(reference == null ? HtmlUtils.htmlEscape(key) : HtmlUtils.htmlEscape(key).replace("%", "<i><u>" + reference + "</i></u>")) +
 				    			"</a>",
-				    			"<font color='gray'>" + HtmlUtils.htmlEscape(value) + "</font>",
+				    			"<font color='#646464'>" + HtmlUtils.htmlEscape(value) + "</font>",
 				    			(reference == null ? description : description.replace("%", "<i><u>" + reference + "</i></u>")) },
 				    		new String[] {key, value, description}
 				    		);

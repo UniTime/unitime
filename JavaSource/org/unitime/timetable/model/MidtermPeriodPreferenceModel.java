@@ -301,9 +301,9 @@ public class MidtermPeriodPreferenceModel {
                 if (length <= Constants.SLOT_LENGTH_MIN * iLength.get(start)) { tooLong=false; break; }
             }
             if (tooLong)
-                return "<font color='red'>Examination is too long, no period is availabile.</font>";
+                return "<font color='#ec0000'>Examination is too long, no period is availabile.</font>";
             else
-                return "<font color='red'>No period is availabile.</font>";
+                return "<font color='#ec0000'>No period is availabile.</font>";
         }
 
         StringBuffer legendCode = new StringBuffer("[");

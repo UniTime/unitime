@@ -1645,7 +1645,7 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 						Integer exp = iClassifications.getExpected(iColumn);
 						setText(exp == null ? MESSAGES.notApplicable() : String.valueOf(Math.round(exp * iDefaultShare)));	
 					}
-					getElement().getStyle().setColor("gray");
+					getElement().getStyle().setColor("#646464");
 				} else {
 					setText("");
 					getElement().getStyle().clearColor();

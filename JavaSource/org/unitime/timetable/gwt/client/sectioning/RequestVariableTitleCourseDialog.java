@@ -510,7 +510,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 				@Override
 				public void onFailure(Throwable caught) {
 					List<Suggestion> suggestions = new ArrayList<Suggestion>();
-					suggestions.add(new SuggestionInterface("<font color='red'>"+caught.getMessage()+"</font>", ""));
+					suggestions.add(new SuggestionInterface("<font color='#ec0000'>"+caught.getMessage()+"</font>", ""));
 					callback.onSuggestionsReady(request, new Response(suggestions));
 				}
 			});

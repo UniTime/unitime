@@ -185,7 +185,7 @@ public class RoleListAction extends UniTimeAction<RoleListForm> {
     	}
     	
         if (user.getCurrentAuthority() == null && nrLines == 0)
-            table.addLine(new String[] {"<i><font color='red'>" + MSG.warnNoRoleForUser(user.getName() == null ? user.getUsername() : user.getName()) + "</font></i>",null,null,null}, null);
+            table.addLine(new String[] {"<i><font color='#ec0000'>" + MSG.warnNoRoleForUser(user.getName() == null ? user.getUsername() : user.getName()) + "</font></i>",null,null,null}, null);
  	    
         if (nrLines == 1 && firstAuthority != null)
         	user.setCurrentAuthority(firstAuthority);

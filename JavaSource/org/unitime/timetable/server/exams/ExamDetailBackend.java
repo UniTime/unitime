@@ -280,7 +280,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
                 	line.addCell();
                 if (clazz.isCancelled())
                 	for (CellInterface cell: line.getCells()) {
-                		cell.setColor("gray");
+                		cell.setColor("#6f6f6f");
                 		cell.addStyle("font-style: italic;");
                 		cell.setTitle(CMSG.classNoteCancelled(clazz.getClassLabel()));
                 	}

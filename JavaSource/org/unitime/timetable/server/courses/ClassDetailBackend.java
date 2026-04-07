@@ -329,7 +329,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 		TableInterface response = new TableInterface();
         if (clazz.isCancelled())
         	response.addProperty("").setText(MSG.classNoteCancelled(clazz.getClassLabel()))
-        		.setColor("red").addStyle("font-weight: bold;");
+        		.setColor("#ee0000").addStyle("font-weight: bold;");
 		
 		response.addProperty(MSG.filterManager()).add(clazz.getManagingDept().getManagingDeptLabel());
         if (clazz.getParentClass() != null) {
@@ -666,7 +666,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         				CellInterface cell = table.addProperty(MSG.itemOnlyRoom(1 + roomIndex) + ":");
         				List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(clazz, roomIndex);
                 		if (roomLocations.isEmpty()) {
-                			cell.add(MSG.warnNoRoomsAreAvaliable()).setColor("red").addStyle("font-weight: bold;");
+                			cell.add(MSG.warnNoRoomsAreAvaliable()).setColor("#ee0000").addStyle("font-weight: bold;");
                 		} else {
             				int idx = 0;
                     		for (RoomLocation rl: roomLocations) {
