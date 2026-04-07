@@ -38,11 +38,12 @@
 			</TD></TR>
 		</s:if>
 		<TR>
-			<TD width="200"><loc:message name="propertyTimetableManager"/></TD>
+			<TD width="200" id='manager-1'><loc:message name="propertyTimetableManager"/></TD>
 			<TD>
 				<s:select name="form.puid"
 					list="#request.managerList" listKey="externalUniqueId" listValue="name"
 					headerKey="" headerValue="%{#msg.itemSelect()}"
+					aria-labelledby='manager-1'
 					/>
 			</TD>
 		</TR>
