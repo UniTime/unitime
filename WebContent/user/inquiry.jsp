@@ -75,21 +75,23 @@
 		</TR>
 
 		<TR>
-			<TD><loc:message name="propCategory"/></TD>
+			<TD id='prop-cat'><loc:message name="propCategory"/></TD>
 			<TD>
 				<s:select name="form.type" onchange="submit();"
-					list="form.typeOptions" listKey="id" listValue="value"/>
+					list="form.typeOptions" listKey="id" listValue="value"
+					aria-labelledby='prop-cat'/>
 				&nbsp;<s:fielderror fieldName="form.type"/>
 			</TD>
 		</TR>
 		
 		<s:if test="form.noRole == false">
 		<TR>
-			<TD><loc:message name="propEmailCC"/></TD>
+			<TD id='prop-email-cc'><loc:message name="propEmailCC"/></TD>
 			<TD>
 				<s:select name="form.puid"
 					list="#request.managerList" listKey="externalUniqueId" listValue="getName(nameFormat)"
-					headerKey="" headerValue="%{#msg.itemSelect()}"/>
+					headerKey="" headerValue="%{#msg.itemSelect()}"
+					aria-labelledby='prop-email-cc'/>
 				<s:submit name='op' value='%{#msg.actionAddRecipient()}'
 					accesskey='%{#msg.accessAddRecipient()}' title='%{#msg.titleAddRecipient(#msg.accessAddRecipient())}'/>
 				&nbsp;<s:fielderror fieldName="form.puid"/>
@@ -106,8 +108,11 @@
 					<s:property value="form.carbonCopyName[#ctr]"/> &lt;<s:property value="#cc"/>&gt;
 					<img src="images/cancel.png" border="0"
 						title="${MSG.titleDeleteRecipient()}"
+						alt="${MSG.titleDeleteRecipient()}"
 						class="btn" style="border:0;background-color:#FFFFFF;vertical-align:middle;"
-						onclick="doDel('${ctr}');"/>
+						tabindex='0'
+						onclick="doDel('${ctr}');"
+						onkeydown="if (window.event.keyCode == 13) this.click();"/>
 					<s:if test="#stat.last == false"><br></s:if>
 				</s:iterator>
 			</TD>
@@ -116,25 +121,25 @@
 		</s:if>
 		
 		<TR>
-			<TD><loc:message name="propEmailSubject"/></TD>
+			<TD id='prop-subject'><loc:message name="propEmailSubject"/></TD>
 			<TD>
-				<s:textfield name="form.subject" size="120" maxlength="100"/>
+				<s:textfield name="form.subject" size="120" maxlength="100" aria-labelledby='prop-subject'/>
 				&nbsp;<s:fielderror fieldName="form.subject"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD valign="top"><loc:message name="propEmailMessage"/></TD>
+			<TD valign="top" id='prop-message'><loc:message name="propEmailMessage"/></TD>
 			<TD>
-				<s:textarea name="form.message" rows="20" cols="120"/>
+				<s:textarea name="form.message" rows="20" cols="120" aria-labelledby='prop-message'/>
 				&nbsp;<s:fielderror fieldName="form.message"/>
 			</TD>
 		</TR>
 
 		<TR>
-			<TD nowrap><loc:message name="propEmailAttachment"/></TD>
+			<TD nowrap id='prop-attachment'><loc:message name="propEmailAttachment"/></TD>
 			<TD>
-				<s:file name="form.file" size="100"/>
+				<s:file name="form.file" size="100" aria-labelledby='prop-attachment'/>
 				<s:submit name='op' value='%{#msg.actionAttachFile()}'
 					accesskey='%{#msg.accessAttachFile()}' title='%{#msg.titleAttachFile(#msg.accessAttachFile())}'/>
 			</TD>
@@ -146,8 +151,11 @@
 				<loc:message name="attachmentFileSize"><s:property value="getAttachedFileSize(#name)"/></loc:message>
 				<img src="images/cancel.png" border="0"
 					title="${MSG.titleDeleteAttachedFile(name)}"
+					alt="${MSG.titleDeleteAttachedFile(name)}"
 					class="btn" style="border:0;background-color:#FFFFFF;vertical-align:middle;"
-					onclick="doDelFile('${name}');"/>
+					onclick="doDelFile('${name}');"
+					tabindex='0'
+					onkeydown="if (window.event.keyCode == 13) this.click();"/>
 				<s:if test="#stat.last == false"><br></s:if>
 			</s:iterator>
 			</TD></TR>

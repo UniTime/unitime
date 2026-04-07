@@ -45,7 +45,7 @@
 		<TR>
 			<TD valign="middle" style="padding-left: 50px;">
 				<s:iterator value="form.allowedValues" var="allowedValue">
-					<s:radio name="form.value" list="#{#allowedValue:''}"/>
+					<s:radio name="form.value" list="#{#allowedValue:''}" aria-label="${form.getLabel(allowedValue)}"/>
 					<s:property value="%{form.getLabel(#allowedValue)}"/>
 					<s:if test="form.defaultValue == #allowedValue"><i><loc:message name="userSettingDefaultIndicator"/></i></s:if>
 					<br>
