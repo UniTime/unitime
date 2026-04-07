@@ -207,7 +207,7 @@ public class AssignedExamsAction extends UniTimeAction<ExamReportForm> {
         	}
         } catch (Exception e) {
         	Debug.error(e);
-        	table.addLine(new String[] {"<font color='red'>"+MSG.error(e.getMessage())+"</font>"},null);
+        	table.addLine(new String[] {"<font color='#ec0000'>"+MSG.error(e.getMessage())+"</font>"},null);
         }
         return table;
     }	

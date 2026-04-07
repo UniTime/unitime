@@ -512,7 +512,7 @@ public class Suggestion implements Serializable, Comparable {
 		        return sb.toString();
 			} catch (Exception e) {
 				Debug.error(e);
-				return "<font color='red'>ERROR:"+e.getMessage()+"</font>";
+				return "<font color='#ec0000'>ERROR:"+e.getMessage()+"</font>";
 			}
 		}    	
 		public void toXml(Element element) {
@@ -633,7 +633,7 @@ public class Suggestion implements Serializable, Comparable {
 		        return sb.toString();
 			} catch (Exception e) {
 				Debug.error(e);
-				return "<font color='red'>ERROR:"+e.getMessage()+"</font>";
+				return "<font color='#ec0000'>ERROR:"+e.getMessage()+"</font>";
 			}
 		}
 		
@@ -730,7 +730,7 @@ public class Suggestion implements Serializable, Comparable {
 				}
 			} catch (Exception e) {
 				Debug.error(e);
-				sb.append("<font color='red'>ERROR:"+e.getMessage()+"</font>");
+				sb.append("<font color='#ec0000'>ERROR:"+e.getMessage()+"</font>");
 			}
 			sb.append("</td></tr></table>");
 			return sb.toString();

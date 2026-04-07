@@ -94,17 +94,17 @@ public class QueueMessage implements Serializable, Comparable<QueueMessage> {
     protected String formatMessageHTML() {
     	switch (getLevel()) {
     	case TRACE:
-    		return "&nbsp;&nbsp;&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
+    		return "&nbsp;&nbsp;&nbsp;&nbsp;<i><font color='#646464'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
     	case DEBUG:
-    		return "&nbsp;&nbsp;<i><font color='gray'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
+    		return "&nbsp;&nbsp;<i><font color='#646464'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
     	case INFO:
     		return "&nbsp;&nbsp;" + StringEscapeUtils.escapeHtml4(getMessage());
     	case WARN:
-    		return "<font color='orange'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
+    		return "<font color='#a36a00'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
     	case ERROR:
-    		return "<font color='red'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
+    		return "<font color='#ec0000'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
     	case FATAL:
-    		return "<font color='red'><b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b></font>";
+    		return "<font color='#ec0000'><b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b></font>";
     	case PROGRESS:
     		return "<b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b>";
     	case STAGE:
@@ -117,7 +117,7 @@ public class QueueMessage implements Serializable, Comparable<QueueMessage> {
     }
     
     public String toHTML() {
-    	return formatMessageHTML() + (hasError() ? "<br><font color='red'><pre>" + StringEscapeUtils.escapeHtml4(getError()) + "</pre></font>" : "");
+    	return formatMessageHTML() + (hasError() ? "<br><font color='#ec0000'><pre>" + StringEscapeUtils.escapeHtml4(getError()) + "</pre></font>" : "");
     }
 
 	@Override

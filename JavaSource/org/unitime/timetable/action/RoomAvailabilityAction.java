@@ -197,7 +197,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
         TreeSet periods = ExamPeriod.findAll(sessionId, form.getExamType());
         if (periods.isEmpty()) {
             table.addLine(new String[] {
-            		color ? "<font color='orange'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
+            		color ? "<font color='#a26a00'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(SessionDAO.getInstance().get(sessionId), form.getExamType());
@@ -249,7 +249,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
             if (ts!=null) request.setAttribute("timestamp", ts);
         } catch (Exception e) {
             Debug.error(e);
-            table.addLine(new String[] { color ? "<font color='red'>"+ MSG.error(e.getMessage())+"</font>" : MSG.error(e.getMessage())},null);
+            table.addLine(new String[] { color ? "<font color='#ec0000'>"+ MSG.error(e.getMessage())+"</font>" : MSG.error(e.getMessage())},null);
         }
         return table;
     }
@@ -279,7 +279,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
         table.setBlankWhenSame(true);
         TreeSet periods = ExamPeriod.findAll(sessionId, form.getExamType());
         if (periods.isEmpty()) {
-            table.addLine(new String[] {color ? "<font color='orange'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
+            table.addLine(new String[] {color ? "<font color='#a26a00'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(SessionDAO.getInstance().get(sessionId), form.getExamType());
@@ -498,7 +498,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
             if (ts!=null) request.setAttribute("timestamp", ts);
         } catch (Exception e) {
             Debug.error(e);
-            table.addLine(new String[] {color ? "<font color='red'>"+MSG.error(e.getMessage())+"</font>" : MSG.error(e.getMessage())},null);
+            table.addLine(new String[] {color ? "<font color='#ec0000'>"+MSG.error(e.getMessage())+"</font>" : MSG.error(e.getMessage())},null);
         }
         return table;
     }  

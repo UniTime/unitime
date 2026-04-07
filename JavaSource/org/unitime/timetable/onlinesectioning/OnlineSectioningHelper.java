@@ -401,15 +401,15 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
     	public String toHtml() {
     		switch (iLevel) {
 			case DEBUG:
-	        	return "<font color='gray'>&nbsp;&nbsp;--" + iMessage + "</font>";
+	        	return "<font color='#646464'>&nbsp;&nbsp;--" + iMessage + "</font>";
 			case INFO:
 				return iMessage;
 			case WARN:
-				return "<font color='orange'>" + iMessage + "</font>";
+				return "<font color='#a26a00'>" + iMessage + "</font>";
 			case ERROR:
-				return "<font color='red'>" + iMessage + "</font>";
+				return "<font color='#ec0000'>" + iMessage + "</font>";
 			case FATAL:
-				return "<font color='red'><b>" + iMessage + "</b></font>";
+				return "<font color='#ec0000'><b>" + iMessage + "</b></font>";
 			default:
 				return iMessage;
     		}

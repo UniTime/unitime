@@ -2788,10 +2788,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				if (a == null || a.isEmpty())
 					return (b == null || b.isEmpty() ? "<span style='text-decoration: none;'>&nbsp;</span>" : b);
 				if (b == null || b.isEmpty())
-					return "<br><span style='font-style: italic; color: gray; text-decoration: line-through;'>" + a + "</span>";
+					return "<br><span style='font-style: italic; color: #646464; text-decoration: line-through;'>" + a + "</span>";
 				if (a.equals(b))
 					return a;
-				return b + "<br><span style='font-style: italic; color: gray; text-decoration: line-through;'>" + a + "</span>";
+				return b + "<br><span style='font-style: italic; color: #646464; text-decoration: line-through;'>" + a + "</span>";
 			}
 		}
 		

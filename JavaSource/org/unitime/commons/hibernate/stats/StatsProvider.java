@@ -62,7 +62,7 @@ public class StatsProvider {
 
             // Checks statistics enabled
             if(!stats.isStatisticsEnabled()) {
-                return "<font color='red'><b>Hibernate statistics is not enabled.</b></font>";
+                return "<font color='#ec0000'><b>Hibernate statistics is not enabled.</b></font>";
             }
             
             

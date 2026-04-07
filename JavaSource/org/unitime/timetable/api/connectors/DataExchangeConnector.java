@@ -97,29 +97,29 @@ public class DataExchangeConnector extends ApiConnector {
 						pw.flush(); pw.close();
 						e.addElement("pre")
 							.addAttribute(QName.get("space", Namespace.XML_NAMESPACE), "preserve")
-							.addAttribute("style", "color: red;")
+							.addAttribute("style", "color: #ec0000;")
 							.setText(StringEscapeUtils.escapeHtml4(writer.toString()));
 					}
 				}
 
 				@Override
 				public void warn(Object message, Throwable t) {
-					printMessage(messages.addElement("p").addAttribute("style", "color: orange;"), message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "color: #a36a00;"), message, t);
 				}
 				
 				@Override
 				public void warn(Object message) {
-					printMessage(messages.addElement("p").addAttribute("style", "color: orange;"), message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "color: #a36a00;"), message, null);
 				}
 				
 				@Override
 				public void trace(Object message, Throwable t) {
-					printMessage(messages.addElement("p").addAttribute("style", "font-style: italic; color: gray;"), message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "font-style: italic; color: #646464;"), message, t);
 				}
 				
 				@Override
 				public void trace(Object message) {
-					printMessage(messages.addElement("p").addAttribute("style", "font-style: italic; color: gray;"), message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "font-style: italic; color: #646464;"), message, null);
 				}
 				
 				@Override
@@ -164,32 +164,32 @@ public class DataExchangeConnector extends ApiConnector {
 				
 				@Override
 				public void fatal(Object message, Throwable t) {
-					printMessage(messages.addElement("p").addAttribute("style", "font-weight: bold; color: red;"), message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "font-weight: bold; color: #ec0000;"), message, t);
 				}
 				
 				@Override
 				public void fatal(Object message) {
-					printMessage(messages.addElement("p").addAttribute("style", "font-weight: bold; color: red;"), message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "font-weight: bold; color: #ec0000;"), message, null);
 				}
 				
 				@Override
 				public void error(Object message, Throwable t) {
-					printMessage(messages.addElement("p").addAttribute("style", "color: red;"), message, t);
+					printMessage(messages.addElement("p").addAttribute("style", "color: #ec0000;"), message, t);
 				}
 				
 				@Override
 				public void error(Object message) {
-					printMessage(messages.addElement("p").addAttribute("style", "color: red;"), message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "color: #ec0000;"), message, null);
 				}
 				
 				@Override
 				public void debug(Object message, Throwable t) {
-					printMessage(messages.addElement("p").addAttribute("style", "color: gray;"), message, t);					
+					printMessage(messages.addElement("p").addAttribute("style", "color: #646464;"), message, t);					
 				}
 				
 				@Override
 				public void debug(Object message) {
-					printMessage(messages.addElement("p").addAttribute("style", "color: gray;"), message, null);
+					printMessage(messages.addElement("p").addAttribute("style", "color: #646464;"), message, null);
 				}
 			});
 			helper.setResponse(output);

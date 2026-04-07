@@ -259,7 +259,7 @@ public class ReservationTable extends Composite {
 						if (course.getAbbv().equals(reservation.getOffering().getAbbv())) continue;
 						Label l = new Label(course.getAbbv(), false);
 						l.getElement().getStyle().setMarginLeft(10, Unit.PX);
-						l.getElement().getStyle().setColor("gray");
+						l.getElement().getStyle().setColor("#646464");
 						courses.add(l);
 					}
 				}

@@ -744,7 +744,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		        return sb.toString();
 			} catch (Exception e) {
 				Debug.error(e);
-				return "<font color='red'>ERROR:"+e.getMessage()+"</font>";
+				return "<font color='#ec0000'>ERROR:"+e.getMessage()+"</font>";
 			}
 		}
 	}
@@ -797,7 +797,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		        return sb.toString();
 			} catch (Exception e) {
 				Debug.error(e);
-				return "<font color='red'>ERROR:"+e.getMessage()+"</font>";
+				return "<font color='#ec0000'>ERROR:"+e.getMessage()+"</font>";
 			}
 		}
 	}
@@ -960,7 +960,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				}
 			} catch (Exception e) {
 				Debug.error(e);
-				sb.append("<font color='red'>ERROR:"+e.getMessage()+"</font>");
+				sb.append("<font color='#ec0000'>ERROR:"+e.getMessage()+"</font>");
 			}
 			return "<font color='"+PreferenceLevel.prolog2color(iInfo.getPreference())+"'>"+
 				PreferenceLevel.prolog2string(iInfo.getPreference())+
@@ -982,7 +982,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public static String dispNumber(String prefix, int number) {
-		if (number>0) return "<font color='red'>"+prefix+"+"+number+"</font>";
+		if (number>0) return "<font color='#ec0000'>"+prefix+"+"+number+"</font>";
 	    if (number<0) return "<font color='green'>"+prefix+number+"</font>";
 	    return prefix+"0";
 	}
@@ -1004,7 +1004,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		else if (dif<0)
 			return "<font color='green'>"+n1+"&rarr;"+n2+"</font>";
 		else
-			return "<font color='red'>"+n1+"&rarr;"+n2+"</font>";
+			return "<font color='#ec0000'>"+n1+"&rarr;"+n2+"</font>";
 	}
 	
 	public static String dispNumberShort(boolean rem, double n1, double n2) {
@@ -1020,7 +1020,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		else if (dif<0)
 			return "<font color='green'>"+prefix+sDF.format(n1)+"&rarr;"+sDF.format(n2)+"</font>";
 		else
-			return "<font color='red'>"+prefix+sDF.format(n1)+"&rarr;"+sDF.format(n2)+"</font>";
+			return "<font color='#ec0000'>"+prefix+sDF.format(n1)+"&rarr;"+sDF.format(n2)+"</font>";
 	}
 
 	public static String dispTime(TimeInfo oldTime, TimeInfo newTime) {
@@ -1091,7 +1091,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public static String dispNumber(String prefix, double number) {
-		if (number>0) return "<font color='red'>"+prefix+"+"+sDF.format(number)+"</font>";
+		if (number>0) return "<font color='#ec0000'>"+prefix+"+"+sDF.format(number)+"</font>";
 	    if (number<0) return "<font color='green'>"+prefix+sDF.format(number)+"</font>";
 	    return prefix+"0";
 	}

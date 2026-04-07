@@ -164,7 +164,7 @@ public class InstructorDetailBackend implements GwtRpcImplementation<InstructorD
 			response.addProperty(MSG.propertyNote()).add(instructor.getNote(), true).addStyle("white-space: pre-wrap;");
 		if (instructor.isIgnoreToFar()) {
 			CellInterface c = response.addProperty(MSG.propertyIgnoreTooFar());
-			c.add(MSG.enabled()).setColor("red");
+			c.add(MSG.enabled()).setColor("#ee0000");
 			c.add(" -- ").addStyle("padding-left:10px;");
 			c.add(MSG.descriptionInstructorIgnoreTooFar()).addStyle("font-style: italic;");
 		}
@@ -334,7 +334,7 @@ public class InstructorDetailBackend implements GwtRpcImplementation<InstructorD
 	    			line.getCells().get(0).addAnchor("back");
 	    		
 				if (c.isCancelled()) {
-					line.setStyle("color: gray; font-style: italic;");
+					line.setStyle("color: #646464; font-style: italic;");
 					line.setTitle(MSG.classNoteCancelled(c.getClassLabel()));
 				}
 			}

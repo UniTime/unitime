@@ -1682,7 +1682,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         	row.setURL("clazz?id=" + aClass.getUniqueId().toString());
 
         if (aClass.isCancelled()) {
-        	row.setStyle("color: graytext; font-style: italic;");
+        	row.setStyle("color: #646464; font-style: italic;");
         	row.setTitle(MSG.classNoteCancelled(aClass.getClassLabel(co)));
         }
 

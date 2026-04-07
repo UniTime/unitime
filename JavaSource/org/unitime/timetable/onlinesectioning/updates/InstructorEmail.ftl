@@ -52,7 +52,7 @@
  					</table></tr></tr>
  				</#if>
  				<#if changeMessage??>
- 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage?replace("\n","<br>")}</td></tr>
+ 					<tr><td style="color: #ec0000; text-align: center; font-style: italic; font-weight: normal; white-space: pre-wrap;">${changeMessage?replace("\n","<br>")}</td></tr>
  				</#if>
  			<#elseif changes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailAssignmentChanges()}</td></tr>
@@ -70,7 +70,7 @@
  			<#if classes??>
  				<tr><td style="width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;">${msg.emailInstructorClassList()}</td></tr>
  				<#if classes?size == 0>
- 					<tr><td style="color: red; text-align: center; font-style: italic; font-weight: normal;">${msg.emailNoSchedule()}</td></tr>
+ 					<tr><td style="color: #ec0000; text-align: center; font-style: italic; font-weight: normal;">${msg.emailNoSchedule()}</td></tr>
  				<#else>
  					<tr><td><table width="100%">
  						<@classTableHeader/>
@@ -122,12 +122,12 @@
 		<#assign stylebr="border-top: 1px dashed #9CB0CE;">
 	</#if>
 	<#if line.cancelled>
-		<#assign style = style + "font-style: italic; color: gray;">
-		<#assign stylebr = stylebr + " font-style: italic; color: gray;">
+		<#assign style = style + "font-style: italic; color: #646464;">
+		<#assign stylebr = stylebr + " font-style: italic; color: #646464;">
 	</#if>
 	<#if line.class.simpleName == "InstructorTableSectionDeletedLine">
-		<#assign style = style + " text-decoration: line-through; font-style: italic; color: gray;">
-		<#assign stylebr = stylebr + " text-decoration: line-through; font-style: italic; color: gray;">
+		<#assign style = style + " text-decoration: line-through; font-style: italic; color: #646464;">
+		<#assign stylebr = stylebr + " text-decoration: line-through; font-style: italic; color: #646464;">
 	</#if>
 	<#if line.freeTime>
 		<tr style='vertical-align: top'>
@@ -188,8 +188,8 @@
 			</tr>
 		</#if>
 	<#else>
-		<#assign style="white-space: nowrap; color: red; border-top: 1px dashed #9CB0CE;">
-		<#assign stylebr="color: red; border-top: 1px dashed #9CB0CE;">
+		<#assign style="white-space: nowrap; color: #ec0000; border-top: 1px dashed #9CB0CE;">
+		<#assign stylebr="color: #ec0000; border-top: 1px dashed #9CB0CE;">
 	 	<tr style='vertical-align: top'>
 	 		<#if line.url??>
 				<td style="${style}"><a href="${line.url}" style="${stylelink}">${line.subject}</a></td>

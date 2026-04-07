@@ -675,16 +675,16 @@ public class TimePatternEditAction extends UniTimeAction<TimePatternEditForm> {
         	        (pattern.isVisible()?"":"<font color='grey'>")+
         	            pattern.getName().replaceAll(" ","&nbsp;")+
         	        (pattern.isVisible()?"":"</font>"),
-        	        (pattern.isVisible()?"":"<font color='gray'>")+pattern.getTimePatternType().getLabel().replaceAll(" ","&nbsp;")+
+        	        (pattern.isVisible()?"":"<font color='#646464'>")+pattern.getTimePatternType().getLabel().replaceAll(" ","&nbsp;")+
         	        (pattern.isVisible()?"":"</font>"),
         			(isUsed?"<IMG border='0' title='" + MSG.hintTimePatternUsed() + "' alt='Default' align='absmiddle' src='images/accept.png'>":""),
-        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getNrMeetings().toString()+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getMinPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getSlotsPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+pattern.getBreakTime().toString()+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+TimePatternEditForm.dayCodes2str(pattern.getDays(),", ")+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+TimePatternEditForm.startSlots2str(pattern.getTimes(),", ")+(pattern.isVisible()?"":"</font>"),
-        			(pattern.isVisible()?"":"<font color='gray'>")+deptStr+(pattern.isVisible()?"":"</font>")
+        			(pattern.isVisible()?"":"<font color='#646464'>")+pattern.getNrMeetings().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='#646464'>")+pattern.getMinPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='#646464'>")+pattern.getSlotsPerMtg().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='#646464'>")+pattern.getBreakTime().toString()+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='#646464'>")+TimePatternEditForm.dayCodes2str(pattern.getDays(),", ")+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='#646464'>")+TimePatternEditForm.startSlots2str(pattern.getTimes(),", ")+(pattern.isVisible()?"":"</font>"),
+        			(pattern.isVisible()?"":"<font color='#646464'>")+deptStr+(pattern.isVisible()?"":"</font>")
         		},new Comparable[] {
         			pattern.getName(),
         			pattern.getType(),

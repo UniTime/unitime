@@ -280,7 +280,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iCallback = new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			public void onFailure(Throwable caught) {
 				iSuggestions.clearData(true);
-				iSuggestions.setEmptyMessage("<font color='red'>" + caught.getMessage() + "</font>");
+				iSuggestions.setEmptyMessage("<font color='#ec0000'>" + caught.getMessage() + "</font>");
 				iMessages.setHTML("");
 				LoadingWidget.getInstance().hide();
 				center();

@@ -509,7 +509,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
     				rooms.append("<tr><td style='width:50px;' nowrap>" + MSG.itemOnlyRoom(1 + roomIndex) + ":</td><td>");
     				List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c, roomIndex);
             		if (roomLocations.isEmpty()) {
-            			rooms.append("<font color='red'><b>" + MSG.warnNoRoomsAreAvaliable() + "</b></font>");
+            			rooms.append("<font color='#ec0000'><b>" + MSG.warnNoRoomsAreAvaliable() + "</b></font>");
             		} else {
         				int idx = 0;
                 		for (RoomLocation rl: roomLocations) {
@@ -533,7 +533,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
             	List<RoomLocation> roomLocations = TimetableDatabaseLoader.computeRoomLocations(c);
             	StringBuffer rooms = new StringBuffer();
             	if (roomLocations.isEmpty()) {
-            		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, "<font color='red'><b>" + MSG.warnNoRoomsAreAvaliable() + "</b></font>");
+            		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, "<font color='#ec0000'><b>" + MSG.warnNoRoomsAreAvaliable() + "</b></font>");
             	} else {
             		int idx = 0;
             		for (RoomLocation rl: roomLocations) {
@@ -549,7 +549,7 @@ public class ClassDetailAction extends PreferencesAction2<ClassEditForm> {
             		}
             		if (idx>=6) rooms.append("</span>");
     	        	if (roomLocations.size()<c.getNbrRooms().intValue()) {
-    	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, "<font color='red'><b>" + MSG.warnNotEnoughtRoomsAreAvaliable() + "</b></font> "+rooms);
+    	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, "<font color='#ec0000'><b>" + MSG.warnNotEnoughtRoomsAreAvaliable() + "</b></font> "+rooms);
     	        	} else {
     	        		request.setAttribute(Location.AVAILABLE_LOCATIONS_ATTR, rooms);
     	        	}

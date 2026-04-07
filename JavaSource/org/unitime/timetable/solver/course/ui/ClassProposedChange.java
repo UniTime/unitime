@@ -185,7 +185,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
                 if (current.getClassId().equals(iSelectedClassId))
                     ret += "<i>"+MSG.assignmentRoomSelectBelow()+"</i>";
                 else
-                    ret += "<i><font color='red'>"+MSG.assignmentRoomNotSelected()+"</font></i>";
+                    ret += "<i><font color='#ec0000'>"+MSG.assignmentRoomNotSelected()+"</font></i>";
             }
             ret += "</td></tr>";
         }
