@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -352,6 +353,7 @@ public class DistributionsEditPage extends Composite {
 		iPanel.addRow(COURSE.propertyDistributionPreference(), iPreference);
 		
 		iClasses = new UniTimeTable<PrefGroupEditInterface.DistributionObjectInterface>();
+		iClasses.addStyleName("unitime-ClassesInDistributionsTable");
 		UniTimeHeaderPanel header = new UniTimeHeaderPanel(COURSE.sectionTitleClassesInDistribution());
 		iPanel.addHeaderRow(header);
 		header.addButton("add", COURSE.actionAddClassToDistribution(), new ClickHandler() {
@@ -409,6 +411,11 @@ public class DistributionsEditPage extends Composite {
 		final ListBox clazz = new ListBox();
 		clazz.addItem("-", ""); clazz.setWidth("150px");
 		row.add(clazz);
+		Roles.getListboxRole().setAriaLabelProperty(subject.getElement(), MESSAGES.colSubject());
+		Roles.getListboxRole().setAriaLabelProperty(course.getElement(), MESSAGES.colCourseNumber());
+		Roles.getListboxRole().setAriaLabelProperty(subpart.getElement(), MESSAGES.colSubpart());
+		Roles.getListboxRole().setAriaLabelProperty(clazz.getElement(), MESSAGES.colClass());
+		
 		for (IdLabel s: iData.getSubjects()) {
 			subject.addItem(s.getLabel(), s.getId().toString());
 			if (s.getId().equals(doi.getSubjectId()))
@@ -462,6 +469,8 @@ public class DistributionsEditPage extends Composite {
 			subjectChanged(row, doi);
 		
 		final ImageButton up = new ImageButton(RESOURCES.orderUp());
+		up.setTitle(MESSAGES.titleMoveUp());
+		up.setAltText(MESSAGES.titleMoveUp());
 		up.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
@@ -473,6 +482,8 @@ public class DistributionsEditPage extends Composite {
 		row.add(up);
 		
 		ImageButton down = new ImageButton(RESOURCES.orderDown());
+		down.setTitle(MESSAGES.titleMoveDown());
+		down.setAltText(MESSAGES.titleMoveDown());
 		down.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {
@@ -484,6 +495,8 @@ public class DistributionsEditPage extends Composite {
 		row.add(down);
 		
 		ImageButton delete = new ImageButton(RESOURCES.delete());
+		delete.setTitle(MESSAGES.titleDeleteRow());
+		delete.setAltText(MESSAGES.titleDeleteRow());
 		delete.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent e) {

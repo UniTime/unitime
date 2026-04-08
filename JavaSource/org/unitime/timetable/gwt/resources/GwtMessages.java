@@ -636,6 +636,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Configuration / Class")
 	String colConfigOrClass();
 	
+	@DefaultMessage("Subpart")
+	String colSubpart();
+	
 	@DefaultMessage("Class Number")
 	String colClassNumber();
 	
