@@ -46,9 +46,11 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -124,6 +126,75 @@ public class DistributionsTableBuilder extends TableBuilder {
             		d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
             prefs.addAll(DistributionPref.getInstructorPreferences(getSessionContext().getUser().getCurrentAcademicSessionId(),
             		d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+        }
+		
+		String prefLevel = filter.getParameterValue("prefLevel");
+		String distType = filter.getParameterValue("distType");
+		String structure = filter.getParameterValue("structure");
+		for (Iterator<DistributionPref> i = prefs.iterator(); i.hasNext(); ) {
+			DistributionPref dp = i.next();
+			if (prefLevel != null && !prefLevel.isEmpty()) {
+				boolean match = false;
+				for (String prefId: prefLevel.split(","))
+					if (dp.getPrefLevel().getUniqueId().toString().equals(prefId)) {
+						match = true;
+						break;
+					}
+				if (!match) {
+					i.remove();
+					continue;
+				}
+			}
+			if (distType != null && !distType.isEmpty()) {
+				boolean match = false;
+				for (String typeId: distType.split(","))
+					if (dp.getDistributionType().getUniqueId().toString().equals(typeId)) {
+						match = true;
+						break;
+					}
+				if (!match) {
+					i.remove();
+					continue;
+				}
+			}
+			if (structure != null && !structure.isEmpty()) {
+				boolean match = false;
+				for (String structureName: structure.split(",")) {
+					if ("instructor".equals(structureName) && dp.getStructure() == null) {
+						match = true;
+						break;
+					} else if (dp.getStructure() != null && dp.getStructure().name().equals(structureName)) {
+						match = true;
+						break;
+					}
+				}
+				if (!match) {
+					i.remove();
+					continue;
+				}
+			}
+		}
+		
+		return createTableForDistributions(prefs); 
+	}
+	
+	public TableInterface getDistPrefsTableForFilter(FilterInterface filter) {
+		Set<DistributionPref> prefs = new TreeSet<DistributionPref>();
+		
+		String subjectArea = filter.getParameterValue("subjectArea");
+		String courseNbr = filter.getParameterValue("courseNbr");
+		
+		Set<Department> userDepts = Department.getUserDepartments(getSessionContext().getUser());
+		
+		for (String subjectAreaId: subjectArea.split(",")) {
+			if (subjectAreaId.isEmpty()) continue;
+			SubjectArea sa = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
+			if (sa != null && userDepts.contains(sa.getDepartment())) {
+				prefs.addAll(DistributionPref.getPreferences(getSessionContext().getUser().getCurrentAcademicSessionId(),
+						sa.getDepartment().getUniqueId(), true, null, sa.getUniqueId(), (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+	            prefs.addAll(DistributionPref.getInstructorPreferences(getSessionContext().getUser().getCurrentAcademicSessionId(),
+	            		sa.getDepartment().getUniqueId(), sa.getUniqueId(), (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+			}
         }
 		
 		String prefLevel = filter.getParameterValue("prefLevel");

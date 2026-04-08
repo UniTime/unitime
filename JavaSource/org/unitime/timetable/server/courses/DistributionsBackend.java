@@ -21,6 +21,7 @@ package org.unitime.timetable.server.courses;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsResponse;
@@ -61,14 +62,20 @@ public class DistributionsBackend implements GwtRpcImplementation<DistributionsR
 		}
 		DistributionsResponse response = new DistributionsResponse();
 		
-		for (String subjectAreaId: subjectArea.split(",")) {
-			if (subjectAreaId.isEmpty()) continue;
-			SubjectArea sa = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
-			if (sa != null) {
-				TableInterface table = builder.getDistPrefsTableForFilter(request.getFilter(), sa.getUniqueId());
-				table.setId(sa.getUniqueId().toString());
-				table.setName(sa.getLabel());
-				response.addTable(table);
+		if (ApplicationProperty.DistributionsSignleTable.isTrue()) {
+			TableInterface table = builder.getDistPrefsTableForFilter(request.getFilter());
+			table.setName(MESSAGES.sectionTitleDistributionPreferences());
+			response.addTable(table);
+		} else {
+			for (String subjectAreaId: subjectArea.split(",")) {
+				if (subjectAreaId.isEmpty()) continue;
+				SubjectArea sa = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
+				if (sa != null) {
+					TableInterface table = builder.getDistPrefsTableForFilter(request.getFilter(), sa.getUniqueId());
+					table.setId(sa.getUniqueId().toString());
+					table.setName(sa.getLabel());
+					response.addTable(table);
+				}
 			}
 		}
 		

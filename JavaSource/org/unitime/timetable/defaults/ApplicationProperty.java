@@ -2662,6 +2662,12 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Distribution Preferences: do not split distribution preferences by subject area")
+	@Since(4.9)
+	DistributionsSignleTable("unitime.distributions.showSingleTable"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Reservations: show class suffix (external id) next to the class section number")
 	@Since(4.1)
 	ReservationsShowClassSufix("unitime.reservations.showClassSuffixes"),
