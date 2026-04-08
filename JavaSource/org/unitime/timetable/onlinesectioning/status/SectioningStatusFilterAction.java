@@ -507,6 +507,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		
 		List<Entity> modes = new ArrayList<Entity>();
+		boolean solver = (server instanceof StudentSolver);
 		if (iRequest.hasOption("role")) {
 			int myStudents = ((Number)query.select("count(distinct s)")
 					.where("s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)")
@@ -518,7 +519,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				modes.add(myE);
 				if (ApplicationProperty.StudentSchedulingFilterSkipAdvisedCounts.isTrue()) {
 					modes.add(new Entity(-1l, "My Advised", MESSAGES.modeMyStudentsAdvised(), "translated-value", MESSAGES.modeMyStudentsAdvised()));
-					modes.add(new Entity(-1l, "My Not Advised", MESSAGES.modeMyStudentsNotAdvised(), "translated-value", MESSAGES.modeMyStudentsNotAdvised()));
+					if (!solver)
+						modes.add(new Entity(-1l, "My Not Advised", MESSAGES.modeMyStudentsNotAdvised(), "translated-value", MESSAGES.modeMyStudentsNotAdvised()));
 					if (iPinOps) {
 						modes.add(new Entity(-1l, "My PIN Released", MESSAGES.modeMyPinReleased(), "translated-value", MESSAGES.modeMyPinReleased()));
 						modes.add(new Entity(-1l, "My PIN Suppressed", MESSAGES.modeMyPinSuppressed(), "translated-value", MESSAGES.modeMyPinSuppressed()));
@@ -533,7 +535,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 						myA.setCount(myAdvised);
 						modes.add(myA);
 					}
-					if (myAdvised < myStudents) {
+					if (myAdvised < myStudents && !solver) {
 						Entity myA = new Entity(-1l, "My Not Advised", MESSAGES.modeMyStudentsNotAdvised(), "translated-value", MESSAGES.modeMyStudentsNotAdvised());
 						myA.setCount(myStudents - myAdvised);
 						modes.add(myA);
@@ -564,7 +566,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 		
 		if (ApplicationProperty.StudentSchedulingFilterSkipAdvisedCounts.isTrue()) {
 			modes.add(new Entity(-1l, "Advised", MESSAGES.modeAdvised(), "translated-value", MESSAGES.modeAdvised()));
-			modes.add(new Entity(-1l, "Not Advised", MESSAGES.modeNotAdvised(), "translated-value", MESSAGES.modeNotAdvised()));
+			if (!solver) modes.add(new Entity(-1l, "Not Advised", MESSAGES.modeNotAdvised(), "translated-value", MESSAGES.modeNotAdvised()));
 			if (iPinOps)
 				modes.add(new Entity(-1l, "PIN Released", MESSAGES.modePinReleased(), "translated-value", MESSAGES.modePinReleased()));
 				modes.add(new Entity(-1l, "PIN Suppressed", MESSAGES.modePinSuppressed(), "translated-value", MESSAGES.modePinSuppressed()));
@@ -579,7 +581,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				int notAdvised = ((Number)query.select("count(distinct s)")
 						.where("s.advisorCourseRequests is empty")
 						.exclude("mode").exclude("credit").query(helper.getHibSession()).uniqueResult()).intValue();
-				if (notAdvised > 0) {
+				if (notAdvised > 0 && !solver) {
 					Entity notAdv = new Entity(-1l, "Not Advised", MESSAGES.modeNotAdvised(), "translated-value", MESSAGES.modeNotAdvised());
 					notAdv.setCount(notAdvised);
 					modes.add(notAdv);

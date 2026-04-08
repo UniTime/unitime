@@ -40,6 +40,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Student Solver Dashboard: Filter</name>
+			<description>
+				<line>Do not show "My Students Not Advised" and "Not Advised" mode options in the filter, as they cannot be computed correctly.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Session Roll Forward: Room Split Attendance</name>
