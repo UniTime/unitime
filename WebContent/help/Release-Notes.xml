@@ -29,6 +29,17 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Distribution Preferences: Single Table</name>
+			<description>
+				<line>Added an option to show all distribution preferences in a single table, not split by subject area.
+					<line>To enable, set unitime.distributions.showSingleTable to true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Session Roll Forward: Room Split Attendance</name>
