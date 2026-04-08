@@ -52,12 +52,15 @@ import org.unitime.timetable.gwt.shared.SolverInterface.SolverConfiguration;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverOwner;
 import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
@@ -368,9 +371,13 @@ public class ListSolutionsPage extends SimpleForm {
 			if (load && iSolverConfig != null) {
 				P loadPanel = new P("load-panel");
 				P configLabel = new P("config-label"); configLabel.setText(MESSAGES.propSolverConfig()); loadPanel.add(configLabel);
+				configLabel.getElement().setId(DOM.createUniqueId());
+				Roles.getListboxRole().setAriaLabelledbyProperty(iSolverConfig.getElement(), Id.of(configLabel.getElement()));
 				loadPanel.add(iSolverConfig);
 				if (iSolverHost != null) {
 					P hostLabel = new P("host-label"); hostLabel.setText(MESSAGES.propSolverHost()); loadPanel.add(hostLabel);
+					hostLabel.getElement().setId(DOM.createUniqueId());
+					Roles.getListboxRole().setAriaLabelledbyProperty(iSolverHost.getElement(), Id.of(hostLabel.getElement()));
 					loadPanel.add(iSolverHost);
 				}
 				AriaButton button = new AriaButton(MESSAGES.opSolverLoad()); button.addClickHandler(createClickHandler(iTableHeader, SolutionOperation.LOAD));
@@ -422,11 +429,17 @@ public class ListSolutionsPage extends SimpleForm {
 				iSolverOwner.addItem(owner.getName(), owner.getId().toString());
 			}
 			P ownerLabel = new P("owner-label"); ownerLabel.setText(MESSAGES.propSolverOwner()); loadPanel.add(ownerLabel);
+			ownerLabel.getElement().setId(DOM.createUniqueId());
+			Roles.getListboxRole().setAriaLabelledbyProperty(iSolverOwner.getElement(), Id.of(ownerLabel.getElement()));
 			loadPanel.add(iSolverOwner);
 			P configLabel = new P("config-label"); configLabel.setText(MESSAGES.propSolverConfig()); loadPanel.add(configLabel);
 			loadPanel.add(iSolverConfig);
+			configLabel.getElement().setId(DOM.createUniqueId());
+			Roles.getListboxRole().setAriaLabelledbyProperty(iSolverConfig.getElement(), Id.of(configLabel.getElement()));
 			if (iSolverHost != null) {
 				P hostLabel = new P("host-label"); hostLabel.setText(MESSAGES.propSolverHost()); loadPanel.add(hostLabel);
+				hostLabel.getElement().setId(DOM.createUniqueId());
+				Roles.getListboxRole().setAriaLabelledbyProperty(iSolverHost.getElement(), Id.of(hostLabel.getElement()));
 				loadPanel.add(iSolverHost);
 			}
 			AriaButton button = new AriaButton(MESSAGES.opSolverLoadEmptySolution()); button.addClickHandler(createClickHandler(iTableHeader, SolutionOperation.LOAD_EMPTY));

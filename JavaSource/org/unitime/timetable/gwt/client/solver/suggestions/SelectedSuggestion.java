@@ -77,33 +77,33 @@ public class SelectedSuggestion extends SimpleForm implements TakesValue<Suggest
 					iContext.remove(details.getClazz());
 				}
 			};
+			at.addMouseClickListener(new MouseClickListener<ClassAssignmentDetails>() {
+				@Override
+				public void onMouseClick(TableEvent<ClassAssignmentDetails> event) {
+					if (event.getData() != null) iContext.select(event.getData().getClazz());
+				}
+			});
 			for (ClassAssignmentDetails d: suggestion.getDifferentAssignments()) {
 				at.addRow(d);
 				if (d.hasConflict()) at.setColumnVisible(at.getCellIndex(AssignmentTable.AssignmentColumn.CONSTRAINT), true);
 			}
 			addHeaderRow(MESSAGES.headerSelectedAssignment());
 			addRow(at);
+		}
+		if (suggestion.hasUnresolvedConflicts()) {
+			AssignmentTable at = new AssignmentTable(iContext.getProperties(), true, false);
 			at.addMouseClickListener(new MouseClickListener<ClassAssignmentDetails>() {
 				@Override
 				public void onMouseClick(TableEvent<ClassAssignmentDetails> event) {
 					if (event.getData() != null) iContext.select(event.getData().getClazz());
 				}
 			});
-		}
-		if (suggestion.hasUnresolvedConflicts()) {
-			AssignmentTable at = new AssignmentTable(iContext.getProperties(), true, false);
 			for (ClassAssignmentDetails d: suggestion.getUnresolvedConflicts()) {
 				at.addRow(d);
 				if (d.hasConflict()) at.setColumnVisible(at.getCellIndex(AssignmentTable.AssignmentColumn.CONSTRAINT), true);
 			}
 			addHeaderRow(MESSAGES.headerConflictingAssignments());
 			addRow(at);
-			at.addMouseClickListener(new MouseClickListener<ClassAssignmentDetails>() {
-				@Override
-				public void onMouseClick(TableEvent<ClassAssignmentDetails> event) {
-					if (event.getData() != null) iContext.select(event.getData().getClazz());
-				}
-			});
 		}
 		if (suggestion.getUnassignedVariables() != suggestion.getBaseUnassignedVariables())
 			addRow(MESSAGES.propNotAssignedClasses(), new HTML(iContext.dispNumber(suggestion.getUnassignedVariables(),suggestion.getBaseUnassignedVariables()), false));

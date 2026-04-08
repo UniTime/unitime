@@ -170,7 +170,7 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		} else {
 			iRooms = null;
 		}
-		if (details.getClazz().nrRooms() > 0 && details.getClazz().getRoomCapacity() > 0)
+		if (details.getClazz().nrRooms() > 0 && details.getClazz().getRoomCapacity() > 0 && details.getClazz().getRoomCapacity() < Integer.MAX_VALUE)
 			addRow(MESSAGES.propMinimumRoomSize(), new Label(String.valueOf(details.getClazz().getRoomCapacity())));
 		if (details.getClazz().getNote() != null && !details.getClazz().getNote().isEmpty()) {
 			addRow(MESSAGES.propNote(), new HTML(details.getClazz().getNote()));
