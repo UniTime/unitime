@@ -3865,6 +3865,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-Navigation {
 	display: block;
 	max-width: 800px;
+	padding-top: 3px;
 }
 
 .unitime-Navigation .item {
@@ -8730,6 +8731,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ExamsInDistributionsTable .unitime-ImageButton {
+	vertical-align: text-top;
+	margin: 1px 5px 0px 5px;
+}
+
+.unitime-ClassesInDistributionsTable .unitime-ImageButton {
 	vertical-align: text-top;
 	margin: 1px 5px 0px 5px;
 }
