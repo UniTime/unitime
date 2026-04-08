@@ -28,7 +28,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
@@ -56,6 +58,7 @@ import org.unitime.timetable.solver.service.SolverService;
 @Service("org.unitime.timetable.export.Exporter:offerings.csv")
 public class OfferingsCSV implements Exporter {
 	protected static ExaminationMessages EXAM = Localization.create(ExaminationMessages.class);
+	protected static CourseMessages COURSE = Localization.create(CourseMessages.class);
 
 	protected @Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 	protected @Autowired SolverService<ExamSolverProxy> examinationSolverService;
@@ -153,15 +156,21 @@ public class OfferingsCSV implements Exporter {
     	builder.setSimple(true);
     	
     	Filter filter = new Filter(helper);
-    	for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
-    		if (subjectAreaId.isEmpty()) continue;
-    		SubjectArea area = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
-    		if (area == null) continue;
-    		TableInterface table = builder.getDistPrefsTableForFilter(filter, area.getUniqueId());
-    		table.setName(area.getLabel());
-    		table.setId(subjectAreaId);
-    		response.add(table);
-    	}
+    	if (ApplicationProperty.DistributionsSignleTable.isTrue()) {
+			TableInterface table = builder.getDistPrefsTableForFilter(filter);
+			table.setName(COURSE.sectionTitleDistributionPreferences());
+			response.add(table);
+		} else {
+			for (String subjectAreaId: helper.getParameter("subjectArea").split(",")) {
+	    		if (subjectAreaId.isEmpty()) continue;
+	    		SubjectArea area = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
+	    		if (area == null) continue;
+	    		TableInterface table = builder.getDistPrefsTableForFilter(filter, area.getUniqueId());
+	    		table.setName(area.getLabel());
+	    		table.setId(subjectAreaId);
+	    		response.add(table);
+	    	}
+		}
 
     	return response;
 	}
