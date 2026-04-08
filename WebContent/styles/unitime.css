@@ -6305,6 +6305,7 @@ unitime-RoomSharingWidget .legend .blank {
 	cursor: pointer;
 	cursor: hand;
 	padding-right: 1px;
+	margin: 1px 5px 0px 5px;
 }
 
 .unitime-ClassAssignmentTable .classes .label {
@@ -6370,6 +6371,11 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ConflictBasedStatistics .cbs-node {
 	white-space: nowrap;
+	padding: 1px 3px 1px 3px;
+}
+
+.unitime-ConflictBasedStatistics:focus-within .gwt-TreeItem-selected .cbs-node {
+	background: #d3def6 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -1463px;
 }
 
 .unitime-ConflictBasedStatistics table {
@@ -8613,6 +8619,14 @@ unitime-RoomSharingWidget .legend .blank {
 	white-space: nowrap;
 }
 
+.unitime-RoomGroupEdit .unitime-Rooms .pref-2 {
+	background: white;
+}
+
+.unitime-RoomFeatureEdit .unitime-Rooms .pref-2 {
+	background: white;
+}
+
 .pref-3 {
 	background-color: #DCB43C;
 	color: black;
@@ -8696,6 +8710,10 @@ unitime-RoomSharingWidget .legend .blank {
 	height: 24px;
 }
 
+.unitime-FocusableTable .focusable-cell {
+	min-width: 24px;
+}
+
 .unitime-CourseCurriculaTable {
 	width: 100%;
 }
@@ -8723,6 +8741,10 @@ unitime-RoomSharingWidget .legend .blank {
 
 #unitime-SideMenu .unitime-TreeMenu:focus-within {
 	outline: 1px solid blue !important;
+}
+
+.gwt-Tree .gwt-TreeItem-selected .gwt-Label {
+    background: inherit;
 }
 
 .unitime-ExamOwnersTable .unitime-ImageButton {

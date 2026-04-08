@@ -132,7 +132,7 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 			}
 			int rowIdx = addRow(row, line);
 			if (row.isSelected()) {
-				getRowFormatter().setStyleName(rowIdx, "unitime-TableRowSelected");
+				getRowFormatter().addStyleName(rowIdx, "unitime-TableRowSelected");
 			}
 		}
 		for (int i = 0; i < table.getHeader().length; i++)

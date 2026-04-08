@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.TimeHint;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.solver.SolverCookie;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -53,7 +54,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 
 /**
@@ -206,9 +206,10 @@ public class AssignmentTable extends UniTimeTable<ClassAssignmentDetails>{
 		case CLASS:
 			if (iCanRemove) {
 				P clazz = new P("class");
-				Image image = new Image(RESOURCES.delete());
+				ImageButton image = new ImageButton(RESOURCES.delete());
 				image.addStyleName("delete");
 				image.setTitle(MESSAGES.titleRemoveSelectedClassAssignment(details.getClazz().getName()));
+				image.setAltText(MESSAGES.titleRemoveSelectedClassAssignment(details.getClazz().getName()));
 				image.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {

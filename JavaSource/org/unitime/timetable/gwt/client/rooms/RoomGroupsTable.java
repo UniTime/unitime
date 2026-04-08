@@ -183,9 +183,11 @@ public class RoomGroupsTable extends UniTimeTable<GroupInterface> {
 		case ABBREVIATION:
 			return new Label(group.getAbbreviation() == null ? "" : group.getAbbreviation(), false);
 		case DEFAULT:
-			if (group.isDefault())
-				return new Image(RESOURCES.on());
-			else
+			if (group.isDefault()) {
+				Image on = new Image(RESOURCES.on());
+				on.setAltText(MESSAGES.exportTrue());
+				return on; 
+			} else
 				return null;
 		case DEPARTMENT:
 			return new DepartmentCell(true, iProperties, group.getDepartment());
