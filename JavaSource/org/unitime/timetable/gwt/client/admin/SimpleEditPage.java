@@ -283,6 +283,7 @@ public class SimpleEditPage extends Composite {
 		iTable = new UniTimeTable<Record>();
 		iTable.addStyleName("unitime-AdminTable");
 		iTable.setAllowSelection(true);
+		iTable.setVisible(false);
 		iTableRow = iPanel.addRow(iTable);
 		
 		iBottom = iHeader.clonePanel();
@@ -715,6 +716,7 @@ public class SimpleEditPage extends Composite {
 		LoadingWidget.showLoading(MESSAGES.waitLoadingData());
 		
 		iTable.clearTable();
+		iTable.setVisible(false);
 		
 		RPC.execute(SimpleEditInterface.LoadDataRpcRequest.loadData(iType, iFilter == null ? null : iFilter.getValues()), new AsyncCallback<SimpleEditInterface>() {
 
@@ -812,6 +814,8 @@ public class SimpleEditPage extends Composite {
 				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			if (field.getType() == FieldType.students)
 				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			if (field.getType() == FieldType.toggle)
+				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 			if (field.getType() == FieldType.parent) {
 				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 				cell.addOperation(new UniTimeTableHeader.Operation() {
@@ -1114,6 +1118,7 @@ public class SimpleEditPage extends Composite {
 			iTable.setColumnVisible(i, iVisible[i] && (!iEditable || !iData.getFields()[i].isNoDetail()));
 		
 		iHeader.clearMessage();
+		iTable.setVisible(iTable.getRowCount() > 0);
 	}
 	
 	protected void fixOrderArrows() {
@@ -1770,6 +1775,7 @@ public class SimpleEditPage extends Composite {
 			case toggle:
 				return HasHorizontalAlignment.ALIGN_CENTER;
 			case students:
+			case number:
 				return HasHorizontalAlignment.ALIGN_RIGHT;
 			default:
 				return HasHorizontalAlignment.ALIGN_LEFT;
