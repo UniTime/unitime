@@ -131,11 +131,11 @@
 							<#switch meeting.getApprovalStatus().name()>
 								<#case "Pending">
 									<#if meeting.isPast()>
-										<td style='color: orange; font-style: italic;'>${msg.approvalNotApprovedPast()}</td>
+										<td style='color: #b85c00; font-style: italic;'>${msg.approvalNotApprovedPast()}</td>
 									<#elseif event.hasExpirationDate()>
-										<td style='color: red; font-style: italic;'>${msg.approvalExpire(event.getExpirationDate()?string(const.eventDateFormat()))}</td>
+										<td style='color: #ec0000; font-style: italic;'>${msg.approvalExpire(event.getExpirationDate()?string(const.eventDateFormat()))}</td>
 									<#else>
-										<td style='color: red; font-style: italic;'>${msg.approvalNotApproved()}</td>
+										<td style='color: #ec0000; font-style: italic;'>${msg.approvalNotApproved()}</td>
 									</#if>									
 									<#break>
 								<#case "Approved">
@@ -268,11 +268,11 @@
 							<#switch meeting.getApprovalStatus().name()>
 								<#case "Pending">
 									<#if meeting.isPast()>
-										<td style='color: orange; font-style: italic;'>${msg.approvalNotApprovedPast()}</td>
+										<td style='color: #b85c00; font-style: italic;'>${msg.approvalNotApprovedPast()}</td>
 									<#elseif event.hasExpirationDate()>
-										<td style='color: red; font-style: italic;'>${msg.approvalExpire(event.getExpirationDate()?string(const.eventDateFormat()))}</td>
+										<td style='color: #ec0000; font-style: italic;'>${msg.approvalExpire(event.getExpirationDate()?string(const.eventDateFormat()))}</td>
 									<#else>
-										<td style='color: red; font-style: italic;'>${msg.approvalNotApproved()}</td>
+										<td style='color: #ec0000; font-style: italic;'>${msg.approvalNotApproved()}</td>
 									</#if>									
 									<#break>
 								<#case "Approved">
@@ -351,11 +351,11 @@
 								<#switch meeting.getApprovalStatus().name()>
 									<#case "Pending">
 										<#if meeting.isPast()>
-											<td style='color: orange; font-style: italic;'>${msg.approvalNotApprovedPast()}</td>
+											<td style='color: #b85c00; font-style: italic;'>${msg.approvalNotApprovedPast()}</td>
 										<#elseif event.hasExpirationDate()>
-											<td style='color: red; font-style: italic;'>${msg.approvalExpire(event.getExpirationDate()?string(const.eventDateFormat()))}</td>
+											<td style='color: #ec0000; font-style: italic;'>${msg.approvalExpire(event.getExpirationDate()?string(const.eventDateFormat()))}</td>
 										<#else>
-											<td style='color: red; font-style: italic;'>${msg.approvalNotApproved()}</td>
+											<td style='color: #ec0000; font-style: italic;'>${msg.approvalNotApproved()}</td>
 										</#if>									
 										<#break>
 									<#case "Approved">
@@ -419,9 +419,9 @@
 		<!-- footer -->
 		<table style="width: 800px; margin-top: -3px;" align="center">
 			<tr>
-				<td width="33%" align="left" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;">${version}</td>
-				<td width="34%" align="center" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;">${msg.pageCopyright()}</td>
-				<td width="33%" align="right" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;">${ts?string(const.timeStampFormat())}</td>
+				<td width="33%" align="left" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #5477ab; white-space: nowrap;">${version}</td>
+				<td width="34%" align="center" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #5477ab; white-space: nowrap;">${msg.pageCopyright()}</td>
+				<td width="33%" align="right" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #5477ab; white-space: nowrap;">${ts?string(const.timeStampFormat())}</td>
 			</tr>
 		</table>
 	</body>
