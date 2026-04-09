@@ -136,7 +136,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                 byte[] buffer = new byte[32*1024];
                 int len = 0;
                 if (output.isEmpty())
-                    form.log("<font color='#a26a00'>" + MSG.warnNoReportGenerated() + "</font>");
+                    form.log("<font color='#b85c00'>" + MSG.warnNoReportGenerated() + "</font>");
                 else if (form.getEmail()) {
                     form.log(MSG.statusSendingEmails());
                     try {

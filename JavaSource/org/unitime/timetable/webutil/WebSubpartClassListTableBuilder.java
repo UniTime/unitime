@@ -66,7 +66,7 @@ public class WebSubpartClassListTableBuilder extends WebClassListTableBuilder {
         		cell.addContent("<A name=\"back\"></A>");
     		Class_ aClass = (Class_) prefGroup;
 	    	if(!isEditable){
-	    		cell.addContent("<font color=gray>");
+	    		cell.addContent("<font color='#646464'>");
 	    	}
 	        cell.addContent("<A name=\"A" + prefGroup.getUniqueId().toString() + "\"></A>");
 	        if (isEditable && aClass.canBeDeleted()){

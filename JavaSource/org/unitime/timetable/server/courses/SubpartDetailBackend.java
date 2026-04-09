@@ -270,7 +270,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 				        	if (tp.getTimePatternModel().hasNotAvailablePreference()) hasNotAvailable = true;
 							if (dm != null && (dp == null || !dm.isValidCombination(minutes, dp, tp.getTimePattern()))) {
 								tpCell.add(tp.getTimePattern().getName());
-								tpCell.add(MSG.warnNoMatchingDatePattern()).setColor("red").addStyle("font-style: italic; padding-left: 20px;");
+								tpCell.add(MSG.warnNoMatchingDatePattern()).setColor("#ec0000").addStyle("font-style: italic; padding-left: 20px;");
 								String hint = rtt.print(false, timeVertical, false, false, "").replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
 								tpCell.add("").setInline(false).setScript("$wnd." + hint);
 							} else {

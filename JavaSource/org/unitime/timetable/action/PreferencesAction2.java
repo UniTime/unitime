@@ -1210,7 +1210,7 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 				String name = null;
 				if (timePattern != null && !rtt.getModel().isExactTime()) {
 					if (dpat == null) {
-						name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
+						name = timePattern.getName() + " <font color=\\'#ec0000\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
 					} else if (dpat.isPatternSet()) {
 						boolean allPatterns = true;
 						String matching = "";
@@ -1222,12 +1222,12 @@ public abstract class PreferencesAction2<T extends PreferencesForm> extends UniT
 							}
 						}
 						if (matching.isEmpty())
-							name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
+							name = timePattern.getName() + " <font color=\\'#ec0000\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
 						else if (!allPatterns)
 							name = timePattern.getName() + " (" + matching + ")";
 					} else {
 						if (!dmod.isValidCombination(minutes, dpat, timePattern))
-							name = timePattern.getName() + " <font color=\\'red\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
+							name = timePattern.getName() + " <font color=\\'#ec0000\\'>" + MSG.warnNoMatchingDatePattern() + "</font>";
 					}
 				}
 				

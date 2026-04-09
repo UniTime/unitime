@@ -260,7 +260,7 @@ public class ExamDetailAction extends PreferencesAction2<ExamEditForm> {
                         title = clazz.getSchedulePrintNote();
                         if (title==null || title.length()==0) title=clazz.getSchedulingSubpart().getControllingCourseOffering().getTitle();
                         if (clazz.isCancelled()) {
-                        	rowStyle = "color: gray; font-style: italic;";
+                        	rowStyle = "color: #646464; font-style: italic;";
                         	rowTitle = MSG.classNoteCancelled(clazz.getClassLabel());
                         }
                         break;

@@ -933,7 +933,7 @@ public class ExamInfoModel implements Serializable {
             ret += "    roomOut(id);";
             ret += "    if (sCap>="+getExam().getNrStudents()+") {displayLoading(); document.location='examInfo.action?op=Select&room='+sRooms+'&noCacheTS=" + new Date().getTime()+"';}";
             ret += "    var c = document.getElementById('roomCapacityCounter');";
-            ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"red\">'+sCap+'</font>':''+sCap);";
+            ret += "    if (c!=null) c.innerHTML = (sCap<"+getExam().getNrStudents()+"?'<font color=\"#ec0000\">'+sCap+'</font>':''+sCap);";
             ret += "}";
             ret += "</script>";
             ret += "<table border='0' cellspacing='0' cellpadding='3'>";

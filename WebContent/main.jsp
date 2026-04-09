@@ -41,7 +41,7 @@
 <s:if test="hasInitializationError">
 	<s:set var="showBackground" value="false"/>
 	<div class='messages'>
-		<div class='WelcomeRowHead' style="color: red;"><loc:message name="errorUniTimeFailedToStart"><%=Constants.getVersion()%></loc:message></div>
+		<div class='WelcomeRowHead' style="color: #ec0000;"><loc:message name="errorUniTimeFailedToStart"><%=Constants.getVersion()%></loc:message></div>
 		<div class='message'><s:property value="%{printInitializationError()}" escapeHtml="false"/></div>
 	</div>
 </s:if>

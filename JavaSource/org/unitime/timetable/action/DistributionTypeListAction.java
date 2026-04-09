@@ -147,7 +147,7 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 		    if (d.getRequirementId() != null)
 		    	line.setUniqueId(d.getRequirementId().toString());
 		    if (!d.isVisible())
-		    	line.setStyle("color:gray;");
+		    	line.setStyle("color:#646464;");
 	    }
 	    return webTable.printTable(WebTable.getOrder(sessionContext,"DistributionTypeList.ord"));
 	}

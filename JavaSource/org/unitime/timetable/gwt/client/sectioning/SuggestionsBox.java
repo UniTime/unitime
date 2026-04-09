@@ -778,9 +778,9 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		case ARIA:
 			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? oldVal : "");
 		case SINGLE:
-			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<font color='"+ (conflict ? "red" : selected ? "#9999FF" : "#999999") +"'>" + oldVal + "</font>" : null);
+			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<font color='"+ (conflict ? "#ec0000" : selected ? "#9999FF" : "#999999") +"'>" + oldVal + "</font>" : null);
 		case BOTH_OLD:
-			return (oldVal == null || oldVal.isEmpty() ? newVal : newVal == null || newVal.isEmpty() ? "<font color='" + (conflict ? "red" : selected ? "#9999FF" : "#999999") + "'>" + oldVal + "</font>" : oldVal.equals(newVal) ? oldVal : "<font color='" + ( selected ? "#9999FF" : "#999999" ) + "'>" + oldVal + "</font>");
+			return (oldVal == null || oldVal.isEmpty() ? newVal : newVal == null || newVal.isEmpty() ? "<font color='" + (conflict ? "#ec0000" : selected ? "#9999FF" : "#999999") + "'>" + oldVal + "</font>" : oldVal.equals(newVal) ? oldVal : "<font color='" + ( selected ? "#9999FF" : "#999999" ) + "'>" + oldVal + "</font>");
 		case BOTH_NEW:
 			return (oldVal != null && !oldVal.isEmpty() && newVal != null && !newVal.isEmpty() && !newVal.equals(oldVal) ? "<font color='#" + ( selected ? "#9999FF" : "#999999" ) + "'>&rarr;</font> " + newVal : null);
 		default:

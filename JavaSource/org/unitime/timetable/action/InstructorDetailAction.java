@@ -392,7 +392,7 @@ public class InstructorDetailAction extends PreferencesAction2<InstructorEditFor
 				if (title != null) line.setTitle(title);
 				
 				if (c.isCancelled()) {
-					line.setStyle("color: gray; font-style: italic;");
+					line.setStyle("color: #646464; font-style: italic;");
 					line.setTitle(MSG.classNoteCancelled(c.getClassLabel()));
 				}
 			}

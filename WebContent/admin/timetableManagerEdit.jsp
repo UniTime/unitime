@@ -65,7 +65,7 @@
 
 		<TR>
 			<TD><loc:message name="propAcademicSession"/></TD>
-			<TD style="color: gray;"><s:property value="session"/></TD>
+			<TD style="color: #646464;"><s:property value="session"/></TD>
 		</TR>
 		
 			<TR>

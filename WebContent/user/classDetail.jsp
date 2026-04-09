@@ -86,7 +86,7 @@
 		<s:if test="form.isCancelled == true">
 			<TR>
 				<TD></TD>
-				<TD style="color:red; font-weight: bold;">
+				<TD style="color:#ec0000; font-weight: bold;">
 					<loc:message name="classNoteCancelled"><s:property value="form.courseName"/> <s:property value="form.itypeDesc"/> <s:property value="form.section"/></loc:message>
 				</TD>
 			</TR>

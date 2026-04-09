@@ -130,7 +130,7 @@
 				<br><loc:message name="sectionTitleAvailableRoomsForClass"><s:property value="#clazz.className"/></loc:message> &nbsp;&nbsp;
 				( <loc:message name="messageSelectedSize"></loc:message> <span id='roomCapacityCounter'>
 					<s:if test="#model.roomSize < #classLimit">
-						<font color='red'><s:property value="#model.roomSize"/></font>
+						<font color='#ec0000'><s:property value="#model.roomSize"/></font>
 					</s:if>
 					<s:else>
 						<s:property value="#model.roomSize"/>

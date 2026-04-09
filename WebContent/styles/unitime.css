@@ -8,6 +8,7 @@
  * compliance with the License. You may obtain a copy of the License at:
  *
  * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -505,7 +506,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-ErrorHint {
 	font-size: x-small;
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 	text-align: right;
 	vertical-align: top;
 	margin-top: -2px;
@@ -579,7 +580,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-ErrorMessage {
-	color: #ee0000;
+	color: #ec0000;
 	text-align: center;
 	font-style: italic;
 	font-weight: normal;
@@ -587,7 +588,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-Disabled {
-	color: #666;
+	color: #646464;
 	font-style: italic;
 }
 
@@ -644,7 +645,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-WebTable .text-red {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-WebTable .text-blue {
@@ -656,7 +657,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-WebTable .text-gray {
-	color: graytext;
+	color: #646464;
 	font-style: italic;
 }
 
@@ -665,7 +666,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-WebTable .text-red-centered {
-	color: #ee0000;
+	color: #ec0000;
 	text-align: center;
 }
 
@@ -975,7 +976,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	text-align: center;
 	width: 100%;
 	white-space: pre-wrap;
-	color: #ee0000;
+	color: #ec0000;
 	font-size: medium;
 	padding-top: 35px;
 	z-index: 10;
@@ -1736,15 +1737,15 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-GrayText {
-	color: #767676;
+	color: #646464;
 }
 
 .unitime-WarningText {
-	color: #B85C00;
+	color: #b85c00;
 }
 
 .unitime-ErrorText {
-	color: #EE0000;
+	color: #ec0000;
 }
 
 .unitime-GreenText {
@@ -2142,7 +2143,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-FilterBoxPopup .error {
-	color: #ee0000;
+	color: #ec0000;
 	font-style: italic;
 	padding: 1px 3px 1px 13px;
 	display: block;
@@ -2824,13 +2825,13 @@ div.gwt-MenuBarPopup {
 	.unitime-EventMeetings .conflict-row {
 		font-style: italic;
 		vertical-align: top;
-		color: graytext;
+		color: #646464;
 	}
 
 	.unitime-EventMeetings .message-row {
 		font-style: italic;
 		vertical-align: top;
-		color: graytext;
+		color: #646464;
 	}
 }
 
@@ -2894,7 +2895,7 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventOwners .cross-list {
 	display: block;
-	color: graytext;
+	color: #646464;
 	padding-left: 10px;
 }
 
@@ -2906,7 +2907,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-EventOwners .conflict {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-EventOwners .conflict .dc {
@@ -3162,7 +3163,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-SuggestionsMessage {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-SuggestionsHint {
@@ -3634,7 +3635,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-RoomAvailabilityHeader .warning {
 	text-align: center;
 	display: block;
-	color: #ee0000;
+	color: #ec0000;
 	font-size: medium;
 	max-width: 800px;
 	margin: auto;
@@ -3909,7 +3910,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-Login .error {
 	display: block;
-	color: #ee0000;
+	color: #ec0000;
 	font-size: medium;
 	font-weight: bold;
 	margin-top: 20px;
@@ -3984,7 +3985,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-InitializationError {
-	color: #ee0000;
+	color: #ec0000;
 	text-align: center;
 	margin-bottom: 20px;
 }
@@ -4070,11 +4071,11 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-MainTable .text-red {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-MainTable .text-gray {
-	color: graytext;
+	color: #646464;
 	font-style: italic;
 }
 
@@ -4154,7 +4155,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	padding-left: 5px;
 	vertical-align: top;
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-RoomDetail .note {
@@ -4250,7 +4251,7 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	padding-left: 5px;
 	vertical-align: top;
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-RoomSharingWidget .preference {
@@ -4268,7 +4269,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-RoomEdit .check-disabled {
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-Dept .department-Status {
@@ -4326,7 +4327,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-Widget .error-hint {
 	font-size: xx-small;
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 	text-align: right;
 	margin-top: -2px;
 	white-space: nowrap;
@@ -4457,7 +4458,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ConfirmationPanel .message-panel .message .text-red {
-	color: #ee0000;
+	color: #ec0000;
 	font-weight: bold;
 }
 
@@ -4466,7 +4467,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ConfirmationPanel .message-panel .message .denied {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-ConfirmationPanel .message-panel .message .note {
@@ -4523,7 +4524,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: right;
 	font-size: x-small;
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 	margin-top: -2px;
 	padding: 0px 10px 0px 10px;
 }
@@ -4604,7 +4605,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitine-DegreePlanTable .error {
 	max-width: 370px;
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -4691,7 +4692,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-RestrictionsTable .cancelled {
 	font-style: italic;
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-RestrictionsNode {
@@ -5050,7 +5051,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SetupTeachingRequests .cancelled {
-	color: graytext;
+	color: #646464;
 	font-style: italic;	
 }
 
@@ -5604,7 +5605,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SuggestionsBox .message {
-	color: #ee0000;
+	color: #ec0000;
 	white-space: normal;
 }
 
@@ -5678,7 +5679,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-HeaderPanel .error {
 	font-size: small;
-	color: #ee0000;
+	color: #ec0000;
 	font-style: italic;
 	font-weight: normal;
 	line-height: 25px;
@@ -6050,7 +6051,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-DataTable .change .not-assigned {
-	color: #ee0000;
+	color: #ec0000;
 	font-style: italic;	
 }
 
@@ -6244,7 +6245,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-SuggestionsPage .error-message {
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 	text-align: center;
 }
 
@@ -6277,7 +6278,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-ClassAssignmentTable .not-assigned {
 	display: inline-block;
 	font-style: italic;
-	color: #ee0000;
+	color: #ec0000;
 	padding-right: 2px;
 }
 
@@ -6489,7 +6490,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrations .registration-errors .denied {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-SpecialRegistrations .registration-errors .approved {
@@ -6507,7 +6508,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrations .change-drop {
-	color: graytext;
+	color: #646464;
     font-style: italic;
 }
 
@@ -6579,7 +6580,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-EnrollmentsTable .nomatch {
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-LogsTable tr:nth-child(odd) {
@@ -6837,7 +6838,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .registration-errors .denied {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-SpecialRegistrationsPanel .registration-errors .approved {
@@ -6861,7 +6862,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-SpecialRegistrationsPanel .change-drop {
-	color: graytext;
+	color: #646464;
     font-style: italic;
 }
 
@@ -7329,7 +7330,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-PinNotReleased {
-	color: graytext;
+	color: #646464;
 	font-style: italic;
 }
 
@@ -7460,15 +7461,15 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-WaitListsPanel .waitlists-errors .error {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-WaitListsPanel .waitlists-errors .rejected {
-	color: #ee0000;
+	color: #ec0000;
 }
 
 .unitime-WaitListsPanel .waitlists-errors .cancelled {
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-WaitListsPanel .waitlists-errors .needed {
@@ -7774,7 +7775,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-InstructorSurveyPage .not-submitted {
-	color: #ee0000;
+	color: #ec0000;
 	font-style: italic;	
 }
 
@@ -7794,7 +7795,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-InstructorSurveyPage .different-dept {
-	color: graytext;
+	color: #646464;
 }
 
 .unitime-InstructorSurveyPage .not-set {
@@ -7882,7 +7883,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-MultipleClassSetup .limit-too-low {
-	color: #ee0000;
+	color: #ec0000;
 	font-weight: bold;
 }
 
@@ -7967,7 +7968,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-MultipleClassSetup .error-table {
-	color: #ee0000;
+	color: #ec0000;
 	border: 1px solid red;
 	padding: 5px;
 	margin: 5px;
@@ -8066,7 +8067,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-InstrOfferingConfig .error-table {
-	color: #ee0000;
+	color: #ec0000;
 	border: 1px solid red;
 	padding: 5px;
 	margin: 5px;
@@ -8311,7 +8312,7 @@ unitime-RoomSharingWidget .legend .blank {
 	vertical-align: baseline;
 }
 .unitime-PreferenceEdit .unitime-RoomSharingWidget .header .warning {
-	color: #ee0000;
+	color: #ec0000;
 	font-style: italic;
 	padding-left: 20px;
 	display: inline-block;

@@ -1071,9 +1071,9 @@ public class ExamGridTable {
                 int m2d = getInfo().getNrMoreThanTwoConflicts();
                 int btb = getInfo().getNrBackToBackConflicts();
                 return
-                    "<font color='"+(dc>0?PreferenceLevel.prolog2color("P"):"gray")+"'>"+dc+"</font>, "+
-                    "<font color='"+(m2d>0?PreferenceLevel.prolog2color("2"):"gray")+"'>"+m2d+"</font>, "+
-                    "<font color='"+(btb>0?PreferenceLevel.prolog2color("1"):"gray")+"'>"+btb+"</font>";
+                    "<font color='"+(dc>0?PreferenceLevel.prolog2color("P"):"#646464")+"'>"+dc+"</font>, "+
+                    "<font color='"+(m2d>0?PreferenceLevel.prolog2color("2"):"#646464")+"'>"+m2d+"</font>, "+
+                    "<font color='"+(btb>0?PreferenceLevel.prolog2color("1"):"#646464")+"'>"+btb+"</font>";
             }
             
             public String getShortCommentNoColors() {

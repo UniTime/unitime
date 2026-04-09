@@ -407,7 +407,7 @@ select {
 
 A.menuLink:hover {
 	font-size: 80%;
-	color: red;
+	color: #ec0000;
 	font-family: sans-serif, verdana, arial;
 	text-decoration: underline;
 }
@@ -421,7 +421,7 @@ A.menuLink {
 
 A.submenuLink:hover {
 	font-size: 80%;
-	color: red;
+	color: #ec0000;
 	font-family: sans-serif, verdana, arial;
 	text-decoration: underline;
 }

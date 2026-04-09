@@ -197,7 +197,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
         TreeSet periods = ExamPeriod.findAll(sessionId, form.getExamType());
         if (periods.isEmpty()) {
             table.addLine(new String[] {
-            		color ? "<font color='#a26a00'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
+            		color ? "<font color='#b85c00'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(SessionDAO.getInstance().get(sessionId), form.getExamType());
@@ -279,7 +279,7 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
         table.setBlankWhenSame(true);
         TreeSet periods = ExamPeriod.findAll(sessionId, form.getExamType());
         if (periods.isEmpty()) {
-            table.addLine(new String[] {color ? "<font color='#a26a00'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
+            table.addLine(new String[] {color ? "<font color='#b85c00'>" + MSG.warnNoExaminationPeriods() + "</font>" : MSG.warnNoExaminationPeriods()},null);
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(SessionDAO.getInstance().get(sessionId), form.getExamType());

@@ -109,7 +109,7 @@ public class WebInstructionalOfferingTableBuilder {
     protected static String oddRowBGColorChild = "#EFEFEF";
     protected static String oddRowMouseOverBGColor = "#8EACD0";
     protected static String evenRowMouseOverBGColor = "#8EACD0";
-    protected String disabledColor = "gray";
+    protected String disabledColor = "#646464";
     protected static String formName = "instructionalOfferingListForm";
     
     //available columns for table
@@ -1029,7 +1029,7 @@ public class WebInstructionalOfferingTableBuilder {
     			label = "<i>" + label + "</i>";
     		}
     		if (!isEditable) {
-    			label = "<span style=\"color:gray;\">" + label + "</span>";
+    			label = "<span style=\"color:#646464;\">" + label + "</span>";
     		}
     		cell.addContent(label);
             cell.setAlign("left");
@@ -1441,7 +1441,7 @@ public class WebInstructionalOfferingTableBuilder {
 		    		} else {
 			    		String label = aClass.getLms().getLabel();
 			    		if (!isEditable) {
-			    			label = "<span style=\"color:gray;\">" + label + "</span>";
+			    			label = "<span style=\"color:#646464;\">" + label + "</span>";
 			    		}
 			    		cell.addContent(label);
 			        cell.setAlign("left");
@@ -1619,7 +1619,7 @@ public class WebInstructionalOfferingTableBuilder {
             	row.setOnClick("document.location='classDetail.action?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'");
         }
         if (aClass.isCancelled()) {
-        	row.setStyle("color: gray; font-style: italic;");
+        	row.setStyle("color: #646464; font-style: italic;");
         	row.setTitle(MSG.classNoteCancelled(aClass.getClassLabel(co)));
         }
         String icon = null;
@@ -1911,7 +1911,7 @@ public class WebInstructionalOfferingTableBuilder {
     		} else {
 	    		demand = (io.getDemand() != null?io.getDemand().toString(): "0");
 	    		if (co.isIsControl().booleanValue() && !io.isNotOffered().booleanValue() && (io.getDemand()==null || io.getDemand().intValue()==0)) {
-	    			demand = "<span style='font-weight:bold;color:red;'>0</span>";
+	    			demand = "<span style='font-weight:bold;color:#ec0000;'>0</span>";
 	    		}
     		}
 	        cell = initNormalCell(demand, isEditable && co.isIsControl().booleanValue());
