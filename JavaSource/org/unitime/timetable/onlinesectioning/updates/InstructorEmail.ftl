@@ -81,14 +81,14 @@
  				</#if>
  			</#if>
 			<#if link??>
-				<tr><td style="font-style: italic; color: #9CB0CE; text-align: right; padding-top: 5px;">${msg.emailLinkToPersonalSchedule(link)}</td></tr>
+				<tr><td style="font-style: italic; color: #5477ab; text-align: right; padding-top: 5px;">${msg.emailLinkToPersonalSchedule(link)}</td></tr>
  			</#if>
 		</table>
 		<table style="width: 800px; margin-top: -3px;" align="center">
 			<tr>
-				<td width="33%" align="left" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;">${version}</td>
-				<td width="34%" align="center" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;">${copyright}</td>
-				<td width="33%" align="right" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;">${ts}</td>
+				<td width="33%" align="left" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #5477ab; white-space: nowrap;">${version}</td>
+				<td width="34%" align="center" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #5477ab; white-space: nowrap;">${copyright}</td>
+				<td width="33%" align="right" style="font-size: 9pt; vertical-align: top; font-style: italic; color: #5477ab; white-space: nowrap;">${ts}</td>
 			</tr>
 		</table>
 	</body>

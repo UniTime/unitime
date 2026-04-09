@@ -2062,10 +2062,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		
 		out.println("<tr><td align='left' style='vertical-align: top;'><table cellspacing='0' cellpadding='0'><tr>");
 		
-		out.println("<td align='left' style='vertical-align: top;'><div style='font-size: x-small; text-align: center; color: #6991CE; display: block; width: 30px;'></div></td>");
+		out.println("<td align='left' style='vertical-align: top;'><div style='font-size: x-small; text-align: center; color: #5477ab; display: block; width: 30px;'></div></td>");
 		
 		for (int i = 0; i < nrDays; i++) {
-			out.println("<td align='center' style='vertical-align: top;'><div style='font-size: x-small; text-align: center; color: #6991CE; display: block; width: 180px; '>" +
+			out.println("<td align='center' style='vertical-align: top;'><div style='font-size: x-small; text-align: center; color: #5477ab; display: block; width: 180px; '>" +
 					DayCode.values()[i].getName() +  "</div></td>");
 		}
 		
@@ -2078,9 +2078,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("<td align='left' style='vertical-align: top; '><div style='position: relative; overflow-x: hidden; overflow-y: hidden; width: 30px; height: " + (50 * (lastHour - firstHour)) + "px; '>");
 		for (int h = firstHour; h < lastHour; h++) {
 			int top = 50 * (h - firstHour);
-			out.println("<div style='font-size: x-small; text-align: center; padding-right: 2px; color: #6991CE; display: block; border-top: 1px solid transparent; height: 100%; width: 28px; white-space: nowrap; " +
+			out.println("<div style='font-size: x-small; text-align: center; padding-right: 2px; color: #5477ab; display: block; border-top: 1px solid transparent; height: 100%; width: 28px; white-space: nowrap; " +
 				"position: absolute; left: 0px; top: " + top + "px;'>" +  (CONST.useAmPm() ? (h > 12 ? h - 12 : h) + (h < 12 ? "am" : "pm") : String.valueOf(h)) + "</div>");
-			out.println("<div style='font-size: x-small; text-align: center; padding-right: 2px; color: #6991CE; display: block; border-top: 1px solid transparent; height: 100%; width: 28px;" +
+			out.println("<div style='font-size: x-small; text-align: center; padding-right: 2px; color: #5477ab; display: block; border-top: 1px solid transparent; height: 100%; width: 28px;" +
 				"position: absolute; left: 0px; top: " + (25 + top) + "px; '></div>");
 		}
 		out.println("</div></td>");
@@ -2100,7 +2100,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (dow.getIndex() >= nrDays) continue;
 					if (fr.getTime().getSlot() + fr.getTime().getLength() < 12 * firstHour) continue;
 					if (fr.getTime().getSlot() > 12 * lastHour) continue;
-					out.println("<div style='background: #FFE1DD; width: 100%; color: #BA5353; font-size: x-small; text-align: left; white-space: nowrap; overflow: hidden;" +
+					out.println("<div style='background: #FFE1DD; width: 100%; color: #5b2424; font-size: x-small; text-align: left; white-space: nowrap; overflow: hidden;" +
 							"width: 183px; height: " + (125 * fr.getTime().getLength() / 30) + "px; " +
 							"position: absolute; left: " + (180 * dow.getIndex()) + "px;" +
 							"top: " + (125 * fr.getTime().getSlot() / 30 - 50 * firstHour) + "px; '>");
@@ -2178,7 +2178,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("</div></td></tr></table></div></td></tr>");
 		
 		/*
-		out.println("	<tr><td style=\"font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;\">");
+		out.println("	<tr><td style=\"font-size: 9pt; font-style: italic; color: #5477ab; text-align: right; margin-top: -2px; white-space: nowrap;\">");
 		out.println("		If the timetable is not displayed correctly, please check out the attached file.");
 		out.println("	</td></tr>");
 		 */
