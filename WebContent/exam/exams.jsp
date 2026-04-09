@@ -52,7 +52,7 @@
 	<BR>
 	<s:if test="form.table == null">
 		<table class="unitime-MainTable">
-			<tr><td style='color:red;font-weight:bold;'>
+			<tr><td style='color:#ec0000;font-weight:bold;'>
 				<s:property value="form.emptyMessage"/>
 			</td></tr>
 		</table>
@@ -75,14 +75,14 @@
 		</TR>
 		<s:if test="form.message != null">
 			<TR>
-				<TD style='color:red;font-weight:bold;'>
+				<TD style='color:#ec0000;font-weight:bold;'>
 					<s:property value="form.message"/>
 				</TD>
 			</TR>
 		</s:if>
  		<s:if test="#request.message != null">
 			<TR>
-				<TD style='color:red;font-weight:bold;'>
+				<TD style='color:#ec0000;font-weight:bold;'>
 					<s:property value="#request.message"/>
 				</TD>
 			</TR>

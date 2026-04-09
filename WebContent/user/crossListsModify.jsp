@@ -55,7 +55,7 @@
 				total += parseInt(val);
 				allBlank = false;
 			} else {
-				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>?</b></font>";
+				document.getElementById("resvTotal").innerHTML = "<font color='#ec0000'><b>?</b></font>";
 				return;
 			}
 		}
@@ -63,7 +63,7 @@
 		str = "<b>" + total + "</b>&nbsp;&nbsp;";
 		if (ioLimit >= 0) {
 			if (total < ioLimit) {
-				str = "<font color='red'><b>" + total + "</b></font>&nbsp;&nbsp;";
+				str = "<font color='#ec0000'><b>" + total + "</b></font>&nbsp;&nbsp;";
 			} else {
 				str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
 			}

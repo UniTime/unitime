@@ -291,7 +291,7 @@ function checkNumberOfRooms(nbrRooms, id) {
 	</TR>
 	<s:iterator value="form.classIds" var="c" status="stat"><s:set var="ctr" value="%{#stat.index}"/>
 		<s:if test="form.isCancelled[#ctr] == true">
-			<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';" style="color: gray;">
+			<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';" style="color: #646464;">
 		</s:if><s:else>
 			<TR onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='default';" onmouseout="this.style.backgroundColor='transparent';">
 		</s:else>

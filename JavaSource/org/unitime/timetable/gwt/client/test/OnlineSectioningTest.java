@@ -575,13 +575,13 @@ public class OnlineSectioningTest extends Composite {
 
 		private void warn(String message) {
 			HTML m = message(message);
-			m.getElement().getStyle().setColor("orange");
+			m.getElement().getStyle().setColor("#b85c00");
 			iLog.add(m);
 		}
 
 		private void error(String message) {
 			HTML m = message(message);
-			m.getElement().getStyle().setColor("red");
+			m.getElement().getStyle().setColor("#ec0000");
 			iLog.add(m);
 		}
 	}

@@ -53,7 +53,7 @@ public class OfferingsPDF extends OfferingsXLS {
 				printer.printHeader(i, table.getHeader().size(), printer.toA(table.getHeader().get(0), true));
 			if (table.hasErrorMessage()) {
 				A a = new A();
-				a.italic(); a.center(); a.setColor("red");
+				a.italic(); a.center(); a.setColor("#ec0000");
 				a.setText(table.getErrorMessage());
 				a.setColSpan(table.getMaxColumns());
 				printer.printLine(a);

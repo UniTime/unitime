@@ -351,7 +351,7 @@ public class InstructorListBuilder {
 		    			title += " - " + MSG.titleDoNotDisplayInstructor();
 		    		}
 		    		if (c.isCancelled()) {
-		    			line[idx] +=  "<span style='color: gray; text-decoration: line-through;" + (ci.isLead() ? "font-weight:bold;" : "") + (c.isDisplayInstructor() ? "" : "font-style:italic;") + "' title='"+title+"'>";
+		    			line[idx] +=  "<span style='color: #646464; text-decoration: line-through;" + (ci.isLead() ? "font-weight:bold;" : "") + (c.isDisplayInstructor() ? "" : "font-style:italic;") + "' title='"+title+"'>";
 		    		} else if (ci.isLead().booleanValue()){
 		    			line[idx] +=  "<span style='font-weight:bold;"+(c.isDisplayInstructor().booleanValue()?"":"font-style:italic;")+"' title='"+title+"'>";
 		    		} else {

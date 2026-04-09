@@ -405,7 +405,7 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
 			case INFO:
 				return iMessage;
 			case WARN:
-				return "<font color='#a26a00'>" + iMessage + "</font>";
+				return "<font color='#b85c00'>" + iMessage + "</font>";
 			case ERROR:
 				return "<font color='#ec0000'>" + iMessage + "</font>";
 			case FATAL:

@@ -131,7 +131,7 @@
 		<s:if test="form.ignoreDist == true">
 			<TR>
 				<TD><loc:message name="propertyIgnoreTooFar"/></TD>
-				<TD><font color='red'><loc:message name="enabled"/></font>&nbsp;&nbsp; -- <i><loc:message name="descriptionInstructorIgnoreTooFar"/>
+				<TD><font color='#ec0000'><loc:message name="enabled"/></font>&nbsp;&nbsp; -- <i><loc:message name="descriptionInstructorIgnoreTooFar"/>
 				</i></TD>
 			</TR>
 		</s:if>

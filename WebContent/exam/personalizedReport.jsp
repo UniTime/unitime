@@ -51,7 +51,7 @@
 	</table>
 	<s:if test="form.message != null">
 		<BR>
-		<div style='font-weight:bold;color:red;'>
+		<div style='font-weight:bold;color:#ec0000;'>
 			<s:property value="form.message"/>
 		</div>
 	</s:if>

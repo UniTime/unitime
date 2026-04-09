@@ -380,14 +380,14 @@ public class PdfExamReportQueueItem extends QueueItem {
             byte[] buffer = new byte[32*1024];
             int len = 0;
             if (output.isEmpty())
-                log("<font color='#a26a00'>" + MSG.warnNoReportGenerated() + "</font>");
+                log("<font color='#b85c00'>" + MSG.warnNoReportGenerated() + "</font>");
             else if (iForm.getEmail()) {
                 setStatus(MSG.statusSendingEmails());
                 if (iForm.getEmailDeputies()) {
                     Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
                     for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
                         if (entry.getKey().getDepartment().getTimetableManagers().isEmpty())
-                            log("<font color='#a26a00'>&nbsp;&nbsp;" + MSG.warnNoManagerForSubject(entry.getKey().getSubjectAreaAbbreviation(), entry.getKey().getDepartment().getLabel())+"</font>");
+                            log("<font color='#b85c00'>&nbsp;&nbsp;" + MSG.warnNoManagerForSubject(entry.getKey().getSubjectAreaAbbreviation(), entry.getKey().getDepartment().getLabel())+"</font>");
                         for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
                             TimetableManager g = (TimetableManager)i.next();
                             boolean receiveEmail = false;
@@ -397,7 +397,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             }
                             if (receiveEmail){
                                 if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
-                                    log("<font color='#a26a00'>&nbsp;&nbsp;" + MSG.warnManagerHasNoEmail(g.getName()) + "</font>");
+                                    log("<font color='#b85c00'>&nbsp;&nbsp;" + MSG.warnManagerHasNoEmail(g.getName()) + "</font>");
                                 } else {
                                     Hashtable<String,File> files = files2send.get(g);
                                     if (files==null) { files = new Hashtable<String,File>(); files2send.put(g, files); }
@@ -478,7 +478,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         File report = ireports.get(instructor);
                         String email = instructor.getInstructor().getEmail();
                         if (email==null || email.length()==0) {
-                            log("&nbsp;&nbsp;<font color='#a26a00'>" + MSG.errorUnableToSentInstructorNoEmail("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>") + "</font>");
+                            log("&nbsp;&nbsp;<font color='#b85c00'>" + MSG.errorUnableToSentInstructorNoEmail("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>") + "</font>");
                             continue;
                         }
                         try {
@@ -496,7 +496,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             mail.send();
                             log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
                         } catch (Exception e) {
-                            log("&nbsp;&nbsp;<font color='#a26a00'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>", e.getMessage())+"</font>");
+                            log("&nbsp;&nbsp;<font color='#b85c00'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>", e.getMessage())+"</font>");
                             setError(e);
                         }
                     }
@@ -508,7 +508,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         File report = sreports.get(student);
                         String email = student.getEmail();
                         if (email==null || email.length()==0) {
-                            log("&nbsp;&nbsp;<font color='#a26a00'>" + MSG.errorUnableToSentStudentNoEmail("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>") + "</font>");
+                            log("&nbsp;&nbsp;<font color='#b85c00'>" + MSG.errorUnableToSentStudentNoEmail("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>") + "</font>");
                             continue;
                         }
                         try {
@@ -526,7 +526,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             mail.send();
                             log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                         } catch (Exception e) {
-                        	log("&nbsp;&nbsp;<font color='#a26a00'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage())+"</font>");
+                        	log("&nbsp;&nbsp;<font color='#b85c00'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage())+"</font>");
                             setError(e);
                         }
                     }

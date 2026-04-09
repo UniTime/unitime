@@ -192,7 +192,7 @@ public class ExamDistributionPrefsTableBuilder {
         	String distType = dp.getDistributionType().getLabel();
             String prefLevel = dp.getPrefLevel().getPrefName();
             String prefColor = dp.getPrefLevel().prefcolor();
-        	if (PreferenceLevel.sNeutral.equals(dp.getPrefLevel().getPrefProlog())) prefColor = "gray";
+        	if (PreferenceLevel.sNeutral.equals(dp.getPrefLevel().getPrefProlog())) prefColor = "#646464";
             String onClick = null;
             
             boolean gray = false;
@@ -209,9 +209,9 @@ public class ExamDistributionPrefsTableBuilder {
                     onClick, 
                 	new String[] { 
                     		(back?"<A name=\"back\"</A>":"")+
-                    		(gray?"<span style='color:gray;'>":"<span style='color:"+prefColor+";font-weight:bold;' title='"+prefLevel+" "+distType+"'>")+distType+"</span>",
-                    		(gray?"<span style='color:gray;'>":"")+examStr+(gray?"</span>":""), 
-                    		(gray?"<span style='color:gray;'>":"")+objStr+(gray?"</span>":"")
+                    		(gray?"<span style='color:#646464;'>":"<span style='color:"+prefColor+";font-weight:bold;' title='"+prefLevel+" "+distType+"'>")+distType+"</span>",
+                    		(gray?"<span style='color:#646464;'>":"")+examStr+(gray?"</span>":""), 
+                    		(gray?"<span style='color:#646464;'>":"")+objStr+(gray?"</span>":"")
                     	}, 
                    	new Comparable[] { distType, examStr, objStr });
             

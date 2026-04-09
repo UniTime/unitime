@@ -123,7 +123,7 @@
 				<br><loc:message name="sectAvailableRoomsForExam"><s:property value="#exam.examName"/></loc:message> &nbsp;&nbsp;
 				( <loc:message name="hintSelectedSize"/> <span id='roomCapacityCounter'>
 					<s:if test="#model.roomSize < #nrStudents">
-						<font color='red'><s:property value="#model.roomSize"/></font>
+						<font color='#ec0000'><s:property value="#model.roomSize"/></font>
 					</s:if>
 					<s:else>
 						<s:property value="#model.roomSize"/>
