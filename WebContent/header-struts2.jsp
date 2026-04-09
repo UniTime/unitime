@@ -20,7 +20,7 @@
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <div id="loading" class="unitime-PageLoading" style="visibility:hidden;display:none">
-	<img align="middle" vspace="5" border="0" src="images/loading.gif">
+	<img align="middle" vspace="5" border="0" src="images/loading.gif" alt="Page is loading, please wait ...">
 </div>
 <s:if test="#request.showNavigation && #request.menu != 'hide'">
 	<tt:has-back>
