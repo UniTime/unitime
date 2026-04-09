@@ -124,6 +124,7 @@ public class SectioningReports extends Composite {
 	public SectioningReports(boolean online) {
 		iOnline = online;
 		iForm = new SimpleForm(2);
+		iTable.setVisible(false);
 		
 		iForm.removeStyleName("unitime-NotPrintableBottomLine");
 		
@@ -468,7 +469,10 @@ public class SectioningReports extends Composite {
 	
 	public void populate(boolean sort) {
 		if (iData == null || iData.isEmpty() || iHead == null) {
+			iTable.setVisible(false);
 			iTableHeader.setMessage(MESSAGES.errorNoResults());
+			iTableHeader.setEnabled("previous", false);
+			iTableHeader.setEnabled("next", false);
 		} else {
 			if (iLastSort != 0 && sort) {
 				final boolean asc = iLastSort > 0;
@@ -970,6 +974,7 @@ public class SectioningReports extends Composite {
 				iTableHeader.setMessage(MESSAGES.infoShowingLines(iFirstLine + 1, Math.min(iFirstLine + 100, iData.size())));
 			iTableHeader.setEnabled("next", iFirstLine + 100 < iData.size());
 			iTableHeader.setEnabled("previous", iFirstLine > 0);
+			iTable.setVisible(iTable.getRowCount() > 0);
 		}
 	}
 		
@@ -1006,6 +1011,7 @@ public class SectioningReports extends Composite {
 		iLastHistory = type.getReference();
 		iLastFilter = (type.isFilter() ? iFilter.getValue() : "");
 		iTable.clearTable();
+		iTable.setVisible(false);
 		iTableHeader.clearMessage();
 		iHeader.clearMessage();
 		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(type.getName()));
