@@ -789,6 +789,26 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		}
 	}
 	
+	public void setUnavailableBitSet(BitSet pattern) {
+		String p = null; int offset = 0;
+		for (int i = 0; i < pattern.length(); i++) {
+			if (pattern.get(i)) {
+				if (p == null) p = "";
+				p += "1";
+			} else {
+				if (p == null) offset ++;
+				else p += "0";
+			}
+		}
+		if (p != null && !p.isEmpty()) {
+			setUnavailableDays(p);
+			setUnavailableOffset(DateUtils.getDayOfYear(getSession().getSessionBeginDateTime()) - getSession().getDayOfYear(1, getSession().getPatternStartMonth()) - offset - 1);
+		} else {
+			setUnavailableDays(null);
+			setUnavailableOffset(null);
+		}
+	}
+	
 	@Transient
 	public Date getUnavailableStartDate() {
 		if (getUnavailableDays()==null || getUnavailableOffset()==null) return null;

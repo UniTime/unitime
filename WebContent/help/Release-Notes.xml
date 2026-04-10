@@ -62,6 +62,12 @@
 				<line>Fixed the ability to attach files to the email inquiry.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Preferences</name>
+			<description>
+				<line>Include instructor unavailability in the Preferences XML export and import.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

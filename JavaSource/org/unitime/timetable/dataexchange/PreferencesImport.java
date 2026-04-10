@@ -23,6 +23,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +71,7 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 
 /**
  * @author Tomas Muller
@@ -305,7 +308,7 @@ public class PreferencesImport  extends BaseImport {
     	return null;
     }
     
-    protected PreferenceGroup lookupPrefGroup(Element element) {
+    protected PreferenceGroup lookupPrefGroup(Element element) throws ParseException {
     	if ("class".equals(element.getName())) {
     		Class_ clazz = lookupClass(element);
     		if (clazz == null) return null;
@@ -328,6 +331,35 @@ public class PreferencesImport  extends BaseImport {
     		Element tp = element.element("teachingPref");
     		instructor.setMaxLoad(tp == null ? null : Float.parseFloat(tp.attributeValue("maxLoad", "0.0")));
     		instructor.setTeachingPreference(tp == null ? null : PreferenceLevel.getPreferenceLevel(tp.attributeValue("level", PreferenceLevel.sProhibited)));
+    		Element unavEl = element.element("unavailabilities");
+    		instructor.setUnavailableOffset(null);
+    		instructor.setUnavailableDays(null);
+    		if (unavEl != null) {
+    			BitSet weekCode = new BitSet();
+                int startMonth = instructor.getDepartment().getSession().getPatternStartMonth();
+    			int endMonth = instructor.getDepartment().getSession().getPatternEndMonth();
+    			int year = instructor.getDepartment().getSession().getSessionStartYear();
+        		Map<Date, Integer> date2index = new HashMap<Date, Integer>();
+        		int idx = 0;
+        		for (int m = startMonth; m <= endMonth; m++) {
+        			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+        			for (int d = 1; d <= daysOfMonth; d++) {
+        				date2index.put(DateUtils.getDate(d, m, year), idx);
+        				idx++;
+        			}
+        		}
+        		for (Iterator dIt = unavEl.elementIterator("dates"); dIt.hasNext(); ) {
+        			Element dEl = (Element)dIt.next();
+        			Date sd = iDateFormat.parse(dEl.attributeValue("fromDate", dEl.attributeValue("date")));
+        			Date ed = iDateFormat.parse(dEl.attributeValue("toDate", dEl.attributeValue("date")));
+        			Integer i1 = date2index.get(sd);
+        			Integer i2 = date2index.get(ed);
+        			if (i1 != null && i2 != null)
+        				for (int j = i1; j <= i2; j++)
+        					weekCode.set(j, true);
+        		}
+        		instructor.setUnavailableBitSet(weekCode);
+    		}
     		return instructor;
     	}
     	return null;
