@@ -20,10 +20,12 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
+<%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization"%>
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-
-<HTML>
+<%@ page import="org.unitime.localization.impl.Localization"%>
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtAriaMessages" id="ARIA">
+<HTML lang='<%=Localization.getLanguage()%>'>
 <HEAD>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta charset="UTF-8"/>
@@ -111,7 +113,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.action' tabIndex="-1" class="logo"></a>
+    			<a href='main.action' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title">Runtime Error</span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>
@@ -162,3 +164,4 @@
 
   </body>
 </HTML>
+</loc:bundle>

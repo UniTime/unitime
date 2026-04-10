@@ -20,7 +20,8 @@
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-<html>
+<%@ page import="org.unitime.localization.impl.Localization"%>
+<html lang='<%=Localization.getLanguage()%>'>
 	<head>
 	    <meta charset="UTF-8"/>
 	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">

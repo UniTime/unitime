@@ -18,7 +18,8 @@
  * limitations under the License.
  * 
 --%>
-<html>
+<%@ page import="org.unitime.localization.impl.Localization"%>
+<html lang='<%=Localization.getLanguage()%>'>
 	<body bgcolor='white' onload="window.close();">
 		You can close this window now and submit again.
 	</body>

@@ -3896,16 +3896,19 @@ unitime-RoomSharingWidget .legend .blank {
 	padding: 5px 0px 5px 10px;
 }
 
-.unitime-Login .header .h1 {
+.unitime-Login .header h1 {
 	display: block;
 	color: #35526F;
 	font-size: xx-large;
+	font-weight: normal;
 }
 
-.unitime-Login .header .h2 {
+.unitime-Login .header h2 {
 	display: block;
 	color: #35526F;
 	font-size: large;
+	font-weight: normal;
+	margin: 0px;
 }
 
 .unitime-Login .error {
