@@ -19,12 +19,13 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
+<%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <s:set var="dp" value="datePattern"/>
-<html>
+<html lang='<%=Localization.getLanguage()%>'>
   <head>
     <title>
     	<loc:message name="sectPreviewOfDatePattern"><s:property value="#dp.name"/></loc:message>

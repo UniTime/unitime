@@ -26,7 +26,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <loc:bundle name="CourseMessages">
-<html>
+<html lang='<%=Localization.getLanguage()%>'>
 <head>
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
@@ -82,8 +82,8 @@
 		<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
 		<span class='logo'><img src="images/unitime.png" border="0" alt="UniTime"></span>
 		<span class='header'>
-			<span class='h1'><loc:message name="pageLogInH1"/></span>
-			<span class='h2'><loc:message name="pageLogInH2"/></span>
+			<h1><loc:message name="pageLogInH1"/></h1>
+			<h2><loc:message name="pageLogInH2"/></h2>
 		</span>
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<s:if test="errorMsg != null"><div class='error'><s:property value="errorMsg" escapeHtml="true"/></div></s:if>
