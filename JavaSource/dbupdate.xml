@@ -15784,4 +15784,25 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'CourseTypeEdit'
 		</sql>
 	</update>
+	<update version="277" date="10-Apr-2026" comment="High Contrast Preferences Setting">
+		<plsql onFail="done">insert into %SCHEMA%.settings (uniqueid, name, default_value, allowed_values, description)
+		            values(%SCHEMA%.settings_seq.nextval, 'highContrastPreferences', 'yes', 'yes,no,legacy', 'High Contrast Preferences: Use preference levels with color backgrounds.')
+		</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql onFail="done">
+			insert into %SCHEMA%.settings 
+		    (uniqueid, name, default_value, allowed_values, description) values
+ 			(%ID% + 0, 'highContrastPreferences', 'yes', 'yes,no,legacy', 'High Contrast Preferences: Use preference levels with color backgrounds.')
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+		<pgsql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</pgsql>
+		<pgsql onFail="done">
+			insert into %SCHEMA%.settings 
+		    (uniqueid, name, default_value, allowed_values, description) values
+ 			(%ID% + 0, 'highContrastPreferences', 'yes', 'yes,no,legacy', 'High Contrast Preferences: Use preference levels with color backgrounds.')
+		</pgsql>
+		<pgsql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</pgsql>
+	</update>
 </dbupdate>
