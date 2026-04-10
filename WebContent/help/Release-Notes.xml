@@ -69,6 +69,27 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other</title>
+		<item>
+			<name>WCAG/Accessibility</name>
+			<description>
+				<line>Various adjustments to improve WCAG compliance of UniTime pages.</line>
+				<line>Most pages should now be fully compliant with WCAG 2.2 level AA, with the following exceptions (typically only available to examination managers and administrators):
+					<line>Student &gt; Enrollment Audits: Form field missing a label (4.1.2)</line>
+					<line>Most pages under Examinations &gt; Examination Timetabling (except for Solver and Log): Container element is empty (1.3.1), Minimum contrast (1.4.3), Form field missing a label (4.1.2), and Keyboard accessibility (2.1.1)</line>
+					<line>Examinations &gt; Pdf Reports: Form field missing a label (4.1.2)</line>
+					<line>Some of the pages under Administration (those still using Struts2): Container element is empty (1.3.1), Minimum contrast (1.4.3), Form field missing a label (4.1.2), and Keyboard accessibility (2.1.1)</line>
+				</line>
+				<line>The above-mentioned pages are all old pages still written in Struts 2. They are planned to be made ADA compliant together with their rewrite to GWT at a later release.</line>
+				<line>For preference colors, you can switch among three options in Preferences &gt; Settings, under High Contrast Preferences: Use preference levels with color backgrounds.
+					<line>yes: (which is the default now) will use preference colors as backgrounds</line>
+					<line>no: will use the new (much darker) preference colors that satisfy the 4.5:1 contrast ratio</line>
+					<line>legacy: will use the old non-ADA compliant colors</line>
+				</line>
+			</description>
+		</item>
+	</category>	
 </release>
 
 <release>
