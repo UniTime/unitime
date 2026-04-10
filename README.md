@@ -43,6 +43,7 @@ a sponsored project of the [Apereo Foundation][apereo] in March 2015.
 - [Examination Timetabling][exams]
 - [Event Management][events]
 - [Student Scheduling][students]
+- [Instructor Scheduling][instructors]
 
 ### Tutorials
 - [Installation Instructions][install]
@@ -52,28 +53,29 @@ a sponsored project of the [Apereo Foundation][apereo] in March 2015.
 - [Localization][localization]
 
 ### Links
-- [UniTime 4.6 documentation][docs]
-- [Online Documentation][help]
+- [UniTime Documentation][docs]
+- [Online Help][help]
 - [Online Demo][demo]
 - [Downloads][downloads]
 - [Nightly Builds][builds]
 - [XML Interfaces][xml]
 - [Publications][publications]
 
-[courses]: https://www.unitime.org/uct_courses.php
-[exams]: https://www.unitime.org/uct_exams.php
-[events]: https://www.unitime.org/uct_events.php
-[students]: https://www.unitime.org/uct_students.php
+[courses]: https://help.unitime.org/course-timetabling
+[exams]: https://help.unitime.org/examination-timetabling
+[events]: https://help.unitime.org/event-management
+[students]: https://help.unitime.org/student-scheduling
+[instructors]: https://help.unitime.org/instructor-scheduling
 [help]: https://help.unitime.org
 [install]: https://help.unitime.org/installation
 [demo]: https://demo.unitime.org
 [builds]: https://builds.unitime.org
-[xml]: https://www.unitime.org/uct_interfaces.php
+[xml]: https://help.unitime.org/xml
 [publications]: https://www.unitime.org/publications.php
 [downloads]: https://sourceforge.net/projects/unitime/files
 [build]: https://help.unitime.org/building-unitime
 [eclipse]: https://help.unitime.org/eclipse
-[docs]: https://bit.ly/unitime46docs
+[docs]: https://help.unitime.org/documentation
 [apereo]: https://www.apereo.org
 [customization]: https://help.unitime.org/customizations
 [localization]: https://help.unitime.org/localization
