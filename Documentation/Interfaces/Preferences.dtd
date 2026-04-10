@@ -29,7 +29,7 @@
 <!ELEMENT department ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref|distributionPref)*) >
 <!ATTLIST department code CDATA #REQUIRED >
 
-<!ELEMENT instructor ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref|distributionPref|coursePref|teachingPref)*) >
+<!ELEMENT instructor ((timePref|roomPref|buildingPref|groupPref|featurePref|datePref|distributionPref|coursePref|teachingPref|unavailabilities)*) >
 <!ATTLIST instructor externalId CDATA #IMPLIED >
 <!ATTLIST instructor firstName CDATA #IMPLIED >
 <!ATTLIST instructor lastName CDATA #IMPLIED >
@@ -111,3 +111,10 @@
 <!ELEMENT teachingPref EMPTY >
 <!ATTLIST teachingPref level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
 <!ATTLIST teachingPref maxLoad CDATA #REQUIRED >
+
+<!ELEMENT unavailabilities (dates*) >
+
+<!ELEMENT dates EMPTY >
+<!ATTLIST dates fromDate CDATA #IMPLIED >
+<!ATTLIST dates toDate CDATA #IMPLIED >
+<!ATTLIST dates date CDATA #IMPLIED >

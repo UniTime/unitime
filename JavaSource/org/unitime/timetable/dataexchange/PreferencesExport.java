@@ -64,6 +64,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
 
@@ -202,6 +203,38 @@ public class PreferencesExport extends BaseExport{
 			if (instructor.getMaxLoad() != null && instructor.getTeachingPreference() != null)
 				el.addElement("teachingPref").addAttribute("maxLoad", instructor.getMaxLoad().toString())
 				.addAttribute("level", instructor.getTeachingPreference().getPrefProlog());
+			if (instructor.hasUnavailabilities()) {
+				Element unavEl = el.addElement("unavailabilities");
+				int startMonth = instructor.getDepartment().getSession().getPatternStartMonth();
+				int endMonth = instructor.getDepartment().getSession().getPatternEndMonth();
+				int year = instructor.getDepartment().getSession().getSessionStartYear();
+				Date firstDate = null;
+				Date yesterday = null;
+				for (int m = startMonth; m <= endMonth; m++) {
+					int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+					for (int d = 1; d <= daysOfMonth; d++) {
+						Date today = DateUtils.getDate(d, m, year);
+						if (instructor.isUnavailable(d, m)) {
+							if (firstDate == null) firstDate = today;
+						} else {
+							if (firstDate != null) {
+								if (firstDate.equals(yesterday))
+									unavEl.addElement("dates").addAttribute("date", sDateFormat.format(firstDate));
+								else
+									unavEl.addElement("dates").addAttribute("fromDate", sDateFormat.format(firstDate)).addAttribute("toDate", sDateFormat.format(yesterday));
+								firstDate = null;
+							}
+						}
+						yesterday = today;
+					}
+				}
+				if (firstDate != null) {
+					if (firstDate.equals(yesterday))
+						unavEl.addElement("dates").addAttribute("date", sDateFormat.format(firstDate));
+					else
+						unavEl.addElement("dates").addAttribute("fromDate", sDateFormat.format(firstDate)).addAttribute("toDate", sDateFormat.format(yesterday));
+				}
+			}
 		}
 		if (el != null) {
 			for (Preference preference: group.getPreferences())

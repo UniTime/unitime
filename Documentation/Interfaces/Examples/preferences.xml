@@ -54,6 +54,12 @@
   </department>
   <instructor externalId="100" firstName="JOE" lastName="DOE" department="0101">
   	<teachingPref maxLoad="20.0" level="0"/>
+  	<unavailabilities>
+  		<dates date="2010/8/19"/>
+		<dates date="2010/9/6"/>
+		<dates fromDate="2010/11/22" toDate="2010/11/23"/>
+		<dates fromDate="2010/12/13" toDate="2010/12/17"/>
+	</unavailabilities>
     <featurePref feature="Comp" level="-2"/>
     <timePref level="R">
       <pref level="P" day="M" start="0730" stop="0830"/>
