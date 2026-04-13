@@ -33,6 +33,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableHeaderCell;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
@@ -262,6 +264,13 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 			super(true);
 			setFocusOnHoverEnabled(true);
 			sinkEvents(Event.ONKEYPRESS);
+			addDomHandler(new BlurHandler() {
+				@Override
+				public void onBlur(BlurEvent event) {
+					if (getSelectedItem() == null)
+						getParent().setVisible(false);
+				}
+			}, BlurEvent.getType());
 		}
 		
 		@Override
