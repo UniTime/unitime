@@ -175,7 +175,10 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		for (RoomsColumn column: RoomsColumn.values()) {
 			int nrCells = getNbrCells(column);
 			for (int idx = 0; idx < nrCells; idx++) {
-				UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column, idx), getColumnAlignment(column, idx));
+				UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(column, idx), getColumnAlignment(column, idx)) {
+					@Override
+					public boolean isCanFocus() { return true; }
+				};
 				header.add(h);
 			}
 		}
