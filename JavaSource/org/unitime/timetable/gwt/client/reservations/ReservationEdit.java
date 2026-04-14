@@ -83,7 +83,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -116,7 +115,7 @@ public class ReservationEdit extends Composite {
 	private ReservationCourseSelectionBox iCourseBox;
 	private Lookup iLookup;
 	private DefaultExpirationDates iExpirations = null;
-	private UniTimeWidget<TextBox> iStudentFilter;
+	private UniTimeWidget<TextArea> iStudentFilter;
 	
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
@@ -552,10 +551,10 @@ public class ReservationEdit extends Composite {
 		iMinors.setHeight("100px");
 		iMinorRow = iPanel.addRow(MESSAGES.propMinors(), iMinors);
 		
-		iStudentFilter = new UniTimeWidget<TextBox>(new TextBox());
-		iStudentFilter.getWidget().setStyleName("unitime-TextBox");
-		iStudentFilter.getWidget().setMaxLength(521);
-		iStudentFilter.getWidget().setWidth("500px");
+		iStudentFilter = new UniTimeWidget<TextArea>(new TextArea());
+		iStudentFilter.getWidget().setStyleName("unitime-TextArea");
+		iStudentFilter.getWidget().setVisibleLines(10);
+		iStudentFilter.getWidget().setCharacterWidth(80);
 		iPanel.addRow(MESSAGES.propStudentFilter(), iStudentFilter);
 		iFilterLine =  iPanel.getRowCount() - 1;
 
@@ -1367,6 +1366,9 @@ public class ReservationEdit extends Composite {
 			((ReservationInterface.UniversalReservation) r).setFilter(iStudentFilter.getWidget().getText());
 			if (iStudentFilter.getWidget().getText().isEmpty()) {
 				iStudentFilter.setErrorHint(MESSAGES.hintReservationNoFilter());
+				ok = false;
+			} else if (iStudentFilter.getWidget().getText().length() > 512) {
+				iStudentFilter.setErrorHint(MESSAGES.hintReservationFilterTooLong());
 				ok = false;
 			}
 		} else if ("".equals(type)) {
