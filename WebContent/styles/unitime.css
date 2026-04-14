@@ -3692,7 +3692,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ChangeLog {
-	width: 800px;
+	width: 100%;
 }
 
 .unitime-ChangeLog .property {

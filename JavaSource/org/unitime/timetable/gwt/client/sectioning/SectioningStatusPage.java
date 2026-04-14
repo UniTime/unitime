@@ -675,6 +675,8 @@ public class SectioningStatusPage extends Composite {
 							final ScrollPanel scroll = new ScrollPanel(widget);
 							scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
 							scroll.setStyleName("unitime-ScrollPanel");
+							scroll.setWidth("800px");
+							scroll.getElement().setTabIndex(0);
 							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 							dialog.setWidget(scroll);
 							dialog.setText(MESSAGES.dialogChangeMessage(event.getData().getStudent().getName()));

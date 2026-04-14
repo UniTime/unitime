@@ -625,6 +625,55 @@ public class EnrollmentTable extends Composite {
 				final UniTimeTable<ClassAssignmentInterface.SectioningAction> table = new UniTimeTable<ClassAssignmentInterface.SectioningAction>();
 				final Map<Long, HTML> id2message = new HashMap<Long, HTML>();
 				
+				table.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
+					@Override
+					public void onMouseClick(TableEvent<SectioningAction> event) {
+						if (event.getData() != null) {
+							LoadingWidget.getInstance().show(MESSAGES.loadingChangeLogMessage());
+							iSectioningService.getChangeLogMessage(event.getData().getLogId(), new AsyncCallback<String>() {
+								@Override
+								public void onSuccess(String message) {
+									LoadingWidget.getInstance().hide();
+									final HTML widget = new HTML(message);
+									final ScrollPanel scroll = new ScrollPanel(widget);
+									scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
+									scroll.setStyleName("unitime-ScrollPanel");
+									scroll.setWidth("800px");
+									scroll.getElement().setTabIndex(0);
+									final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+									dialog.setWidget(scroll);
+									dialog.setText(MESSAGES.dialogChangeMessage(student.getName()));
+									dialog.setEscapeToHide(true);
+									dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
+										@Override
+										public void onOpen(OpenEvent<UniTimeDialogBox> event) {
+											RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+											scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
+											dialog.setPopupPosition(
+													Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
+													Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
+										}
+									});
+									dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+										@Override
+										public void onClose(CloseEvent<PopupPanel> event) {
+											table.clearHover();
+											RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+										}
+									});
+									dialog.center();
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									UniTimeNotifications.error(caught);
+								}
+							});
+						}
+					}
+				});
+				
 				table.addRow(null,
 						new UniTimeTableHeader(MESSAGES.colOperation()),
 						new UniTimeTableHeader(MESSAGES.colTimeStamp()),
@@ -659,52 +708,7 @@ public class EnrollmentTable extends Composite {
 						public void onFailure(Throwable caught) {}
 					});
 				}
-				table.addMouseClickListener(new MouseClickListener<ClassAssignmentInterface.SectioningAction>() {
-					@Override
-					public void onMouseClick(TableEvent<SectioningAction> event) {
-						if (event.getData() != null) {
-							LoadingWidget.getInstance().show(MESSAGES.loadingChangeLogMessage());
-							iSectioningService.getChangeLogMessage(event.getData().getLogId(), new AsyncCallback<String>() {
-								@Override
-								public void onSuccess(String message) {
-									LoadingWidget.getInstance().hide();
-									final HTML widget = new HTML(message);
-									final ScrollPanel scroll = new ScrollPanel(widget);
-									scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
-									scroll.setStyleName("unitime-ScrollPanel");
-									final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
-									dialog.setWidget(scroll);
-									dialog.setText(MESSAGES.dialogChangeMessage(student.getName()));
-									dialog.setEscapeToHide(true);
-									dialog.addOpenHandler(new OpenHandler<UniTimeDialogBox>() {
-										@Override
-										public void onOpen(OpenEvent<UniTimeDialogBox> event) {
-											RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
-											scroll.setHeight(Math.min(widget.getElement().getScrollHeight(), Window.getClientHeight() * 80 / 100) + "px");
-											dialog.setPopupPosition(
-													Math.max(Window.getScrollLeft() + (Window.getClientWidth() - dialog.getOffsetWidth()) / 2, 0),
-													Math.max(Window.getScrollTop() + (Window.getClientHeight() - dialog.getOffsetHeight()) / 2, 0));
-										}
-									});
-									dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-										@Override
-										public void onClose(CloseEvent<PopupPanel> event) {
-											table.clearHover();
-											RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
-										}
-									});
-									dialog.center();
-								}
-								
-								@Override
-								public void onFailure(Throwable caught) {
-									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(caught);
-								}
-							});
-						}
-					}
-				});
+
 				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
 				final ScrollPanel scroll = new ScrollPanel(table);
 				scroll.setHeight(((int)(0.8 * Window.getClientHeight())) + "px");
