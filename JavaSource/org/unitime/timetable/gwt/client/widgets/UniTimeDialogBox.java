@@ -78,6 +78,8 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
         	@Override
             public void onClick(ClickEvent event) {
         		onMaximizeClick(event);
+        		event.preventDefault();
+                event.stopPropagation();
             }
         });
         iMaximize.setVisible(false);
@@ -91,6 +93,8 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
         	@Override
             public void onClick(ClickEvent event) {
                 onCloseClick(event);
+                event.preventDefault();
+                event.stopPropagation();
             }
         });
         iClose.setVisible(autoHide);
@@ -220,9 +224,12 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
 				AriaStatus.getInstance().setText(ARIA.dialogClosed(getText()));
 				hide();
 			} if (isEnterToSubmit() && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-				event.getNativeEvent().stopPropagation();
-				event.getNativeEvent().preventDefault();
-				iSubmitHandler.execute();
+				Element active = getActiveElement();
+				if (active == null || !isInside(active) || !("button".equalsIgnoreCase(active.getTagName()) || "a".equalsIgnoreCase(active.getTagName()))) {
+					event.getNativeEvent().stopPropagation();
+					event.getNativeEvent().preventDefault();
+					iSubmitHandler.execute();
+				}
 			}
 			break;
 	    case Event.ONKEYUP:
