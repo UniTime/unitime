@@ -361,6 +361,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 		TableInterface table = new TableInterface();
 		boolean hasNotAvailable = false;
 		boolean excap = (pg.getSeatingType() == Exam.sSeatingTypeExam);
+		boolean prefStyles = CommonValues.Yes.eq(UserProperty.HighContrastPreferences.get(context.getUser()));
 		for (Preference.Type type: types) {
 			switch (type) {
 			case ROOM_GROUP:
@@ -369,7 +370,9 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 					CellInterface rpCell = table.addProperty(CMSG.propertyRoomGroups());
 					for (RoomGroupPref rp: roomGrouPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+        					cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+        				else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getRoomGroup().getNameWithTitle());
 						String hint = HtmlUtils.htmlEscape(CMSG.prefTitleRoomGroup(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -385,7 +388,9 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 					CellInterface rpCell = table.addProperty(CMSG.propertyRooms());
 					for (RoomPref rp: roomPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+        					cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+        				else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(excap ? rp.getRoom().getLabelWithExamCapacity() : rp.getRoom().getLabelWithCapacity());
 						cell.setAria(CMSG.prefTitleRoom(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -400,7 +405,9 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 					CellInterface rpCell = table.addProperty(CMSG.propertyBuildings());
 					for (BuildingPref rp: buildingPrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+        					cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+        				else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getBuilding().getAbbrName());
 						cell.setAria(CMSG.prefTitleBuilding(rp.getPrefLevel().getPrefName(), cell.getText()));
@@ -415,7 +422,9 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 					CellInterface rpCell = table.addProperty(CMSG.propertyRoomFeatures());
 					for (RoomFeaturePref rp: roomFeaturePrefs) {
 						CellInterface cell = rpCell.add(null).setInline(false);
-						if (rp.getPrefLevel().getPrefId().intValue() != 4)
+						if (prefStyles)
+        					cell.setClassName("pref-" + PreferenceLevel.prolog2char(rp.getPrefLevel().getPrefProlog()));
+        				else if (rp.getPrefLevel().getPrefId().intValue() != 4)
 							cell.setColor(PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()));
 						cell.setText(rp.getRoomFeature().getLabelWithType());
 						cell.setAria(CMSG.prefTitleRoomFeature(rp.getPrefLevel().getPrefName(), cell.getText()));
