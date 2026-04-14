@@ -328,11 +328,19 @@ public class DistributionsTableBuilder extends TableBuilder {
             }
             
             if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
-            line.addCell(distType).setColor(prefColor)
-            	.setTitle(prefLevel + " " + distType)
-            	.setAria(isSimple() ? distType : prefLevel + " " + distType)
-            	.setNoWrap(true)
-            	.setComparable(distType);
+            if (isUsePrefStyles()) {
+            	line.addCell(distType).setClassName("pref-" + PreferenceLevel.prolog2char(dp.getPrefLevel().getPrefProlog()))
+            		.setTitle(prefLevel + " " + distType)
+            		.setAria(isSimple() ? distType : prefLevel + " " + distType)
+            		.setNoWrap(true)
+            		.setComparable(distType);
+            } else {
+                line.addCell(distType).setColor(prefColor)
+            		.setTitle(prefLevel + " " + distType)
+            		.setAria(isSimple() ? distType : prefLevel + " " + distType)
+            		.setNoWrap(true)
+            		.setComparable(distType);
+            }
             line.addCell(groupingText).setNoWrap(true);
             line.addCell(ownerType);
             line.addCell(obj);
@@ -466,11 +474,19 @@ public class DistributionsTableBuilder extends TableBuilder {
             			);
             
             if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
-            line.addCell(distType).setColor(prefColor)
-            	.setTitle(prefLevel + " " + distType)
-            	.setAria(isSimple() ? distType : prefLevel + " " + distType)
-            	.setNoWrap(true)
-            	.setComparable(distType);
+            if (isUsePrefStyles()) {
+            		line.addCell(distType).setClassName("pref-" + PreferenceLevel.prolog2char(dp.getPrefLevel().getPrefProlog()))
+            		.setTitle(prefLevel + " " + distType)
+        			.setAria(isSimple() ? distType : prefLevel + " " + distType)
+        			.setNoWrap(true)
+        			.setComparable(distType);
+            } else {
+            	line.addCell(distType).setColor(prefColor)
+            		.setTitle(prefLevel + " " + distType)
+            		.setAria(isSimple() ? distType : prefLevel + " " + distType)
+            		.setNoWrap(true)
+            		.setComparable(distType);
+            }
             line.addCell(examStr);
             line.addCell(objectStr);
             

@@ -60,6 +60,7 @@ public class ExamDistributionsBackend implements GwtRpcImplementation<ExamDistri
 		
 		DistributionsTableBuilder builder = new DistributionsTableBuilder(
 				context, request.getBackType(), request.getBackId());
+		builder.setSimple(true);
 		
 		for (FilterParameterInterface p: request.getFilter().getParameters()) {
 			if ("subjectArea".equals(p.getName())) {
