@@ -2899,6 +2899,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         										canOverlap = tcr.isCanOverlap(); break;
         									}
         							Unavailability ua = new Unavailability(student, section, canOverlap);
+        							ua.setCourseId(offering.getControllingCourseOffering().getUniqueId());
         							ua.setTeachingAssignment(true);
         						}
         			        }
@@ -2910,6 +2911,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 						if (student != null) {
                 							Unavailability ua = new Unavailability(student, section, tcr.isCanOverlap());
                 							ua.setTeachingAssignment(true);
+                							ua.setCourseId(offering.getControllingCourseOffering().getUniqueId());
                 						}
         			            	}
         			        	}
