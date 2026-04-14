@@ -32,7 +32,6 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.rooms.RoomsPage.HistoryToken;
-import org.unitime.timetable.gwt.client.rooms.RoomsTable.DeptMode;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -56,6 +55,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveFilterDefaultRpcRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface.DeptMode;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.GroupInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomGroupsColumn;
@@ -192,7 +192,7 @@ public class RoomGroupsPage extends Composite {
 				
 				MenuBar deptItems = new MenuBar(true);
 				for (final DeptMode d: DeptMode.values()) {
-					String name = (RoomCookie.getInstance().getDeptMode() == d.ordinal() ? MESSAGES.opUncheck(d.getName()) : MESSAGES.opCheck(d.getName()));
+					String name = (RoomCookie.getInstance().getDeptMode() == d.ordinal() ? MESSAGES.opUncheck(RoomsTable.getDeptModeLabel(d)) : MESSAGES.opCheck(RoomsTable.getDeptModeLabel(d)));
 					MenuItem item = new MenuItem(name, true, new Command() {
 						@Override
 						public void execute() {
@@ -202,7 +202,7 @@ public class RoomGroupsPage extends Composite {
 							iDepartmentalGroupsTable.refreshTable();
 						}
 					});
-					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), d.getName());
+					Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), RoomsTable.getDeptModeLabel(d));
 					deptItems.addItem(item);
 				}
 				MenuItem deptMenu = new MenuItem(MESSAGES.opDepartmentFormat(), deptItems);

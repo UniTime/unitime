@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.AttachmentTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.RoomInterface.DepartmentInterface.DeptMode;
 import org.unitime.timetable.gwt.shared.RoomInterface.ExamTypeInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.FeatureTypeInterface;
@@ -331,9 +332,9 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 				@Override
 				public String getName() {
 					if (RoomCookie.getInstance().getDeptMode() == d.ordinal())
-						return MESSAGES.opUncheck(d.getName());
+						return MESSAGES.opUncheck(getDeptModeLabel(d));
 					else
-						return MESSAGES.opCheck(d.getName());
+						return MESSAGES.opCheck(getDeptModeLabel(d));
 				}
 			};
 			iDepartmentOperations.add(op);
@@ -1261,6 +1262,7 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		public PreferenceCell(List<DepartmentInterface> departments, RoomPropertiesInterface props) {
 			super(true, props);
 			boolean abbv = RoomCookie.getInstance().getDeptMode() <= 1;
+			
 			for (DepartmentInterface department: departments) {
 				if (department.getPreference() == null) continue;
 				P p = new P("department");
@@ -1534,18 +1536,15 @@ public class RoomsTable extends UniTimeTable<RoomDetailInterface>{
 		public boolean isChecked();
 	}
 	
-	public static enum DeptMode {
-		CODE(MESSAGES.fieldCode()),
-		ABBV(MESSAGES.fieldAbbreviation()),
-		NAME(MESSAGES.fieldName()),
-		ABBV_NAME(MESSAGES.fieldAbbv() + " - " + MESSAGES.fieldName()),
-		CODE_NAME(MESSAGES.fieldCode() + " - " + MESSAGES.fieldName());
-
-		private String iName;
-		
-		DeptMode(String name) { iName = name; }
-		
-		public String getName() { return iName; }
+	public static String getDeptModeLabel(DeptMode mode) {
+		switch(mode) {
+		case CODE: return MESSAGES.fieldCode();
+		case ABBV: return MESSAGES.fieldAbbreviation();
+		case NAME: return MESSAGES.fieldName();
+		case ABBV_NAME: return MESSAGES.fieldAbbv() + " - " + MESSAGES.fieldName();
+		case CODE_NAME: return MESSAGES.fieldCode() + " - " + MESSAGES.fieldName();
+		default: return mode.name();
+		}
 	}
 	
 	public static interface SortOperation extends Operation, HasColumnName {}
