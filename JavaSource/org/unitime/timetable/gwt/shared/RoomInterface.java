@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.EventInterface.EventServiceProviderInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -819,7 +820,7 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 	
-	public static class RoomPropertyInterface implements GwtRpcResponse {
+	public static class RoomPropertyInterface implements GwtRpcResponse, Comparable<RoomPropertyInterface> {
 		private Long iId;
 		private String iAbbv;
 		private String iLabel;
@@ -866,6 +867,15 @@ public class RoomInterface implements IsSerializable {
 		public boolean equals(Object object) {
 			if (object == null || !(object instanceof RoomPropertyInterface)) return false;
 			return getId().equals(((RoomPropertyInterface)object).getId());
+		}
+
+		@Override
+		public int compareTo(RoomPropertyInterface r) {
+			int cmp = NaturalOrderComparator.compare(getLabel() == null ? "" : getLabel(), r.getLabel() == null ? "" : r.getLabel());
+			if (cmp != 0) return cmp;
+			cmp = NaturalOrderComparator.compare(getAbbreviation() == null ? "" : getAbbreviation(), r.getAbbreviation() == null ? "" : r.getAbbreviation());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(r.getId());
 		}
 	}
 	
@@ -957,6 +967,14 @@ public class RoomInterface implements IsSerializable {
 		private PreferenceInterface iPreference;
 		private boolean iCanEditRoomSharing = false;
 		
+		public static enum DeptMode implements IsSerializable {
+			CODE,
+			ABBV,
+			NAME,
+			ABBV_NAME,
+			CODE_NAME,
+		}
+		
 		public DepartmentInterface() {
 			super();
 		}
@@ -985,6 +1003,43 @@ public class RoomInterface implements IsSerializable {
 		
 		public boolean isCanEditRoomSharing() { return iCanEditRoomSharing; }
 		public void setCanEditRoomSharing(boolean canEditRoomSharing) { iCanEditRoomSharing = canEditRoomSharing; }
+		
+		public String toString(DeptMode mode, boolean ext) {
+			switch (mode) {
+			case ABBV:
+				return ext ? getExtAbbreviationWhenExist() : getAbbreviationOrCode();
+			case CODE:
+				return getDeptCode();
+			case ABBV_NAME:
+				return ext ? getExtAbbreviationWhenExist() + " - " + getExtLabelWhenExist() : getAbbreviationOrCode() + " - " + getLabel();
+			case CODE_NAME:
+				return ext ? getDeptCode() + " - " + getExtLabelWhenExist() : getDeptCode() + " - " + getLabel();
+			case NAME:
+				return ext ? getExtLabelWhenExist() : getLabel();
+			default:
+				return getDeptCode();
+			}
+		}
+		
+		public String toString(DeptMode mode) {
+			return toString(mode, true);
+		}
+		
+		@Override
+		public String toString() {
+			return toString(DeptMode.CODE_NAME);
+		}
+		
+		public int compareTo(DepartmentInterface r, DeptMode mode) {
+			int cmp = toString(mode).compareTo(r.toString(mode));
+			if (cmp != 0) return cmp;
+			return super.compareTo(r);
+		}
+		
+		@Override
+		public int compareTo(RoomPropertyInterface r) {
+			return compareTo((DepartmentInterface)r, DeptMode.CODE_NAME);
+		}
 	}
 	
 	public static class FeatureInterface extends RoomPropertyInterface {
