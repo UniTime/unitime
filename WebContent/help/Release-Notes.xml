@@ -78,6 +78,7 @@
 				<line>Most pages should now be fully compliant with WCAG 2.2 level AA, with the following exceptions (typically only available to examination managers and administrators):
 					<line>Student &gt; Enrollment Audits: Form field missing a label (4.1.2)</line>
 					<line>Most pages under Examinations &gt; Examination Timetabling (except for Solver and Log): Container element is empty (1.3.1), Minimum contrast (1.4.3), Form field missing a label (4.1.2), and Keyboard accessibility (2.1.1)</line>
+					<line>Examination Assignment: Image missing a text alternative (1.1.1), Minimum contrast (1.4.3), Form field missing a label (4.1.2), and Keyboard accessibility (2.1.1)</line>
 					<line>Examinations &gt; Pdf Reports: Form field missing a label (4.1.2)</line>
 					<line>Some of the pages under Administration (those still using Struts2): Container element is empty (1.3.1), Minimum contrast (1.4.3), Form field missing a label (4.1.2), and Keyboard accessibility (2.1.1)</line>
 				</line>

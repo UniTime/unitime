@@ -458,15 +458,15 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
-	<filter-mapping>
-    	<filter-name>Apache Struts 2</filter-name>
-    	<url-pattern>*.action</url-pattern>
-    </filter-mapping>
-    
     <filter-mapping>
 		<filter-name>User Settings Filter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+
+	<filter-mapping>
+    	<filter-name>Apache Struts 2</filter-name>
+    	<url-pattern>*.action</url-pattern>
+    </filter-mapping>
 
 	<jsp-config>
 		<jsp-property-group>
