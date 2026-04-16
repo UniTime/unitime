@@ -359,7 +359,17 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
                     }
                     sections.add(section);
                 }
-                return cr.createEnrollment(currentSolution().getAssignment(), sections);
+                Enrollment ret = cr.createEnrollment(currentSolution().getAssignment(), sections);
+                if (enrollment.getReservation() != null) {
+                    for (Reservation reservation: cr.getReservations(ret.getCourse())) {
+                        if (reservation.getId() == enrollment.getReservation().getId() && reservation.isIncluded(ret)) {
+                        	ret.setReservation(reservation); break;
+                        }
+                    }
+                } else {
+                	ret.setReservation(null);
+                }
+                return ret;
             }
         }
         
@@ -399,59 +409,78 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
         public void execute() {
             iProgress = Progress.getInstance(currentSolution().getModel());
             
-            Map<Long, Map<Long, Request>> requests = new Hashtable<Long, Map<Long,Request>>();
-            for (Request request: currentSolution().getModel().variables()) {
-            	Map<Long, Request> r = requests.get(request.getStudent().getId());
-            	if (r == null) {
-            		r = new Hashtable<Long, Request>();
-            		requests.put(request.getStudent().getId(), r);
-            	}
-            	r.put(request.getId(), request);
-            }
-            
             if (!iBestAssignmentTable.isEmpty()) {
-                iProgress.setPhase("Creating best assignment ...", iBestAssignmentTable.size());
+                iProgress.setPhase("Creating best assignment ...", currentSolution().getModel().variables().size());
                 unassignAll();
-                for (Map.Entry<Long, Map<Long, Enrollment>> e1: iBestAssignmentTable.entrySet()) {
-                	Map<Long, Request> r = requests.get(e1.getKey());
-                    iProgress.incProgress();
-                	if (r == null) continue;
-                	for (Map.Entry<Long, Enrollment> e2: e1.getValue().entrySet()) {
-                		Request request = r.get(e2.getKey());
-                		if (request == null) continue;
-                		Enrollment enrollment = getEnrollment(request, e2.getValue());
-                        if (enrollment!=null) assign(enrollment, false);
-                	}
+                
+                List<Request> sortedRequests = new ArrayList<Request>(currentSolution().getModel().variables());
+                Collections.sort(sortedRequests, new Comparator<Request>() {
+                    @Override
+                    public int compare(Request r1, Request r2) {
+                    	// Get best assignments
+                    	Map<Long, Enrollment> a1 = iBestAssignmentTable.get(r1.getStudent().getId());
+                    	Enrollment e1 = (a1 == null ? null : a1.get(r1.getId()));
+                    	Map<Long, Enrollment> a2 = iBestAssignmentTable.get(r2.getStudent().getId());
+                    	Enrollment e2 = (a2 == null ? null : a2.get(r2.getId()));
+                    	// Enrollments with a reservation must go first, enrollments with an override go last
+                    	// Not-assigned requests go last
+                    	Integer o1 = (e1 == null ? 4 : e1.getReservation() == null ? 2 : e1.getReservation().isExpired() ? 3 : 1);
+                    	Integer o2 = (e2 == null ? 4 : e2.getReservation() == null ? 2 : e2.getReservation().isExpired() ? 3 : 1);
+                    	if (!o1.equals(o2)) return o1.compareTo(o2);
+                        // Then student and priority
+                        return r1.compareTo(r2);
+                    }
+                });
+                for (Request request: sortedRequests) {
+                	iProgress.incProgress();
+                	Map<Long, Enrollment> a = iBestAssignmentTable.get(request.getStudent().getId());
+                	Enrollment e = (a == null ? null : a.get(request.getId()));
+                	if (e == null) continue;
+            		Enrollment enrollment = getEnrollment(request, e);
+                    if (enrollment!=null) assign(enrollment, false);
                 }
                 currentSolution().saveBest();
             }
             if (!iInitialAssignmentTable.isEmpty()) {
-                iProgress.setPhase("Creating initial assignment ...", iInitialAssignmentTable.size());
-                for (Map.Entry<Long, Map<Long, Enrollment>> e1: iInitialAssignmentTable.entrySet()) {
-                	Map<Long, Request> r = requests.get(e1.getKey());
-                    iProgress.incProgress();
-                	if (r == null) continue;
-                	for (Map.Entry<Long, Enrollment> e2: e1.getValue().entrySet()) {
-                		Request request = r.get(e2.getKey());
-                		if (request == null) continue;
-                		Enrollment enrollment = getEnrollment(request, e2.getValue());
-                        if (enrollment!=null) request.setInitialAssignment(enrollment);
-                	}
+                iProgress.setPhase("Creating initial assignment ...", currentSolution().getModel().variables().size());
+                for (Request request: currentSolution().getModel().variables()) {
+                	iProgress.incProgress();
+                	Map<Long, Enrollment> a = iInitialAssignmentTable.get(request.getStudent().getId());
+                	Enrollment e = (a == null ? null : a.get(request.getId()));
+                	if (e == null) continue;
+                	Enrollment enrollment = getEnrollment(request, e);
+                	if (enrollment!=null) request.setInitialAssignment(enrollment);
                 }
             }
             if (!iCurrentAssignmentTable.isEmpty()) {
-                iProgress.setPhase("Creating current assignment ...", iCurrentAssignmentTable.size());
+                iProgress.setPhase("Creating current assignment ...", currentSolution().getModel().variables().size());
                 unassignAll();
-                for (Map.Entry<Long, Map<Long, Enrollment>> e1: iCurrentAssignmentTable.entrySet()) {
-                	Map<Long, Request> r = requests.get(e1.getKey());
-                    iProgress.incProgress();
-                	if (r == null) continue;
-                	for (Map.Entry<Long, Enrollment> e2: e1.getValue().entrySet()) {
-                		Request request = r.get(e2.getKey());
-                		if (request == null) continue;
-                		Enrollment enrollment = getEnrollment(request, e2.getValue());
-                        if (enrollment!=null) assign(enrollment, true);
-                	}
+                
+                List<Request> sortedRequests = new ArrayList<Request>(currentSolution().getModel().variables());
+                Collections.sort(sortedRequests, new Comparator<Request>() {
+                    @Override
+                    public int compare(Request r1, Request r2) {
+                    	// Get current assignments
+                    	Map<Long, Enrollment> a1 = iCurrentAssignmentTable.get(r1.getStudent().getId());
+                    	Enrollment e1 = (a1 == null ? null : a1.get(r1.getId()));
+                    	Map<Long, Enrollment> a2 = iCurrentAssignmentTable.get(r2.getStudent().getId());
+                    	Enrollment e2 = (a2 == null ? null : a2.get(r2.getId()));
+                    	// Enrollments with a reservation must go first, enrollments with an override go last
+                    	// Not-assigned requests go last
+                    	Integer o1 = (e1 == null ? 4 : e1.getReservation() == null ? 2 : e1.getReservation().isExpired() ? 3 : 1);
+                    	Integer o2 = (e2 == null ? 4 : e2.getReservation() == null ? 2 : e2.getReservation().isExpired() ? 3 : 1);
+                    	if (!o1.equals(o2)) return o1.compareTo(o2);
+                        // Then student and priority
+                        return r1.compareTo(r2);
+                    }
+                });
+                for (Request request: sortedRequests) {
+                	iProgress.incProgress();
+                	Map<Long, Enrollment> a = iCurrentAssignmentTable.get(request.getStudent().getId());
+                	Enrollment e = (a == null ? null : a.get(request.getId()));
+                	if (e == null) continue;
+            		Enrollment enrollment = getEnrollment(request, e);
+                    if (enrollment!=null) assign(enrollment, true);
                 }
             }
             iCurrentAssignmentTable.clear();
