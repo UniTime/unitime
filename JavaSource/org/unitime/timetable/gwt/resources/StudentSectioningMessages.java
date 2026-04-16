@@ -1262,13 +1262,13 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Available {0} out of {1} spaces, reservation required for {2} of them")
 	String availableSomeReservation(int available, int limit, int availableWithReservation);
 	
-	@DefaultMessage("<sup><font color='#2066CE'>r)</font></sup>")
+	@DefaultMessage("<sup style='color:#2066CE;'>r)</sup>")
 	String htmlReservationSign();
 	
-	@DefaultMessage("<sup><font color='#2066CE'>w)</font></sup>")
+	@DefaultMessage("<sup style='color:#2066CE;'>w)</sup>")
 	String htmlWaitListSign();
 	
-	@DefaultMessage("<sup><font color='#2066CE'>n)</font></sup>")
+	@DefaultMessage("<sup style='color:#2066CE;'>n)</sup>")
 	String htmlNoSubSign();
 		
 	@DefaultMessage(" (r)")
@@ -1319,7 +1319,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change <u>L</u>og")
 	String tabChangeLog();
 
-	@DefaultMessage("<sup><font color='#2066CE'>({0}p)</font></sup>")
+	@DefaultMessage("<sup style='color:#2066CE;'>({0}p)</sup>")
 	String firstWaitListedPrioritySign(int priority);
 	
 	@DefaultMessage(" ({0}p)")

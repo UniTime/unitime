@@ -179,16 +179,16 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 		    	value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName()+
 		    	"</span> ";
 		} else {
-			html = "<font color='"+PreferenceLevel.int2color(value.getTimePref())+"'>"+
+			html = "<span style='color:'"+PreferenceLevel.int2color(value.getTimePref())+";'>"+
 		    	value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName()+
-		    	"</font> ";
+		    	"</span> ";
 		}
 		String name = value.getDays()+" "+value.getStartTime()+" - "+value.getEndTime()+" "+value.getDatePatternName();
 		for (int i=0;i<value.getRoomIds().size();i++) {
 			if (usePrefStyles)
 				html += (i > 0 ? ", " : "") + "<span class='pref-"+PreferenceLevel.int2char(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</span>";
 			else
-				html += (i > 0 ? ", " : "") + "<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</font>";
+				html += (i > 0 ? ", " : "") + "<span style='color:'"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+";'>"+ value.getRoomNames().get(i)+"</span>";
 			name += (i > 0 ? ", " : "") + value.getRoomNames().get(i);
 		}
 		if (value.getInstructorName() != null) {
@@ -253,15 +253,15 @@ public class ConflictBasedStatisticsBackend implements GwtRpcImplementation<Conf
 				assignment.getVariableName()+ "</span> &larr; <span class='pref-"+PreferenceLevel.int2char(assignment.getTimePref())+"'>"+
 				assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName()+"</span> ";
 		} else {
-			html = "<font color='"+PreferenceLevel.prolog2color(assignment.getPref())+"'>"+
-					assignment.getVariableName()+ "</font> &larr; <font color='"+PreferenceLevel.int2color(assignment.getTimePref())+"'>"+
-					assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName()+"</font> ";
+			html = "<span style='color:'"+PreferenceLevel.prolog2color(assignment.getPref())+";'>"+
+					assignment.getVariableName()+ "</span> &larr; <span style='color:'"+PreferenceLevel.int2color(assignment.getTimePref())+";'>"+
+					assignment.getDays()+" "+assignment.getStartTime()+" - "+assignment.getEndTime()+" "+assignment.getDatePatternName()+"</span> ";
 		}
     	for (int i = 0; i < assignment.getRoomIds().size(); i++) {
     		if (usePrefStyles)
     			html += (i>0?", ":"")+"<span class='pref-"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</span>";
     		else
-    			html += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</font>";
+    			html += (i>0?", ":"")+"<span style='color:'"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</span>";
     		name += (i>0?", ":"")+assignment.getRoomNames().get(i);
     	}
     	if (assignment.getInstructorName()!=null) {

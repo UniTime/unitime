@@ -410,7 +410,7 @@ public class CourseSelectionSuggestBox extends P implements CourseSelection {
 		private RequestedCourse iSuggestion = null;
 		
 		public SimpleSuggestion(Throwable error) {
-			iDisplay = "<font color='#ec0000'>"+error.getMessage()+"</font>";
+			iDisplay = "<span style='color:#ec0000;'>"+error.getMessage()+"</span>";
 			iReplace = "";
 			iStatus = error.getMessage();
 		}

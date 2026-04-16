@@ -280,7 +280,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iCallback = new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			public void onFailure(Throwable caught) {
 				iSuggestions.clearData(true);
-				iSuggestions.setEmptyMessage("<font color='#ec0000'>" + caught.getMessage() + "</font>");
+				iSuggestions.setEmptyMessage("<span style='color:#ec0000;'>" + caught.getMessage() + "</span>");
 				iMessages.setHTML("");
 				LoadingWidget.getInstance().hide();
 				center();
@@ -778,11 +778,11 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		case ARIA:
 			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? oldVal : "");
 		case SINGLE:
-			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<font color='"+ (conflict ? "#ec0000" : selected ? "#9999FF" : "#999999") +"'>" + oldVal + "</font>" : null);
+			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<span style='color:"+ (conflict ? "#ec0000" : selected ? "#9999FF" : "#999999") +";'>" + oldVal + "</span>" : null);
 		case BOTH_OLD:
-			return (oldVal == null || oldVal.isEmpty() ? newVal : newVal == null || newVal.isEmpty() ? "<font color='" + (conflict ? "#ec0000" : selected ? "#9999FF" : "#999999") + "'>" + oldVal + "</font>" : oldVal.equals(newVal) ? oldVal : "<font color='" + ( selected ? "#9999FF" : "#999999" ) + "'>" + oldVal + "</font>");
+			return (oldVal == null || oldVal.isEmpty() ? newVal : newVal == null || newVal.isEmpty() ? "<span style='color:" + (conflict ? "#ec0000" : selected ? "#9999FF" : "#999999") + ";'>" + oldVal + "</span>" : oldVal.equals(newVal) ? oldVal : "<span style='color:'" + ( selected ? "#9999FF" : "#999999" ) + ";'>" + oldVal + "</span>");
 		case BOTH_NEW:
-			return (oldVal != null && !oldVal.isEmpty() && newVal != null && !newVal.isEmpty() && !newVal.equals(oldVal) ? "<font color='#" + ( selected ? "#9999FF" : "#999999" ) + "'>&rarr;</font> " + newVal : null);
+			return (oldVal != null && !oldVal.isEmpty() && newVal != null && !newVal.isEmpty() && !newVal.equals(oldVal) ? "<span style='color:" + ( selected ? "#9999FF" : "#999999" ) + ";'>&rarr;</span> " + newVal : null);
 		default:
 			return newVal;
 		}
