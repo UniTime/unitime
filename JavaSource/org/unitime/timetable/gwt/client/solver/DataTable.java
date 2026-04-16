@@ -251,10 +251,13 @@ public class DataTable extends UniTimeTable<TableInterface.TableRowInterface> im
 			}
 			if (cell instanceof TableInterface.TableCellBoolean) {
 				Boolean value = ((TableInterface.TableCellBoolean)cell).getValue();
-				if (value != null && value.booleanValue())
-					add(new Image(RESOURCES.on()));
-				else if (value != null && !value.booleanValue())
-					add(new Image(RESOURCES.off()));
+				if (value != null && value.booleanValue()) {
+					Image img = new Image(RESOURCES.on()); img.setAltText(MESSAGES.exportTrue());
+					add(img);
+				} else if (value != null && !value.booleanValue()) {
+					Image img = new Image(RESOURCES.off()); img.setAltText(MESSAGES.exportFalse());
+					add(img);
+				}
 				else
 					setHTML(cell.getFormattedValue());
 			} else {
