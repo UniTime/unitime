@@ -387,7 +387,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 									suggestions.add(new Suggestion() {
 										@Override
 										public String getDisplayString() {
-											return "<font color='#ec0000'>" + caught.getMessage() + "</font>";
+											return "<span style='color:#ec0000;'>" + caught.getMessage() + "</span>";
 										}
 										@Override
 										public String getReplacementString() {

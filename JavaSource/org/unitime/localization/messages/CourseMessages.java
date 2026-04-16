@@ -2860,19 +2860,19 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Building")
 	String prefBuilding();
 	
-	@DefaultMessage("<font color='#ec0000'><B>DISABLED</B></font><i> -- Classes of this subpart may be timetabled during overlapping times.</i>")
+	@DefaultMessage("<span style='color:#ec0000;font-weight:bold;'>DISABLED</span><i> -- Classes of this subpart may be timetabled during overlapping times.</i>")
 	String classDetailNoSpread();
 	
-	@DefaultMessage("<font color='#ec0000'><B>ENABLED</B></font><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>")
+	@DefaultMessage("<span style='color:#ec0000;font-weight:bold;'>ENABLED</span><i> -- Students are allowed to take classes from this subpart even when they overlap with other classes.</i>")
 	String classDetailAllowOverlap();
 	
-	@DefaultMessage("<font color='green'><B>ENABLED</B></font><i> -- Classes from this subpart will be included in the Instructor Scheduling problem.</i>")
+	@DefaultMessage("<span style='color:green;font-weight:bold;'>ENABLED</span><i> -- Classes from this subpart will be included in the Instructor Scheduling problem.</i>")
 	String subpartDetailNeedInstructorAssignment();
 	
-	@DefaultMessage("<font color='green'><B>ENABLED</B></font><i> -- This class will be included in the Instructor Scheduling problem.</i>")
+	@DefaultMessage("<span style='color:green;font-weight:bold;'>ENABLED</span><i> -- This class will be included in the Instructor Scheduling problem.</i>")
 	String classDetailNeedInstructorAssignment();
 	
-	@DefaultMessage("<font color='#ec0000'><B>DISABLED</B></font><i> -- This class will NOT be included in the Instructor Scheduling problem.</i>")
+	@DefaultMessage("<span style='color:#ec0000;font-weight:bold;'>DISABLED</span><i> -- This class will NOT be included in the Instructor Scheduling problem.</i>")
 	String classDetailNoInstructorAssignment();
 
 	@DefaultMessage("(defaults to {0} when blank)")

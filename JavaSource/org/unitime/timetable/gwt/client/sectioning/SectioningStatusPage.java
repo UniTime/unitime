@@ -3118,7 +3118,7 @@ public class SectioningStatusPage extends Composite {
 		
 		public void onFailure(Throwable caught) {
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
-			// suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", ""));
+			// suggestions.add(new SimpleSuggestion("<span style='color:#ec0000;'>"+caught.getMessage()+"</span>", ""));
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 			ToolBox.checkAccess(caught);
 		}

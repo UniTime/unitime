@@ -226,7 +226,7 @@ h1 {
 	font-size: 8pt;
 	font-weight: 400;
 	font-style: normal;
-	color: #6c6c6c;
+	color: #5a5a5a;
 	line-height: 15px;
 	vertical-align: baseline;
 	height: 20px;
@@ -3650,7 +3650,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-ButtonArrow {
 	position: relative;
-	font-size: 8px;
+	font-size: 9px;
 	margin-left: 5px;
 	top: -0.1em;
 }
@@ -4494,7 +4494,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ConfirmationPanel .message-panel .notes-scroll {
-	overflow-x: scroll;
+	overflow-x: auto;
 	overflow-y: visible;
 	margin-left: 15px;
 	margin-bottom: -2px;
@@ -5959,7 +5959,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-TimetablePage .scroll-panel {
 	max-width: 99vw;
 	overflow: auto;
-	overflow-x: scroll;	
+
 }
 
 .unitime-TimetablePage .legend .box {
@@ -6827,7 +6827,6 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SpecialRegistrationsPanel .registrations-panel {
 	border: 1px solid #9CB0CE;	
 	overflow: auto;
-	overflow-x: scroll;
 	max-width: calc(100vw - 20px);
 }
 
@@ -7057,7 +7056,7 @@ unitime-RoomSharingWidget .legend .blank {
 }
 
 .unitime-ChangeGradeModesDialog .course-notes .notes-scroll {
-	overflow-x: scroll;
+	overflow-x: auto;
 	overflow-y: visible;
 	margin-left: 15px;
 	margin-bottom: 2px;
@@ -7446,7 +7445,6 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-WaitListsPanel .waitlists-panel {
 	border: 1px solid #9CB0CE;	
 	overflow: auto;
-	overflow-x: scroll;
 	max-width: calc(100vw - 20px);
 }
 
@@ -8795,4 +8793,8 @@ unitime-RoomSharingWidget .legend .blank {
 	width: 24px;
 	height: 24px;
 	padding: 4px;
+}
+
+.unitime-SolverPage tr:has(.unitime-SolverStatus) {
+	height: 24px;
 }

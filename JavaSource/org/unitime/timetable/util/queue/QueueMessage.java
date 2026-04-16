@@ -94,17 +94,17 @@ public class QueueMessage implements Serializable, Comparable<QueueMessage> {
     protected String formatMessageHTML() {
     	switch (getLevel()) {
     	case TRACE:
-    		return "&nbsp;&nbsp;&nbsp;&nbsp;<i><font color='#646464'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
+    		return "&nbsp;&nbsp;&nbsp;&nbsp;<i><span style='color:#646464;'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</span></i>";
     	case DEBUG:
-    		return "&nbsp;&nbsp;<i><font color='#646464'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</font></i>";
+    		return "&nbsp;&nbsp;<i><span style='color:#646464;'> " + StringEscapeUtils.escapeHtml4(getMessage()) + "</span></i>";
     	case INFO:
     		return "&nbsp;&nbsp;" + StringEscapeUtils.escapeHtml4(getMessage());
     	case WARN:
-    		return "<font color='#a36a00'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
+    		return "<span style='color:#a36a00;'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</span>";
     	case ERROR:
-    		return "<font color='#ec0000'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</font>";
+    		return "<span style='color:#ec0000;'>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</span>";
     	case FATAL:
-    		return "<font color='#ec0000'><b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b></font>";
+    		return "<span style='color:#ec0000;'><b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b></span>";
     	case PROGRESS:
     		return "<b>" + StringEscapeUtils.escapeHtml4(getMessage()) + "</b>";
     	case STAGE:
@@ -117,7 +117,7 @@ public class QueueMessage implements Serializable, Comparable<QueueMessage> {
     }
     
     public String toHTML() {
-    	return formatMessageHTML() + (hasError() ? "<br><font color='#ec0000'><pre>" + StringEscapeUtils.escapeHtml4(getError()) + "</pre></font>" : "");
+    	return formatMessageHTML() + (hasError() ? "<br><span style='color:#ec0000;'><pre>" + StringEscapeUtils.escapeHtml4(getError()) + "</pre></span>" : "");
     }
 
 	@Override

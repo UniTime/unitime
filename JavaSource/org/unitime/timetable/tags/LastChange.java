@@ -356,7 +356,7 @@ public class LastChange extends BodyTagSupport {
         } catch (Exception e) {
             Debug.error(e);
             try {
-                pageContext.getOut().print("<font color='#ec0000'>"+GWT.failedToComputeReport(e.getMessage())+"</font>");
+                pageContext.getOut().print("<span style='color:#ec0000;'>"+GWT.failedToComputeReport(e.getMessage())+"</span>");
             } catch (IOException io) {}
         }
         
