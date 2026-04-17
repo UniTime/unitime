@@ -29,6 +29,7 @@ import java.util.Map;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 
 import com.google.gwt.aria.client.Id;
@@ -205,11 +206,16 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 					getCellFormatter().setVisible(row, col, span > 0);
 					getFlexCellFormatter().setColSpan(row, col, Math.max(1, span));
 				}
-				Element inputElement = ToolBox.firstInputElement(widget.getElement());
-				if (inputElement != null) {
-					String id = getHeaderId(col);
-					if (id != null && !id.isEmpty())
-						Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(id));
+				String ariaLabel = null;
+				if (widget instanceof HasAriaLabel)
+					ariaLabel = ((HasAriaLabel)widget).getAriaLabel();
+				if (ariaLabel == null || ariaLabel.isEmpty()) {
+					Element inputElement = ToolBox.firstInputElement(widget.getElement());
+					if (inputElement != null) {
+						String id = getHeaderId(col);
+						if (id != null && !id.isEmpty())
+							Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(id));
+					}
 				}
 			}
 			col++;
