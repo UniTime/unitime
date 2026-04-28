@@ -204,6 +204,7 @@ public class PreferenceEditWidget extends SimpleForm implements TakesValue<PrefG
 			iResponse = response;
 			TimePreferences timePrefs = response.getTimePreferences();
 			iTimePatterns = new ListBox();
+			Roles.getListboxRole().setAriaLabelProperty(iTimePatterns.getElement(), COURSE.columnTimePattern());
 			final P tpSelection = new P("pattern-selection");
 			tpSelection.add(iTimePatterns);
 			ImageButton img = new ImageButton(RESOURCES.add());

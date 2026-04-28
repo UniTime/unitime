@@ -555,7 +555,7 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 
 			@Override
 			public Integer[] getValue() {
-				if (iSlot.getValue() == null)
+				if (iSlot.getValue() == null || iDays.getValue() == null)
 					return null;
 				return new Integer[] { iDays.getValue(), iSlot.getValue() };
 			}
