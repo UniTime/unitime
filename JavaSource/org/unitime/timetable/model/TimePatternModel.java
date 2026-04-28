@@ -617,7 +617,11 @@ public class TimePatternModel implements RequiredTimeTableModel {
 			}
 			sb.append(" ");
 			sb.append(Constants.toTime(startSlot * Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN));
-			cell.add(sb.toString()).setColor(PreferenceLevel.prolog2color("R"));
+			CellInterface c = cell.add(sb.toString());
+			if (prefStyles)
+				c.setClassName("pref-R");
+			else
+				c.setColor(PreferenceLevel.prolog2color("R"));
 			return cell;
 		} else {
 			boolean canMergeDays = true;
