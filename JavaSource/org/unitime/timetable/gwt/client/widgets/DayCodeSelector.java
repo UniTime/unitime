@@ -62,6 +62,7 @@ public class DayCodeSelector extends Composite implements HasValue<Integer>, Has
 		for (Bit bit: iBits) {
 			if (bit.getValue()) ret += bit.value();
 		}
+		if (ret == 0) return null;
 		return ret;
 	}
 

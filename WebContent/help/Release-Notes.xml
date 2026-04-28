@@ -31,6 +31,20 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Edit Class: Exact Times</name>
+			<description>
+				<line>When adding exact times, do not include a time without a day of the week selected.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.125</version>
+	<release-date>Sat, 18 Apr 2026</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Distribution Preferences: Single Table</name>
 			<description>
 				<line>Added an option to show all distribution preferences in a single table, not split by subject area.
