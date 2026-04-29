@@ -227,6 +227,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         else return iPeriod;
     }
     
+    public Integer getPeriodIndex() {
+    	return iPeriodIdx;
+    }
+    
     public String getPeriodName() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();

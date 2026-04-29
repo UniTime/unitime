@@ -233,7 +233,7 @@ public class OfferingsCSV implements Exporter {
     	return response;
 	}
 	
-	protected TableInterface sorted(TableInterface table, ExportHelper helper) {
+	protected static TableInterface sorted(TableInterface table, ExportHelper helper) {
 		String sort = helper.getParameter("sort");
 		if (sort != null && !sort.isEmpty() && table.hasLines()) {
 			int sortColumn = -1;

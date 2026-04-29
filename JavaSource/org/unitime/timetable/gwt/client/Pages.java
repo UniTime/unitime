@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.departments.DepartmentsPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
+import org.unitime.timetable.gwt.client.exams.AssignedExamsPage;
 import org.unitime.timetable.gwt.client.exams.ExamDetailPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsEditPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsPage;
@@ -432,6 +433,10 @@ public enum Pages {
 	catalog(new PageFactory() {
 		public Widget create() { return new CourseCatalogPage(); }
 		public String name(GwtMessages messages) { return messages.pageCourseCatalog(); }
+		}),
+	assignedExams(new PageFactory() {
+		public Widget create() { return new AssignedExamsPage(); }
+		public String name(GwtMessages messages) { return messages.pageAssignedExaminations(); }
 		}),
 	
 	;

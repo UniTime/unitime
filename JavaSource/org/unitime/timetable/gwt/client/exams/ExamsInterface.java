@@ -534,4 +534,8 @@ public class ExamsInterface {
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
 	}
 
+	
+	public static class AssignedExamsFilterRequest implements GwtRpcRequest<ClassesFilterResponse> {}
+	
+	public static class AssignedExamsRequest extends OfferingsRequest {}
 }
