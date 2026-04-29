@@ -173,6 +173,7 @@ public class TableInterface implements IsSerializable {
 		private String iTitle;
 		private String iWarning;
 		private String iAnchor;
+		private String iDialog;
 		private Long iId;
 		
 		public LineInterface() {}
@@ -212,6 +213,10 @@ public class TableInterface implements IsSerializable {
 		public String getURL() { return iURL; }
 		public void setURL(String url) { iURL = url; }
 		public boolean hasURL() { return iURL != null && !iURL.isEmpty(); }
+		
+		public String getDialog() { return iDialog; }
+		public void setDialog(String dialog) { iDialog = dialog; }
+		public boolean hasDialog() { return iDialog != null && !iDialog.isEmpty(); }
 		
 		public String getTitle() { return iTitle; }
 		public void setTitle(String title) { iTitle = title; }

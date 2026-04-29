@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -95,6 +96,10 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				if (event.getData() != null && event.getData().hasURL()) {
 					if (event.getData().getURL().startsWith("#")) {
 						History.newItem(event.getData().getURL().substring(1), true);
+					} else if (event.getData().hasDialog()) {
+						UniTimeFrameDialog.openDialog(
+								event.getData().getDialog(), GWT.getHostPageBaseURL() + event.getData().getURL(), "900", "90%");
+						clearHover();
 					} else {
 						LoadingWidget.showLoading(MESSAGES.waitLoadingPage());
 						ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getURL());

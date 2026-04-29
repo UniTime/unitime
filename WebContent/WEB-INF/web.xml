@@ -264,6 +264,7 @@
     	<url-pattern>/examEdit</url-pattern>
     	<url-pattern>/examAdd</url-pattern>
     	<url-pattern>/catalog</url-pattern>
+    	<url-pattern>/assignedExams</url-pattern>
     </servlet-mapping>
 	
 	<filter>
