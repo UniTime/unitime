@@ -1991,6 +1991,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					hibSession.close();
 				}				
 			} else {
+				getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
@@ -2184,6 +2185,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			if (online) {
 				final Long sessionId = getStatusPageSessionId();
+				getSessionContext().checkPermission(sessionId, Right.SchedulingDashboard);
 				
 				OnlineSectioningServer server = getServerInstance(sessionId, true);
 				if (server == null)
@@ -2214,6 +2216,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						.withFilter(filter), currentUser()
 				);				
 			} else {
+				getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
@@ -2242,6 +2245,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
+				getSessionContext().checkPermission(sessionId, Right.SchedulingDashboard);
 				
 				OnlineSectioningServer server = getServerInstance(sessionId, true);
 				if (server == null)
@@ -2285,6 +2289,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						currentUser()
 				);
 			} else {
+				getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
@@ -2311,6 +2316,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		try {
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
+				getSessionContext().checkPermission(sessionId, Right.SchedulingDashboard);
 				
 				OnlineSectioningServer server = getServerInstance(sessionId, true);
 				if (server == null)
@@ -2321,6 +2327,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						user.getExternalUserId(), user.getName(),
 						query, limit), currentUser());				
 			} else {
+				getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
@@ -2352,6 +2359,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
+				getSessionContext().checkPermission(sessionId, Right.SchedulingDashboard);
 				
 				OnlineSectioningServer server = getServerInstance(sessionId, true);
 				if (server == null)
@@ -2390,6 +2398,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 						currentUser());
 			} else {
+				getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
 				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
@@ -3074,6 +3083,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public List<SectioningAction> changeLog(String query) throws SectioningException, PageAccessException {
 		Long sessionId = getStatusPageSessionId();
+		getSessionContext().checkPermission(sessionId, Right.SchedulingDashboard);
 		OnlineSectioningServer server = getServerInstance(sessionId, true);
 		if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 		if (server instanceof DatabaseServer)
