@@ -168,6 +168,8 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
             			} else {
                 			String value = form.getParameter(def.getUniqueId());
                 			Boolean useDefault = form.getUseDefault(def.getUniqueId());
+                			if (!useDefault && value == null && "boolean".equals(def.getType()))
+                				value = "false";
                 			if (useDefault) {
                 				if (param!=null) {
                 					params.remove(param);
