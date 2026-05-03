@@ -28,6 +28,9 @@ import java.util.Locale;
  */
 public class DateUtils {
     public static int getWeek(Date date) {
+		if (date == null) {
+    throw new IllegalArgumentException("Date cannot be null");
+}
     	Calendar c = Calendar.getInstance(Locale.US);
     	c.setTime(date);
     	int week = c.get(Calendar.WEEK_OF_YEAR);
@@ -37,6 +40,9 @@ public class DateUtils {
     	return week;
     }
     public static int getDayOfYear(Date date) {
+		if (date == null) {
+    throw new IllegalArgumentException("Date cannot be null");
+}
     	Calendar c = Calendar.getInstance(Locale.US);
     	c.setTime(date);
     	return c.get(Calendar.DAY_OF_YEAR);
