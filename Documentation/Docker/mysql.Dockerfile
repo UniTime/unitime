@@ -16,5 +16,5 @@
 # limitations under the License.
 
 FROM mysql:8.3
-ADD ./doc/mysql/schema.sql /docker-entrypoint-initdb.d/1-schema.sql
-ADD ./doc/mysql/woebegon-data.sql /docker-entrypoint-initdb.d/2-data.sql
+COPY ./doc/mysql/schema.sql /docker-entrypoint-initdb.d/1-schema.sql
+COPY ./doc/mysql/woebegon-data.sql /docker-entrypoint-initdb.d/2-data.sql
