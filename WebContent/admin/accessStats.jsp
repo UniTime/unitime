@@ -24,7 +24,7 @@
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <s:form action="accessStats">
 <table class="unitime-MainTable">
-	<TR><TD valign="middle" colspan='3'>
+	<TR><TD colspan='3'>
 		<tt:section-title><loc:message name="filter"/></tt:section-title>
 	</TD></TR>
 	<TR><TD>
