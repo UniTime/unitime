@@ -17,65 +17,37 @@
  * limitations under the License.
  * 
  -->
-# UniTime
+***Project Overview: UniTime — Comprehensive University Timetabling System***
+UniTime is an open-source, web-based educational scheduling platform designed to support the full lifecycle of academic scheduling within universities and colleges. The system is built to handle the complexity of coordinating schedules across multiple departments, campuses, and stakeholders simultaneously.
 
-Comprehensive University Timetabling System
-<https://www.unitime.org>
+*Functional Requirements*
+1. Course Timetabling and Management
+The system must allow academic departments to create, manage, and modify course timetables. It must support assigning courses to specific time slots and rooms while minimizing scheduling conflicts between courses that share the same student population. Multiple departmental managers must be able to collaborate on building a unified schedule.
 
-UniTime is a comprehensive educational scheduling system that supports developing
-course and exam timetables, managing changes to these timetables, sharing rooms
-with other events, and scheduling students to individual classes.
-It is a distributed system that allows multiple university and departmental schedule managers
-to coordinate efforts to build and modify a schedule that meets their diverse organizational
-needs while allowing for minimization of student course conflicts. It can be used alone to
-create and maintain a school's schedule of classes and/or exams, or interfaced with
-an existing student information system. 
+2. Examination Timetabling
+The system must support the creation and management of both midterm and final examination schedules. It must account for student enrollments to avoid placing exams for courses taken by the same students at overlapping times.
 
-The system was originally developed as a collaborative effort by faculty,
-students, and staff at universities in North America and Europe. The software
-is distributed free under an open source license in hopes that other colleges
-and universities can benefit their students through better scheduling or wish to
-contribute to ongoing research in this area. The UniTime project has become
-a sponsored project of the [Apereo Foundation][apereo] in March 2015.
+3. Event Management
+The system must allow non-academic events to be scheduled and managed within the same room infrastructure used for courses and exams. This includes sharing rooms between academic and non-academic uses, handling event approvals, and managing meeting times.
 
-### Components
-- [Course Timetabling & Management][courses]
-- [Examination Timetabling][exams]
-- [Event Management][events]
-- [Student Scheduling][students]
-- [Instructor Scheduling][instructors]
+4. Student Scheduling
+The system must support assigning individual students to specific class sections. It must minimize course conflicts in student schedules and accommodate student preferences where possible. It may operate standalone or integrate with an external Student Information System (SIS).
 
-### Tutorials
-- [Installation Instructions][install]
-- [Building UniTime][build]
-- [Setting up UniTime in Eclipse][eclipse]
-- [Customization][customization]
-- [Localization][localization]
+5. Instructor Scheduling
+The system must support scheduling instructors to courses and classes, taking into account availability, preferences, and workload constraints.
 
-### Links
-- [UniTime Documentation][docs]
-- [Online Help][help]
-- [Online Demo][demo]
-- [Downloads][downloads]
-- [Nightly Builds][builds]
-- [XML Interfaces][xml]
-- [Publications][publications]
+*Non-Functional Requirements*
+1. Distributed and Multi-User Architecture
+The system must operate as a distributed platform, allowing multiple university and departmental scheduling managers to work concurrently without overwriting each other's changes.
 
-[courses]: https://help.unitime.org/course-timetabling
-[exams]: https://help.unitime.org/examination-timetabling
-[events]: https://help.unitime.org/event-management
-[students]: https://help.unitime.org/student-scheduling
-[instructors]: https://help.unitime.org/instructor-scheduling
-[help]: https://help.unitime.org
-[install]: https://help.unitime.org/installation
-[demo]: https://demo.unitime.org
-[builds]: https://builds.unitime.org
-[xml]: https://help.unitime.org/xml
-[publications]: https://www.unitime.org/publications.php
-[downloads]: https://sourceforge.net/projects/unitime/files
-[build]: https://help.unitime.org/building-unitime
-[eclipse]: https://help.unitime.org/eclipse
-[docs]: https://help.unitime.org/documentation
-[apereo]: https://www.apereo.org
-[customization]: https://help.unitime.org/customizations
-[localization]: https://help.unitime.org/localization
+2. Integration Capability
+The system must be capable of operating standalone or interfacing with existing Student Information Systems through well-defined XML interfaces.
+
+3. Scalability and Extensibility
+The system must be customizable and localizable to accommodate different institutional needs, languages, and regional configurations.
+
+4. Open Source and Free Distribution
+The system must be distributed under an open-source license, making it freely available to any educational institution wishing to adopt or contribute to it.
+
+5. Accessibility
+The system must provide online documentation, demos, and nightly builds to support adoption, development, and testing by external contributors and institutions.
