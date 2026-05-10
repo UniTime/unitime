@@ -92,6 +92,9 @@ public class DeepLTranslator {
     }
     
     public void execute() throws BuildException {
+		if (iToken == null || iToken.trim().isEmpty() || "FIXME".equals(iToken)) {
+            throw new BuildException("DeepL API token is missing or invalid. Please provide a valid token.");
+        }
     	try {
 			File translations = new File(iBaseDir, iTranslations);
 			for (Locale locale: iLocales) {
@@ -166,7 +169,13 @@ public class DeepLTranslator {
 			DeepLTranslator task = new DeepLTranslator();
 			task.setBaseDir(System.getProperty("source", "/Users/muller/git/unitime"));
 			task.setLocales(System.getProperty("locale", "cs"));
-			task.setToken(System.getProperty("token", "FIXME"));
+			String token = System.getProperty("token");
+            if (token != null && !token.trim().isEmpty()) {
+                task.setToken(token);
+            } else {
+                System.err.println("[error] You must provide a valid DeepL API token using -Dtoken=<your_token>");
+                System.exit(1);
+            }
 			task.execute();
 		} catch (Exception e) {
 			e.printStackTrace();
