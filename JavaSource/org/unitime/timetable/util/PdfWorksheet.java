@@ -632,8 +632,7 @@ public class PdfWorksheet {
     protected void printFooter() throws DocumentException {
         out("");
         out(renderEnd(renderMiddle("","Page "+(iPageNo+1)),"<"+iCurrentSubjectArea.getSubjectAreaAbbreviation()+(iCourseNumber!=null?" "+iCourseNumber:"")+">  "));
-    	//FIXME: For some reason when a line starts with space, the line is shifted by one space in the resulting PDF (when using iText 5.0.2)
-        Paragraph p = new Paragraph(iBuffer.toString().replace("\n ", "\n  "), PdfFont.getFixedFont());
+	    Paragraph p = new Paragraph(iBuffer.toString().replaceAll("(?m)^ ", "  "), PdfFont.getFixedFont());
         p.setLeading(9.5f); //was 13.5f
         iDoc.add(p);
         iBuffer = new StringBuffer();
