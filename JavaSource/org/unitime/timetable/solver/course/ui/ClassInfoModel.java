@@ -80,6 +80,10 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.RoomSharingModel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverParameter;
+import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.SolverParameterGroup;
+import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
@@ -1129,9 +1133,29 @@ public class ClassInfoModel implements Serializable {
         	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
         	float room2limitRatio = clazz.getRoomRatio().floatValue();
         	int roomCapacity = Math.round(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
-        	//TODO: Use parameters from the default solver configuration
-            int discouragedCapacity = (int)Math.round(0.99 * roomCapacity);
-            int stronglyDiscouragedCapacity = (int)Math.round(0.98 * roomCapacity);
+        	
+        	double fewerSeatsDiscouraged = 0.01;
+            double fewerSeatsStronglyDiscouraged = 0.02;
+            SolverParameterDef discouragedDef = SolverParameterDef.findByNameType(Class_DAO.getInstance().getSession(), "Global.FewerSeatsDisouraged", SolverParameterGroup.SolverType.COURSE);
+            if (discouragedDef != null && discouragedDef.getDefault() != null)
+                fewerSeatsDiscouraged = Double.parseDouble(discouragedDef.getDefault());
+            SolverParameterDef stronglyDiscouragedDef = SolverParameterDef.findByNameType(Class_DAO.getInstance().getSession(), "Global.FewerSeatsStronglyDisouraged", SolverParameterGroup.SolverType.COURSE);
+            if (stronglyDiscouragedDef != null && stronglyDiscouragedDef.getDefault() != null)
+                fewerSeatsStronglyDisouraged = Double.parseDouble(stronglyDiscouragedDef.getDefault());
+
+            SolverPredefinedSetting settings = SolverPredefinedSetting.findByName(ApplicationProperty.SolverConfigDefaultCourse.value());
+            if (settings != null) {
+                for (SolverParameter param : settings.getParameters()) {
+                    if ("Global.FewerSeatsDisouraged".equals(param.getDefinition().getName())) {
+                        fewerSeatsDiscouraged = Double.parseDouble(param.getValue());
+                    } else if ("Global.FewerSeatsStronglyDisouraged".equals(param.getDefinition().getName())) {
+                        fewerSeatsStronglyDisouraged = Double.parseDouble(param.getValue());
+                    }
+                }
+            }
+
+            int discouragedCapacity = (int)Math.round((1.0 - fewerSeatsDiscouraged) * roomCapacity);
+            int stronglyDiscouragedCapacity = (int)Math.round((1.0 - fewerSeatsStronglyDisouraged) * roomCapacity);
             
     		Calendar cal = Calendar.getInstance(Locale.US);
     		cal.setTime(new Date());
