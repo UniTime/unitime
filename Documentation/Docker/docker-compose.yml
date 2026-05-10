@@ -27,7 +27,7 @@ services:
             - MYSQL_DATABASE=timetable
         build:
             context: ..
-            dockerfile: docker/mysql.Dockerfile
+            dockerfile: Docker/mysql.Dockerfile
         expose:
             - 3306
         volumes:
@@ -40,8 +40,8 @@ services:
         environment:
             - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable
         build:
-            context: ..
-            dockerfile: docker/tomcat.Dockerfile
+            context: ../..
+            dockerfile: Documentation/Docker/tomcat.Dockerfile
         ports:
             - 8888:8080 
         volumes:

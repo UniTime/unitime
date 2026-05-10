@@ -17,4 +17,4 @@
 
 FROM tomcat:10.1-jre17
 ADD https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.31/mysql-connector-j-8.0.31.jar /usr/local/tomcat/lib
-ADD web/UniTime.war /usr/local/tomcat/webapps/ROOT.war
+ADD target/UniTime.war /usr/local/tomcat/webapps/ROOT.war
