@@ -3791,7 +3791,12 @@ public enum ApplicationProperty {
 	@Type(Boolean.class)
 	@DefaultValue("false")
 	@Description("Assigned Examinations: switch the user interface back to the old (Struts-based) assigned examinations page")
-	LegacyAssiognedExams("unitime.legacy.assignedExams"),
+	LegacyAssignedExams("unitime.legacy.assignedExams"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Not-Assigned Examinations: switch the user interface back to the old (Struts-based) not-assigned examinations page")
+	LegacyNotAssignedExams("unitime.legacy.notAssignedExams"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

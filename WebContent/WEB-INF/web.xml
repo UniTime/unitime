@@ -265,6 +265,7 @@
     	<url-pattern>/examAdd</url-pattern>
     	<url-pattern>/catalog</url-pattern>
     	<url-pattern>/assignedExams</url-pattern>
+    	<url-pattern>/notAssignedExams</url-pattern>
     </servlet-mapping>
 	
 	<filter>

@@ -41,6 +41,7 @@ public interface ExamSolverProxy extends ExamAssignmentProxy, CommonSolverInterf
     public Collection<ExamAssignmentInfo> getAssignedExams(Long subjectAreaId);
     public Collection<ExamAssignmentInfo> getAssignedExams(Collection<Long> subjectAreaIds);
     public Collection<ExamInfo> getUnassignedExams(Long subjectAreaId);
+    public Collection<ExamInfo> getUnassignedExams(Collection<Long> subjectAreaIds);
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId);
     public Collection<ExamAssignmentInfo> getAssignedExamsOfInstructor(Long instructorId);
     

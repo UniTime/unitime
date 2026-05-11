@@ -21,6 +21,7 @@ package org.unitime.timetable.server.exams;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -127,6 +128,8 @@ public class AssignedExamsTableBuilder extends TableBuilder {
         
         boolean hasBack = false;
         List<Long> examIds = new ArrayList<Long>();
+        if (assignedExams instanceof List)
+        	Collections.sort((List<ExamAssignmentInfo>)assignedExams);
         for (ExamAssignmentInfo exam: assignedExams) {
         	examIds.add(exam.getExamId());
         	LineInterface line = ret.addLine();
@@ -173,7 +176,7 @@ public class AssignedExamsTableBuilder extends TableBuilder {
         		.setTextAlignment(Alignment.CENTER);
         	line.addCell(String.valueOf(exam.getNrStudents())).setComparable(exam.getNrStudents())
         		.setTextAlignment(Alignment.RIGHT);
-        	line.addCell(exam.getInstructorName(", "));
+        	line.addCell(exam.getInstructorName("\n")).addStyle("white-space:pre;");
         	CellInterface dst = line.addCell();
         	for (DistributionConflict dist: exam.getDistributionConflicts()) {
         		if (dst.hasItems() && !isUsePrefStyles()) dst.add(", ");
