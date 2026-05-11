@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.exams.ExamDistributionsEditPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsPage;
 import org.unitime.timetable.gwt.client.exams.ExamEditPage;
 import org.unitime.timetable.gwt.client.exams.ExamsPage;
+import org.unitime.timetable.gwt.client.exams.NotAssignedExamsPage;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAssignmentPreferencesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
@@ -437,6 +438,10 @@ public enum Pages {
 	assignedExams(new PageFactory() {
 		public Widget create() { return new AssignedExamsPage(); }
 		public String name(GwtMessages messages) { return messages.pageAssignedExaminations(); }
+		}),
+	notAssignedExams(new PageFactory() {
+		public Widget create() { return new NotAssignedExamsPage(); }
+		public String name(GwtMessages messages) { return messages.pageNotAssignedExaminations(); }
 		}),
 	
 	;

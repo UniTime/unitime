@@ -20,7 +20,9 @@
 package org.unitime.timetable.action;
 
 import java.awt.Image;
+import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 import org.apache.struts2.convention.annotation.Action;
@@ -31,6 +33,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.BuildingPref;
@@ -74,6 +77,17 @@ public class UnassignedExamsAction extends UniTimeAction<ExamReportForm> {
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyNotAssignedExams.isFalse()) {
+    		String url = "notAssignedExams";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check Access
 		sessionContext.checkPermission(Right.NotAssignedExaminations);
 		

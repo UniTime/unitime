@@ -562,6 +562,39 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     }
     
     @Override
+    public Collection<ExamInfo> getUnassignedExams(Collection<Long> subjectAreaIds) {
+    	if (subjectAreaIds == null || subjectAreaIds.isEmpty() || subjectAreaIds.contains(-1l))
+    		return getUnassignedExams();
+    	List<String> abbvs = new ArrayList<String>();
+    	for (Long subjectAreaId: subjectAreaIds) {
+    		SubjectArea sa = SubjectAreaDAO.getInstance().get(subjectAreaId);
+    		if (sa != null) abbvs.add(sa.getSubjectAreaAbbreviation() + " ");
+    	}
+    	Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+        	Vector<ExamInfo> ret = new Vector<ExamInfo>();
+            for (Exam exam: currentSolution().getModel().variables()) {
+                boolean hasSubjectArea = false;
+                owners: for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                    ExamOwner ecs = (ExamOwner)f.next();
+                    for (String abbv: abbvs) {
+                    	if (ecs.getName().startsWith(abbv)) { hasSubjectArea = true; break owners; }
+                    }
+                }
+                if (hasSubjectArea) {
+                	ExamPlacement placement = currentSolution().getAssignment().getValue(exam);
+                	if (placement==null)
+                		ret.add(new ExamInfo(exam));
+                }
+            }
+            return ret;
+        } finally {
+        	lock.unlock();
+        }
+    }
+    
+    @Override
     public Collection<ExamAssignmentInfo> getAssignedExamsOfRoom(Long roomId) {
         Lock lock = currentSolution().getLock().readLock();
         lock.lock();

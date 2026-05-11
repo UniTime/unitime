@@ -4059,6 +4059,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Assigned Examinations")
 	@DoNotTranslate
 	String pageAssignedExaminations();
+	
+	@DefaultMessage("Not-Assigned Examinations")
+	@DoNotTranslate
+	String pageNotAssignedExaminations();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

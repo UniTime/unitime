@@ -538,4 +538,8 @@ public class ExamsInterface {
 	public static class AssignedExamsFilterRequest implements GwtRpcRequest<ClassesFilterResponse> {}
 	
 	public static class AssignedExamsRequest extends OfferingsRequest {}
+	
+	public static class NotAssignedExamsFilterRequest extends AssignedExamsFilterRequest {}
+	
+	public static class NotAssignedExamsRequest extends AssignedExamsRequest {}
 }

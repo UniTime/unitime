@@ -66,7 +66,7 @@ public class AssignedExamsAction extends UniTimeAction<ExamReportForm> {
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
 	public String execute() throws Exception {
-		if (ApplicationProperty.LegacyAssiognedExams.isFalse()) {
+		if (ApplicationProperty.LegacyAssignedExams.isFalse()) {
     		String url = "assignedExams";
     		boolean first = true;
     		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
