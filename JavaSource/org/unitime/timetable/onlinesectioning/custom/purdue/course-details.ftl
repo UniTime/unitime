@@ -150,7 +150,9 @@
 </#if>
 
 
-<#if prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisites?? && prerequisites.coursePrerequisite.prerequisites.basic??>
+<#if prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisites??
+	&& prerequisites.coursePrerequisite.prerequisites.basic??
+	&& (prerequisites.coursePrerequisite.prerequisites.basic?filter(r -> r.lineOrderSequence??)?size > 0)>
 <@header 'Prerequisites' 'Prerequisites'/>
 <table class='prerequisites' id='Prerequisites'>
 	<tr class='header'><th>And/Or</th><th><span style='display:none;'>Left Parenthesis</span></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th><span style='display:none;'>Right Parenthesis</span></th></tr>
@@ -165,7 +167,9 @@
 		<td><#if line.rightParenthesis?? && line.rightParenthesis>)</#if></td></tr>
 	</#list>
 </table>
-<#elseif prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisite?? && prerequisites.coursePrerequisite.prerequisite.basicPrerequisites??>
+<#elseif prerequisites?? && prerequisites.coursePrerequisite?? && prerequisites.coursePrerequisite.prerequisite??
+	&& prerequisites.coursePrerequisite.prerequisite.basicPrerequisites??
+	&& (prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.lineOrderSequence??)?size > 0)>
 <@header 'Prerequisites' 'Prerequisites'/>
 <table class='prerequisites' id='Prerequisites'>
 	<tr class='header'><th>And/Or</th><th><span style='display:none;'>Left Parenthesis</span></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th><span style='display:none;'>Right Parenthesis</span></th></tr>
