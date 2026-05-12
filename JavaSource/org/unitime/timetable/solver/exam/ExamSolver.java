@@ -706,6 +706,80 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
         return changes;
     }
     
+    @Override
+    public Collection<ExamAssignmentInfo[]> getChangesToInitial(Collection<Long> subjectAreaIds) {
+    	List<String> abbvs = null;
+    	if (subjectAreaIds != null && !subjectAreaIds.isEmpty() && !subjectAreaIds.contains(-1l)) {
+    		abbvs = new ArrayList<String>();
+        	for (Long subjectAreaId: subjectAreaIds) {
+        		SubjectArea sa = SubjectAreaDAO.getInstance().get(subjectAreaId);
+        		if (sa != null) abbvs.add(sa.getSubjectAreaAbbreviation() + " ");
+        	}
+    	}
+        Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+            for (Exam exam: currentSolution().getModel().variables()) {
+                if (abbvs!=null) {
+                	boolean hasSubjectArea = false;
+                    owners: for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                        ExamOwner ecs = (ExamOwner)f.next();
+                        for (String abbv: abbvs) {
+                        	if (ecs.getName().startsWith(abbv)) { hasSubjectArea = true; break owners; }
+                        }
+                    }
+                    if (!hasSubjectArea) continue;
+                }
+                if (!ToolBox.equals(exam.getInitialAssignment(),currentSolution().getAssignment().getValue(exam))) {
+                    changes.add(new ExamAssignmentInfo[] {
+                            new ExamAssignmentInfo(exam,exam.getInitialAssignment(), currentSolution().getAssignment()),
+                            new ExamAssignmentInfo(exam,currentSolution().getAssignment().getValue(exam), currentSolution().getAssignment())});
+                }
+            }
+        } finally {
+        	lock.unlock();
+        }
+        return changes;
+    }
+    
+    @Override
+    public Collection<ExamAssignmentInfo[]> getChangesToBest(Collection<Long> subjectAreaIds) {
+    	List<String> abbvs = null;
+    	if (subjectAreaIds != null && !subjectAreaIds.isEmpty() && !subjectAreaIds.contains(-1l)) {
+    		abbvs = new ArrayList<String>();
+        	for (Long subjectAreaId: subjectAreaIds) {
+        		SubjectArea sa = SubjectAreaDAO.getInstance().get(subjectAreaId);
+        		if (sa != null) abbvs.add(sa.getSubjectAreaAbbreviation() + " ");
+        	}
+    	}
+        Vector<ExamAssignmentInfo[]> changes = new Vector<ExamAssignmentInfo[]>();
+        Lock lock = currentSolution().getLock().readLock();
+        lock.lock();
+        try {
+            for (Exam exam: currentSolution().getModel().variables()) {
+            	if (abbvs!=null) {
+                	boolean hasSubjectArea = false;
+                    owners: for (Iterator<ExamOwner> f=exam.getOwners().iterator();!hasSubjectArea && f.hasNext();) {
+                        ExamOwner ecs = (ExamOwner)f.next();
+                        for (String abbv: abbvs) {
+                        	if (ecs.getName().startsWith(abbv)) { hasSubjectArea = true; break owners; }
+                        }
+                    }
+                    if (!hasSubjectArea) continue;
+                }
+                if (!ToolBox.equals(exam.getBestAssignment(),currentSolution().getAssignment().getValue(exam))) {
+                    changes.add(new ExamAssignmentInfo[] {
+                            new ExamAssignmentInfo(exam,exam.getBestAssignment(),currentSolution().getAssignment()),
+                            new ExamAssignmentInfo(exam,currentSolution().getAssignment().getValue(exam),currentSolution().getAssignment())});
+                }
+            }
+        } finally {
+        	lock.unlock();
+        }
+        return changes;
+    }
+    
 
     @Override
     public ExamConflictStatisticsInfo getCbsInfo() {

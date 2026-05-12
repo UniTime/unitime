@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -33,6 +35,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
@@ -63,7 +66,18 @@ public class ExamChangesAction extends UniTimeAction<ExamChangesForm> {
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 	
 	public String execute() throws Exception {
-        // Check Access
+		if (ApplicationProperty.LegacyExamAssignmentChanges.isFalse()) {
+    		String url = "examChanges";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
+		// Check Access
 		sessionContext.checkPermission(Right.ExaminationAssignmentChanges);
 		
 		ExamSolverProxy solver = getExaminationSolverService().getSolver();
