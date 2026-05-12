@@ -224,6 +224,18 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 .list();
     }
     
+    public static List<Exam> findExamsOfSubjectAreas(Long sessionId, Collection<Long> subjectAreaIds, Long examTypeId) {
+    	if (subjectAreaIds==null || subjectAreaIds.isEmpty() || subjectAreaIds.contains(-1l))
+    		return findAll(sessionId, examTypeId);
+        return ExamDAO.getInstance().getSession().createQuery(
+                "select distinct x from Exam x inner join x.owners o where " +
+                "o.course.subjectArea.uniqueId in :subjectAreaIds and x.examType.uniqueId=:examTypeId", Exam.class)
+                .setParameterList("subjectAreaIds", subjectAreaIds, Long.class)
+                .setParameter("examTypeId", examTypeId)
+                .setCacheable(true)
+                .list();
+    }
+    
     public static List<Exam> findExamsOfSubjectAreaIncludeCrossLists(Long subjectAreaId, Long examTypeId) {
         return ExamDAO.getInstance().getSession().createQuery(
                 "select distinct x from Exam x inner join x.owners o inner join o.course.instructionalOffering.courseOfferings co where " +

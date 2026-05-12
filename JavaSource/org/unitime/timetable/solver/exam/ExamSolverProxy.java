@@ -55,6 +55,8 @@ public interface ExamSolverProxy extends ExamAssignmentProxy, CommonSolverInterf
     
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId);
     public Collection<ExamAssignmentInfo[]> getChangesToBest(Long subjectAreaId);
+    public Collection<ExamAssignmentInfo[]> getChangesToInitial(Collection<Long> subjectAreaIds);
+    public Collection<ExamAssignmentInfo[]> getChangesToBest(Collection<Long> subjectAreaIds);
     
     public ExamConflictStatisticsInfo getCbsInfo();
     public ExamConflictStatisticsInfo getCbsInfo(Long examId);
