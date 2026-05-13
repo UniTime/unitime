@@ -226,19 +226,26 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 
 				List<EnrollmentRequest> enrlCheck = server.createAction(CheckAssignmentAction.class).forStudent(getStudentId()).withAssignment(getAssignment()).check(server, helper, checkErrors);
 				
-				Student student = helper.getHibSession().createQuery(
-						"select s from Student s " +
-						"left join fetch s.courseDemands as cd " +
-	                    "left join fetch cd.courseRequests as cr " +
-	                    "left join fetch cd.freeTime as ft " +
-	                    "left join fetch cr.courseOffering as co " +
-	                    "left join fetch cr.courseRequestOptions as cro " +
-	                    "left join fetch cr.classWaitLists as cwl " + 
-	                    "left join fetch s.classEnrollments as e " +
-	                    "left join fetch e.clazz as c " +
-	                    "left join fetch c.managingDept as cmd " +
-	                    "left join fetch c.schedulingSubpart as ss " +
-						"where s.uniqueId = :studentId", Student.class).setParameter("studentId", getStudentId()).uniqueResult();
+				Student student = null;
+				if (ApplicationProperty.EnrollmentPrefetchStudents.isTrue()) {
+					student = helper.getHibSession().createQuery(
+							"select s from Student s " +
+							"left join fetch s.courseDemands as cd " +
+		                    "left join fetch cd.courseRequests as cr " +
+		                    "left join fetch cd.freeTime as ft " +
+		                    "left join fetch cr.courseOffering as co " +
+		                    "left join fetch cr.courseRequestOptions as cro " +
+		                    "left join fetch cr.classWaitLists as cwl " + 
+		                    "left join fetch s.classEnrollments as e " +
+		                    "left join fetch e.clazz as c " +
+		                    "left join fetch c.managingDept as cmd " +
+		                    "left join fetch c.schedulingSubpart as ss " +
+							"where s.uniqueId = :studentId", Student.class).setParameter("studentId", getStudentId()).uniqueResult();
+				} else {
+					student = helper.getHibSession().createQuery(
+							"select s from Student s " +
+							"where s.uniqueId = :studentId", Student.class).setParameter("studentId", getStudentId()).uniqueResult();
+				}
 				if (student == null) throw new SectioningException(MSG.exceptionBadStudentId());
 				wlMode = student.getWaitListMode();
 				

@@ -3906,6 +3906,18 @@ public enum ApplicationProperty {
 	@Since(4.9)
 	EnrollmentCheckSubstitutes("unitime.enrollment.checkSubstitutes"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: use left join fetch when loading students")
+	@Since(4.9)
+	EnrollmentPrefetchStudents("unitime.enrollment.prefetchStudents"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: use left join fetch when loading offerings")
+	@Since(4.9)
+	EnrollmentPrefetchOfferings("unitime.enrollment.prefetchOfferings"),
+	
 	@DefaultValue(".*\\.ics")
 	@Description("Exporter: for the encoded export queries (/export?q= or /export?x=), the exporter (output parameter) must match this regular expression for authorization. " +
 	"This means that for matching exports, it is assumed that the export is run by the user for whom the encoded query was generated. By default, only iCalendar exports are allowed.")

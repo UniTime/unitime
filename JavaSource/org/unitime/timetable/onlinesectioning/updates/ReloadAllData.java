@@ -134,16 +134,26 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 				Map<Long, XOffering> offeringMap = new HashMap<Long, XOffering>();
 				Map<Long, XSection> sectionMap = new HashMap<Long, XSection>();
 				Map<Long, Map<Long, Double>> spaceMap = new HashMap<Long, Map<Long,Double>>();
-				List<InstructionalOffering> offerings = helper.getHibSession().createQuery(
-						"select distinct io from InstructionalOffering io " +
-						"left join io.courseOfferings co " +
-						"left join fetch io.instrOfferingConfigs cf " +
-						"left join fetch cf.schedulingSubparts ss " +
-						"left join fetch ss.classes as c "+
-						"left join fetch io.reservations x " +
-						"where io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true",
-						InstructionalOffering.class)
-						.setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				List<InstructionalOffering> offerings = null;
+				if (ApplicationProperty.EnrollmentPrefetchOfferings.isTrue()) {
+					offerings = helper.getHibSession().createQuery(
+							"select distinct io from InstructionalOffering io " +
+							"left join io.courseOfferings co " +
+							"left join fetch io.instrOfferingConfigs cf " +
+							"left join fetch cf.schedulingSubparts ss " +
+							"left join fetch ss.classes as c "+
+							"left join fetch io.reservations x " +
+							"where io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true",
+							InstructionalOffering.class)
+							.setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				} else {
+					offerings = helper.getHibSession().createQuery(
+							"select distinct io from InstructionalOffering io " +
+							"left join io.courseOfferings co " +
+							"where io.session.uniqueId = :sessionId and io.notOffered = false and co.subjectArea.department.allowStudentScheduling = true",
+							InstructionalOffering.class)
+							.setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				}
 				for (InstructionalOffering io: offerings) {
 					XOffering offering = loadOffering(io, distributions.get(io.getUniqueId()), server, helper);
 					if (offering != null) {
@@ -158,18 +168,26 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 				}
 				
 		        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
-				List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
-	                    "select distinct s from Student s " +
-	                    "left join fetch s.courseDemands as cd " +
-	                    "left join fetch cd.courseRequests as cr " +
-	                    "left join fetch cr.classWaitLists as cwl " + 
-	                    "left join fetch s.classEnrollments as e " +
-	                    "left join fetch s.areaClasfMajors as acm " +
-	                    "left join fetch s.waitlists as w " +
-	                    "left join fetch s.groups as g " +
-	                    "left join fetch s.notes as n " +
-	                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
-	                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				List<org.unitime.timetable.model.Student> students = null;
+				if (ApplicationProperty.EnrollmentPrefetchStudents.isTrue()) {
+					students = helper.getHibSession().createQuery(
+		                    "select distinct s from Student s " +
+		                    "left join fetch s.courseDemands as cd " +
+		                    "left join fetch cd.courseRequests as cr " +
+		                    "left join fetch cr.classWaitLists as cwl " + 
+		                    "left join fetch s.classEnrollments as e " +
+		                    "left join fetch s.areaClasfMajors as acm " +
+		                    "left join fetch s.waitlists as w " +
+		                    "left join fetch s.groups as g " +
+		                    "left join fetch s.notes as n " +
+		                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
+		                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				} else {
+					students = helper.getHibSession().createQuery(
+		                    "select s from Student s " +
+		                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
+		                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				}
 	            for (org.unitime.timetable.model.Student student: students) {
 	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)

@@ -189,34 +189,53 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 			newStudents.put(student.getUniqueId(), student);
 		}
 		*/
-		for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
-                "select distinct s from Student s " +
-                "left join s.courseDemands as cd " +
-                "left join cd.courseRequests as cr " +
-                "left join fetch s.classEnrollments as e " +
-                "left join fetch s.areaClasfMajors as acm " +
-                "left join fetch s.waitlists as w " +
-                "left join fetch s.groups as g " +
-                "left join fetch s.notes as n " +
-                "where cr.courseOffering.instructionalOffering.uniqueId = :offeringId", org.unitime.timetable.model.Student.class
-                ).setParameter("offeringId", offeringId).list()) {
-			newStudents.put(student.getUniqueId(), student);
-		}
-		for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
-                "select distinct s from Student s " +
-                "left join fetch s.courseDemands as cd " +
-                "left join fetch cd.courseRequests as cr " +
-                "left join fetch cr.courseOffering as co " +
-                "left join fetch cr.classWaitLists as cwl " + 
-                "left join fetch s.classEnrollments as e " +
-                "left join fetch s.areaClasfMajors as acm " +
-                "left join fetch s.waitlists as w " +
-                "left join fetch s.groups as g " +
-                "left join fetch s.notes as n " +
-                "where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null",
-                org.unitime.timetable.model.Student.class
-                ).setParameter("offeringId", offeringId).list()) {
-			newStudents.put(student.getUniqueId(), student);
+		if (ApplicationProperty.EnrollmentPrefetchStudents.isTrue()) {
+			for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
+	                "select distinct s from Student s " +
+	                "left join s.courseDemands as cd " +
+	                "left join cd.courseRequests as cr " +
+	                "left join fetch s.classEnrollments as e " +
+	                "left join fetch s.areaClasfMajors as acm " +
+	                "left join fetch s.waitlists as w " +
+	                "left join fetch s.groups as g " +
+	                "left join fetch s.notes as n " +
+	                "where cr.courseOffering.instructionalOffering.uniqueId = :offeringId", org.unitime.timetable.model.Student.class
+	                ).setParameter("offeringId", offeringId).list()) {
+				newStudents.put(student.getUniqueId(), student);
+			}
+			for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
+	                "select distinct s from Student s " +
+	                "left join fetch s.courseDemands as cd " +
+	                "left join fetch cd.courseRequests as cr " +
+	                "left join fetch cr.courseOffering as co " +
+	                "left join fetch cr.classWaitLists as cwl " + 
+	                "left join fetch s.classEnrollments as e " +
+	                "left join fetch s.areaClasfMajors as acm " +
+	                "left join fetch s.waitlists as w " +
+	                "left join fetch s.groups as g " +
+	                "left join fetch s.notes as n " +
+	                "where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null",
+	                org.unitime.timetable.model.Student.class
+	                ).setParameter("offeringId", offeringId).list()) {
+				newStudents.put(student.getUniqueId(), student);
+			}
+		} else {
+			for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
+	                "select distinct s from Student s " +
+	                "left join s.courseDemands as cd " +
+	                "left join cd.courseRequests as cr " +
+	                "where cr.courseOffering.instructionalOffering.uniqueId = :offeringId", org.unitime.timetable.model.Student.class
+	                ).setParameter("offeringId", offeringId).list()) {
+				newStudents.put(student.getUniqueId(), student);
+			}
+			for (org.unitime.timetable.model.Student student : helper.getHibSession().createQuery(
+	                "select distinct s from Student s " +
+	                "left join s.classEnrollments as e " +
+	                "where e.courseOffering.instructionalOffering.uniqueId = :offeringId and e.courseRequest is null",
+	                org.unitime.timetable.model.Student.class
+	                ).setParameter("offeringId", offeringId).list()) {
+				newStudents.put(student.getUniqueId(), student);
+			}
 		}
 		
 		// Persist expected spaces if needed
