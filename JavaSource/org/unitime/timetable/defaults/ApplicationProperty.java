@@ -3845,6 +3845,18 @@ public enum ApplicationProperty {
 	"(this optional check fixes an issue where a student may end up in a state where a substitute course is enrolled without a matching not-assigned course request that it is substituting)")
 	@Since(4.9)
 	EnrollmentCheckSubstitutes("unitime.enrollment.checkSubstitutes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: use left join fetch when loading students")
+	@Since(4.9)
+	EnrollmentPrefetchStudents("unitime.enrollment.prefetchStudents"),
+
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Online Student Scheduling: use left join fetch when loading offerings")
+	@Since(4.9)
+	EnrollmentPrefetchOfferings("unitime.enrollment.prefetchOfferings"),
 	;
 
 	String iKey;

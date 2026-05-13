@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.WaitList;
@@ -49,18 +50,26 @@ public class ReloadAllStudents extends ReloadAllData {
 				server.clearAllStudents();
 				
 		        Map<Long, List<XCourseRequest>> requestMap = new HashMap<Long, List<XCourseRequest>>();
-				List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
-	                    "select distinct s from Student s " +
-	                    "left join fetch s.courseDemands as cd " +
-	                    "left join fetch cd.courseRequests as cr " +
-	                    "left join fetch cr.classWaitLists as cwl " + 
-	                    "left join fetch s.classEnrollments as e " +
-	                    "left join fetch s.areaClasfMajors as acm " +
-	                    "left join fetch s.waitlists as w " +
-	                    "left join fetch s.groups as g " +
-	                    "left join fetch s.notes as n " +
-	                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
-	                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				List<org.unitime.timetable.model.Student> students = null;
+				if (ApplicationProperty.EnrollmentPrefetchStudents.isTrue()) {
+					students = helper.getHibSession().createQuery(
+		                    "select distinct s from Student s " +
+		                    "left join fetch s.courseDemands as cd " +
+		                    "left join fetch cd.courseRequests as cr " +
+		                    "left join fetch cr.classWaitLists as cwl " + 
+		                    "left join fetch s.classEnrollments as e " +
+		                    "left join fetch s.areaClasfMajors as acm " +
+		                    "left join fetch s.waitlists as w " +
+		                    "left join fetch s.groups as g " +
+		                    "left join fetch s.notes as n " +
+		                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
+		                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				} else {
+					students = helper.getHibSession().createQuery(
+		                    "select s from Student s " +
+		                    "where s.session.uniqueId=:sessionId", org.unitime.timetable.model.Student.class).
+		                    setParameter("sessionId", server.getAcademicSession().getUniqueId()).list();
+				}
 	            for (org.unitime.timetable.model.Student student: students) {
 	            	XStudent s = loadStudent(student, requestMap, server, helper, WaitList.WaitListType.RELOAD);
 	            	if (s != null)
