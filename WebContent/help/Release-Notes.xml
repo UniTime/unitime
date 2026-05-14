@@ -36,6 +36,12 @@
 				<line>When adding exact times, do not include a time without a day of the week selected.</line>
 			</description>
 		</item>
+		<item>
+			<name>Navigation</name>
+			<description>
+				<line>Corrected navigation using the Back button over multiple detail pages, newly rewritten to GWT.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

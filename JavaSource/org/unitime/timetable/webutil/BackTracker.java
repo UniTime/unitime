@@ -224,6 +224,8 @@ public class BackTracker {
 				String uriNoBack = uri;
 				if (uriNoBack.indexOf("backType=")>=0)
 					uriNoBack = uriNoBack.substring(0, uriNoBack.indexOf("backType=")-1);
+				if (uriNoBack.indexOf("backId=")>=0)
+					uriNoBack = uriNoBack.substring(0, uriNoBack.indexOf("backId=")-1);
 				while (!back.isEmpty() && !uriNoBack.equals(back.get(back.size() - 1).getUrl()))
 					back.remove(back.size()-1);
 				if (!back.isEmpty())
