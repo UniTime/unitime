@@ -196,7 +196,7 @@ public class Query implements Serializable {
 		
 		public void remove(Term t) { iTerms.remove(t); }
 		
-		protected List<Term> terms() { return iTerms; }
+		public List<Term> terms() { return iTerms; }
 		
 		public abstract String getOp();
 		
@@ -331,6 +331,9 @@ public class Query implements Serializable {
 		public Boolean match(AmbigousTermMatcher m) {
 			return m.match(iAttr, iBody);
 		}
+
+		public String getAttr() { return iAttr; }
+		public String getBody() { return iBody; }
 	}
 	
 	public static interface TermMatcher {
