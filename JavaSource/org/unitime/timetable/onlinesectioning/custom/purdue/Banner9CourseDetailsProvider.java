@@ -49,6 +49,11 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
+import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.gwt.server.Query.AndTerm;
+import org.unitime.timetable.gwt.server.Query.AtomTerm;
+import org.unitime.timetable.gwt.server.Query.QueryFormatter;
+import org.unitime.timetable.gwt.server.Query.Term;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -222,11 +227,81 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 		}
 	}
 	
+	public String getPrerequisites(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
+		try {
+			String accessToken = getAccessToken();
+			
+			final Map<String, String> params = new HashMap<String, String>();
+			params.put("subject", iExternalTermProvider.getExternalSubject(session, subject, courseNbr));
+			params.put("courseNumber", iExternalTermProvider.getExternalCourseNumber(session, subject, courseNbr));
+			params.put("queryTerm", iExternalTermProvider.getExternalTerm(session));
+			
+			Map<String, String> params2 = new HashMap<String, String>();
+			params2.put("scacrseSubjCode", iExternalTermProvider.getExternalSubject(session, subject, courseNbr));
+			params2.put("scacrseCrseNumb", iExternalTermProvider.getExternalCourseNumber(session, subject, courseNbr));
+			params2.put("scacrseTermCodeEff", iExternalTermProvider.getExternalTerm(session));
+
+			Configuration cfg = new Configuration(Configuration.VERSION_2_3_34);
+			cfg.setClassForTemplateLoading(Banner9CourseDetailsProvider.class, "");
+			cfg.setLocale(Localization.getJavaLocale());
+			cfg.setOutputEncoding("utf-8");
+			Template template = cfg.getTemplate("prerequisites.ftl");
+			Map<String, Object> input = new HashMap<String, Object>();
+			input.put("msg", MSG);
+			input.put("const", CONST);
+			input.put("cmsg", CMSG);
+			input.put("gmsg", GMSG);
+			input.put("session", session);
+			Map<?, ?> base = executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-bases", accessToken, params);
+			if (base == null || base.isEmpty())
+				return MSG.catalogCourseNotInCatalog(subject, courseNbr);
+			input.put("base", base);
+			input.put("details", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-additional-details", accessToken, params));
+			input.put("prerequisites", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
+			
+			StringWriter s = new StringWriter();
+			template.process(input, new PrintWriter(s));
+			s.flush(); s.close();
+
+			return s.toString();
+		} catch (SectioningException e) {
+			sLog.info(e.getMessage(), e);
+			return MSG.exceptionCustomCourseDetailsFailed(e.getMessage());
+		} catch (Exception e) {
+			sLog.error(e.getMessage(), e);
+			return MSG.exceptionCustomCourseDetailsFailed(e.getMessage());
+		}
+	}
+
 	public static void main(String[] args) {
 		try {
 			ToolBox.configureLogging();
 			Banner9CourseDetailsProvider p = new Banner9CourseDetailsProvider();
-			System.out.println(p.getDetails(new AcademicSessionInfo(-1l, "2026", "Spring", "PWL"), "ECON", "39000"));
+
+			String[] courses = new String[] {
+					"CHM 11520",
+					"CHM 11620",
+			};
+			AcademicSessionInfo s = new AcademicSessionInfo(-1l, "2026", "Fall", "PWL");
+			for (String course: courses) {
+				int idx = course.indexOf(' ');
+				String prereq = p.getPrerequisites(s, course.substring(0, idx), course.substring(1 + idx));
+				if (prereq != null && !prereq.trim().isEmpty()) {
+					Term q = new Query(prereq).getQuery();
+					System.out.println(course + ": " + q.toString(new QueryFormatter() {
+						@Override
+						public String format(String attr, String term) {
+							return ("c".equals(attr) ? "@" : "") + term;
+						}
+					}));
+					if (q instanceof AtomTerm && "c".equals(((AtomTerm)q).getAttr()))
+						System.out.println("  [1] -- " + ((AtomTerm)q).getBody());
+					if (q instanceof AndTerm)
+						for (Term t: ((AndTerm)q).terms())
+							if (t instanceof AtomTerm && "c".equals(((AtomTerm)t).getAttr()))
+								System.out.println("  [2] -- " + ((AtomTerm)t).getBody());
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
