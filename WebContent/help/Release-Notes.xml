@@ -42,6 +42,12 @@
 				<line>Corrected navigation using the Back button over multiple detail pages, newly rewritten to GWT.</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offering: Details</name>
+			<description>
+				<line>Fixed a recently introduced issue not showing some curricula in certain cases.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
