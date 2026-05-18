@@ -109,6 +109,17 @@ public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentRepo
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyExamAssignmentReport.isFalse()) {
+    		String url = "examAssignmentReport";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 	    // Check Access
 	    sessionContext.checkPermission(Right.ExaminationReports);
 	    
@@ -1016,7 +1027,7 @@ public class ExamAssignmentReportAction extends UniTimeAction<ExamAssignmentRepo
                             String.valueOf(twoExams),
                             String.valueOf(threeExams),
                             String.valueOf(fourExams),
-                            String.valueOf(btb),
+                            String.valueOf(fourExams),
                             String.valueOf(dbtb)},
                     new Comparable[] {
                             new MultiComparable(0,entry.getKey()),

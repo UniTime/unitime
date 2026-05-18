@@ -20,8 +20,6 @@
 package org.unitime.timetable.export.instructors;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.CSVPrinter;
@@ -29,9 +27,7 @@ import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.export.courses.OfferingsCSV.Filter;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
-import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -87,43 +83,7 @@ public class InstructorsCSV implements Exporter {
 		        helper.getSessionContext());
 		table.setId(department.getDeptCode());
     	
-    	String sort = helper.getParameter("sort");
-    	if (sort != null && !sort.isEmpty()) {
-    		LineInterface header = table.getHeader().get(0);
-    		for (int col = 0; col < header.getCells().size(); col++) {
-    			if (sort.equals(header.getCells().get(col).getText())) {
-    				final int column = col;
-    				Collections.sort(table.getLines(), new Comparator<LineInterface>() {
-						@Override
-						public int compare(LineInterface l1, LineInterface l2) {
-							CellInterface c1 = l1.getCells().get(column);
-							CellInterface c2 = l2.getCells().get(column);
-							Comparable o1 = c1.getComparable();
-							Comparable o2 = c2.getComparable();
-							if (o1 instanceof String)
-								return NaturalOrderComparator.compare(o1.toString(), o2.toString());
-							else
-								return o1.compareTo(o2);
-						}
-					});
-    			} else if (sort.equals("!" + header.getCells().get(col).getText())) {
-    				final int column = col;
-    				Collections.sort(table.getLines(), new Comparator<LineInterface>() {
-						@Override
-						public int compare(LineInterface l1, LineInterface l2) {
-							CellInterface c1 = l1.getCells().get(column);
-							CellInterface c2 = l2.getCells().get(column);
-							Comparable o1 = c1.getComparable();
-							Comparable o2 = c2.getComparable();
-							if (o1 instanceof String)
-								return - NaturalOrderComparator.compare(o1.toString(), o2.toString());
-							else
-								return - o1.compareTo(o2);
-						}
-					});
-    			}
-    		}
-    	}
+		table.sort(helper.getParameter("sort"));
     	
     	return table;
 	}

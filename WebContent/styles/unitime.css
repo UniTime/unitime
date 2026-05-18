@@ -8798,3 +8798,7 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SolverPage tr:has(.unitime-SolverStatus) {
 	height: 24px;
 }
+
+.unitime-MainTable .blank-cell {
+	display: none;
+}

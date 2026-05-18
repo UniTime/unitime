@@ -329,6 +329,12 @@ public class PDFPrinter implements Printer {
 			col += cell.getColspan();
 			iTable.addCell(cell);
 		}
+		if (col < iMaxWidth.length) {
+			PdfPCell cell = new PdfPCell();
+			cell.setBorder(Rectangle.NO_BORDER);
+			cell.setColspan(iMaxWidth.length - col);
+			iTable.addCell(cell);
+		}
 		iLastLine = fields;
 	}
 	

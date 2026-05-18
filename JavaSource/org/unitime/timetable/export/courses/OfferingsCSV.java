@@ -21,8 +21,6 @@ package org.unitime.timetable.export.courses;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +37,6 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
@@ -234,46 +231,7 @@ public class OfferingsCSV implements Exporter {
 	}
 	
 	protected static TableInterface sorted(TableInterface table, ExportHelper helper) {
-		String sort = helper.getParameter("sort");
-		if (sort != null && !sort.isEmpty() && table.hasLines()) {
-			int sortColumn = -1;
-			boolean sortAsc = true;
-			if (table.getHeader() != null)
-				for (LineInterface line: table.getHeader()) {
-					for (int col = 0; col < line.getCells().size(); col++) {
-						CellInterface cell = line.getCells().get(col);
-						if (cell.hasText() && sort.equals(cell.getText())) {
-							sortColumn = col; sortAsc = true;
-							break;
-						}
-						if (cell.hasText() && sort.equals("!" + cell.getText())) {
-							sortColumn = col; sortAsc = false;
-							break;
-						}
-					}
-					break;
-				}
-			if (sortColumn >= 0) {
-				final int col = sortColumn;
-				final boolean asc = sortAsc;
-				Collections.sort(table.getLines(), new Comparator<LineInterface>() {
-					@Override
-					@SuppressWarnings({ "rawtypes", "unchecked" })
-					public int compare(LineInterface l1, LineInterface l2) {
-						CellInterface c1 = l1.getCells().get(col);
-						CellInterface c2 = l2.getCells().get(col);
-						Comparable o1 = c1.getComparable();
-						Comparable o2 = c2.getComparable();
-						if (o1 instanceof String)
-							return asc ?
-									NaturalOrderComparator.compare(o1.toString(), o2.toString()):
-									NaturalOrderComparator.compare(o2.toString(), o1.toString());
-						else
-							return asc ? o1.compareTo(o2) : o2.compareTo(o1);
-					}
-				});
-			}
-		}
+		table.sort(helper.getParameter("sort"));
 		return table;
 	}
 	

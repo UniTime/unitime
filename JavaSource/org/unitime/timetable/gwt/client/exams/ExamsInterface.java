@@ -546,4 +546,8 @@ public class ExamsInterface {
 	public static class ExamAssignmentChangesFilterRequest extends AssignedExamsFilterRequest {}
 	
 	public static class ExamAssignmentChangesRequest extends AssignedExamsRequest {}
+
+	public static class ExamReportsFilterRequest extends AssignedExamsFilterRequest {}
+	
+	public static class ExamReportsRequest extends AssignedExamsRequest {}
 }
