@@ -46,7 +46,6 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -245,7 +244,8 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				}
 			}
 		}
-		sort();
+		if (!sort() && table.isBlankWhenSame())
+			blankSameValues();
 		if (table.isMultiRows()) {
 			addMouseOverListener(new MouseOverListener<LineInterface>() {
 				@Override
@@ -290,20 +290,19 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	}
 	
 	
-	public void sort() {
-		if (iSortColumn < 0) return;
+	public boolean sort() {
+		if (iSortColumn < 0) return false;
 		sort((HeaderCellWidget)getWidget(0, iSortColumn), new Comparator<LineInterface>() {
 			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public int compare(LineInterface l1, LineInterface l2) {
-				CellInterface c1 = l1.getCells().get(iSortColumn);
-				CellInterface c2 = l2.getCells().get(iSortColumn);
-				Comparable o1 = c1.getComparable();
-				Comparable o2 = c2.getComparable();
-				if (o1 instanceof String)
-					return NaturalOrderComparator.compare(o1.toString(), o2.toString());
-				else
-					return o1.compareTo(o2);
+				CellInterface c1 = l1.getCell(iSortColumn);
+				CellInterface c2 = l2.getCell(iSortColumn);
+				if (c1 == null) {
+					return (c2 == null ? 0 : iSortAsc ? 1 : 11);
+				}
+				if (c2 == null) return (iSortAsc ? -1 : 1);
+				return c1.compareTo(c2);
 			}
 		}, iSortAsc);
 		if (iNavigationLevel != null) {
@@ -321,6 +320,39 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 					public void onSuccess(GwtRpcResponseNull r) {}
 				});
 			}
+		}
+		if (iTable.isBlankWhenSame())
+			blankSameValues();
+		return true;
+	}
+	
+	public void blankSameValues() {
+		LineInterface prev = null;
+		for (int row = 0; row < getRowCount(); row++) {
+			LineInterface line = getData(row);
+			if (line != null) {
+				if (prev == null) {
+					for (int col = 0 ; col < getCellCount(row); col ++) {
+						Widget w = getWidget(row, col);
+						if (w != null) w.removeStyleName("blank-cell");
+					}
+				} else {
+					boolean same = true;
+					for (int col = 0 ; col < getCellCount(row); col ++) {
+						Widget w = getWidget(row, col);
+						if (w != null) w.removeStyleName("blank-cell");
+						if (same) {
+							CellInterface cell = line.getCell(col);
+							CellInterface p = prev.getCell(col);
+							if (cell != null && cell.toString().equals(p == null ? null : p.toString()))
+								w.addStyleName("blank-cell");
+							else
+								same = false;
+						}
+					}
+				}
+			}
+			prev = line;
 		}
 	}
 	

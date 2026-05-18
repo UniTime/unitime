@@ -20,12 +20,15 @@
 package org.unitime.timetable.gwt.client.tables;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
+import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -43,6 +46,7 @@ public class TableInterface implements IsSerializable {
 	private Integer iNavigationLevel;
 	private Boolean iMultiRows;
 	private String iDefaultSortCookie;
+	private Boolean iBlankWhenSame;
 	
 	public TableInterface() {}
 	
@@ -51,6 +55,7 @@ public class TableInterface implements IsSerializable {
 		if (iHeader == null) iHeader = new ArrayList<LineInterface>();
 		iHeader.add(header);
 	}
+	public boolean hasHeader() { return iHeader != null && !iHeader.isEmpty(); }
 	public LineInterface addHeader() {
 		LineInterface line = new LineInterface();
 		addHeader(line);
@@ -142,6 +147,9 @@ public class TableInterface implements IsSerializable {
 	public boolean isMultiRows() { return iMultiRows != null && iMultiRows.booleanValue(); }
 	public void setMultiRows(boolean multiRows) { iMultiRows = multiRows; }
 	
+	public boolean isBlankWhenSame() { return iBlankWhenSame != null && iBlankWhenSame.booleanValue(); }
+	public void setBlankWhenSame(boolean blankWhenSame) { iBlankWhenSame = blankWhenSame; }
+	
 	public static class PropertyInterface implements IsSerializable {
 		private String iName;
 		private CellInterface iCell;
@@ -179,6 +187,11 @@ public class TableInterface implements IsSerializable {
 		public LineInterface() {}
 		
 		public List<CellInterface> getCells() { return iCells; }
+		public CellInterface getCell(int index) {
+			if (iCells != null && index >= 0 && index < iCells.size())
+				return iCells.get(index);
+			return null;
+		}
 		public void addCell(CellInterface cell) {
 			if (iCells == null) iCells = new ArrayList<CellInterface>();
 			iCells.add(cell);
@@ -266,7 +279,7 @@ public class TableInterface implements IsSerializable {
 		public LinkInteface setHref(String href) { iHref = href; return this; }
 	}
 	
-	public static class CellInterface implements IsSerializable {
+	public static class CellInterface implements IsSerializable, Comparable<CellInterface> {
 		public static enum Alignment {
 			LEFT, CENTER, RIGHT,
 			TOP, MIDLE, BOTTOM,
@@ -295,7 +308,7 @@ public class TableInterface implements IsSerializable {
 		private CourseLinkInterface iCourseLink;
 		private String iScript;
 		private Boolean iDots;
-		private Comparable<?> iComparable;
+		private Comparable[] iComparable;
 		private Boolean iSortable; 
 		private WidgetInterface iWidget;
 		private TimePatternModel iTimePreference, iTimePreferenceToolTip;
@@ -333,10 +346,14 @@ public class TableInterface implements IsSerializable {
 		public CellInterface setTitle(String title) { iTitle = title; return this; }
 		public boolean hasTitle() { return iTitle != null && !iTitle.isEmpty(); }
 		
-		public Comparable<?> getComparable() { return (iComparable != null ? iComparable : toString()); }
-		public CellInterface setComparable(Comparable<?> comparable) { iComparable = comparable; return this; }
+		public Comparable<?>[] getComparable() { return (iComparable != null ? iComparable : new String[] {toString()}); }
 		public CellInterface setSortable(boolean sortable) { iSortable = sortable; return this; }
 		public boolean isSortable() { return iSortable != null && iSortable.booleanValue(); }
+		public boolean hasSortable() { return iSortable != null; }
+		public CellInterface setComparable(Comparable<?>... comparable) {
+			iComparable = comparable;
+			return this;
+		}
 		
 		public String getColor() { return iColor; }
 		public CellInterface setColor(String color) { iColor = color; return this; }
@@ -371,6 +388,7 @@ public class TableInterface implements IsSerializable {
 		}
 		
 		public List<String> getAnchors() { return iAnchors; }
+		@SuppressWarnings("rawtypes")
 		public CellInterface addAnchor(String anchor) {
 			if (iAnchors == null) iAnchors = new ArrayList();
 			iAnchors.add(anchor);
@@ -511,6 +529,29 @@ public class TableInterface implements IsSerializable {
 			}
 			return ret;
 		}
+
+		@Override
+		@SuppressWarnings("rawtypes")
+		public int compareTo(CellInterface o) {
+			Comparable[] a = getComparable();
+			Comparable[] b = o.getComparable();
+			for (int i = 0; i < Math.min(a.length, b.length); i++) {
+	            if (a[i] == null) {
+	                if (b[i] == null) continue;
+	                return -1;
+	            }
+	            if (b[i] == null) return 1;
+	            int cmp = 0;
+	            if (a[i] != null && a[i] instanceof String && b[i] != null && b[i] instanceof String)
+	                cmp = NaturalOrderComparator.compare((String)a[i], (String)b[i]);
+	            else
+	                cmp = a[i].compareTo(b[i]);
+	            if (cmp != 0) return cmp;
+	        }
+	        if (a.length > b.length) return 1;
+	        if (a.length < b.length) return -1;
+	        return 0;
+		}
 	}
 	
 	public static class ImageInterface implements IsSerializable {
@@ -612,5 +653,33 @@ public class TableInterface implements IsSerializable {
 		public void setNavigationLevel(Integer level) { iNavigationLevel = level; }
 		public List<Long> getIds() { return iIds; }
 		public void setIds(List<Long> ids) { iIds = ids; }
+	}
+	
+	public void sort(String sort) {
+		if (!hasHeader() || sort == null || sort.isEmpty()) return;
+		LineInterface header = getHeader().get(0);
+		for (int col = 0; col < header.getCells().size(); col++) {
+			if (sort.equals(header.getCell(col).getText())) {
+				sort(col, true);
+			} else if (sort.equals("!" + header.getCell(col).getText())) {
+				sort(col, false);
+			}
+		}
+	}
+	
+	public void sort(final int column, final boolean asc) {
+		if (!hasLines()) return;
+		Collections.sort(getLines(), new Comparator<LineInterface>() {
+			@Override
+			public int compare(LineInterface l1, LineInterface l2) {
+				CellInterface c1 = l1.getCell(column);
+				CellInterface c2 = l2.getCell(column);
+				if (c1 == null) {
+					return (c2 == null ? 0 : 1);
+				}
+				if (c2 == null) return -1;
+				return (asc ? c1.compareTo(c2) : c2.compareTo(c1));
+			}
+		});
 	}
 }
