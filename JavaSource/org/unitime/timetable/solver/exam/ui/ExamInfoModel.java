@@ -350,7 +350,10 @@ public class ExamInfoModel implements Serializable {
             for (StringTokenizer stk=new StringTokenizer(rooms,":");stk.hasMoreTokens();) {
                 String token = stk.nextToken();
                 if (token.trim().length()==0) continue;
-                assignedRooms.add(Long.valueOf(token.substring(0, token.indexOf('@'))));
+                if (token.indexOf('@') < 0)
+                	assignedRooms.add(Long.valueOf(token));
+                else
+                	assignedRooms.add(Long.valueOf(token.substring(0, token.indexOf('@'))));
             }
             assignment = getSolver().getAssignment(getExam().getExamId(), assignment.getPeriodId(), assignedRooms);
         } else {
@@ -358,7 +361,11 @@ public class ExamInfoModel implements Serializable {
             for (StringTokenizer stk=new StringTokenizer(rooms,":");stk.hasMoreTokens();) {
                 String token = stk.nextToken();
                 if (token.trim().length()==0) continue;
-                Long roomId = Long.valueOf(token.substring(0, token.indexOf('@')));
+                Long roomId = null;
+                if (token.indexOf('@') < 0)
+                	roomId = Long.valueOf(token);
+                else
+                	roomId = Long.valueOf(token.substring(0, token.indexOf('@')));
                 ExamRoomInfo room = null;
                 for (ExamRoomInfo r : getRooms()) {
                     if (r.getLocationId().equals(roomId)) { room = r; break; }

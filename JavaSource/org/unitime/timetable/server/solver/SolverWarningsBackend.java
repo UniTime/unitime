@@ -66,7 +66,7 @@ public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarning
 			if (warn != null) return warn;
 			return getExamAssignmentWarning(context, false);
 		case exam:
-			return getExamAssignmentWarning(context, true);
+			return getExamAssignmentWarning(context, false);
 		}
 		return null;
 	}

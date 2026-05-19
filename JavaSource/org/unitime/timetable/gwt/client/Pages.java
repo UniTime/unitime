@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.exams.AssignedExamsPage;
 import org.unitime.timetable.gwt.client.exams.ExamAssignmentChangesPage;
+import org.unitime.timetable.gwt.client.exams.ExamConflictBasedStatisticsPage;
 import org.unitime.timetable.gwt.client.exams.ExamDetailPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsEditPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsPage;
@@ -440,18 +441,22 @@ public enum Pages {
 	assignedExams(new PageFactory() {
 		public Widget create() { return new AssignedExamsPage(); }
 		public String name(GwtMessages messages) { return messages.pageAssignedExaminations(); }
-		}),
+		}, SolverWarnings.Type.exam),
 	notAssignedExams(new PageFactory() {
 		public Widget create() { return new NotAssignedExamsPage(); }
 		public String name(GwtMessages messages) { return messages.pageNotAssignedExaminations(); }
-		}),
+		}, SolverWarnings.Type.exam),
 	examChanges(new PageFactory() {
 		public Widget create() { return new ExamAssignmentChangesPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationAssignmentChanges(); }
-		}),
+		}, SolverWarnings.Type.exam),
 	examAssignmentReport(new PageFactory() {
 		public Widget create() { return new ExamReportsPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationReports(); }
+		}, SolverWarnings.Type.exam),
+	ecbs(new PageFactory() {
+		public Widget create() { return new ExamConflictBasedStatisticsPage(); }
+		public String name(GwtMessages messages) { return messages.pageExaminationConflictBasedStatistics(); }
 		}),
 	;
 	

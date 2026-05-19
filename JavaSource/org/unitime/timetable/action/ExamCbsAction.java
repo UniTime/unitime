@@ -19,12 +19,16 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+import java.util.Enumeration;
+
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamCbsForm;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
@@ -46,6 +50,17 @@ public class ExamCbsAction extends UniTimeAction<ExamCbsForm> {
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyExamCBS.isFalse()) {
+    		String url = "ecbs";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check Access
 		sessionContext.checkPermission(Right.ExaminationConflictStatistics);
 		

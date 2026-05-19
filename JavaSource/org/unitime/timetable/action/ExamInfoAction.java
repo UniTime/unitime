@@ -99,7 +99,7 @@ public class ExamInfoAction extends UniTimeAction<ExamInfoForm> {
         form.setModel(model);
         model.apply(request, form);
         
-        if (op==null) {
+        if (op==null || "Try".equals(op)) {
             model.clear(sessionContext.getUser());
         } else if (MSG.buttonApply().equals(op)) {
             model.refreshRooms();
@@ -135,7 +135,7 @@ public class ExamInfoAction extends UniTimeAction<ExamInfoForm> {
             RoomAvailability.setAvailabilityWarning(request, session, model.getExam().getExamType().getUniqueId(), true, true);
         }
         
-        if ("Select".equals(op)) {
+        if ("Select".equals(op) || "Try".equals(op)) {
             synchronized (model) {
                 if (period != null)
                     model.setPeriod(period);

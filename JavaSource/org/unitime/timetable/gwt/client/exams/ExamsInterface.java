@@ -38,6 +38,8 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.ConflictStatisticsFilterRequest;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface.ConflictBasedStatisticsRequest;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -550,4 +552,12 @@ public class ExamsInterface {
 	public static class ExamReportsFilterRequest extends AssignedExamsFilterRequest {}
 	
 	public static class ExamReportsRequest extends AssignedExamsRequest {}
+	
+	public static class ExamConflictStatisticsFilterRequest extends ConflictStatisticsFilterRequest {
+		private static final long serialVersionUID = 1L;
+	}
+	
+	public static class ExamConflictBasedStatisticsRequest extends ConflictBasedStatisticsRequest {
+		private static final long serialVersionUID = 1L;
+	}
 }
