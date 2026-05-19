@@ -31,6 +31,20 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Instructional Offering Detail: Curricula</name>
+			<description>
+				<line>Fixed a recently introduced issue with the student counts on the second and later academic area lines.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.131</version>
+	<release-date>Mon, 18 May 2026</release-date>
+	<category>
+		<title>Course Timetabling</title>
+		<item>
 			<name>Edit Class: Exact Times</name>
 			<description>
 				<line>When adding exact times, do not include a time without a day of the week selected.</line>
@@ -43,7 +57,7 @@
 			</description>
 		</item>
 		<item>
-			<name>Instructional Offering: Details</name>
+			<name>Instructional Offering Detail: Curricula</name>
 			<description>
 				<line>Fixed a recently introduced issue not showing some curricula in certain cases.</line>
 			</description>
