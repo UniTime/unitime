@@ -4067,6 +4067,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Examination Assignment Changes")
 	@DoNotTranslate
 	String pageExaminationAssignmentChanges();
+	
+	@DefaultMessage("Examination Conflict-Based Statistics")
+	@DoNotTranslate
+	String pageExaminationConflictBasedStatistics();
+	
+	@DefaultMessage("Examination Assignment")
+	@DoNotTranslate
+	String pageExaminationAssignment();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -8119,4 +8127,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Update")
 	String colUpdate();
+	
+	@DefaultMessage("Student {0}")
+	String constraintStudent(String constraint);
 }
