@@ -662,6 +662,8 @@ public class CourseCurriculaTable extends Composite {
 				Row row = new Row(RowType.Area, lastArea.get(0).getAcademicArea().getId());
 				iCurricula.addRow(row, line);
 				lastArea.clear();
+				for (int i = 0; i <totalThisArea.length; i++)
+					totalThisArea[i] = new int[] {0, 0, 0, 0, 0, 0, 0};
 			}
 			lastArea.add(curriculum);
 			
