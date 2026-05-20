@@ -39,6 +39,7 @@ import jakarta.servlet.http.HttpSession;
 import org.unitime.timetable.api.ApiToken;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.QueryEncoderBackend;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
@@ -77,9 +78,11 @@ public class ExportServletHelper implements ExportHelper {
 				uc = ((ApiToken)SpringApplicationContextHolder.getBean("apiToken")).getContext(getParameter("token"));
 				if (uc != null) iContext = new CustomExportContext(request.getSession(), uc);
 			} else if (isRequestEncoded()) {
-				String user = getParameter("user");
-				if (user != null)
-					uc = new UniTimeUserContext(user, null, null, null);
+				String[] user = getParameterValues("user");
+				String[] role = getParameterValues("role");
+				if (user != null && user.length == 1 && user[0] != null && !user[0].isEmpty() &&
+					role != null && role.length == 1 && role[0] != null && !role[0].isEmpty() && !Roles.ROLE_ANONYMOUS.equals(role[0]))
+					uc = new UniTimeUserContext(user[0], null, null, null);
 			}
 			if (uc != null) {
 	    		String role = getParameter("role");
