@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.model.HashedQuery;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.dao.HashedQueryDAO;
 import org.unitime.timetable.security.SessionContext;
 
@@ -54,8 +55,8 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 	@Override
 	public EncodeQueryRpcResponse execute(EncodeQueryRpcRequest request, SessionContext context) {
 		String query = request.getQuery() + 
-				(context.getUser() == null ? "" : "&user=" + context.getUser().getExternalUserId() +
-				(context.getUser() == null || context.getUser().getCurrentAuthority() == null ? "" : "&role=" + context.getUser().getCurrentAuthority().getRole()));
+				(context.getUser() == null ? "&user=" : "&user=" + context.getUser().getExternalUserId() +
+				(context.getUser() == null || context.getUser().getCurrentAuthority() == null ? "&role=" + Roles.ROLE_ANONYMOUS : "&role=" + context.getUser().getCurrentAuthority().getRole()));
 		if (request.isHash() && ApplicationProperty.UrlEncoderHashQueryWhenAsked.isTrue()) {
 			return new EncodeQueryRpcResponse(encode(query), hash(query));
 		} else {

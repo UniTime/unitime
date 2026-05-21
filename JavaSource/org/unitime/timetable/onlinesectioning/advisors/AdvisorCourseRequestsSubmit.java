@@ -82,7 +82,7 @@ public class AdvisorCourseRequestsSubmit implements OnlineSectioningAction<Advis
 		try {
 			AdvisorCourseRequestSubmission ret = new AdvisorCourseRequestSubmission();
 			ret.setName("crf-" + server.getAcademicSession().getTerm() + server.getAcademicSession().getYear() + "-" + getDetails().getStudentName().replaceAll("[&$\\+,/:;=\\?@<>\\[\\]\\{\\}\\|\\^\\~%#`\\t\\s\\n\\r \\\\]", "") + "-" + getDetails().getStudentExternalId());
-			ret.setLink("export?q=" + QueryEncoderBackend.encode("output=acrf.pdf&sid=" + server.getAcademicSession().getUniqueId() + "&user=" + helper.getUser().getExternalId() + "&id=" + getDetails().getStudentExternalId()));
+			ret.setLink("export?q=" + QueryEncoderBackend.encode("output=acrf.pdf&sid=" + server.getAcademicSession().getUniqueId() + "&user=" + helper.getUser().getExternalId() + "&role=Advisor&id=" + getDetails().getStudentExternalId()));
 			
 			OnlineSectioningLog.Action.Builder action = helper.getAction();
 			action.setStudent(OnlineSectioningLog.Entity.newBuilder()
