@@ -77,7 +77,7 @@ public class ExportServletHelper implements ExportHelper {
 			if (token != null && ApplicationProperty.ApiCanUseAPIToken.isTrue()) {
 				uc = ((ApiToken)SpringApplicationContextHolder.getBean("apiToken")).getContext(getParameter("token"));
 				if (uc != null) iContext = new CustomExportContext(request.getSession(), uc);
-			} else if (isRequestEncoded()) {
+			} else if (isRequestEncoded() && canAuthorizeEncodedQueries()) {
 				String[] user = getParameterValues("user");
 				String[] role = getParameterValues("role");
 				if (user != null && user.length == 1 && user[0] != null && !user[0].isEmpty() &&
@@ -249,6 +249,14 @@ public class ExportServletHelper implements ExportHelper {
 	@Override
 	public boolean isRequestEncoded() {
 		return iParams instanceof QParams;
+	}
+	
+	public boolean canAuthorizeEncodedQueries() {
+		String output = getParameter("output");
+		String regexp = ApplicationProperty.ExportAuthorizeEncodedQueries.value();
+		if (output == null || output.isEmpty()) return false;
+		if (regexp == null || regexp.isEmpty()) return true;
+		return output.matches(regexp);
 	}
 	
 	public class CustomExportContext extends HttpSessionContext {
