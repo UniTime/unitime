@@ -1456,7 +1456,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			@Override
 			public void onSuccess(EncodeQueryRpcResponse result) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+				ToolBox.open(GWT.getHostPageBaseURL() + result.getExportUrl());
 			}
 		});
 	}
@@ -1483,7 +1483,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				ta.setStyleName("unitime-TextArea");
 				ta.setVisibleLines(5);
 				ta.setCharacterWidth(80);
-				ta.setText(GWT.getHostPageBaseURL() + (result.hasHash() ? "export?x=" + result.getHash() : "export?q=" + result.getQuery()));
+				ta.setText(GWT.getHostPageBaseURL() + result.getExportUrl());
 				UniTimeWidget<TextArea> w = new UniTimeWidget<TextArea>(ta);
 				w.setHint(MESSAGES.hintCtrlCToCopy());
 				form.addRow(w);
@@ -1497,7 +1497,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				h.addButton("download", MESSAGES.buttonDownload(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+						ToolBox.open(GWT.getHostPageBaseURL() + result.getExportUrl());
 						dialog.hide();
 					}
 				});

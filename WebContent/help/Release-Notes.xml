@@ -65,6 +65,9 @@
 			<name>Export: Encrypted URLs</name>
 			<description>
 				<line>Fixed a potential vulnerability problem with encrypted export URLs, allowing an attacker to inject a wrong user ID.</line>
+				<line>It is now possible to specify which exporters allow encrypted URL authorizations (by default, only the iCalendar exports are allowed).
+					<line>This can be configured using the unitime.export.authorizeEncodedQueries application property.</line>
+				</line>
 			</description>
 		</item>
 	</category>
