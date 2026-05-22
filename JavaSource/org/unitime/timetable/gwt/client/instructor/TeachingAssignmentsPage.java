@@ -245,7 +245,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 			}
 			@Override
 			public void onSuccess(EncodeQueryRpcResponse result) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+				ToolBox.open(GWT.getHostPageBaseURL() + result.getExportUrl());
 			}
 		});
 	}
