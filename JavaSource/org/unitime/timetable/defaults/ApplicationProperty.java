@@ -271,6 +271,11 @@ public enum ApplicationProperty {
 	@DefaultValue("true")
 	@Description("Configuration: hash calendar queries to make the iCalendar URL short")
 	UrlEncoderHashQueryWhenAsked("unitime.encode.hash"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Configuration: allow URL encoding for anonymous access (e.g., Lookup Examinations page can provide encrypted/hashed export URLs even when used without authentication).")
+	UrlEncoderAnonymousAccess("unitime.encode.anonymous"),
 
 	@Description("JAAS authentication modules (deprecated)")
 	@Deprecated
@@ -3125,6 +3130,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Edit Class/Scheduling Subpart: enable searcheable date pattern")
 	ClassEditSearcheableDatePattern("unitime.classEdit.searchableDatePattern"),
+
+	@DefaultValue(".*\\.ics")
+	@Description("Exporter: for the encoded export queries (/export?q= or /export?x=), the exporter (output parameter) must match this regular expression for authorization. " +
+	"This means that for matching exports, it is assumed that the export is run by the user for whom the encoded query was generated. By default, only iCalendar exports are allowed.")
+	ExportAuthorizeEncodedQueries("unitime.export.authorizeEncodedQueries")
 	;
 
 	String iKey;

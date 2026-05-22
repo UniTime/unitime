@@ -1959,6 +1959,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EncodeQueryRpcResponse implements GwtRpcResponse {
+		private String iSource;
 		private String iQuery;
 		private String iHash = null;
 		
@@ -1966,12 +1967,27 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public EncodeQueryRpcResponse(String query) { iQuery = query; }
 		public EncodeQueryRpcResponse(String query, String hash) { iQuery = query; iHash = hash; }
 
+		public boolean hasQuery() { return iQuery != null && !iQuery.isEmpty(); }
 		public String getQuery() { return iQuery; }
 		public void setQuery(String query) { iQuery = query; }
+		
+		public boolean hasSource() { return iSource != null && !iSource.isEmpty(); }
+		public EncodeQueryRpcResponse setSource(String source) { iSource = source; return this; }
+		public String getSource() { return iSource; }
 		
 		public boolean hasHash() { return iHash != null && !iHash.isEmpty(); }
 		public String getHash() { return iHash; }
 		public void setHash(String hash) { iHash = hash; }
+		
+		public String getExportUrl() {
+			if (hasHash())
+				return "export?x=" + getHash();
+			if (hasQuery())
+				return "export?q=" + getQuery();
+			if (hasSource())
+				return "export?" + getSource();
+			return null;
+		}
 	}
 	
 	public static class EventPropertiesRpcRequest extends EventRpcRequest<EventPropertiesRpcResponse> {
