@@ -22,6 +22,10 @@ package org.unitime.timetable.export;
 import java.io.IOException;
 import java.util.Enumeration;
 
+import org.unitime.timetable.export.PDFPrinter.A;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+
 /**
  * @author Tomas Muller
  */
@@ -44,5 +48,10 @@ public interface Exporter {
 		public void printLine(String... fields) throws IOException;
 		public void flush() throws IOException;
 		public void close() throws IOException;
+	}
+	
+	public static interface TableAware {
+		public A[] toA(LineInterface line, boolean header);
+		public A toA(CellInterface cell);
 	}
 }

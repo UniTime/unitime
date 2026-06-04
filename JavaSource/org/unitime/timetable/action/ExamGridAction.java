@@ -20,7 +20,9 @@
 package org.unitime.timetable.action;
 
 import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.TreeSet;
 
 import org.apache.struts2.convention.annotation.Action;
@@ -29,6 +31,7 @@ import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamPeriod;
@@ -65,6 +68,17 @@ public class ExamGridAction extends UniTimeAction<ExamGridForm> {
 	public void setResource(String resource) { this.resource = resource; }
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyExamGrid.isFalse()) {
+    		String url = "examGrid";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check Access
 		sessionContext.checkPermission(Right.ExaminationTimetable);
 		

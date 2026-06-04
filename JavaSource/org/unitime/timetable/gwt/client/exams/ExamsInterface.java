@@ -20,9 +20,11 @@
 package org.unitime.timetable.gwt.client.exams;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterResponse;
@@ -38,8 +40,10 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.ConflictStatisticsFilterRequest;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ConflictBasedStatisticsRequest;
+import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridLegend;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -559,5 +563,152 @@ public class ExamsInterface {
 	
 	public static class ExamConflictBasedStatisticsRequest extends ConflictBasedStatisticsRequest {
 		private static final long serialVersionUID = 1L;
+	}
+	
+	public static class ExamGridFilterRequest extends AssignedExamsFilterRequest {
+		private FilterInterface iFilter;
+		
+		public boolean hasFilter() { return iFilter != null; }
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+	}
+	
+	public static class ExamGridRequest implements GwtRpcRequest<ExamGridTable> {
+		private FilterInterface iFilter;
+		
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+	}
+	
+	public static class ExamGridContext implements GwtRpcResponse {
+		List<ExamGridPeriod> iPeriods;
+		
+		public void addPeriod(ExamGridPeriod period) {
+			if (iPeriods == null) iPeriods = new ArrayList<ExamGridPeriod>();
+			iPeriods.add(period);
+		}
+		public List<ExamGridPeriod> getPeriods() { return iPeriods; }
+		public boolean hasPeriods() { return iPeriods != null && !iPeriods.isEmpty(); }		
+	}
+	
+	public static class ExamGridTable implements GwtRpcResponse {
+		List<ExamGridModel> iModels;
+		List<ExamGridPeriod> iPeriods;
+		List<TimetableGridLegend> iAssignedLegend = new ArrayList<TimetableGridLegend>();
+		List<TimetableGridLegend> iNotAssignedLegend = new ArrayList<TimetableGridLegend>();
+		
+		public void addPeriod(ExamGridPeriod period) {
+			if (iPeriods == null) iPeriods = new ArrayList<ExamGridPeriod>();
+			iPeriods.add(period);
+		}
+		public List<ExamGridPeriod> getPeriods() { return iPeriods; }
+		public boolean hasPeriods() { return iPeriods != null && !iPeriods.isEmpty(); }
+		public void addModel(ExamGridModel model) {
+			if (iModels == null) iModels = new ArrayList<ExamGridModel>();
+			iModels.add(model);
+		}
+		public List<ExamGridModel> getModels() { return iModels; }
+		public boolean hasModels() { return iModels != null && !iModels.isEmpty(); }
+		
+		public void addAssignedLegend(String color, String label) { iAssignedLegend.add(new TimetableGridLegend(color, label)); }
+		public List<TimetableGridLegend> getAssignedLegend() { return iAssignedLegend; }
+		public void addNotAssignedLegend(String color, String label) { iNotAssignedLegend.add(new TimetableGridLegend(color, label)); }
+		public List<TimetableGridLegend> getNotAssignedLegend() { return iNotAssignedLegend; }
+	}
+	
+	public static class ExamGridPeriod implements IsSerializable {
+		private Long iId;
+		private Integer iDate, iStart, iLength, iWeek, iDayOfWeek;
+		private String iDateLabel, iTimeLabel, iWeekLabel;
+		private String iBgColor;
+		
+		public ExamGridPeriod() {}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		public Integer getDate() { return iDate; }
+		public void setDate(Integer date) { iDate = date; }
+		public Integer getStart() { return iStart; }
+		public void setStart(Integer start) { iStart = start; }
+		public Integer getLength() { return iLength; }
+		public void setLength(Integer length) { iLength = length; }
+		public Integer getEnd() { return getStart() + getLength(); }
+		public void setDayOfWeek(Integer dow) { iDayOfWeek = dow; }
+		public Integer getDayOfWeek() { return iDayOfWeek; }
+		public void setWeek(Integer week) { iWeek = week; }
+		public Integer getWeek() { return iWeek; }
+		
+		public String getDateLabel() { return iDateLabel; } 
+		public void setDateLabel(String dateLabel) { iDateLabel = dateLabel; }
+		public String getTimeLabel() { return iTimeLabel; } 
+		public void setTimeLabel(String timeLabel) { iTimeLabel = timeLabel; }
+		public String getWeekLabel() { return iWeekLabel; } 
+		public void setWeekLabel(String weekLabel) { iWeekLabel = weekLabel; }
+		
+		public boolean hasBgColor() { return iBgColor != null && !iBgColor.isEmpty(); }
+		public String getBgColor() { return iBgColor; }
+		public void setBgColor(String bgColor) { iBgColor = bgColor; }
+	}
+	
+	public static class ExamGridModel implements IsSerializable {
+		private Long iId;
+	    private String iName;
+	    private Integer iSize = null;
+	    private Map<Long, List<ExamGridCell>> iCells;
+	    private Map<Long, String> iPeriodBgColor;
+	    
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		public Integer getSize() { 
+            if (iSize == null) {
+            	int nrAssignments = 0;
+            	if (iCells != null)
+            		for (List<ExamGridCell> cells: iCells.values())
+            			nrAssignments += cells.size();
+            	return nrAssignments;
+            }
+	        return iSize;
+		}
+		public void setSize(Integer size) { iSize = size; }
+		public boolean hasSize() { return iSize != null && iSize > 0; }
+		public void setPeriodBgColor(Long periodId, String bgColor) {
+			if (iPeriodBgColor == null) iPeriodBgColor = new HashMap<Long, String>();
+			iPeriodBgColor.put(periodId, bgColor);
+		}
+		public String getPeriodBgColor(Long periodId) {
+			if (iPeriodBgColor == null) return null;
+			return iPeriodBgColor.get(periodId);
+		}
+		
+		public void addCell(ExamGridCell cell) {
+			if (iCells == null) iCells = new HashMap<Long, List<ExamGridCell>>();
+			List<ExamGridCell> cells = iCells.get(cell.getPeriodId());
+			if (cells == null) {
+				cells = new ArrayList<ExamsInterface.ExamGridCell>();
+				iCells.put(cell.getPeriodId(), cells);
+			}
+			cells.add(cell);
+		}
+		public List<ExamGridCell> getCells(Long periodId) {
+			if (iCells == null || periodId == null) return null;
+			return iCells.get(periodId);
+		}
+		public boolean hasCells() { return iCells != null && !iCells.isEmpty(); }
+	}
+	
+	public static class ExamGridCell extends CellInterface {
+		private Long iId;
+		private Long iPeriodId;
+		private String iBgColor;
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		public Long getPeriodId() { return iPeriodId; }
+		public void setPeriodId(Long periodId) { iPeriodId = periodId; }
+		public boolean hasBgColor() { return iBgColor != null && !iBgColor.isEmpty(); }
+		public String getBgColor() { return iBgColor; }
+		public void setBgColor(String bgColor) { iBgColor = bgColor; }
 	}
 }

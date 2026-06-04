@@ -33,9 +33,11 @@ import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import org.unitime.timetable.export.Exporter.Printer;
+import org.unitime.timetable.export.Exporter.TableAware;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Formats.Format;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
@@ -60,7 +62,7 @@ import com.lowagie.text.pdf.PdfPTable;
 /**
  * @author Tomas Muller
  */
-public class PDFPrinter implements Printer {
+public class PDFPrinter implements Printer, TableAware {
 	private static Pattern sNumber = Pattern.compile("[+-]?[0-9]*\\.?[0-9]*[a-z]?");
 	private OutputStream iOutput;
 	private Object[] iLastLine = null;
@@ -117,6 +119,13 @@ public class PDFPrinter implements Printer {
 			iMaxWidth[idx] = width;
 		}
 	}
+	
+	public void setupHeader(A... fields) {
+		iTable = new PdfPTable(fields.length - iHiddenColumns.size());
+		iMaxWidth = new float[fields.length];
+		iTable.setHeaderRows(1);
+		iTable.setWidthPercentage(100);
+	}
 
 	@Override
 	public void printLine(String... fields) {
@@ -160,7 +169,9 @@ public class PDFPrinter implements Printer {
 	
 	protected Font font(A f) {
 		Font font = PdfFont.getFont(f.has(F.BOLD), f.has(F.ITALIC));
-		if (f.getColorValue() != null) font.setColor(f.getColorValue());
+		if (f.getColorValue() != null) {
+			font.setColor(f.getColorValue());
+		}
 		if (f.has(F.UNDERLINE)) font.setStyle(Font.UNDERLINE);
 		return font;
 	}
@@ -291,6 +302,7 @@ public class PDFPrinter implements Printer {
 		for (int idx = 0; idx < fields.length; idx++) {
 			if (iHiddenColumns.contains(idx)) continue;
 			A f = fields[idx];
+			if (f.getColSpan() == 0) continue;
 			if (f == null || f.isEmpty() || (iCheckLast && f.equals(iLastLine == null || idx >= iLastLine.length ? null : iLastLine[idx]))) {
 				f = new A();
 				if (fields[idx] != null && fields[idx].has(F.NOSEPARATOR))
@@ -299,7 +311,17 @@ public class PDFPrinter implements Printer {
 			
 			PdfPCell cell = new PdfPCell();
 			float rpad = 0f;
-			cell.setBorder(iLastLine == null && !f.has(F.NOSEPARATOR) ? Rectangle.TOP : Rectangle.NO_BORDER);
+			cell.setBorderColor(new Color(156, 176, 206));
+			cell.setBorder((f.has(F.TOP_DASH) || iLastLine == null && !f.has(F.NOSEPARATOR)) ? Rectangle.TOP : Rectangle.NO_BORDER);
+			if (f.has(F.HAIR_BORDER)) cell.setBorder(Rectangle.BOX);
+			if (f.has(F.LEFT_BORDER)) {
+				cell.setBorder(cell.getBorder() | Rectangle.LEFT);
+				cell.setBorderWidthLeft(2f);
+			}
+			if (f.has(F.TOP_BORDER)) {
+				cell.setBorder(cell.getBorder() | Rectangle.TOP);
+				cell.setBorderWidthTop(2f);
+			}
 			cell.setVerticalAlignment(Element.ALIGN_TOP);
 			if (f.has(F.RIGHT)) {
 				cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -311,7 +333,8 @@ public class PDFPrinter implements Printer {
 				cell.setHorizontalAlignment(Element.ALIGN_LEFT);
 			}
 			cell.setPaddingBottom(4f);
-			cell.setCellEvent(setLineDashEvent);
+			if (!f.has(F.HAIR_BORDER))
+				cell.setCellEvent(setLineDashEvent);
 			
 			if (f.getColSpan() > 1)
 				cell.setColspan(f.getColSpan());
@@ -329,12 +352,13 @@ public class PDFPrinter implements Printer {
 			col += cell.getColspan();
 			iTable.addCell(cell);
 		}
+		/*
 		if (col < iMaxWidth.length) {
 			PdfPCell cell = new PdfPCell();
 			cell.setBorder(Rectangle.NO_BORDER);
 			cell.setColspan(iMaxWidth.length - col);
 			iTable.addCell(cell);
-		}
+		}*/
 		iLastLine = fields;
 	}
 	
@@ -354,21 +378,32 @@ public class PDFPrinter implements Printer {
 				float mw = iMaxWidth[i];
 				if (!iHiddenColumns.contains(i)) { width += 15f + mw; w[wi++] = mw; }
 			}
-			if (width < PageSize.A4.getWidth() - 60f)
-				width = PageSize.A4.getWidth() - 60f;
 			if (iDocument == null) {
-				iDocument = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
+				iDocument = null;
+				if (width < PageSize.A4.getWidth() - 60f)
+					iDocument = new Document(PageSize.A4, 30f, 30f, 30f, 30f);
+				else if (width < PageSize.A4.getHeight() - 60f)
+					iDocument = new Document(new Rectangle(PageSize.A4.getHeight(), PageSize.A4.getWidth()), 30f, 30f, 30f, 30f);
+				else
+					iDocument = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
 				iWriter = PdfWriter.getInstance(iDocument, iOutput);
 				iWriter.setPageEvent(new PdfEventHandler());
 				iDocument.open();
-				iDocument.addTitle(tableName);
+				if (tableName != null)
+					iDocument.addTitle(tableName);
 				iDocument.addAuthor("UniTime "+Constants.getVersion());
 			} else {
 				iDocument.newPage();
-				iDocument.setPageSize(new Rectangle(60f + width, 60f + width * 0.75f));
+				if (width < PageSize.A4.getWidth() - 60f)
+					iDocument.setPageSize(PageSize.A4);
+				else if (width < PageSize.A4.getHeight() - 60f)
+					iDocument.setPageSize(new Rectangle(PageSize.A4.getHeight(), PageSize.A4.getWidth()));
+				else
+					iDocument.setPageSize(new Rectangle(60f + width, 60f + width * 0.75f));
 			}
 			iTable.setWidths(w);
-			iDocument.add(new Paragraph(tableName, PdfFont.getBigFont(true)));
+			if (tableName != null)
+				iDocument.add(new Paragraph(tableName, PdfFont.getBigFont(true)));
 			iDocument.add(iTable);
 			iTable = null;
 		} catch (DocumentException e) {
@@ -388,7 +423,13 @@ public class PDFPrinter implements Printer {
 					float mw = iMaxWidth[i];
 					if (!iHiddenColumns.contains(i)) { width += 15f + mw; w[wi++] = mw; }
 				}
-				Document document = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
+				Document document = null;
+				if (width < PageSize.A4.getWidth() - 60f)
+					document = new Document(PageSize.A4, 30f, 30f, 30f, 30f);
+				else if (width < PageSize.A4.getHeight() - 60f)
+					document = new Document(new Rectangle(PageSize.A4.getHeight(), PageSize.A4.getWidth()), 30f, 30f, 30f, 30f);
+				else
+					document = new Document(new Rectangle(60f + width, 60f + width * 0.75f), 30f, 30f, 30f, 30f);
 				PdfWriter writer = PdfWriter.getInstance(document, iOutput);
 				writer.setPageEvent(new PdfEventHandler());
 				document.open();
@@ -603,7 +644,8 @@ public class PDFPrinter implements Printer {
 	} 
 	
 	public static enum F {
-		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR, INLINE, FIX_BR, WRAP
+		ITALIC, BOLD, UNDERLINE, RIGHT, CENTER, NOSEPARATOR, INLINE, FIX_BR, WRAP,
+		HAIR_BORDER, LEFT_BORDER, TOP_BORDER, TOP_DASH,
 		;
 		
 		public int flag() { return 1 << ordinal(); }
@@ -618,6 +660,7 @@ public class PDFPrinter implements Printer {
 		}
 	}
 	
+	@Override
 	public A[] toA(LineInterface line, boolean header) {
 		List<A> ret = new ArrayList<A>();
 		if (line.hasCells())
@@ -660,6 +703,11 @@ public class PDFPrinter implements Printer {
 		return new A();
 	}
 	
+	@Override
+	public A toA(CellInterface cell) {
+		return toA(cell, null, null, 0);
+	}
+	
 	protected A toA(CellInterface cell, LineInterface line, A parent, int index) {
 		A a = createCell(cell);
 		if (cell.hasWidth()) a.setWidth(cell.getWidth());
@@ -672,7 +720,7 @@ public class PDFPrinter implements Printer {
 		if (parent == null && !cell.hasNoWrap()) a.wrap();
 		a.setColSpan(cell.getColSpan()); a.setRowSpan(cell.getRowSpan());
 		if (cell.hasColor()) a.color(cell.getColor());
-		if (parent == null) {
+		if (parent == null && line != null) {
 			if (line.hasBgColor()) a.setBackground(line.getBgColor());
 			if (line.hasStyle()) applyStyle(a, line.getStyle());
 		}
@@ -691,6 +739,22 @@ public class PDFPrinter implements Printer {
 		} else if (cell.hasImage()) {
 			if (cell.getImage().hasTitle())
 				a.setText(cell.getImage().getTitle());
+		}
+		if (cell.hasClassName() && cell.getClassName().startsWith("pref-")) {
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelProhibited))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sProhibited));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelRequired))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sRequired));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelStronglyDiscouraged))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sStronglyDiscouraged));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelDiscouraged))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sDiscouraged));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelPreferred))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sPreferred));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelStronglyPreferred))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sStronglyPreferred));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelNotAvailable))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sNotAvailable));
 		}
 		if (cell.hasIndent())
 			for (int i = 0; i < cell.getIndent(); i++)

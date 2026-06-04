@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.exams.ExamDetailPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsEditPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsPage;
 import org.unitime.timetable.gwt.client.exams.ExamEditPage;
+import org.unitime.timetable.gwt.client.exams.ExamGridPage;
 import org.unitime.timetable.gwt.client.exams.ExamReportsPage;
 import org.unitime.timetable.gwt.client.exams.ExamsPage;
 import org.unitime.timetable.gwt.client.exams.NotAssignedExamsPage;
@@ -457,6 +458,10 @@ public enum Pages {
 	ecbs(new PageFactory() {
 		public Widget create() { return new ExamConflictBasedStatisticsPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationConflictBasedStatistics(); }
+		}),
+	examGrid(new PageFactory() {
+		public Widget create() { return new ExamGridPage(); }
+		public String name(GwtMessages messages) { return messages.pageExaminationTimetable(); }
 		}),
 	;
 	
