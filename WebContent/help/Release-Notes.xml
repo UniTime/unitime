@@ -44,6 +44,15 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Security: Session Independent If No Session Given</name>
+			<description>
+				<line>Corrected session checking for the session independent if no session is given roles during authorization.</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
