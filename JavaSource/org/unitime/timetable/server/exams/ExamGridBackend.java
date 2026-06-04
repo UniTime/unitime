@@ -384,7 +384,7 @@ public class ExamGridBackend implements GwtRpcImplementation<ExamGridRequest, Ex
             	cell.setBgColor(toBgColor(PreferenceLevel.sNeutral));
             break; 
         case DirectStudentConfs:
-        	cell.setBgColor(conflicts2color(assignment.getNrDirectConflicts(), 6));
+        	cell.setBgColor(conflicts2color(assignment.getNrDirectConflicts(), 15));
         	break;
         case MoreThanTwoADayStudentConfs:
         	cell.setBgColor(conflicts2color(assignment.getNrMoreThanTwoConflicts(), 15));
@@ -403,13 +403,13 @@ public class ExamGridBackend implements GwtRpcImplementation<ExamGridRequest, Ex
             	cell.setBgColor(toBgColor(PreferenceLevel.sNeutral));
             break;
         case DirectInstructorConfs:
-        	cell.setBgColor(conflicts2color(assignment.getNrInstructorDirectConflicts(), 6));
+        	cell.setBgColor(conflicts2color(assignment.getNrInstructorDirectConflicts(), 5));
         	break;
         case MoreThanTwoADayInstructorConfs:
-        	cell.setBgColor(conflicts2color(assignment.getNrInstructorMoreThanTwoConflicts(), 15));
+        	cell.setBgColor(conflicts2color(assignment.getNrInstructorMoreThanTwoConflicts(), 5));
         	break;
         case BackToBackInstructorConfs:
-        	cell.setBgColor(conflicts2color(assignment.getNrInstructorBackToBackConflicts(), 15));
+        	cell.setBgColor(conflicts2color(assignment.getNrInstructorBackToBackConflicts(), 5));
         	break;
         default:
         	cell.setBgColor(toBgColor(PreferenceLevel.sNeutral));
@@ -465,20 +465,20 @@ public class ExamGridBackend implements GwtRpcImplementation<ExamGridRequest, Ex
 	        table.addAssignedLegend(toBgColor(PreferenceLevel.sProhibited), MESSAGES.legendOneOrMoreStudentDirectConflicts());
 	        break;
 		case DirectInstructorConfs:
-			for (int nrConflicts = 0; nrConflicts <= 6; nrConflicts++)
-				table.addAssignedLegend(conflicts2color(nrConflicts, 6), MESSAGES.legendInstructorConflicts(nrConflicts + (nrConflicts == 6 ? " " + MESSAGES.legendOrMore() : "")));
+			for (int nrConflicts = 0; nrConflicts <= 5; nrConflicts++)
+				table.addAssignedLegend(conflicts2color(nrConflicts, 5), MESSAGES.legendInstructorConflicts(nrConflicts + (nrConflicts == 6 ? " " + MESSAGES.legendOrMore() : "")));
 			break;
 		case MoreThanTwoADayInstructorConfs:
-			for (int nrConflicts = 0; nrConflicts <= 15; nrConflicts++)
-				table.addAssignedLegend(conflicts2color(nrConflicts, 15), MESSAGES.legendInstructorMoreThanTwoExamsADayConflicts(nrConflicts + (nrConflicts == 15 ? " " + MESSAGES.legendOrMore() : "")));
+			for (int nrConflicts = 0; nrConflicts <= 5; nrConflicts++)
+				table.addAssignedLegend(conflicts2color(nrConflicts, 5), MESSAGES.legendInstructorMoreThanTwoExamsADayConflicts(nrConflicts + (nrConflicts == 15 ? " " + MESSAGES.legendOrMore() : "")));
 			break;
 		case BackToBackInstructorConfs:
-			for (int nrConflicts = 0; nrConflicts <= 15; nrConflicts++)
-				table.addAssignedLegend(conflicts2color(nrConflicts, 15), MESSAGES.legendInstructorBackToBackConflicts(nrConflicts + (nrConflicts == 15 ? " " + MESSAGES.legendOrMore() : "")));
+			for (int nrConflicts = 0; nrConflicts <= 5; nrConflicts++)
+				table.addAssignedLegend(conflicts2color(nrConflicts, 5), MESSAGES.legendInstructorBackToBackConflicts(nrConflicts + (nrConflicts == 15 ? " " + MESSAGES.legendOrMore() : "")));
 			break;
 		case DirectStudentConfs:
-			for (int nrConflicts = 0; nrConflicts <= 6; nrConflicts++)
-				table.addAssignedLegend(conflicts2color(nrConflicts, 6), MESSAGES.legendStudentDirectConflicts(nrConflicts + (nrConflicts == 6 ? " " + MESSAGES.legendOrMore() : "")));
+			for (int nrConflicts = 0; nrConflicts <= 15; nrConflicts++)
+				table.addAssignedLegend(conflicts2color(nrConflicts, 15), MESSAGES.legendStudentDirectConflicts(nrConflicts + (nrConflicts == 6 ? " " + MESSAGES.legendOrMore() : "")));
 			break;
 		case MoreThanTwoADayStudentConfs:
 			for (int nrConflicts = 0; nrConflicts <= 15; nrConflicts++)
