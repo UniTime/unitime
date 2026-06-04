@@ -302,7 +302,7 @@ public class TableInterface implements IsSerializable {
 		private ImageInterface iImage;
 		private ButtonInterface iButton;
 		private Integer iWidth;
-		private String iUrl;
+		private String iUrl, iDialog;
 		private TableInterface iTable;
 		private String iWarning;
 		private CourseLinkInterface iCourseLink;
@@ -462,6 +462,10 @@ public class TableInterface implements IsSerializable {
 		public CellInterface setUrl(String url) { iUrl = url; return this; }
 		public String getUrl() { return iUrl; }
 		public boolean hasUrl() { return iUrl != null && !iUrl.isEmpty(); }
+		
+		public String getDialog() { return iDialog; }
+		public void setDialog(String dialog) { iDialog = dialog; }
+		public boolean hasDialog() { return iDialog != null && !iDialog.isEmpty(); }
 		
 		public TableInterface getTable() { return iTable; }
 		public CellInterface setTable(TableInterface table) { iTable = table; return this; }

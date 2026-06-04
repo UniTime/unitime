@@ -1791,6 +1791,9 @@ public interface ExaminationMessages extends Messages {
     @DefaultMessage("Show period preferences:")
     String propShowPeriodPreferences();
     
+    @DefaultMessage("Show student conflicts:")
+    String propShowStudentConflicts();
+    
     @DefaultMessage("Order By:")
     String propOrderBy();
     

@@ -85,6 +85,7 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 		
 		public String getLabel() { return iLabel; }
 		public void setLabel(String label) { iLabel = label; }
+		public boolean hasLabel() { return iLabel != null && !iLabel.isEmpty(); }
 		
 		public boolean hasSuffix() { return iSuffix != null && !iSuffix.isEmpty(); }
 		public String getSuffix() { return iSuffix; }
@@ -144,6 +145,12 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 			for (ListItem option: getOptions())
 				if (value.equals(option.getValue())) return option.getText();
 			return null;
+		}
+		public boolean hasOption(String value) {
+			if (value == null || iOptions == null) return false;
+			for (ListItem option: getOptions())
+				if (value.equals(option.getValue())) return true;
+			return false;
 		}
 		
 		public boolean isMultiSelect() { return iMultiSelect; }

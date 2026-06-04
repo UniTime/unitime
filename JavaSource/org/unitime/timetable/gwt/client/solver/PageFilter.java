@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
@@ -47,9 +48,11 @@ import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.gwt.shared.FilterInterface.ListItem;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -441,6 +444,11 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				P composite = new P("composite");
 				composite.add(prev);
 				composite.add(panel);
+				if (param.hasLabel()) {
+					Element input = ToolBox.firstInputElement(w.getElement());
+					if (input != null)
+						Roles.getTextboxRole().setAriaLabelProperty(input, param.getLabel());
+				}
 				setWidget(row, 1, composite);
 			} else if (panel.getWidgetCount() == 1)
 				row = addRow(label, w);

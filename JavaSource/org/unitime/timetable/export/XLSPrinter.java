@@ -50,25 +50,26 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.unitime.timetable.export.Exporter.Printer;
+import org.unitime.timetable.export.Exporter.TableAware;
 import org.unitime.timetable.export.PDFPrinter.A;
 import org.unitime.timetable.export.PDFPrinter.F;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.Formats.Format;
 
 /**
  * @author Tomas Muller
  */
-public class XLSPrinter implements Printer {
+public class XLSPrinter implements Printer, TableAware {
 	private static Pattern sNumber = Pattern.compile("[+-]?[0-9\\,]*\\.?[0-9]*[a-z\\%]?|N/A|NaN|NaN%|\u221e");
 	private static Format<Number> sDFP = Formats.getNumberFormat("#,###,##0.###%");
 	private static Format<Number> sDF = Formats.getNumberFormat("#,###,##0.###");
@@ -83,6 +84,7 @@ public class XLSPrinter implements Printer {
 	private Map<String, CellStyle> iStyles;
 	private Map<String, Font> iFonts = new HashMap<String, Font>();
 	private Map<String, Short> iColors = new HashMap<String, Short>();
+	private short iLastColorIndex = 8;
 	
 	
 	public XLSPrinter(OutputStream output, boolean checkLast) {
@@ -95,11 +97,11 @@ public class XLSPrinter implements Printer {
 		CellStyle style;
         style = iWorkbook.createCellStyle();
         style.setBorderBottom(BorderStyle.THIN);
-        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+        style.setBottomBorderColor(colorToShort(Color.BLACK));
         style.setAlignment(HorizontalAlignment.LEFT);
         style.setVerticalAlignment(VerticalAlignment.TOP);
         style.setFont(getFont(true, false, false, Color.BLACK));
-        style.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+        style.setFillForegroundColor(colorToShort(new Color(156, 176, 206)));
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setWrapText(true);
         iStyles.put("header", style);
@@ -183,7 +185,7 @@ public class XLSPrinter implements Printer {
 				nrLines = Math.max(nrLines, fields[idx].split("\n").length);
 		}
 		if (nrLines > 1)
-			headerRow.setHeightInPoints(nrLines * iSheet.getDefaultRowHeightInPoints() + 1f);
+			headerRow.setHeightInPoints(nrLines * (2f + iSheet.getDefaultRowHeightInPoints()));
 	}
 	
 	@Override
@@ -236,7 +238,7 @@ public class XLSPrinter implements Printer {
 			}
 		}
 		if (nrLines > 1)
-			row.setHeightInPoints(nrLines * iSheet.getDefaultRowHeightInPoints() + 1f);
+			row.setHeightInPoints(nrLines * (2f + iSheet.getDefaultRowHeightInPoints()));
 		iLastLine = fields;
 	}
 	
@@ -280,7 +282,8 @@ public class XLSPrinter implements Printer {
 					}
 				} else {
 					cell.setCellValue(f.getText());
-					nrLines = Math.max(nrLines, f.getText().split("\n").length);
+					if (f.getRowSpan() <= 1)
+						nrLines = Math.max(nrLines, f.getText().split("\n").length);
 				}
 			}
 			if (f.hasChunks()) {
@@ -313,7 +316,8 @@ public class XLSPrinter implements Printer {
 						}
 					}
 				}
-				nrLines = Math.max(nrLines, text.toString().split("\n").length);
+				if (f.getRowSpan() <= 1)
+					nrLines = Math.max(nrLines, text.toString().split("\n").length);
 				font.add(new Integer[] {text.length(), 0});
 				HSSFRichTextString value = new HSSFRichTextString(text.toString());
 				for (int i = 0; i < font.size() - 1; i++)
@@ -330,7 +334,7 @@ public class XLSPrinter implements Printer {
 			}
 		}
 		if (nrLines > 1)
-			row.setHeightInPoints(Math.max(nrLines * iSheet.getDefaultRowHeightInPoints() + 1f, row.getHeightInPoints()));
+			row.setHeightInPoints(Math.max(nrLines * (2f + iSheet.getDefaultRowHeightInPoints()), row.getHeightInPoints()));
 		iLastLine = fields;
 	}
 	
@@ -340,8 +344,17 @@ public class XLSPrinter implements Printer {
 		Short color = iColors.get(colorId);
 		if (color == null) {
 			HSSFPalette palette = ((HSSFWorkbook)iWorkbook).getCustomPalette();
-			HSSFColor clr = palette.findSimilarColor(c.getRed(), c.getGreen(), c.getBlue());
-			color = (clr == null ? IndexedColors.BLACK.getIndex() : clr.getIndex());
+			HSSFColor clr = palette.findColor((byte)c.getRed(), (byte)c.getGreen(), (byte)c.getBlue());
+			if (clr == null || clr.getIndex() >= iLastColorIndex) {
+				if (iLastColorIndex < 64) {
+					color = iLastColorIndex ++;
+					palette.setColorAtIndex(color, (byte)c.getRed(), (byte)c.getGreen(), (byte)c.getBlue());
+				} else {
+					if (clr == null)
+						clr = palette.findSimilarColor(c.getRed(), c.getGreen(), c.getBlue());
+					color = (clr == null ? 0 : clr.getIndex());
+				}
+			}
 			iColors.put(colorId, color);
 		}
 		return color;
@@ -365,24 +378,48 @@ public class XLSPrinter implements Printer {
 	}
 	
 	protected CellStyle getStyle(A f, boolean dashed, String format) {
-		String styleId = (dashed ? "D" : "")
+		String styleId = (dashed || f.has(F.TOP_DASH) ? "D" : "")
 				+ (f.has(F.BOLD) ? "b" : "") + (f.has(F.ITALIC) ? "i" : "") + (f.has(F.UNDERLINE) ? "u" : "")
 				+ (f.has(F.RIGHT) ? "R" : f.has(F.CENTER) ? "C" : "L")
+				+ (f.has(F.HAIR_BORDER) ? "H" : "")
+				+ (f.has(F.LEFT_BORDER) ? "l" : "")
+				+ (f.has(F.TOP_BORDER) ? "t" : "")
 				+ (f.hasColor() ? "#" + Integer.toHexString(f.getColorValue().getRGB()) : "")
 				+ (f.hasBackground() ? "@" + Integer.toHexString(f.getBackground().getRGB()) : "")
 				+ (format == null ? "" : "|" + format);
 		CellStyle style = iStyles.get(styleId);
 		if (style == null) {
 			style = iWorkbook.createCellStyle();
-			if (dashed) {
+			if (f.has(F.HAIR_BORDER)) {
+				style.setBorderTop(BorderStyle.HAIR);
+				style.setBorderLeft(BorderStyle.HAIR);
+				style.setBorderRight(BorderStyle.HAIR);
+				style.setBorderBottom(BorderStyle.HAIR);
+				short color = colorToShort(new Color(156, 176, 206));
+				style.setTopBorderColor(color);
+				style.setLeftBorderColor(color);
+				style.setRightBorderColor(color);
+				style.setBottomBorderColor(color);
+			}
+			if (dashed || f.has(F.TOP_DASH)) {
 				style.setBorderTop(BorderStyle.DASHED);
-		        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+		        style.setTopBorderColor(colorToShort(new Color(156, 176, 206)));
+			}
+			if (f.has(F.LEFT_BORDER)) {
+				style.setBorderLeft(BorderStyle.THIN);
+				style.setLeftBorderColor(colorToShort(new Color(156, 176, 206)));
+			}
+			if (f.has(F.TOP_BORDER)) {
+				style.setBorderTop(BorderStyle.THIN);
+				style.setTopBorderColor(colorToShort(new Color(156, 176, 206)));
 			}
 			style.setAlignment(f.has(F.RIGHT) ? HorizontalAlignment.RIGHT : f.has(F.CENTER) ? HorizontalAlignment.CENTER : HorizontalAlignment.LEFT);
 			style.setVerticalAlignment(VerticalAlignment.TOP);
 			style.setFont(getFont(f.has(F.BOLD), f.has(F.ITALIC), f.has(F.UNDERLINE), f.getColorValue()));
-			if (f.hasBackground())
-				style.setFillBackgroundColor(colorToShort(f.getBackground()));
+			if (f.hasBackground()) {
+				style.setFillForegroundColor(colorToShort(f.getBackground()));
+		        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			}
         	style.setWrapText(true);
         	if (format != null)
         		style.setDataFormat(iWorkbook.createDataFormat().getFormat(format));
@@ -614,6 +651,7 @@ public class XLSPrinter implements Printer {
 		iWorkbook.close();
 	}
 	
+	@Override
 	public A[] toA(LineInterface line, boolean header) {
 		List<A> ret = new ArrayList<A>();
 		if (line.hasCells())
@@ -649,6 +687,11 @@ public class XLSPrinter implements Printer {
 		return new A();
 	}
 	
+	@Override
+	public A toA(CellInterface cell) {
+		return toA(cell, null, null, 0);
+	}
+	
 	protected A toA(CellInterface cell, LineInterface line, A parent, int index) {
 		A a = createCell(cell);
 		if (cell.hasWidth()) a.setWidth(cell.getWidth());
@@ -661,7 +704,7 @@ public class XLSPrinter implements Printer {
 		if (parent == null && !cell.hasNoWrap()) a.wrap();
 		a.setColSpan(cell.getColSpan()); a.setRowSpan(cell.getRowSpan());
 		if (cell.hasColor()) a.color(cell.getColor());
-		if (parent == null) {
+		if (parent == null && line != null) {
 			if (line.hasBgColor()) a.setBackground(line.getBgColor());
 			if (line.hasStyle()) applyStyle(a, line.getStyle());
 		}
@@ -680,6 +723,22 @@ public class XLSPrinter implements Printer {
 		} else if (cell.hasImage()) {
 			if (cell.getImage().hasTitle())
 				a.setText(cell.getImage().getTitle());
+		}
+		if (cell.hasClassName() && cell.getClassName().startsWith("pref-")) {
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelProhibited))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sProhibited));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelRequired))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sRequired));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelStronglyDiscouraged))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sStronglyDiscouraged));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelDiscouraged))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sDiscouraged));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelPreferred))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sPreferred));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelStronglyPreferred))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sStronglyPreferred));
+			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelNotAvailable))
+				a.setColor(PreferenceLevel.prolog2color(PreferenceLevel.sNotAvailable));
 		}
 		if (cell.hasIndent())
 			for (int i = 0; i < cell.getIndent(); i++)

@@ -510,6 +510,9 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 						if (cell.getUrl().startsWith("#")) {
 							History.newItem(cell.getUrl().substring(1), true);
 							evt.stopPropagation();
+						} else if (cell.hasDialog()) {
+							UniTimeFrameDialog.openDialog(
+									cell.getDialog(), GWT.getHostPageBaseURL() + cell.getUrl(), "900", "90%");
 						} else {
 							ToolBox.open(GWT.getHostPageBaseURL() + cell.getUrl());
 						}

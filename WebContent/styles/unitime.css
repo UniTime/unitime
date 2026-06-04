@@ -3410,7 +3410,7 @@ div.gwt-MenuBarPopup {
 	
 }
 
-unitime-RoomSharingWidget .legend .blank {
+.unitime-RoomSharingWidget .legend .blank {
 	display: table-cell;
 }
 
@@ -8801,4 +8801,106 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-MainTable .blank-cell {
 	display: none;
+}
+
+.unitime-ExamGrid {
+	white-space: pre-wrap;
+	border-spacing: 0px;
+}
+
+.unitime-ExamGrid .grid-header {
+	font-weight: bold;
+	background-color: #f1f3f9;
+	height: 100%;
+	padding: 2px;
+}
+
+.unitime-ExamGrid .multi-cell {
+	display: block;
+	height: 100%;
+}
+
+.unitime-ExamGrid .multi-cell:has(> span:nth-child(2)) {
+	overflow: clip;
+}
+
+.unitime-ExamGrid .cell {
+	display: block;
+}
+
+.unitime-ExamGrid .multi-cell .cell:nth-child(n+2) {
+	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-ExamGrid .multi-cell .cell:last-child {
+	height: 100%;
+}
+
+.unitime-ExamGrid tr:first-child td {
+	border-top: 1px solid #9CB0CE;
+}
+
+.unitime-ExamGrid td:first-child {
+	border-left: 1px solid #9CB0CE;
+}
+ 
+.unitime-ExamGrid td {
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	padding: 0px;
+	width: 120px;
+	height: 40px;
+	text-align: center;
+}
+
+.unitime-ExamGrid .cell {
+	padding: 2px;
+}
+
+.unitime-ExamGrid .clickable-cell:hover {
+	cursor: pointer;
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-ExamGrid .ver-br-left {
+	border-left: 2px solid #9CB0CE !important;
+}
+
+.unitime-ExamGrid .hor-br-top {
+	border-top: 2px solid #9CB0CE;
+}
+
+.unitime-ExamGrid .hor-br-top-thin {
+	border-top: 1px solid #9CB0CE;
+}
+
+.unitime-ExamGrid td:has(> .blank-cell) {
+	background-color: #c8c8c8;	
+}
+
+.unitime-ExamGrid .empty-cell {
+	display: block;
+	height: 100%;
+	width: 100%;	
+}
+
+.unitime-ExamGridPage .grid-scroll {
+	overflow-x: auto; 
+	max-width: calc(100vw - 20px);
+}
+
+.unitime-ExamGridPage .legend .box {
+	width: 40px;
+	height: 20px;
+	vertical-align: middle;
+	display: inline-block;
+	border: 1px solid black;
+	margin: 1px 5px 0px 10px;
+}
+
+.unitime-ExamGridPage .legend .text {
+	display: inline-block;
+	vertical-align: middle;
 }
