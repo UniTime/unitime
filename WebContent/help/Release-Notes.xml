@@ -29,6 +29,27 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Technology Update / GWT</name>
+			<description>
+				<line>The following pages have been rewritten to GWT:
+					<line>Assigned Examinations</line>
+					<line>Not-Assigned Examinations</line>
+					<line>Examination Assignment Changes</line>
+					<line>Examination Conflict-Based Statistics</line>
+					<line>Examination Assignment Reports</line>
+					<line>Examination Timetable Grid</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.135</version>
+	<release-date>Sat, 23 May 2026</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offering Detail: Curricula</name>
