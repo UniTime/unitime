@@ -100,6 +100,8 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     	CellInterface cell = new CellInterface();
     	cell.setText(getName());
     	cell.setColor(PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(getPreference())));
+    	if (getPreference() >= 500)
+    		cell.addStyle("text-decoration: line-through;");
     	cell.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + getLocationId() + "', '" + PreferenceLevel.int2string(getPreference()) + "');");
 		cell.setMouseOut("$wnd.hideGwtRoomHint();");
 		return cell;

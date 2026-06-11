@@ -205,6 +205,16 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         }
         return ret;
     }
+    
+	public CellInterface toRoomCell() {
+		CellInterface r = new CellInterface(); r.setNoWrap(true);
+		for (ExamRoomInfo rm: getRooms()) {
+			if (r.hasItems()) r.add(", ");
+			r.addItem(rm.toCell());
+		}
+		return r;
+	}
+
 
     public Long getPeriodId() {
         return iPeriodId;
@@ -224,7 +234,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
 
     public Comparable getPeriodOrd() {
         if (iPeriodIdx>=0) return Integer.valueOf(iPeriodIdx);
-        else return iPeriod;
+        else return getPeriod().getDateOffset() * 288 + getPeriod().getStartSlot();
     }
     
     public Integer getPeriodIndex() {
@@ -276,6 +286,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public CellInterface getPeriodCell() {
     	CellInterface cell = new CellInterface();
     	cell.setText(getPeriodName());
+    	cell.setColor(PreferenceLevel.prolog2color(getPeriodPref()));
     	if (getPeriodId() != null) {
         	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
         		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + getExamId() + "," + getPeriodId() + "');");

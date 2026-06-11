@@ -94,7 +94,7 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
             }
         }
         //if (initial!=null && initial.assignmentEquals(change)) return;
-        if (change.getPeriodId()!=null) {
+        if (change != null && change.getPeriodId()!=null) {
             iAssignments.add(change); 
             if (initial!=null && initial.getPeriodId()!=null) 
                 iInitials.put(initial.getExamId(),initial);

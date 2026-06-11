@@ -283,7 +283,7 @@ public class ExamAssignmentChangesTableBuilder extends ExaminationsTableBuilder 
                     }
         			rooms.addStyle("display: inline-block; vertical-align: top;");
         		}
-        		cell.add(" \u2192 ").addStyle("vertical-align: middle;");
+        		cell.add(" \u2192 ").addStyle("vertical-align: top;");
         		if (exam.getRooms() == null) {
         			cell.add(XMSG.notAssigned()).addStyle("font-style:italic;").setColor(PreferenceLevel.prolog2color("P"));
         		} else {

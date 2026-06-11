@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 
@@ -26,20 +27,18 @@ import com.google.gwt.user.client.Window;
  * @author Tomas Muller
  */
 public class Refresh {
-	
 	public static native void createTriggers()/*-{
-	$wnd.refreshPage = function(message) {
-		@org.unitime.timetable.gwt.client.page.Refresh::refreshPage()();
+	$wnd.refreshPage = function(anchor) {
+		@org.unitime.timetable.gwt.client.page.Refresh::refreshPage(Ljava/lang/String;)(anchor);
 	};
 	@org.unitime.timetable.gwt.client.page.Refresh::scrollDown()();
 	}-*/;
 	
-	public static void refreshPage() {
-		String url = Window.Location.getHref();
-		if (url.indexOf('#') >= 0)
-			url = url.substring(0, url.lastIndexOf('#'));
-		url += "#" + Window.getScrollLeft() + ":" + Window.getScrollTop();
-		Window.Location.assign(url);
+	public static void refreshPage(String anchor) {
+		if (anchor != null)
+			History.newItem(anchor);
+		else if (Window.getScrollLeft() != 0 || Window.getScrollTop() != 0)
+			History.newItem(Window.getScrollLeft() + ":" + Window.getScrollTop(), false);
 		new Timer() {
 			@Override
 			public void run() {
@@ -49,11 +48,10 @@ public class Refresh {
 	}
 		
 	public static void scrollDown() {
-		String hash = Window.Location.getHash();
+		final String hash = Window.Location.getHash();
 		if (hash != null && hash.matches("#[0-9]+:[0-9]+")) {
 			String[] scroll = hash.substring(1).split(":");
 			Window.scrollTo(Integer.parseInt(scroll[0]), Integer.parseInt(scroll[1]));
 		}
 	}
-
 }

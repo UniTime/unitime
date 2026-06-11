@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Date;
+import java.util.Enumeration;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
@@ -27,6 +29,7 @@ import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ExamInfoForm;
 import org.unitime.timetable.model.ExamPeriod;
@@ -72,6 +75,18 @@ public class ExamInfoAction extends UniTimeAction<ExamInfoForm> {
 	public void setDelete(Long delete) { this.delete = delete; }
 	
     public String execute() throws Exception {
+		if (ApplicationProperty.LegacyExamAssignment.isFalse()) {
+    		String url = "examAssignment?menu=hide";
+    		boolean first = false;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
+		
     	if (form == null) {
 	    	form = new ExamInfoForm();
 	    	form.reset();

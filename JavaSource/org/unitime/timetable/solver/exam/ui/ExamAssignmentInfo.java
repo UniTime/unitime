@@ -1706,6 +1706,20 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         public String getType() {
             return iType;
         }
+        public CellInterface getTypeCell() {
+        	CellInterface cell = new CellInterface();
+        	cell.setText(getType());
+        	String title = PreferenceLevel.prolog2string(getPreference())+" "+getType()+" with ";
+            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
+                ExamInfo a = (ExamInfo)i.next();
+                title += a.getExamName();
+                if (i.hasNext()) title += " and ";
+            }
+            cell.setTitle(title);
+            cell.addStyle("font-weight:bold;");
+            cell.setColor(PreferenceLevel.prolog2color(getPreference()));
+            return cell;
+        }
         public String getTypeHtml() {
             String title = PreferenceLevel.prolog2string(getPreference())+" "+getType()+" with ";
             for (Iterator i=getOtherExams().iterator();i.hasNext();) {

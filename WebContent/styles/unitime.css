@@ -8904,3 +8904,41 @@ div.gwt-MenuBarPopup {
 	display: inline-block;
 	vertical-align: middle;
 }
+
+.unitime-ExamAssignmentPage .domain-items {
+	max-width: 800px;
+}
+
+.unitime-ExamAssignmentPage .domain-item {
+	display: inline-block;
+	min-width: 25%;
+	padding: 0px 5px 0px 5px;
+	cursor: pointer;
+	border-right: 1px dashed #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-ExamAssignmentPage .selected-total {
+	display: inline;
+	padding-left: 20px;
+}
+
+.unitime-ExamAssignmentPage .domain-item:nth-child(4n+4) {
+	border-right: none;
+}
+
+.unitime-ExamAssignmentPage .domain-item-label {
+	display: inline-block;
+	min-width: 80%;
+}
+
+.unitime-ExamAssignmentPage .domain-item-extra {
+	display: inline-block;
+	min-width: 20%;
+	text-align: right;
+	padding-right: 3px;
+}
+
+.unitime-ExamAssignmentPage .assigned-period {
+	text-decoration: underline;
+}
