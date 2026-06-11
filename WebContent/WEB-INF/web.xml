@@ -270,6 +270,7 @@
     	<url-pattern>/examAssignmentReport</url-pattern>
     	<url-pattern>/ecbs</url-pattern>
     	<url-pattern>/examGrid</url-pattern>
+    	<url-pattern>/examAssignment</url-pattern>
     </servlet-mapping>
 	
 	<filter>

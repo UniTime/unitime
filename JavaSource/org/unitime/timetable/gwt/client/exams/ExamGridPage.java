@@ -48,6 +48,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -187,6 +188,7 @@ public class ExamGridPage extends Composite {
 				iFilter.getFooter().setEnabled("exportCsv", false);
 				iFilter.getFooter().setEnabled("exportXls", false);
 				iFilter.getFooter().setEnabled("exportPdf", false);
+				createTriggers();
 			}
 		});
 	}
@@ -266,4 +268,25 @@ public class ExamGridPage extends Composite {
 			+ iFilter.getFullQuery());
 	}
 
+	public static native void createTriggers()/*-{
+		$wnd.refreshPage = function() {
+			@org.unitime.timetable.gwt.client.exams.ExamGridPage::__search()();
+		};
+	}-*/;
+
+	public static void __search() {
+		final int left = Window.getScrollLeft();
+		final int top = Window.getScrollTop();
+		ExamGridPage page = (ExamGridPage)RootPanel.get("UniTimeGWT:Body").getWidget(0);
+		page.search(new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				if (result)
+					Window.scrollTo(left, top);
+			}
+		});
+	}
 }

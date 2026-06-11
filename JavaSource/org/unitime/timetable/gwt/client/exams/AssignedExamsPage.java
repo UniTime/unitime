@@ -56,6 +56,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 public class AssignedExamsPage extends Composite {
@@ -179,6 +180,7 @@ public class AssignedExamsPage extends Composite {
 					}
 					DomEvent.fireNativeEvent(Document.get().createChangeEvent(), list);
 				}
+				createTriggers();
 				if (autoSearch)
 					search(null);
 			}
@@ -288,6 +290,28 @@ public class AssignedExamsPage extends Composite {
 		ToolBox.open(GWT.getHostPageBaseURL() + "export?output=" + format + "&sid=" + iConfig.getSessionId()
 			+ (sort == null ? "" : "&sort=" + sort)
 			+ iFilter.getFullQuery());
+	}
+	
+	public static native void createTriggers()/*-{
+		$wnd.refreshPage = function() {
+			@org.unitime.timetable.gwt.client.exams.AssignedExamsPage::__search()();
+		};
+	}-*/;
+
+	public static void __search() {
+		final int left = Window.getScrollLeft();
+		final int top = Window.getScrollTop();
+		AssignedExamsPage page = (AssignedExamsPage)RootPanel.get("UniTimeGWT:Body").getWidget(0);
+		page.search(new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				if (result)
+					Window.scrollTo(left, top);
+			}
+		});
 	}
 
 }

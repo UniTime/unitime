@@ -238,13 +238,14 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
             }
             if (period==null) return null;
             HashSet rooms = new HashSet();
-            for (Long roomId: roomIds) {
-                ExamRoomPlacement room = null;
-                for (ExamRoomPlacement r: exam.getRoomPlacements()) {
-                    if (r.getId()==roomId) { room = r; break; }
+            if (roomIds != null)
+                for (Long roomId: roomIds) {
+                    ExamRoomPlacement room = null;
+                    for (ExamRoomPlacement r: exam.getRoomPlacements()) {
+                        if (r.getId()==roomId) { room = r; break; }
+                    }
+                    if (room!=null) rooms.add(room);
                 }
-                if (room!=null) rooms.add(room);
-            }
             return new ExamAssignmentInfo(exam, new ExamPlacement(exam, period, rooms), currentSolution().getAssignment());
         } finally {
         	lock.unlock();
@@ -903,7 +904,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     
     @Override
     public Vector<ExamRoomInfo> getRooms(long examId, long periodId, ExamProposedChange change, int minRoomSize, int maxRoomSize, String filter, boolean allowConflicts) {
-        Lock lock = currentSolution().getLock().readLock();
+        Lock lock = currentSolution().getLock().writeLock();
         lock.lock();
         try {
             //lookup exam, period etc.
@@ -960,7 +961,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
 
                 if (!allowConflicts && conf) continue;
                 
-                rooms.add(new ExamRoomInfo(room.getRoom(), (conf?100:0) + room.getPenalty(period.getPeriod())));
+                rooms.add(new ExamRoomInfo(room.getRoom(), (conf?1000:0) + room.getPenalty(period.getPeriod())));
             }
             
             //undo change
@@ -979,7 +980,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
     
     @Override
     public Collection<ExamAssignmentInfo> getPeriods(long examId, ExamProposedChange change) {
-        Lock lock = currentSolution().getLock().readLock();
+        Lock lock = currentSolution().getLock().writeLock();
         lock.lock();
         try {
             //lookup exam
@@ -1008,7 +1009,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
                         currentSolution().getAssignment().unassign(0, conflict.variable());
                     }
                     if (currentSolution().getAssignment().getValue(placement.variable())!=null)
-                        undoAssign.put((Exam)placement.variable(),currentSolution().getAssignment().getValue(placement.variable()));
+                        undoAssign.put((Exam)placement.variable(), currentSolution().getAssignment().getValue(placement.variable()));
                     else
                         undoUnassing.add((Exam)placement.variable());
                     currentSolution().getAssignment().assign(0, placement);
@@ -1032,7 +1033,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
             	currentSolution().getAssignment().unassign(0, entry.getKey());
             for (Map.Entry<Exam, ExamPlacement> entry : undoAssign.entrySet())
             	currentSolution().getAssignment().assign(0, entry.getValue());
-            
+
             return periods;
         } finally {
         	lock.unlock();

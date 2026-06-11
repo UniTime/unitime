@@ -385,6 +385,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		Set<String> flag = (options == null || "flag".equals(ignoreCommand) ? null : options.get("flag"));
 		Set<String> departments = (options == null || "department".equals(ignoreCommand) ? null : options.get("department"));
 		boolean nearby = (flag != null && (flag.contains("nearby") || flag.contains("Nearby")));
+		boolean examcap = (flag != null && (flag.contains("examcap") || flag.contains("Examination Capacity")));
 
 		Set<String> featureTypes = new HashSet<String>();
 		for (RoomFeatureType ft: RoomFeatureTypeDAO.getInstance().findAll())
@@ -392,7 +393,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		
 		List<Location> ret = new ArrayList<Location>();
 		for (Location location: locations) {
-			if (query != null && !query.match(new LocationMatcher(location, featureTypes, departments))) continue;
+			if (query != null && !query.match(new LocationMatcher(location, featureTypes, departments).setUseExamCapacity(examcap))) continue;
 			if (nearby && building != null && !building.isEmpty() && (!(location instanceof Room) || !building.contains(((Room)location).getBuilding().getAbbreviation()))) continue;
 			ret.add(location);
 		}
@@ -417,7 +418,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			if (!coord.isEmpty()) {
 				for (Location location: locations) {
 					if (building != null && !building.isEmpty() && (location instanceof Room) && building.contains(((Room)location).getBuilding().getAbbreviation())) continue;
-					if (query != null && !query.match(new LocationMatcher(location, featureTypes, departments))) continue;
+					if (query != null && !query.match(new LocationMatcher(location, featureTypes, departments).setUseExamCapacity(examcap))) continue;
 					Coordinates c = new Coordinates(location);
 					Double distance = null;
 					for (Coordinates x: coord) {
@@ -465,10 +466,15 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	@Override
 	public void suggestions(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		fixRoomFeatureTypes(request);
+		
+		Set<String> flag = request.getOptions("flag");
+		boolean examcap = (flag != null && (flag.contains("examcap") || flag.contains("Examination Capacity")));
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, distances, null, context)) {
 			String hint = location.getRoomTypeLabel() + (location.getCapacity() == null ? "" : ", " + MESSAGES.hintRoomCapacity(location.getCapacity().toString()));
+			if (examcap)
+				hint = location.getRoomTypeLabel() + (location.getExamCapacity() == null ? "" : ", " + MESSAGES.hintRoomCapacity(location.getExamCapacity().toString()));
 			Double dist = distances.get(location.getUniqueId());
 			if (dist != null) hint += ", " + MESSAGES.hintRoomDistance(String.valueOf(Math.round(dist)));
 			response.addSuggestion(location.getLabelWithDisplayName(), location.getLabel(), "(" + hint + ")");
@@ -556,16 +562,19 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		private Location iLocation;
 		private Set<String> iFeatureTypes = null;
 		private Set<String> iDepartments = null;
+		private boolean iUseExamCapacity = false;
 		
 		public LocationMatcher(Location location, Set<String> featureTypes) {
 			this(location, featureTypes, null);
 		}
-
+		
 		public LocationMatcher(Location location, Set<String> featureTypes, Set<String> departments) {
 			iLocation = location;
 			iFeatureTypes = featureTypes;
 			iDepartments = departments;
 		}
+
+		public LocationMatcher setUseExamCapacity(boolean useExamCapacity) { iUseExamCapacity = useExamCapacity; return this; }
 		
 		public Location getLocation() { return iLocation; }
 
@@ -629,7 +638,8 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 						min = Integer.parseInt(a); max = Integer.parseInt(b);
 					} catch (NumberFormatException e) {}
 				}
-				return min <= getLocation().getCapacity() && getLocation().getCapacity() <= max;
+				Integer capacity = (iUseExamCapacity ? getLocation().getExamCapacity() : getLocation().getCapacity());
+				return capacity != null && min <= capacity && capacity <= max;
 			} else if ("flag".equals(attr) && "event".equalsIgnoreCase(term)) {
 				return getLocation().getEventDepartment() != null && getLocation().getEventDepartment().isAllowEvents() && getLocation().getEffectiveEventStatus() != RoomTypeOption.Status.NoEventManagement;
 			} else if ("department".equals(attr) || "dept".equals(attr) || "event".equals(attr) || "control".equals(attr)) {
@@ -757,6 +767,11 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			}
 		}
 		
+		
+		Set<String> flags = (options == null ? null : options.get("flag"));
+		boolean nearby = (flags != null && (flags.contains("nearby") || flags.contains("Nearby")));
+		boolean examcap = (flags != null && (flags.contains("examcap") || flags.contains("Examination Capacity")));
+		
 		Set<String> size = (options == null ? null : options.get("size"));
 		if (size != null && !size.isEmpty()) {
 			String term = size.iterator().next();
@@ -787,21 +802,18 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			}
 			if (min > 0) {
 				if (max < Integer.MAX_VALUE) {
-					query.addWhere("size", "l.capacity >= :Xmin and l.capacity <= :Xmax");
+					query.addWhere("size", examcap ? "l.examCapacity >= :Xmin and l.examCapacity <= :Xmax" : "l.capacity >= :Xmin and l.capacity <= :Xmax");
 					query.addParameter("size", "Xmin", min);
 					query.addParameter("size", "Xmax", max);
 				} else {
-					query.addWhere("size", "l.capacity >= :Xmin");
+					query.addWhere("size", examcap ? "l.examCapacity >= :Xmin" : "l.capacity >= :Xmin");
 					query.addParameter("size", "Xmin", min);
 				}
 			} else if (max < Integer.MAX_VALUE) {
-				query.addWhere("size", "l.capacity <= :Xmax");
+				query.addWhere("size", examcap ? "l.examCapacity <= :Xmax" : "l.capacity <= :Xmax");
 				query.addParameter("size", "Xmax", max);
 			}
 		}
-		
-		Set<String> flags = (options == null ? null : options.get("flag"));
-		boolean nearby = (flags != null && (flags.contains("nearby") || flags.contains("Nearby")));
 		
 		Set<String> buildings = (options == null ? null : options.get("building"));
 		if (buildings != null && !buildings.isEmpty() && !nearby) {

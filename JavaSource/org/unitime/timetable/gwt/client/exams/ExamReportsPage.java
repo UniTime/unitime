@@ -55,6 +55,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 public class ExamReportsPage extends Composite {
@@ -166,6 +167,7 @@ public class ExamReportsPage extends Composite {
 				iFilter.getFooter().setEnabled("exportCsv", iConfig.isCanExport());
 				iFilter.getFooter().setEnabled("exportXls", iConfig.isCanExport());
 				iFilter.getFooter().setEnabled("exportPdf", iConfig.isCanExport());
+				createTriggers();
 			}
 		});
 	}
@@ -274,5 +276,26 @@ public class ExamReportsPage extends Composite {
 			+ (sort == null ? "" : "&sort=" + URL.encodeQueryString(sort))
 			+ iFilter.getFullQuery());
 	}
-
+	
+	public static native void createTriggers()/*-{
+		$wnd.refreshPage = function() {
+			@org.unitime.timetable.gwt.client.exams.ExamReportsPage::__search()();
+		};
+	}-*/;
+	
+	public static void __search() {
+		final int left = Window.getScrollLeft();
+		final int top = Window.getScrollTop();
+		ExamReportsPage page = (ExamReportsPage)RootPanel.get("UniTimeGWT:Body").getWidget(0);
+		page.search(new AsyncCallback<Boolean>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+			@Override
+			public void onSuccess(Boolean result) {
+				if (result)
+					Window.scrollTo(left, top);
+			}
+		});
+	}
 }

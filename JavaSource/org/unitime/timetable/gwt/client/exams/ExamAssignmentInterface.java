@@ -17,7 +17,7 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.shared;
+package org.unitime.timetable.gwt.client.exams;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,16 +29,18 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.gwt.shared.SolverInterface.HasPageMessages;
+import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionProperties;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class ClassAssignmentPageInterface {
-	
+public class ExamAssignmentInterface {
 	public static enum Operation {
 		INIT,
 		UPDATE,
-		LOCK,
 		ASSIGN,
+		SUGGESTIONS,
 	}
 	
 	public static enum RoomOrder {
@@ -47,114 +49,114 @@ public class ClassAssignmentPageInterface {
 		SIZE_ASC,
 		SIZE_DESC,
 	}
-	
-	public static class ClassAssignmentPageRequest implements GwtRpcRequest<ClassAssignmentPageResponse> {
-		private Long iSelectedClassId;
-		private Long iPreviousClassId;
-		private Long iOfferingId;
+
+	public static class ExamAssignmentRequest implements GwtRpcRequest<ExamAssignmentResponse> {
+		private Long iSelectedExamId;
+		private Long iPreviousExamId;
 		private Operation iOperation;
 		private List<ChangeInterface> iChanges;
-		private Boolean iUseRealStudents = null;
-		private Boolean iShowStudentConflicts = null;
-		private Boolean iKeepConflictingAssignments = false;
 		private Boolean iRoomAllowConflicts = false;
 		private RoomFilterRpcRequest iRoomFilter;
 		private RoomOrder iRoomOrder;
-		
-		public Long getSelectedClassId() { return iSelectedClassId; }
-		public void setSelectedClassId(Long classId) { iSelectedClassId = classId; }
-		public Long getPreviousClassId() { return iPreviousClassId; }
-		public void setPreviousClassId(Long classId) { iPreviousClassId = classId; }
+		private String iSuggestionFilter;
+		private int iSuggestionMax = 30;
+		private int iSuggestionTimeOut = 5;
+		private int iSuggestionDepth = 2;
+
+		public Long getSelectedExamId() { return iSelectedExamId; }
+		public void setSelectedExamId(Long examId) { iSelectedExamId = examId; }
+		public Long getPreviousExamId() { return iPreviousExamId; }
+		public void setPreviousExamId(Long examId) { iPreviousExamId = examId; }
 		public Operation getOperation() { return iOperation; }
 		public void setOperation(Operation operation) { iOperation = operation; }
 
 		public boolean hasChanges() { return iChanges != null && !iChanges.isEmpty(); }
 		public List<ChangeInterface> getChanges() { return iChanges; }
-		public boolean hasChange(Long classId) {
+		public boolean hasChange(Long examId) {
 			if (iChanges == null) return false;
 			for (ChangeInterface ch: iChanges)
-				if (ch.getClassId().equals(classId)) return true;
+				if (ch.getExamId().equals(examId)) return true;
 			return false;
 		}
-		public ChangeInterface getChange(Long classId) {
+		public ChangeInterface getChange(Long examId) {
 			if (iChanges == null) iChanges = new ArrayList<ChangeInterface>();
 			for (ChangeInterface ch: iChanges)
-				if (ch.getClassId().equals(classId)) return ch;
+				if (ch.getExamId().equals(examId)) return ch;
 			ChangeInterface ch = new ChangeInterface();
-			ch.setClassId(classId);
+			ch.setExamId(examId);
 			iChanges.add(ch);
 			return ch;
 		}
-		public ChangeInterface removeChange(Long classId) {
+		public ChangeInterface removeChange(Long examId) {
 			if (iChanges == null) return null;
 			for (Iterator<ChangeInterface> i = iChanges.iterator(); i.hasNext();) {
 				ChangeInterface ch = i.next();
-				if (ch.getClassId().equals(classId)) {
+				if (ch.getExamId().equals(examId)) {
 					i.remove();
 					return ch;
 				}
 			}
 			return null;
 		}
-		public void addChange(Long classId, String date, String time, String room) {
+		public void addChange(Long examId, String period, String room) {
 			if (iChanges == null) iChanges = new ArrayList<ChangeInterface>();
-			ChangeInterface old = getChange(classId);
+			ChangeInterface old = getChange(examId);
 			if (old == null) {
-				iChanges.add(new ChangeInterface(classId, date, time, room));
+				iChanges.add(new ChangeInterface(examId, period, room));
 			} else {
-				old.setDate(date); old.setTime(time); old.setRoom(room);
+				old.setPeriod(period); old.setRoom(room);
 			}
 		}
-		
-	    public void setUseRealStudents(boolean userReal) { iUseRealStudents = userReal; }
-	    public Boolean isUseRealStudents() { return iUseRealStudents; }
-	    public void setKeepConflictingAssignments(boolean keepConflictingAssignments) { iKeepConflictingAssignments = keepConflictingAssignments; }
-	    public Boolean isKeepConflictingAssignments() { return iKeepConflictingAssignments; }
-	    public void setShowStudentConflicts(boolean showStudentConflicts) { iShowStudentConflicts = showStudentConflicts; }
-	    public Boolean isShowStudentConflicts() { return iShowStudentConflicts; }
+		public void clearChanges() {
+			if (iChanges != null) iChanges.clear();
+		}
+
 	    public void setRoomAllowConflicts(boolean roomAllowConflicts) { iRoomAllowConflicts = roomAllowConflicts; }
 	    public Boolean isRoomAllowConflicts() { return iRoomAllowConflicts; }
 		public RoomFilterRpcRequest getRoomFilter() { return iRoomFilter; }
 		public void setRoomFilter(RoomFilterRpcRequest filter) { iRoomFilter = filter; }
-		public void setOfferingId(Long offeringId) { iOfferingId = offeringId; }
-		public Long getOfferingId() { return iOfferingId; }
 		public void setRoomOrder(RoomOrder ord) { iRoomOrder = ord; }
 		public RoomOrder getRoomOrder() { return (iRoomOrder == null ? RoomOrder.NAME_ASC : iRoomOrder); }
+		
+		public String getSuggestionFilter() { return iSuggestionFilter; }
+		public void setSuggestionFilter(String filter) { iSuggestionFilter = filter; }
+		public int getSuggestionMax() { return iSuggestionMax; }
+		public void setSuggestionMax(int limit) { iSuggestionMax = limit; }
+		public int getSuggestionTimeOut() { return iSuggestionTimeOut; }
+		public void setSuggestionTimeOut(int limit) { iSuggestionTimeOut = limit; }
+		public int getSuggestionDepth() { return iSuggestionDepth; }
+		public void setSuggestionDepth(int depth) { iSuggestionDepth = depth; }
 	}
 	
-	public static class ClassAssignmentPageResponse implements GwtRpcResponse {
+	public static class ExamAssignmentResponse implements GwtRpcResponse, HasPageMessages {
 		private Long iSessionId;
-	    private Long iSelectedClassId;
-	    private String iClassName;
-	    private boolean iShowStudentConflicts = true;
-	    private boolean iUseRealStudents = true;
-	    private boolean iKeepConflictingAssignments = false;
-	    private boolean iCanAssign = false;
+	    private Long iSelectedExamId;
+	    private String iExamName, iExamType;
+	    private boolean iCanAssign = false, iCanShowSuggestions = false;
 		private TableInterface iProperties;
 		private TableInterface iAssignments;
-		private TableInterface iStudentConflicts;
-		private List<DomainItem> iDates, iTimes, iRooms;
+		private TableInterface iDistributionConflicts, iStudentConflicts, iInstructorConflicts;
+		private TableInterface iPeriods;
+		private TableInterface iSuggestions;
+		private List<DomainItem> iRooms;
 		private String iUrl;
 		private String iErrorMessage;
-		private String iManagingDeptCode;
-		private Integer iMinRoomCapacity, iNbrRooms;
-		private String iDatesErrorMessage, iTimesErrorMessage, iRoomsErrorMessage;
-		private Boolean iRoomSplitAttendance;
-
-		public Long getSelectedClassId() { return iSelectedClassId; }
-		public void setSelectedClassId(Long classId) { iSelectedClassId = classId; }
+		private Integer iMinRoomCapacity, iMaxRooms;
+		private String iPeriodsErrorMessage, iRoomsErrorMessage;
+		private String iAssignConfirmation;
+		private String iSuggestionsMessage;
+		private Boolean iSuggestionsTimeoutReached;
+		private SuggestionProperties iSuggestionProperties;
+		private List<PageMessage> iPageMessages = null;
 		
-		public String getClassName() { return iClassName; }
-		public void setClassName(String className) { iClassName = className; }
-	    
-	    public boolean isUseRealStudents() { return iUseRealStudents; }
-	    public void setUseRealStudents(boolean userReal) { iUseRealStudents = userReal; }
-	    
-	    public boolean isShowStudentConflicts() { return iShowStudentConflicts; }
-	    public void setShowStudentConflicts(boolean showConflicts) { iShowStudentConflicts = showConflicts; }
-	    
-	    public void setKeepConflictingAssignments(boolean keepConflictingAssignments) { iKeepConflictingAssignments = keepConflictingAssignments; }
-	    public boolean isKeepConflictingAssignments() { return iKeepConflictingAssignments; }
+		
+		public Long getSelectedExamId() { return iSelectedExamId; }
+		public void setSelectedExamId(Long examId) { iSelectedExamId = examId; }
+		
+		public String getExamName() { return iExamName; }
+		public void setExamName(String examName) { iExamName = examName; }
+		public String getExamType() { return iExamType; }
+		public void setExamType(String examType) { iExamType = examType; }
 	    
 		public boolean hasProperties() { return iProperties != null && iProperties.hasProperties(); }
 		public void addProperty(PropertyInterface property) {
@@ -181,25 +183,21 @@ public class ClassAssignmentPageInterface {
 		public TableInterface getAssignments() { return iAssignments; }
 		public void setAssignments(TableInterface assignments) { iAssignments = assignments; }
 
+		public boolean hasDistributionConflicts() { return iDistributionConflicts != null; }
+		public TableInterface getDistributionConflicts() { return iDistributionConflicts; }
+		public void setDistributionConflicts(TableInterface distrubutionConflicts) { iDistributionConflicts = distrubutionConflicts; }
+
 		public boolean hasStudentConflicts() { return iStudentConflicts != null; }
 		public TableInterface getStudentConflicts() { return iStudentConflicts; }
 		public void setStudentConflicts(TableInterface studentConflicts) { iStudentConflicts = studentConflicts; }
+
+		public boolean hasInstructorConflicts() { return iInstructorConflicts != null; }
+		public TableInterface getInstructorConflicts() { return iInstructorConflicts; }
+		public void setInstructorConflicts(TableInterface instructorConflicts) { iInstructorConflicts = instructorConflicts; }
 		
-		public boolean hasDates() { return iDates != null && !iDates.isEmpty(); }
-		public List<DomainItem> getDates() { return iDates; }
-		public void setDates(List<DomainItem> dates) { iDates = dates; }
-		public void addDate(DomainItem date) {
-			if (iDates == null) iDates = new ArrayList<DomainItem>();
-			iDates.add(date);
-		}
-		
-		public boolean hasTimes() { return iTimes != null && !iTimes.isEmpty(); }
-		public List<DomainItem> getTimes() { return iTimes; }
-		public void setTimes(List<DomainItem> dates) { iTimes = dates; }
-		public void addTime(DomainItem time) {
-			if (iTimes == null) iTimes = new ArrayList<DomainItem>();
-			iTimes.add(time);
-		}
+		public boolean hasPeriods() { return iPeriods != null && iPeriods.hasLines(); }
+		public TableInterface getPeriods() { return iPeriods; }
+		public void setPeriods(TableInterface periods) { iPeriods = periods; }
 
 		public boolean hasRooms() { return iRooms != null && !iRooms.isEmpty(); }
 		public List<DomainItem> getRooms() { return iRooms; }
@@ -223,25 +221,15 @@ public class ClassAssignmentPageInterface {
 		}
 		public String getErrorMessage() { return iErrorMessage; }
 		
-		public boolean hasDatesErrorMessage() { return iDatesErrorMessage != null && !iDatesErrorMessage.isEmpty(); }
-		public void setDatesErrorMessage(String message) { iDatesErrorMessage = message; }
-		public void addDatesErrorMessage(String message) {
-			if (iDatesErrorMessage == null || iDatesErrorMessage.isEmpty())
-				iDatesErrorMessage = message;
+		public boolean hasPeriodsErrorMessage() { return iPeriodsErrorMessage != null && !iPeriodsErrorMessage.isEmpty(); }
+		public void setPeriodsErrorMessage(String message) { iPeriodsErrorMessage = message; }
+		public void addPeriodsErrorMessage(String message) {
+			if (iPeriodsErrorMessage == null || iPeriodsErrorMessage.isEmpty())
+				iPeriodsErrorMessage = message;
 			else
-				iDatesErrorMessage += "\n" + message;
+				iPeriodsErrorMessage += "\n" + message;
 		}
-		public String getDatesErrorMessage() { return iDatesErrorMessage; }
-		
-		public boolean hasTimesErrorMessage() { return iTimesErrorMessage != null && !iTimesErrorMessage.isEmpty(); }
-		public void setTimesErrorMessage(String message) { iTimesErrorMessage = message; }
-		public void addTimesErrorMessage(String message) {
-			if (iTimesErrorMessage == null || iTimesErrorMessage.isEmpty())
-				iTimesErrorMessage = message;
-			else
-				iTimesErrorMessage += "\n" + message;
-		}
-		public String getTimesErrorMessage() { return iTimesErrorMessage; }
+		public String getPeriodsErrorMessage() { return iPeriodsErrorMessage; }
 		
 		public boolean hasRoomsErrorMessage() { return iRoomsErrorMessage != null && !iRoomsErrorMessage.isEmpty(); }
 		public void setRoomsErrorMessage(String message) { iRoomsErrorMessage = message; }
@@ -253,54 +241,69 @@ public class ClassAssignmentPageInterface {
 		}
 		public String getRoomsErrorMessage() { return iRoomsErrorMessage; }
 		
-		public String getManagingDeptCode() { return iManagingDeptCode; }
-		public void setManagingDeptCode(String deptCode) { iManagingDeptCode = deptCode; }
 		public Long getSessionId() { return iSessionId; }
 		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 		public Integer getMinRoomCapacity() { return iMinRoomCapacity; }
 		public void setMinRoomCapacity(Integer cap) { iMinRoomCapacity = cap; }
-		public Integer getNbrRooms() { return iNbrRooms; }
-		public void setNbrRooms(Integer nbrRooms) { iNbrRooms = nbrRooms; }
-		public Boolean isRoomSplitAttendance() { return iRoomSplitAttendance; }
-		public void setRoomSplitAttendance(Boolean roomSplitAttendance) { iRoomSplitAttendance = roomSplitAttendance; }
+		public Integer getMaxRooms() { return iMaxRooms; }
+		public void setMaxRooms(Integer maxRooms) { iMaxRooms = maxRooms; }
 		public boolean isCanAssign() { return iCanAssign; }
 		public void setCanAssign(boolean canAssign) { iCanAssign = canAssign; }
+		
+		public boolean hasAssignConfirmation() { return iAssignConfirmation != null && !iAssignConfirmation.isEmpty(); }
+		public String getAssignConfirmation() { return iAssignConfirmation; }
+		public void setAssignConfirmation(String assignConfirmation) { iAssignConfirmation = assignConfirmation; }
+		
+		public boolean isCanShowSuggestions() { return iCanShowSuggestions; }
+		public void setCanShowSuggestions(boolean canShowSuggestions) { iCanShowSuggestions = canShowSuggestions; }
+		
+		public boolean hasSuggestions() { return iSuggestions != null && iSuggestions.hasLines(); }
+		public TableInterface getSuggestions() { return iSuggestions; }
+		public void setSuggestions(TableInterface suggestions) { iSuggestions = suggestions; }
+		public boolean hasSuggestionsMessage() { return iSuggestionsMessage != null && !iSuggestionsMessage.isEmpty(); }
+		public void setSuggestionsMessage(String message) { iSuggestionsMessage = message; }
+		public String getSuggestionsMessage() { return iSuggestionsMessage; }
+		public boolean isSuggestionsTimeoutReached() { return iSuggestionsTimeoutReached != null && iSuggestionsTimeoutReached.booleanValue(); }
+		public void setSuggestionsTimeoutReached(boolean timeoutReached) { iSuggestionsTimeoutReached = timeoutReached; }
+		
+		public SuggestionProperties getSuggestionProperties() { return iSuggestionProperties; }
+		public void setSuggestionProperties(SuggestionProperties properties) { iSuggestionProperties = properties; }
+		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
+		public List<PageMessage> getPageMessages() { return iPageMessages; }
+		public void addPageMessage(PageMessage message) {
+			if (iPageMessages == null) iPageMessages = new ArrayList<PageMessage>();
+			iPageMessages.add(message);
+		}
 	}
 	
 	public static class ChangeInterface implements IsSerializable {
-		private Long iClassId;
-		private String iDate;
-		private String iTime;
+		private Long iExamId;
+		private String iPeriod;
 		private String iRoom;
 		
 		public ChangeInterface() {}
-		public ChangeInterface(Long classId, String date, String time, String room) {
-			iClassId = classId;
-			iDate = date;
-			iTime = time;
+		public ChangeInterface(Long examId, String period, String room) {
+			iExamId = examId;
+			iPeriod = period;
 			iRoom = room;
 		}
 		
-		public Long getClassId() { return iClassId; }
-		public void setClassId(Long classId) { iClassId = classId; }
+		public Long getExamId() { return iExamId; }
+		public void setExamId(Long examId) { iExamId = examId; }
 		
-		public String getDate() { return iDate; }
-		public void setDate(String date) { iDate = date; }
-		public boolean hasDate() { return iDate != null && !iDate.isEmpty(); }
-		
-		public String getTime() { return iTime; }
-		public boolean hasTime() { return iTime != null && !iTime.isEmpty(); }
-		public void setTime(String time) { iTime = time; }
+		public String getPeriod() { return iPeriod; }
+		public void setPeriod(String period) { iPeriod = period; }
+		public boolean hasPeriod() { return iPeriod != null && !iPeriod.isEmpty(); }
 		
 		public String getRoom() { return iRoom; }
 		public boolean hasRoom() { return iRoom != null && !iRoom.isEmpty(); }
 		public void setRoom(String room) { iRoom = room; }
 		
 		@Override
-		public int hashCode() { return getClassId().hashCode(); }
+		public int hashCode() { return getExamId().hashCode(); }
 		
 		@Override
-		public String toString() { return iClassId + "/{date=" + iDate + ", time=" + iTime + ", room=" + iRoom + "}"; }
+		public String toString() { return iExamId + "/{period=" + iPeriod + ", room=" + iRoom + "}"; }
 	}
 	
 	public static class DomainItem implements IsSerializable {
@@ -322,5 +325,4 @@ public class ClassAssignmentPageInterface {
 		public boolean isSelected() { return iSelected; }
 		public void setSelected(boolean selected) { iSelected = selected; }
 	}
-
 }

@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
 import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.exams.AssignedExamsPage;
 import org.unitime.timetable.gwt.client.exams.ExamAssignmentChangesPage;
+import org.unitime.timetable.gwt.client.exams.ExamAssignmentPage;
 import org.unitime.timetable.gwt.client.exams.ExamConflictBasedStatisticsPage;
 import org.unitime.timetable.gwt.client.exams.ExamDetailPage;
 import org.unitime.timetable.gwt.client.exams.ExamDistributionsEditPage;
@@ -462,6 +463,10 @@ public enum Pages {
 	examGrid(new PageFactory() {
 		public Widget create() { return new ExamGridPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationTimetable(); }
+		}),
+	examAssignment(new PageFactory() {
+		public Widget create() { return new ExamAssignmentPage(); }
+		public String name(GwtMessages messages) { return messages.pageExaminationAssignment(); }
 		}),
 	;
 	
