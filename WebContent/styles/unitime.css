@@ -6404,9 +6404,10 @@ div.gwt-MenuBarPopup {
 	vertical-align: bottom;
 }
 
-
 .unitime-PageFilter .panel .prefix {
 	padding-right: 3px;
+	vertical-align: top;
+	padding-top: 2px;
 }
 
 .unitime-PageFilter .composite .panel {
@@ -6420,6 +6421,10 @@ div.gwt-MenuBarPopup {
 
 .unitime-PageFilter .label-cell {
 	white-space: nowrap;
+}
+
+.unitime-PageFilter .unitime-MultiSelect {
+	border: none;
 }
 
 .unitime-ListSolutionsPage .load-panel {
@@ -8941,4 +8946,13 @@ div.gwt-MenuBarPopup {
 
 .unitime-ExamAssignmentPage .assigned-period {
 	text-decoration: underline;
+}
+
+.unitime-ExamPdfReportsPage .subject-line td:nth-child(n+2){
+	border-top: 1px dashed #9CB0CE;
+	padding-top: 5px;
+}
+
+.unitime-ExamPdfReportsPage .unitime-PageFilter td {
+	white-space: nowrap;
 }

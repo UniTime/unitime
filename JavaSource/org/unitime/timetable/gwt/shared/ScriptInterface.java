@@ -360,13 +360,22 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public ExecuteScriptRpcRequest getExecutionRequest() { return iExecutionRequest; }
 	}
 	
+	public static enum QueueType {
+		Script,
+		ExamPdfReport,
+		DataExchange,
+	}
+	
 	public static class GetQueueTableRpcRequest implements GwtRpcRequest<GwtRpcResponseList<QueueItemInterface>> {
 		private String iDeleteId = null;
+		private QueueType iType = QueueType.Script;
 
 		public GetQueueTableRpcRequest() {}
 		public GetQueueTableRpcRequest(String deleteId) {  iDeleteId = deleteId; }
 		
 		public String getDeleteId() { return iDeleteId; }
+		public QueueType getType() { return iType; }
+		public GetQueueTableRpcRequest setType(QueueType type) { iType = type; return this; }
 		
 		@Override
 		public String toString() {

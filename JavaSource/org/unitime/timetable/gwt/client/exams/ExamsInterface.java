@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.shared.FilterInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.ConflictStatisticsFilterRequest;
+import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ConflictBasedStatisticsRequest;
 import org.unitime.timetable.gwt.shared.TimetableGridInterface.TimetableGridLegend;
 
@@ -710,5 +711,83 @@ public class ExamsInterface {
 		public boolean hasBgColor() { return iBgColor != null && !iBgColor.isEmpty(); }
 		public String getBgColor() { return iBgColor; }
 		public void setBgColor(String bgColor) { iBgColor = bgColor; }
+	}
+	
+	public static class ExaminationPdfReportFilterRequest implements GwtRpcRequest<ExaminationPdfReportFilterRequesponse> {}
+	
+	public static class ExaminationPdfReportFilterRequesponse implements GwtRpcResponse {
+		private FilterInterface iInput, iReports, iParameters, iOutput;
+		private String iSolverWarning;
+		
+		public FilterInterface getInput() { return iInput; }
+		public void setInput(FilterInterface input) { iInput = input; }
+		public void addInput(FilterParameterInterface parameter) {
+			if (iInput == null) iInput = new FilterInterface();
+			iInput.addParameter(parameter);
+		}
+		public boolean hasInput(String name) { return iInput == null ? null : iInput.hasParameter(name); }
+		public FilterParameterInterface getInput(String name) { return iInput == null ? null : iInput.getParameter(name); }
+		public String getInputValue(String name) { return iInput == null ? null : iInput.getParameterValue(name); }
+		public String getInputValue(String name, String defaultValue) { return iInput == null ? null : iInput.getParameterValue(name, defaultValue); }
+
+		public FilterInterface getReports() { return iReports; }
+		public void setReports(FilterInterface reports) { iReports = reports; }
+		public void addReport(FilterParameterInterface parameter) {
+			if (iReports == null) iReports = new FilterInterface();
+			iReports.addParameter(parameter);
+		}
+		public boolean hasReport(String name) { return iReports == null ? null : iReports.hasParameter(name); }
+		public FilterParameterInterface getReport(String name) { return iReports == null ? null : iReports.getParameter(name); }
+		public String getReportValue(String name) { return iReports == null ? null : iReports.getParameterValue(name); }
+		public String getReportValue(String name, String defaultValue) { return iReports == null ? null : iReports.getParameterValue(name, defaultValue); }
+		
+		public FilterInterface getParameters() { return iParameters; }
+		public void setParameters(FilterInterface parameters) { iParameters = parameters; }
+		public void addParameter(FilterParameterInterface parameter) {
+			if (iParameters == null) iParameters = new FilterInterface();
+			iParameters.addParameter(parameter);
+		}
+		public boolean hasParameter(String name) { return iParameters == null ? null : iParameters.hasParameter(name); }
+		public FilterParameterInterface getParameter(String name) { return iParameters == null ? null : iParameters.getParameter(name); }
+		public String getParameterValue(String name) { return iParameters == null ? null : iParameters.getParameterValue(name); }
+		public String getParameterValue(String name, String defaultValue) { return iParameters == null ? null : iParameters.getParameterValue(name, defaultValue); }
+
+		public FilterInterface getOutput() { return iOutput; }
+		public void setOutput(FilterInterface output) { iOutput = output; }
+		public void addOutput(FilterParameterInterface parameter) {
+			if (iOutput == null) iOutput = new FilterInterface();
+			iOutput.addParameter(parameter);
+		}
+		public boolean hasOutput(String name) { return iOutput == null ? null : iOutput.hasParameter(name); }
+		public FilterParameterInterface getOutput(String name) { return iOutput == null ? null : iOutput.getParameter(name); }
+		public String getOutputValue(String name) { return iOutput == null ? null : iOutput.getParameterValue(name); }
+		public String getOutputValue(String name, String defaultValue) { return iOutput == null ? null : iOutput.getParameterValue(name, defaultValue); }
+		
+		public boolean hasSolverWarning() { return iSolverWarning != null && !iSolverWarning.isEmpty(); }
+		public String getSolverWarning() { return iSolverWarning; }
+		public void setSolverWarning(String warning) { iSolverWarning = warning; }
+	}
+	
+	public static class ExaminationPdfReportRequest implements GwtRpcRequest<ExaminationPdfReportResponse> {
+		private Map<String, String> iFilter = new HashMap<String, String>();
+		
+		public void setParameter(String name, String value) {
+			iFilter.put(name, value);
+		}
+		public String getParameter(String name) {
+			return iFilter.get(name);
+		}
+		public String getParameter(String name, String defaultValue) {
+			String value = getParameter(name);
+			return (value != null ? value : defaultValue);
+		}
+		public Map<String, String> getParameters() { return iFilter; }
+	}
+	
+	public static class ExaminationPdfReportResponse implements GwtRpcResponse {
+		private String iLogId;
+		
+		public String getLogId() { return iLogId; }
+		public void setLogId(String logId) { iLogId = logId; }
 	}
 }

@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverServerService;
+import org.unitime.timetable.util.queue.PdfExamReportQueueItem;
 import org.unitime.timetable.util.queue.QueueItem;
 
 /**
@@ -46,13 +47,25 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 
 	@Override
 	public GwtRpcResponseList<QueueItemInterface> execute(GetQueueTableRpcRequest request, SessionContext context) {
-		context.checkPermission(Right.Scripts);
 
+		String type = null;
+		switch(request.getType()) {
+		case ExamPdfReport:
+			type = PdfExamReportQueueItem.TYPE;
+			context.checkPermission(Right.ExaminationPdfReports);
+			break;
+		case DataExchange:
+			type = "Data Exchange";
+			context.checkPermission(Right.DataExchange);
+		default:
+			type = "Script";
+			context.checkPermission(Right.Scripts);
+		}
+	
 		if (request.getDeleteId() != null)
 			solverServerService.getQueueProcessor().remove(request.getDeleteId());
-		
 
-		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, "Script");
+		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, type);
 		GwtRpcResponseList<QueueItemInterface> table = new GwtRpcResponseList<QueueItemInterface>();
 		
 		Date now = new Date();

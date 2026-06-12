@@ -122,7 +122,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     	public Class<? extends PdfLegacyExamReport> getImplementation() { return implementation; }
     }
     
-    public String getReportName(RegisteredReport report) {
+    public static String getReportName(RegisteredReport report) {
     	switch (report) {
         case ScheduleByCourseReport: return MSG.reportScheduleByCourseReport();
         case ConflictsByCourseAndStudentReport: return MSG.reportConflictsByCourseAndStudentReport();

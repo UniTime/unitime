@@ -77,6 +77,7 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 		private String iParent = null;
 		private String iConfig = null;
 		private Integer iMaxLinesToShow = null;
+		private Integer iMaxLength = null;
 		
 		public FilterParameterInterface() {}
 		
@@ -94,6 +95,10 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 		public boolean hasPrefix() { return iPrefix != null && !iPrefix.isEmpty(); }
 		public String getPrefix() { return iPrefix; }
 		public void setPrefix(String prefix) { iPrefix = prefix; }
+		
+		public boolean hasMaxLength() { return iMaxLength != null; }
+		public void setMaxLength(int maxLength) { iMaxLength = maxLength; }
+		public Integer getMaxLength() { return iMaxLength; }
 		
 		public String getType() { return iType; }
 		public void setType(String type) { iType = type; }

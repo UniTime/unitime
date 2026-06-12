@@ -93,7 +93,10 @@ public class PdfExamReportQueueItem extends QueueItem {
 	public PdfExamReportQueueItem(Session session, UserContext owner, ExamPdfReportForm form, HttpServletRequest request, ExamSolverProxy examSolver) {
 		super(session, owner);
 		iForm = form;
-		iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
+		if (request != null)
+			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
+		else
+			iUrl = ApplicationProperty.UniTimeUrl.value();
 		iExamSolver = examSolver;
 		iName = ExamTypeDAO.getInstance().get(iForm.getExamType()).getLabel() + " ";
         for (int i=0;i<iForm.getReports().length;i++) {
@@ -419,7 +422,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 Email mail = Email.createEmail();
                                 mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                                 mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                                		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                                		(iUrl == null || iUrl.isEmpty() ? "" : MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n")+
                                 		MSG.emailFooter(Constants.getVersion())
                                 		);
                                 mail.addRecipient(manager.getEmailAddress(), manager.getName());
@@ -454,7 +457,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     	Email mail = Email.createEmail();
                         mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                         mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                        		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                        		(iUrl == null || iUrl.isEmpty() ? "" : MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n")+
                         		MSG.emailFooter(Constants.getVersion()));
                         if (iForm.getAddress()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipient(s.nextToken(), null);
@@ -485,7 +488,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         	Email mail = Email.createEmail();
                             mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                             mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                            		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                            		(iUrl == null || iUrl.isEmpty() ? "" : MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n") +
                             		MSG.emailFooter(Constants.getVersion()));
                             mail.addRecipient(email, null);
                             if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 
@@ -515,7 +518,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             Email mail = Email.createEmail();
                             mail.setSubject(iForm.getSubject()==null?MSG.emailSubjectExaminationReport():iForm.getSubject());
                             mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
-                            		MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n"+
+                            		(iUrl == null || iUrl.isEmpty() ? "" : MSG.emailForUpToDateReportVisit(iUrl)+"\r\n\r\n")+
                             		MSG.emailFooter(Constants.getVersion()));
                             mail.addRecipient(email, null);
                             if (iForm.getCc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getCc(),";,\n\r ");s.hasMoreTokens();) 

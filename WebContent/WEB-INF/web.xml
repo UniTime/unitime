@@ -271,6 +271,7 @@
     	<url-pattern>/ecbs</url-pattern>
     	<url-pattern>/examGrid</url-pattern>
     	<url-pattern>/examAssignment</url-pattern>
+    	<url-pattern>/examPdfReport</url-pattern>
     </servlet-mapping>
 	
 	<filter>
