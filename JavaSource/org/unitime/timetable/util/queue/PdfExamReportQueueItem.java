@@ -87,7 +87,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 	private String iUrl = null;
 	private transient ExamSolverProxy iExamSolver;
 	private String iName = null;
-	private double iProgress = 0;
+	private double iProgressPct = 0;
 	private boolean iSubjectIndependent = false;
 	
 	public PdfExamReportQueueItem(Session session, UserContext owner, ExamPdfReportForm form, HttpServletRequest request, ExamSolverProxy examSolver) {
@@ -125,7 +125,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 	
 	private void createReports(org.hibernate.Session hibSession) {
         try {
-        	iProgress = 0;
+        	iProgressPct = 0;
             setStatus(MSG.statusLoadingExams());
             TreeSet<ExamAssignmentInfo> exams = null;
             if (iExamSolver!=null && iExamSolver.getExamTypeId().equals(iForm.getExamType()) && ApplicationProperty.ExaminationPdfReportsCanUseSolution.isTrue()) {
@@ -275,7 +275,7 @@ public class PdfExamReportQueueItem extends QueueItem {
             } else {
                     exams = PdfLegacyExamReport.loadExams(getSessionId(), iForm.getExamType(), true, iForm.getIgnoreEmptyExams(), true);
             }
-        	iProgress = 0.1;
+        	iProgressPct = 0.1;
             /*
             if (iForm.getAll()) {
                 for (Iterator i=Exam.findAll(session.getUniqueId(), iForm.getExamType()).iterator();i.hasNext();) {
@@ -298,9 +298,9 @@ public class PdfExamReportQueueItem extends QueueItem {
             Hashtable<Student,File> sreports = null;
             Session session = getSession();
             for (int i=0;i<iForm.getReports().length;i++) {
-            	iProgress = 0.1 + (0.8 / iForm.getReports().length) * i;
+            	iProgressPct = 0.1 + (0.8 / iForm.getReports().length) * i;
             	RegisteredReport regReport = ExamPdfReportForm.RegisteredReport.valueOf(iForm.getReports()[i]);
-                setStatus(MSG.statusGeneratingReport(iForm.getReportName(regReport)));
+                setStatus(MSG.statusGeneratingReport(ExamPdfReportForm.getReportName(regReport)));
                 Class reportClass = regReport.getImplementation();
                 String reportName = null;
                 for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
@@ -309,7 +309,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                 String name = session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
                 if (iForm.getAll()) {
                     File file = ApplicationProperties.getTempFile(name, PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
-                    log("&nbsp;&nbsp;" + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
+                    log("  " + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                         getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
                         newInstance(iForm.getReportMode().ordinal(), file, SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
@@ -344,7 +344,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         for (ExamAssignmentInfo exam : exams) {
                             if (exam.isOfSubjectArea(subject)) nrExams++;
                         }
-                        log("&nbsp;&nbsp;" + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + " " + MSG.hintNbrExams(nrExams));
+                        log("  " + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + " " + MSG.hintNbrExams(nrExams));
                         List<SubjectArea> subjects = new ArrayList<SubjectArea>(); subjects.add(subject);
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
@@ -379,18 +379,18 @@ public class PdfExamReportQueueItem extends QueueItem {
                     }
                 }
             }
-        	iProgress = 0.9;
+        	iProgressPct = 0.9;
             byte[] buffer = new byte[32*1024];
             int len = 0;
             if (output.isEmpty())
-                log("<span style='color:#b85c00;'>" + MSG.warnNoReportGenerated() + "</span>");
+                warn(MSG.warnNoReportGenerated());
             else if (iForm.getEmail()) {
                 setStatus(MSG.statusSendingEmails());
                 if (iForm.getEmailDeputies()) {
                     Hashtable<TimetableManager,Hashtable<String,File>> files2send = new Hashtable();
                     for (Map.Entry<SubjectArea, Hashtable<String,File>> entry : outputPerSubject.entrySet()) {
                         if (entry.getKey().getDepartment().getTimetableManagers().isEmpty())
-                            log("<span style='color:#b85c00;'>&nbsp;&nbsp;" + MSG.warnNoManagerForSubject(entry.getKey().getSubjectAreaAbbreviation(), entry.getKey().getDepartment().getLabel())+"</span>");
+                            warn("  " + MSG.warnNoManagerForSubject(entry.getKey().getSubjectAreaAbbreviation(), entry.getKey().getDepartment().getLabel()));
                         for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
                             TimetableManager g = (TimetableManager)i.next();
                             boolean receiveEmail = false;
@@ -400,7 +400,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             }
                             if (receiveEmail){
                                 if (g.getEmailAddress()==null || g.getEmailAddress().length()==0) {
-                                    log("<span style='color:#b85c00;'>&nbsp;&nbsp;" + MSG.warnManagerHasNoEmail(g.getName()) + "</span>");
+                                    warn("  " + MSG.warnManagerHasNoEmail(g.getName()));
                                 } else {
                                     Hashtable<String,File> files = files2send.get(g);
                                     if (files==null) { files = new Hashtable<String,File>(); files2send.put(g, files); }
@@ -410,7 +410,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         }
                     }
                     if (files2send.isEmpty()) {
-                        log("<span style='color:#ec0000;'>" + MSG.warnNothingToSend() + "</span>");
+                        error(MSG.warnNothingToSend());
                     } else {
                         Set<TimetableManager> managers = files2send.keySet();
                         while (!managers.isEmpty()) {
@@ -429,7 +429,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 for (Iterator<TimetableManager> i=managers.iterator();i.hasNext();) {
                                     TimetableManager m = (TimetableManager)i.next();
                                     if (files.equals(files2send.get(m))) {
-                                        log("&nbsp;&nbsp;" + MSG.infoIncluding(m.getName(), m.getEmailAddress()));
+                                        log("  " + MSG.infoIncluding(m.getName(), m.getEmailAddress()));
                                         mail.addRecipient(m.getEmailAddress(),m.getName());
                                         i.remove();
                                     }
@@ -442,12 +442,12 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     mail.addRecipientBCC(s.nextToken(), null);
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
                                 	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
-                                    log("&nbsp;&nbsp;" + MSG.infoAttaching("<a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>"));
+                                    log("  " + MSG.infoAttaching("<a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>"));
                                 }
                                 mail.send();
                                 log(MSG.infoEmailSent());
                             } catch (Exception e) {
-                                log("<span style='color:#ec0000;'>" + MSG.errorUnableToSendEmail(e.getMessage())+"</span>");
+                                error(MSG.errorUnableToSendEmail(e.getMessage()));
                                 setError(e);
                             }
                         }
@@ -471,7 +471,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         mail.send();
                         log(MSG.infoEmailSent());
                     } catch (Exception e) {
-                    	log("<span style='color:#ec0000;'>" + MSG.errorUnableToSendEmail(e.getMessage())+"</span>");
+                    	error(MSG.errorUnableToSendEmail(e.getMessage()));
                         setError(e);
                     }
                 }
@@ -481,7 +481,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         File report = ireports.get(instructor);
                         String email = instructor.getInstructor().getEmail();
                         if (email==null || email.length()==0) {
-                            log("&nbsp;&nbsp;<span style='color:#b85c00;'>" + MSG.errorUnableToSentInstructorNoEmail("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>") + "</span>");
+                            warn("  " + MSG.errorUnableToSentInstructorNoEmail("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
                             continue;
                         }
                         try {
@@ -497,9 +497,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientBCC(s.nextToken(), null);
                             mail.addAttachment(report, session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
-                            log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
+                            log("  " + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
                         } catch (Exception e) {
-                            log("&nbsp;&nbsp;<span style='color:#b85c00;'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>", e.getMessage())+"</span>");
+                            warn("  " + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>", e.getMessage()));
                             setError(e);
                         }
                     }
@@ -511,7 +511,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         File report = sreports.get(student);
                         String email = student.getEmail();
                         if (email==null || email.length()==0) {
-                            log("&nbsp;&nbsp;<span style='color:#b85c00;'>" + MSG.errorUnableToSentStudentNoEmail("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>") + "</span>");
+                            warn("  " + MSG.errorUnableToSentStudentNoEmail("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                             continue;
                         }
                         try {
@@ -527,9 +527,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientBCC(s.nextToken(), null);
                             mail.addAttachment(report, session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
-                            log("&nbsp;&nbsp;" + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
+                            log("  " + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                         } catch (Exception e) {
-                        	log("&nbsp;&nbsp;<span style='color:#b85c00;'>" + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage())+"</span>");
+                        	warn("  " + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage()));
                             setError(e);
                         }
                     }
@@ -562,7 +562,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     setError(e);
                 }
             }
-        	iProgress = 1.0;
+        	iProgressPct = 1.0;
             setStatus(MSG.statusAllDone());
         } catch (Exception e) {
             fatal(MSG.errorTaskFailed(), e);
@@ -576,7 +576,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 
 	@Override
 	public double progress() {
-		return iProgress;
+		return iProgressPct;
 	}
 	
 	@Override

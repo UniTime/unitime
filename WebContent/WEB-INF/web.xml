@@ -272,6 +272,7 @@
     	<url-pattern>/examGrid</url-pattern>
     	<url-pattern>/examAssignment</url-pattern>
     	<url-pattern>/examPdfReport</url-pattern>
+    	<url-pattern>/enrollmentAuditPdfReport</url-pattern>
     </servlet-mapping>
 	
 	<filter>

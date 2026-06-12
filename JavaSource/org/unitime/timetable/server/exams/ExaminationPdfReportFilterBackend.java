@@ -30,7 +30,6 @@ import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfRepor
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfReportFilterRequest;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.ExamType;
@@ -44,7 +43,6 @@ import org.unitime.timetable.solver.service.SolverService;
 @GwtRpcImplements(ExaminationPdfReportFilterRequest.class)
 public class ExaminationPdfReportFilterBackend implements GwtRpcImplementation<ExaminationPdfReportFilterRequest, ExaminationPdfReportFilterRequesponse>{
 	protected static ExaminationMessages MESSAGES = Localization.create(ExaminationMessages.class);
-	protected static GwtMessages GWT = Localization.create(GwtMessages.class);
 	
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
@@ -69,7 +67,7 @@ public class ExaminationPdfReportFilterBackend implements GwtRpcImplementation<E
 		
 		FilterParameterInterface allSubjects = new FilterParameterInterface();
 		allSubjects.setName("all");
-		allSubjects.setLabel(MESSAGES.propExamSubject());
+		allSubjects.setLabel(MESSAGES.filterSubjectAreas());
 		allSubjects.setSuffix(MESSAGES.checkReportAllSubjectAreas());
 		allSubjects.setType("boolean");
 		allSubjects.setDefaultValue(context.getUser().getProperty("ExamPdfReport.all", "1"));
@@ -81,7 +79,7 @@ public class ExaminationPdfReportFilterBackend implements GwtRpcImplementation<E
 		subjectArea.setType("list");
 		subjectArea.setMultiSelect(true);
 		subjectArea.setCollapsible(false);
-		subjectArea.setLabel(MESSAGES.propExamSubject());
+		subjectArea.setLabel(MESSAGES.filterSubjectAreas());
 		if (ApplicationProperty.OfferingsFilterSubjectTitle.isTrue())
 			for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser()))
 				subjectArea.addOption(subject.getUniqueId().toString(), subject.getLabel());
@@ -93,6 +91,7 @@ public class ExaminationPdfReportFilterBackend implements GwtRpcImplementation<E
 		
 		FilterParameterInterface reports = new FilterParameterInterface();
 		reports.setName("reports");
+		reports.setMultiSelect(true);
 		reports.setType("checkboxlist");
 		reports.setLabel(MESSAGES.filterReport());
 		for (RegisteredReport report: RegisteredReport.values())

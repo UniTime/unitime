@@ -30,6 +30,7 @@ import java.util.Set;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
+import org.unitime.timetable.gwt.client.exams.ReportQueueTable;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
@@ -40,8 +41,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -57,6 +56,7 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.GetScriptOptionsRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.LoadAllScriptsRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
+import org.unitime.timetable.gwt.shared.ScriptInterface.QueueType;
 import org.unitime.timetable.gwt.shared.ScriptInterface.SaveOrUpdateScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptOptionsInterface;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptParameterInterface;
@@ -76,10 +76,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -102,23 +100,18 @@ public class ScriptPage extends Composite {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
-	private static DateTimeFormat sTS = DateTimeFormat.getFormat(CONSTANTS.timeStampFormatShort());
-
 	private SimpleForm iForm;
-	private UniTimeHeaderPanel iHeader, iBottom, iQueueHeader, iLogHeader;
+	private UniTimeHeaderPanel iHeader, iBottom;
 	private ListBox iName;
 	private HTML iDescription;
 	private int iDescriptionRow;
 	
-	private UniTimeTable<QueueItemInterface> iQueue;
-	private HTML iLog;
-	private int iQueueRow, iLogRow;
+	private ReportQueueTable iQueue;
 	
 	private List<ScriptInterface> iScripts = null;
 	private Map<String, String> iParams = new HashMap<String, String>();
 	
 	private SaveOrUpdateDialog iDialog = new SaveOrUpdateDialog();
-	private int iLastSelectedRow = -1;
 	private CheckBox iSendEmail;
 	private TextArea iEmailAddresses;
 	private VerticalPanel iEmailPanel;
@@ -127,41 +120,7 @@ public class ScriptPage extends Composite {
 		iForm = new SimpleForm(2);
 		iForm.removeStyleName("unitime-NotPrintableBottomLine");
 		
-		iQueueHeader = new UniTimeHeaderPanel(MESSAGES.sectScriptQueue());
-		iQueueHeader.addButton("refresh", MESSAGES.buttonRefresh(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				refreshQueue(null, null);
-			}
-		});
-		iQueueRow = iForm.addHeaderRow(iQueueHeader);
-		
-		iQueue = new UniTimeTable<ScriptInterface.QueueItemInterface>();
-		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		header.add(new UniTimeTableHeader(MESSAGES.colName()));
-		header.add(new UniTimeTableHeader(MESSAGES.colStatus()));
-		header.add(new UniTimeTableHeader(MESSAGES.colProgress()));
-		header.add(new UniTimeTableHeader(MESSAGES.colOwner()));
-		header.add(new UniTimeTableHeader(MESSAGES.colSession()));
-		header.add(new UniTimeTableHeader(MESSAGES.colCreated()));
-		header.add(new UniTimeTableHeader(MESSAGES.colStarted()));
-		header.add(new UniTimeTableHeader(MESSAGES.colFinished()));
-		header.add(new UniTimeTableHeader(MESSAGES.colOutput()));
-		header.add(new UniTimeTableHeader(""));
-		iQueue.addRow(null, header);
-		iQueue.setAllowSelection(true);
-		iQueue.addStyleName("unitime-QueueTable");
-		iForm.addRow(iQueue);
-		
-		iLogHeader = new UniTimeHeaderPanel();
-		iLogRow = iForm.addHeaderRow(iLogHeader);
-		iLog = new HTML();
-		iForm.addRow(iLog);
-		
-		iForm.getRowFormatter().setVisible(iQueueRow, false);
-		iForm.getRowFormatter().setVisible(iQueueRow + 1, false);
-		iForm.getRowFormatter().setVisible(iLogRow, false);
-		iForm.getRowFormatter().setVisible(iLogRow + 1, false);
+		iQueue = new ReportQueueTable(QueueType.Script).attach(iForm, MESSAGES.sectScriptQueue());
 		
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectScript());
 		
@@ -183,7 +142,7 @@ public class ScriptPage extends Composite {
 							public void onSuccess(QueueItemInterface result) {
 								LoadingWidget.getInstance().hide();
 								iHeader.clearMessage();
-								refreshQueue(null, result == null ? null : result.getId());
+								iQueue.refreshQueue(result == null ? null : result.getId());
 							}
 						});
 			}
@@ -262,30 +221,6 @@ public class ScriptPage extends Composite {
 		});
 		
 		reload(History.getToken() == null || History.getToken().isEmpty() ? null : Long.valueOf(History.getToken()));
-		
-		refreshQueue(null, null);
-		new Timer() {
-			@Override
-			public void run() {
-				refreshQueue(null, null);
-			}
-		}.scheduleRepeating(5000);
-		
-		iQueue.addMouseClickListener(new MouseClickListener<ScriptInterface.QueueItemInterface>() {
-			@Override
-			public void onMouseClick(TableEvent<QueueItemInterface> event) {
-				if (iLastSelectedRow >= 1)
-					iQueue.setSelected(iLastSelectedRow, false);
-				if (event.getData() != null && iLastSelectedRow != event.getRow()) {
-					iQueue.setSelected(event.getRow(), true);
-					showLog(event.getData());
-					iLastSelectedRow = event.getRow();
-				} else {
-					showLog(null);
-					iLastSelectedRow = -1;
-				}
-			}
-		});
 	}
 	
 	private ScriptInterface getScript() {
@@ -296,86 +231,6 @@ public class ScriptPage extends Composite {
 				}
 		}
 		return null;
-	}
-	
-	private void populate(GwtRpcResponseList<QueueItemInterface> queue, String selectId) {
-		if (iQueue.getSelectedRow() > 0 && selectId == null) {
-			QueueItemInterface q = iQueue.getData(iQueue.getSelectedRow());
-			if (q != null) selectId = q.getId();
-		}
-		QueueItemInterface selectedQueue = null;
-		iQueue.clearTable(1);
-		iLastSelectedRow = -1;
-		
-		for (final QueueItemInterface q: queue) {
-			List<Widget> line = new ArrayList<Widget>();
-			line.add(new Label(q.getName()));
-			line.add(new Label(q.getStatus()));
-			line.add(new Label(q.getProgress()));
-			line.add(new Label(q.getOwner()));
-			line.add(new Label(q.getSession()));
-			line.add(new Label(q.getCreated() == null ? "" : sTS.format(q.getCreated())));
-			line.add(new Label(q.getStarted() == null ? "" : sTS.format(q.getStarted())));
-			line.add(new Label(q.getFinished() == null ? "" : sTS.format(q.getFinished())));
-			if (q.getOtuput() != null) {
-				line.add(new Anchor(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.')), q.getOtuputLink()));
-			} else {
-				line.add(new Label(""));
-			}
-			if (q.isCanDelete()) {
-				ImageButton delete = new ImageButton(RESOURCES.delete());
-				delete.setTitle(MESSAGES.titleDeleteRow());
-				delete.setAltText(MESSAGES.titleDeleteRow());
-				delete.getElement().getStyle().setCursor(Cursor.POINTER);
-				delete.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						refreshQueue(q.getId(), null);
-					}
-				});
-				line.add(delete);
-			} else {
-				line.add(new Label(""));
-			}
-			
-			iQueue.addRow(q, line);
-			
-			if (selectId != null && selectId.equals(q.getId())) {
-				iQueue.setSelected(iQueue.getRowCount() - 1, true);
-				iLastSelectedRow = iQueue.getRowCount() - 1;
-				selectedQueue = q;
-			}
-		}
-		
-		iForm.getRowFormatter().setVisible(iQueueRow, iQueue.getRowCount() > 1);
-		iForm.getRowFormatter().setVisible(iQueueRow + 1, iQueue.getRowCount() > 1);
-		showLog(selectedQueue);
-	}
-	
-	private void refreshQueue(String deleteId, final String selectId) {
-		RPC.execute(new ScriptInterface.GetQueueTableRpcRequest(deleteId), new AsyncCallback<GwtRpcResponseList<QueueItemInterface>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
-			}
-
-			@Override
-			public void onSuccess(GwtRpcResponseList<QueueItemInterface> result) {
-				populate(result, selectId);
-			}
-		});
-	}
-	
-	private void showLog(QueueItemInterface item) {
-		if (item == null || item.getLog() == null || item.getLog().isEmpty()) {
-			iForm.getRowFormatter().setVisible(iLogRow, false);
-			iForm.getRowFormatter().setVisible(iLogRow + 1, false);
-		} else {
-			iLogHeader.setHeaderTitle(MESSAGES.sectScriptLog(item.getName()));
-			iForm.getRowFormatter().setVisible(iLogRow, true);
-			iForm.getRowFormatter().setVisible(iLogRow + 1, true);
-			iLog.setHTML(item.getLog());
-		}
 	}
 	
 	private void scriptChanged() {

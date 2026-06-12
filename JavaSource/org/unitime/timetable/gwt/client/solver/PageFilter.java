@@ -453,6 +453,9 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			String label = param.getLabel();
 			if (label.equals(lastLabel)) {
 				label = "";
+				Element firstInput = ToolBox.firstInputElement(w.getElement());
+				if (firstInput != null)
+					Roles.getTextboxRole().setAriaLabelProperty(firstInput, param.getLabel());
 			} else {
 				lastLabel = label;
 			}

@@ -364,6 +364,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		Script,
 		ExamPdfReport,
 		DataExchange,
+		EnrollmentPdfReport,
 	}
 	
 	public static class GetQueueTableRpcRequest implements GwtRpcRequest<GwtRpcResponseList<QueueItemInterface>> {

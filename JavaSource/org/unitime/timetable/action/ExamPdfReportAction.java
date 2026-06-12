@@ -67,7 +67,7 @@ public class ExamPdfReportAction extends UniTimeAction<ExamPdfReportForm> {
 	public void setRemove(String remove) { this.remove = remove; }
 
 	public String execute() throws Exception {
-		if (ApplicationProperty.LegacyAssignedExams.isFalse()) {
+		if (ApplicationProperty.LegacyExamPdfReport.isFalse()) {
     		String url = "examPdfReport";
     		boolean first = true;
     		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
