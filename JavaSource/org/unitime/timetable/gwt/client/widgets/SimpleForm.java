@@ -148,6 +148,38 @@ public class SimpleForm extends FlexTable {
 		return row;
 	}
 	
+	public int addRow(String text, String subtext, Widget widget) {
+		return addRow(new Label(text), new Label(subtext), widget);
+	}
+	
+	public int addRow(Widget header, Widget subheader, Widget widget) {
+		int colSpan = getColSpan() - 2;
+		Element inputElement = ToolBox.firstInputElement(widget.getElement());
+		header.addStyleName("label-cell");
+		int row = getRowCount();
+		setWidget(row, 0, header);
+		getCellFormatter().setStyleName(row, 0, "label-td");
+		setWidget(row, 1, subheader);
+		getCellFormatter().setStyleName(row, 1, "label-td");
+		if (widget instanceof HasMobileScroll) {
+			ScrollPanel scroll = new ScrollPanel(widget);
+			scroll.addStyleName("table-cell");
+			setWidget(row, 2, scroll);
+			getCellFormatter().setStyleName(row, 2, "table-td");
+		} else {
+			widget.addStyleName("widget-cell");
+			setWidget(row, 2, widget);
+			getCellFormatter().setStyleName(row, 2, "widget-td");
+		}
+		if (colSpan > 1)
+			getFlexCellFormatter().setColSpan(row, 2, colSpan);
+		if (subheader.getElement().getId() == null || subheader.getElement().getId().isEmpty())
+			subheader.getElement().setId(DOM.createUniqueId());
+		if (inputElement != null && Roles.getTextboxRole().getAriaLabelProperty(inputElement).isEmpty())
+			Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(subheader.getElement()));
+		return row;
+	}
+	
 	public int addDoubleRow(String text1, Widget widget1, int c1, String text2, Widget widget2, int c2) {
 		return addDoubleRow(new Label(text1), widget1, c1, new Label(text2), widget2, c2);
 	}

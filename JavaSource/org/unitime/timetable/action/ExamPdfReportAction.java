@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,6 +67,17 @@ public class ExamPdfReportAction extends UniTimeAction<ExamPdfReportForm> {
 	public void setRemove(String remove) { this.remove = remove; }
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyAssignedExams.isFalse()) {
+    		String url = "examPdfReport";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		sessionContext.checkPermission(Right.ExaminationPdfReports);
 		
 		ExamSolverProxy examSolver = getExaminationSolverService().getSolver();

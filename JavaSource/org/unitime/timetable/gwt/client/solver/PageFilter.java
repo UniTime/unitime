@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.admin.MultiSelect;
 import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
@@ -92,11 +93,16 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	private int iFilterHeaderRow = -1, iFilterLastRow = -1;
 	private List<Integer> iCollapsibleRows = new ArrayList<Integer>();
 	private Map<String, Widget> iWidgets = new HashMap<String, Widget>();
+	private Map<String, Integer> iRows = new HashMap<String, Integer>();
 	private Command iSubmitCommand;
 	
 	public PageFilter() {
+		this(MESSAGES.sectFilter(), true);
+	}
+	
+	public PageFilter(String label, boolean footer) {
 		addStyleName("unitime-PageFilter");
-		iHeader = new UniTimeHeaderPanel(MESSAGES.sectFilter());
+		iHeader = new UniTimeHeaderPanel(label);
 		iHeader.setCollapsible(true);
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
 			@Override
@@ -108,7 +114,8 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		});
 		iFilterHeaderRow = addHeaderRow(iHeader);
 		iFilterLastRow = iFilterHeaderRow;
-		iFooter = iHeader.clonePanel(null);
+		if (footer)
+			iFooter = iHeader.clonePanel(null);
 	}
 	
 	public UniTimeHeaderPanel getHeader() { return iHeader; }
@@ -118,6 +125,28 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 	public void setSubmitCommand(Command command) { iSubmitCommand = command; }
 	
 	public Widget getWidget(final FilterParameterInterface param) {
+		if ("checkboxlist".equalsIgnoreCase(param.getType()) && param.hasOptions()) {
+			MultiSelect<String> select = new MultiSelect<String>();
+			for (ListItem item: param.getOptions()) {
+				select.addItem(item.getValue(), item.getText());
+				select.setSelected(item.getValue(), param.isDefaultItem(item));
+			}
+			select.addValueChangeHandler(new ValueChangeHandler<List<String>>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<List<String>> event) {
+					String value = "";
+					for (String id: event.getValue()) {
+						if (value.isEmpty())
+							value = id;
+						else
+							value += "," + id;
+					}
+					param.setValue(value);
+					ValueChangeEvent.fire(PageFilter.this, iFilter);
+				}
+			});
+			return select;
+		}
 		if (param.hasOptions()) {
 			final ListBox list = new ListBox();
 			list.setMultipleSelect(param.isMultiSelect());
@@ -142,7 +171,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 						param.setValue(value);
 					} else {
 						if (list.getSelectedIndex() <= 0)
-							param.setValue(null);
+							param.setValue("");
 						else
 							param.setValue(list.getValue(list.getSelectedIndex()));
 					}
@@ -190,10 +219,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			ch.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {
-					if (event.getValue() == null)
-						param.setValue(null);
-					else
-						param.setValue(event.getValue() ? "1" : "0");
+					param.setValue(event.getValue() ? "1" : "0");
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
 				}
 			});
@@ -204,10 +230,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			upload.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
-					if (event.getValue() == null)
-						param.setValue(null);
-					else
-						param.setValue(event.getValue());
+					param.setValue(event.getValue());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
 				}
 			});
@@ -216,17 +239,17 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		if ("textarea".equalsIgnoreCase(param.getType())) {
 			TextArea textarea = new TextArea();
 			textarea.setStyleName("unitime-TextArea");
-			textarea.setVisibleLines(5);
+			if (param.hasMaxLength())
+				textarea.setVisibleLines(param.getMaxLength());
+			else
+				textarea.setVisibleLines(5);
 			textarea.setCharacterWidth(80);
 			if (param.hasDefaultValue())
 				textarea.setText(param.getDefaultValue());
 			textarea.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
-					if (event.getValue() == null)
-						param.setValue(null);
-					else
-						param.setValue(event.getValue());
+					param.setValue(event.getValue());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
 				}
 			});
@@ -237,11 +260,15 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			text.setDecimal(false); text.setNegative(true);
 			if (param.hasDefaultValue())
 				text.setText(param.getDefaultValue());
+			if (param.hasMaxLength()) {
+				text.setMaxLength(param.getMaxLength());
+				text.setWidth(Math.min(50, param.getMaxLength()) + "em");
+			}
 			text.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
 					if (event.getValue() == null)
-						param.setValue(null);
+						param.setValue("");
 					else
 						param.setValue(event.getValue());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
@@ -252,13 +279,17 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		if ("number".equalsIgnoreCase(param.getType()) || "float".equalsIgnoreCase(param.getType()) || "double".equalsIgnoreCase(param.getType())) {
 			NumberBox text = new NumberBox();
 			text.setDecimal(true); text.setNegative(true);
+			if (param.hasMaxLength()) {
+				text.setMaxLength(param.getMaxLength());
+				text.setWidth(Math.min(50, param.getMaxLength()) + "em");
+			}
 			if (param.hasDefaultValue())
 				text.setText(param.getDefaultValue());
 			text.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
 					if (event.getValue() == null)
-						param.setValue(null);
+						param.setValue("");
 					else
 						param.setValue(event.getValue());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
@@ -275,7 +306,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				@Override
 				public void onValueChange(ValueChangeEvent<Date> event) {
 					if (event.getValue() == null)
-						param.setValue(null);
+						param.setValue("");
 					else
 						param.setValue(format.format(event.getValue()));
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
@@ -307,7 +338,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				@Override
 				public void onValueChange(ValueChangeEvent<Integer> event) {
 					if (event.getValue() == null)
-						param.setValue(null);
+						param.setValue("");
 					else
 						param.setValue(event.getValue().toString());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
@@ -326,10 +357,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 			text.addValueChangeHandler(new ValueChangeHandler<String>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<String> event) {
-					if (event.getValue() == null)
-						param.setValue(null);
-					else
-						param.setValue(event.getValue());
+					param.setValue(event.getValue());
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
 				}
 			});
@@ -347,13 +375,14 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		text.setWidth("400px");
 		if (param.hasDefaultValue())
 			text.setText(param.getDefaultValue());
+		if (param.hasMaxLength()) {
+			text.setMaxLength(param.getMaxLength());
+			text.setWidth(Math.min(50, param.getMaxLength()) + "em");
+		}
 		text.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
-				if (event.getValue() == null)
-					param.setValue(null);
-				else
-					param.setValue(event.getValue());
+				param.setValue(event.getValue());
 				ValueChangeEvent.fire(PageFilter.this, iFilter);
 			}
 		});
@@ -377,13 +406,25 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		return iWidgets.get(name);
 	}
 	
+	public Integer getFilterRow(String name) {
+		return iRows.get(name);
+	}
+	
 	@Override
 	public void setValue(FilterInterface filter, boolean fireEvents) {
+		for (int row = getRowCount() - 1; row >= iFilterHeaderRow; row--)
+			removeRow(row);
+		populate(this, filter);
+		if (fireEvents)
+			ValueChangeEvent.fire(this, iFilter);
+	}
+	
+	public void populate(SimpleForm form, FilterInterface filter) {		
 		iFilter = filter;
 		iWidgets.clear();
-		for (int row = getRowCount() - 1; row > iFilterHeaderRow; row--)
-			removeRow(row);
+		iRows.clear();
 		iCollapsibleRows.clear();
+		form.addHeaderRow(iHeader);
 		Set<String> parents = new HashSet<String>();
 		String lastLabel = null;
 		FilterParameterInterface previous = null;
@@ -416,24 +457,27 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				lastLabel = label;
 			}
 			P panel = new P("panel");
-			if (param.hasSuffix() || param.hasPrefix()) {
-				if (param.hasPrefix()) {
-					Label prefix = new Label(param.getPrefix()); prefix.addStyleName("prefix");
-					panel.add(prefix);
-				}
+			if (param.hasPrefix() && (param.isComposite() || form.getColSpan() <= 2)) {
+				Label prefix = new Label(param.getPrefix()); prefix.addStyleName("prefix");
+				panel.add(prefix);
 			}
 			panel.add(w);
 			if (param.hasSuffix()) {
 				if (w instanceof CheckBox) {
-					((CheckBox)w).setText(param.getSuffix());
+					((CheckBox)w).setHTML(param.getSuffix());
 				} else {
 					Label suffix = new Label(param.getSuffix()); suffix.addStyleName("suffix");
 					panel.add(suffix);
 				}
 			}
-			if (label.isEmpty() && param.isComposite() && previous != null && previous.isComposite()) {
+			if (param.hasPrefix() && !param.isComposite() && form.getColSpan() > 2) {
+				if (panel.getWidgetCount() == 1)
+					row = form.addRow(label, param.getPrefix(), w);
+				else
+					row = form.addRow(label, param.getPrefix(), panel);
+			} else if (label.isEmpty() && param.isComposite() && previous != null && previous.isComposite()) {
 				row = iFilterLastRow;
-				Widget widget = getWidget(row, 1);
+				Widget widget = form.getWidget(row, 1);
 				P prev = null;
 				if (widget instanceof P && ((P)widget).getStyleName().contains("panel")) {
 					prev = (P) widget;
@@ -449,26 +493,29 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 					if (input != null)
 						Roles.getTextboxRole().setAriaLabelProperty(input, param.getLabel());
 				}
-				setWidget(row, 1, composite);
+				form.setWidget(row, 1, composite);
 			} else if (panel.getWidgetCount() == 1)
-				row = addRow(label, w);
+				row = form.addRow(label, w);
 			else
-				row = addRow(label, panel);
+				row = form.addRow(label, panel);
 			if (param.getParent() != null) {
-				getWidget(row, 1).getElement().getStyle().setPaddingLeft(20, Unit.PX);
+				form.getWidget(row, 1).getElement().getStyle().setPaddingLeft(20, Unit.PX);
 				parents.add(param.getParent());
 			}
 			if (param.isCollapsible()) iCollapsibleRows.add(row);
+			iRows.put(param.getName(), row);
 			iFilterLastRow = row;
 			previous = param;
 			if (iHeader.isCollapsible() != null && !iHeader.isCollapsible() && param.isCollapsible())
-				getRowFormatter().setVisible(iFilterLastRow, false);
+				form.getRowFormatter().setVisible(iFilterLastRow, false);
 		}
 		if (iCollapsibleRows.isEmpty())
 			iHeader.setCollapsible(null);
 		else if (iHeader.isCollapsible() == null)
 			iHeader.setCollapsible(false);
-		addBottomRow(iFooter);
+		if (iFooter != null)
+			form.addBottomRow(iFooter);
+
 		for (final String parent: parents) {
 			Widget w = iWidgets.get(parent);
 			if (w != null && w instanceof CheckBox) {
@@ -483,8 +530,6 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 				}); 
 			}
 		}
-		if (fireEvents)
-			ValueChangeEvent.fire(this, iFilter);
 	}
 	
 	public String getQuery() {
