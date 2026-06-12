@@ -82,6 +82,7 @@ import org.unitime.timetable.gwt.client.rooms.RoomSharingPage;
 import org.unitime.timetable.gwt.client.rooms.RoomsPage;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.sectioning.AdvisorCourseRequestsPage;
+import org.unitime.timetable.gwt.client.sectioning.EnrollmentAuditPdfReportPage;
 import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsPage;
 import org.unitime.timetable.gwt.client.sectioning.SectioningReports;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
@@ -472,6 +473,10 @@ public enum Pages {
 	examPdfReport(new PageFactory() {
 		public Widget create() { return new ExamPdfReportPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationPDFReports(); }
+		}),
+	enrollmentAuditPdfReport(new PageFactory() {
+		public Widget create() { return new EnrollmentAuditPdfReportPage(); }
+		public String name(GwtMessages messages) { return messages.pageEnrollmentAuditPDFReports(); }
 		}),
 	;
 	

@@ -790,4 +790,8 @@ public class ExamsInterface {
 		public String getLogId() { return iLogId; }
 		public void setLogId(String logId) { iLogId = logId; }
 	}
+	
+	public static class EnrollmentAuditPdfReportFilterRequest extends ExaminationPdfReportFilterRequest {}
+	
+	public static class EnrollmentAuditPdfReportRequest extends ExaminationPdfReportRequest {}
 }

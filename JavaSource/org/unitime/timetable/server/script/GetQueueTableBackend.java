@@ -57,6 +57,11 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		case DataExchange:
 			type = "Data Exchange";
 			context.checkPermission(Right.DataExchange);
+			break;
+		case EnrollmentPdfReport:
+			type = "PDF Enrollment Report";
+			context.checkPermission(Right.EnrollmentAuditPDFReports);
+			break;
 		default:
 			type = "Script";
 			context.checkPermission(Right.Scripts);

@@ -8794,6 +8794,11 @@ div.gwt-MenuBarPopup {
 	display: inline-block;
 }
 
+.unitime-QueueTable td .gwt-Label {
+	white-space: normal;
+	max-width: 300px;
+}
+
 .unitime-ScriptParametersTable .unitime-ImageButton-focus {
 	width: 24px;
 	height: 24px;
@@ -8955,4 +8960,15 @@ div.gwt-MenuBarPopup {
 
 .unitime-ExamPdfReportsPage .unitime-PageFilter td {
 	white-space: nowrap;
+}
+
+.unitime-ExamPdfReportsPage .unitime-HeaderPanel .title {
+	max-width: calc(100vw - 100px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: block;
+}
+
+.unitime-QueueLog {
+	white-space: pre-wrap;
 }

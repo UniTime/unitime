@@ -4083,6 +4083,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Examination PDF Reports")
 	@DoNotTranslate
 	String pageExaminationPDFReports();
+	
+	@DefaultMessage("Enrollment Audit PDF Reports")
+	@DoNotTranslate
+	String pageEnrollmentAuditPDFReports();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

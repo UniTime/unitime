@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -40,6 +42,7 @@ import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -69,6 +72,17 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
 
 	@Override
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyEnrollmentAuditPDFReports.isFalse()) {
+    		String url = "enrollmentAuditPdfReport";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (form == null) {
 			form = new EnrollmentAuditPdfReportForm();
 		}
@@ -91,7 +105,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                 Hashtable<String,File> output = new Hashtable();
                 for (int i=0;i<form.getReports().length;i++) {
                     Class reportClass = EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]).getImplementation();
-                    String reportName = form.getReportName(EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]));
+                    String reportName = EnrollmentAuditPdfReportForm.getReportName(EnrollmentAuditPdfReportForm.RegisteredReport.valueOf(form.getReports()[i]));
                     String name = session.getAcademicTerm()+session.getAcademicYear()+"_"+form.getReports()[i];
                 	String ext = PdfLegacyExamReport.getExtension(form.getReportMode().ordinal());
                     form.log(MSG.statusGeneratingReport(reportName));

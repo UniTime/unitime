@@ -17,14 +17,14 @@
  * limitations under the License.
  * 
 */
-package org.unitime.timetable.gwt.client.exams;
+package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
-import org.unitime.timetable.gwt.client.admin.MultiSelect;
+import org.unitime.timetable.gwt.client.exams.ReportQueueTable;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.EnrollmentAuditPdfReportFilterRequest;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.EnrollmentAuditPdfReportRequest;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfReportFilterRequesponse;
-import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfReportFilterRequest;
-import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfReportRequest;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfReportResponse;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.solver.PageFilter;
@@ -44,14 +44,12 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
 
-public class ExamPdfReportPage extends Composite implements ValueChangeHandler<FilterInterface> {
+public class EnrollmentAuditPdfReportPage extends Composite implements ValueChangeHandler<FilterInterface> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final ExaminationMessages EXAM = GWT.create(ExaminationMessages.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -65,12 +63,12 @@ public class ExamPdfReportPage extends Composite implements ValueChangeHandler<F
 	
 	private ReportQueueTable iQueue;
 	
-	public ExamPdfReportPage() {
+	public EnrollmentAuditPdfReportPage() {
 		iPanel = new SimpleForm(3);
 		iPanel.addStyleName("unitime-PageFilter");
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
-		iQueue = new ReportQueueTable(QueueType.ExamPdfReport).attach(iPanel, EXAM.sectReportsInProgress());
+		iQueue = new ReportQueueTable(QueueType.EnrollmentPdfReport).attach(iPanel, EXAM.sectReportsInProgress());
 		
 		iRootPanel = new SimplePanel(iPanel);
 		iRootPanel.addStyleName("unitime-ExamPdfReportsPage");
@@ -80,7 +78,7 @@ public class ExamPdfReportPage extends Composite implements ValueChangeHandler<F
 	}
 
 	protected void init() {
-		RPC.execute(new ExaminationPdfReportFilterRequest(), new AsyncCallback<ExaminationPdfReportFilterRequesponse>() {
+		RPC.execute(new EnrollmentAuditPdfReportFilterRequest(), new AsyncCallback<ExaminationPdfReportFilterRequesponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				UniTimeNotifications.error(MESSAGES.failedToInitialize(caught.getMessage()), caught);
@@ -113,7 +111,7 @@ public class ExamPdfReportPage extends Composite implements ValueChangeHandler<F
 							iInput.getHeader().setErrorMessage(valid);
 							return;
 						}
-						ExaminationPdfReportRequest request = new ExaminationPdfReportRequest();
+						EnrollmentAuditPdfReportRequest request = new EnrollmentAuditPdfReportRequest();
 						for (FilterParameterInterface p: iConfig.getInput().getParameters())
 							request.setParameter(p.getName(), (p.getValue() == null ? p.getDefaultValue() : p.getValue()));
 						for (FilterParameterInterface p: iConfig.getReports().getParameters())
@@ -180,23 +178,11 @@ public class ExamPdfReportPage extends Composite implements ValueChangeHandler<F
 		if (filter == null) return;
 		if (filter.hasParameter("all")) {
 			((ListBox)iInput.getFilterWidget("subjects")).setEnabled(!"1".equals(filter.getParameterValue("all")));
-			Widget emailDeputies = iOutput.getFilterWidget("emailDeputies");
-			if (emailDeputies != null)
-				((CheckBox)emailDeputies).setEnabled(!"1".equals(filter.getParameterValue("all")));
 		}
 		if (filter.hasParameter("email")) {
 			boolean visible = "1".equals(filter.getParameterValue("email"));
 			for (int row = iOutput.getFilterRow("addr"); row <= iOutput.getFilterRow("message"); row++)
 				iPanel.getRowFormatter().setVisible(row, visible);
-		}
-		if (filter.hasParameter("reports")) {
-			MultiSelect<String> select = (MultiSelect<String>)iReports.getFilterWidget("reports");
-			Widget emailStudents = iOutput.getFilterWidget("emailStudents");
-			Widget emailInstructors = iOutput.getFilterWidget("emailInstructors");
-			if (emailStudents != null)
-				((CheckBox)emailStudents).setEnabled(select.isSelected("StudentExamReport"));
-			if (emailInstructors != null)
-				((CheckBox)emailInstructors).setEnabled(select.isSelected("InstructorExamReport"));
 		}
 	}
 }

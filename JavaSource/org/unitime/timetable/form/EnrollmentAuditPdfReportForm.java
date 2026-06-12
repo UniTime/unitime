@@ -80,7 +80,7 @@ public class EnrollmentAuditPdfReportForm implements UniTimeForm {
     	public Class<? extends PdfEnrollmentAuditReport> getImplementation() { return implementation; }
     }
     
-    public String getReportName(RegisteredReport report) {
+    public static String getReportName(RegisteredReport report) {
     	switch (report) {
     	case EnrollmentsViolatingCourseStructureAuditReport: 
     		return MSG.reportEnrollmentsViolatingCourseStructureAudit();
