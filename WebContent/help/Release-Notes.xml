@@ -43,6 +43,7 @@
 					<line>Examination Assignment</line>
 					<line>Examination PDF Reports</line>
 					<line>Enrollment Audit PDF Reports</line>
+					<line>Select Academic Session/Select User Role</line>
 				</line>
 			</description>
 		</item>
@@ -53,6 +54,13 @@
 			<name>Security: Session Independent If No Session Given</name>
 			<description>
 				<line>Corrected session checking for the session independent if no session is given roles during authorization.</line>
+			</description>
+		</item>
+		<item>
+			<name>Select Academic Session/Select User Role: Improvements (GWT-based version only)</name>
+			<description>
+				<line>Added a toggle to hide inactive academic session (e.g., test and finished sessions).</line>
+				<line>Highlight the academic session that was used the last time.</line>
 			</description>
 		</item>
 	</category>

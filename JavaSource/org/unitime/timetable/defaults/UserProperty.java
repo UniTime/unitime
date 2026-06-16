@@ -27,6 +27,7 @@ import org.unitime.timetable.security.UserContext;
  */
 public enum UserProperty {
 	LastAcademicSession("LastUsed.acadSessionId", "Last used academic session id"),
+	LastAuthority("LastUsed.authority", "Last used authority"),
 	
 	CourseOfferingNoteDisplay("crsOffrNoteDisplay", CommonValues.NoteAsIcon, "Display an icon or shortened text when a course offering has a schedule note."),
 	SchedulePrintNoteDisplay("printNoteDisplay", CommonValues.NoteAsIcon, "Display an icon or shortened text when a class has a schedule print note."),

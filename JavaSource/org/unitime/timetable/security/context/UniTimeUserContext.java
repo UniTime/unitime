@@ -395,6 +395,8 @@ public class UniTimeUserContext extends AbstractUserContext {
 		super.setCurrentAuthority(authority);
 		if (authority.getAcademicSession() != null)
 			setProperty(UserProperty.LastAcademicSession, authority.getAcademicSession().getQualifierId().toString());
+		if (authority.getAuthority() != null)
+			setProperty(UserProperty.LastAuthority, authority.getAuthority());
 	}
 
 	@Override
