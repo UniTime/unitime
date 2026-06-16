@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +36,7 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoleListForm;
 import org.unitime.timetable.model.Roles;
@@ -91,6 +94,18 @@ public class RoleListAction extends UniTimeAction<RoleListForm> {
         if (user == null) return "loginRequired";
         
         if (user.getAuthorities().isEmpty()) return "norole";
+        
+        if (ApplicationProperty.LegacySelectPrimaryRole.isFalse()) {
+    		String url = "selectPrimaryRole";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         
         // Form submitted
         if (form.getAuthority() != null) {

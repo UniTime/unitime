@@ -112,6 +112,9 @@ public class HttpSessionContext implements SessionContext {
 		}
 	}
 	
+	public HttpSession getHttpSession() { return iSession; }
+	
+	
 	@Override
 	public void checkPermission(Right right) {
 		unitimePermissionCheck.checkPermission(getUser(), null, null, right);

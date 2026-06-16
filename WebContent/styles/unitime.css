@@ -8972,3 +8972,8 @@ div.gwt-MenuBarPopup {
 .unitime-QueueLog {
 	white-space: pre-wrap;
 }
+
+.unitime-SelectUserRolePage .inactive-session {
+	font-style: italic;
+	color: #646464;	
+}

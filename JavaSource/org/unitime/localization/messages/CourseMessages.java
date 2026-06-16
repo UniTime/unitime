@@ -6096,4 +6096,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No preferences")
 	String altNoPreferences();
+	
+	@DefaultMessage("Include inactive academic sessions")
+	String checkIncludeInactiveSessions();
 }

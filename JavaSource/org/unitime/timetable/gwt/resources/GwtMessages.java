@@ -4087,6 +4087,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Enrollment Audit PDF Reports")
 	@DoNotTranslate
 	String pageEnrollmentAuditPDFReports();
+	
+	@DefaultMessage("Select User Role")
+	@DoNotTranslate
+	String pageSelectUserRole();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

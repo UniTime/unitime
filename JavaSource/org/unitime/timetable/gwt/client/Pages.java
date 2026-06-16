@@ -70,6 +70,7 @@ import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupPage;
 import org.unitime.timetable.gwt.client.offerings.OfferingDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartEditPage;
+import org.unitime.timetable.gwt.client.page.SelectUserRolePage;
 import org.unitime.timetable.gwt.client.page.SolverWarnings;
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
@@ -477,6 +478,10 @@ public enum Pages {
 	enrollmentAuditPdfReport(new PageFactory() {
 		public Widget create() { return new EnrollmentAuditPdfReportPage(); }
 		public String name(GwtMessages messages) { return messages.pageEnrollmentAuditPDFReports(); }
+		}),
+	selectPrimaryRole(new PageFactory() {
+		public Widget create() { return new SelectUserRolePage(); }
+		public String name(GwtMessages messages) { return messages.pageSelectUserRole(); }
 		}),
 	;
 	

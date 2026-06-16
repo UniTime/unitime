@@ -36,6 +36,7 @@
 		<intercept-url pattern="/gwt.action" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/*.action" access="isAuthenticated()"/>
+		<intercept-url pattern="/selectPrimaryRole" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
 		
 		<form-login login-page="/login.action"
