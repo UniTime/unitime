@@ -172,15 +172,27 @@
 	&& (prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.lineOrderSequence??)?size > 0)>
 <@header 'Prerequisites' 'Prerequisites'/>
 <table class='prerequisites' id='Prerequisites'>
-	<tr class='header'><th>And/Or</th><th><span style='display:none;'>Left Parenthesis</span></th><th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th><th><span style='display:none;'>Right Parenthesis</span></th></tr>
+	<tr class='header'><th>And/Or</th><th><span style='display:none;'>Left Parenthesis</span></th>
+	<#if (prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.requirement.assessment??)?size > 0)>
+	<th>Test</th><th>Score</th>
+	</#if>
+	<#if (prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.requirement.course??)?size > 0)>
+	<th>Subject</th><th>Course</th><th>Level</th><th>Grade</th><th>Concurrent</th>
+	</#if>
+	<th><span style='display:none;'>Right Parenthesis</span></th></tr>
 	<#list prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.lineOrderSequence??)?sort_by("lineOrderSequence") as line>
 		<tr><td><#if line.logicalOperator??>${line.logicalOperator?capitalize}</#if></td>
 		<td><#if line.leftParenthesis?? && line.leftParenthesis>(</#if></td>
+		<#if (prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.requirement.assessment??)?size > 0)>
+		<td><#if line.requirement.assessment?? && line.requirement.assessment.assessment??>${line.requirement.assessment.assessment}<#if line.requirement.assessment.assessmentDescription??> - ${line.requirement.assessment.assessmentDescription?capitalize}</#if></#if></td>
+		<td><#if line.requirement.assessment?? && line.requirement.assessment.minimumTestScore??>${line.requirement.assessment.minimumTestScore}</#if></td>
+		</#if><#if (prerequisites.coursePrerequisite.prerequisite.basicPrerequisites?filter(r -> r.requirement.course??)?size > 0)>
 		<td><#if line.requirement.course?? && line.requirement.course.subject??>${line.requirement.course.subject}</#if></td>
 		<td><#if line.requirement.course?? && line.requirement.course.number??>${line.requirement.course.number}</#if></td>
 		<td><#if line.requirement.course?? && line.requirement.course.academicLevel??><@studentLevel line.requirement.course.academicLevel/></#if></td>
 		<td><#if line.requirement.course?? && line.requirement.course.minimumGrade??>${line.requirement.course.minimumGrade}</#if></td>
-		<td><#if line.requirement.course?? && line.requirement.course.concurrentEnrollment?? && line.requirement.course.concurrentEnrollment == 'allowed'>Yes<#else>No</#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.concurrentEnrollment?? && line.requirement.course.concurrentEnrollment == 'allowed'>Yes<#elseif line.requirement.course??>No</#if></td>
+		</#if>
 		<td><#if line.rightParenthesis?? && line.rightParenthesis>)</#if></td></tr>
 	</#list>
 </table>
