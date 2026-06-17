@@ -27,6 +27,7 @@ import jakarta.persistence.Transient;
 import java.util.Iterator;
 import java.util.TreeSet;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BaseDepartmentStatusType;
 import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
 
@@ -275,7 +276,10 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	/** Status is active when someone can edit, timetable or commit*/
 	@Transient
 	public boolean isActive() {
-	    return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit() || canExamEdit() || canExamTimetable() || canNoRoleReport();
+		Integer mask = ApplicationProperty.SessionStatusActive.intValue();
+		if (mask == null)
+			return canTimetable() || canCommit() || canManagerEdit() || canOwnerEdit() || canManagerLimitedEdit() || canOwnerLimitedEdit() || canExamEdit() || canExamTimetable() || canNoRoleReport();
+		return (getStatus().intValue() & mask) != 0;
 	}
 	
 	public boolean canLockOfferings() {
@@ -285,5 +289,21 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 	public static void main(String[] args) {
 		for (Status s: Status.values())
 			System.out.println(s.name() + ": " + s.toInt());
+		
+		int status = 0;
+		status += Status.Timetable.toInt();
+		status += Status.Commit.toInt();
+		status += Status.ManagerEdit.toInt();
+		status += Status.OwnerEdit.toInt();
+		status += Status.ManagerLimitedEdit.toInt();
+		status += Status.OwnerLimitedEdit.toInt();
+		status += Status.ExamEdit.toInt();
+		status += Status.ExamTimetable.toInt();
+		status += Status.EventManagement.toInt();
+		status += Status.InstructorSurvey.toInt();
+		status += Status.StudentsOnline.toInt();
+		status += Status.StudentsAssistant.toInt();
+		status += Status.StudentsPreRegister.toInt();
+		System.out.println("Active: " + Integer.toString(status));
 	}
 }

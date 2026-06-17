@@ -3890,7 +3890,13 @@ public enum ApplicationProperty {
 	@Description("Exporter: for the encoded export queries (/export?q= or /export?x=), the exporter (output parameter) must match this regular expression for authorization. " +
 	"This means that for matching exports, it is assumed that the export is run by the user for whom the encoded query was generated. By default, only iCalendar exports are allowed.")
 	@Since(4.9)
-	ExportAuthorizeEncodedQueries("unitime.export.authorizeEncodedQueries")
+	ExportAuthorizeEncodedQueries("unitime.export.authorizeEncodedQueries"),
+	
+	@Type(Integer.class)
+	@DefaultValue("6524342")
+	@Description("Active Session Identification: status of an academic session contains at least one of the provided bits (binary and returns a non zero value).")
+	@Since(4.9)
+	SessionStatusActive("unitime.session.activeStatus"),
 	;
 
 	String iKey;
