@@ -33,13 +33,14 @@ import org.unitime.timetable.onlinesectioning.custom.ExternalTermProvider;
 public class SpecialRegistrationInterface {
 	
 	/** Possible values of the status field in the Spec Reg API responses */
-	// FIXME: Are there any other values that can be returned?
 	public static enum ResponseStatus {
-		success, // call succeeded, data field is filled in
-		error, // there was an error, see message for details 
-		failure, //TODO: is this status used? 
-		Failed, // present in outJson.status when the validation failed
-		;
+	    success,   // call succeeded, data field is filled in
+	    error,     // there was an error, see message for details
+	    // "failure" — returned by [endpoint X]; confirm if still active
+	    failure,
+		// "Failed"  — returned in outJson.status when validation fails
+	    Failed,
+	    ;
 	}
 	
 	/** Possible values for the Spec Reg API mode */
@@ -64,17 +65,27 @@ public class SpecialRegistrationInterface {
 		cancelled, // all the changes are either approved, denied, or canceled and there is at least one that is canceled
 		;
 	}
-	
+		
 	/** Possible status values of a single override request ({@link Change}, work order in the Spec Reg terms) */
 	// FIXME: Could there be any other values returned?
 	public static enum ChangeStatus {
-		 inProgress, // override has been posted, no change has been done to it yet
-		 approved, // override has been approved
-		 denied, // override has been denied
-		 cancelled, // override has been cancelled
-		 deferred, // override has been deferred (it is in progress for UniTime)
-		 escalated, // override has been escalated (it is in progress for UniTime)
-		 ;
+	    inProgress,  // override has been posted, no change has been done to it yet
+	    approved,    // override has been approved
+	    denied,      // override has been denied
+	    cancelled,   // override has been cancelled
+	    deferred,    // override has been deferred
+	    escalated,   // override has been escalated
+	    ;
+	
+	    // Returns true if the override is still pending resolution (including UniTime in-progress states).
+	    public boolean isPending() {
+	        return this == inProgress || this == deferred || this == escalated;
+	    }
+	
+	    // Returns true if the override has reached a terminal state.
+	    public boolean isTerminal() {
+	        return this == approved || this == denied || this == cancelled;
+	    }
 	}
 	
 	/** Basic format of (mostly all) responses from Spec Reg API */
