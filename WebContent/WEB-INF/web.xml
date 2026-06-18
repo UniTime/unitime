@@ -274,6 +274,7 @@
     	<url-pattern>/examPdfReport</url-pattern>
     	<url-pattern>/enrollmentAuditPdfReport</url-pattern>
     	<url-pattern>/selectPrimaryRole</url-pattern>
+    	<url-pattern>/instructorListUpdate</url-pattern>
     </servlet-mapping>
 	
 	<filter>

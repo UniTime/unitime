@@ -72,6 +72,11 @@ public class InstructorListUpdateAction extends UniTimeAction<InstructorListUpda
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyManageInstructorList.isFalse()) {
+    		String url = "instructorListUpdate?deptId=" + request.getSession().getAttribute(Constants.DEPT_ID_ATTR_NAME);
+    		response.sendRedirect(url);
+			return null;
+    	}
 		//Check permissions
 		sessionContext.checkPermission(Right.ManageInstructors);
 		

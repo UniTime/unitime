@@ -48,6 +48,7 @@ import org.unitime.timetable.gwt.client.instructor.InstructorDetailPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorEditPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorPreferencesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorsPage;
+import org.unitime.timetable.gwt.client.instructor.ManageInstructorListPage;
 import org.unitime.timetable.gwt.client.instructor.SetupTeachingRequestsPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsChangesPage;
 import org.unitime.timetable.gwt.client.instructor.TeachingAssignmentsPage;
@@ -482,6 +483,10 @@ public enum Pages {
 	selectPrimaryRole(new PageFactory() {
 		public Widget create() { return new SelectUserRolePage(); }
 		public String name(GwtMessages messages) { return messages.pageSelectUserRole(); }
+		}),
+	instructorListUpdate(new PageFactory() {
+		public Widget create() { return new ManageInstructorListPage(); }
+		public String name(GwtMessages messages) { return messages.pageManageInstructorList(); }
 		}),
 	;
 	

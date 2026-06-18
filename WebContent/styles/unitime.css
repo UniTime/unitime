@@ -8977,3 +8977,13 @@ div.gwt-MenuBarPopup {
 	font-style: italic;
 	color: #646464;	
 }
+
+.unitime-ManageInstructorListPage .position {
+	display: inline-block;
+	width: 33%;
+	white-space: nowrap;
+}
+
+.unitime-ManageInstructorListPage .staff-line {
+	background-color: #eee;
+}
