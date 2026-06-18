@@ -191,7 +191,7 @@
 		<td><#if line.requirement.course?? && line.requirement.course.number??>${line.requirement.course.number}</#if></td>
 		<td><#if line.requirement.course?? && line.requirement.course.academicLevel??><@studentLevel line.requirement.course.academicLevel/></#if></td>
 		<td><#if line.requirement.course?? && line.requirement.course.minimumGrade??>${line.requirement.course.minimumGrade}</#if></td>
-		<td><#if line.requirement.course?? && line.requirement.course.concurrentEnrollment?? && line.requirement.course.concurrentEnrollment == 'allowed'>Yes<#elseif line.requirement.course??>No</#if></td>
+		<td><#if line.requirement.course?? && line.requirement.course.concurrentEnrollment?? && line.requirement.course.concurrentEnrollment == 'allowed'>Yes<#elseif line.requirement.course?? && line.requirement.course.subject??>No</#if></td>
 		</#if>
 		<td><#if line.rightParenthesis?? && line.rightParenthesis>)</#if></td></tr>
 	</#list>
