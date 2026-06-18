@@ -1687,4 +1687,178 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		public void setCanEditExternalId(boolean canEditExternalId) { iCanEditExternalId = canEditExternalId; }
 
 	}
+	
+	public static class ManageInstructorListRequest implements GwtRpcRequest<ManageInstructorListResponse>{
+		private Long iDepartmentId = null;
+		
+		public ManageInstructorListRequest() {}
+		public ManageInstructorListRequest(Long departmentId) { iDepartmentId = departmentId; }
+		
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
+	}
+	
+	public static class ManageInstructorListResponse implements GwtRpcResponse {
+		private Long iDepartmentId;
+		private String iDepartmentName;
+		private List<AssignedStaffInterface> iAssigned;
+		private List<StaffInterface> iAvailable;
+		private List<IdLabel> iPositions;
+		
+		public ManageInstructorListResponse() {}
+		
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
+		public String getDepartmentName() { return iDepartmentName; }
+		public void setDepartmentName(String name) { iDepartmentName = name; }
+		
+		
+	    public boolean hasPositions() { return iPositions != null && !iPositions.isEmpty(); }
+	    public void addPosition(Long id, String label) {
+	    	if (iPositions == null) iPositions = new ArrayList<IdLabel>();
+	    	iPositions.add(new IdLabel(id, label, null));
+	    }
+	    public List<IdLabel> getPositions() { return iPositions; }
+	    public String getPosition(Long id) {
+	    	if (iPositions == null) return null;
+	    	for (IdLabel pos: iPositions)
+	    		if (id.equals(pos.getId())) return pos.getLabel();
+	    	return null;
+	    }
+	    public Integer getPositionIndex(Long id) {
+	    	if (iPositions == null) return -1;
+	    	int ret = 0;
+	    	for (IdLabel pos: iPositions) {
+	    		if (id.equals(pos.getId())) return ret;
+	    		ret++;
+	    	}
+	    	return ret;
+	    }
+		
+		public boolean hasAssigned() { return iAssigned != null && !iAssigned.isEmpty(); }
+		public void addAssigned(AssignedStaffInterface staff) {
+			if (iAssigned == null) iAssigned = new ArrayList<AssignedStaffInterface>();
+			iAssigned.add(staff);
+		}
+		public void addAssigned(Long id, String extId, String name, Long pos, boolean canRemove) {
+			AssignedStaffInterface staff = new AssignedStaffInterface();
+			staff.setInstructorId(id);
+			staff.setExternalId(extId);
+			staff.setName(name);
+			staff.setPositionId(pos);
+			staff.setCanRemove(canRemove);
+			addAssigned(staff);
+		}
+		public List<AssignedStaffInterface> getAssigned() { return iAssigned; }
+		
+		public boolean hasAvailable() { return iAvailable != null && !iAvailable.isEmpty(); }
+		public void addAvailable(StaffInterface staff) {
+			if (iAvailable == null) iAvailable = new ArrayList<StaffInterface>();
+			iAvailable.add(staff);
+		}
+		public void addAvailable(String extId, String name, Long pos) {
+			StaffInterface staff = new StaffInterface();
+			staff.setExternalId(extId);
+			staff.setName(name);
+			staff.setPositionId(pos);
+			addAvailable(staff);
+		}
+		public List<StaffInterface> getAvailable() { return iAvailable; }
+		
+		public List<AssignedStaffInterface> getAssigned(Long positionId) { 
+			List<AssignedStaffInterface> ret = new ArrayList<AssignedStaffInterface>();
+			if (iAssigned != null)
+				for (AssignedStaffInterface staff: iAssigned) {
+					if (positionId.equals(staff.getPositionId()))
+						ret.add(staff);
+				}
+			return ret;	
+		}
+		public List<StaffInterface> getAvailable(Long positionId) { 
+			List<StaffInterface> ret = new ArrayList<StaffInterface>();
+			if (iAvailable != null)
+				for (StaffInterface staff: iAvailable) {
+					if (positionId.equals(staff.getPositionId()))
+						ret.add(staff);
+				}
+			return ret;	
+		}
+		
+		public AssignedStaffInterface hasAssigned(String externalId) {
+			if (iAssigned == null) return null;
+			for (AssignedStaffInterface staff: iAssigned)
+				if (externalId.equals(staff.getExternalId()))
+					return staff;
+			return null;
+		}
+	}
+	
+	public static class ManageInstructorListUpdateRequest implements GwtRpcRequest<GwtRpcResponseNull>{
+		private Long iDepartmentId = null;
+		private Set<String> iAssignExternalIds;
+		private Set<Long> iUnassignIds;
+		
+		public ManageInstructorListUpdateRequest() {}
+		public ManageInstructorListUpdateRequest(Long deptId) { iDepartmentId = deptId; }
+
+		public Long getDepartmentId() { return iDepartmentId; }
+		public void setDepartmentId(Long deptId) { iDepartmentId = deptId; }
+
+		public void addAssignExternalId(String externalId) {
+			if (iAssignExternalIds == null) iAssignExternalIds = new HashSet<String>();
+			iAssignExternalIds.add(externalId);
+		}
+		public boolean hasAssignExternalIds() { return iAssignExternalIds != null && !iAssignExternalIds.isEmpty(); }
+		public Set<String> getAssignExternalIds() { return iAssignExternalIds; }
+		public boolean hasAssignExternalId(String externalId) {
+			return iAssignExternalIds != null && externalId != null && iAssignExternalIds.contains(externalId);
+		}
+		
+		public void addUnassignId(Long id) {
+			if (iUnassignIds == null) iUnassignIds = new HashSet<Long>();
+			iUnassignIds.add(id);
+		}
+		public boolean hasUnassignIds() { return iUnassignIds != null && !iUnassignIds.isEmpty(); }
+		public boolean hasUnassignId(Long id) { return iUnassignIds != null && iUnassignIds.contains(id); }
+		public Set<Long> getUnassignIds() { return iUnassignIds; }
+	}
+	
+	public static class StaffInterface implements IsSerializable, Comparable<StaffInterface> {
+		private String iExternalId;
+		private String iName;
+		private Long iPositionId;
+		
+		public StaffInterface() {}
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+		public Long getPositionId() { return iPositionId; }
+		public void setPositionId(Long positionId) { iPositionId = positionId; }
+		public String getExternalId() { return iExternalId; }
+		public String getExternalIdNotNull() { return iExternalId == null ? "" : iExternalId; }
+		public void setExternalId(String externalId) { iExternalId = externalId; }
+		
+		@Override
+		public String toString() {
+			return getExternalId() + ": " + getName();
+		}
+
+		@Override
+		public int compareTo(StaffInterface o) {
+			return getName().compareTo(o.getName());
+		}
+	}
+	
+	public static class AssignedStaffInterface extends StaffInterface implements IsSerializable {
+		public boolean iCanRemove = true;
+		public Long iInstructorId;
+		
+		public AssignedStaffInterface() {}
+		
+		
+		public Long getInstructorId() { return iInstructorId; }
+		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+		public boolean isCanRemove() { return iCanRemove; }
+		public void setCanRemove(boolean canRemove) { iCanRemove = canRemove; }
+	}
 }

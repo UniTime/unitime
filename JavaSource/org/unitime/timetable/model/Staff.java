@@ -66,7 +66,7 @@ public class Staff extends BaseStaff implements Comparable, NameInterface {
 	 * @param deptCode
 	 * @return
 	 */
-	public static List<Staff> getStaffByDept(String deptCode, Long acadSessionId) throws Exception {	
+	public static List<Staff> getStaffByDept(String deptCode, Long acadSessionId) {	
 		if (deptCode == null) return null;
 		Query<Staff> q = StaffDAO.getInstance().getSession().createQuery(
 				"select distinct s from Staff s where s.dept=:deptCode and " +

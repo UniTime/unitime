@@ -4091,6 +4091,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Select User Role")
 	@DoNotTranslate
 	String pageSelectUserRole();
+	
+	@DefaultMessage("Manage Instructor List")
+	@DoNotTranslate
+	String pageManageInstructorList();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -8146,4 +8150,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Student {0}")
 	String constraintStudent(String constraint);
+	
+	@DefaultMessage("Failed to update instructors: {0}")
+	String errorFailedToUpdateInstructors(String message);
 }
