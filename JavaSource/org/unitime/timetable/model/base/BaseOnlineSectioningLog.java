@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -83,6 +85,7 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public void setOperation(String operation) { iOperation = operation; }
 
 	@Column(name = "action", nullable = false)
+	@Basic(fetch =  FetchType.LAZY)
 	public byte[] getAction() { return iAction; }
 	public void setAction(byte[] action) { iAction = action; }
 

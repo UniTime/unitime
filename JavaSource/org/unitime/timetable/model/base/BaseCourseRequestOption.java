@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -64,6 +66,7 @@ public abstract class BaseCourseRequestOption implements Serializable {
 	public void setOptionType(Integer optionType) { iOptionType = optionType; }
 
 	@Column(name = "value", nullable = false)
+	@Basic(fetch =  FetchType.LAZY)
 	public byte[] getValue() { return iValue; }
 	public void setValue(byte[] value) { iValue = value; }
 

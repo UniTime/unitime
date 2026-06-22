@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 
@@ -87,10 +89,12 @@ public abstract class BaseQueryLog implements Serializable {
 	public void setUid(String uid) { iUid = uid; }
 
 	@Column(name = "query", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public String getQuery() { return iQuery; }
 	public void setQuery(String query) { iQuery = query; }
 
 	@Column(name = "exception", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public String getException() { return iException; }
 	public void setException(String exception) { iException = exception; }
 

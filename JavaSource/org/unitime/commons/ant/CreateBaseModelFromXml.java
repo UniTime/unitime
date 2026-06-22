@@ -571,6 +571,11 @@ public class CreateBaseModelFromXml extends Task {
 				pwb.println();
 				imports.add("jakarta.persistence.Column");
 				pwb.println("	@Column(name = \"" + column + "\", nullable = " + (notNul ? "false" : "true") + (length != null && !length.isEmpty() ? ", length = " + length : "") + ")");
+				if ("true".equals(el.attributeValue("lazy"))) {
+					pwb.println("	@Basic(fetch =  FetchType.LAZY)");
+					imports.add("jakarta.persistence.Basic");
+					imports.add("jakarta.persistence.FetchType");
+				}
 				if (type.equals("Boolean")) {
 					pwb.println("	public "+type+" is"+name+"() { return i"+name+"; }");
 					imports.add("jakarta.persistence.Transient");
