@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -104,10 +106,12 @@ public abstract class BaseTaskExecution implements Serializable {
 	public void setFinishedDate(Date finishedDate) { iFinishedDate = finishedDate; }
 
 	@Column(name = "log_file", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public String getLogFile() { return iLogFile; }
 	public void setLogFile(String logFile) { iLogFile = logFile; }
 
 	@Column(name = "output_file", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public byte[] getOutputFile() { return iOutputFile; }
 	public void setOutputFile(byte[] outputFile) { iOutputFile = outputFile; }
 

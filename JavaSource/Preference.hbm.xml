@@ -136,8 +136,7 @@
                 column="preference"
                 type="java.lang.String"
                 not-null="false"
-                length="2048"
-                lazy="true"/>
+                length="2048"/>
 
             <many-to-one
                 name="timePattern"

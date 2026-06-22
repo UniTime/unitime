@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
@@ -88,6 +89,7 @@ public abstract class BaseCurriculumClassification implements Serializable {
 	public void setOrd(Integer ord) { iOrd = ord; }
 
 	@Column(name = "students", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public String getStudents() { return iStudents; }
 	public void setStudents(String students) { iStudents = students; }
 

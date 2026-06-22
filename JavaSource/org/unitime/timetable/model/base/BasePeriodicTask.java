@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -83,6 +85,7 @@ public abstract class BasePeriodicTask implements Serializable {
 	public void setEmail(String email) { iEmail = email; }
 
 	@Column(name = "input_file", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public byte[] getInputFile() { return iInputFile; }
 	public void setInputFile(byte[] inputFile) { iInputFile = inputFile; }
 

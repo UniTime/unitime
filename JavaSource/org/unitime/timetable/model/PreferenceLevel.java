@@ -121,12 +121,19 @@ public class PreferenceLevel extends BasePreferenceLevel {
     		iLightBgColor = lightBgColor;
     	}
     	
+	@Transient
     	public String getProlog() { return iProlog; }
+	@Transient
     	public char getChar() { return iChar; }
+	@Transient
     	public int getLevel() { return iLevel; }
+	@Transient
     	public int getColor() { return iColor; }
+	@Transient
     	public int getAdaColor() { return iAdaColor; }
+	@Transient
     	public int getBgColor() { return iBgColor; }
+	@Transient
     	public int getLightBgColor() { return iLightBgColor; }
     	
     	public static Color toAwtColor(int color) {

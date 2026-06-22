@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model.base;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
@@ -101,6 +102,7 @@ public abstract class BaseEventNote implements Serializable {
 	public void setMeetings(String meetings) { iMeetings = meetings; }
 
 	@Column(name = "attached_file", nullable = true)
+	@Basic(fetch =  FetchType.LAZY)
 	public byte[] getAttachedFile() { return iAttachedFile; }
 	public void setAttachedFile(byte[] attachedFile) { iAttachedFile = attachedFile; }
 
