@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.admin.ChameleonPage;
 import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
@@ -487,6 +488,10 @@ public enum Pages {
 	instructorListUpdate(new PageFactory() {
 		public Widget create() { return new ManageInstructorListPage(); }
 		public String name(GwtMessages messages) { return messages.pageManageInstructorList(); }
+		}),
+	chameleon(new PageFactory() {
+		public Widget create() { return new ChameleonPage(); }
+		public String name(GwtMessages messages) { return messages.pageChameleon(); }
 		}),
 	;
 	

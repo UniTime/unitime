@@ -76,14 +76,25 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
  	    	}
  		}
  		
- 		if (user.getCurrentAuthority() != null)
+ 		if (user.getCurrentAuthority() != null) {
  			request.setAuthority(user.getCurrentAuthority().getAuthority());
+ 			if (!request.isList()) {
+ 				if (request.hasTarget()) {
+ 	        		response.setUrl(request.getTarget());
+ 	 	    	} else {
+ 	 	    		// success 	    		
+ 	 	    		response.setUrl("main.action");
+ 	 	    	}
+ 			}
+ 		}
  		
  		UserAuthority authority = setupAuthorities(request, user, response);
  		
         // Role/session list not requested -- try assign default role/session first 
         if (!request.isList() && authority != null) {
         	user.setCurrentAuthority(authority);
+        	for (SessionAttribute s: SessionAttribute.values())
+        		context.removeAttribute(s);
         	if (request.hasTarget()) {
         		response.setUrl(request.getTarget());
  	    	} else {

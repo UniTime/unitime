@@ -104,6 +104,7 @@ public class SelectUserRolePage extends Composite {
 						ToolBox.open(response.getUrl());
 					else
 						ToolBox.open(GWT.getHostPageBaseURL() + response.getUrl());
+					return;
 				}
 				iHeader.clear();
 				iPanel.clear();
