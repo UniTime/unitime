@@ -4095,6 +4095,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Manage Instructor List")
 	@DoNotTranslate
 	String pageManageInstructorList();
+	
+	@DefaultMessage("Chameleon")
+	@DoNotTranslate
+	String pageChameleon();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

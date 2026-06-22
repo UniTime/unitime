@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Enumeration;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
@@ -63,6 +65,17 @@ public class ChameleonAction extends UniTimeAction<ChameleonForm> {
 	public void setUname(String uname) { this.uname = uname; }
 
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyChameleon.isFalse()) {
+    		String url = "chameleon";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
     	if (form == null) {
     		form = new ChameleonForm();
     		form.reset();
