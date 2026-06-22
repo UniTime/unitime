@@ -8356,13 +8356,9 @@ div.gwt-MenuBarPopup {
 	white-space: pre-wrap;
 }
 
-.unitime-ClassAssignmentPage .domain-items {
-	max-width: 800px;
-}
-
 .unitime-ClassAssignmentPage .domain-item {
 	display: inline-block;
-	min-width: 25%;
+	min-width: 20%;
 	padding: 0px 5px 0px 5px;
 	cursor: pointer;
 	border-right: 1px dashed #9CB0CE;
@@ -8374,18 +8370,19 @@ div.gwt-MenuBarPopup {
 	padding-left: 20px;
 }
 
-.unitime-ClassAssignmentPage .domain-item:nth-child(4n+4) {
+.unitime-ClassAssignmentPage .domain-item:nth-child(5n+5) {
 	border-right: none;
 }
 
 .unitime-ClassAssignmentPage .domain-item-label {
 	display: inline-block;
-	min-width: 80%;
+	width: 80%;
 }
 
 .unitime-ClassAssignmentPage .domain-item-extra {
 	display: inline-block;
-	min-width: 20%;
+	width: 20%;
+	min-width: 35px;
 	text-align: right;
 	padding-right: 3px;
 }
