@@ -4100,6 +4100,18 @@ public interface GwtMessages extends Messages {
 	@DoNotTranslate
 	String pageChameleon();
 
+	@DefaultMessage("Manager Settings")
+	@DoNotTranslate
+	String pageManagerSettings();
+
+	@DefaultMessage("Edit Manager Setting")
+	@DoNotTranslate
+	String pageEditManagerSetting();
+	
+	@DefaultMessage("University Timetabling Application")
+	@DoNotTranslate
+	String pageUniversityTimetablingApplication();
+
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	

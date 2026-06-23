@@ -20,6 +20,8 @@
 package org.unitime.timetable.action;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Enumeration;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.struts2.convention.annotation.Action;
@@ -79,6 +81,17 @@ public class MainAction extends UniTimeAction<BlankForm>{
 	}
 	
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyMain.isFalse()) {
+    		String url = "main";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (message != null && !message.isEmpty())
 			message = StringEscapeUtils.escapeHtml4(message);
 		else if (message == null)

@@ -28,4 +28,9 @@ public interface GwtRpcRequest<T extends GwtRpcResponse> extends IsSerializable 
 	
 	/** What is to be recorded into the query log (query field) */
 	public String toString();
+	
+	public interface HasUniTimeUrl {
+		public String getUniTimeUrl();
+		public void setUniTimeUrl(String url);
+	}
 }

@@ -3850,6 +3850,16 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Manager Settings: switch the user interface back to the old (Struts-based) manager settings page")
+	LegacyManagerSettings("unitime.legacy.managerSettings"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("University Timetabling Application: switch the user interface back to the old (Struts-based) main page")
+	LegacyMain("unitime.legacy.main"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Student Scheduling: provide associated (parent) course -- a student requesting both courses cannot get the course without also getting the associated course")
 	@Since(4.9)
 	StudentSchedulingParentCourse("unitime.sectioning.parentCourse"),

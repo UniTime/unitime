@@ -49,6 +49,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest.HasUniTimeUrl;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
@@ -184,6 +185,9 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			// retrieve implementation from given request
 			GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = getImplementation(request);
 			
+			if (request instanceof HasUniTimeUrl)
+				((HasUniTimeUrl)request).setUniTimeUrl(getUniTimeUrl());
+			
 			// get logging
 			logging = implementation.getClass().getAnnotation(GwtRpcLogging.class);
 			
@@ -224,6 +228,10 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			sLog.error("Seen exception: " + t.getMessage(), t);
 			throw new GwtRpcException(t.getMessage());
 		}
+	}
+	
+	public String getUniTimeUrl() {
+		return getThreadLocalRequest().getRequestURL().toString().replace(getRequestModuleBasePath() + "gwt.rpc", "");
 	}
 	
 	private <T extends GwtRpcResponse> void log(GwtRpcRequest<T> request, T response, Throwable exception, long time, SessionContext context, GwtRpcLogging logging) {

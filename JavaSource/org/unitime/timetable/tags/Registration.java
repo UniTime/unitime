@@ -46,6 +46,7 @@ import org.dom4j.io.XMLWriter;
 import org.restlet.resource.ClientResource;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.gwt.client.page.MainPage.MainPageResponse;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
@@ -74,6 +75,14 @@ public class Registration extends BodyTagSupport {
 	public void setUpdate(boolean update) { iUpdate = update; }
 	public boolean isUpdate() { return iUpdate; }
 	
+	private boolean iRefresh = false;
+	public void setRefresh(boolean refresh) { iRefresh = refresh; }
+	public boolean isRefresh() { return iRefresh; }
+
+	private String iUniTimeUrl = null;
+	public void setUniTimeUrl(String url) { iUniTimeUrl = url; }
+	public String getUniTimeUrl() { return iUniTimeUrl; }
+
 	private static long sLastRefresh = -1;
 	
 	private static enum Obtrusiveness {
@@ -110,7 +119,10 @@ public class Registration extends BodyTagSupport {
 			registration.put("version", Constants.getVersion());
 			registration.put("sessions", String.valueOf(QueryLog.getNrSessions(31)));
 			registration.put("users", String.valueOf(QueryLog.getNrActiveUsers(31)));
-			registration.put("url", pageContext.getRequest().getScheme()+"://"+pageContext.getRequest().getServerName()+":"+pageContext.getRequest().getServerPort()+
+			if (getUniTimeUrl() != null)
+				registration.put("url", getUniTimeUrl());
+			else
+				registration.put("url", pageContext.getRequest().getScheme()+"://"+pageContext.getRequest().getServerName()+":"+pageContext.getRequest().getServerPort()+
 					((HttpServletRequest)pageContext.getRequest()).getContextPath());
 			sLog.debug("Sending the following registration info: " + registration);
 			
@@ -167,6 +179,58 @@ public class Registration extends BodyTagSupport {
 	private void refresh() {
 		if ("1".equals(pageContext.getRequest().getParameter("refresh")) || System.currentTimeMillis() - sLastRefresh > 60 * 60 * 1000)
 			init();
+	}
+	
+	public void populate(MainPageResponse response, SessionContext context) {
+		if (sLastRefresh < 0) init();
+		if (context.hasPermission(Right.Registration)) {
+			// refresh
+			if (isRefresh() || System.currentTimeMillis() - sLastRefresh > 60 * 60 * 1000)
+				init();
+			response.setRegistrationMessage(sNote);
+		}
+		response.setRegistration(sMessage);
+		if (isUpdate()) {
+			String back = "";
+			try {
+				if (getUniTimeUrl() != null)
+					back = "&back=" + URLEncoder.encode(getUniTimeUrl() + "/main?refresh=1", "utf-8");
+			} catch (Exception e) {}
+			Obtrusiveness obtrusiveness = Obtrusiveness.valueOf(ApplicationProperty.RegistrationPopupObtrusiveness.value());
+			if (context.hasPermission(Right.Registration)) {
+				response.setRegistration(sMessage +
+						"<br><span style=\"font-size: x-small;\">Click <a "+
+						"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
+						"onClick=\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://register.unitime.org?key=" + sKey + back + "', '750px', '75%');\" " +
+						"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
+						(sRegistered ? "update the current registration" : "register") + "." +
+						"</span>");
+				switch (obtrusiveness) {
+				case low:
+					if (sRegistered) break;
+				case high:
+				case medium:
+					response.setPopupMessage(sMessage +
+							"<br><span style='font-size: x-small;'>Click <a " +
+							"onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" " +
+							"onClick=\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://register.unitime.org?key=" + sKey + back + "', '750px', '75%');\" " +
+							"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
+							(sRegistered ? "update the current registration" : "register") + "." +
+							"</span>");
+					break;
+				default:
+				}
+			} else {
+				switch (obtrusiveness) {
+				case medium:
+					if (sRegistered) break;
+				case high:
+					response.setPopupMessage(sMessage);
+					break;
+				default:
+				}
+			}
+		}
 	}
 	
 	public int doStartTag() throws JspException {

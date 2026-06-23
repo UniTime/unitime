@@ -8989,3 +8989,8 @@ div.gwt-MenuBarPopup {
 .unitime-ChameleonPage button {
 	min-width: 75px;
 }
+
+.unitime-ManagerSettingsPage .gwt-RadioButton {
+	display: block;
+	padding-left: 20px;
+}
