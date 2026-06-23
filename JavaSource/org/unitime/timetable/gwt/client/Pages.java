@@ -72,6 +72,8 @@ import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupPage;
 import org.unitime.timetable.gwt.client.offerings.OfferingDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartEditPage;
+import org.unitime.timetable.gwt.client.page.MainPage;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage;
 import org.unitime.timetable.gwt.client.page.SelectUserRolePage;
 import org.unitime.timetable.gwt.client.page.SolverWarnings;
 import org.unitime.timetable.gwt.client.pointintimedata.PointInTimeDataReportsPage;
@@ -492,6 +494,14 @@ public enum Pages {
 	chameleon(new PageFactory() {
 		public Widget create() { return new ChameleonPage(); }
 		public String name(GwtMessages messages) { return messages.pageChameleon(); }
+		}),
+	managerSettings(new PageFactory() {
+		public Widget create() { return new ManagerSettingsPage(); }
+		public String name(GwtMessages messages) { return messages.pageManagerSettings(); }
+		}),
+	main(new PageFactory() {
+		public Widget create() { return new MainPage(); }
+		public String name(GwtMessages messages) { return messages.pageUniversityTimetablingApplication(); }
 		}),
 	;
 	

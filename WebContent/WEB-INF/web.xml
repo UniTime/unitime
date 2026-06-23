@@ -276,6 +276,8 @@
     	<url-pattern>/selectPrimaryRole</url-pattern>
     	<url-pattern>/instructorListUpdate</url-pattern>
     	<url-pattern>/chameleon</url-pattern>
+    	<url-pattern>/managerSettings</url-pattern>
+    	<url-pattern>/main</url-pattern>
     </servlet-mapping>
 	
 	<filter>
