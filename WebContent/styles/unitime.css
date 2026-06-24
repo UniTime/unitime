@@ -37,6 +37,7 @@ input[type="button"] {
 .unitime-Body {
 	font-family: sans-serif, verdana, arial;
 	background-color: #FFFFFF;
+	overflow-y: scroll;
 }
 
 .unitime-Page {
@@ -4001,7 +4002,7 @@ div.gwt-MenuBarPopup {
 
 .unitime-MainLogo {
 	background-repeat:no-repeat;
-	background-position: center;
+	background-position: top;
 	background-image: url('../images/logo.jpg');
 	margin: 10px;
 }
@@ -4009,7 +4010,7 @@ div.gwt-MenuBarPopup {
 .unitime-MainLogoFaded {
 	background-image: url('../images/logofaded.jpg');
 	background-repeat: no-repeat;
-	background-position: center;
+	background-position: top;
 }
 
 .unitime-MainContent .messages {
@@ -8376,13 +8377,12 @@ div.gwt-MenuBarPopup {
 
 .unitime-ClassAssignmentPage .domain-item-label {
 	display: inline-block;
-	width: 80%;
+	width: calc(100% - 35px);
 }
 
 .unitime-ClassAssignmentPage .domain-item-extra {
 	display: inline-block;
-	width: 20%;
-	min-width: 35px;
+	width: 35px;
 	text-align: right;
 	padding-right: 3px;
 }
@@ -8932,13 +8932,12 @@ div.gwt-MenuBarPopup {
 
 .unitime-ExamAssignmentPage .domain-item-label {
 	display: inline-block;
-	width: 80%;
+	width: calc(100% - 35px);
 }
 
 .unitime-ExamAssignmentPage .domain-item-extra {
 	display: inline-block;
-	width: 20%;
-	min-width: 35px;
+	width: 35px;
 	text-align: right;
 	padding-right: 3px;
 }
