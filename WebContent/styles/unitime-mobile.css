@@ -173,10 +173,17 @@
 }
 
 @media all and (max-width: 800px) {
+	.unitime-Body {
+		overflow-y: auto;
+	}
+	
+	.unitime-Page .body:has(span):has(.unitime-MainContent) {
+		min-height: 700px;
+	}
+	
 	.unitime-MainContent {
 		width: inherit;
 		height: inherit;
-		min-height: 70vh;
 	}
 
 	.unitime-MainContent .messages {
@@ -501,6 +508,13 @@
 	
 	.unitime-EventResults .gwt-TabBarItem .gwt-HTML {
 		width: 12vw;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+	
+	.unitime-StudentSchedule .gwt-TabBarItem .gwt-HTML {
+		max-width: 16vw;
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		overflow: hidden;
