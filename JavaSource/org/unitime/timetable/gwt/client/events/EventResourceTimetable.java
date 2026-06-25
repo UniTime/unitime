@@ -575,6 +575,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 					for (MeetingInterface meeting: event.getMeetings()) {
 						if (filterEvent(event, meeting)) continue;
+						if (meeting.isArrangeHours()) continue;
 						if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 						if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 						if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
@@ -920,7 +921,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 				for (MeetingInterface meeting: event.getMeetings()) {
 					if (filterEvent(event, meeting)) continue;
-					if (meeting.getDayOfWeek() == 0) continue;
+					if (meeting.isArrangeHours()) continue;
 					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 					if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 					if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
