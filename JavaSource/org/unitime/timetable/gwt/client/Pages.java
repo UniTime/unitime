@@ -471,7 +471,7 @@ public enum Pages {
 	examGrid(new PageFactory() {
 		public Widget create() { return new ExamGridPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationTimetable(); }
-		}),
+		}, SolverWarnings.Type.exam),
 	examAssignment(new PageFactory() {
 		public Widget create() { return new ExamAssignmentPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationAssignment(); }

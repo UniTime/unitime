@@ -596,6 +596,7 @@ public class ExamAssignmentPage extends Composite {
 
 				iLastExamId = response.getSelectedExamId();				
 				iPanel.addBottomRow(iFooter);
+				if (hasParent()) centerDialog();
 			}
 		});
 	}
@@ -905,5 +906,8 @@ public class ExamAssignmentPage extends Composite {
 	}-*/;
 	public static native void clickElement(Element elem) /*-{
 		elem.click();
+	}-*/;
+	public static native void centerDialog() /*-{
+		$wnd.parent.centerGwtDialog();
 	}-*/;
 }
