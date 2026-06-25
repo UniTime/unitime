@@ -4111,6 +4111,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("University Timetabling Application")
 	@DoNotTranslate
 	String pageUniversityTimetablingApplication();
+	
+	@DefaultMessage("Contact Us")
+	@DoNotTranslate
+	String pageContactUs();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -8169,4 +8173,19 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to update instructors: {0}")
 	String errorFailedToUpdateInstructors(String message);
+	
+	@DefaultMessage("Uploading {0} ...")
+	String uploading(String fileName);
+	
+	@DefaultMessage("Upload failed: {0}")
+	String failedUpload(String error);
+	
+	@DefaultMessage("No file is selected.")
+	String failedUploadNoFile();
+	
+	@DefaultMessage("File {0} ({1} bytes) uploaded.")
+	String fileUploaded(String fileName,long size);
+	
+	@DefaultMessage("Failed to upload a file. Please check the server log for more details.")
+	String failedUploadUnknown();
 }

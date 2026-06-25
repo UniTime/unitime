@@ -24,6 +24,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -41,6 +42,7 @@ import com.google.gwt.user.client.ui.FormPanel;
  */
 public class UniTimeFileUpload extends FormPanel implements HasValueChangeHandlers<String> {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private FileUpload iUpload;
 	
 	public UniTimeFileUpload() {
@@ -63,12 +65,14 @@ public class UniTimeFileUpload extends FormPanel implements HasValueChangeHandle
 			@Override
 			public void onSubmitComplete(SubmitCompleteEvent event) {
 				String message = event.getResults();
-				if (message.startsWith("ERROR:")) {
+				if (message != null && message.startsWith("ERROR:")) {
 					UniTimeNotifications.error(message.substring("ERROR:".length()));
 					reset();
-				} else {
+				} else if (message != null) {
 					UniTimeNotifications.info(message);
 					ValueChangeEvent.fire(UniTimeFileUpload.this, iUpload.getFilename());
+				} else {
+					UniTimeNotifications.warn(MESSAGES.failedUploadUnknown());
 				}
 			}
 		});
@@ -80,7 +84,7 @@ public class UniTimeFileUpload extends FormPanel implements HasValueChangeHandle
 				if (name.indexOf('/') >= 0) name = name.substring(name.lastIndexOf('/') + 1);
 				if (name.indexOf('\\') >= 0) name = name.substring(name.lastIndexOf('\\') + 1);
 				if (!name.isEmpty())
-					UniTimeNotifications.info("Uploading " + name + " ...");
+					UniTimeNotifications.info(MESSAGES.uploading(name));
 			}
 		});
 	}

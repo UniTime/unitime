@@ -72,6 +72,7 @@ import org.unitime.timetable.gwt.client.offerings.MultipleClassSetupPage;
 import org.unitime.timetable.gwt.client.offerings.OfferingDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartDetailPage;
 import org.unitime.timetable.gwt.client.offerings.SubpartEditPage;
+import org.unitime.timetable.gwt.client.page.ContactUsPage;
 import org.unitime.timetable.gwt.client.page.MainPage;
 import org.unitime.timetable.gwt.client.page.ManagerSettingsPage;
 import org.unitime.timetable.gwt.client.page.SelectUserRolePage;
@@ -502,6 +503,10 @@ public enum Pages {
 	main(new PageFactory() {
 		public Widget create() { return new MainPage(); }
 		public String name(GwtMessages messages) { return messages.pageUniversityTimetablingApplication(); }
+		}),
+	inquiry(new PageFactory() {
+		public Widget create() { return new ContactUsPage(); }
+		public String name(GwtMessages messages) { return messages.pageContactUs(); }
 		}),
 	;
 	
