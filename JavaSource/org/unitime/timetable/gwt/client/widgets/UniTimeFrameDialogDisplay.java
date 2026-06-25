@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.HasText;
 public interface UniTimeFrameDialogDisplay extends HasText {
 	public void openDialog(String title, String source, String width, String height, boolean noCacheTS);
 	public void hideDialog();
+	public void centerDialog();
 	public boolean isShowing();
 	
 	public static interface Mobile extends UniTimeFrameDialogDisplay {}

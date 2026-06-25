@@ -163,4 +163,9 @@ public class MobileUniTimeFrameDialogImpl implements UniTimeFrameDialogDisplay {
 			});
 		}
 	}-*/;
+
+	@Override
+	public void centerDialog() {
+		iPopup.setPopupPosition(0, 0);
+	}
 }

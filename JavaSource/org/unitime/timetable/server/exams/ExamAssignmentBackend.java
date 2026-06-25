@@ -200,7 +200,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
 				proposed.setSelected(selected.getUniqueId());
 			}
 			if (solver != null) {
-//				proposed.addChange(solver.getAssignment(selected.getUniqueId(), examInfo.getPeriodId(), null), examInfo);
+				proposed.addChange(solver.getAssignment(selected.getUniqueId(), examInfo.getPeriodId(), null), examInfo);
 			} else {
 				try {
 					proposed.addChange(new ExamAssignmentInfo(selected, examInfo.getPeriod(), null), examInfo);
@@ -212,7 +212,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
 		}
 		
 		try {
-			update(proposed, examInfo, solver);
+			proposed = update(proposed, examInfo, solver);
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			response.addErrorMessage(e.getMessage());
@@ -613,10 +613,10 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
 		return response;
 	}
 	
-	public void update(ExamProposedChange change, ExamAssignmentInfo examInfo, ExamSolverProxy solver) throws Exception {
-		if (change == null) return;
+	public ExamProposedChange update(ExamProposedChange change, ExamAssignmentInfo examInfo, ExamSolverProxy solver) throws Exception {
+		if (change == null) return null;
 		if (solver != null) {
-			change = solver.update(change);
+			return solver.update(change);
         } else {
             Vector<ExamAssignment> assignments = new Vector(change.getAssignments());
             Hashtable<Long,ExamAssignment> table = change.getAssignmentTable();
@@ -692,6 +692,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
                     }
                 }
             }
+            return change;
         }
 	}
 	

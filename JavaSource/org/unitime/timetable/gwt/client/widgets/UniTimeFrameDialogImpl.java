@@ -167,4 +167,9 @@ public class UniTimeFrameDialogImpl extends UniTimeDialogBox implements UniTimeF
 			});
 		}
 	}-*/;
+
+	@Override
+	public void centerDialog() {
+		center();
+	}
 }

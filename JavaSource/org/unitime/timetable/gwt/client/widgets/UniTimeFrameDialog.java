@@ -38,6 +38,9 @@ public class UniTimeFrameDialog {
 		$wnd.hasGwtDialog = function() {
 			return @org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog::hasDialog()();
 		};
+		$wnd.centerGwtDialog = function() {
+			@org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog::centerDialog()();
+		};
 	}-*/;
 	
 	public static void openDialog(String title, String source) {
@@ -64,5 +67,9 @@ public class UniTimeFrameDialog {
 	
 	public static boolean hasDialog() {
 		return sDialog != null && sDialog.isShowing();
+	}
+	
+	public static void centerDialog() {
+		if (sDialog != null && sDialog.isShowing()) sDialog.centerDialog();
 	}
 }
