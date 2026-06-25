@@ -34,9 +34,13 @@ import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.commons.fileupload2.core.DiskFileItemFactory;
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.CalendarServlet.HttpParams;
 import org.unitime.timetable.gwt.server.CalendarServlet.Params;
 import org.unitime.timetable.gwt.server.CalendarServlet.QParams;
@@ -51,6 +55,8 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 public class UploadServlet extends HttpServlet {
+	protected static Logger sLog = LogManager.getLogger(UploadServlet.class);
+	protected static GwtMessages MSG = Localization.create(GwtMessages.class);
 	private static final long serialVersionUID = 1L;
 	private static final int DEFAULT_MAX_SIZE = 4096 * 1024;
 	
@@ -120,14 +126,14 @@ public class UploadServlet extends HttpServlet {
 				FileItem file = files.get(0);
 				if (file.getSize() <= 0) {
 					request.getSession().removeAttribute(SESSION_LAST_FILE);
-					message = "No file is selected.";
+					message = MSG.failedUploadNoFile();
 				} else {
 					request.getSession().setAttribute(SESSION_LAST_FILE, file);
-					message = "File " + file.getName() + " (" + file.getSize() + " bytes) selected.";
+					message = MSG.fileUploaded(file.getName(), file.getSize());
 				}
 			} else {
 				request.getSession().removeAttribute(SESSION_LAST_FILE);
-				message = "No file is selected.";
+				message = MSG.failedUploadNoFile();
 			}
 			
 			response.setContentType("text/html; charset=UTF-8");
@@ -137,10 +143,11 @@ public class UploadServlet extends HttpServlet {
 			out.flush();
 			out.close();
 		} catch (FileUploadException e) {
+			sLog.error("Upload failed: " + e.getMessage(), e);
 			response.setContentType("text/html; charset=UTF-8");
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter out = response.getWriter();
-			out.print("ERROR:Upload failed: " + e.getMessage());
+			out.print("ERROR:" + MSG.failedUpload(e.getMessage()));
 			out.flush();
 			out.close();
 		}

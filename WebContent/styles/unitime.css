@@ -8993,3 +8993,19 @@ div.gwt-MenuBarPopup {
 	display: block;
 	padding-left: 20px;
 }
+
+.unitime-ContactUsPage .managers-line button {
+	margin-left: 5px;
+}
+
+.unitime-ContactUsPage .managers-line .gwt-SuggestBox {
+	width: 300px;
+}
+
+.unitime-ContactUsPage .item-line .item-text {
+	display: inline-block;
+}
+.unitime-ContactUsPage .item-line img {
+	display: inline-block;
+	margin-left: 3px;
+}

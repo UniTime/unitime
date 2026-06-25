@@ -90,7 +90,7 @@ public class JavaMailWrapper extends Email {
 
 	@Override
 	public void setReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
-		if (email != null)
+		if (email != null && !email.isEmpty())
 			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name, "UTF-8")});
 	}
 	
