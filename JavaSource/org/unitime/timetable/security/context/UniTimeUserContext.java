@@ -374,16 +374,7 @@ public class UniTimeUserContext extends AbstractUserContext {
         if (firstFutureSession != null) return firstFutureSession;
         if (lastActive != null) return lastActive;
         
-        Session lastNoTest = null;
-        for (Session session: sessions) {
-        	if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
-        	
-        	Date begin = session.getEventBeginDate();
-        	if (!begin.after(today)) return session;
-        	
-        	lastNoTest = session;
-        }
-        return lastNoTest;
+        return null;
 	}
 	
 	public static Session defaultSession(TreeSet<Session> sessions, HasRights role) {
