@@ -9005,3 +9005,11 @@ div.gwt-MenuBarPopup {
 	display: inline-block;
 	margin-left: 3px;
 }
+
+.unitime-SolutionReportsPage .single-report .unitime-MainTable tr:hover {
+	background-color: #DDD;
+}
+
+.unitime-SolutionReportsPage .single-report .unitime-MainTable .clickable-cell {
+	cursor: pointer;
+}
