@@ -65,7 +65,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentPageInterface.DomainItem;
 import org.unitime.timetable.gwt.shared.ClassAssignmentPageInterface.Operation;
 import org.unitime.timetable.gwt.shared.ClassAssignmentPageInterface.RoomOrder;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
+import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;

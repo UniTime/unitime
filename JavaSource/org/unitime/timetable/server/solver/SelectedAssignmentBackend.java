@@ -55,6 +55,8 @@ import org.cpsolver.ifs.solver.Solver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -70,8 +72,6 @@ import org.unitime.timetable.gwt.shared.SuggestionsInterface.SelectedAssignments
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.StudentConflictInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.Suggestion;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.TimeInfo;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellMulti;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -394,21 +394,24 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         long studentConflictsCommitted = Math.round((scc == null ? 0.0 : scc.getValue(assignment)) - context.getBaseStudentConflictsCommitted());
         long studentConflictsDistance = Math.round((sdc == null ? 0.0 : sdc.getValue(assignment)) - context.getBaseStudentConflictsDistance());
         long studentConflictsHard = Math.round((shc == null ? 0.0 : shc.getValue(assignment)) - context.getBaseStudentConflictsHard());
-        TableCellMulti studentConfs = new TableCellMulti();
-		studentConfs.add(dispNumber(studentConflicts));
-		if (studentConflictsCommitted != 0) {
-			if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
-			studentConfs.add(dispNumber(studentConflictsCommitted).setFormattedValue("c" + (studentConflictsCommitted > 0 ? "+" : "") + studentConflictsCommitted));
+        
+        CellInterface studentConfs = new CellInterface().setTextAlignment(Alignment.RIGHT);
+		studentConfs.setComparable(studentConflicts, studentConflictsCommitted, studentConflictsDistance, studentConflictsHard);
+		studentConfs.setNoWrap(true);
+		studentConfs.addItem(dispNumber(null, studentConflicts));
+		if (studentConflictsCommitted!=0) {
+			if (studentConfs.getNrItems() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+			studentConfs.addItem(dispNumber("c", studentConflictsCommitted));
 	    }
-	    if (studentConflictsDistance != 0) {
-	    	if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
-	    	studentConfs.add(dispNumber(studentConflictsDistance).setFormattedValue("d" + (studentConflictsDistance > 0 ? "+" : "") + studentConflictsDistance));
+	    if (studentConflictsDistance!=0) {
+	    	if (studentConfs.getNrItems() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+	    	studentConfs.addItem(dispNumber("d", studentConflictsDistance));
 	    }
-	    if (studentConflictsHard != 0) {
-	    	if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
-	    	studentConfs.add(dispNumber(studentConflictsHard).setFormattedValue("h" + (studentConflictsHard > 0 ? "+" : "") + studentConflictsHard));
+	    if (studentConflictsHard!=0) {
+	    	if (studentConfs.getNrItems() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+	    	studentConfs.addItem(dispNumber("h", studentConflictsHard));
 	    }
-	    if (studentConfs.getNrChunks() > 1) studentConfs.add(")");
+	    if (studentConfs.getNrItems()>1) studentConfs.add(")");
 	    suggestion.setStudentConflictSummary(studentConfs);
 	    
 		return suggestion;
@@ -548,10 +551,9 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
         }
     }
 	
-	public static TableCellInterface dispNumber(long value) {
-		TableCellInterface cell = new TableCellInterface<Long>(value)
-				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
-		if (value > 0) cell.setFormattedValue("+" + value);
-		return cell;
+	public static CellInterface dispNumber(String prefix, long value) {
+		return new CellInterface().setText((prefix == null ? "" : prefix) + (value > 0 ? "+" : "") + value).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
 	}
 }

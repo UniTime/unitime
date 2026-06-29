@@ -32,6 +32,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.ExportHelper;
+import org.unitime.timetable.export.courses.ClassesPDF;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -63,7 +64,7 @@ import com.lowagie.text.pdf.PdfContentByte;
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:timetable.pdf")
-public class ExportTimetablePDF extends TableExporter {
+public class ExportTimetablePDF extends ClassesPDF {
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static Format<Date> sDateFormatMeeting = Formats.getDateFormat(Formats.Pattern.TIMETABLE_GRID_DATE);

@@ -583,12 +583,22 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			cmp = Double.compare(getMin(),t.getMin());
 			return cmp;
 		}
-		public CellInterface toCell() {
+		public CellInterface toCell() { return toCell(false); } 
+		public CellInterface toCell(boolean usePrefStyles) {
 			return new CellInterface()
 				.setText(getDaysName() + " " + getStartTime() + " - " + getEndTime())
-				.setColor(PreferenceLevel.int2color(getPref()))
+				.setColor(usePrefStyles ? null : PreferenceLevel.int2color(getPref()))
+				.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(getPref()) : null)
 				.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + getClazz().getClassId() + "," + getDays() + "," + getStartSlot() + "');")
-				.setMouseOut("$wnd.hideGwtTimeHint();");
+				.setMouseOut("$wnd.hideGwtTimeHint();")
+				.setNoWrap(true);
+		}
+		public CellInterface toDateCell(boolean usePrefStyles) {
+			return new CellInterface()
+				.setText(getDatePatternName())
+				.setColor(usePrefStyles ? null : PreferenceLevel.int2color(getDatePatternPreference()))
+				.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(getDatePatternPreference()) : null)
+				.setNoWrap(true);
 		}
 	}
 
@@ -655,17 +665,20 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			//if (cmp!=0) return cmp;
 			return getName().compareTo(((RoomInfo)o).getName());
 		}
-	    public CellInterface toCell() {
+		public CellInterface toCell() { return toCell(false); }
+	    public CellInterface toCell(boolean usePrefStyles) {
 	    	CellInterface c = new CellInterface();
 	    	c.add(getName())
-				.setColor(PreferenceLevel.int2color(getPref()))
+				.setColor(usePrefStyles ? null : PreferenceLevel.int2color(getPref()))
+				.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(getPref()) : null)
 				.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + getId() + "', '" + PreferenceLevel.int2string(getPref()) + "');")
-				.setMouseOut("$wnd.hideGwtRoomHint();");
+				.setMouseOut("$wnd.hideGwtRoomHint();")
+				.setNoWrap(true);
 	    	if (isStriked()) c.addStyle("text-decoration: line-through;");
 	    	return c;
 	    }
 	}
-
+	
 	public class InstructorInfo implements Serializable {
 		private static final long serialVersionUID = 1L;
 		private String iName;
@@ -1280,5 +1293,4 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
     public String toString() {
         return getClassName()+" "+getTimeNoHtml()+" "+getRoomNoHtml()+" "+getDaysName()+" "+getInstructorName();
     }
-
 }

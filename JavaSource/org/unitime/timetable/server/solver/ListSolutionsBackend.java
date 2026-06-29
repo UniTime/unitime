@@ -27,9 +27,6 @@ import org.unitime.timetable.gwt.shared.SolverInterface.SolutionInfo;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverConfiguration;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverOwner;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableHeaderIterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
@@ -71,6 +68,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsTable.InfoComparator;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -382,43 +382,66 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 			
 			PropertiesInfo globalInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 			
-			response.addRow(new TableRowInterface(
-					solution.getUniqueId(), selectedIds != null && selectedIds.contains(solution.getUniqueId()),
-					new TableCellInterface<Date>(solution.getCreated(), sTS.format(solution.getCreated())),
-					new TableCellInterface<String>(type),
-					new TableCellInterface<Date>(solution.isCommited() ? solution.getCommitDate() : null, solution.isCommited() ? sTS.format(solution.getCommitDate()) : ""),
-					new TableCellInterface<String>(solution.getOwner().getAbbv()).setTitle(solution.getOwner().getName()),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Assigned variables", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Overall solution value", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Time preferences", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : globalInfo.getProperty("Student conflicts", MESSAGES.notApplicable())
-							.replaceAll(" \\[","(").replaceAll("\\]",")").replaceAll(", ",",").replaceAll("hard:","h").replaceAll("distance:","d").replaceAll("commited:","c").replaceAll("committed:","c")),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Room preferences", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Distribution preferences", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Back-to-back instructor preferences", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Too big rooms", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Useless half-hours", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Perturbations: Total penalty", MESSAGES.notApplicable()))),
-					new TableCellInterface<String>(solution.getNote())
-					));
+			LineInterface line = response.addLine();
+			line.setId(solution.getUniqueId());
+			if (selectedIds != null && selectedIds.contains(solution.getUniqueId())) {
+				line.setClassName("unitime-TableRowSelected");
+				line.setURL("#-" + solution.getUniqueId());
+			} else {
+				line.setURL("#" + solution.getUniqueId());
+			}
+			line.addCell(sTS.format(solution.getCreated())).setComparable(solution.getCreated());
+			line.addCell(type).setComparable(type, solution.getOwner().getAbbv(), solution.getCreated());
+			line.addCell(solution.isCommited() ? sTS.format(solution.getCommitDate()) : "").setComparable(solution.getCommitDate(), solution.getCreated());
+			line.addCell(solution.getOwner().getAbbv()).setTitle(solution.getOwner().getName())
+				.setComparable(solution.getOwner().getAbbv(), solution.getCreated());
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Assigned variables", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Overall solution value", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Time preferences", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : globalInfo.getProperty("Student conflicts", MESSAGES.notApplicable())
+							.replaceAll(" \\[","(").replaceAll("\\]",")").replaceAll(", ",",").replaceAll("hard:","h").replaceAll("distance:","d").replaceAll("commited:","c").replaceAll("committed:","c"));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Room preferences", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Distribution preferences", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Back-to-back instructor preferences", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Too big rooms", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Useless half-hours", MESSAGES.notApplicable())));
+			line.addCell(globalInfo == null ? MESSAGES.listSolutionsUnknown() : fix(globalInfo.getProperty("Perturbations: Total penalty", MESSAGES.notApplicable())));
+			line.addCell(solution.getNote()).setComparable(solution.getNote(), solution.getCreated());
+			for (int i = 4; i < line.getNrCells() - 1; i++) {
+				CellInterface cell = line.getCell(i);
+				cell.setTextAlignment(Alignment.RIGHT);
+				cell.setComparable(cell.toString(), solution.getCreated());
+			}
 		}
 		
-		response.setHeader(
-				new TableHeaderIterface(MESSAGES.colCreated()),
-				new TableHeaderIterface(MESSAGES.colSolverConfiguration()),
-				new TableHeaderIterface(MESSAGES.colCommitted()),
-				new TableHeaderIterface(MESSAGES.colOwner()),
-				new TableHeaderIterface(MESSAGES.colShortAssignedVariables()),
-				new TableHeaderIterface(MESSAGES.colShortTotalValue()),
-				new TableHeaderIterface(MESSAGES.colShortTimePref()),
-				new TableHeaderIterface(MESSAGES.colShortStudentConflicts()),
-				new TableHeaderIterface(MESSAGES.colShortRoomPref()),
-				new TableHeaderIterface(MESSAGES.colShortDistPref()),
-				new TableHeaderIterface(MESSAGES.colShortInstructorBtbPref()),
-				new TableHeaderIterface(MESSAGES.colShortTooBigRooms()),
-				new TableHeaderIterface(MESSAGES.colShortUselessHalfHours()),
-				new TableHeaderIterface(MESSAGES.colShortPerturbations()),
-				new TableHeaderIterface(MESSAGES.colNote()));
+		LineInterface line = response.addHeader();
+		line.addCell(MESSAGES.colCreated());
+		line.addCell(MESSAGES.colSolverConfiguration());
+		line.addCell(MESSAGES.colCommitted());
+		line.addCell(MESSAGES.colOwner());
+		line.addCell(MESSAGES.colShortAssignedVariables());
+		line.addCell(MESSAGES.colShortTotalValue());
+		line.addCell(MESSAGES.colShortTimePref());
+		line.addCell(MESSAGES.colShortStudentConflicts());
+		line.addCell(MESSAGES.colShortRoomPref());
+		line.addCell(MESSAGES.colShortDistPref());
+		line.addCell(MESSAGES.colShortInstructorBtbPref());
+		line.addCell(MESSAGES.colShortTooBigRooms());
+		line.addCell(MESSAGES.colShortUselessHalfHours());
+		line.addCell(MESSAGES.colShortPerturbations());
+		line.addCell(MESSAGES.colNote());
+		for (int i = 0; i < line.getNrCells(); i++) {
+			CellInterface cell = line.getCell(i);
+			cell.setSortable(true);
+			cell.setClassName("unitime-ClickableTableHeader");
+    		cell.setText(cell.getText().replace("<br>", "\n"));
+    		cell.addStyle("white-space: pre-wrap;");
+    		if (i > 3 && i + 1 < line.getNrCells())
+    			cell.setTextAlignment(Alignment.RIGHT);
+		}
+		response.setId("SavedSolutions");
+		response.setName(MESSAGES.sectSavedSolutions());
+		response.setClassName("unitime-DataTable");
 	}
 	
 	protected void fillSelectedSolutions(ListSolutionsResponse response, SessionContext context, Set<Long> selectedIds, SolverProxy solver) {

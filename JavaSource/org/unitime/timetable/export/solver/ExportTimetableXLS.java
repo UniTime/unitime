@@ -52,6 +52,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.export.ExportHelper;
+import org.unitime.timetable.export.courses.ClassesXLS;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -70,7 +71,7 @@ import org.unitime.timetable.util.Formats.Format;
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:timetable.xls")
-public class ExportTimetableXLS extends TableExporter {
+public class ExportTimetableXLS extends ClassesXLS {
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static Format<Date> sDateFormatMeeting = Formats.getDateFormat(Formats.Pattern.TIMETABLE_GRID_DATE);

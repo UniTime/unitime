@@ -22,6 +22,8 @@ package org.unitime.timetable.gwt.client.solver;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.ToolBox.Page;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -29,7 +31,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
@@ -44,7 +45,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 
 /**
@@ -104,7 +104,7 @@ public class SolutionReportsPage extends P {
 	}
 	
 	protected void print(final TableInterface data) {
-		final DataTable table = new DataTable(data);
+		final TableWidget table = new TableWidget(data);
 		Element headerRow = table.getRowFormatter().getElement(0);
 		Element tableElement = table.getElement();
 		Element thead = DOM.createTHead();
@@ -169,37 +169,28 @@ public class SolutionReportsPage extends P {
 					}
 				});
 				form.addHeaderRow(header);
-				final DataTable table = new DataTable(data);
+				final TableWidget table = new TableWidget(data);
 				header.addButton("exportCSV", MESSAGES.buttonExportCSV(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						exportData("csv", data.getTableId(), table.getValue());
+						exportData("csv", data.getId(), table.getSortCookie());
 					}
 				});
 				header.addButton("exportPDF", MESSAGES.buttonExportPDF(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
-						exportData("pdf", data.getTableId(), table.getValue());
+						exportData("pdf", data.getId(), table.getSortCookie());
 					}
 				});
-
 				form.addRow(table);
 				if (data.hasErrorMessage()) header.setErrorMessage(data.getErrorMessage());
-				if (data.isShowPrefLegend())
-					form.addRow(new PreferenceLegend(response.getPreferences()));
-				if (data.hasColumnDescriptions()) {
-					for (TableInterface.TableHeaderIterface h: data.getHeader()) {
-						if (h.hasDescription())
-							form.addRow(h.getName(), new HTML(h.getDescription()));
-					}
-				}
 				add(form);
 			}
 		}
 	}
 	
-	public void exportData(String format, String tableId, Integer sort) {
-		String query = "output=solution-reports." + format + "&sort=" + (sort == null ? 0 : sort.intValue()) + "&table=" + tableId;
+	public void exportData(String format, String tableId, String sort) {
+		String query = "output=solution-reports." + format + (sort == null || sort.isEmpty() ? "" : "&sort=" + sort) + "&table=" + tableId;
 		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {

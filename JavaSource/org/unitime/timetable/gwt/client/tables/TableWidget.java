@@ -218,17 +218,22 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				}
 			}
 		if (table.hasProperties()) {
+			int idx = 0;
 			for (PropertyInterface property: table.getProperties()) {
 				List<Widget> cells = new ArrayList<Widget>();
 				if (property.getName() == null) {
-					property.getCell().setColSpan(2);
+					if (!property.getCell().hasColSpan())
+						property.getCell().setColSpan(table.getMaxColumns());
 				} else {
 					Label label = new Label(property.getName(), false);
 					cells.add(label);
+					if (!property.getCell().hasColSpan())
+						property.getCell().setColSpan(table.getMaxColumns() - 1);
 				}
 				CellWidget cell = new CellWidget(property.getCell());
 				cells.add(cell);
 				LineInterface line = new LineInterface();
+				line.setPropertyIndex(idx++);
 				line.addCell(property.getName());
 				line.getCells().add(property.getCell());
 				int row = addRow(line, cells);
@@ -296,6 +301,11 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 			@Override
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			public int compare(LineInterface l1, LineInterface l2) {
+				if (l1.getPropertyIndex() != null)
+					return (l2.getPropertyIndex() != null ? (iSortAsc ? l1.getPropertyIndex().compareTo(l2.getPropertyIndex()) : l2.getPropertyIndex().compareTo(l1.getPropertyIndex())) :
+						(l1.getPropertyIndex() >= 0  ? (iSortAsc ? 1 : -1) : (iSortAsc ? -1 : 1)));
+				else if (l2.getPropertyIndex() != null)
+					return (l2.getPropertyIndex() >= 0 ? (iSortAsc ? -1 : 1) : (iSortAsc ? 1 : -1));
 				CellInterface c1 = l1.getCell(iSortColumn);
 				CellInterface c2 = l2.getCell(iSortColumn);
 				if (c1 == null) {
@@ -324,6 +334,14 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		if (iTable.isBlankWhenSame())
 			blankSameValues();
 		return true;
+	}
+	
+	public String getSortCookie() {
+		String sortCookie = ToolBox.getSessionCookie(iTable.getId() + ".Sort");
+		if (sortCookie == null)
+			sortCookie = iTable.getDefaultSortCookie();
+		return sortCookie;
+		
 	}
 	
 	public void blankSameValues() {

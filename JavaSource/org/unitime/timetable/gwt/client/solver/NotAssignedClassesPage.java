@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.solver;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.ToolBox.Page;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -65,7 +66,7 @@ public class NotAssignedClassesPage extends Composite {
 	private SimpleForm iPanel;
 	private FilterInterface iLastFilter;
 	private NotAssignedClassesResponse iLastResponse;
-	private DataTable iTable;
+	private TableWidget iTable;
 	private HTML iNote1, iNote2;
 	private PreferenceLegend iLegend;
 
@@ -204,13 +205,13 @@ public class NotAssignedClassesPage extends Composite {
 				populate(request.getFilter(), result);
 				iFilter.getFooter().setEnabled("search", true);
 				if (callback != null)
-					callback.onSuccess(!result.getRows().isEmpty());
+					callback.onSuccess(result.hasLines());
 			}
 		});
 	}
 	
 	protected void print() {
-		final DataTable table = new DataTable(iLastResponse);
+		final TableWidget table = new TableWidget(iLastResponse);
 		Element headerRow = table.getRowFormatter().getElement(0);
 		Element tableElement = table.getElement();
 		Element thead = DOM.createTHead();
@@ -239,7 +240,7 @@ public class NotAssignedClassesPage extends Composite {
 	}
 	
 	private void exportData(String format) {
-		String query = "output=unassigned-classes." + format + iFilter.getQuery() + "&sort=" + SolverCookie.getInstance().getNotAssignedClassesSort();
+		String query = "output=unassigned-classes." + format + iFilter.getQuery() + "&sort=" + iTable.getSortCookie();
 		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -281,7 +282,7 @@ public class NotAssignedClassesPage extends Composite {
 			}
 		}
 		
-		if (response.getRows().isEmpty()) {
+		if (!response.hasLines()) {
 			iFilter.getFooter().setMessage(MESSAGES.errorNotAssignedClassesNoDataReturned());
 			return;
 		}
@@ -290,17 +291,10 @@ public class NotAssignedClassesPage extends Composite {
 		UniTimeHeaderPanel header = new UniTimeHeaderPanel(MESSAGES.sectNotAssignedClasses());
 		iPanel.addHeaderRow(header);
 		if (iTable == null) {
-			iTable = new DataTable(response);
-			iTable.addValueChangeHandler(new ValueChangeHandler<Integer>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<Integer> event) {
-					SolverCookie.getInstance().setNotAssignedClassesSort(event.getValue() == null ? 0 : event.getValue().intValue());
-				}
-			});
+			iTable = new TableWidget(response);
 		} else {
-			iTable.populate(response);
+			iTable.setData(response);
 		}
-		iTable.setValue(SolverCookie.getInstance().getNotAssignedClassesSort());
 		iPanel.addRow(iTable);
 		iPanel.addRow(iLegend);
 		if (response.isShowNote()) iPanel.addRow(iNote2);

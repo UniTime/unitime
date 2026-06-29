@@ -36,24 +36,17 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsResponse;
 import org.unitime.timetable.gwt.shared.RoomInterface.PreferenceInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.Alignment;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellBoolean;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellChange;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellClickableClassName;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellMultiLine;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellRooms;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellText;
-import org.unitime.timetable.gwt.shared.TableInterface.TableHeaderIterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomType;
@@ -61,8 +54,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.courses.SubpartDetailBackend;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
+import org.unitime.timetable.solver.interactive.ClassAssignmentDetails.RoomInfo;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails.TimeInfo;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.DeptBalancingReport;
@@ -119,9 +114,17 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         }
         
         if (response.hasTables()) {
-        	for (int i = 0; i < response.getTables().size() - 1; i++)
-        		for (TableHeaderIterface h: response.getTables().get(i).getHeader())
-        			h.setDescription(null);
+        	// only the last one for the room reports
+        	TableInterface table = response.getTables().get(response.getTables().size() - 1);
+    		table.addProperty(MESSAGES.colRoomReportGroup()).setHtml(MESSAGES.reportRoomAlocDescGroup());
+    		table.addProperty(MESSAGES.colRoomReportActualSizes()).setHtml(MESSAGES.reportRoomAlocDescSize());
+    		table.addProperty(MESSAGES.colRoomReportNbrRooms()).setHtml(MESSAGES.reportRoomAlocDescNbrRooms());
+    		table.addProperty(MESSAGES.colRoomReportClassUse()).setHtml(MESSAGES.reportRoomAlocDescClassUse());
+    		table.addProperty(MESSAGES.colRoomReportClassShould()).setHtml(MESSAGES.reportRoomAlocDescClassShould());
+    		table.addProperty(MESSAGES.colRoomReportClassMust()).setHtml(MESSAGES.reportRoomAlocDescClassMust());
+    		table.addProperty(MESSAGES.colRoomReportHourUse()).setHtml(MESSAGES.reportRoomAlocDescHourUse());
+    		table.addProperty(MESSAGES.colRoomReportHourShould()).setHtml(MESSAGES.reportRoomAlocDescHourShould());
+    		table.addProperty(MESSAGES.colRoomReportHourMust()).setHtml(MESSAGES.reportRoomAlocDescHourMust());
         }
         
 		ViolatedDistrPreferencesReport violatedDistrPreferencesReport = solver.getViolatedDistrPreferencesReport();
@@ -153,23 +156,35 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 					PreferenceLevel.prolog2color(pref.getPrefProlog()), PreferenceLevel.prolog2bgColor(pref.getPrefProlog()),
 					pref.getPrefProlog(), pref.getPrefName(), pref.getAbbreviation(), false));
 		
+		if (response.hasTables()) {
+        	for (int i = 0; i < response.getTables().size(); i++) {
+        		response.getTables().get(i).addStyle("white-space: nowrap");
+        		for (LineInterface header: response.getTables().get(i).getHeader())
+        			for (CellInterface cell: header.getCells()) {
+        				cell.setSortable(true);
+        				cell.setClassName("unitime-ClickableTableHeader");
+        	    		cell.setText(cell.getText().replace("<br>", "\n"));
+        	    		cell.addStyle("white-space: pre-wrap;");
+        			}
+        	}
+        }
+		
 		return response;
 	}
 	
 	public static TableInterface getRoomReportTable(RoomReport report, RoomType type) {
 		TableInterface table = new TableInterface("report-rooms" + (type == null ? "" : "-" + type.getReference().toLowerCase()), type == null ? MESSAGES.reportRoomAllocationNonUnivLocs() : MESSAGES.reportRoomAllocation(type.getLabel()));
 		
-		table.setHeader(
-				new TableHeaderIterface(MESSAGES.colRoomReportGroup()).setDescription(MESSAGES.reportRoomAlocDescGroup()),
-				new TableHeaderIterface(MESSAGES.colRoomReportActualSizes()).setDescription(MESSAGES.reportRoomAlocDescSize()),
-				new TableHeaderIterface(MESSAGES.colRoomReportNbrRooms()).setDescription(MESSAGES.reportRoomAlocDescNbrRooms()),
-				new TableHeaderIterface(MESSAGES.colRoomReportClassUse()).setDescription(MESSAGES.reportRoomAlocDescClassUse()),
-				new TableHeaderIterface(MESSAGES.colRoomReportClassShould()).setDescription(MESSAGES.reportRoomAlocDescClassShould()),
-				new TableHeaderIterface(MESSAGES.colRoomReportClassMust()).setDescription(MESSAGES.reportRoomAlocDescClassMust()),
-				new TableHeaderIterface(MESSAGES.colRoomReportHourUse()).setDescription(MESSAGES.reportRoomAlocDescHourUse()),
-				new TableHeaderIterface(MESSAGES.colRoomReportHourShould()).setDescription(MESSAGES.reportRoomAlocDescHourShould()),
-				new TableHeaderIterface(MESSAGES.colRoomReportHourMust()).setDescription(MESSAGES.reportRoomAlocDescHourMust())
-				);
+		LineInterface header = table.addHeader();
+		header.addCell(MESSAGES.colRoomReportGroup());
+		header.addCell(MESSAGES.colRoomReportActualSizes());
+		header.addCell(MESSAGES.colRoomReportNbrRooms());
+		header.addCell(MESSAGES.colRoomReportClassUse());
+		header.addCell(MESSAGES.colRoomReportClassShould());
+		header.addCell(MESSAGES.colRoomReportClassMust());
+		header.addCell(MESSAGES.colRoomReportHourUse());
+		header.addCell(MESSAGES.colRoomReportHourShould());
+		header.addCell(MESSAGES.colRoomReportHourMust());
 		
 		int nrLines = 0;
         
@@ -177,10 +192,8 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
             int nrAllRooms = 0, nrAllLectureUse = 0, nrAllLectureShouldUse = 0;
             double allSlotsUse = 0.0, allSlotsShouldUse = 0.0;
             
-            TreeSet groups = new TreeSet(new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    RoomReport.RoomAllocationGroup g1 = (RoomReport.RoomAllocationGroup)o1;
-                    RoomReport.RoomAllocationGroup g2 = (RoomReport.RoomAllocationGroup)o2;
+            TreeSet<RoomReport.RoomAllocationGroup> groups = new TreeSet<RoomReport.RoomAllocationGroup>(new Comparator<RoomReport.RoomAllocationGroup>() {
+                public int compare(RoomReport.RoomAllocationGroup g1, RoomReport.RoomAllocationGroup g2) {
                     return -Double.compare(g1.getMinRoomSize(),g2.getMinRoomSize());
                 }
             });
@@ -199,49 +212,48 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
                 nrAllLectureShouldUse+=g.getLecturesShouldUse();
                 
                 nrLines++;
-
-                table.addRow(new TableRowInterface(
-                		new TableCellInterface<Integer>(g.getMinRoomSize(), MESSAGES.reportRoomRange(String.valueOf(g.getMinRoomSize()), (g.getMaxRoomSize() == Integer.MAX_VALUE ? "\u221E" : String.valueOf(g.getMaxRoomSize())))),
-                		new TableCellInterface<Integer>(g.getActualMinRoomSize(), MESSAGES.reportRoomRange(String.valueOf(g.getActualMinRoomSize()), String.valueOf(g.getActualMaxRoomSize()))),
-                		new TableCellInterface<Integer>(g.getNrRooms(), g.getNrRooms()+" (" + g.getNrRoomsThisSizeOrBigger() + ")"),
-                		new TableCellInterface<Integer>(g.getLecturesUse(), g.getLecturesUse() + " (" + nrAllLectureUse + ")"),
-                		new TableCellInterface<Integer>(g.getLecturesShouldUse(), g.getLecturesShouldUse() + " (" + nrAllLectureShouldUse + ")"),
-                		new TableCellInterface<Integer>(g.getLecturesMustUse(), g.getLecturesMustUse() + " (" + g.getLecturesMustUseThisSizeOrBigger() + ")"),
-                		new TableCellInterface<Double>(factor*g.getSlotsUse()/g.getNrRooms(), sDoubleFormat.format(factor*g.getSlotsUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*allSlotsUse/nrAllRooms)+")"),
-                		new TableCellInterface<Double>(factor*g.getSlotsShouldUse()/g.getNrRooms(), sDoubleFormat.format(factor*g.getSlotsShouldUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*allSlotsShouldUse/nrAllRooms)+")"),
-                		new TableCellInterface<Double>(factor*g.getSlotsMustUse()/g.getNrRooms(), sDoubleFormat.format(factor*g.getSlotsMustUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*g.getSlotsMustUseThisSizeOrBigger()/g.getNrRoomsThisSizeOrBigger())+")")
-                		));
+                
+                LineInterface line = table.addLine();
+                line.addCell(MESSAGES.reportRoomRange(String.valueOf(g.getMinRoomSize()), (g.getMaxRoomSize() == Integer.MAX_VALUE ? "\u221E" : String.valueOf(g.getMaxRoomSize()))))
+                	.setComparable(g.getMinRoomSize());
+                line.addCell(MESSAGES.reportRoomRange(String.valueOf(g.getActualMinRoomSize()), String.valueOf(g.getActualMaxRoomSize())))
+                	.setComparable(g.getActualMinRoomSize());
+                line.addCell(g.getNrRooms()+" (" + g.getNrRoomsThisSizeOrBigger() + ")").setComparable(g.getNrRooms(), g.getMinRoomSize());
+                line.addCell(g.getLecturesUse() + " (" + nrAllLectureUse + ")").setComparable(g.getLecturesUse(), g.getMinRoomSize());
+                line.addCell(g.getLecturesShouldUse() + " (" + nrAllLectureShouldUse + ")").setComparable(g.getLecturesShouldUse(), g.getMinRoomSize());
+                line.addCell(g.getLecturesMustUse() + " (" + g.getLecturesMustUseThisSizeOrBigger() + ")").setComparable(g.getLecturesMustUse(), g.getMinRoomSize());
+                line.addCell(sDoubleFormat.format(factor*g.getSlotsUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*allSlotsUse/nrAllRooms)+")")
+                	.setComparable(factor*g.getSlotsUse()/g.getNrRooms(), g.getMinRoomSize());
+                line.addCell(sDoubleFormat.format(factor*g.getSlotsShouldUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*allSlotsShouldUse/nrAllRooms)+")")
+                	.setComparable(factor*g.getSlotsShouldUse()/g.getNrRooms(), g.getMinRoomSize());
+                line.addCell(sDoubleFormat.format(factor*g.getSlotsMustUse()/g.getNrRooms())+" ("+sDoubleFormat.format(factor*g.getSlotsMustUseThisSizeOrBigger()/g.getNrRoomsThisSizeOrBigger())+")")
+                	.setComparable(factor*g.getSlotsMustUse()/g.getNrRooms(), g.getMinRoomSize());
         	}
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
         if (nrLines == 0 && !table.hasErrorMessage()) return null;
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, false);
-			}
-		});
- 
+        table.setDefaultSortCookie(MESSAGES.colRoomReportGroup());
+
         return table;
 	}
 	
 	public static TableInterface getDeptBalancingReportTable(DeptBalancingReport deptBalancingReport) {
 		TableInterface table = new TableInterface("dept-balancing", MESSAGES.reportDepartmentalBalancing());
-		TableHeaderIterface[] header = new TableHeaderIterface[2 + deptBalancingReport.getSlotsPerDayNoEvening() / 6];
-		header[0] = new TableHeaderIterface(MESSAGES.colDepartment());
-		header[1] = new TableHeaderIterface(MESSAGES.colPenalty());
+		LineInterface header = table.addHeader();
+		header.addCell(MESSAGES.colDepartment());
+		header.addCell(MESSAGES.colPenalty()).setTextAlignment(Alignment.RIGHT);
 		for (int i = 0; i < deptBalancingReport.getSlotsPerDayNoEvening() / 6; i++)
-			header[2 + i] = new TableHeaderIterface(Constants.slot2str(deptBalancingReport.getFirstDaySlot() + i * 6)).setAlignment(Alignment.CENTER);
-		table.setHeader(header);
+			header.addCell(Constants.slot2str(deptBalancingReport.getFirstDaySlot() + i * 6)).setTextAlignment(Alignment.CENTER);
 		
 		try {
         	for (Iterator it=deptBalancingReport.getGroups().iterator();it.hasNext();) {
         		DeptBalancingReport.DeptBalancingGroup g = (DeptBalancingReport.DeptBalancingGroup)it.next();
         		
-        		TableCellInterface[] line = new TableCellInterface[2 + deptBalancingReport.getSlotsPerDayNoEvening() / 6];
-        		line[0] = new TableCellInterface<String>(g.getDepartmentName());
+        		LineInterface line = table.addLine();
+        		line.addCell(g.getDepartmentName());
+        		CellInterface p = line.addCell().setTextAlignment(Alignment.RIGHT);
         		
         		int penalty = 0;
         		for (int i = 0; i < deptBalancingReport.getSlotsPerDayNoEvening() / 6; i++) {
@@ -252,198 +264,135 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				penalty += g.getExcess(slot);
         			Vector classes = new Vector(g.getClasses(slot));
         			Collections.sort(classes);
-        			TableCellMultiLine cell = new TableCellMultiLine();
+        			CellInterface cell = line.addCell().setTextAlignment(Alignment.CENTER);
         			int u = 0; boolean over = false;
+        			CellInterface ug = cell.add(null);
+        			CellInterface prv = ug;
         			for (Enumeration e=classes.elements();e.hasMoreElements();) {
         				ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
-        				TableCellClickableClassName x = new TableCellClickableClassName(ca.getClazz().getClassId(), ca.getClazz().getName());
+        				CellInterface c = cell.add(ca.getClazz().getName()).setInline(false);
+        				c.setUrl("suggestions?menu=hide&id=" + ca.getClazz().getClassId());
+        				c.setDialog(MESSAGES.dialogSuggestions());
         				int nrMeetings = 0;
         				for (int j = deptBalancingReport.getFirstWorkDay(); j<=deptBalancingReport.getLastWorkDay(); j++)
         					if ((Constants.DAY_CODES[j%7]&ca.getTime().getDays())!=0) nrMeetings++;
         				u+=nrMeetings;
         				if (u>limit && !over) {
         					over=true;
-        					if (cell.last() != null)
-        						cell.last().setUnderlined(true);
+        					prv.addStyle("text-decoration: underline;");
         				}
-        				x.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref()));
-        				cell.add(x);
+        				c.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref()));
+        				prv = c;
         			}
-        			TableCellInterface h = new TableCellInterface(limit == 0 ? "" : usage + " / " + limit);
-        			if (usage > limit) h.setColor("#b80000");
-        			cell.getChunks().add(0, h);
-        			line[i + 2] = cell;
+        			ug.setText(limit == 0 ? "" : usage + " / " + limit).setInline(false);
+        			if (usage > limit) ug.setColor("#b80000");
         		}
-        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#b80000");
-        		table.addRow(new TableRowInterface(line));
+        		p.setText(String.valueOf(penalty)).setComparable(penalty, g.getDepartmentName()).setColor(penalty > 0 ? "#b80000" : null);
         	}
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, true);
-			}
-		});
-		table.setShowPrefLegend(true);
+		table.setDefaultSortCookie(MESSAGES.colDepartment());
+		table.addProperty(SubpartDetailBackend.getLegend(false));
         return table;
 	}
 	
 	public static TableInterface getViolatedDistrPreferencesReportTable(ViolatedDistrPreferencesReport report, boolean usePrefStyles) {
 		TableInterface table = new TableInterface("dist-pref", MESSAGES.reportViolatedDistributionPreferences());
-		table.setHeader(
-				new TableHeaderIterface(MESSAGES.colDistrubutionType()),
-				new TableHeaderIterface(MESSAGES.colPreference()),
-				new TableHeaderIterface(MESSAGES.colViolations()).setAlignment(Alignment.RIGHT),
-				new TableHeaderIterface(MESSAGES.colClass()),
-				new TableHeaderIterface(MESSAGES.colDate()),
-				new TableHeaderIterface(MESSAGES.colTime()),
-				new TableHeaderIterface(MESSAGES.colRoom())
-				);
+		LineInterface header = table.addHeader();
+		header.addCell(MESSAGES.colDistrubutionType());
+		header.addCell(MESSAGES.colPreference());
+		header.addCell(MESSAGES.colViolations()).setTextAlignment(Alignment.RIGHT);
+		header.addCell(MESSAGES.colClass());
+		header.addCell(MESSAGES.colDate());
+		header.addCell(MESSAGES.colTime());
+		header.addCell(MESSAGES.colRoom());
         try {
         	for (Iterator i = report.getGroups().iterator(); i.hasNext(); ) {
         		ViolatedDistrPreferencesReport.ViolatedDistrPreference g = (ViolatedDistrPreferencesReport.ViolatedDistrPreference)i.next();
-        		
-        		TableCellMultiLine classes = new TableCellMultiLine();
-        		TableCellMultiLine dates = new TableCellMultiLine();
-        		TableCellMultiLine times = new TableCellMultiLine();
-        		TableCellMultiLine rooms = new TableCellMultiLine();
+        		LineInterface line = table.addLine();
+        		line.addCell(g.getName());
+        		line.addCell(PreferenceLevel.getPreferenceLevel(PreferenceLevel.int2prolog(g.getPreference())).getPrefName())
+        			.setColor(PreferenceLevel.int2color(g.getPreference()))
+        			.setComparable(g.getPreference(), g.getName());
+        		line.addCell(String.valueOf(g.getNrViolations())).setComparable(g.getNrViolations(), g.getName()).setTextAlignment(Alignment.RIGHT);
+        		CellInterface classes = line.addCell();
+        		CellInterface dates = line.addCell();
+        		CellInterface times = line.addCell();
+        		CellInterface rooms = line.addCell();
         		
         		for (Enumeration e=g.getClasses().elements();e.hasMoreElements();) {
         			ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
         			TimeInfo time = ca.getTime();
         			
-        			TableInterface.TableCellRooms room = new TableInterface.TableCellRooms();
-        			if (ca.getRoom() != null) {
-            	    	for (int j = 0; j<ca.getRoom().length; j++) {
-            	    		room.add(
-            	    				ca.getRoom()[j].getName(),
-            	    				ca.getRoom()[j].getColor(),
-            	    				ca.getRoom()[j].getId(),
-            	    				PreferenceLevel.int2string(ca.getRoom()[j].getPref()),
-            	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(ca.getRoom()[j].getPref()) : null);
-            	    	}
-            	    }
-        			
-        			classes.add(new TableInterface.TableCellClickableClassName(ca.getClazz().getClassId(), ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())));
-        			dates.add(new TableCellInterface(time.getDatePatternName())
-        					.setColor(PreferenceLevel.int2color(time.getDatePatternPreference()))
-        					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getDatePatternPreference()) : null));
-        			times.add(new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime())
-        					.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot())
-        					.setColor(PreferenceLevel.int2color(time.getPref()))
-        					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null));
-        			rooms.add(room);
+        			CellInterface c = classes.add(ca.getClazz().getName()).setNoWrap(true).setInline(false)
+        					.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref()));
+    				c.setUrl("suggestions?menu=hide&id=" + ca.getClazz().getClassId());
+    				c.setDialog(MESSAGES.dialogSuggestions());
+    				dates.addItem(time.toDateCell(usePrefStyles).setInline(false));
+        			times.addItem(time.toCell().setInline(false));
+        			rooms.addItem(toRoomCell(ca.getRoom(), usePrefStyles).setInline(false));
         		}
-        		
-        		table.addRow(new TableRowInterface(
-        				new TableCellInterface<String>(g.getName()),
-        				new TableCellInterface<String>(PreferenceLevel.getPreferenceLevel(PreferenceLevel.int2prolog(g.getPreference())).getPrefName()).setColor(PreferenceLevel.int2color(g.getPreference())),
-        				new TableCellInterface<Integer>(g.getNrViolations()),
-        				classes,
-        				dates,
-        				times,
-        				rooms));
         	}
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, true);
-			}
-		});
-		table.setShowPrefLegend(true);
+        table.setDefaultSortCookie(MESSAGES.colDistrubutionType());
+        table.addProperty(SubpartDetailBackend.getLegend(false));
         return table;
 	}
 	
 	public static TableInterface getDiscouragedInstructorBtbReportReportTable(DiscouragedInstructorBtbReport report, boolean usePrefStyles) {
 		TableInterface table = new TableInterface("instructor-btb", MESSAGES.reportInstructorBackToBackPreferences());
 		table.setHeader(
-				new TableHeaderIterface(MESSAGES.colInstructor()),
-				new TableHeaderIterface(MESSAGES.colPreference()),
-				new TableHeaderIterface(MESSAGES.colDistance()),
-				new TableHeaderIterface(MESSAGES.colClass()),
-				new TableHeaderIterface(MESSAGES.colDate()),
-				new TableHeaderIterface(MESSAGES.colTime()),
-				new TableHeaderIterface(MESSAGES.colRoom())
+				(MESSAGES.colInstructor()),
+				(MESSAGES.colPreference()),
+				(MESSAGES.colDistance()),
+				(MESSAGES.colClass()),
+				(MESSAGES.colDate()),
+				(MESSAGES.colTime()),
+				(MESSAGES.colRoom())
 				);
 
 		try {
         	for (Iterator i = report.getGroups().iterator(); i.hasNext(); ) {
         		DiscouragedInstructorBtbReport.DiscouragedBtb g = (DiscouragedInstructorBtbReport.DiscouragedBtb)i.next();
+        		LineInterface line = table.addLine();
+        		line.addCell(g.getInstructorName());
+        		line.addCell(PreferenceLevel.getPreferenceLevel(g.getPreference()).getPrefName())
+        			.setColor(PreferenceLevel.prolog2color(g.getPreference()))
+        			.setComparable(PreferenceLevel.prolog2int(g.getPreference()), g.getInstructorName());
+        		line.addCell(g.getDistance() == 0.0 ? MESSAGES.notApplicable() : g.getDistance() < 0.0 ? MESSAGES.breakTime(sDF.format(- g.getDistance())) : MESSAGES.roomDistance(sDoubleFormat.format(g.getDistance())))
+        			.setComparable(g.getDistance(), g.getInstructorName());
+        		CellInterface classes = line.addCell();
+        		CellInterface dates = line.addCell();
+        		CellInterface times = line.addCell();
+        		CellInterface rooms = line.addCell();
         		
-        		TableCellMultiLine classes = new TableCellMultiLine();
-        		TableCellMultiLine dates = new TableCellMultiLine();
-        		TableCellMultiLine times = new TableCellMultiLine();
-        		TableCellMultiLine rooms = new TableCellMultiLine();
-        		
-    			classes.add(new TableInterface.TableCellClickableClassName(g.getFirst().getClazz().getClassId(), g.getFirst().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getFirst().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getFirst().getTime().getDatePatternName())
-    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getDatePatternPreference()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getDatePatternPreference()) : null));
-    			times.add(new TableInterface.TableCellTime(g.getFirst().getTime().getDaysName() + " " + g.getFirst().getTime().getStartTime() + " - " + g.getFirst().getTime().getEndTime())
-    					.setId(g.getFirst().getClazz().getClassId() + "," + g.getFirst().getTime().getDays() + "," + g.getFirst().getTime().getStartSlot())
-    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getPref()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getPref()) : null));
-    			TableInterface.TableCellRooms froom = new TableInterface.TableCellRooms();
-    			if (g.getFirst().getRoom() != null) {
-        	    	for (int j = 0; j<g.getFirst().getRoom().length; j++) {
-        	    		froom.add(
-        	    				g.getFirst().getRoom()[j].getName(),
-        	    				g.getFirst().getRoom()[j].getColor(),
-        	    				g.getFirst().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getFirst().getRoom()[j].getPref()),
-        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getRoom()[j].getPref()) : null);
-        	    	}
-        	    }
-    			rooms.add(froom);
+    			CellInterface c = classes.add(g.getFirst().getClazz().getName()).setNoWrap(true).setInline(false)
+    					.setColor(PreferenceLevel.prolog2color(g.getFirst().getClazz().getPref()));
+				c.setUrl("suggestions?menu=hide&id=" + g.getFirst().getClazz().getClassId());
+				c.setDialog(MESSAGES.dialogSuggestions());
+				dates.addItem(g.getFirst().getTime().toDateCell(usePrefStyles).setInline(false));
+    			times.addItem(g.getFirst().getTime().toCell().setInline(false));
+    			rooms.addItem(toRoomCell(g.getFirst().getRoom(), usePrefStyles).setInline(false));
     			
-    			classes.add(new TableInterface.TableCellClickableClassName(g.getSecond().getClazz().getClassId(), g.getSecond().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getSecond().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getSecond().getTime().getDatePatternName())
-    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getDatePatternPreference()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getDatePatternPreference()) : null));
-    			times.add(new TableInterface.TableCellTime(g.getSecond().getTime().getDaysName() + " " + g.getSecond().getTime().getStartTime() + " - " + g.getSecond().getTime().getEndTime())
-    					.setId(g.getSecond().getClazz().getClassId() + "," + g.getSecond().getTime().getDays() + "," + g.getSecond().getTime().getStartSlot())
-    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getPref()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getPref()) : null));
-    			TableInterface.TableCellRooms sroom = new TableInterface.TableCellRooms();
-    			if (g.getSecond().getRoom() != null) {
-        	    	for (int j = 0; j<g.getSecond().getRoom().length; j++) {
-        	    		sroom.add(
-        	    				g.getSecond().getRoom()[j].getName(),
-        	    				g.getSecond().getRoom()[j].getColor(),
-        	    				g.getSecond().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getSecond().getRoom()[j].getPref()),
-        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getRoom()[j].getPref()) : null);
-        	    	}
-        	    }
-    			rooms.add(sroom);
-    			
-    			table.addRow(new TableRowInterface(
-    					new TableCellInterface<String>(g.getInstructorName()),
-    					new TableCellInterface<String>(PreferenceLevel.getPreferenceLevel(g.getPreference()).getPrefName()).setColor(PreferenceLevel.prolog2color(g.getPreference())),
-        				new TableCellInterface<Double>(g.getDistance(), g.getDistance() == 0.0 ? MESSAGES.notApplicable() : g.getDistance() < 0.0 ? MESSAGES.breakTime(sDF.format(- g.getDistance())) : MESSAGES.roomDistance(sDoubleFormat.format(g.getDistance()))),
-        				classes,
-        				dates,
-        				times,
-        				rooms));
+    			c = classes.add(g.getSecond().getClazz().getName()).setNoWrap(true).setInline(false)
+    					.setColor(PreferenceLevel.prolog2color(g.getSecond().getClazz().getPref()));
+				c.setUrl("suggestions?menu=hide&id=" + g.getSecond().getClazz().getClassId());
+				c.setDialog(MESSAGES.dialogSuggestions());
+				dates.addItem(g.getSecond().getTime().toDateCell(usePrefStyles).setInline(false));
+    			times.addItem(g.getSecond().getTime().toCell().setInline(false));
+    			rooms.addItem(toRoomCell(g.getSecond().getRoom(), usePrefStyles).setInline(false));
         	}
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, true);
-			}
-		});
-		table.setShowPrefLegend(true);
+        table.setDefaultSortCookie(MESSAGES.colInstructor());
+        table.addProperty(SubpartDetailBackend.getLegend(false));
         return table;
 	}
 
@@ -465,90 +414,61 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
 			if (g.isWorkDay()) hasWorkday = true;
 		}
 		TableInterface table = new TableInterface("student-conf", MESSAGES.reportStudentConflicts());
-		table.setHeader(
-				new TableHeaderIterface(MESSAGES.colNrConflicts()),
-				new TableHeaderIterface(MESSAGES.colClass()),
-				new TableHeaderIterface(MESSAGES.colDate()),
-				new TableHeaderIterface(MESSAGES.colTime()),
-				new TableHeaderIterface(MESSAGES.colRoom()),
-				new TableHeaderIterface(MESSAGES.colStudentConflictHard()).setVisible(hasHard),
-				new TableHeaderIterface(MESSAGES.colStudentConflictDistance()).setVisible(hasDistance),
-				new TableHeaderIterface(MESSAGES.colStudentConflictFixed()).setVisible(hasFixed),
-				new TableHeaderIterface(MESSAGES.colStudentConflictCommitted()).setVisible(hasCommitted),
-				new TableHeaderIterface(MESSAGES.colStudentConflictImportant()).setVisible(hasImportant),
-				new TableHeaderIterface(MESSAGES.colStudentConflictInstructor()).setVisible(hasInstructor),
-				new TableHeaderIterface(MESSAGES.colStudentConflictWorkday()).setVisible(hasWorkday),
-				new TableHeaderIterface(MESSAGES.colCurriculum())
-				);
+		LineInterface header = table.addHeader();
+		header.addCell(MESSAGES.colNrConflicts()).setTextAlignment(Alignment.RIGHT);
+		header.addCell(MESSAGES.colClass());
+		header.addCell(MESSAGES.colDate());
+		header.addCell(MESSAGES.colTime());
+		header.addCell(MESSAGES.colRoom());
+		if (hasHard) header.addCell(MESSAGES.colStudentConflictHard());
+		if (hasDistance) header.addCell(MESSAGES.colStudentConflictDistance());
+		if (hasFixed) header.addCell(MESSAGES.colStudentConflictFixed());
+		if (hasCommitted) header.addCell(MESSAGES.colStudentConflictCommitted());
+		if (hasImportant) header.addCell(MESSAGES.colStudentConflictImportant());
+		if (hasInstructor) header.addCell(MESSAGES.colStudentConflictInstructor());
+		if (hasWorkday) header.addCell(MESSAGES.colStudentConflictWorkday());
+		header.addCell(MESSAGES.colCurriculum());
         try {
         	int total[] = new int [] { 0, 0, 0, 0, 0, 0, 0, 0};
         	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		JenrlInfo g = (JenrlInfo)i.next();
+        		long jenrl = Math.round(g.getJenrl());  
         		
-        		if (Math.round(g.getJenrl()) <= 0) continue;
+        		if (jenrl <= 0) continue;
         		
-        		TableCellMultiLine classes = new TableCellMultiLine();
-        		TableCellMultiLine dates = new TableCellMultiLine();
-        		TableCellMultiLine times = new TableCellMultiLine();
-        		TableCellMultiLine rooms = new TableCellMultiLine();
+        		LineInterface line = table.addLine();
+        		line.addCell(String.valueOf(jenrl)).setComparable(jenrl).setTextAlignment(Alignment.RIGHT);
         		
-    			classes.add(new TableInterface.TableCellClickableClassName(g.getFirst().getClazz().getClassId(), g.getFirst().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getFirst().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getFirst().getTime().getDatePatternName())
-    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getDatePatternPreference()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getDatePatternPreference()) : null));
-    			times.add(new TableInterface.TableCellTime(g.getFirst().getTime().getDaysName() + " " + g.getFirst().getTime().getStartTime() + " - " + g.getFirst().getTime().getEndTime())
-    					.setId(g.getFirst().getClazz().getClassId() + "," + g.getFirst().getTime().getDays() + "," + g.getFirst().getTime().getStartSlot())
-    					.setColor(PreferenceLevel.int2color(g.getFirst().getTime().getPref()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getTime().getPref()) : null));
-    			TableInterface.TableCellRooms froom = new TableInterface.TableCellRooms();
-    			if (g.getFirst().getRoom() != null) {
-        	    	for (int j = 0; j<g.getFirst().getRoom().length; j++) {
-        	    		froom.add(
-        	    				g.getFirst().getRoom()[j].getName(),
-        	    				g.getFirst().getRoom()[j].getColor(),
-        	    				g.getFirst().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getFirst().getRoom()[j].getPref()),
-        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getFirst().getRoom()[j].getPref()) : null);
-        	    	}
-        	    }
-    			rooms.add(froom);
+        		CellInterface classes = line.addCell();
+        		CellInterface dates = line.addCell();
+        		CellInterface times = line.addCell();
+        		CellInterface rooms = line.addCell();
+        		
+    			CellInterface c = classes.add(g.getFirst().getClazz().getName()).setNoWrap(true).setInline(false)
+    					.setColor(PreferenceLevel.prolog2color(g.getFirst().getClazz().getPref()));
+				c.setUrl("suggestions?menu=hide&id=" + g.getFirst().getClazz().getClassId());
+				c.setDialog(MESSAGES.dialogSuggestions());
+				dates.addItem(g.getFirst().getTime().toDateCell(usePrefStyles).setInline(false));
+    			times.addItem(g.getFirst().getTime().toCell().setInline(false));
+    			rooms.addItem(toRoomCell(g.getFirst().getRoom(), usePrefStyles).setInline(false));
     			
-    			classes.add(new TableInterface.TableCellClickableClassName(g.getSecond().getClazz().getClassId(), g.getSecond().getClazz().getName()).setColor(PreferenceLevel.prolog2color(g.getSecond().getClazz().getPref())));
-    			dates.add(new TableCellInterface(g.getSecond().getTime().getDatePatternName())
-    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getDatePatternPreference()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getDatePatternPreference()) : null));
-    			times.add(new TableInterface.TableCellTime(g.getSecond().getTime().getDaysName() + " " + g.getSecond().getTime().getStartTime() + " - " + g.getSecond().getTime().getEndTime())
-    					.setId(g.getSecond().getClazz().getClassId() + "," + g.getSecond().getTime().getDays() + "," + g.getSecond().getTime().getStartSlot())
-    					.setColor(PreferenceLevel.int2color(g.getSecond().getTime().getPref()))
-    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getTime().getPref()) : null));
-    			TableInterface.TableCellRooms sroom = new TableInterface.TableCellRooms();
-    			if (g.getSecond().getRoom() != null) {
-        	    	for (int j = 0; j<g.getSecond().getRoom().length; j++) {
-        	    		sroom.add(
-        	    				g.getSecond().getRoom()[j].getName(),
-        	    				g.getSecond().getRoom()[j].getColor(),
-        	    				g.getSecond().getRoom()[j].getId(),
-        	    				PreferenceLevel.int2string(g.getSecond().getRoom()[j].getPref()),
-        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(g.getSecond().getRoom()[j].getPref()) : null);
-        	    	}
-        	    }
-    			rooms.add(sroom);
+    			c = classes.add(g.getSecond().getClazz().getName()).setNoWrap(true).setInline(false)
+    					.setColor(PreferenceLevel.prolog2color(g.getSecond().getClazz().getPref()));
+				c.setUrl("suggestions?menu=hide&id=" + g.getSecond().getClazz().getClassId());
+				c.setDialog(MESSAGES.dialogSuggestions());
+				dates.addItem(g.getSecond().getTime().toDateCell(usePrefStyles).setInline(false));
+    			times.addItem(g.getSecond().getTime().toCell().setInline(false));
+    			rooms.addItem(toRoomCell(g.getSecond().getRoom(), usePrefStyles).setInline(false));
     			
-    			table.addRow(new TableRowInterface(
-    					new TableCellInterface<Long>(Math.round(g.getJenrl())),
-    					classes,
-    					dates,
-    					times,
-    					rooms,
-    					new TableCellBoolean(g.isHard()).setFormattedValue(g.isHard() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellInterface<Double>(g.isDistance() ? Double.valueOf(g.getDistance()) : null).setFormattedValue(g.isDistance() ? MESSAGES.reportDistanceInMeter((int)Math.round(g.getDistance())) : ""),
-    					new TableCellBoolean(g.isFixed()).setFormattedValue(g.isFixed() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isCommited()).setFormattedValue(g.isCommited() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isImportant()).setFormattedValue(g.isImportant() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isInstructor()).setFormattedValue(g.isInstructor() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellBoolean(g.isWorkDay()).setFormattedValue(g.isWorkDay() ? MESSAGES.exportTrue() : MESSAGES.exportFalse()),
-    					new TableCellText(g.getCurriculumText())
-    					));
+    			if (hasHard) setBoolean(line.addCell().setComparable(g.isHard(), jenrl), g.isHard());
+    			if (hasDistance) line.addCell(g.isDistance() ? MESSAGES.reportDistanceInMeter((int)Math.round(g.getDistance())) : "")
+    				.setComparable(g.isDistance(), -g.getDistance(), jenrl).setTextAlignment(Alignment.CENTER);
+    			if (hasFixed) setBoolean(line.addCell().setComparable(g.isFixed(), jenrl), g.isFixed());
+    			if (hasCommitted) setBoolean(line.addCell().setComparable(g.isCommited(), jenrl), g.isCommited());
+    			if (hasImportant) setBoolean(line.addCell().setComparable(g.isImportant(), jenrl), g.isImportant());
+    			if (hasInstructor) setBoolean(line.addCell().setComparable(g.isInstructor(), jenrl), g.isInstructor());
+    			if (hasWorkday) setBoolean(line.addCell().setComparable(g.isWorkDay(), jenrl), g.isWorkDay());
+    			line.addCell(g.getCurriculumText()).setComparable(g.getCurriculumText(), jenrl).setNoWrap(true);
 
         		total[0] += Math.round(g.getJenrl());
         		if (g.isHard()) total[1] += Math.round(g.getJenrl());
@@ -560,50 +480,53 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         		if (g.isWorkDay()) total[7] += Math.round(g.getJenrl());
         	}
         	
-        	table.addRow(new TableRowInterface(
-					new TableCellInterface<Long>((long)total[0]),
-					new TableCellText(MESSAGES.reportTotal()).setStyleName("italic"),
-					new TableCellText(""),
-					new TableCellText(""),
-					new TableCellText(""),
-					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[1])),
-					new TableCellInterface<Integer>(1000*total[2]).setFormattedValue(String.valueOf(total[2])),
-					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[3])),
-					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[4])),
-					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[5])),
-					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[6])),
-					new TableCellBoolean(null).setFormattedValue(String.valueOf(total[7])),
-					new TableCellText("")
-					));
+    		LineInterface line = table.addLine();
+    		line.addCell(String.valueOf(total[0])).setComparable(total[0]).setTextAlignment(Alignment.RIGHT);
+    		line.addCell(MESSAGES.reportTotal()).addStyle("font-style: italic;");
+    		line.addCell("");
+    		line.addCell("");
+    		line.addCell("");
+			if (hasHard) line.addCell(String.valueOf(total[1])).setTextAlignment(Alignment.CENTER);
+			if (hasDistance) line.addCell(String.valueOf(total[2])).setTextAlignment(Alignment.CENTER);
+			if (hasFixed) line.addCell(String.valueOf(total[3])).setTextAlignment(Alignment.CENTER);
+			if (hasCommitted) line.addCell(String.valueOf(total[4])).setTextAlignment(Alignment.CENTER);
+			if (hasImportant) line.addCell(String.valueOf(total[5])).setTextAlignment(Alignment.CENTER);
+			if (hasInstructor) line.addCell(String.valueOf(total[6])).setTextAlignment(Alignment.CENTER);
+			if (hasWorkday) line.addCell(String.valueOf(total[7])).setTextAlignment(Alignment.CENTER);
+			line.addCell("");
+    		line.setPropertyIndex(-1);
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, false);
-			}
-		});
-		table.setShowPrefLegend(true);
+        table.setDefaultSortCookie("!" + MESSAGES.colNrConflicts());
+        table.addProperty(SubpartDetailBackend.getLegend(false));
         return table;
+	}
+	
+	protected static void setBoolean(CellInterface cell, boolean val) {
+		if (val) {
+			cell.setTextAlignment(Alignment.CENTER).addImage().setSource("images/accept.png").setAlt(MESSAGES.exportTrue()).setTitle(MESSAGES.exportTrue());
+		} else {
+			cell.setTextAlignment(Alignment.CENTER).addImage().setSource("images/cross.png").setAlt(MESSAGES.exportFalse()).setTitle(MESSAGES.exportFalse());
+		}
 	}
 	
 	public static TableInterface getSameSubpartBalancingReportTable(SameSubpartBalancingReport report) {
 		TableInterface table = new TableInterface("section-balanc", MESSAGES.reportSectionBalancing());
-		TableHeaderIterface[] header = new TableHeaderIterface[2 + report.getSlotsPerDayNoEvening() / 6];
-		header[0] = new TableHeaderIterface(MESSAGES.colDepartment());
-		header[1] = new TableHeaderIterface(MESSAGES.colPenalty());
+		LineInterface header = table.addHeader();
+		header.addCell(MESSAGES.colDepartment());
+		header.addCell(MESSAGES.colPenalty()).setTextAlignment(Alignment.RIGHT);
 		for (int i = 0; i < report.getSlotsPerDayNoEvening() / 6; i++)
-			header[2 + i] = new TableHeaderIterface(Constants.slot2str(report.getFirstDaySlot() + i * 6)).setAlignment(Alignment.CENTER);
-		table.setHeader(header);
+			header.addCell(Constants.slot2str(report.getFirstDaySlot() + i * 6)).setTextAlignment(Alignment.CENTER);
 		
         try {
         	for (Iterator it=report.getGroups().iterator();it.hasNext();) {
         		SameSubpartBalancingReport.SameSubpartBalancingGroup g = (SameSubpartBalancingReport.SameSubpartBalancingGroup)it.next();
         		
-        		TableCellInterface[] line = new TableCellInterface[2 + report.getSlotsPerDayNoEvening() / 6];
-        		line[0] = new TableCellInterface<String>(g.getName());
+        		LineInterface line = table.addLine();
+        		line.addCell(g.getName());
+        		CellInterface p = line.addCell().setTextAlignment(Alignment.RIGHT);
         		
         		int penalty = 0;
         		for (int i = 0; i < report.getSlotsPerDayNoEvening() / 6; i++) {
@@ -614,178 +537,211 @@ public class SolverReportsBackend implements GwtRpcImplementation<SolverReportsR
         				penalty += g.getExcess(slot);
         			Vector classes = new Vector(g.getClasses(slot));
         			Collections.sort(classes);
-        			TableCellMultiLine cell = new TableCellMultiLine();
+        			CellInterface cell = line.addCell().setTextAlignment(Alignment.CENTER);
         			int u = 0; boolean over = false;
+        			CellInterface ug = cell.add(null);
+        			CellInterface prv = ug;
         			for (Enumeration e=classes.elements();e.hasMoreElements();) {
         				ClassAssignmentDetails ca = (ClassAssignmentDetails)e.nextElement();
-        				TableCellClickableClassName x = new TableCellClickableClassName(ca.getClazz().getClassId(), ca.getClazz().getName());
+        				CellInterface c = cell.add(ca.getClazz().getName()).setInline(false);
+        				c.setUrl("suggestions?menu=hide&id=" + ca.getClazz().getClassId());
+        				c.setDialog(MESSAGES.dialogSuggestions());
         				int nrMeetings = 0;
         				for (int j = report.getFirstWorkDay(); j<=report.getLastWorkDay(); j++)
         					if ((Constants.DAY_CODES[j%7]&ca.getTime().getDays())!=0) nrMeetings++;
         				u+=nrMeetings;
         				if (u>limit && !over) {
         					over=true;
-        					if (cell.last() != null)
-        						cell.last().setUnderlined(true);
+        					prv.addStyle("text-decoration: underline;");
         				}
-        				x.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref()));
-        				cell.add(x);
+        				c.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref()));
+        				prv = c;
         			}
-        			TableCellInterface h = new TableCellInterface(limit == 0 ? "" : usage + " / " + limit);
-        			if (usage > limit) h.setColor("#b80000");
-        			cell.getChunks().add(0, h);
-        			line[i + 2] = cell;
+        			ug.setText(limit == 0 ? "" : usage + " / " + limit).setInline(false);
+        			if (usage > limit) ug.setColor("#b80000");
         		}
-        		line[1] = new TableCellInterface<Integer>(penalty); if (penalty > 0) line[1].setColor("#b80000");
-        		table.addRow(new TableRowInterface(line));
+        		p.setText(String.valueOf(penalty)).setComparable(penalty, g.getName()).setColor(penalty > 0 ? "#b80000" : null);
         	}
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, true);
-			}
-		});
-		table.setShowPrefLegend(true);
+		table.setDefaultSortCookie(MESSAGES.colDepartment());
+		table.addProperty(SubpartDetailBackend.getLegend(false));
         return table;
 	}
 	
-	public static TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value, value == 0 ? "" : value <= 0 ? String.valueOf(value) : "+" + String.valueOf(value)).setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
+	public static CellInterface dispNumber(int value) {
+		return new CellInterface().setText(String.valueOf(value)).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
 	}
 	
-	public static TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
+	public static CellInterface dispNumber(long value) {
+		return new CellInterface().setText(String.valueOf(value)).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
+	}
+	
+	public static CellInterface dispNumber(double value) {
+		return new CellInterface().setText(Math.round(1000.0 * value) == 0.0 ? "" : (value >= 0.0005 ? "+" : "") + sDF.format(value)).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
+	}
+	
+	private static String toId(ClassAssignmentDetails.RoomInfo[] rooms) {
+		String ret = "";
+		if (rooms != null)
+			for (RoomInfo rm: rooms) {
+				ret += (ret.isEmpty() ? "" : ",") + rm.getId();
+			}
+		return ret;
+	}
+	
+	private static  CellInterface toRoomCell(ClassAssignmentDetails.RoomInfo[] rooms, boolean usePrefStyles) {
+		CellInterface r = new CellInterface();
+		if (rooms != null)
+			for (RoomInfo rm: rooms) {
+				if (r.hasItems()) r.add(", ").setInline(true);
+				r.addItem(rm.toCell(usePrefStyles).setInline(true));
+			}
+		return r;
 	}
 	
 	public static TableInterface getPerturbationReportTable(PerturbationReport report, boolean usePrefStyles) {
 		TableInterface table = new TableInterface("perturbations", MESSAGES.reportPerturbations());
 		table.setHeader(
-				new TableHeaderIterface(MESSAGES.colClass()).setDescription(MESSAGES.reportPertClass()),
-				new TableHeaderIterface(MESSAGES.colDate()).setDescription(MESSAGES.reportPertDate()),
-				new TableHeaderIterface(MESSAGES.colTime()).setDescription(MESSAGES.reportPertTime()),
-				new TableHeaderIterface(MESSAGES.colRoom()).setDescription(MESSAGES.reportPertRoom()),
-				new TableHeaderIterface(MESSAGES.colShortDist()).setDescription(MESSAGES.reportPertDistance()),
-				new TableHeaderIterface(MESSAGES.colPerturbationStudents()).setDescription(MESSAGES.reportPertStudents()),
-				new TableHeaderIterface(MESSAGES.colPerturbationStudentsTime()).setDescription(MESSAGES.reportPertStudentsTime()),
-				new TableHeaderIterface(MESSAGES.colPerturbationStudentsRoom()).setDescription(MESSAGES.reportPertStudentsRoom()),
-				new TableHeaderIterface(MESSAGES.colPerturbationStudentsBuilding()).setDescription(MESSAGES.reportPertStudentsBuilding()),
-				new TableHeaderIterface(MESSAGES.colPerturbationInstructor()).setDescription(MESSAGES.reportPertInstructor()),
-				new TableHeaderIterface(MESSAGES.colPerturbationInstructorTime()).setDescription(MESSAGES.reportPertInstructorTime()),
-				new TableHeaderIterface(MESSAGES.colPerturbationInstructorRoom()).setDescription(MESSAGES.reportPertInstructorRoom()),
-				new TableHeaderIterface(MESSAGES.colPerturbationInstructorBuilding()).setDescription(MESSAGES.reportPertInstructorBuilding()),
-				new TableHeaderIterface(MESSAGES.colPerturbationRoom()).setDescription(MESSAGES.reportPertRoomChange()),
-				new TableHeaderIterface(MESSAGES.colPerturbationBuilding()).setDescription(MESSAGES.reportPertBuildingChange()),
-				new TableHeaderIterface(MESSAGES.colPerturbationTime()).setDescription(MESSAGES.reportPertTimeChange()),
-				new TableHeaderIterface(MESSAGES.colPerturbationDay()).setDescription(MESSAGES.reportPertDayChange()),
-				new TableHeaderIterface(MESSAGES.colPerturbationHour()).setDescription(MESSAGES.reportPertHourChange()),
-				new TableHeaderIterface(MESSAGES.colPerturbationTooFarStudent()).setDescription(MESSAGES.reportPertTooFarStudents()),
-				new TableHeaderIterface(MESSAGES.colPerturbationTooFarInstructor()).setDescription(MESSAGES.reportPertTooFarInstructor()),
-				new TableHeaderIterface(MESSAGES.colPerturbationDeltaStudentConflicts()).setDescription(MESSAGES.reportPertDeltaStudentConf()),
-				new TableHeaderIterface(MESSAGES.colPerturbationNewStudentConflicts()).setDescription(MESSAGES.reportPertNewStudentConf()),
-				new TableHeaderIterface(MESSAGES.colPerturbationDeltaTimePref()).setDescription(MESSAGES.reportPertDeltaTimePref()),
-				new TableHeaderIterface(MESSAGES.colPerturbationDeltaRoomPref()).setDescription(MESSAGES.reportPertDeltaRoomPref()),
-				new TableHeaderIterface(MESSAGES.colPerturbationDeltaInstructorBTB()).setDescription(MESSAGES.reportPertDeltaInstructorBTBPref())
-				);
-				
+				MESSAGES.colClass(),
+				MESSAGES.colDate(),
+				MESSAGES.colTime(),
+				MESSAGES.colRoom(),
+				MESSAGES.colShortDist(),
+				MESSAGES.colPerturbationStudents(),
+				MESSAGES.colPerturbationStudentsTime(),
+				MESSAGES.colPerturbationStudentsRoom(),
+				MESSAGES.colPerturbationStudentsBuilding(),
+				MESSAGES.colPerturbationInstructor(),
+				MESSAGES.colPerturbationInstructorTime(),
+				MESSAGES.colPerturbationInstructorRoom(),
+				MESSAGES.colPerturbationInstructorBuilding(),
+				MESSAGES.colPerturbationRoom(),
+				MESSAGES.colPerturbationBuilding(),
+				MESSAGES.colPerturbationTime(),
+				MESSAGES.colPerturbationDay(),
+				MESSAGES.colPerturbationHour(),
+				MESSAGES.colPerturbationTooFarStudent(),
+				MESSAGES.colPerturbationTooFarInstructor(),
+				MESSAGES.colPerturbationDeltaStudentConflicts(),
+				MESSAGES.colPerturbationNewStudentConflicts(),
+				MESSAGES.colPerturbationDeltaTimePref(),
+				MESSAGES.colPerturbationDeltaRoomPref(),
+				MESSAGES.colPerturbationDeltaInstructorBTB());
+		for (int i = 5; i < table.getMaxColumns(); i++)
+			table.getHeader().get(0).getCell(i).setTextAlignment(Alignment.RIGHT);
+			
+		table.addProperty(MESSAGES.colClass()).setText(MESSAGES.reportPertClass());
+		table.addProperty(MESSAGES.colDate()).setText(MESSAGES.reportPertDate());
+		table.addProperty(MESSAGES.colTime()).setText(MESSAGES.reportPertTime());
+		table.addProperty(MESSAGES.colRoom()).setText(MESSAGES.reportPertRoom());
+		table.addProperty(MESSAGES.colShortDist()).setText(MESSAGES.reportPertDistance());
+		table.addProperty(MESSAGES.colPerturbationStudents()).setText(MESSAGES.reportPertStudents());
+		table.addProperty(MESSAGES.colPerturbationStudentsTime()).setText(MESSAGES.reportPertStudentsTime());
+		table.addProperty(MESSAGES.colPerturbationStudentsRoom()).setText(MESSAGES.reportPertStudentsRoom());
+		table.addProperty(MESSAGES.colPerturbationStudentsBuilding()).setText(MESSAGES.reportPertStudentsBuilding());
+		table.addProperty(MESSAGES.colPerturbationInstructor()).setText(MESSAGES.reportPertInstructor());
+		table.addProperty(MESSAGES.colPerturbationInstructorTime()).setText(MESSAGES.reportPertInstructorTime());
+		table.addProperty(MESSAGES.colPerturbationInstructorRoom()).setText(MESSAGES.reportPertInstructorRoom());
+		table.addProperty(MESSAGES.colPerturbationInstructorBuilding()).setText(MESSAGES.reportPertInstructorBuilding());
+		table.addProperty(MESSAGES.colPerturbationRoom()).setText(MESSAGES.reportPertRoomChange());
+		table.addProperty(MESSAGES.colPerturbationBuilding()).setText(MESSAGES.reportPertBuildingChange());
+		table.addProperty(MESSAGES.colPerturbationTime()).setText(MESSAGES.reportPertTimeChange());
+		table.addProperty(MESSAGES.colPerturbationDay()).setText(MESSAGES.reportPertDayChange());
+		table.addProperty(MESSAGES.colPerturbationHour()).setText(MESSAGES.reportPertHourChange());
+		table.addProperty(MESSAGES.colPerturbationTooFarStudent()).setText(MESSAGES.reportPertTooFarStudents());
+		table.addProperty(MESSAGES.colPerturbationTooFarInstructor()).setText(MESSAGES.reportPertTooFarInstructor());
+		table.addProperty(MESSAGES.colPerturbationDeltaStudentConflicts()).setText(MESSAGES.reportPertDeltaStudentConf());
+		table.addProperty(MESSAGES.colPerturbationNewStudentConflicts()).setText(MESSAGES.reportPertNewStudentConf());
+		table.addProperty(MESSAGES.colPerturbationDeltaTimePref()).setText(MESSAGES.reportPertDeltaTimePref());
+		table.addProperty(MESSAGES.colPerturbationDeltaRoomPref()).setText(MESSAGES.reportPertDeltaRoomPref());
+		table.addProperty(MESSAGES.colPerturbationDeltaInstructorBTB()).setText(MESSAGES.reportPertDeltaInstructorBTBPref());		
         try {
         	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		PerturbationReport.PerturbationGroup g = (PerturbationReport.PerturbationGroup)i.next();
         		ClassAssignmentDetails ca = g.getClazz();
-        		ClassAssignmentDetails.ClassInfo clazz = ca.getClazz();
         		
         		ClassAssignmentDetails.TimeInfo timeBefore = ca.getTime();
         		ClassAssignmentDetails.TimeInfo timeAfter = ca.getAssignedTime();
         		
-    	    	TableCellChange date = new TableCellChange(
-    	    			timeBefore == null ? null : new TableCellInterface(timeBefore.getDatePatternName())
-    	    					.setColor(PreferenceLevel.int2color(timeBefore.getDatePatternPreference()))
-    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeBefore.getDatePatternPreference()) : null),
-    	    			timeAfter == null ? null : new TableCellInterface(timeAfter.getDatePatternName())
-    	    					.setColor(PreferenceLevel.int2color(timeAfter.getDatePatternPreference()))
-    	    					.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeAfter.getDatePatternPreference()) : null));
-    	    	
-    	    	TableCellChange time = new TableCellChange(
-    	    			timeBefore == null ? null : new TableInterface.TableCellTime(timeBefore.getDaysName() + " " + timeBefore.getStartTime() + " - " + timeBefore.getEndTime())
-    	    	    			.setId(clazz.getClassId() + "," + timeBefore.getDays() + "," + timeBefore.getStartSlot())
-    	    	    			.setColor(PreferenceLevel.int2color(timeBefore.getPref()))
-    	    	    			.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeBefore.getPref()) : null),
-    	    	    	timeAfter == null ? null : new TableInterface.TableCellTime(timeAfter.getDaysName() + " " + timeAfter.getStartTime() + " - " + timeAfter.getEndTime())
-    	    	    	    	.setId(clazz.getClassId() + "," + timeAfter.getDays() + "," + timeAfter.getStartSlot())
-    	    	    	    	.setColor(PreferenceLevel.int2color(timeAfter.getPref()))
-    	    	    	    	.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(timeAfter.getPref()) : null));
-    	    	
+        		LineInterface line = table.addLine();
+        		line.setId(ca.getClazz().getClassId());
+        		line.setURL("suggestions?menu=hide&id=" + ca.getClazz().getClassId());
+        		line.setDialog(MESSAGES.dialogSuggestions());
+        		
+        		line.addCell(ca.getClazz().getName());
+        		
+        		CellInterface d = line.addCell(); d.setNoWrap(true);
+        		if (timeBefore!=null && (timeAfter==null || !timeBefore.getDatePatternId().equals(timeAfter.getDatePatternId())))
+        			d.addItem(timeBefore.toDateCell(usePrefStyles)).add(" \u2192 ");
+        		if (timeBefore==null && timeAfter!=null)
+        			d.add(MESSAGES.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;")
+        			.add(" \u2192 ");
+        		if (timeAfter == null)
+        			d.add(MESSAGES.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;");
+        		else
+        			d.addItem(timeAfter.toDateCell(usePrefStyles));
+        		
+        		CellInterface t = line.addCell(); t.setNoWrap(true);
+        		if (timeBefore!=null && (timeAfter==null || timeBefore.getDays() != timeAfter.getDays() || timeBefore.getStartSlot() != timeAfter.getStartSlot() || timeBefore.getMin() != timeAfter.getMin()))
+        			t.addItem(timeBefore.toCell(usePrefStyles)).add(" \u2192 ");
+        		if (timeBefore==null && timeAfter!=null)
+        			t.add(MESSAGES.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;")
+        			.add(" \u2192 ");
+        		if (timeAfter == null)
+        			t.add(MESSAGES.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;");
+        		else
+        			t.addItem(timeAfter.toCell(usePrefStyles));
+        		
     	    	ClassAssignmentDetails.RoomInfo[] roomBefore = ca.getRoom();
     	    	ClassAssignmentDetails.RoomInfo[] roomAfter = ca.getAssignedRoom();
-    	    	TableCellChange room = new TableCellChange();
-    	    	if (roomBefore != null) {
-    	    		TableCellRooms beforeRooms = new TableCellRooms();
-        	    	for (int j = 0; j < roomBefore.length; j++) {
-        	    		beforeRooms.add(
-        	    				roomBefore[j].getName(),
-        	    				roomBefore[j].getColor(),
-        	    				roomBefore[j].getId(),
-        	    				PreferenceLevel.int2string(roomBefore[j].getPref()),
-        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(roomBefore[j].getPref()) : null);
-        	    	}
-        	    	room.setFirst(beforeRooms);
-        	    }
-    	    	if (roomAfter != null) {
-    	    		TableCellRooms afterRooms = new TableCellRooms();
-    	    		for (int j = 0; j < roomAfter.length; j++) {
-    	    			afterRooms.add(
-    	    					roomAfter[j].getName(),
-    	    					roomAfter[j].getColor(),
-    	    					roomAfter[j].getId(),
-        	    				PreferenceLevel.int2string(roomAfter[j].getPref()),
-        	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(roomAfter[j].getPref()) : null);
-        	    	}
-        	    	room.setSecond(afterRooms);
-        	    	if (roomAfter.length == 0 && roomBefore == null)
-        	    		room.setFirst(new TableCellRooms());
-        	    }
+
+    	    	CellInterface r = line.addCell(); r.setNoWrap(true);
+    	    	if (roomBefore!=null && (roomAfter==null || !toId(roomBefore).equals(toId(roomAfter))))
+        			r.addItem(toRoomCell(roomBefore, usePrefStyles)).add(" \u2192 ");
+        		if (roomBefore==null && roomAfter!=null)
+        			r.add(MESSAGES.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;")
+        			.add(" \u2192 ");
+        		if (roomAfter == null)
+        			r.add(MESSAGES.notAssigned()).setColor(PreferenceLevel.prolog2color("P")).addStyle("font-style: italic;");
+        		else
+        			r.addItem(toRoomCell(roomAfter, usePrefStyles));
         		
-        		table.addRow(new TableRowInterface(g.getClazz().getClazz().getClassId(), 
-        				"suggestions?menu=hide&id=" + clazz.getClassId(),
-    	    			MESSAGES.dialogSuggestions(),
-    	    			new TableCellClickableClassName(clazz.getClassId(), clazz.getName()).setColor(PreferenceLevel.prolog2color(clazz.getPref())),
-    	    			date, time, room,
-    	    			new TableCellInterface<Double>(g.distance).setFormattedValue((Math.round(g.distance) > 0 ? MESSAGES.reportDistanceInMeter((int)Math.round(g.distance)) : "")),
-        				dispNumber(g.affectedStudents),
-        				dispNumber(g.affectedStudentsByTime),
-        				dispNumber(g.affectedStudentsByRoom),
-        				dispNumber(g.affectedStudentsByBldg),
-        				dispNumber(g.affectedInstructors),
-        				dispNumber(g.affectedInstructorsByTime),
-        				dispNumber(g.affectedInstructorsByRoom),
-        				dispNumber(g.affectedInstructorsByBldg),
-        				dispNumber(g.differentRoom),
-        				dispNumber(g.differentBuilding),
-        				dispNumber(g.differentTime),
-        				dispNumber(g.differentDay),
-        				dispNumber(g.differentHour),
-        				dispNumber(g.tooFarForStudents),
-        				dispNumber(g.tooFarForInstructors),
-        				dispNumber(g.deltaStudentConflicts),
-        				dispNumber(g.newStudentConflicts),
-        				dispNumber(Math.round(g.deltaTimePreferences)),
-        				dispNumber(g.deltaRoomPreferences),
-        				dispNumber(g.deltaInstructorDistancePreferences)
-        				));
+        		line.addCell(Math.round(g.distance) > 0 ? MESSAGES.reportDistanceInMeter((int)Math.round(g.distance)) : "").setComparable(g.distance, ca.getClazz().getName()).setTextAlignment(Alignment.RIGHT);
+        		line.addCell(dispNumber(g.affectedStudents));
+        		line.addCell(dispNumber(g.affectedStudentsByTime));
+        		line.addCell(dispNumber(g.affectedStudentsByRoom));
+        		line.addCell(dispNumber(g.affectedStudentsByBldg));
+        		line.addCell(dispNumber(g.affectedInstructors));
+        		line.addCell(dispNumber(g.affectedInstructorsByTime));
+        		line.addCell(dispNumber(g.affectedInstructorsByRoom));
+        		line.addCell(dispNumber(g.affectedInstructorsByBldg));
+        		line.addCell(dispNumber(g.differentRoom));
+        		line.addCell(dispNumber(g.differentBuilding));
+        		line.addCell(dispNumber(g.differentTime));
+        		line.addCell(dispNumber(g.differentDay));
+        		line.addCell(dispNumber(g.differentHour));
+        		line.addCell(dispNumber(g.tooFarForStudents));
+        		line.addCell(dispNumber(g.tooFarForInstructors));
+        		line.addCell(dispNumber(g.deltaStudentConflicts));
+        		line.addCell(dispNumber(g.newStudentConflicts));
+        		line.addCell(dispNumber(Math.round(g.deltaTimePreferences)));
+        		line.addCell(dispNumber(g.deltaRoomPreferences));
+        		line.addCell(dispNumber(g.deltaInstructorDistancePreferences));
         	}
         } catch (Exception e) {
         	Debug.error(e);
         	table.setErrorMessage(MESSAGES.failedToComputeReport(e.getMessage()));
         }
-		Collections.sort(table.getRows(), new Comparator<TableInterface.TableRowInterface>() {
-			@Override
-			public int compare(TableRowInterface r1, TableRowInterface r2) {
-				return r1.compareTo(r2, 0, true);
-			}
-		});
+        table.setDefaultSortCookie(MESSAGES.colClass());
         return table;
 	}
 

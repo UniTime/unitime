@@ -20,11 +20,15 @@
 package org.unitime.timetable.export.solver;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
+import org.unitime.timetable.export.courses.ClassesPDF;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolutionChangesFilterRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolutionChangesFilterResponse;
@@ -35,7 +39,7 @@ import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.Solutio
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:solution-changes.pdf")
-public class ExportSolutionChangesPDF extends TableExporter {
+public class ExportSolutionChangesPDF extends ClassesPDF {
 
 	@Autowired private ApplicationContext applicationContext;
 
@@ -55,7 +59,8 @@ public class ExportSolutionChangesPDF extends TableExporter {
 		request.setFilter(filter);
 		SolutionChangesResponse response = service.execute(request, helper.getSessionContext());
 		
-		printTablePDF(response, helper);
+		List<TableInterface> tables = new ArrayList<TableInterface>(1); tables.add(sorted(response, helper));
+		exportDataPdf(tables, helper);
 	}
 
 }

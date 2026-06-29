@@ -29,13 +29,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -114,7 +114,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 				int cmp = Double.compare(iOrd, ci.iOrd);
 				if (cmp!=0) return cmp;
 			}
-			int cmp = TableInterface.NaturalOrderComparator.compare(getName(), ci.getName());
+			int cmp = NaturalOrderComparator.compare(getName(), ci.getName());
 			if (cmp != 0) return cmp;
 			return getClassId().compareTo(ci.getClassId());
 		}
@@ -170,7 +170,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public int compareTo(RoomInfo r) {
 			if (isStriked() && !r.isStriked()) return 1;
 			if (!isStriked() && r.isStriked()) return -1;
-			return TableInterface.NaturalOrderComparator.compare(getName(), r.getName());
+			return NaturalOrderComparator.compare(getName(), r.getName());
 		}
 		
 		@Override
@@ -234,7 +234,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		
 		@Override
 		public int compareTo(DateInfo d) {
-			int cmp = TableInterface.NaturalOrderComparator.compare(getDatePatternName(), d.getDatePatternName());
+			int cmp = NaturalOrderComparator.compare(getDatePatternName(), d.getDatePatternName());
 			if (cmp != 0) return cmp;
 			return getDatePatternId().compareTo(d.getDatePatternId());
 		}
@@ -370,7 +370,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public int compareTo(TimeInfo t, Integer firstDay) {
 			if (isStriked() && !t.isStriked()) return 1;
 			if (!isStriked() && t.isStriked()) return -1;
-			int cmp = TableInterface.NaturalOrderComparator.compare(getDatePatternName(), t.getDatePatternName());
+			int cmp = NaturalOrderComparator.compare(getDatePatternName(), t.getDatePatternName());
 			if (cmp!=0) return cmp;
 			cmp = Double.compare(getDaysOrder(firstDay),t.getDaysOrder(firstDay));
 			if (cmp!=0) return cmp;
@@ -989,7 +989,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 	    private ClassAssignmentDetails iSelectedPlacement = null;
 	    private double iBaseValue = 0;
 	    private int iBaseUnassignedVariables = 0;
-	    private TableInterface.TableCellMulti iStudentConflictSummary = null;
+	    private CellInterface iStudentConflictSummary = null;
 	    private Map<String, Double> iCriteria = new HashMap<String, Double>();
 	    private Map<String, Double> iBaseCriteria = new HashMap<String, Double>();
 		
@@ -1109,8 +1109,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		}
 		
 		public boolean hasStudentConflictSummary() { return iStudentConflictSummary != null; }
-		public void setStudentConflictSummary(TableInterface.TableCellMulti cell) { iStudentConflictSummary = cell; }
-		public TableInterface.TableCellMulti getStudentConflictSummary() { return iStudentConflictSummary; }
+		public void setStudentConflictSummary(CellInterface cell) { iStudentConflictSummary = cell; }
+		public CellInterface getStudentConflictSummary() { return iStudentConflictSummary; }
 	}
 	
 	public static class MakeAssignmentRequest implements GwtRpcRequest<GwtRpcResponseNull>, Serializable {
