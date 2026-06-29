@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.shared.FilterInterface.FilterParameterInterface;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
@@ -289,6 +290,26 @@ public class OfferingsCSV implements Exporter {
 		public String getParameterValue(String name, String defaultValue) {
 			String value = iHelper.getParameter(name);
 			return (value == null ? defaultValue : value);
+		}
+	}
+	
+	public static void fillInFilter(org.unitime.timetable.gwt.shared.FilterInterface filter, ExportHelper helper) {
+		for (FilterParameterInterface parameter: filter.getParameters()) {
+			if (parameter.isMultiSelect()) {
+				parameter.setValue("");
+				String[] values = helper.getParameterValues(parameter.getName());
+				if (values != null)
+					for (String v: values)
+						parameter.setValue((parameter.getValue().isEmpty() ? "" : ",") + v);
+				else
+					parameter.setValue(parameter.getDefaultValue());
+			} else {
+				String value = helper.getParameter(parameter.getName());
+				if (value != null)
+					parameter.setValue(value);
+				else
+					parameter.setValue(parameter.getDefaultValue());
+			}
 		}
 	}
 }

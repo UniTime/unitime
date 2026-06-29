@@ -59,11 +59,11 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.SectioningAction;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
+import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
 
 import com.google.gwt.aria.client.Id;

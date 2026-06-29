@@ -22,6 +22,7 @@ package org.unitime.timetable.server.solver;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,16 +31,16 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.NotAssignedClassesRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.NotAssignedClassesResponse;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
-import org.unitime.timetable.gwt.shared.TableInterface.TableHeaderIterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -118,22 +119,36 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 			Collections.sort(model.rows());
 			for (UnassignedClassRow ucr: model.rows()) {
 				boolean showClassDetail = (solver == null && context.hasPermission(ucr.getId(), "Class_", Right.ClassDetail));
-				response.addRow(new TableRowInterface(
-						ucr.getId(),
-						(showClassDetail ? "classDetail.action?cid="+ucr.getId() : "suggestions?menu=hide&id="+ucr.getId()),
-						(showClassDetail ? null : MESSAGES.dialogSuggestions()),
-	    	    		new TableInterface.TableCellClassName(ucr.getName()),
-	    	    		new TableInterface.TableCellItems(ucr.getInstructors()),
-	    	    		new TableInterface.TableCellInterface<Integer>(ucr.getNrStudents()),
-	    	    		new TableInterface.TableCellText(ucr.getInitial())));
+		    	LineInterface line = response.addLine();
+		    	line.setId(ucr.getId());
+		    	line.setURL(showClassDetail ? "classDetail.action?cid=" + ucr.getId() : "suggestions?menu=hide&id="+ucr.getId());
+		    	line.setDialog(showClassDetail ? null : MESSAGES.dialogSuggestions());
+		    	CellInterface clazz = line.addCell().setClassName("collection");
+		    	clazz.add(ucr.getName()).setInline(false).setNoWrap(true);
+		    	CellInterface instructors = line.addCell().setNoWrap(false);
+		    	if (ucr.getInstructors() != null) {
+		    		for (Iterator<String> i = ucr.getInstructors().iterator(); i.hasNext(); )
+		    			instructors.add(i.next() + (i.hasNext() ? ", " : "")).setNoWrap(true);
+		    	}
+				line.addCell(String.valueOf(ucr.getNrStudents())).setComparable(ucr.getNrStudents()).setTextAlignment(Alignment.RIGHT);
+		    	line.addCell(ucr.getInitial());
 			}
 		}
 		
-		response.setHeader(
-				new TableHeaderIterface(MESSAGES.colClass()),
-				new TableHeaderIterface(MESSAGES.colInstructor()),
-				new TableHeaderIterface(MESSAGES.colNrAssignedStudents()),
-				new TableHeaderIterface(MESSAGES.colInitialAssignment()));
+		LineInterface line = response.addHeader();
+		line.addCell(MESSAGES.colClass());
+		line.addCell(MESSAGES.colInstructor());
+		line.addCell(MESSAGES.colNrAssignedStudents()).setTextAlignment(Alignment.RIGHT);
+		line.addCell(MESSAGES.colInitialAssignment());
+		for (CellInterface cell: line.getCells()) {
+			cell.setSortable(true);
+			cell.setClassName("unitime-ClickableTableHeader");
+    		cell.setText(cell.getText().replace("<br>", "\n"));
+    		cell.addStyle("white-space: pre-wrap;");
+		}
+		response.setId("NotAssignedClasses");
+		response.setName(MESSAGES.sectNotAssignedClasses());
+		response.setClassName("unitime-DataTable");
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
 		BackTracker.markForBack(context, "notAssignedClasses", MESSAGES.pageNotAssignedClasses(), true, true);

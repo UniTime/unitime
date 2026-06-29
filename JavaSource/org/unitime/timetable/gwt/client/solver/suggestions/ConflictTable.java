@@ -34,9 +34,9 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
+import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.TimeInfo;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;

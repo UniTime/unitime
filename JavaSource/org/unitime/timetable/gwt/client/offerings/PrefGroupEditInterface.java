@@ -35,8 +35,8 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeInterface;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
+import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 

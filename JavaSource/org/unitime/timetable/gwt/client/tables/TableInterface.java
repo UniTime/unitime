@@ -26,13 +26,14 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseNull;
+import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class TableInterface implements IsSerializable {
+public class TableInterface implements GwtRpcResponse {
 	private String iId;
 	private String iName;
 	private String iStyle;
@@ -49,6 +50,9 @@ public class TableInterface implements IsSerializable {
 	private Boolean iBlankWhenSame;
 	
 	public TableInterface() {}
+	public TableInterface(String id, String name) {
+		iId = id; iName = name;
+	}
 	
 	public List<LineInterface> getHeader() { return iHeader; }
 	public void addHeader(LineInterface header) {
@@ -59,6 +63,12 @@ public class TableInterface implements IsSerializable {
 	public LineInterface addHeader() {
 		LineInterface line = new LineInterface();
 		addHeader(line);
+		return line;
+	}
+	public LineInterface setHeader(String... names) {
+		LineInterface line = addHeader();
+		for (String name: names)
+			line.addCell(name);
 		return line;
 	}
 	
@@ -92,6 +102,8 @@ public class TableInterface implements IsSerializable {
 				int cols = line.getMaxColumns();
 				if (ret < cols) ret = cols;
 			}
+		if (iProperties != null)
+			if (ret < 2) ret = 2;
 		return ret;
 	}
 	
@@ -183,6 +195,7 @@ public class TableInterface implements IsSerializable {
 		private String iAnchor;
 		private String iDialog;
 		private Long iId;
+		private Integer iPropertyIndex;
 		
 		public LineInterface() {}
 		
@@ -202,6 +215,7 @@ public class TableInterface implements IsSerializable {
 			addCell(cell);
 			return cell;
 		}
+		public int getNrCells() { return iCells == null ? 0 : iCells.size(); }
 		public CellInterface addCell(String text) {
 			return addCell().setText(text);
 		}
@@ -245,6 +259,10 @@ public class TableInterface implements IsSerializable {
 		
 		public Long getId() { return iId; }
 		public void setId(Long id) { iId = id; }
+		public boolean hasId() { return iId != null; }
+		
+		public Integer getPropertyIndex() { return iPropertyIndex; }
+		public void setPropertyIndex(int idx) { iPropertyIndex = idx; }
 		
 		public int getMaxColumns() {
 			if (iCells == null) return 0;
@@ -332,6 +350,7 @@ public class TableInterface implements IsSerializable {
 		public String getStyle() { return iStyle; }
 		public void setStyle(String style) { iStyle = style; }
 		public CellInterface addStyle(String style) {
+			if (style == null || style.isEmpty()) return this;
 			if (iStyle == null) iStyle = style;
 			else iStyle += style;
 			return this;
@@ -354,6 +373,7 @@ public class TableInterface implements IsSerializable {
 			iComparable = comparable;
 			return this;
 		}
+		public boolean hasComparable() { return iComparable != null; }
 		
 		public String getColor() { return iColor; }
 		public CellInterface setColor(String color) { iColor = color; return this; }
@@ -376,6 +396,13 @@ public class TableInterface implements IsSerializable {
 			addItem(cell);
 			return cell;
 		}
+		public CellInterface addRoom(String name, String color, Long id, String preference, String style) {
+			return add(name).setColor(color).setClassName(style)
+				.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + id + "', '" + preference + "');")
+				.setMouseOut("$wnd.hideGwtRoomHint();")
+				.setNoWrap(true);
+		}
+		public int getNrItems() { return iItems == null ? 0 : iItems.size(); }
 		public CellInterface add(String text, boolean html) {
 			return add(text).setHtml(html);
 		}
@@ -412,6 +439,7 @@ public class TableInterface implements IsSerializable {
 		
 		public int getRowSpan() { return (iRowSpan == null ? 1 : iRowSpan.intValue()); }
 		public CellInterface setRowSpan(int rowSpan) { iRowSpan = rowSpan; return this; }
+		public boolean hasColSpan() { return iColSpan != null; }
 		public int getColSpan() { return iColSpan == null ? 1 : iColSpan.intValue(); }
 		public CellInterface setColSpan(int colSpan) { iColSpan = colSpan; return this; }
 		public Alignment getTextAlignment() { return iTextAlignment == null ? Alignment.LEFT : iTextAlignment; }
@@ -548,8 +576,13 @@ public class TableInterface implements IsSerializable {
 	            int cmp = 0;
 	            if (a[i] != null && a[i] instanceof String && b[i] != null && b[i] instanceof String)
 	                cmp = NaturalOrderComparator.compare((String)a[i], (String)b[i]);
-	            else
-	                cmp = a[i].compareTo(b[i]);
+	            else {
+	            	try {
+	            		cmp = a[i].compareTo(b[i]);
+	            	} catch (ClassCastException e) {
+	            		cmp = NaturalOrderComparator.compare(a[i].toString(), b[i].toString());
+	            	}
+	            }
 	            if (cmp != 0) return cmp;
 	        }
 	        if (a.length > b.length) return 1;
@@ -676,6 +709,11 @@ public class TableInterface implements IsSerializable {
 		Collections.sort(getLines(), new Comparator<LineInterface>() {
 			@Override
 			public int compare(LineInterface l1, LineInterface l2) {
+				if (l1.getPropertyIndex() != null)
+					return (l2.getPropertyIndex() != null ? (asc ? l1.getPropertyIndex().compareTo(l2.getPropertyIndex()) : l2.getPropertyIndex().compareTo(l1.getPropertyIndex())):
+						(l1.getPropertyIndex() >= 0 ? (asc ? 1 : -1) : (asc ? -1 : 1)));
+				else if (l2.getPropertyIndex() != null)
+					return (l2.getPropertyIndex() >= 0 ? (asc ? -1 : 1) : (asc ? 1 : -1));
 				CellInterface c1 = l1.getCell(column);
 				CellInterface c2 = l2.getCell(column);
 				if (c1 == null) {

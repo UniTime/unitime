@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.solver;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.ToolBox.Page;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -64,7 +65,7 @@ public class AssignedClassesPage extends Composite {
 	private SimpleForm iPanel;
 	private FilterInterface iLastFilter;
 	private AssignedClassesResponse iLastResponse;
-	private DataTable iTable;
+	private TableWidget iTable;
 	private PreferenceLegend iLegend;
 
 	public AssignedClassesPage() {
@@ -198,13 +199,13 @@ public class AssignedClassesPage extends Composite {
 				populate(request.getFilter(), result);
 				iFilter.getFooter().setEnabled("search", true);
 				if (callback != null)
-					callback.onSuccess(!result.getRows().isEmpty());
+					callback.onSuccess(result.hasLines());
 			}
 		});
 	}
 	
 	protected void print() {
-		final DataTable table = new DataTable(iLastResponse);
+		final TableWidget table = new TableWidget(iLastResponse);
 		Element headerRow = table.getRowFormatter().getElement(0);
 		Element tableElement = table.getElement();
 		Element thead = DOM.createTHead();
@@ -233,7 +234,7 @@ public class AssignedClassesPage extends Composite {
 	}
 	
 	private void exportData(String format) {
-		String query = "output=assigned-classes." + format + iFilter.getQuery() + "&sort=" + SolverCookie.getInstance().getAssignedClassesSort();
+		String query = "output=assigned-classes." + format + iFilter.getQuery() + "&sort=" + iTable.getSortCookie();
 		RPC.execute(EncodeQueryRpcRequest.encode(query), new AsyncCallback<EncodeQueryRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -275,7 +276,7 @@ public class AssignedClassesPage extends Composite {
 			}
 		}
 		
-		if (response.getRows().isEmpty()) {
+		if (!response.hasLines()) {
 			iFilter.getFooter().setMessage(MESSAGES.errorAssignedClassesNoDataReturned());
 			return;
 		}
@@ -283,17 +284,10 @@ public class AssignedClassesPage extends Composite {
 		UniTimeHeaderPanel header = new UniTimeHeaderPanel(MESSAGES.sectAssignedClasses());
 		iPanel.addHeaderRow(header);
 		if (iTable == null) {
-			iTable = new DataTable(response);
-			iTable.addValueChangeHandler(new ValueChangeHandler<Integer>() {
-				@Override
-				public void onValueChange(ValueChangeEvent<Integer> event) {
-					SolverCookie.getInstance().setAssignedClassesSort(event.getValue() == null ? 0 : event.getValue().intValue());
-				}
-			});
+			iTable = new TableWidget(response);
 		} else {
-			iTable.populate(response);
+			iTable.setData(response);
 		}
-		iTable.setValue(SolverCookie.getInstance().getAssignedClassesSort());
 		iPanel.addRow(iTable);
 		iPanel.addRow(iLegend);
 		

@@ -20,11 +20,15 @@
 package org.unitime.timetable.export.solver;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
+import org.unitime.timetable.export.courses.ClassesCSV;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.AssignmentHistoryFilterRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.AssignmentHistoryFilterResponse;
@@ -35,7 +39,7 @@ import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.Assignm
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:assignment-history.csv")
-public class ExportAssignmentHistoryCSV extends TableExporter {
+public class ExportAssignmentHistoryCSV extends ClassesCSV {
 
 	@Autowired private ApplicationContext applicationContext;
 
@@ -55,7 +59,8 @@ public class ExportAssignmentHistoryCSV extends TableExporter {
 		request.setFilter(filter);
 		AssignmentHistoryResponse response = service.execute(request, helper.getSessionContext());
 		
-		printTableCSV(response, helper);
+		List<TableInterface> tables = new ArrayList<TableInterface>(1); tables.add(sorted(response, helper));
+		exportDataCsv(tables, helper);
 	}
 
 }

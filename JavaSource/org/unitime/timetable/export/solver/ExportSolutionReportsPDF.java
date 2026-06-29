@@ -20,14 +20,17 @@
 package org.unitime.timetable.export.solver;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
+import org.unitime.timetable.export.courses.ClassesPDF;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsResponse;
 
@@ -35,7 +38,7 @@ import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverR
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:solution-reports.pdf")
-public class ExportSolutionReportsPDF extends TableExporter {
+public class ExportSolutionReportsPDF extends ClassesPDF {
 
 	@Autowired private ApplicationContext applicationContext;
 
@@ -55,12 +58,12 @@ public class ExportSolutionReportsPDF extends TableExporter {
 		PDFPrinter out = new PDFPrinter(helper.getOutputStream(), false);
 		helper.setup(out.getContentType(), reference(), true);
 		
-		if (response.hasTables())
+		if (response.hasTables()) {
+			List<TableInterface> tables = new ArrayList<TableInterface>();
 			for (TableInterface table: response.getTables())
-				if (table.getTableId().equals(tableId)) {
-					printTablePDF(table, helper);
-					return;
-				}
+				if (table.getId().equals(tableId)) tables.add(sorted(table, helper));
+			exportDataPdf(tables, helper);
+		}
 	}
 
 }

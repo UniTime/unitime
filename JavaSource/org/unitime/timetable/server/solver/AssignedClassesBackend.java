@@ -34,18 +34,17 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.AssignedClassesRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.AssignedClassesResponse;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverType;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableCellMulti;
-import org.unitime.timetable.gwt.shared.TableInterface.TableHeaderIterface;
-import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -173,29 +172,32 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		for (ClassAssignmentDetails ca: assignedClasses) {
 			AssignmentPreferenceInfo ci = ca.getInfo();
 			
-			TableCellMulti studentConfs = new TableCellMulti();
-			studentConfs.add(dispNumber(ci.getNrStudentConflicts()));
+			CellInterface studentConfs = new CellInterface().setTextAlignment(Alignment.RIGHT);
+			studentConfs.setComparable(ci.getNrStudentConflicts(), ci.getNrCommitedStudentConflicts(),
+					ci.getNrDistanceStudentConflicts(), ci.getNrHardStudentConflicts());
+			studentConfs.setNoWrap(true);
+			studentConfs.addItem(dispNumber(ci.getNrStudentConflicts()));
 
 			if (ci.getNrCommitedStudentConflicts()!=0) {
-				if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
-				studentConfs.add(dispNumber(ci.getNrCommitedStudentConflicts()).setFormattedValue("c" + ci.getNrCommitedStudentConflicts()));
+				if (studentConfs.getNrItems() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+				studentConfs.addItem(dispNumber("c", ci.getNrCommitedStudentConflicts()));
     	    }
     	    if (ci.getNrDistanceStudentConflicts()!=0) {
-    	    	if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
-    	    	studentConfs.add(dispNumber(ci.getNrDistanceStudentConflicts()).setFormattedValue("d" + ci.getNrDistanceStudentConflicts()));
+    	    	if (studentConfs.getNrItems() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+    	    	studentConfs.addItem(dispNumber("d", ci.getNrDistanceStudentConflicts()));
     	    }
     	    if (ci.getNrHardStudentConflicts()!=0) {
-    	    	if (studentConfs.getNrChunks() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
-    	    	studentConfs.add(dispNumber(ci.getNrHardStudentConflicts()).setFormattedValue("h" + ci.getNrHardStudentConflicts()));
+    	    	if (studentConfs.getNrItems() <= 1) studentConfs.add(" ("); else studentConfs.add(",");
+    	    	studentConfs.addItem(dispNumber("h", ci.getNrHardStudentConflicts()));
     	    }
-    	    if (studentConfs.getNrChunks()>1) studentConfs.add(")");
+    	    if (studentConfs.getNrItems()>1) studentConfs.add(")");
     	    
-    	    TableInterface.TableCellRooms rooms = new TableInterface.TableCellRooms();
+    	    CellInterface rooms = new CellInterface();
     	    if (ca.getAssignedRoom() != null) {
     	    	for (int i=0;i<ca.getAssignedRoom().length;i++) {
-    	    		rooms.add(
-    	    				ca.getAssignedRoom()[i].getName(),
-    	    				ca.getAssignedRoom()[i].getColor(),
+    	    		if (i > 0) rooms.add(", ");
+    	    		rooms.addRoom(ca.getAssignedRoom()[i].getName(),
+    	    				usePrefStyles ? null : ca.getAssignedRoom()[i].getColor(),
     	    				ca.getAssignedRoom()[i].getId(),
     	    				PreferenceLevel.int2string(ca.getAssignedRoom()[i].getPref()),
     	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(ca.getAssignedRoom()[i].getPref()) : null
@@ -203,95 +205,91 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    	}
     	    } else if (ca.getRoom()!=null) {
     	    	for (int i=0;i<ca.getRoom().length;i++) {
-    	    		rooms.add(
+    	    		if (i > 0) rooms.add(", ");
+    	    		rooms.addRoom(
     	    				ca.getRoom()[i].getName(),
-    	    				ca.getRoom()[i].getColor(),
+    	    				usePrefStyles ? null : ca.getRoom()[i].getColor(),
     	    				ca.getRoom()[i].getId(),
     	    				PreferenceLevel.int2string(ca.getRoom()[i].getPref()),
     	    				usePrefStyles ? "pref-" + PreferenceLevel.int2char(ca.getRoom()[i].getPref()) : null
     	    				);
     	    	}
     	    }
-    	    TableInterface.TableCellItems instructors = new TableInterface.TableCellItems();
+    	    CellInterface instructors = new CellInterface().setClassName("collection");
     	    if (ca.getInstructor() != null)
     	    	for (int i = 0; i < ca.getInstructor().length; i++) {
-    	    		instructors.add(ca.getInstructor()[i].getName(), ca.getInstructor()[i].getColor(), ca.getInstructor()[i].getId());
+    	    		instructors.add(ca.getInstructor()[i].getName() + (i + 1 < ca.getInstructor().length ? ", " : ""))
+    	    			.setColor(ca.getInstructor()[i].getColor()).setNoWrap(true).setClassName("item");
     	    	}
     	    TimeInfo time = (ca.getAssignedTime() != null ? ca.getAssignedTime() : ca.getTime());
     	    
     	    boolean showClassDetail = (solver == null && context.hasPermission(ca.getClazz().getClassId(), "Class_", Right.ClassDetail));
     	    
-    	    if (simple)
-    	    	response.addRow(new TableRowInterface(
-    	    			ca.getClazz().getClassId(),
-    	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId()),
-    	    			(showClassDetail ? null : MESSAGES.dialogSuggestions()),
-    	    			new TableInterface.TableCellClassName(ca.getClazz().getName())
-    	    				.setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
-    	    			new TableCellInterface(time.getDatePatternName())
-    	    				.setColor(PreferenceLevel.int2color(time.getDatePatternPreference()))
-    	    				.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getDatePatternPreference()) : null),
-    	    			new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime()).setOrder(getOrder(time))
-    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot())
-    	    				.setColor(PreferenceLevel.int2color(time.getPref()))
-    	    				.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null),
-    	    			rooms,
-    	    			instructors,
-    	    			studentConfs
-    	    			));
-    	    else
-    	    	response.addRow(new TableRowInterface(
-    	    			ca.getClazz().getClassId(),
-    	    			(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId()),
-        	    		(showClassDetail ? null : MESSAGES.dialogSuggestions()),
-        	    		new TableInterface.TableCellClassName(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())),
-        	    		new TableCellInterface(time.getDatePatternName())
-        	    			.setColor(PreferenceLevel.int2color(time.getDatePatternPreference()))
-        	    			.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getDatePatternPreference()) : null),
-        	    		new TableInterface.TableCellTime(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime()).setOrder(getOrder(time))
-    	    				.setId(ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot())
-    	    				.setColor(PreferenceLevel.int2color(time.getPref()))
-    	    				.setStyleName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null),
-        	    		rooms,
-        	    		instructors,
-        	    		studentConfs,
-        	    		dispNumber(ci.getTimePreference()),
-        	    		dispNumber(ci.sumRoomPreference()),
-        	    		dispNumber(ci.getGroupConstraintPref()),
-        	    		dispNumber(ci.getBtbInstructorPreference()),
-        	    		dispNumber(ci.getUselessHalfHours()),
-        	    		dispNumber(ci.getTooBigRoomPreference()),
-        	    		dispNumber(ci.getDeptBalancPenalty()),
-        	    		dispNumber(ci.getSpreadPenalty()),
-        	    		dispNumber(ci.getPerturbationPenalty())
-        	    		));
+	    	LineInterface line = response.addLine();
+	    	line.setId(ca.getClazz().getClassId());
+	    	line.setURL(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId());
+	    	line.setDialog(showClassDetail ? null : MESSAGES.dialogSuggestions());
+	    	CellInterface clazz = line.addCell().setClassName("collection");
+	    	clazz.add(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())).setInline(false).setNoWrap(true);
+	    	line.addCell().add(time.getDatePatternName())
+	    		.setColor(usePrefStyles ? null : PreferenceLevel.int2color(time.getDatePatternPreference()))
+	    		.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null);
+	    	line.addCell().setComparable(getOrder(time))
+	    		.add(time.getDaysName() + " " + time.getStartTime() + " - " + time.getEndTime())
+	    		.setColor(usePrefStyles ? null : PreferenceLevel.int2color(time.getPref()))
+	    		.setClassName(usePrefStyles ? "pref-" + PreferenceLevel.int2char(time.getPref()) : null)
+	    		.setNoWrap(true)
+	    		.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + ca.getClazz().getClassId() + "," + time.getDays() + "," + time.getStartSlot() + "')")
+	    		.setMouseOut("$wnd.hideGwtTimeHint()")
+	    		;
+	    	line.addCell(rooms);
+	    	line.addCell(instructors);
+	    	line.addCell(studentConfs);
+	    	if (!simple) {
+    	    	line.addCell(dispNumber(ci.getTimePreference()));
+    	    	line.addCell(dispNumber(ci.sumRoomPreference()));
+    	    	line.addCell(dispNumber(ci.getGroupConstraintPref()));
+    	    	line.addCell(dispNumber(ci.getBtbInstructorPreference()));
+    	    	line.addCell(dispNumber(ci.getUselessHalfHours()));
+    	    	line.addCell(dispNumber(ci.getTooBigRoomPreference()));
+    	    	line.addCell(dispNumber(ci.getDeptBalancPenalty()));
+    	    	line.addCell(dispNumber(ci.getSpreadPenalty()));
+    	    	line.addCell(dispNumber(ci.getPerturbationPenalty()));
+	    	}
 		}
 		
-		if (simple)
-			response.setHeader(
-					new TableHeaderIterface(MESSAGES.colClass()),
-					new TableHeaderIterface(MESSAGES.colDate()),
-					new TableHeaderIterface(MESSAGES.colTime()),
-					new TableHeaderIterface(MESSAGES.colRoom()),
-					new TableHeaderIterface(MESSAGES.colInstructor()),
-					new TableHeaderIterface(MESSAGES.colNrStudentConflicts()));
-		else
-			response.setHeader(
-					new TableHeaderIterface(MESSAGES.colClass()),
-					new TableHeaderIterface(MESSAGES.colDate()),
-					new TableHeaderIterface(MESSAGES.colTime()),
-					new TableHeaderIterface(MESSAGES.colRoom()),
-					new TableHeaderIterface(MESSAGES.colInstructor()),
-					new TableHeaderIterface(MESSAGES.colShortStudentConflicts()),
-					new TableHeaderIterface(MESSAGES.colShortTimePref()),
-					new TableHeaderIterface(MESSAGES.colShortRoomPref()),
-					new TableHeaderIterface(MESSAGES.colShortDistPref()),
-					new TableHeaderIterface(MESSAGES.colShortInstructorBtbPref()),
-					new TableHeaderIterface(MESSAGES.colShortUselessHalfHours()),
-					new TableHeaderIterface(MESSAGES.colShortTooBigRooms()),
-					new TableHeaderIterface(MESSAGES.colShortDepartmentBalance()),
-					new TableHeaderIterface(MESSAGES.colShortSameSubpartBalance()),
-					new TableHeaderIterface(MESSAGES.colShortPerturbations()));
+		LineInterface line = response.addHeader();
+		line.addCell(MESSAGES.colClass());
+		line.addCell(MESSAGES.colDate());
+		line.addCell(MESSAGES.colTime());
+		line.addCell(MESSAGES.colRoom());
+		line.addCell(MESSAGES.colInstructor());
+		if (simple) {
+			line.addCell(MESSAGES.colNrStudentConflicts());
+		} else {
+			line.addCell(MESSAGES.colShortStudentConflicts());
+			line.addCell(MESSAGES.colShortTimePref());
+			line.addCell(MESSAGES.colShortRoomPref());
+			line.addCell(MESSAGES.colShortDistPref());
+			line.addCell(MESSAGES.colShortInstructorBtbPref());
+			line.addCell(MESSAGES.colShortUselessHalfHours());
+			line.addCell(MESSAGES.colShortTooBigRooms());
+			line.addCell(MESSAGES.colShortDepartmentBalance());
+			line.addCell(MESSAGES.colShortSameSubpartBalance());
+			line.addCell(MESSAGES.colShortPerturbations());
+		}
+		for (int i = 0; i < line.getNrCells(); i++) {
+			CellInterface cell = line.getCell(i);
+			cell.setSortable(true);
+			cell.setClassName("unitime-ClickableTableHeader");
+    		cell.setText(cell.getText().replace("<br>", "\n"));
+    		cell.addStyle("white-space: pre-wrap;");
+    		if (i > 4)
+    			cell.setTextAlignment(Alignment.RIGHT);
+		}
+		response.setId("AssignedClasses");
+		response.setName(MESSAGES.sectAssignedClasses());
+		response.setClassName("unitime-DataTable");
 		
 		SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
 		BackTracker.markForBack(context, "assignedClasses", MESSAGES.pageAssignedClasses(), true, true);
@@ -302,21 +300,30 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 		return response;
 	}
 	
-	public TableCellInterface dispNumber(int value) {
-		return new TableCellInterface<Integer>(value)
-				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
+	public CellInterface dispNumber(int value) {
+		return new CellInterface().setText(String.valueOf(value)).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
 	}
 	
-	public TableCellInterface dispNumber(double value) {
-		return new TableCellInterface<Double>(value, sDF.format(value))
-				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null);
+	public CellInterface dispNumber(String prefix, int value) {
+		return new CellInterface().setText(prefix + value).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
+	}
+	
+	public CellInterface dispNumber(double value) {
+		return new CellInterface().setText(sDF.format(value)).setComparable(value)
+				.setColor(value < 0 ? "#1d6600" : value > 0 ? "#b80000" : null)
+				.setTextAlignment(Alignment.RIGHT);
 	}
 	
 	public static void addCrosslistedNames(TableInterface table, boolean showClassSuffix, boolean showConfigNames) {
-		Map<Long, TableInterface.TableRowInterface> id2row = new HashMap<Long, TableInterface.TableRowInterface>();
-		for (TableInterface.TableRowInterface row: table.getRows()) {
-			if (row.hasId()) id2row.put(row.getId(), row);
-		}
+		Map<Long, LineInterface> id2row = new HashMap<Long, LineInterface>();
+		if (table.hasLines())
+			for (LineInterface row: table.getLines()) {
+				if (row.hasId()) id2row.put(row.getId(), row);
+			}
 		if (id2row.isEmpty()) return;
 		if (id2row.size() <= 1000) {
 			for (Object[] o: Class_DAO.getInstance().getSession().createQuery(
@@ -325,9 +332,10 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 					.setParameterList("classIds", id2row.keySet(), Long.class).setCacheable(true).list()) {
 				Class_ clazz = (Class_)o[0];
 				CourseOffering course = (CourseOffering)o[1];
-				TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
+				LineInterface row = id2row.get(clazz.getUniqueId());
 				if (row != null)
-					((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+					row.getCell(0).add(clazz.getClassLabel(course, showClassSuffix, showConfigNames))
+						.setIndent(1).setInline(false).setClassName("alternative").setNoWrap(true).setColor("#767676");
 			}
 		} else {
 			List<Long> ids = new ArrayList<Long>(1000);
@@ -340,9 +348,10 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 							.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 						Class_ clazz = (Class_)o[0];
 						CourseOffering course = (CourseOffering)o[1];
-						TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
+						LineInterface row = id2row.get(clazz.getUniqueId());
 						if (row != null)
-							((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+							row.getCell(0).add(clazz.getClassLabel(course, showClassSuffix, showConfigNames))
+								.setIndent(1).setInline(false).setClassName("alternative").setNoWrap(true).setColor("#767676");
 					}
 					ids.clear();
 				}
@@ -354,9 +363,10 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 						.setParameterList("classIds", ids, Long.class).setCacheable(true).list()) {
 					Class_ clazz = (Class_)o[0];
 					CourseOffering course = (CourseOffering)o[1];
-					TableInterface.TableRowInterface row = id2row.get(clazz.getUniqueId());
+					LineInterface row = id2row.get(clazz.getUniqueId());
 					if (row != null)
-						((TableInterface.TableCellClassName)row.getCell(0)).addAlternative(clazz.getClassLabel(course, showClassSuffix, showConfigNames));
+						row.getCell(0).add(clazz.getClassLabel(course, showClassSuffix, showConfigNames))
+							.setIndent(1).setInline(false).setClassName("alternative").setNoWrap(true).setColor("#767676");
 				}
 			}
 		}

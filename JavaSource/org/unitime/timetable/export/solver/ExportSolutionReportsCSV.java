@@ -20,14 +20,17 @@
 package org.unitime.timetable.export.solver;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
+import org.unitime.timetable.export.courses.ClassesCSV;
+import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsRequest;
 import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverReportsResponse;
 
@@ -35,7 +38,7 @@ import org.unitime.timetable.gwt.shared.CourseTimetablingSolverInterface.SolverR
  * @author Tomas Muller
  */
 @Service("org.unitime.timetable.export.Exporter:solution-reports.csv")
-public class ExportSolutionReportsCSV extends TableExporter {
+public class ExportSolutionReportsCSV extends ClassesCSV {
 
 	@Autowired private ApplicationContext applicationContext;
 
@@ -55,49 +58,12 @@ public class ExportSolutionReportsCSV extends TableExporter {
 		Printer out = new CSVPrinter(helper, false);
 		helper.setup(out.getContentType(), reference(), false);
 		
-		boolean first = true;
 		if (response.hasTables()) {
-			for (TableInterface table: response.getTables()) {
-				if (tableId != null && !tableId.equals(table.getTableId())) continue;
-				
-				if (!first) {
-					out.printLine(); out.printLine();
-				} else {
-					first = false;
-				}
-				
-				if (table.hasName())
-					out.printLine(table.getName());
-				
-				sort(table, helper);
-				
-				String[] header = new String[table.getHeader().length];
-				for (int i = 0; i < table.getHeader().length; i++) {
-					header[i] = table.getHeader(i).getName().replace("<br>", "\n");
-				}	
-				out.printHeader(header);
-				out.flush();
-				
-				for (TableInterface.TableRowInterface row: table.getRows()) {
-					String[] line = new String[row.getNrCells()];
-					for (int i = 0; i < row.getNrCells(); i++) {
-						line[i] = convertCSV(row.getCell(i));
-					}
-					out.printLine(line);
-				}
-				
-				if (table.hasColumnDescriptions()) {
-					out.printLine();
-					for (TableInterface.TableHeaderIterface h: table.getHeader())
-						if (h.hasDescription())
-							out.printLine(h.getName(), h.getDescription());
-				}
-				
-				out.flush();				
-			}
+			List<TableInterface> tables = new ArrayList<TableInterface>();
+			for (TableInterface table: response.getTables())
+				if (table.getId().equals(tableId)) tables.add(sorted(table, helper));
+			exportDataCsv(tables, helper);
 		}
-		
-		out.close();
 	}
 
 }

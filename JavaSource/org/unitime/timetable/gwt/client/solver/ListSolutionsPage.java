@@ -29,13 +29,12 @@ import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.solver.SolverPage.SolverStatus;
+import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -50,7 +49,6 @@ import org.unitime.timetable.gwt.shared.SolverInterface.ProgressMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolutionInfo;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverConfiguration;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverOwner;
-import org.unitime.timetable.gwt.shared.TableInterface.TableRowInterface;
 
 import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
@@ -61,6 +59,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
@@ -78,8 +77,7 @@ public class ListSolutionsPage extends SimpleForm {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private UniTimeHeaderPanel iTableHeader;
-	private DataTable iTable;
-	private ListSolutionsResponse iResponse;
+	private TableWidget iTable;
 	private TextArea iCurrentSolutionNote;
 	private ListBox iSolverConfig = null;
 	private ListBox iSolverOwner = null;
@@ -93,6 +91,16 @@ public class ListSolutionsPage extends SimpleForm {
 		iTableHeader = new UniTimeHeaderPanel(MESSAGES.sectSavedSolutions());
 		addHeaderRow(iTableHeader);
 		execute(iTableHeader, SolutionOperation.INIT);
+		
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				try {
+					Long id = Long.valueOf(event.getValue());
+					execute(iTableHeader, id < 0 ? SolutionOperation.DESELECT : SolutionOperation.SELECT, Math.abs(id));
+				} catch (Exception e) {}
+			}
+		});
 	}
 	
 	protected void execute(final UniTimeHeaderPanel header, SolutionOperation operation) {
@@ -223,7 +231,6 @@ public class ListSolutionsPage extends SimpleForm {
 	
 	protected void populate(ListSolutionsRequest request, ListSolutionsResponse response) {
 		clear();
-		iResponse = response;
 		
 		RootPanel cpm = RootPanel.get("UniTimeGWT:CustomPageMessages");
 		if (cpm != null) {
@@ -391,34 +398,15 @@ public class ListSolutionsPage extends SimpleForm {
 		if (response.hasMessage()) {
 			iTableHeader.setMessage(response.getMessage());
 		}
-		if (response.getRows().isEmpty()) {
+		if (!response.hasLines()) {
 			if (!response.hasMessage())
 				iTableHeader.setMessage(MESSAGES.errorListSolutionsNoDataReturned());
 		} else {
 			if (iTable == null) {
-				iTable = new DataTable(response);
-				iTable.addValueChangeHandler(new ValueChangeHandler<Integer>() {
-					@Override
-					public void onValueChange(ValueChangeEvent<Integer> event) {
-						SolverCookie.getInstance().setListSolutionsSort(event.getValue() == null ? 0 : event.getValue().intValue());
-					}
-				});
-				iTable.addMouseClickListener(new MouseClickListener<TableRowInterface>() {
-					@Override
-					public void onMouseClick(TableEvent<TableRowInterface> event) {
-						if (event.getData() != null) {
-							boolean selected = false;
-							if (iResponse.hasSelectedSolutions())
-								for (SolutionInfo solution: iResponse.getSelectedSolutions())
-									if (event.getData().getId().equals(solution.getId())) selected = true;
-							execute(iTableHeader, selected ? SolutionOperation.DESELECT : SolutionOperation.SELECT, event.getData().getId());
-						}
-					}
-				});
+				iTable = new TableWidget(response);
 			} else {
-				iTable.populate(response);
+				iTable.setData(response);
 			}
-			iTable.setValue(SolverCookie.getInstance().getListSolutionsSort());
 			addRow(iTable);
 		}
 		

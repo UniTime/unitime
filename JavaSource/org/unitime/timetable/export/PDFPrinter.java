@@ -739,6 +739,8 @@ public class PDFPrinter implements Printer, TableAware {
 		} else if (cell.hasImage()) {
 			if (cell.getImage().hasTitle())
 				a.setText(cell.getImage().getTitle());
+			else if (cell.getImage().hasAlt())
+				a.setText(cell.getImage().getAlt());
 		}
 		if (cell.hasClassName() && cell.getClassName().startsWith("pref-")) {
 			if (cell.getClassName().equals("pref-" + PreferenceLevel.sCharLevelProhibited))

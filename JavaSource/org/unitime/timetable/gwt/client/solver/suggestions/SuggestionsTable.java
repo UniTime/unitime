@@ -29,7 +29,8 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.TimeHint;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.solver.SolverCookie;
-import org.unitime.timetable.gwt.client.solver.DataTable.DataTableCell;
+import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
+import org.unitime.timetable.gwt.client.tables.TableWidget.CellWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -38,7 +39,6 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.shared.TableInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.PreferenceInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.RoomInfo;
@@ -470,7 +470,7 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 				rooms.add(getCellLine(details, true, column, idx));
 			return rooms;
 		case STUDENTS:
-			return (suggestion.hasStudentConflictSummary() ? new DataTableCell(null, suggestion.getStudentConflictSummary()) : null);
+			return (suggestion.hasStudentConflictSummary() ? new CellWidget(suggestion.getStudentConflictSummary()) : null);
 		case OBJECTIVES:
 			return new Objectives(suggestion);
 		default:
@@ -542,7 +542,7 @@ public class SuggestionsTable extends UniTimeTable<Suggestion> implements TakesV
 			return 0;
 		}
 		
-		public int compareByCell(TableInterface.TableCellInterface c1, TableInterface.TableCellInterface c2) {
+		public int compareByCell(CellInterface c1, CellInterface c2) {
 			if (c1 == null) return (c2 == null ? 0 : -1);
 			if (c2 == null) return 1;
 			return c1.compareTo(c2);

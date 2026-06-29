@@ -65,16 +65,14 @@ public class CourseTimetablingSolverInterface {
 		private static final long serialVersionUID = 0l;
 	}
 
-	public static class AssignedClassesRequest implements GwtRpcRequest<AssignedClassesResponse>, Serializable {
-		private static final long serialVersionUID = 0l;
+	public static class AssignedClassesRequest implements GwtRpcRequest<AssignedClassesResponse> {
 		private FilterInterface iFilter;
 		
 		public FilterInterface getFilter() { return iFilter; }
 		public void setFilter(FilterInterface filter) { iFilter = filter; }
 	}
 	
-	public static class AssignedClassesResponse extends TableInterface implements HasPageMessages {
-		private static final long serialVersionUID = 0l;
+	public static class AssignedClassesResponse extends org.unitime.timetable.gwt.client.tables.TableInterface implements HasPageMessages {
 		private List<PageMessage> iPageMessages = null;
 		
 		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
@@ -85,8 +83,7 @@ public class CourseTimetablingSolverInterface {
 		}
 	}
 	
-	public static class NotAssignedClassesRequest implements GwtRpcRequest<NotAssignedClassesResponse>, Serializable {
-		private static final long serialVersionUID = 0l;
+	public static class NotAssignedClassesRequest implements GwtRpcRequest<NotAssignedClassesResponse> {
 		private FilterInterface iFilter;
 		
 		public FilterInterface getFilter() { return iFilter; }
@@ -94,7 +91,6 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class NotAssignedClassesResponse extends AssignedClassesResponse {
-		private static final long serialVersionUID = 0l;
 		private boolean iShowNote = false;
 		
 		public boolean isShowNote() { return iShowNote; }
@@ -138,7 +134,6 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class SolutionChangesResponse extends AssignedClassesResponse {
-		private static final long serialVersionUID = 0l;
 		private String iMessage = null;
 		
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
@@ -163,7 +158,6 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class AssignmentHistoryResponse extends SolutionChangesResponse {
-		private static final long serialVersionUID = 0l;
 	}
 	
 	public static enum SolutionOperation implements IsSerializable {
@@ -221,7 +215,7 @@ public class CourseTimetablingSolverInterface {
 		public void setNote(String note) { iNote = note; }
 	}
 	
-	public static class ListSolutionsResponse extends TableInterface implements HasPageMessages {
+	public static class ListSolutionsResponse extends org.unitime.timetable.gwt.client.tables.TableInterface implements HasPageMessages, Serializable {
 		private static final long serialVersionUID = 0l;
 		private Date iLoadDate;
 		private List<PageMessage> iPageMessages = null;
@@ -380,7 +374,7 @@ public class CourseTimetablingSolverInterface {
 	public static class SolverReportsResponse implements GwtRpcResponse, HasPageMessages, Serializable {
 		private static final long serialVersionUID = 0l;
 		private List<PageMessage> iPageMessages = null;
-		private List<TableInterface> iTables = null;
+		private List<org.unitime.timetable.gwt.client.tables.TableInterface> iTables = null;
 		private List<PreferenceInterface> iPreferences = new ArrayList<PreferenceInterface>();
 
 		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
@@ -391,10 +385,10 @@ public class CourseTimetablingSolverInterface {
 		}
 		
 		public boolean hasTables() { return iTables != null && !iTables.isEmpty(); }
-		public List<TableInterface> getTables() { return iTables; }
-		public void addTable(TableInterface table) {
+		public List<org.unitime.timetable.gwt.client.tables.TableInterface> getTables() { return iTables; }
+		public void addTable(org.unitime.timetable.gwt.client.tables.TableInterface table) {
 			if (table == null) return;
-			if (iTables == null) iTables = new ArrayList<TableInterface>();
+			if (iTables == null) iTables = new ArrayList<org.unitime.timetable.gwt.client.tables.TableInterface>();
 			iTables.add(table);
 		}
 		

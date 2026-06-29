@@ -51,7 +51,7 @@ import org.unitime.timetable.gwt.shared.InstructorInterface.ManageInstructorList
 import org.unitime.timetable.gwt.shared.InstructorInterface.ManageInstructorListResponse;
 import org.unitime.timetable.gwt.shared.InstructorInterface.ManageInstructorListUpdateRequest;
 import org.unitime.timetable.gwt.shared.InstructorInterface.StaffInterface;
-import org.unitime.timetable.gwt.shared.TableInterface.NaturalOrderComparator;
+import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
