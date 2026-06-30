@@ -877,7 +877,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					if (!course.isEmpty())
 						where = (where == null ? "" : where + " or ") + "co.uniqueId in (" + course + ")"; 
 					query.addWhere("lookup", where);
-					query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");					
+					if (!request.hasOptions("course"))
+						query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
 				}
 			} catch (Exception e) {}
 		} else if (request.hasOptions("lookup") && CustomCourseLookupHolder.hasProvider()) {
@@ -896,7 +897,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				}
 				if (id > 0) {
 					query.addWhere("lookup", "co.uniqueId in (" + course + ")");
-					query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");					
+					if (!request.hasOptions("course"))
+						query.addFrom("lookup", "inner join s.courseDemands cd inner join cd.courseRequests cr inner join cr.courseOffering co");
 				}
 			} catch (Exception e) {}
 		}
