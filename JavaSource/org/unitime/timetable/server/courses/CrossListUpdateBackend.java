@@ -47,6 +47,7 @@ import org.unitime.timetable.model.AdvisorSectioningPref;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
 import org.unitime.timetable.model.CurriculumCourse;
@@ -120,7 +121,7 @@ public class CrossListUpdateBackend implements GwtRpcImplementation<CrossListUpd
                     	x.getClassification().getCourses().remove(x);
                     	hibSession.remove(x);
                     }
-                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
+                    if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue()) {
                     	for (CourseRequest oldReq: hibSession.createQuery(
                     			"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class)
                     			.setParameter("courseId", co1.getUniqueId()).list()) {
@@ -134,6 +135,12 @@ public class CrossListUpdateBackend implements GwtRpcImplementation<CrossListUpd
                     		courseRequests.add(newReq);
                     		hibSession.remove(oldReq);
                     	}
+                        for (CourseDemand cd: hibSession.createQuery(
+                    			"from CourseDemand where waitListSwapWithCourseOffering.uniqueId = :courseId", CourseDemand.class)
+                    			.setParameter("courseId", co1.getUniqueId()).list()) {
+                        	cd.setWaitListSwapWithCourseOffering(null);
+                        }
+                    }
                     
                     List<AdvisorCourseRequest> acrs = hibSession.createQuery(
                 			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)
@@ -245,7 +252,7 @@ public class CrossListUpdateBackend implements GwtRpcImplementation<CrossListUpd
                         	x.getClassification().getCourses().remove(x);
                         	hibSession.remove(x);
                         }
-                        if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue())
+                        if (ApplicationProperty.ModifyCrossListKeepCourseRequests.isTrue()) {
                         	for (CourseRequest oldReq: hibSession.createQuery(
                         			"from CourseRequest where courseOffering.uniqueId = :courseId", CourseRequest.class)
                         			.setParameter("courseId", co2.getUniqueId()).list()) {
@@ -259,6 +266,12 @@ public class CrossListUpdateBackend implements GwtRpcImplementation<CrossListUpd
                         		courseRequests.add(newReq);
                         		hibSession.remove(oldReq);
                         	}
+                        	for (CourseDemand cd: hibSession.createQuery(
+                        			"from CourseDemand where waitListSwapWithCourseOffering.uniqueId = :courseId", CourseDemand.class)
+                        			.setParameter("courseId", co2.getUniqueId()).list()) {
+                            	cd.setWaitListSwapWithCourseOffering(null);
+                            }
+                        }
 
                         List<AdvisorCourseRequest> acrs = hibSession.createQuery(
                     			"from AdvisorCourseRequest where courseOffering.uniqueId = :courseId", AdvisorCourseRequest.class)

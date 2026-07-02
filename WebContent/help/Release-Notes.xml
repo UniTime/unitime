@@ -29,6 +29,15 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructional Offering Cross Lists: Bugfix</name>
+			<description>
+				<line>Fixed a Hibernate exception (persistent instance references an unsaved transient instance) that can be thrown when dropping a course that has been involved in a wait-listing swap.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Security: Session Independent If No Session Given</name>
