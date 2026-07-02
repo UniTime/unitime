@@ -21,8 +21,6 @@ package org.unitime.timetable.export.hql;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -152,30 +150,7 @@ public class SavedHqlExportToXLS extends SavedHqlExportToCSV {
 		
 		execute(context.getUser(), out, hql.getQuery(), params, 0, -1, hql.getParameters());
 		
-		String sort = helper.getParameter("sort");
-		if (sort != null && !"0".equals(sort)) {
-			final boolean asc = Integer.parseInt(sort) > 0;
-			final int col = Math.abs(Integer.parseInt(sort)) - 1;
-			Collections.sort(out.getBuffer(), new Comparator<String[]>() {
-				int compare(String[] a, String[] b, int col) {
-					for (int i = 0; i < a.length; i++) {
-						int c = (col + i) % a.length;
-						try {
-							int cmp = Double.valueOf(a[c] == null ? "0" : a[c]).compareTo(Double.valueOf(b[c] == null ? "0" : b[c]));
-							if (cmp != 0) return cmp;
-						} catch (NumberFormatException e) {
-							int cmp = (a[c] == null ? "" : a[c]).compareTo(b[c] == null ? "" : b[c]);
-							if (cmp != 0) return cmp;
-						}
-					}
-					return 0;
-				}	
-				@Override
-				public int compare(String[] a, String[] b) {
-					return asc ? compare(a, b, col) : compare(b, a, col);
-				}
-			});
-		}
+		sort(out.getBuffer(), helper);
 		
 		out.close();
 	}

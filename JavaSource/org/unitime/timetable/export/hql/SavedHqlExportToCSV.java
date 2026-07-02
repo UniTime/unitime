@@ -181,11 +181,17 @@ public class SavedHqlExportToCSV implements Exporter {
 		
 		execute(context.getUser(), out, hql.getQuery(), params, 0, -1, hql.getParameters());
 		
+		sort(out.getBuffer(), helper);
+		
+		out.close();
+	}
+	
+	public static void sort(List<String[]> lines, ExportHelper helper) {
 		String sort = helper.getParameter("sort");
 		if (sort != null && !"0".equals(sort)) {
 			final boolean asc = Integer.parseInt(sort) > 0;
 			final int col = Math.abs(Integer.parseInt(sort)) - 1;
-			Collections.sort(out.getBuffer(), new Comparator<String[]>() {
+			Collections.sort(lines, new Comparator<String[]>() {
 				int compare(String[] a, String[] b, int col) {
 					for (int i = 0; i < a.length; i++) {
 						int c = (col + i) % a.length;
@@ -205,8 +211,23 @@ public class SavedHqlExportToCSV implements Exporter {
 				}
 			});
 		}
-		
-		out.close();
+	}
+	
+	public static void enumerate(Printer out, org.hibernate.query.Query<Tuple> q) throws IOException {
+		int len = -1;
+		for (Tuple o: q.list()) {
+			if (len < 0) {
+				len = length(o);
+				String[] line = new String[len];
+				header(line, o);
+				if (line.length > 0 && line[0].startsWith("__")) out.hideColumn(0);
+				out.printHeader(line);
+			}
+			String[] line = new String[len];
+			line(line, o);
+			out.printLine(line);
+			out.flush();
+		}
 	}
 	
 	public static void execute(UserContext user, Printer out, String hql, List<SavedHQLInterface.IdValue> options, int fromRow, int maxRows, Collection<SavedHQLParameter> parameters) throws SavedHQLException, PageAccessException {
@@ -349,7 +370,7 @@ public class SavedHqlExportToCSV implements Exporter {
         }
     }
 	
-    private static int length(Tuple o) {
+    protected static int length(Tuple o) {
     	if (o == null) return 1;
     	int len = 0;
     	for (TupleElement te: o.getElements()) {
@@ -377,7 +398,7 @@ public class SavedHqlExportToCSV implements Exporter {
     	return column.substring(0, 1).toUpperCase() + column.substring(1);
     }
 	
-	private static void header(String[] ret, Tuple o) {
+	protected static void header(String[] ret, Tuple o) {
 		int idx = 0;
 		for (TupleElement te: o.getElements()) {
         	EntityType et = null;
@@ -409,7 +430,7 @@ public class SavedHqlExportToCSV implements Exporter {
 		return (o == null ? "" : o.toString());
 	}
 	
-	private static void line(String[] ret, Tuple o) {
+	protected static void line(String[] ret, Tuple o) {
 		int idx = 0;
 		for (TupleElement te: o.getElements()) {
         	EntityType et = null;

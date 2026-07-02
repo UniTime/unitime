@@ -279,6 +279,7 @@
     	<url-pattern>/managerSettings</url-pattern>
     	<url-pattern>/main</url-pattern>
     	<url-pattern>/inquiry</url-pattern>
+    	<url-pattern>/hibernateQueryTest</url-pattern>
     </servlet-mapping>
 	
 	<filter>

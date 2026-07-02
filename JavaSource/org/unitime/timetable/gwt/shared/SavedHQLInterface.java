@@ -248,6 +248,7 @@ public class SavedHQLInterface implements IsSerializable {
 		public void add(String... line) { iData.add(line); }
 		public int size() { return iData.size(); }
 		public String[] get(int row) { return iData.get(row); }
+		public List<String[]> getData() { return iData; }
 	}
 	
 	public static class HQLExecuteRpcRequest implements GwtRpcRequest<Table> {
@@ -334,5 +335,81 @@ public class SavedHQLInterface implements IsSerializable {
 		
 		@Override
 		public String toString() { return getAppearance() + "#" + getHistory(); }
+	}
+	
+	public static class TestHQLRequest implements GwtRpcRequest<TestHQLResponse> {
+		private String iQuery;
+		private Operation iOperation;
+		private List<IdValue> iOptions = new ArrayList<IdValue>();
+		private String iHistory;
+		private Integer iFromRow;
+		private Integer iMaxRows;
+		
+		public TestHQLRequest() {}
+		public TestHQLRequest(Operation op) { iOperation = op; }
+		
+		public String getQuery() { return iQuery; }
+		public void setQuery(String query) { iQuery=  query; }
+		public boolean hasQuery() { return iQuery != null && !iQuery.isEmpty(); }
+		
+		public Operation getOperation() { return iOperation; }
+		public void setOperation(Operation op) { iOperation = op; }
+		
+		public String getHistory() { return iHistory; }
+		public void setHistory(String history) { iHistory = history; }
+		
+		public void addOption(String value, String text) {
+			iOptions.add(new IdValue(value, text));
+		}
+		public List<IdValue> getOptions() { return iOptions; }
+		public boolean hasOptions() { return iOptions != null && !iOptions.isEmpty(); }
+		
+		public void setFromRow(int fromRow) { iFromRow = fromRow; }
+		public int getFromRow() { return iFromRow == null ? 0 : iFromRow.intValue(); }
+		
+		public void setMaxRows(Integer maxRows) { iMaxRows = maxRows; }
+		public Integer getMaxRows() { return iMaxRows; }
+		
+		public static enum Operation {
+			LOAD,
+			EXECUTE,
+			CLEAR_CACHE,
+		}
+	}
+	
+	public static class TestHQLResponse implements GwtRpcResponse {
+		private String iQuery;
+		private String iSQL;
+		private Table iTable;
+		private List<Option> iOptions;
+		private Integer iMaxRows;
+		private String iMessage;
+		
+		public String getSQL() { return iSQL; }
+		public boolean hasSQL() { return iSQL != null && !iSQL.isEmpty(); }
+		public void setSQL(String sql) { iSQL = sql; }
+		
+		public Table getTable() { return iTable; }
+		public void setTable(Table table) { iTable = table; }
+		public boolean hasTable() { return iTable != null; }
+		
+		public void addOption(Option option) {
+			if (iOptions == null) iOptions = new ArrayList<Option>();
+			iOptions.add(option);
+		}
+		public boolean hasOptions() { return iOptions != null && !iOptions.isEmpty(); }
+		public List<Option> getOptions() { return iOptions; }
+		
+		public String getQuery() { return iQuery; }
+		public void setQuery(String query) { iQuery=  query; }
+		public boolean hasQuery() { return iQuery != null && !iQuery.isEmpty(); }
+		
+		public void setMaxRows(int maxRows) { iMaxRows = maxRows; }
+		public int getMaxRows() { return (iMaxRows == null ? 100 : iMaxRows.intValue()); }
+		
+		public String getMessage() { return iMessage; }
+		public void setMessage(String message) { iMessage = message; }
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+
 	}
 }

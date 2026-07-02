@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.client.exams.ExamReportsPage;
 import org.unitime.timetable.gwt.client.exams.ExamsPage;
 import org.unitime.timetable.gwt.client.exams.NotAssignedExamsPage;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
+import org.unitime.timetable.gwt.client.hql.TestHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAssignmentPreferencesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAttributesPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorDetailPage;
@@ -507,6 +508,10 @@ public enum Pages {
 	inquiry(new PageFactory() {
 		public Widget create() { return new ContactUsPage(); }
 		public String name(GwtMessages messages) { return messages.pageContactUs(); }
+		}),
+	hibernateQueryTest(new PageFactory() {
+		public Widget create() { return new TestHQLPage(); }
+		public String name(GwtMessages messages) { return messages.pageTestHQL(); }
 		}),
 	;
 	
