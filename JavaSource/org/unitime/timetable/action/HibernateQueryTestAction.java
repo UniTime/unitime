@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,17 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
 
 	@Override
     public String execute() throws Exception {
+		if (ApplicationProperty.LegacyTestHQL.isFalse()) {
+    		String url = "hibernateQueryTest";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
     	sessionContext.checkPermission(Right.TestHQL);
     	if (form == null)
     		form = new HibernateQueryTestForm();
@@ -168,7 +180,7 @@ public class HibernateQueryTestAction extends UniTimeAction<HibernateQueryTestFo
     		response.setDateHeader("Date", new Date().getTime());
     		response.setDateHeader("Expires", 0);
     		response.setHeader("Content-Disposition", "attachment; filename=\"hql-test.csv\"" );
-        	TestHqlExportToCSV.execute(sessionContext.getUser(), out, query, 0, -1);
+        	TestHqlExportToCSV.execute(sessionContext.getUser(), out, query, null, 0, -1);
         	out.close();
         	return null;
         }

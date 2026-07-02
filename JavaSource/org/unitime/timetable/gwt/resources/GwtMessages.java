@@ -4115,6 +4115,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Contact Us")
 	@DoNotTranslate
 	String pageContactUs();
+	
+	@DefaultMessage("Test HQL")
+	@DoNotTranslate
+	String pageTestHQL();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

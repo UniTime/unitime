@@ -45,20 +45,24 @@ public class HQLSetBackBackend implements GwtRpcImplementation<HQLSetBackRpcRequ
 	@Override
 	@PreAuthorize("checkPermission('HQLReports')")
 	public GwtRpcResponseNull execute(HQLSetBackRpcRequest request, SessionContext context) {
-		String title = MESSAGES.pageCourseReports();
-		switch (getAppearanceFlag(request.getAppearance())) {
-		case APPEARANCE_COURSES:
-			title = MESSAGES.pageCourseReports(); break;
-		case APPEARANCE_EXAMS:
-			title = MESSAGES.pageExaminationReports(); break;
-		case APPEARANCE_SECTIONING:
-			title = MESSAGES.pageStudentSectioningReports(); break;
-		case APPEARANCE_EVENTS:
-			title = MESSAGES.pageEventReports(); break;
-		case APPEARANCE_ADMINISTRATION:
-			title = MESSAGES.pageAdministrationReports(); break;
+		if (request.getAppearance() == null || "TestHQL".equals(request.getAppearance())) {
+			BackTracker.markForBack(sessionContext, "hibernateQueryTest#" + request.getHistory().replaceAll("%", "%25"), MESSAGES.pageTestHQL(), true, true);
+		} else {
+			String title = MESSAGES.pageCourseReports();
+			switch (getAppearanceFlag(request.getAppearance())) {
+			case APPEARANCE_COURSES:
+				title = MESSAGES.pageCourseReports(); break;
+			case APPEARANCE_EXAMS:
+				title = MESSAGES.pageExaminationReports(); break;
+			case APPEARANCE_SECTIONING:
+				title = MESSAGES.pageStudentSectioningReports(); break;
+			case APPEARANCE_EVENTS:
+				title = MESSAGES.pageEventReports(); break;
+			case APPEARANCE_ADMINISTRATION:
+				title = MESSAGES.pageAdministrationReports(); break;
+			}
+			BackTracker.markForBack(sessionContext, "hql?appearance=" + request.getAppearance() + "#" + request.getHistory(), title, true, true);
 		}
-		BackTracker.markForBack(sessionContext, "hql?appearance=" + request.getAppearance() + "#" + request.getHistory(), title, true, true);
 		if ("__Class".equals(request.getType()))
 			Navigation.set(sessionContext, Navigation.sClassLevel, request.getIds());
 		else if ("__Offering".equals(request.getType()))

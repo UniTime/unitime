@@ -9013,3 +9013,30 @@ div.gwt-MenuBarPopup {
 .unitime-SolutionReportsPage .single-report .unitime-MainTable .clickable-cell {
 	cursor: pointer;
 }
+
+.unitime-HQLTablePanel {
+	max-width: calc(100vw - 50px);
+	width: 100%;
+	overflow: auto;
+}
+
+.unitime-TestHQLPage .generated-sql-panel {
+	max-width: calc(100vw - 50px);
+	width: 100%;
+	overflow: auto;
+}
+
+.unitime-TestHQLPage .generated-sql {
+	white-space: pre-wrap;
+}
+
+.unitime-TestHQLPage .label-cell {
+	min-width: 120px;
+	white-space: nowrap;
+}
+.unitime-TestHQLPage .label-td {
+	width: 120px;
+}
+.unitime-TestHQLPage .widget-td {
+	width: 100%;
+}

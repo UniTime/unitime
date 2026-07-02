@@ -81,7 +81,7 @@ public class HQLOptionsBackend implements GwtRpcImplementation<HQLOptionsRpcRequ
 		return ret;
 	}
 
-	private String getLocalizedText(SavedHQL.Option option) {
+	protected static String getLocalizedText(SavedHQL.Option option) {
 		switch (option) {
 		case BUILDING:
 			return MESSAGES.optionBuilding();
