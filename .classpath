@@ -17,5 +17,8 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="3rd_party/gwt-user-2.13.0.jar"/>
+	<classpathentry kind="lib" path="3rd_party/validation-api-1.0.0.GA.jar"/>
+	<classpathentry kind="lib" path="3rd_party/sources/validation-api-1.0.0.GA-sources.jar"/>
 	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
 </classpath>
