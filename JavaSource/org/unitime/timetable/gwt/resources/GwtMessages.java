@@ -2397,6 +2397,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load curricula: {0}")
 	String failedToLoadCurricula(String reason);
 	
+	@DefaultMessage("Failed to load: {0}")
+	String failedToLoadData(String reason);
+	
+	@DefaultMessage("Failed to save or update: {0}")
+	String failedToSaveData(String reason);
+	
+	@DefaultMessage("Failed to delete: {0}")
+	String failedToDeleteData(String reason);
+	
 	@DefaultMessage("Failed to delete selected curricula: {0}")
 	String failedToDeleteSelectedCurricula(String reason);
 	
@@ -4119,6 +4128,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Test HQL")
 	@DoNotTranslate
 	String pageTestHQL();
+	
+	@DefaultMessage("Academic Sessions")
+	@DoNotTranslate
+	String pageAcademicSessions();
+
+	@DefaultMessage("Add Academic Session")
+	@DoNotTranslate
+	String pageAddAcademicSession();
+
+	@DefaultMessage("Edit Academic Session")
+	@DoNotTranslate
+	String pageEditAcademicSession();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

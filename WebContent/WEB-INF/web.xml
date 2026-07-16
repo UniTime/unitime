@@ -280,6 +280,7 @@
     	<url-pattern>/main</url-pattern>
     	<url-pattern>/inquiry</url-pattern>
     	<url-pattern>/hibernateQueryTest</url-pattern>
+    	<url-pattern>/sessions</url-pattern>
     </servlet-mapping>
 	
 	<filter>
