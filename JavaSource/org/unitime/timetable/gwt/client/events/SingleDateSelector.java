@@ -446,11 +446,11 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		}
 	}
 	
-	static int startingDayOfWeek() {
+	public static int startingDayOfWeek() {
 		return sStartingDay;
 	}
 	
-	static boolean isWeekend(int dayOfWeek) {
+	public static boolean isWeekend(int dayOfWeek) {
 		return sFirstDayOfWeekend == dayOfWeek || sLastDayOfWeekend == dayOfWeek;
 	}
 	
@@ -459,17 +459,17 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	}
 	
 	@SuppressWarnings("deprecation")
-	static int firstDayOfWeek(int year, int month) {
+	public static int firstDayOfWeek(int year, int month) {
 		return (6 + new Date(year - 1900, month - 1, 1).getDay()) % 7;
 	}
 	
 	@SuppressWarnings("deprecation")
-	static int daysInMonth(int year, int month) {
+	public static int daysInMonth(int year, int month) {
 		return new Date(year + (month == 12 ? 1 : 0) - 1900, (month == 12 ? 1 : month + 1) - 1, 0).getDate();
 	}
 	
 	@SuppressWarnings("deprecation")
-	static int weekNumber(int year, int month) {
+	public static int weekNumber(int year, int month) {
 		Date d = new Date(year - 1900, month - 1, 1);
 		while (d.getDay() != CalendarUtil.getStartingDayOfWeek()) d.setDate(d.getDate() - 1);
 		// ISO 8601: move to the next Thursday
@@ -481,7 +481,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	}
 	
 	@SuppressWarnings("deprecation")
-	static int dayOfYear(int year, int month, int day) {
+	public static int dayOfYear(int year, int month, int day) {
 		Date d = new Date(year - 1900, month - 1, day);
 		int doy = 0, y = d.getYear();
 		while (d.getYear() == y) { d.setDate(d.getDate() - 1); doy ++; }
@@ -489,7 +489,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	}
 	
 	@SuppressWarnings("deprecation")
-	static Date dayOfYear(int year, int dayOfYear) {
+	public static Date dayOfYear(int year, int dayOfYear) {
 		Date d = new Date(year - 1900, 0, 1); dayOfYear--;
 		while (dayOfYear < 0) { d.setDate(d.getDate() - 1); dayOfYear ++; }
 		while (dayOfYear > 0) { d.setDate(d.getDate() + 1); dayOfYear --; }
@@ -497,7 +497,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	}
 
 	
-	static String monthName(int year, int month) {
+	public static String monthName(int year, int month) {
 		return DateTimeFormat.getFormat("MMMM yyyy").format(toDate(year, month, 1));
 	}
 	

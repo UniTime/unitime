@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage;
 import org.unitime.timetable.gwt.client.admin.ChameleonPage;
 import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
@@ -512,6 +513,10 @@ public enum Pages {
 	hibernateQueryTest(new PageFactory() {
 		public Widget create() { return new TestHQLPage(); }
 		public String name(GwtMessages messages) { return messages.pageTestHQL(); }
+		}),
+	sessions(new PageFactory() {
+		public Widget create() { return new AcademicSessionsPage(); }
+		public String name(GwtMessages messages) { return messages.pageAcademicSessions(); }
 		}),
 	;
 	

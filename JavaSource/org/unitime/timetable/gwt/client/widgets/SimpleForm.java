@@ -152,6 +152,12 @@ public class SimpleForm extends FlexTable {
 		return addRow(new Label(text), new Label(subtext), widget);
 	}
 	
+	public int addRow(String header, Widget subheader, Widget widget) {
+		int row = addRow(new Label(header), subheader, widget);
+		getCellFormatter().setStyleName(row, 1, "sub-label-td");
+		return row;
+	}
+	
 	public int addRow(Widget header, Widget subheader, Widget widget) {
 		int colSpan = getColSpan() - 2;
 		Element inputElement = ToolBox.firstInputElement(widget.getElement());
@@ -177,6 +183,14 @@ public class SimpleForm extends FlexTable {
 			subheader.getElement().setId(DOM.createUniqueId());
 		if (inputElement != null && Roles.getTextboxRole().getAriaLabelProperty(inputElement).isEmpty())
 			Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(subheader.getElement()));
+		if (inputElement == null) {
+			inputElement = ToolBox.firstInputElement(subheader.getElement());
+			if (inputElement != null && Roles.getTextboxRole().getAriaLabelProperty(inputElement).isEmpty()) {
+				if (header.getElement().getId() == null || header.getElement().getId().isEmpty())
+					header.getElement().setId(DOM.createUniqueId());
+				Roles.getTextboxRole().setAriaLabelledbyProperty(inputElement, Id.of(header.getElement()));
+			}
+		}
 		return row;
 	}
 	

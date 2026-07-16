@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.TreeSet;
 
@@ -31,6 +33,7 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -57,6 +60,17 @@ public class SessionListAction extends UniTimeAction<BlankForm> {
 	protected final static StudentSectioningMessages SCT_MSG = Localization.create(StudentSectioningMessages.class);
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacySessions.isFalse()) {
+    		String url = "sessions";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check access
 		sessionContext.checkPermission(Right.AcademicSessions);
 

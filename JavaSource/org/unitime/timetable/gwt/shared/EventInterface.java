@@ -2772,7 +2772,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			DATE_MAPPING_CLASS,
 			DATE_MAPPING_EVENT,
 			CLASSES,
-			MIDTERMS;
+			MIDTERMS,
+			SESSION_START, SESSION_END,
+			CLASS_END, EXAM_START,
+			EVENT_START, EVENT_END;
 			
 			public int flag() { return 1 << ordinal(); }
 		}

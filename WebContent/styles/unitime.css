@@ -2379,6 +2379,25 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #0cc;
 }
 
+.unitime-DateSelector .session-start {
+	box-shadow: inset 0px 0px 0px 2px #0c0;
+}
+.unitime-DateSelector .session-end {
+	box-shadow: inset 0px 0px 0px 2px #cc0;
+}
+.unitime-DateSelector .class-end {
+	box-shadow: inset 0px 0px 0px 2px #c00;
+}
+.unitime-DateSelector .exam-start {
+	box-shadow: inset 0px 0px 0px 2px #00c;
+}
+.unitime-DateSelector .event-start {
+	box-shadow: inset 0px 0px 0px 2px #0cc;
+}
+.unitime-DateSelector .event-end {
+	box-shadow: inset 0px 0px 0px 2px #c0c;
+}
+
 .unitime-DateSelector .legend {
 	display: -moz-inline-box;
 	display: inline-block;
@@ -5679,6 +5698,7 @@ div.gwt-MenuBarPopup {
 	font-weight: normal;
 	line-height: 25px;
 	vertical-align: bottom;
+	white-space: pre-wrap;
 }
 
 .unitime-HeaderPanel .error {
@@ -5688,6 +5708,7 @@ div.gwt-MenuBarPopup {
 	font-weight: normal;
 	line-height: 25px;
 	vertical-align: bottom;
+	white-space: pre-wrap;
 }
 
 .unitime-HeaderPanel .warning {
@@ -5697,6 +5718,7 @@ div.gwt-MenuBarPopup {
 	font-weight: normal;
 	line-height: 25px;
 	vertical-align: bottom;
+	white-space: pre-wrap;
 }
 
 .unitime-HeaderPanel .widget {
@@ -9039,4 +9061,31 @@ div.gwt-MenuBarPopup {
 }
 .unitime-TestHQLPage .widget-td {
 	width: 100%;
+}
+
+.unitime-DateSelector .legend .editable-title {
+	cursor: pointer;
+}
+
+.unitime-DateSelector .legend .selected-title {
+	text-decoration: underline;
+}
+
+.unitime-DateSelector .legend .selected-box {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .selected-holiday {
+	background-color: #FA5053;
+}
+
+.unitime-DateSelector .selected-break {
+	background-color: #ED80E9;
+}
+
+.unitime-AcademicSessionsPage .unitime-MainTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
 }
