@@ -95,6 +95,15 @@ public class RoleListAction extends UniTimeAction<RoleListForm> {
         
         if (user.getAuthorities().isEmpty()) return "norole";
         
+        if (user.getCurrentAuthority() != null && !"Y".equals(list)) {
+        	if (form.getTarget() != null && !form.getTarget().isEmpty()) {
+        		response.sendRedirect(form.getTarget());
+        		return null;
+        	} else {
+        		return "success";
+        	}
+        }
+        
         if (ApplicationProperty.LegacySelectPrimaryRole.isFalse()) {
     		String url = "selectPrimaryRole";
     		boolean first = true;
