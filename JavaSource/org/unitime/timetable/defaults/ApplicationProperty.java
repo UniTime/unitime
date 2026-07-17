@@ -3666,7 +3666,13 @@ public enum ApplicationProperty {
 	@DefaultValue(".*\\.ics")
 	@Description("Exporter: for the encoded export queries (/export?q= or /export?x=), the exporter (output parameter) must match this regular expression for authorization. " +
 	"This means that for matching exports, it is assumed that the export is run by the user for whom the encoded query was generated. By default, only iCalendar exports are allowed.")
-	ExportAuthorizeEncodedQueries("unitime.export.authorizeEncodedQueries")
+	ExportAuthorizeEncodedQueries("unitime.export.authorizeEncodedQueries"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Events: show last note for events of type %Events (Replace <EventType> with either Class, FinalExam, MidtermExam, Course, or Special)")
+	@Parameter("EventType")
+	EventsShowLastNote("unitime.events.note.showChangesFor%Events"),
 	;
 
 	String iKey;

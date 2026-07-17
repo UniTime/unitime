@@ -1873,18 +1873,34 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    	}
 				    	
 				    	if (event.isCanView()) {
-							for (EventNote n: m.getEvent().getNotes()) {
-				    			NoteInterface note = new NoteInterface();
-				    			note.setId(n.getUniqueId());
-				        		note.setDate(n.getTimeStamp());
-				        		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
-				        		note.setMeetings(n.getMeetingsHtml());
-				        		note.setNote(n.getTextNote());
-				        		note.setUser(n.getUser());
-				        		note.setAttachment(n.getAttachedName());
-				        		note.setLink(n.getAttachedName() == null ? null : QueryEncoderBackend.encode("event=" + m.getEvent().getUniqueId() + "&note=" + n.getUniqueId()));
-				    			event.addNote(note);
-							}
+				    		if (ApplicationProperty.EventsShowLastNote.isTrue(event.getType().name())) {
+				    			for (EventNote n: m.getEvent().getNotes()) {
+					    			NoteInterface note = new NoteInterface();
+					    			note.setId(n.getUniqueId());
+					        		note.setDate(n.getTimeStamp());
+					        		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
+					        		note.setMeetings(n.getMeetingsHtml());
+					        		note.setNote(n.getTextNote());
+					        		note.setUser(n.getUser());
+					        		note.setAttachment(n.getAttachedName());
+					        		note.setLink(n.getAttachedName() == null ? null : QueryEncoderBackend.encode("event=" + m.getEvent().getUniqueId() + "&note=" + n.getUniqueId()));
+					    			event.addNote(note);
+								}
+				    		} else {
+				    			// empty last note to show Last Change
+				    			EventNote lastNote = null;
+					    		for (EventNote n: m.getEvent().getNotes()) {
+					    			if (lastNote == null || lastNote.getTimeStamp().before(n.getTimeStamp()))
+					    				lastNote = n;
+					    		}
+					    		if (lastNote != null) {
+					    			NoteInterface note = new NoteInterface();
+					    			note.setId(lastNote.getUniqueId());
+					        		note.setDate(lastNote.getTimeStamp());
+					        		note.setType(NoteInterface.NoteType.values()[lastNote.getNoteType()]);
+					        		event.addNote(note);
+					    		}
+				    		}
 				    	}
 				    	
 				    	event.setSequence(m.getEvent().getNotes().size());
@@ -2333,11 +2349,36 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									provider.setEmail(p.getEmail());
 									event.addRequestedService(provider);
 								}
-								String note = null;
-								for (EventNote n: m.getEvent().getNotes()) {
-									if (n.getTextNote() != null && !n.getTextNote().isEmpty())
-										note = (note == null ? "" : note + "n") + n.getTextNote();
-								}
+								if (event.isCanView()) {
+									if (ApplicationProperty.EventsShowLastNote.isTrue(event.getType().name())) {
+										for (EventNote n: m.getEvent().getNotes()) {
+							    			NoteInterface note = new NoteInterface();
+							    			note.setId(n.getUniqueId());
+							        		note.setDate(n.getTimeStamp());
+							        		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
+							        		note.setMeetings(n.getMeetingsHtml());
+							        		note.setNote(n.getTextNote());
+							        		note.setUser(n.getUser());
+							        		note.setAttachment(n.getAttachedName());
+							        		note.setLink(n.getAttachedName() == null ? null : QueryEncoderBackend.encode("event=" + m.getEvent().getUniqueId() + "&note=" + n.getUniqueId()));
+							    			event.addNote(note);
+										}
+									} else {
+										// empty last note to show Last Change
+						    			EventNote lastNote = null;
+							    		for (EventNote n: m.getEvent().getNotes()) {
+							    			if (lastNote == null || lastNote.getTimeStamp().before(n.getTimeStamp()))
+							    				lastNote = n;
+							    		}
+							    		if (lastNote != null) {
+							    			NoteInterface note = new NoteInterface();
+							    			note.setId(lastNote.getUniqueId());
+							        		note.setDate(lastNote.getTimeStamp());
+							        		note.setType(NoteInterface.NoteType.values()[lastNote.getNoteType()]);
+							        		event.addNote(note);
+							    		}
+									}
+						    	}
 						    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 						    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		Class_ clazz = ce.getClazz();
@@ -2439,9 +2480,18 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							    		if (clazz.getClassSuffix(co) != null)
 							    			event.addExternalId(clazz.getClassSuffix(co));
 					    			}
-						    		note = correctedOffering.getScheduleBookNote();
-						    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
-						    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
+					    			if (correctedOffering.getScheduleBookNote() != null && !correctedOffering.getScheduleBookNote().isEmpty()) {
+					    				NoteInterface note = new NoteInterface();
+					    				note.setId(-2l);
+					    				note.setNote(correctedOffering.getScheduleBookNote());
+					    				event.addNote(note);
+					    			}
+						    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty()) {
+						    			NoteInterface note = new NoteInterface();
+					    				note.setId(-1l);
+					    				note.setNote(clazz.getSchedulePrintNote());
+					    				event.addNote(note);
+						    		}
 						    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 						    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		event.setEnrollment(xe.getExam().countStudents());
@@ -2543,11 +2593,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									event.setEnrollment(enrl);
 									event.setMaxCapacity(cap);
 						    	}
-					    		if (note != null && !note.isEmpty()) {
-					    			NoteInterface n = new NoteInterface();
-					    			n.setNote(note);
-					    			event.addNote(n);
-					    		}
 							}
 							MeetingInterface meeting = new MeetingInterface();
 							meeting.setId(m.getUniqueId());
