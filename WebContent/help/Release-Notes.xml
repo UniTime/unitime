@@ -38,6 +38,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Event Managements</title>
+		<item>
+			<name>Events: Notes</name>
+			<description>
+				<line>Added an option to avoid showing event changes/notes for particular event types, such as classes or exams.</line>
+				<line>To disable event notes for a particular type of event, set unitime.events.note.showChangesFor&lt;Type&gt;Events to false, where &lt;Type&gt; is either Class, FinalExam, MidtermExam, Course, or Special.
+					<line>For example, set unitime.events.note.showChangesForClassEvents=false to hide mostly auto-generated change notes for class events.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Security: Session Independent If No Session Given</name>

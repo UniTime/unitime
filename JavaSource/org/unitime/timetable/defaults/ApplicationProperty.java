@@ -3944,6 +3944,12 @@ public enum ApplicationProperty {
 	@Description("Active Session Identification: status of an academic session contains at least one of the provided bits (binary and returns a non zero value).")
 	@Since(4.9)
 	SessionStatusActive("unitime.session.activeStatus"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Events: show last note for events of type %Events (Replace <EventType> with either Class, FinalExam, MidtermExam, Course, or Special)")
+	@Parameter("EventType")
+	EventsShowLastNote("unitime.events.note.showChangesFor%Events"),
 	;
 
 	String iKey;
