@@ -49,6 +49,15 @@
 			</description>
 		</item>
 	</category>
+		<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Batch Solver Load: Student Filter Reservation</name>
+			<description>
+				<line>Corrected computation of student filter reservation limit (already enrolled but not loaded students did not get correctly excluded).</line>
+			</description>
+		</item>
+	</category>
 	<category>
 		<title>Administration</title>
 		<item>
