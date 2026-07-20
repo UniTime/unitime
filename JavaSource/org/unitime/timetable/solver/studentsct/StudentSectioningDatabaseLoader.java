@@ -1259,8 +1259,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         							applicable = true; break;
         					}
         				}
-    			} else if (reservation instanceof UniversalOverride) {
-    				UniversalOverride u = (UniversalOverride)reservation;
+    			} else if (r instanceof UniversalOverride) {
+    				UniversalOverride u = (UniversalOverride)r;
     				applicable = (u.getFilter() != null && !u.getFilter().isEmpty() && new Query(u.getFilter()).match(new DbStudentMatcher(s)));
     			}
     			if (!applicable) continue;
