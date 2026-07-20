@@ -102,6 +102,10 @@ public class SelectUserRolePage extends Composite {
 				if (response.hasUrl()) {
 					if (response.getUrl().startsWith(GWT.getHostPageBaseURL()))
 						ToolBox.open(response.getUrl());
+					else if (response.getUrl().startsWith("/"))
+						ToolBox.open(response.getUrl());
+					else if (response.getUrl().matches("\\w+://.*"))
+						ToolBox.open(response.getUrl());
 					else
 						ToolBox.open(GWT.getHostPageBaseURL() + response.getUrl());
 					return;

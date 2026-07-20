@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -73,7 +74,14 @@ public class UniTimeAuthenticationSuccessHandler extends SimpleUrlAuthentication
 		
 		SavedRequest savedRequest = requestCache.getRequest(request, response);
 		if (savedRequest != null && !StringUtils.hasText(targetUrl)) {
-			targetUrl = savedRequest.getRedirectUrl();
+			try {
+				DefaultSavedRequest dsr = (DefaultSavedRequest)savedRequest;
+				targetUrl = dsr.getRequestURI();
+				if (dsr.getQueryString() != null)
+					targetUrl += "?" + dsr.getQueryString();
+			} catch (Throwable t) {
+				targetUrl = savedRequest.getRedirectUrl();
+			}
 		}
 		
 		if (useReferer && !StringUtils.hasText(targetUrl)) {
