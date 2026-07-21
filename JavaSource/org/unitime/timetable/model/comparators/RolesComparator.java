@@ -30,7 +30,7 @@ import org.unitime.timetable.model.Roles;
  * 
  * @author Heston Fernandes
  */
-public class RolesComparator implements Comparator {
+public class RolesComparator implements Comparator<Object> {
 
     public int compare(Object o1, Object o2) {
         

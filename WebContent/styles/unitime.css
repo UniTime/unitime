@@ -9089,3 +9089,38 @@ div.gwt-MenuBarPopup {
 .unitime-AcademicSessionsPage .unitime-MainTable tr:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;	
 }
+
+.unitime-TimetableManagersPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-TimetableManagersPage .first-name input[type="text"] {
+	margin-right: 5px;
+	vertical-align: middle;
+}
+
+.unitime-TimetableManagersPage select {
+	margin-right: 5px;
+	min-width: 500px;
+	vertical-align: middle;
+}
+
+.unitime-TimetableManagersPage button {
+	min-width: 75px;
+}
+
+.unitime-TimetableManagersPage .session-list .gwt-CheckBox {
+	min-width: 25%;
+	display: inline-block;
+}
+
+.unitime-TimetableManagersPage .table-cell table {
+	width: 100%;
+}
+
+.unitime-TimetableManagersPage .table-cell table td:has(> img) {
+	text-align: right;
+}
+.unitime-TimetableManagersPage .table-cell table td:has(> .gwt-CheckBox) {
+	padding-left: 20px;
+}
