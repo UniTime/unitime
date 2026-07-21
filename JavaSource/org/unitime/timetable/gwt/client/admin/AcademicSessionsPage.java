@@ -60,6 +60,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Composite;
@@ -210,6 +211,7 @@ public class AcademicSessionsPage extends Composite {
 	private HolidayDatesSelector iHolidays;
 	
 	protected void editSession(final Long sessionId) {
+		Window.scrollTo(0, 0);
 		LoadingWidget.getInstance().show(MSG.waitPlease());
 		RPC.execute(new AcademicSessionEditRequest(sessionId == null ? Operation.ADD : Operation.EDIT, sessionId), new AsyncCallback<AcademicSessionEditResponse>() {
 			@Override

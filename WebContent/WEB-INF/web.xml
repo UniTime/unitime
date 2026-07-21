@@ -281,6 +281,7 @@
     	<url-pattern>/inquiry</url-pattern>
     	<url-pattern>/hibernateQueryTest</url-pattern>
     	<url-pattern>/sessions</url-pattern>
+    	<url-pattern>/managers</url-pattern>
     </servlet-mapping>
 	
 	<filter>

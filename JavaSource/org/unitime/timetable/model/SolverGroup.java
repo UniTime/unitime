@@ -49,7 +49,7 @@ import org.unitime.timetable.security.rights.Right;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "solver_group")
-public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifiable {
+public class SolverGroup extends BaseSolverGroup implements Comparable<SolverGroup>, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -136,9 +136,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	return (SolverGroup)groups.get(0);
     }
 
-    public int compareTo(Object o) {
-    	if (o==null || !(o instanceof SolverGroup)) return -1;
-    	SolverGroup sg = (SolverGroup)o;
+    public int compareTo(SolverGroup sg) {
     	int cmp = getName().compareTo(sg.getName());
     	if (cmp!=0) return cmp;
     	return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(sg.getUniqueId() == null ? -1 : sg.getUniqueId());

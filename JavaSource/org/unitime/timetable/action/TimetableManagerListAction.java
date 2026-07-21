@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+import java.util.Enumeration;
+
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
@@ -26,6 +29,7 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
@@ -56,6 +60,17 @@ public class TimetableManagerListAction extends UniTimeAction<BlankForm> {
 
 	@Override
     public String execute() throws Exception {
+		if (ApplicationProperty.LegacyManagers.isFalse()) {
+    		String url = "managers";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check permissions
         sessionContext.checkPermission(Right.TimetableManagers);
 

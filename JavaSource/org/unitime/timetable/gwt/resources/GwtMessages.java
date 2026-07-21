@@ -4140,6 +4140,19 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Academic Session")
 	@DoNotTranslate
 	String pageEditAcademicSession();
+	
+	@DefaultMessage("Timetable Managers")
+	@DoNotTranslate
+	String pageTimetableManagers();
+
+	@DefaultMessage("Add Timetable Manager")
+	@DoNotTranslate
+	String pageAddTimetableManager();
+
+	@DefaultMessage("Edit Timetable Manager")
+	@DoNotTranslate
+	String pageEditTimetableManager();
+
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

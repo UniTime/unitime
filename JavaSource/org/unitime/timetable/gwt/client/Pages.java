@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.admin.TasksPage;
+import org.unitime.timetable.gwt.client.admin.TimetableManagersPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.departments.DepartmentsPage;
@@ -517,6 +518,10 @@ public enum Pages {
 	sessions(new PageFactory() {
 		public Widget create() { return new AcademicSessionsPage(); }
 		public String name(GwtMessages messages) { return messages.pageAcademicSessions(); }
+		}),
+	managers(new PageFactory() {
+		public Widget create() { return new TimetableManagersPage(); }
+		public String name(GwtMessages messages) { return messages.pageTimetableManagers(); }
 		}),
 	;
 	
