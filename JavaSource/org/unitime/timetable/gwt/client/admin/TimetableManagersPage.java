@@ -304,6 +304,7 @@ public class TimetableManagersPage extends Composite {
 
 				iHeader.setHeaderTitle(iManager.hasFormattedName() ? iManager.getFormattedName() : "");
 				iPanel.clear();
+				iHeader.clearMessage();
 				iPanel.addHeaderRow(iHeader);
 				
 				if (result.hasSessionName())
@@ -412,6 +413,7 @@ public class TimetableManagersPage extends Composite {
 						}
 					};
 					iDepartments = new ListBox();
+					Roles.getListboxRole().setAriaLabelProperty(iDepartments.getElement(), ARIA.listSelectItem(COURSE.columnDepartment()));
 					iDepartments.addItem(COURSE.itemSelect(), "");
 					for (IdLabel item: result.getDepartments())
 						iDepartments.addItem(item.getLabel(), item.getId().toString());
@@ -447,6 +449,7 @@ public class TimetableManagersPage extends Composite {
 						}
 					};
 					iSolverGroups = new ListBox();
+					Roles.getListboxRole().setAriaLabelProperty(iSolverGroups.getElement(), ARIA.listSelectItem(COURSE.columnSolverGroup()));
 					iSolverGroups.addItem(COURSE.itemSelect(), "");
 					for (IdLabel item: result.getSolverGroups())
 						iSolverGroups.addItem(item.getLabel(), item.getId().toString());
@@ -476,6 +479,7 @@ public class TimetableManagersPage extends Composite {
 					iPanel.addHeaderRow(COURSE.columnRoles());
 					iRolesTable = new RolesTable(result.getRoles());
 					iRoles = new ListBox();
+					Roles.getListboxRole().setAriaLabelProperty(iRoles.getElement(), ARIA.listSelectItem(COURSE.columnUserRole()));
 					iRoles.addItem(COURSE.itemSelect(), "");
 					for (IdLabel item: result.getRoles())
 						iRoles.addItem(item.getLabel(), item.getId().toString());
@@ -574,11 +578,12 @@ public class TimetableManagersPage extends Composite {
 		return errors.isEmpty();
 	}
 	
-	protected class DepartmentsTable extends UniTimeTable<IdLabel>{
+	public static class DepartmentsTable extends UniTimeTable<IdLabel>{
 		List<IdLabel> iDepartments;
 		
 		public DepartmentsTable(List<IdLabel> departments) {
 			iDepartments = departments;
+			setVisible(false);
 		}
 		public IdLabel getDepartment(Long id) {
 			if (iDepartments == null || id == null) return null;
@@ -601,6 +606,7 @@ public class TimetableManagersPage extends Composite {
 				}
 			});
 			addRow(dept, new Label(dept.getLabel()), remove);
+			setVisible(true);
 			return true;
 		}
 		
@@ -608,6 +614,7 @@ public class TimetableManagersPage extends Composite {
 			for (int row = 0; row < getRowCount(); row++)
 				if (id.equals(getData(row).getId())) {
 					removeRow(row);
+					setVisible(getRowCount() > 0);
 					return true;
 				}
 			return false;
@@ -656,9 +663,10 @@ public class TimetableManagersPage extends Composite {
 					iManager.removeManagerRole(mr);
 				}
 			});
-			CheckBox primary = new AriaCheckBox(DOM.createInputRadio("primary"));
+			Element rd = DOM.createInputRadio("primary");
+			CheckBox primary = new AriaCheckBox(rd);
 			primary.setValue(mr.isPrimary());
-			Roles.getRadioRole().setAriaLabelledbyProperty(primary.getElement(), Id.of(getCellFormatter().getElement(0, 0)));
+			Roles.getRadioRole().setAriaLabelledbyProperty(rd, Id.of(getCellFormatter().getElement(0, 0)));
 			primary.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 				@Override
 				public void onValueChange(ValueChangeEvent<Boolean> event) {

@@ -282,6 +282,7 @@
     	<url-pattern>/hibernateQueryTest</url-pattern>
     	<url-pattern>/sessions</url-pattern>
     	<url-pattern>/managers</url-pattern>
+    	<url-pattern>/solverGroups</url-pattern>
     </servlet-mapping>
 	
 	<filter>

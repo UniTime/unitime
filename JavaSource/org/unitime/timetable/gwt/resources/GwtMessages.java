@@ -4152,7 +4152,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Timetable Manager")
 	@DoNotTranslate
 	String pageEditTimetableManager();
+	
+	@DefaultMessage("Solver Groups")
+	@DoNotTranslate
+	String pageSolverGroups();
 
+	@DefaultMessage("Add Solver Group")
+	@DoNotTranslate
+	String pageAddSolverGroup();
+
+	@DefaultMessage("Edit Solver Group")
+	@DoNotTranslate
+	String pageEditSolverGroup();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

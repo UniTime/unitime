@@ -96,11 +96,11 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return(isExternal);
 	}
 	
-	public Set departmentsForSession(Long sessionId){
-		HashSet l = new HashSet();
+	public Set<Department> departmentsForSession(Long sessionId){
+		HashSet<Department> l = new HashSet<Department>();
 		if (this.getDepartments() != null){
 			Department d = null;
-			for (Iterator it = this.getDepartments().iterator(); it.hasNext();){
+			for (Iterator<Department> it = this.getDepartments().iterator(); it.hasNext();){
 				d = (Department) it.next();
 				if (d.getSessionId().equals(sessionId)){
 					l.add(d);

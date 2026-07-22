@@ -44,7 +44,6 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
-import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.IdValue;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.core.client.GWT;
@@ -232,6 +231,7 @@ public class AcademicSessionsPage extends Composite {
 				iHeader.setEnabled("back", true);
 				iHeader.setHeaderTitle(result.getSession() == null ? COURSE.sectAddAcademicSession() : COURSE.sectEditAcademicSession());
 				iPanel.clear();
+				iHeader.clearMessage();
 				iPanel.addHeaderRow(iHeader);
 				
 				iSession = result.getSession();
@@ -892,8 +892,8 @@ public class AcademicSessionsPage extends Composite {
 		
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof IdValue)) return false;
-			return getId().equals(((IdValue)o).getId());
+			if (o == null || !(o instanceof IdLabel)) return false;
+			return getId().equals(((IdLabel)o).getId());
 		}
 		
 		@Override

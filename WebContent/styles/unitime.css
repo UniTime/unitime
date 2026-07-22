@@ -9108,6 +9108,7 @@ div.gwt-MenuBarPopup {
 .unitime-TimetableManagersPage button {
 	min-width: 75px;
 }
+ 
 
 .unitime-TimetableManagersPage .session-list .gwt-CheckBox {
 	min-width: 25%;
@@ -9123,4 +9124,28 @@ div.gwt-MenuBarPopup {
 }
 .unitime-TimetableManagersPage .table-cell table td:has(> .gwt-CheckBox) {
 	padding-left: 20px;
+}
+
+.unitime-SolverGroupsPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-SolverGroupsPage .departments-list select {
+	margin-right: 5px;
+	min-width: 350px;
+	vertical-align: middle;
+}
+
+.unitime-SolverGroupsPage .managers-list input[type="text"] {
+	margin-right: 5px;
+	min-width: 350px;
+	vertical-align: middle;
+}
+
+.unitime-SolverGroupsPage .table-cell table {
+	width: 100%;
+}
+
+.unitime-SolverGroupsPage .table-cell table td:has(> img) {
+	text-align: right;
 }
