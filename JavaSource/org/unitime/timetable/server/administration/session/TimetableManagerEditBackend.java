@@ -387,7 +387,7 @@ public class TimetableManagerEditBackend implements GwtRpcImplementation<Timetab
                     context, 
                     mgr, 
                     ChangeLog.Source.MANAGER_EDIT, 
-                    ChangeLog.Operation.UPDATE, 
+                    manager.getManagerId() == null ? ChangeLog.Operation.CREATE : ChangeLog.Operation.UPDATE, 
                     null, 
                     null);
             

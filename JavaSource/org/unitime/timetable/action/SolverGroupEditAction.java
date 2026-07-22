@@ -19,10 +19,12 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +41,7 @@ import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.SolverGroupEditForm;
 import org.unitime.timetable.model.Department;
@@ -87,6 +90,17 @@ public class SolverGroupEditAction extends UniTimeAction<SolverGroupEditForm> {
 
 	@Override
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacySolverGroups.isFalse()) {
+    		String url = "solverGroups";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (form == null) form = new SolverGroupEditForm();
 		
         // Check Access
