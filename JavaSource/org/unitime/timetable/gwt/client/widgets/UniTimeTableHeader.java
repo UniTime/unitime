@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableHeaderCell;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.WhiteSpace;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -62,6 +63,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	
 	public UniTimeTableHeader(String title, int colSpan, HorizontalAlignmentConstant align) {
 		super(title, false);
+		getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
 		iColSpan = colSpan;
 		iAlign = align;
 		iTitle = title;
@@ -80,6 +82,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	
 	public UniTimeTableHeader(String title, int colSpan, HorizontalAlignmentConstant align, ClickHandler clickHandler) {
 		super(title, false);
+		getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
 		iColSpan = colSpan;
 		iAlign = align;
 		iTitle = title;
