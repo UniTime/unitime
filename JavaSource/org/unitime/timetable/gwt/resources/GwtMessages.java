@@ -4164,6 +4164,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Solver Group")
 	@DoNotTranslate
 	String pageEditSolverGroup();
+	
+	@DefaultMessage("Exact Times")
+	@DoNotTranslate
+	String pageExactTimes();
+	
+	@DefaultMessage("Exact Time")
+	@DoNotTranslate
+	String pageExactTime();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

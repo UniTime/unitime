@@ -698,7 +698,8 @@
 					<hasPermission name="TimePatterns"/>
 				</condition>
 			</item>
-			<item name="Exact Time" page="exactTimeEdit.action">
+			<item name="Exact Time" page="admin" type="gwt">
+				<parameter name="type">exactTimes</parameter>
 				<condition>
 					<hasPermission name="ExactTimes"/>
 				</condition>

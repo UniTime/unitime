@@ -190,7 +190,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 					Double d2 = Double.parseDouble(s2.isEmpty() ? "0": s2);
 					return d1.compareTo(d2);
 				} catch (NumberFormatException e) {
-					return s1.compareTo(s2);
+					return NaturalOrderComparator.compare(s1, s2);
 				}
 			}
 		}
