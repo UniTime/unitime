@@ -150,7 +150,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 		if (param.hasOptions()) {
 			final ListBox list = new ListBox();
 			list.setMultipleSelect(param.isMultiSelect());
-			if (!param.isMultiSelect()) list.addItem(MESSAGES.itemSelect());
+			if (!param.isMultiSelect() && param.isShowSelectItem()) list.addItem(MESSAGES.itemSelect());
 			for (ListItem item: param.getOptions()) {
 				list.addItem(item.getText(), item.getValue());
 				if (param.isMultiSelect())
@@ -170,10 +170,7 @@ public class PageFilter extends SimpleForm implements HasValue<FilterInterface> 
 								value += (value.isEmpty() ? "" : ",") + list.getValue(i);
 						param.setValue(value);
 					} else {
-						if (list.getSelectedIndex() <= 0)
-							param.setValue("");
-						else
-							param.setValue(list.getValue(list.getSelectedIndex()));
+						param.setValue(list.getSelectedValue());
 					}
 					ValueChangeEvent.fire(PageFilter.this, iFilter);
 				}

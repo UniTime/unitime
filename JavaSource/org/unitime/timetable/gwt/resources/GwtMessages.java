@@ -4172,6 +4172,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Exact Time")
 	@DoNotTranslate
 	String pageExactTime();
+	
+	@DefaultMessage("Last Changes")
+	@DoNotTranslate
+	String pageLastChanges();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

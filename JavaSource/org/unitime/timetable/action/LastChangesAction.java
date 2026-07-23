@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -31,6 +33,7 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.LastChangesForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -62,6 +65,17 @@ public class LastChangesAction extends UniTimeAction<LastChangesForm> {
 	
 	@SuppressWarnings("unchecked")
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyLastChanges.isFalse()) {
+    		String url = "lastChanges";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         if (getForm() == null) setForm(new LastChangesForm());
 		
         // Check Access

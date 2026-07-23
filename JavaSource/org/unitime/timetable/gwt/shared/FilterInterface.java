@@ -69,6 +69,7 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 	public static class FilterParameterInterface implements IsSerializable, Comparable<FilterParameterInterface> {
 		private String iName, iLabel, iType, iValue, iDefault, iPrefix, iSuffix;
 		private List<ListItem> iOptions = null;
+		private boolean iSelectItem = true;
 		private boolean iMultiSelect = false;
 		private boolean iCollapsible = true;
 		private boolean iComposite = false;
@@ -157,6 +158,9 @@ public class FilterInterface implements GwtRpcResponse, Serializable, TableInter
 				if (value.equals(option.getValue())) return true;
 			return false;
 		}
+		
+		public boolean isShowSelectItem() { return iSelectItem; }
+		public void setShowSelectItem(boolean selectItem) { iSelectItem = selectItem; }
 		
 		public boolean isMultiSelect() { return iMultiSelect; }
 		public void setMultiSelect(boolean multiSelect) { iMultiSelect = multiSelect; }
