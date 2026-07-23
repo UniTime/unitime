@@ -283,6 +283,7 @@
     	<url-pattern>/sessions</url-pattern>
     	<url-pattern>/managers</url-pattern>
     	<url-pattern>/solverGroups</url-pattern>
+    	<url-pattern>/lastChanges</url-pattern>
     </servlet-mapping>
 	
 	<filter>
