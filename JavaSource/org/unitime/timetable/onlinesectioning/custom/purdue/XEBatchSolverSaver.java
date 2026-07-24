@@ -1255,8 +1255,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 						case eq: min = max = a; break; // = a
 						case le: max = a; break; // <= a
 						case ge: min = a; break; // >= a
-						case lt: max = a - 1; break; // < a
-						case gt: min = a + 1; break; // > a
+						case lt: max = a - 0.0001f; break; // < a
+						case gt: min = a + 0.0001f; break; // > a
 					}
 				} catch (NumberFormatException e) {
 					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)([^0-9\\.].*)").matcher(number);
@@ -1267,8 +1267,8 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 							case eq: min = max = a; break; // = a
 							case le: max = a; break; // <= a
 							case ge: min = a; break; // >= a
-							case lt: max = a - 1; break; // < a
-							case gt: min = a + 1; break; // > a
+							case lt: max = a - 0.0001f; break; // < a
+							case gt: min = a + 0.0001f; break; // > a
 						}
 					}
 				}
