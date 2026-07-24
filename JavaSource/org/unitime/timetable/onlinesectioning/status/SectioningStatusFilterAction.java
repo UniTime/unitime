@@ -1306,8 +1306,8 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 					case eq: min = max = a; break; // = a
 					case le: max = a; break; // <= a
 					case ge: min = a; break; // >= a
-					case lt: max = a - 1; break; // < a
-					case gt: min = a + 1; break; // > a
+					case lt: max = a - 0.0001f; break; // < a
+					case gt: min = a + 0.0001f; break; // > a
 				}
 			} catch (NumberFormatException e) {
 				Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)([^0-9\\.].*)").matcher(number);
@@ -1318,14 +1318,14 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 						case eq: min = max = a; break; // = a
 						case le: max = a; break; // <= a
 						case ge: min = a; break; // >= a
-						case lt: max = a - 1; break; // < a
-						case gt: min = a + 1; break; // > a
+						case lt: max = a - 0.0001f; break; // < a
+						case gt: min = a + 0.0001f; break; // > a
 					}
 				}
 			}
 			if (term.contains("..")) {
 				try {
-					String a = term.substring(0, term.indexOf('.'));
+					String a = term.substring(0, term.indexOf(".."));
 					String b = term.substring(term.indexOf("..") + 2);
 					min = Float.parseFloat(a); max = Float.parseFloat(b);
 				} catch (NumberFormatException e) {
