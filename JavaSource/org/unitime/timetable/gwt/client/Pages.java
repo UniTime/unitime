@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage;
 import org.unitime.timetable.gwt.client.admin.ChameleonPage;
+import org.unitime.timetable.gwt.client.admin.DatePatternsPage;
 import org.unitime.timetable.gwt.client.admin.LastChangesPage;
 import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
@@ -532,6 +533,10 @@ public enum Pages {
 	lastChanges(new PageFactory() {
 		public Widget create() { return new LastChangesPage(); }
 		public String name(GwtMessages messages) { return messages.pageLastChanges(); }
+		}),
+	datePatterns(new PageFactory() {
+		public Widget create() { return new DatePatternsPage(); }
+		public String name(GwtMessages messages) { return messages.pageDatePatterns(); }
 		}),
 	;
 	
