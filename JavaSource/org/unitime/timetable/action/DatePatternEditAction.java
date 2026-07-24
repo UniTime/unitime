@@ -22,6 +22,7 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -112,6 +113,17 @@ public class DatePatternEditAction extends UniTimeAction<DatePatternEditForm> {
 	}
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyDatePatterns.isFalse()) {
+    		String url = "datePatterns";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (form == null)
 			form = new DatePatternEditForm();
 		

@@ -166,6 +166,21 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		return ret;
 	}
 	
+	public void setPattern(String pattern) {
+		int index = 0;
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				for (D d: s.getDays()) {
+					char c = (pattern == null || index >= pattern.length() ? '0' : pattern.charAt(index));
+					index ++;
+					d.setValue(c == '1');
+				}
+			}
+		}
+	}
+	
 	public SessionDatesSelector forDatePattern(final String pattern) {
 		return forDatePattern(pattern, null);
 	}

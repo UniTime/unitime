@@ -523,7 +523,7 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
     	return (DatePattern)list.get(0);
 	}
     
-    public static List<DatePattern> findAll(UserContext user, Department department, DatePattern includeGiven) throws Exception {
+    public static List<DatePattern> findAll(UserContext user, Department department, DatePattern includeGiven) {
     	boolean includeExtended = user.getCurrentAuthority().hasRight(Right.ExtendedDatePatterns);
     	return findAll(user.getCurrentAcademicSessionId(), includeExtended, department, includeGiven);
     }

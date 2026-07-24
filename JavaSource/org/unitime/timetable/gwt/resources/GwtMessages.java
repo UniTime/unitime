@@ -4176,6 +4176,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Last Changes")
 	@DoNotTranslate
 	String pageLastChanges();
+	
+	@DefaultMessage("Date Patterns")
+	@DoNotTranslate
+	String pageDatePatterns();
+
+	@DefaultMessage("Add Date Pattern")
+	@DoNotTranslate
+	String pageAddDatePattern();
+
+	@DefaultMessage("Edit Date Pattern")
+	@DoNotTranslate
+	String pageEditDatePattern();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

@@ -9149,3 +9149,21 @@ div.gwt-MenuBarPopup {
 .unitime-SolverGroupsPage .table-cell table td:has(> img) {
 	text-align: right;
 }
+
+.unitime-DatePatternsPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-DatePatternsPage select {
+	margin-right: 5px;
+	min-width: 350px;
+	vertical-align: middle;
+}
+
+.unitime-DatePatternsPage .table-cell table {
+	width: 400px;
+}
+
+.unitime-DatePatternsPage .table-cell table td:has(> img) {
+	width: 50px;
+}
