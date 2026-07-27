@@ -81,9 +81,10 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
 			
 			return addResponse;
 		case EDIT:
-			context.checkPermission(request.getSessionId(), Right.AcademicSessionEdit);
 			Session acadSession = Session.getSessionById(request.getSessionId());
-			
+			if (acadSession == null) throw new GwtRpcException(MSG.errorDoesNotExists(MSG.columnAcademicSession()));
+			context.checkPermission(acadSession, Right.AcademicSessionEdit);
+
 			AcademicSessionEditResponse response = new AcademicSessionEditResponse();
 			
 			for (DepartmentStatusType status: DepartmentStatusType.findAllForSession(context.hasPermission(Right.AllowTestSessions)))

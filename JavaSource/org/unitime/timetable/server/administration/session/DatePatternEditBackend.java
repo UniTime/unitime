@@ -76,6 +76,8 @@ public class DatePatternEditBackend implements GwtRpcImplementation<DatePatternE
 			response.setSessionName(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
 			
 			DatePattern pattern = DatePatternDAO.getInstance().get(request.getPatternId());
+			if (pattern == null)
+				throw new GwtRpcException(MSG.errorDoesNotExists(MSG.columnDatePattern()));
 			DatePatternInterface dp = new DatePatternInterface();
 			dp.setPatternId(pattern.getUniqueId());
 			dp.setName(pattern.getName());

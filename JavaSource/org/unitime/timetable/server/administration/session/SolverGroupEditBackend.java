@@ -74,6 +74,8 @@ public class SolverGroupEditBackend implements GwtRpcImplementation<SolverGroupE
 			response.setSessionName(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
 			
 			SolverGroup group = SolverGroupDAO.getInstance().get(request.getSolverGroupId());
+			if (group == null)
+				throw new GwtRpcException(MSG.errorDoesNotExists(MSG.columnSolverGroup()));
 			SolverGroupInterface groupInterface = new SolverGroupInterface();
 			groupInterface.setAbbreviation(group.getAbbv());
 			groupInterface.setSolverGroupId(group.getUniqueId());

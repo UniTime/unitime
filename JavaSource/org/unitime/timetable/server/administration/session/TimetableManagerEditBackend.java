@@ -70,7 +70,10 @@ public class TimetableManagerEditBackend implements GwtRpcImplementation<Timetab
 			
 			return addResponse;
 		case EDIT:
-			context.checkPermission(request.getManagerId(), Right.TimetableManagerEdit);
+			TimetableManager mgr = TimetableManagerDAO.getInstance().get(request.getManagerId());
+			if (mgr == null) throw new GwtRpcException(MSG.errorDoesNotExists(MSG.columnManager()));
+			context.checkPermission(mgr, Right.TimetableManagerEdit);
+
 			TimetableManagerEditResponse response = new TimetableManagerEditResponse();
 			response.setSessionId(context.getUser().getCurrentAcademicSessionId());
 			response.setSessionName(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel());
@@ -81,7 +84,6 @@ public class TimetableManagerEditBackend implements GwtRpcImplementation<Timetab
 			
 			NameFormat nameFormat = NameFormat.fromReference(context.getUser().getProperty(UserProperty.NameFormat));
 			
-			TimetableManager mgr = TimetableManagerDAO.getInstance().get(manager.getManagerId());
 			manager.setExternalId(mgr.getExternalUniqueId());
 			manager.setFirstName(mgr.getFirstName());
 			manager.setMiddleName(mgr.getMiddleName());
