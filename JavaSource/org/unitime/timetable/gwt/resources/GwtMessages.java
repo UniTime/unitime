@@ -4188,6 +4188,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Date Pattern")
 	@DoNotTranslate
 	String pageEditDatePattern();
+	
+	@DefaultMessage("Time Patterns")
+	@DoNotTranslate
+	String pageTimePatterns();
+
+	@DefaultMessage("Add Time Pattern")
+	@DoNotTranslate
+	String pageAddTimePattern();
+
+	@DefaultMessage("Edit Time Pattern")
+	@DoNotTranslate
+	String pageEditTimePattern();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

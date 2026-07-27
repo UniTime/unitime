@@ -63,6 +63,8 @@ public class DatePatternsBackend implements GwtRpcImplementation<DatePatternsReq
 		LineInterface header = table.addHeader();
 		header.addCell(MSG.columnDatePatternName());
         header.addCell(MSG.columnDatePatternType());
+        if (request.isExport())
+        	header.addCell(MSG.columnTimePatternVisible());	
         header.addCell(MSG.columnDatePatternUsed());
         header.addCell(MSG.columnDatePatternWeeks());
         if (request.isExport()) {
@@ -98,11 +100,18 @@ public class DatePatternsBackend implements GwtRpcImplementation<DatePatternsReq
 			if (pattern.isDefault())
 				name.addStyle("font-weight: bold;");
 			line.addCell(pattern.getDatePatternType().getLabel());
+			if (request.isExport()) {
+				if (pattern.isVisible())
+					line.addCell().setComparable(true)
+					.addImage().setSource("images/accept.png").setAlt(MSG.altYes()).setTitle(MSG.yes());
+				else
+					line.addCell().setComparable(false).setTitle(MSG.no());
+			}
 			if (used.contains(pattern) || pattern.isDefault()) {
 				line.addCell().setComparable(true)
-					.addImage().setSource("images/accept.png").setTitle(MSG.infoDatePatternUsed()).setAlt(MSG.altYes());
+					.addImage().setSource("images/accept.png").setTitle(request.isExport() ? MSG.yes() : MSG.infoDatePatternUsed()).setAlt(MSG.altYes());
 			} else {
-				line.addCell().setComparable(false);
+				line.addCell().setComparable(false).setTitle(request.isExport() ? MSG.no() : null);
 			}
 			if (pattern.getNumberOfWeeks() == null) {
 				line.addCell(df.format(pattern.getComputedNumberOfWeeks())).addStyle("font-style: italic;");

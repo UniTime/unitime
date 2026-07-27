@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.admin.SolverGroupsPage;
 import org.unitime.timetable.gwt.client.admin.TasksPage;
+import org.unitime.timetable.gwt.client.admin.TimePatternsPage;
 import org.unitime.timetable.gwt.client.admin.TimetableManagersPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
@@ -537,6 +538,10 @@ public enum Pages {
 	datePatterns(new PageFactory() {
 		public Widget create() { return new DatePatternsPage(); }
 		public String name(GwtMessages messages) { return messages.pageDatePatterns(); }
+		}),
+	timePatterns(new PageFactory() {
+		public Widget create() { return new TimePatternsPage(); }
+		public String name(GwtMessages messages) { return messages.pageTimePatterns(); }
 		}),
 	;
 	
