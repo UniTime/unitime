@@ -105,12 +105,16 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 	public void setShowLegend(boolean showLegend) { iShowLegend = showLegend; }
 	
 	public PrefLevel getPreference(int day, int slot) {
-		char code = iModel.getPreference(day, slot);
-		for (PrefLevel pref: iPreferences)
-			if (pref.getTpCode() == code) return pref;
-		for (PrefLevel pref: iPreferences)
-			if ("0".equals(pref.getCode())) return pref;
-		return null;
+		try {
+			char code = iModel.getPreference(day, slot);
+			for (PrefLevel pref: iPreferences)
+				if (pref.getTpCode() == code) return pref;
+			for (PrefLevel pref: iPreferences)
+				if ("0".equals(pref.getCode())) return pref;
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
 	public PrefLevel getPreference(String code) {
@@ -403,8 +407,8 @@ public class TimePreferenceWidget extends Composite implements HasValue<TimeSele
 			super("cell", "item", isEditable() ? "clickable" : null);
 			iDay = day; iSlot = slot;
 			PrefLevel option = getPreference(day, slot);
-			getElement().getStyle().setBackgroundColor(option.getBgColor());
-			setTitle(iModel.getDaysLabel(iDay, CONSTANTS) + " " + iModel.getStartTime(iSlot, CONSTANTS) + " - " + iModel.getEndTime(iSlot, CONSTANTS) + ": " + option.getTitle());
+			getElement().getStyle().setBackgroundColor(option == null ? "" : option.getBgColor());
+			setTitle(iModel.getDaysLabel(iDay, CONSTANTS) + " " + iModel.getStartTime(iSlot, CONSTANTS) + " - " + iModel.getEndTime(iSlot, CONSTANTS) + (option == null ? "" : ": " + option.getTitle()));
 			if (isEditable())
 				addClickHandler(new ClickHandler() {
 					@Override

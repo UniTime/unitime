@@ -307,8 +307,8 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	return findAllUsed(session.getUniqueId()); 
     }
     
-    public static Set findAllUsed(Long sessionId) {
-    	TreeSet ret = new TreeSet(
+    public static Set<TimePattern> findAllUsed(Long sessionId) {
+    	TreeSet<TimePattern> ret = new TreeSet<TimePattern>(
     			TimePatternDAO.getInstance().getSession().
         		createQuery("select distinct tp from TimePref as p inner join p.timePattern as tp where tp.session.uniqueId=:sessionId", TimePattern.class).
 				setParameter("sessionId", sessionId.longValue()).

@@ -231,15 +231,13 @@ public class DatePatternsPage extends Composite {
 			}
 		});
 		iHeader.setEnabled("delete", false);
-		iHeader.addButton("back", COURSE.actionBackToManagers(), new ClickHandler() {
+		iHeader.addButton("back", COURSE.actionBackToDatePatterns(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				History.newItem(null, false);
 				showPatterns(iPattern == null ? null : iPattern.getPatternId());
 			}
 		});
-		iHeader.getButton("back").setAccessKey(COURSE.accessBackToManagers().charAt(0));
-		iHeader.getButton("back").setTitle(COURSE.titleBackToManagers(COURSE.accessBackToManagers()));
 		iHeader.setEnabled("back", false);
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {

@@ -285,6 +285,7 @@
     	<url-pattern>/solverGroups</url-pattern>
     	<url-pattern>/lastChanges</url-pattern>
     	<url-pattern>/datePatterns</url-pattern>
+    	<url-pattern>/timePatterns</url-pattern>
     </servlet-mapping>
 	
 	<filter>

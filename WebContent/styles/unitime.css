@@ -9167,3 +9167,34 @@ div.gwt-MenuBarPopup {
 .unitime-DatePatternsPage .table-cell table td:has(> img) {
 	width: 50px;
 }
+
+.unitime-TimePatternsPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-TimePatternsPage .pattern-type div {
+	display: inline-block;
+	vertical-align: middle;	
+}
+
+.unitime-TimePatternsPage .pattern-type select {
+	display: inline-block;
+	margin-left: 10px;
+}
+
+.unitime-TimePatternsPage .slots-per-mtg .gwt-Label {
+	display: inline;
+}
+
+.unitime-TimePatternsPage .slots-per-mtg .slots-per-mtg-hint {
+	padding-left: 10px;
+	font-style: italic;
+}
+
+.unitime-TimePatternsPage .days .gwt-Label {
+	display: inline;
+}
+
+.unitime-TimePatternsPage .starts .gwt-Label {
+	display: inline;
+}
