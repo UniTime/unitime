@@ -190,6 +190,19 @@ public class DatePatternsPage extends Composite {
 			}
 		});
 		iHeader.setEnabled("update", false);
+		iHeader.addButton("default", COURSE.actionMakeDatePatternDefaulf(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				UniTimeConfirmationDialog.confirm(COURSE.confirmDefaultDatePatternChange(), new Command() {
+					@Override
+					public void execute() {
+						iPattern.setDefault(true);
+						saveOrUpdatePattern(null);
+					}
+				});
+			}
+		});
+		iHeader.setEnabled("default", false);
 		iHeader.addButton("previous", COURSE.actionPreviousDatePattern(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -218,19 +231,6 @@ public class DatePatternsPage extends Composite {
 			}
 		});
 		iHeader.setEnabled("delete", false);
-		iHeader.addButton("default", COURSE.actionMakeDatePatternDefaulf(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				UniTimeConfirmationDialog.confirm(COURSE.confirmDefaultDatePatternChange(), new Command() {
-					@Override
-					public void execute() {
-						iPattern.setDefault(true);
-						saveOrUpdatePattern(null);
-					}
-				});
-			}
-		});
-		iHeader.setEnabled("default", false);
 		iHeader.addButton("back", COURSE.actionBackToManagers(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -602,11 +602,14 @@ public class DatePatternsPage extends Composite {
 
 				@Override
 				public void onSuccess(DatePatternEditResponse result) {
-					History.newItem(null, false);
-					if (nextPatternId != null)
+					
+					if (nextPatternId != null) {
+						History.newItem(nextPatternId.toString(), false);
 						editPattern(nextPatternId);
-					else
+					} else {
+						History.newItem(null, false);
 						showPatterns(result.getPatternId());
+					}
 				}
 			});
 		}
