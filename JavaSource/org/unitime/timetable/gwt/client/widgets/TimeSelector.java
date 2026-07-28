@@ -50,6 +50,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -60,7 +61,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 /**
  * @author Tomas Muller
  */
-public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<Integer>, HasText {
+public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<Integer>, HasText, HasEnabled {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
@@ -703,5 +704,15 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 				setValue(null);
 			}
 		}
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return iText.isEnabled();
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		iText.setEnabled(enabled);
 	}
 }

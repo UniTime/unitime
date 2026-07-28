@@ -90,6 +90,9 @@ public class PatternDatesBackend implements GwtRpcImplementation<PatternDatesReq
 					compare(calendar.getTime(), session.getClassesEndDateTime()) <= 0)
 					m.setFlag(i, SessionMonth.Flag.CLASSES);
 				
+				if (compare(calendar.getTime(), session.getExamBeginDate()) == 0)
+					m.setFlag(i, SessionMonth.Flag.EXAM_START);
+				
 				int dayInv = (7 + calendar.get(Calendar.DAY_OF_WEEK) - firstDay) % 7;
 				if (dayInv >= 5)
 					m.setFlag(i, SessionMonth.Flag.WEEKEND);

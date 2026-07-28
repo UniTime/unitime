@@ -4200,6 +4200,22 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Time Pattern")
 	@DoNotTranslate
 	String pageEditTimePattern();
+	
+	@DefaultMessage("Examination Periods")
+	@DoNotTranslate
+	String pageExaminationPeriods();
+
+	@DefaultMessage("Add Examination Period")
+	@DoNotTranslate
+	String pageAddExaminationPeriod();
+
+	@DefaultMessage("Edit Examination Period")
+	@DoNotTranslate
+	String pageEditExaminationPeriod();
+	
+	@DefaultMessage("Setup Examination Periods")
+	@DoNotTranslate
+	String pageSetupExaminationPeriods();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -4311,6 +4327,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Classes End")
 	String legendClassesEnd();
+	
+	@DefaultMessage("Examinations Start")
+	String legendExamStart();
 
 	@DefaultMessage("Finals")
 	String legendFinals();
