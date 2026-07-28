@@ -2520,6 +2520,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-weight: 400;
 	font-style: normal;
 	color: #333333;
+	white-space: nowrap;
 }
 
 .unitime-TimeSelectorPopup .item-selected {
@@ -9197,4 +9198,13 @@ div.gwt-MenuBarPopup {
 
 .unitime-TimePatternsPage .starts .gwt-Label {
 	display: inline;
+}
+
+.unitime-ExamPeriodsPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-ExamPeriodsPage .line-with-mins span {
+	font-style: italic;
+	margin-left: 5px;	
 }

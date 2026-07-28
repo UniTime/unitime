@@ -286,6 +286,7 @@
     	<url-pattern>/lastChanges</url-pattern>
     	<url-pattern>/datePatterns</url-pattern>
     	<url-pattern>/timePatterns</url-pattern>
+    	<url-pattern>/examPeriods</url-pattern>
     </servlet-mapping>
 	
 	<filter>

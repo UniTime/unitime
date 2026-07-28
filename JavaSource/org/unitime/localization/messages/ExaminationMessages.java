@@ -2301,6 +2301,21 @@ public interface ExaminationMessages extends Messages {
 	@DefaultMessage("Preference:")
 	String propPeriodPreference();
 	
+	@DefaultMessage("1st Period:")
+	String prop1stPeriod();
+	
+	@DefaultMessage("2nd Period:")
+	String prop2ndPeriod();
+	
+	@DefaultMessage("3rd Period:")
+	String prop3rdPeriod();
+	
+	@DefaultMessage("4th Period:")
+	String prop4thPeriod();
+	
+	@DefaultMessage("5th Period:")
+	String prop5thPeriod();
+	
 	@DefaultMessage("1st Period Start Time:")
 	String prop1stPeriodStartTime();
 	

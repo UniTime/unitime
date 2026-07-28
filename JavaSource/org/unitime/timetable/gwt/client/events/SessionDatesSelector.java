@@ -244,7 +244,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(List<SessionMonth> months, String selected, String notSelected) {
 		iPanel.getWidget().clear();
-		int firstOutside = -1, start = -1, end = -1, finals = -1, midterms = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1;
+		int firstOutside = -1, start = -1, end = -1, finals = -1, midterms = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1, examStart = -1;
 		int idx = 0;
 		P lastWeek = null;
 		for (SessionMonth month: months) {
@@ -262,12 +262,13 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (firstPast < 0) firstPast = month.getFirst(SessionMonth.Flag.PAST);
 			if (firstEventDate < 0) firstEventDate = month.getFirst(SessionMonth.Flag.DATE_MAPPING_EVENT);
 			if (firstClassDate < 0) firstClassDate = month.getFirst(SessionMonth.Flag.DATE_MAPPING_CLASS);
+			if (examStart < 0) examStart = month.getFirst(SessionMonth.Flag.EXAM_START);
 			if (month.getYear() == Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(new Date())) &&
 				month.getMonth() + 1 == Integer.parseInt(DateTimeFormat.getFormat("MM").format(new Date())))
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
-		iPanel.getWidget().add(new Legend(firstOutside, start, finals, midterms, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate,
+		iPanel.getWidget().add(new Legend(firstOutside, start, finals, midterms, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate, examStart,
 				selected, notSelected));
 		iPanel.getWidget().setCursor(new Date());
 	}
@@ -646,7 +647,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.CLASS_END)) {
 					d.addStyleName("class-end");
 				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.EXAM_START)) {
-					d.addStyleName("exam-start");
+					d.addStyleName("exam");
 				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.EVENT_START)) {
 					d.addStyleName("event-start");
 				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.EVENT_END)) {
@@ -685,13 +686,13 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public class Legend extends AbsolutePanel {
-		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate) {
-			this(firstOutside, start, finals, midterms, firstHoliday, firstBreak, firstPast, today, firstClassDate, firstEventDate,
+		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate, int examStart) {
+			this(firstOutside, start, finals, midterms, firstHoliday, firstBreak, firstPast, today, firstClassDate, firstEventDate, examStart,
 					MESSAGES.legendSelected(),
 					MESSAGES.legendNotSelected());
 		}
 		
-		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate, String selected, String notSelected) {
+		public Legend(int firstOutside, int start, int finals, int midterms, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate, int examStart, String selected, String notSelected) {
 			addStyleName("legend");
 			P box = new P(null, "box");
 			add(box);
@@ -724,6 +725,13 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(start + 1), "cell", "start"));
 				line.add(new P(MESSAGES.legendClassesStartOrEnd(), "title"));
+				box.add(line);
+			}
+			
+			if (examStart >= 0) {
+				line = new P(null, "row");
+				line.add(new P(String.valueOf(examStart + 1), "cell", "exam"));
+				line.add(new P(MESSAGES.legendExamStart(), "title"));
 				box.add(line);
 			}
 			
