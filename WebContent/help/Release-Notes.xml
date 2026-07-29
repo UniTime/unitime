@@ -43,6 +43,7 @@
 					<line>Date Patterns</line>
 					<line>Time Patterns</line>
 					<line>Examination Periods</line>
+					<line>Data Exchange</line>
 				</line>
 			</description>
 		</item>
@@ -148,6 +149,15 @@
 					<line>Manager Settings</line>
 					<line>University Timetabling Application (main page)</line>
 					<line>Contact Us</line>
+					<line>Test HQL</line>
+					<line>Academic Sessions, Add/Edit Academic Session</line>
+					<line>Timetable Managers, Add/Edit Timetable Manager</line>
+					<line>Solver Groups, Add/Edit Solver Group</line>
+					<line>Exact Times</line>
+					<line>Last Changes</line>
+					<line>Date Patterns</line>
+					<line>Time Patterns</line>
+					<line>Examination Periods</line>
 				</line>
 			</description>
 		</item>

@@ -397,6 +397,7 @@ public enum ApplicationProperty {
 
 	@Type(Integer.class)
 	@Description("Configuration: maximum upload file size in bytes")
+	@DefaultValue("1073741824")
 	MaxUploadSize("unitime.upload.max_size_in_bytes"),
 
 	/**
@@ -3906,6 +3907,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Examination Periods: switch the user interface back to the old (Struts-based) examination periods page")
 	LegacyExamPeriods("unitime.legacy.examPeriods"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Data Exchange: switch the user interface back to the old (Struts-based) data exchange page")
+	LegacyDataExchange("unitime.legacy.dataExchange"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

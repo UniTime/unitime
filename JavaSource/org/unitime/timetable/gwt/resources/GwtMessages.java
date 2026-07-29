@@ -4216,6 +4216,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Setup Examination Periods")
 	@DoNotTranslate
 	String pageSetupExaminationPeriods();
+	
+	@DefaultMessage("Data Exchange")
+	@DoNotTranslate
+	String pageDataExchange();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
