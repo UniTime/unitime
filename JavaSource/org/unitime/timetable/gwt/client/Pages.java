@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage;
 import org.unitime.timetable.gwt.client.admin.ChameleonPage;
+import org.unitime.timetable.gwt.client.admin.DataExchangePage;
 import org.unitime.timetable.gwt.client.admin.DatePatternsPage;
 import org.unitime.timetable.gwt.client.admin.ExamPeriodsPage;
 import org.unitime.timetable.gwt.client.admin.LastChangesPage;
@@ -547,6 +548,10 @@ public enum Pages {
 	examPeriods(new PageFactory() {
 		public Widget create() { return new ExamPeriodsPage(); }
 		public String name(GwtMessages messages) { return messages.pageExaminationPeriods(); }
+		}),
+	dataExchange(new PageFactory() {
+		public Widget create() { return new DataExchangePage(); }
+		public String name(GwtMessages messages) { return messages.pageDataExchange(); }
 		}),
 	;
 	
