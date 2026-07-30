@@ -1002,6 +1002,10 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Examination PDF Reports: can use in-memory solution")
 	ExaminationPdfReportsCanUseSolution("tmtbl.exam.pdfReports.canUseSolution"),
+	
+	@Description("Examination PDF Reports: password-protect generated XLS files" +
+			"\n(to enable, set this property to a password that woulld be used to protect the data)")
+	ExaminationPdfReportsXLSPassword("tmtbl.exam.pdfReports.protectXLSpassword"),
 
 	@Type(Boolean.class)
 	@DefaultValue("true")

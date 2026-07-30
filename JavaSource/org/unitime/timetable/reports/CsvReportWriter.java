@@ -81,7 +81,9 @@ public class CsvReportWriter implements ReportWriter {
 	}
 
 	@Override
-	public void newPage() throws DocumentException {}
+	public void newPage() throws DocumentException {
+		println(""); println("");
+	}
 
 	@Override
 	public void lastPage() throws DocumentException {}
