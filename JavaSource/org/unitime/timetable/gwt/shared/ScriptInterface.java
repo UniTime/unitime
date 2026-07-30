@@ -360,7 +360,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public ExecuteScriptRpcRequest getExecutionRequest() { return iExecutionRequest; }
 	}
 	
-	public static enum QueueType {
+	public static enum QueueType implements IsSerializable {
 		Script,
 		ExamPdfReport,
 		DataExchange,
