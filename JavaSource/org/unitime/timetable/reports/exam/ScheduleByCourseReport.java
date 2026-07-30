@@ -156,7 +156,11 @@ public class ScheduleByCourseReport extends PdfLegacyExamReport {
                             (iItype?rpad(child.getItype(), 6):NULL),
                             formatSection10(child.getSection()),
                             rpad("",35),
-                            lpad(String.valueOf(child.getNrStudents()),5)
+                            lpad(String.valueOf(child.getNrStudents()),5),
+                            lpad("", 30),
+            				lpad("", 11),
+            				lpad("", 5),
+            				lpad("", 5)
                             );
             	}
                 if (iNewPage || section.hasDifferentSubjectChildren()) {

@@ -59,6 +59,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination PDF Reports</name>
+			<description>
+				<line>CSV Output: Generate two blank lines between pages.</line>
+				<line>XLS Output: Added an ability to password-protect generated XLS files.
+					<line>To enable, set tmtbl.exam.pdfReports.protectXLSpassword to a password that will be used.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Security: Session Independent If No Session Given</name>

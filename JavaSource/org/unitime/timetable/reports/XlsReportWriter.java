@@ -25,9 +25,13 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.poi.hssf.record.PasswordRecord;
+import org.apache.poi.hssf.record.ProtectRecord;
+import org.apache.poi.hssf.record.WindowProtectRecord;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.poifs.crypt.CryptoFunctions;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -40,6 +44,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.reports.AbstractReport.Alignment;
 import org.unitime.timetable.reports.AbstractReport.Line;
 
@@ -111,6 +116,17 @@ public class XlsReportWriter implements ReportWriter {
 	@Override
 	public void close() throws IOException, DocumentException {
 		lastPage();
+		String password = ApplicationProperty.ExaminationPdfReportsXLSPassword.value();
+		if (password != null && !password.isEmpty()) {
+			for (org.apache.poi.hssf.record.Record record: ((HSSFWorkbook)iWorkbook).getInternalWorkbook().getRecords()) {
+				if (record instanceof ProtectRecord)
+					((ProtectRecord)record).setProtect(true);
+				else if (record instanceof WindowProtectRecord)
+					((WindowProtectRecord)record).setProtect(true);
+				else if (record instanceof PasswordRecord)
+					((PasswordRecord)record).setPassword(CryptoFunctions.createXorVerifier1(password));
+			}
+		}
 		iWorkbook.write(iOutput);
 		iWorkbook.close();
 	}
@@ -124,6 +140,9 @@ public class XlsReportWriter implements ReportWriter {
 	
 	protected void createSheet() {
 		iSheet = iWorkbook.createSheet();
+		String password = ApplicationProperty.ExaminationPdfReportsXLSPassword.value();
+		if (password != null && !password.isEmpty())
+			iSheet.protectSheet(password);
 		// iSheet.setDisplayGridlines(false);
 		iSheet.setPrintGridlines(false);
 		iSheet.setFitToPage(true);
