@@ -507,7 +507,7 @@ public enum ApplicationProperty {
 	@DefaultValue("auto")
 	@Description("Class Assignment: for student conflicts, use the actual student class enrollments or those that have been used by the solver (possible values none,auto,actual,solution)")
 	ClassAssignmentStudentConflictsType("tmtbl.classAssign.studentConflicts"),
-
+	
 	@Type(Boolean.class)
 	@DefaultValue("true")
 	@Description("Class Setup: display external ids")
@@ -3990,6 +3990,12 @@ public enum ApplicationProperty {
 	@Description("Events: show last note for events of type %Events (Replace <EventType> with either Class, FinalExam, MidtermExam, Course, or Special)")
 	@Parameter("EventType")
 	EventsShowLastNote("unitime.events.note.showChangesFor%Events"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Class Assignment: ignore parent/child class conflicts within a course when &quot;Do not unassign conflicting classes&quot; toggle is checked.")
+	@Since(4.9)
+	ClassAssignmentAllowCourseTimeConflicts("tmtbl.classAssign.allowCourseTimeConflicts"),
 	;
 
 	String iKey;

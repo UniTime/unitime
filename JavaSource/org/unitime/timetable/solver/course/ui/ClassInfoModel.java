@@ -248,44 +248,31 @@ public class ClassInfoModel implements Serializable {
 	            	*/
 	            }
         	}
-            // Check the course structure for conflicts
-            Class_ clazz = assignment.getClazz(Class_DAO.getInstance().getSession());
-            // a) all parents
-            Class_ parent = clazz.getParentClass();
-            while (parent!=null) {
-            	if (iChange.getCurrent(parent.getUniqueId())==null && iChange.getConflict(parent.getUniqueId())==null) {
-            		Assignment a = parent.getCommittedAssignment();
-            		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
-            			iChange.getConflicts().add(new ClassAssignment(a));
-            		}
-            	}
-            	parent = parent.getParentClass();
-            }
-            // b) all children
-            Queue<Class_> children = new LinkedList();
-            try {
-            	children.addAll(clazz.getChildClasses());
-            } catch (LazyInitializationException e) {
-            	sLog.error("This should never happen.");
-            	Class_ c = Class_DAO.getInstance().get(assignment.getClassId());
-            	children.addAll(c.getChildClasses());
-            }
-            Class_ child = null;
-            while ((child=children.poll())!=null) {
-            	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
-            		Assignment a = child.getCommittedAssignment();
-            		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
-            			iChange.getConflicts().add(new ClassAssignment(a));
-            		}
-            	}
-            	if (!child.getChildClasses().isEmpty())
-            		children.addAll(child.getChildClasses());
-            }
-            // c) all single-class subparts
-            for (Iterator i=clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator(); i.hasNext();) {
-            	SchedulingSubpart ss = (SchedulingSubpart)i.next();
-            	if (ss.getClasses().size()==1) {
-            		child = (Class_)ss.getClasses().iterator().next();
+        	if (iUnassignConflictingAssignments || !ApplicationProperty.ClassAssignmentAllowCourseTimeConflicts.isTrue()) {
+                // Check the course structure for conflicts
+                Class_ clazz = assignment.getClazz(Class_DAO.getInstance().getSession());
+                // a) all parents
+                Class_ parent = clazz.getParentClass();
+                while (parent!=null) {
+                	if (iChange.getCurrent(parent.getUniqueId())==null && iChange.getConflict(parent.getUniqueId())==null) {
+                		Assignment a = parent.getCommittedAssignment();
+                		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+                			iChange.getConflicts().add(new ClassAssignment(a));
+                		}
+                	}
+                	parent = parent.getParentClass();
+                }
+                // b) all children
+                Queue<Class_> children = new LinkedList();
+                try {
+                	children.addAll(clazz.getChildClasses());
+                } catch (LazyInitializationException e) {
+                	sLog.error("This should never happen.");
+                	Class_ c = Class_DAO.getInstance().get(assignment.getClassId());
+                	children.addAll(c.getChildClasses());
+                }
+                Class_ child = null;
+                while ((child=children.poll())!=null) {
                 	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
                 		Assignment a = child.getCommittedAssignment();
                 		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
@@ -294,8 +281,23 @@ public class ClassInfoModel implements Serializable {
                 	}
                 	if (!child.getChildClasses().isEmpty())
                 		children.addAll(child.getChildClasses());
-            	}
-            }
+                }
+                // c) all single-class subparts
+                for (Iterator i=clazz.getSchedulingSubpart().getInstrOfferingConfig().getSchedulingSubparts().iterator(); i.hasNext();) {
+                	SchedulingSubpart ss = (SchedulingSubpart)i.next();
+                	if (ss.getClasses().size()==1) {
+                		child = (Class_)ss.getClasses().iterator().next();
+                    	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
+                    		Assignment a = child.getCommittedAssignment();
+                    		if (a!=null && !a.getClazz().isCancelled() && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+                    			iChange.getConflicts().add(new ClassAssignment(a));
+                    		}
+                    	}
+                    	if (!child.getChildClasses().isEmpty())
+                    		children.addAll(child.getChildClasses());
+                	}
+                }
+        	}
                         
             //TODO: Check for other HARD conflicts (e.g., distribution constraints)
         }
