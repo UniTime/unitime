@@ -19,7 +19,10 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,6 +35,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionType;
@@ -54,8 +58,19 @@ public class DistributionTypeListAction extends UniTimeAction<BlankForm> {
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	@Override
-	public String execute() throws HibernateException {
+	public String execute() throws HibernateException, IOException {
 		sessionContext.checkPermission(Right.DistributionTypes);
+		if (ApplicationProperty.LegacyDistributionTypes.isFalse()) {
+    		String url = "distributionTypes";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		return "showDistributionTypeList";
 	}
 	

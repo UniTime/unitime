@@ -45,14 +45,15 @@ public class MultiSelect<T> extends ScrollPanel implements HasValue<List<T>> {
 		setWidget(iPanel);
 	}
 	
-	public void addItem(T id, String text, boolean asHTML) {
+	public Item addItem(T id, String text, boolean asHTML) {
 		Item item = new Item(id, text, asHTML);
 		iItems.add(item);
 		iPanel.add(item);
+		return item;
 	}
 	
-	public void addItem(T id, String text) {
-		addItem(id, text, false);
+	public Item addItem(T id, String text) {
+		return addItem(id, text, false);
 	}
 	
 	public boolean isSelected(T id) {

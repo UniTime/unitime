@@ -876,6 +876,7 @@ public class AcademicSessionsPage extends Composite {
 	public static class IdLabel implements IsSerializable, Comparable<IdLabel> {
 		private Long iId;
 		private String iLabel;
+		private String iColor;
 
 		public IdLabel() {}
 		public IdLabel(Long id, String label) {
@@ -886,6 +887,9 @@ public class AcademicSessionsPage extends Composite {
 		public void setId(Long id) { iId = id; }
 		public String getLabel() { return iLabel; }
 		public void setLabel(String label) { iLabel = label; }
+		public boolean hasColor() { return iColor != null && !iColor.isEmpty(); }
+		public String getColor() { return iColor; }
+		public void setColor(String color) { iColor = color; }
 		
 		@Override
 		public int hashCode() { return getId().hashCode(); }

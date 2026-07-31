@@ -4220,6 +4220,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Data Exchange")
 	@DoNotTranslate
 	String pageDataExchange();
+	
+	@DefaultMessage("Edit Distribution Type")
+	@DoNotTranslate
+	String pageEditDistributionType();
+	
+	@DefaultMessage("Distribution Types")
+	@DoNotTranslate
+	String pageDistributionTypes();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

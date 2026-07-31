@@ -346,7 +346,7 @@ public class PDFPrinter implements Printer, TableAware {
 			}
 			
 			float width = print(cell, null, f, false);
-			if (f.getColSpan() == 1 && !f.has(F.WRAP))
+			if (f.getColSpan() == 1)
 				iMaxWidth[col] = Math.max(iMaxWidth[col], width + rpad);
 			
 			col += cell.getColspan();
@@ -624,6 +624,18 @@ public class PDFPrinter implements Printer, TableAware {
 		
 		public float getWidth(Font font) {
 			if (hasText()) {
+				if (has(F.WRAP)) {
+					float width = 0f;
+					for (StringTokenizer s = new StringTokenizer(getText(),"\n"); s.hasMoreTokens();) {
+						String line = s.nextToken();
+						float wordWidth = 0f;
+						for (StringTokenizer t = new StringTokenizer(line," \t.,;-"); t.hasMoreTokens();)
+							wordWidth = Math.max(wordWidth, width(t.nextToken(), font));
+						float w = width(line, font);
+						width = Math.max(width, Math.min(Math.max(wordWidth, w / 5), 300f));
+					}
+					return width;
+				}
 				if (getText().indexOf('\n')>=0) {
 					float width = 0f;
 					for (StringTokenizer s = new StringTokenizer(getText(),"\n"); s.hasMoreTokens();)
