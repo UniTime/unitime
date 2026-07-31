@@ -23,6 +23,7 @@ import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage;
 import org.unitime.timetable.gwt.client.admin.ChameleonPage;
 import org.unitime.timetable.gwt.client.admin.DataExchangePage;
 import org.unitime.timetable.gwt.client.admin.DatePatternsPage;
+import org.unitime.timetable.gwt.client.admin.DistributionTypesPage;
 import org.unitime.timetable.gwt.client.admin.ExamPeriodsPage;
 import org.unitime.timetable.gwt.client.admin.LastChangesPage;
 import org.unitime.timetable.gwt.client.admin.PasswordPage;
@@ -552,6 +553,10 @@ public enum Pages {
 	dataExchange(new PageFactory() {
 		public Widget create() { return new DataExchangePage(); }
 		public String name(GwtMessages messages) { return messages.pageDataExchange(); }
+		}),
+	distributionTypes(new PageFactory() {
+		public Widget create() { return new DistributionTypesPage(); }
+		public String name(GwtMessages messages) { return messages.pageDistributionTypes(); }
 		}),
 	;
 	

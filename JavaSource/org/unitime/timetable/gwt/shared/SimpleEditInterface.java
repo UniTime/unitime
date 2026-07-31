@@ -359,6 +359,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public static class ListItem implements IsSerializable, Comparable<ListItem> {
 		private String iValue, iText;
+		private String iColor;
 		public ListItem() {}
 		public ListItem(String value, String text) {
 			iValue = value; iText = text;
@@ -377,6 +378,10 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			ListItem i = (ListItem)o;
 			return getValue().equals(i.getValue());
 		}
+		
+		public boolean hasColor() { return iColor != null && !iColor.isEmpty(); }
+		public String getColor() { return iColor; }
+		public ListItem setColor(String color) { iColor = color; return this; }
 	}
 	
 	public static class Field implements IsSerializable {

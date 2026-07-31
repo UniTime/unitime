@@ -288,6 +288,7 @@
     	<url-pattern>/timePatterns</url-pattern>
     	<url-pattern>/examPeriods</url-pattern>
     	<url-pattern>/dataExchange</url-pattern>
+    	<url-pattern>/distributionTypes</url-pattern>
     </servlet-mapping>
 	
 	<filter>

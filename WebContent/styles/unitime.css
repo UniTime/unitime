@@ -9208,3 +9208,13 @@ div.gwt-MenuBarPopup {
 	font-style: italic;
 	margin-left: 5px;	
 }
+
+.unitime-DistributionTypesPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-DistributionTypesPage .departments-list select {
+	margin-right: 5px;
+	min-width: 350px;
+	vertical-align: middle;
+}
