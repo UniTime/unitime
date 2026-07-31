@@ -36,6 +36,14 @@
 				<line>Fixed a Hibernate exception (persistent instance references an unsaved transient instance) that can be thrown when dropping a course that has been involved in a wait-listing swap.</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Assignment: Do not unassign conflicting classes</name>
+			<description>
+				<line>Added an option to ignore parent/child class conflicts within a course when &quot;Do not unassign conflicting classes&quot; toggle is checked.
+					<line>To enable, set tmtbl.classAssign.allowCourseTimeConflicts to true (defaults to false).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Event Managements</title>
