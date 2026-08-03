@@ -19,12 +19,15 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.apache.struts2.convention.annotation.Action;
@@ -33,6 +36,7 @@ import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.AccessStatistics;
@@ -197,7 +201,18 @@ public class AccessStatsAction extends UniTimeAction<BlankForm> {
 	}
 	
 	@Override
-	public String execute() {
+	public String execute() throws IOException {
+		if (ApplicationProperty.LegacyAccessStats.isFalse()) {
+    		String url = "accessStats";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		sessionContext.checkPermission(Right.AccessStatistics);
 		return "show";
 	}
