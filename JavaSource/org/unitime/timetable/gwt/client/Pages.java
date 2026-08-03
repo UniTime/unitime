@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage;
+import org.unitime.timetable.gwt.client.admin.AccessStatisticsPage;
 import org.unitime.timetable.gwt.client.admin.ChameleonPage;
 import org.unitime.timetable.gwt.client.admin.DataExchangePage;
 import org.unitime.timetable.gwt.client.admin.DatePatternsPage;
@@ -557,6 +558,10 @@ public enum Pages {
 	distributionTypes(new PageFactory() {
 		public Widget create() { return new DistributionTypesPage(); }
 		public String name(GwtMessages messages) { return messages.pageDistributionTypes(); }
+		}),
+	accessStats(new PageFactory() {
+		public Widget create() { return new AccessStatisticsPage(); }
+		public String name(GwtMessages messages) { return messages.pageAccessStatistics(); }
 		}),
 	;
 	
