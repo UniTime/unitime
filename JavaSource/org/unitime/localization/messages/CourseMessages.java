@@ -6099,4 +6099,88 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Include inactive academic sessions")
 	String checkIncludeInactiveSessions();
+	
+	@DefaultMessage("Page Statistics (last {0} days)")
+	String sectPageStatistics(int days);
+	
+	@DefaultMessage("URI")
+	String columnQueryLogURI();
+	
+	@DefaultMessage("Calls")
+	String columnQueryLogCalls();
+	
+	@DefaultMessage("Calls [>10ms]")
+	String columnQueryLogCallsOver10ms();
+	
+	@DefaultMessage("Calls [>100ms]")
+	String columnQueryLogCallsOver100ms();
+	
+	@DefaultMessage("Calls [>1min]")
+	String columnQueryLogCallsOver1min();
+	
+	@DefaultMessage("AvgTime [ms]")
+	String columnQueryLogAverageTime();
+	
+	@DefaultMessage("MaxTime [s]")
+	String columnQueryLogMaxTime();
+	
+	@DefaultMessage("Errors")
+	String columnQueryLogErrors();
+	
+	@DefaultMessage("Last 3 Hours")
+	String sectQueryLogChartLast3Hours();
+	
+	@DefaultMessage("Last 7 Days")
+	String sectQueryLogChartLastWeek();
+	
+	@DefaultMessage("Last 3 Months")
+	String sectQueryLogChartLast3Months();
+	
+	@DefaultMessage("Number of Users/Sessions")
+	String axeQueryLogNumberOfUsersAndSessions();
+	
+	@DefaultMessage("Calls per Minute")
+	String axeQueryLogCallsPerMinute();
+
+	@DefaultMessage("Max Time [s]")
+	String axeQueryLogMaxTimeSec();
+
+	@DefaultMessage("Average Time [ms]")
+	String axeQueryLogAverageTimeMs();
+	
+	@DefaultMessage("Day")
+	String axeQueryLogBaseDay();
+	
+	@DefaultMessage("Minute")
+	String axeQueryLogBaseMinte();
+	
+	@DefaultMessage("Hour")
+	String axeQueryLogBaseHour();
+	
+	@DefaultMessage("Time")
+	String axeQueryLogTime();
+	
+	@DefaultMessage("Max Time")
+	String axeQueryLogMaxTime();
+	
+	@DefaultMessage("GWT Max Time")
+	String axeQueryLogMaxTimeGWT();
+	
+	@DefaultMessage("Average Time")
+	String axeQueryLogAverageTime();
+	
+	@DefaultMessage("GWT Average Time")
+	String axeQueryLogAverageTimeGWT();
+	
+	@DefaultMessage("Users per {0}")
+	String axeQueryLogUsers(String base);
+	
+	@DefaultMessage("HTTP Sessions per {0}")
+	String axeQueryLogSessions(String base);
+	
+	@DefaultMessage("Pages per Minute")
+	String axeQueryLogPages();
+	
+	@DefaultMessage("GWT Calls per Minute")
+	String axeQueryLogCalls();
 }

@@ -290,6 +290,7 @@
     	<url-pattern>/dataExchange</url-pattern>
     	<url-pattern>/distributionTypes</url-pattern>
     	<url-pattern>/accessStats</url-pattern>
+    	<url-pattern>/stats</url-pattern>
     </servlet-mapping>
 	
 	<filter>
