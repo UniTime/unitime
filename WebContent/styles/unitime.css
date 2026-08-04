@@ -9226,3 +9226,16 @@ div.gwt-MenuBarPopup {
 .unitime-AcessStatisticsPage .custom-to-line .unitime-Widget {
 	margin-right: 10px;
 }
+
+.unitime-QueryLogStatsPage .label-td {
+	width: 50%;
+}
+
+.unitime-QueryLogStatsPage .widget-td {
+	width: 50%;
+}
+
+.unitime-QueryLogStatsPage .chart {
+	min-width: 600px;
+	height: 400px;
+}

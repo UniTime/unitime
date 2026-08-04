@@ -19,11 +19,16 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Enumeration;
+
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.rights.Right;
@@ -42,7 +47,18 @@ public class StatsAction extends UniTimeAction<BlankForm> {
 	private static final long serialVersionUID = -1957840172304483386L;
 
 	@Override
-	public String execute() {
+	public String execute() throws IOException {
+		if (ApplicationProperty.LegacyPageStats.isFalse()) {
+    		String url = "stats";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		sessionContext.checkPermission(Right.PageStatistics);
 		WebTable.setOrder(sessionContext,"pageStats.ord",request.getParameter("ord"), 1);
 		return "show";

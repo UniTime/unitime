@@ -4232,6 +4232,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Access Statistics")
 	@DoNotTranslate
 	String pageAccessStatistics();
+	
+	@DefaultMessage("Page Statistics")
+	@DoNotTranslate
+	String pagePageStatistics();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

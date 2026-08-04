@@ -48,6 +48,7 @@ import org.joda.time.ReadablePeriod;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.base.BaseQueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 
@@ -60,6 +61,7 @@ import org.unitime.timetable.model.dao.QueryLogDAO;
 public class QueryLog extends BaseQueryLog {
 	private static final long serialVersionUID = 7073111443207707716L;
 	protected static Log sLog = LogFactory.getLog(QueryLog.class);
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	public QueryLog() {
 		super();
@@ -91,8 +93,16 @@ public class QueryLog extends BaseQueryLog {
 		Calendar c = Calendar.getInstance(Locale.US);
 		c.setTime(new Date());
 		c.add(Calendar.DAY_OF_YEAR, -days);
-		WebTable table = new WebTable(8, "Page Statistics (last " + days + " days)", "stats.action?ord=%%",
-				new String[] {"URI", "Calls", "Calls [>10ms]", "Calls [>100ms]", "Calls [>1min]", "AvgTime [ms]", "MaxTime [s]", "Errors"},
+		WebTable table = new WebTable(8, MSG.sectPageStatistics(days), "stats.action?ord=%%",
+				new String[] {
+						MSG.columnQueryLogURI(),
+						MSG.columnQueryLogCalls(),
+						MSG.columnQueryLogCallsOver10ms(),
+						MSG.columnQueryLogCallsOver100ms(),
+						MSG.columnQueryLogCallsOver1min(),
+						MSG.columnQueryLogAverageTime(),
+						MSG.columnQueryLogMaxTime(),
+						MSG.columnQueryLogErrors()},
 				new String[] {"left", "right", "right", "right", "right", "right", "right", "right"},
 				new boolean[] {true, false, false, false, false, false, false, false});
 		DecimalFormat df = new DecimalFormat("#,##0.00");
@@ -154,39 +164,44 @@ public class QueryLog extends BaseQueryLog {
 		return table;
 	}
 	
+	public static enum ChartBaseUnit {
+		Minute,
+		Hour,
+		Day
+	}
+	
 	public static enum ChartWindow {
-		LAST_HOUR("Last 3 Hours", "kkmm", Hours.THREE, 10, Minutes.ONE,
-				"k:mm", 20, 0, 10, "Minute",
+		LAST_HOUR("kkmm", Hours.THREE, 10, Minutes.ONE,
+				"k:mm", 20, 0, 10, ChartBaseUnit.Minute,
 				"to_char(timeStamp, 'HH24MI')", "timeStamp > adddate(current_date(), -1)",
 				"date_format(timeStamp, '%H%i')", "timeStamp > adddate(current_date(), -1)"),
 /*		LAST_DAY("Last 24 Hours (1-hour average)", "kk", Days.ONE, 1, Hours.ONE,
 				"k", 3, 2, 60, "Hour",
 				"to_char(timeStamp, 'HH24')", "timeStamp > adddate(current_date(), -1)",
 				"date_format(timeStamp, '%H')", "timeStamp > adddate(current_date(), -1)"),*/
-		LAST_WEEK("Last 7 Days", "ddkk", Days.SEVEN, 1, Hours.ONE,
-				"M/d kk", 24, 0, 60, "Hour",
+		LAST_WEEK("ddkk", Days.SEVEN, 1, Hours.ONE,
+				"M/d kk", 24, 0, 60, ChartBaseUnit.Hour,
 				"to_char(timeStamp, 'DDHH24')", "timeStamp > adddate(current_date(), - 7)",
 				"date_format(timeStamp, '%d%H')", "timeStamp > adddate(current_date(), -7)"),
-		LAST_MONTH("Last 3 Months", "MMdd", Months.THREE, 1, Days.ONE,
-				"MMM d", 32, 1, 24 * 60, "Day",
+		LAST_MONTH("MMdd", Months.THREE, 1, Days.ONE,
+				"MMM d", 32, 1, 24 * 60, ChartBaseUnit.Day,
 				"to_char(timeStamp, 'MMDD')", "timeStamp > adddate(current_date(), - 92)",
 				"date_format(timeStamp, '%m%d')", "timeStamp > adddate(current_date(), -92)"),
 		;
-		private String iName;
 		private DateFormat iFormat;
 		private ReadablePeriod iStart, iIncrement;
 		private int iWindow;
 		private String iOracleFormat, iOracleCondition;
 		private String iMySqlFormat, iMySqlCondition;
-		private String iAxeFormat, iBase;
+		private String iAxeFormat;
+		private ChartBaseUnit iBase;
 		private int iMinutes;
 		int iAxeMod, iAxeValue;
 		
-		ChartWindow(String name, String format,
+		ChartWindow(String format,
 				ReadablePeriod start, int window, ReadablePeriod increment,
-				String axeFormat,  int axeMod, int axeValue, int minutes, String base,
+				String axeFormat,  int axeMod, int axeValue, int minutes, ChartBaseUnit base,
 				String oracleFormat, String oracleCondition, String mySqlFormat, String mySqlCondition) {
-			iName = name;
 			iFormat = new SimpleDateFormat(format, Locale.US);
 			iStart = start; iWindow = window; iIncrement = increment;
 			iAxeFormat = axeFormat; iAxeMod = axeMod; iAxeValue = axeValue;
@@ -194,17 +209,31 @@ public class QueryLog extends BaseQueryLog {
 			iOracleFormat = oracleFormat; iOracleCondition = oracleCondition;
 			iMySqlFormat = mySqlFormat; iMySqlCondition = mySqlCondition;
 		}
-	@Transient
-		public String getName() { return iName; }
-	@Transient
-		public String getBase() { return iBase; }
+		@Transient
+		public String getName() {
+			switch (this) {
+			case LAST_HOUR: return MSG.sectQueryLogChartLast3Hours();
+			case LAST_MONTH: return MSG.sectQueryLogChartLast3Months();
+			case LAST_WEEK: return MSG.sectQueryLogChartLastWeek();
+			default: return name();
+			}
+		}
+		@Transient
+		public String getBase() {
+			switch(iBase) {
+			case Day: return MSG.axeQueryLogBaseDay();
+			case Hour: return MSG.axeQueryLogBaseHour();
+			case Minute: return MSG.axeQueryLogBaseMinte();
+			default: return iBase.name();
+			}
+		}
 		public String format(DateTime date) { return iFormat.format(date.getMillis()); }
 		public DateTime getFirst(DateTime now) { return now.minus(iStart); }
 		public DateTime next(DateTime date, DateTime now) {
 			DateTime ret = date.plus(iIncrement);
 			return (ret.isAfter(now) ? null : ret);
 		}
-	@Transient
+		@Transient
 		public int getMinutes() { return iMinutes; }
 		
 		public Map<String, int[]> getUsersAndSessions(org.hibernate.Session hibSession) {
@@ -338,14 +367,13 @@ public class QueryLog extends BaseQueryLog {
 		switch (t) {
 		case USERS:
 			return new String[] {
-					"Number of Users/Sessions",
-					"Calls per Minute",
-					
+					MSG.axeQueryLogNumberOfUsersAndSessions(),
+					MSG.axeQueryLogCallsPerMinute(),
 			};
 		case TIME:
 			return new String[] {
-					"Max Time [s]",
-					"Average Time [ms]",
+					MSG.axeQueryLogMaxTimeSec(),
+					MSG.axeQueryLogAverageTimeMs(),
 			};
 		default:
 			return null;
@@ -359,16 +387,18 @@ public class QueryLog extends BaseQueryLog {
 		String ret = "[";
 		switch (t) {
 		case USERS:
-			ret += "['Time', 'Users per " + w.getBase() + "', " +
-				"'HTTP Sessions per " + w.getBase() + "', " +
-				"'Pages per Minute', " +
-				"'GWT Calls per Minute'],";
+			ret += "['" + MSG.axeQueryLogTime() + "', '" +
+				MSG.axeQueryLogUsers(w.getBase())+ "', '" +
+				MSG.axeQueryLogSessions(w.getBase()) + "', '" +
+				MSG.axeQueryLogPages() + "', '" +
+				MSG.axeQueryLogCalls() + "'],";
 			break;
 		case TIME:
-			ret += "['Time', 'Max Time', " +
-				"'GWT Max Time', " +
-				"'Average Time', " +
-				"'GWT Average Time'],";
+			ret += "['" + MSG.axeQueryLogTime() + "', '" +
+				MSG.axeQueryLogMaxTime() + "', '" +
+				MSG.axeQueryLogMaxTimeGWT() + "', '" +
+				MSG.axeQueryLogAverageTime() + "', '" +
+				MSG.axeQueryLogAverageTimeGWT() + "'],";
 			break;
 		}
 		if (t == ChartType.USERS) {
