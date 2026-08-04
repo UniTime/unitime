@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,6 +114,17 @@ public class ManageSolversAction extends UniTimeAction<BlankForm> {
 	}
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyManageSolvers.isFalse()) {
+    		String url = "manageSolvers";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check Access.
 		sessionContext.checkPermission(Right.ManageSolvers);
         

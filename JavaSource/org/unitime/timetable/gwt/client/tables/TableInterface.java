@@ -629,6 +629,7 @@ public class TableInterface implements GwtRpcResponse {
 		private String iUrl;
 		private String iTitle;
 		private String iText;
+		private String iConfirm;
 		
 		public ButtonInterface() {}
 		
@@ -641,6 +642,9 @@ public class TableInterface implements GwtRpcResponse {
 		public String getText() { return iText; }
 		public ButtonInterface setText(String text) { iText = text; return this; }
 		public boolean hasText() { return iText != null && !iText.isEmpty(); }
+		public String getConfirm() { return iConfirm; }
+		public ButtonInterface setConfirm(String confirm) { iConfirm = confirm; return this; }
+		public boolean hasConfirm() { return iConfirm != null && !iConfirm.isEmpty(); }
 	}
 	
 	public static class CourseLinkInterface implements IsSerializable {
