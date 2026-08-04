@@ -4236,6 +4236,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Page Statistics")
 	@DoNotTranslate
 	String pagePageStatistics();
+	
+	@DefaultMessage("Manage Solvers")
+	@DoNotTranslate
+	String pageManageSolvers();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

@@ -63,6 +63,7 @@ import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOutHandler;
 import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.History;
@@ -546,7 +547,25 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 				button.addClickHandler(new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent evt) {
-						ToolBox.open(GWT.getHostPageBaseURL() + cell.getButton().getUrl());
+						evt.stopPropagation();
+						if (cell.getButton().hasConfirm()) {
+							UniTimeConfirmationDialog.confirm(cell.getButton().getConfirm(), new Command() {
+								@Override
+								public void execute() {
+									if (cell.getButton().getUrl().startsWith("#")) {
+										History.newItem(cell.getButton().getUrl().substring(1), true);
+									} else {
+										ToolBox.open(GWT.getHostPageBaseURL() + cell.getButton().getUrl());
+									}
+								}
+							});
+						} else {
+							if (cell.getButton().getUrl().startsWith("#")) {
+								History.newItem(cell.getButton().getUrl().substring(1), true);
+							} else {
+								ToolBox.open(GWT.getHostPageBaseURL() + cell.getButton().getUrl());
+							}
+						}
 					}
 				});
 			}

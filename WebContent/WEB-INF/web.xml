@@ -291,6 +291,7 @@
     	<url-pattern>/distributionTypes</url-pattern>
     	<url-pattern>/accessStats</url-pattern>
     	<url-pattern>/stats</url-pattern>
+    	<url-pattern>/manageSolvers</url-pattern>
     </servlet-mapping>
 	
 	<filter>
