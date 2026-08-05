@@ -27,7 +27,6 @@ import jakarta.persistence.Transient;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections4.map.HashedMap;
 import org.unitime.timetable.model.base.BaseInstructorSurvey;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 
@@ -74,7 +73,7 @@ public class InstructorSurvey extends BaseInstructorSurvey {
 	}
 	
 	public static Map<String, InstructorSurvey> getInstructorSurveysForDepartment(Long departmentId) {
-		Map<String, InstructorSurvey> ret = new HashedMap<String, InstructorSurvey>();
+		Map<String, InstructorSurvey> ret = new HashMap<String, InstructorSurvey>();
 		for (InstructorSurvey is: InstructorSurveyDAO.getInstance().getSession().createQuery(
 				"select s from DepartmentalInstructor di, InstructorSurvey s where " +
 				"s.session = di.department.session and s.externalUniqueId = di.externalUniqueId and " +

@@ -764,9 +764,9 @@
 		<struts2.version>7.1.1</struts2.version>
 		<protobuf.version>4.34.1</protobuf.version>
 		<gwt.version>2.13.0</gwt.version>
-		<spring.version>6.2.17</spring.version>
-		<spring-security.version>6.5.9</spring-security.version>
-		<spring-integration.version>6.5.8</spring-integration.version>
+		<spring.version>6.2.19</spring.version>
+		<spring-security.version>6.5.11</spring-security.version>
+		<spring-integration.version>6.5.10</spring-integration.version>
 		<servlet.version>6.0.0</servlet.version>
 		<jsp.version>3.1.1</jsp.version>
 		<mail.version>2.1.5</mail.version>
@@ -787,7 +787,7 @@
 		<biweekly.version>0.6.8</biweekly.version>
 		<poi.version>5.5.1</poi.version>
 		<dom4j.version>2.1.5</dom4j.version>
-		<jackson.version>2.21.1</jackson.version>
+		<jackson.version>2.22.1</jackson.version>
 		<text.version>1.15.0</text.version>
 		<lang3.version>3.20.0</lang3.version>
 		<asm.version>9.9.1</asm.version>
