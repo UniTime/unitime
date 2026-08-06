@@ -124,9 +124,9 @@ public class SubjectAreas implements AdminTable {
 		}
 		HashMap<Long, String> deptToManagers = managersForAllDepts(context, hibSession);
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field(MESSAGES.fieldAbbv(), FieldType.text, 100, 40, Flag.UNIQUE),
-				new Field(MESSAGES.fieldTitle(), FieldType.text, 120, 40, Flag.UNIQUE),
-				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.UNIQUE_IF_SET),
+				new Field(MESSAGES.fieldAbbv(), FieldType.text, 140, 40, Flag.UNIQUE),
+				new Field(MESSAGES.fieldTitle(), FieldType.text, 280, 100, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldExternalId(), FieldType.text, 280, 40, Flag.UNIQUE_IF_SET),
 				new Field(MESSAGES.fieldDepartment(), FieldType.list, 300, depts, Flag.NOT_EMPTY),
 				(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue()? new Field(MESSAGES.fieldFundingDepartment(), FieldType.list, 300, fundDepts) : new Field(MESSAGES.fieldFundingDepartment(), FieldType.list, 300, fundDepts, Flag.HIDDEN)),
 				new Field(MESSAGES.fieldManagers(), FieldType.textarea, 100, Flag.READ_ONLY, Flag.NO_DETAIL),
