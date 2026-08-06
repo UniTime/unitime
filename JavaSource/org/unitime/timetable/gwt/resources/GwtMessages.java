@@ -4240,6 +4240,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Manage Solvers")
 	@DoNotTranslate
 	String pageManageSolvers();
+	
+	@DefaultMessage("Roll Forward Session")
+	@DoNotTranslate
+	String pageRollForwardSession();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

@@ -292,6 +292,7 @@
     	<url-pattern>/accessStats</url-pattern>
     	<url-pattern>/stats</url-pattern>
     	<url-pattern>/manageSolvers</url-pattern>
+    	<url-pattern>/rollForward</url-pattern>
     </servlet-mapping>
 	
 	<filter>
