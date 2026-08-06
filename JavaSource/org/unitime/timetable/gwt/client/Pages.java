@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.admin.LastChangesPage;
 import org.unitime.timetable.gwt.client.admin.ManageSolversPage;
 import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.QueryLogStatsPage;
+import org.unitime.timetable.gwt.client.admin.RollForwardSessionPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.admin.SolverGroupsPage;
@@ -572,6 +573,10 @@ public enum Pages {
 	manageSolvers(new PageFactory() {
 		public Widget create() { return new ManageSolversPage(); }
 		public String name(GwtMessages messages) { return messages.pageManageSolvers(); }
+		}),
+	rollForward(new PageFactory() {
+		public Widget create() { return new RollForwardSessionPage(); }
+		public String name(GwtMessages messages) { return messages.pageRollForwardSession(); }
 		}),
 	;
 	

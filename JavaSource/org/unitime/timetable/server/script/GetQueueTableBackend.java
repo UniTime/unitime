@@ -62,6 +62,11 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 			type = "PDF Enrollment Report";
 			context.checkPermission(Right.EnrollmentAuditPDFReports);
 			break;
+		case RollForward:
+			type = "Roll Forward";
+			context.checkPermission(Right.SessionRollForward);
+			break;
+		case Script:
 		default:
 			type = "Script";
 			context.checkPermission(Right.Scripts);

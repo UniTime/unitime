@@ -21,51 +21,23 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.action.RollForwardSessionAction.RollForwardErrors;
 import org.unitime.timetable.action.UniTimeAction;
-import org.unitime.timetable.model.Building;
-import org.unitime.timetable.model.ClassInstructor;
-import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.Curriculum;
-import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrors;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.StudentEnrollmentMode;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.LastLikeCourseDemand;
-import org.unitime.timetable.model.LearningManagementSystemInfo;
-import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.OfferingCoordinator;
-import org.unitime.timetable.model.PitStudentClassEnrollment;
 import org.unitime.timetable.model.PointInTimeData;
-import org.unitime.timetable.model.RoomFeature;
-import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TeachingRequest;
-import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.ClassInstructorDAO;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
-import org.unitime.timetable.model.dao.CourseRequestDAO;
-import org.unitime.timetable.model.dao.CurriculumDAO;
-import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.ExamPeriodDAO;
-import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
-import org.unitime.timetable.model.dao.OfferingCoordinatorDAO;
-import org.unitime.timetable.model.dao.RoomFeatureDAO;
-import org.unitime.timetable.model.dao.RoomGroupDAO;
-import org.unitime.timetable.model.dao.StudentClassEnrollmentDAO;
-import org.unitime.timetable.model.dao.TeachingRequestDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.SessionRollForward;
+import org.unitime.timetable.util.Formats;
 
 
 /** 
@@ -125,7 +97,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 	private Boolean rollForwardLearningManagementSystems;
 	private Long sessionToRollLearningManagementSystemsForwardFrom;
 	private Boolean rollForwardWaitListsProhibitedOverrides;
-	private Boolean roolForwardParentOfferings;
+	private Boolean rollForwardParentOfferings;
 	
 	private Boolean rollForwardReservations;
 	private Long sessionToRollReservationsForwardFrom;
@@ -157,313 +129,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 	@Override
 	public void validate(UniTimeAction action) {
 	}
-	
-		
-	private boolean validateRollForwardSessionHasNoDataOfType(RollForwardErrors action, Session sessionToRollForwardTo, String rollForwardType, Collection checkCollection){
-		if (checkCollection != null && !checkCollection.isEmpty()){
-			action.addFieldError("sessionHasData", MSG.errorRollForwardNoData(rollForwardType, sessionToRollForwardTo.getLabel()));
-			return false;
-		}
-		return true;
-	}
 
-	protected boolean validateRollForward(RollForwardErrors action, Session sessionToRollForwardTo, Long sessionIdToRollForwardFrom, String rollForwardType, Collection checkCollection){
-		if (!validateRollForwardSessionHasNoDataOfType(action, sessionToRollForwardTo, rollForwardType,  checkCollection))
-			return false;
-		Session sessionToRollForwardFrom = Session.getSessionById(sessionIdToRollForwardFrom);
-		if (sessionToRollForwardFrom == null){
-			action.addFieldError("mustSelectSession", MSG.errorRollForwardMissingFromSession(rollForwardType));
-			return false;
-		}
-		if (sessionToRollForwardFrom.equals(sessionToRollForwardTo)){
-			action.addFieldError("sessionsMustBeDifferent", MSG.errorRollForwardSessionsMustBeDifferent(rollForwardType, sessionToRollForwardTo.getLabel()));
-			return false;
-		}
-		return true;
-	}
-
-	public boolean validateLearningManagementSystemRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardLearningManagementSystems().booleanValue()){
-			return validateRollForward(action, toAcadSession, getSessionToRollLearningManagementSystemsForwardFrom(), MSG.rollForwardLMSInfo(), LearningManagementSystemInfo.findAll(toAcadSession.getUniqueId()));			
- 		} else {
- 			return true;
- 		}
-	}
-	
-	public boolean validateDatePatternRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardDatePatterns().booleanValue()){
-			return validateRollForward(action, toAcadSession, getSessionToRollDatePatternsForwardFrom(), MSG.rollForwardDatePatterns(), DatePattern.findAll(toAcadSession, true, null, null));			
- 		} else {
- 			return true;
- 		}
-	}
-	
-	public boolean validateTimePatternRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardTimePatterns().booleanValue()){
-			return validateRollForward(action, toAcadSession, getSessionToRollTimePatternsForwardFrom(), MSG.rollForwardTimePatterns(), TimePattern.findAll(toAcadSession, null));			
- 		} else {
- 			return true;
- 		}
-	}
-
-	public boolean validateDepartmentRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardDepartments().booleanValue()){
-			return validateRollForward(action, toAcadSession, getSessionToRollDeptsFowardFrom(), MSG.rollForwardDepartments(), Department.findAll(toAcadSession.getUniqueId()));			
-		} else {
-			return true;
-		}
-	}
-
-	public boolean validateManagerRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardManagers().booleanValue()){
-			TimetableManagerDAO tmDao = TimetableManagerDAO.getInstance();
-			return validateRollForward(action, toAcadSession, getSessionToRollManagersForwardFrom(), MSG.rollForwardManagers(), tmDao.getSession().createQuery("from TimetableManager tm inner join tm.departments d where d.session.uniqueId =" + toAcadSession.getUniqueId().toString(), TimetableManager.class).list());
-		} else {
-			return true;
-		}
-	}
-	
-	public boolean validateBuildingAndRoomRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardRoomData().booleanValue()){
-			boolean vbf = validateRollForward(action, toAcadSession, getSessionToRollRoomDataForwardFrom(), MSG.rollForwardBuildings(), new ArrayList<Building>());
-			boolean vb = validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardBuildings(), Building.findAll(toAcadSession.getUniqueId()));
-			boolean vrf = validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardRooms(), Location.findAll(toAcadSession.getUniqueId()));
-			RoomFeatureDAO rfDao = RoomFeatureDAO.getInstance();
-			boolean vr = validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardRoomsFeatures(), rfDao.getSession().createQuery("from RoomFeature rf where rf.department.session.uniqueId = " + toAcadSession.getUniqueId().toString(), RoomFeature.class).list());
-			RoomGroupDAO rgDao = RoomGroupDAO.getInstance();
-			boolean vn = validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardRoomsGroups(), rgDao.getSession().createQuery("from RoomGroup rg where rg.session.uniqueId = " + toAcadSession.getUniqueId().toString() + " and rg.global = false", RoomGroup.class).list());
-			return vbf && vb && vrf && vr && vn;
-		} else {
-			return true;
-		}
-	}
-
-	public boolean validateSubjectAreaRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardSubjectAreas().booleanValue()){
-			return validateRollForward(action, toAcadSession, getSessionToRollSubjectAreasForwardFrom(), MSG.rollForwardSubjectAreas(), SubjectArea.getSubjectAreaList(toAcadSession.getUniqueId()));			
-		} else {
-			return true;
-		}
-	}
-		
-	public void validateInstructorDataRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardInstructorData().booleanValue()){
-			DepartmentalInstructorDAO diDao = DepartmentalInstructorDAO.getInstance();
-			validateRollForward(action, toAcadSession, getSessionToRollInstructorDataForwardFrom(), MSG.rollForwardInstructors(), diDao.getSession().createQuery("from DepartmentalInstructor di where di.department.session.uniqueId = " + toAcadSession.getUniqueId().toString(), DepartmentalInstructor.class).list());			
-		}		
-	}
-
-	public boolean validateCourseOfferingRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
-		boolean ret = true;
-		if (getRollForwardCourseOfferings().booleanValue()){
-			if (getSubpartLocationPrefsAction() != null 
-					&& !getSubpartLocationPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
-					&& !getSubpartLocationPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
-				action.addFieldError("invalidSubpartLocationAction", MSG.errorRollForwardInvalidSubpartLocationAction(getSubpartLocationPrefsAction()));
-				ret = false;
-			}
-			if (getSubpartTimePrefsAction() != null 
-					&& !getSubpartTimePrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
-					&& !getSubpartTimePrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
-				action.addFieldError("invalidSubpartTimeAction", MSG.errorRollForwardInvalidSubpartTimeAction(getSubpartLocationPrefsAction()));
-				ret = false;
-			}
-			if (getClassPrefsAction() != null 
-					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION)
-					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION)
-					&& !getClassPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION)){
-				action.addFieldError("invalidClassAction", MSG.errorRollForwardInvalidClassAction(getClassPrefsAction()));
-				ret = false;
-			}
-			if (getRollForwardDistributions() != null
-					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.ALL.name())
-					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.MIXED.name())
-					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.SUBPART.name())
-					&& !getRollForwardDistributions().equalsIgnoreCase(SessionRollForward.DistributionMode.NONE.name())){
-				action.addFieldError("invalidDistributionAction", MSG.errorRollForwardInvalidDistributionAction(getRollForwardDistributions()));
-				ret = false;
-			}
-			if (getCancelledClassAction() != null
-					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.KEEP.name())
-					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.REOPEN.name())
-					&& !getCancelledClassAction().equalsIgnoreCase(SessionRollForward.CancelledClassAction.SKIP.name())){
-				action.addFieldError("invalidCancelAction", MSG.errorRollForwardInvalidCancelAction(getCancelledClassAction()));
-				ret = false;
-			}
-			if (!validateRollForward(action, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardCourseOfferings(), new ArrayList<CourseOffering>()))
-				ret = false;
-			CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
-			if (toSubjectArea == null) {
-				for (int i = 0; i < getRollForwardSubjectAreaIds().length; i++){
-					String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
-						+ toAcadSession.getUniqueId().toString()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + getRollForwardSubjectAreaIds()[i];
-					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + getRollForwardSubjectAreaIds()[i]), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
-						ret = false;
-				}
-			} else {
-				String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
-						+ toAcadSession.getUniqueId()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + toSubjectArea.getUniqueId();
-					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
-						ret = false;
-			}
-		}
-		return ret;
-	}
-	
-	public boolean validateClassInstructorRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
-		if (getRollForwardClassInstructors().booleanValue()){
-			boolean ret = true;
-			if (!validateRollForward(action, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardClassInstructors(), new ArrayList<ClassInstructor>()))
-				ret = false;
-			ClassInstructorDAO ciDao = ClassInstructorDAO.getInstance();
-			if (toSubjectArea == null) {
-				for (int i = 0; i < getRollForwardClassInstrSubjectIds().length; i++){
-					String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
-						+ toAcadSession.getUniqueId().toString()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + getRollForwardClassInstrSubjectIds()[i];
-					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardClassInstructors() + ": " + getRollForwardClassInstrSubjectIds()[i]), ciDao.getSession().createQuery(queryStr, ClassInstructor.class).list()))
-						ret = false;
-				}
-			} else {
-				String queryStr = "from ClassInstructor c  inner join c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co where c.classInstructing.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = "
-						+ toAcadSession.getUniqueId().toString()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + toSubjectArea.getUniqueId();
-					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardClassInstructors() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), ciDao.getSession().createQuery(queryStr, ClassInstructor.class).list()))
-						ret = false;
-			}
-			return ret;
-		} else {
-			return true;
-		}
-	}
-	
-	public boolean validateOfferingCoordinatorsRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
-		if (getRollForwardOfferingCoordinators().booleanValue()){
-			boolean ret = true;
-			if (!validateRollForward(action, toAcadSession, getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardOfferingCoordinators(), new ArrayList<OfferingCoordinator>()))
-				ret = false;
-			OfferingCoordinatorDAO ocDao = OfferingCoordinatorDAO.getInstance();
-			if (toSubjectArea == null) {
-				for (int i = 0; i < getRollForwardOfferingCoordinatorsSubjectIds().length; i++){
-					String queryStr = "from OfferingCoordinator c inner join c.offering.courseOfferings as co where c.offering.session.uniqueId = "
-						+ toAcadSession.getUniqueId().toString()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + getRollForwardOfferingCoordinatorsSubjectIds()[i];
-					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardOfferingCoordinators() + ": " + getRollForwardOfferingCoordinatorsSubjectIds()[i]), ocDao.getSession().createQuery(queryStr, OfferingCoordinator.class).list()))
-						ret = false;
-				}
-			} else {
-				String queryStr = "from OfferingCoordinator c inner join c.offering.courseOfferings as co where c.offering.session.uniqueId = "
-						+ toAcadSession.getUniqueId().toString()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + toSubjectArea.getUniqueId();
-					if (!validateRollForwardSessionHasNoDataOfType(action, toAcadSession, (MSG.rollForwardOfferingCoordinators() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), ocDao.getSession().createQuery(queryStr, OfferingCoordinator.class).list()))
-						ret = false;
-			}
-			return ret;
-		} else {
-			return true;
-		}
-	}
-
-	
-	public boolean validateExamConfigurationRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardExamConfiguration().booleanValue()){
-			ExamPeriodDAO epDao = ExamPeriodDAO.getInstance();
-			return validateRollForward(action, toAcadSession, getSessionToRollExamConfigurationForwardFrom(), MSG.rollForwardExamConfiguration(), epDao.getSession().createQuery("from ExamPeriod ep where ep.session.uniqueId = " + toAcadSession.getUniqueId().toString(), ExamPeriod.class).list());			
-		} else {
-			return true;
-		}
-	}
-
-	public boolean validateMidtermExamRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardMidtermExams().booleanValue()){
-			ExamDAO eDao = ExamDAO.getInstance();
-			return validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardMidtermExams(), eDao.getSession().createQuery("from Exam e where e.session.uniqueId = " + toAcadSession.getUniqueId().toString() +" and e.examType.type = " + ExamType.sExamTypeMidterm, Exam.class).list());			
-		} else {
-			return true;
-		}
-	}
-
-	public boolean validateFinalExamRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardFinalExams().booleanValue()){
-			ExamDAO epDao = ExamDAO.getInstance();
-			return validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardFinalExams(), epDao.getSession().createQuery("from Exam e where e.session.uniqueId = " + toAcadSession.getUniqueId().toString() +" and e.examType.type = " + ExamType.sExamTypeFinal, Exam.class).list());			
-		} else {
-			return true;
-		}
-	}
-
-	public boolean validateLastLikeDemandRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardStudents().booleanValue()) {
-		    if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.LAST_LIKE.name())) {
-		        return validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardLastLikeStudentCourseRequests(), 
-		                LastLikeCourseDemandDAO.getInstance().getSession().createQuery("from LastLikeCourseDemand d where d.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString(), LastLikeCourseDemand.class).list());
-		    } else if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.STUDENT_CLASS_ENROLLMENTS.name())) {
-		    	return validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardStudentClassEnrollments(), 
-		                StudentClassEnrollmentDAO.getInstance().getSession().createQuery("from StudentClassEnrollment d where d.courseOffering.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString(), StudentClassEnrollment.class).list());
-		    } else if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.STUDENT_COURSE_REQUESTS.name())) {
-		    	return validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardCourseRequests(), 
-                        CourseRequestDAO.getInstance().getSession().createQuery("from CourseRequest r where r.courseOffering.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString(), CourseRequest.class).list());
-		    } else if (getRollForwardStudentsMode().equals(SessionRollForward.StudentEnrollmentMode.POINT_IN_TIME_CLASS_ENROLLMENTS.name())) {
-		    	return validateRollForwardSessionHasNoDataOfType(action, toAcadSession, MSG.rollForwardPITStudentClassEnrollments(), 
-		                StudentClassEnrollmentDAO.getInstance().getSession().createQuery("from PitStudentClassEnrollment d where d.pitCourseOffering.subjectArea.session.uniqueId = " + toAcadSession.getUniqueId().toString(), PitStudentClassEnrollment.class).list());
-		    } else {
-				action.addFieldError("invalidCancelAction", MSG.errorRollForwardInvalidCourseDemandAction(getRollForwardStudentsMode()));
-				return false;
-		    }
-		} else {
-			return true;
-		}
-	}
-
-	public boolean validateCurriculaRollForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardCurricula().booleanValue()){
-			CurriculumDAO curDao = CurriculumDAO.getInstance();
-			return validateRollForward(action, toAcadSession, getSessionToRollCurriculaForwardFrom(), MSG.rollForwardCurricula(), curDao.getSession().createQuery("from Curriculum c where c.department.session.uniqueId = " + toAcadSession.getUniqueId().toString(), Curriculum.class).list());			
-		} else {
-			return true;
-		}
-	}
-	
-	public void validatePeriodicTasksForward(Session toAcadSession, RollForwardErrors action){
-		if (getRollForwardPeriodicTasks()){
-			validateRollForward(action, toAcadSession, getSessionToRollCurriculaForwardFrom(), MSG.rollForwardScheduledTasks(), null);			
-		}
-	}
-
-	public void validateSessionToRollForwardTo(RollForwardErrors action){
-		Session toAcadSession = Session.getSessionById(getSessionToRollForwardTo());
-		if (toAcadSession == null){
-   			action.addFieldError("mustSelectSession", MSG.errorRollForwardMissingToSession());
-   			return;
-		}
-		
-		validateDepartmentRollForward(toAcadSession, action);
-		validateManagerRollForward(toAcadSession, action);
-		validateBuildingAndRoomRollForward(toAcadSession, action);
-		validateDatePatternRollForward(toAcadSession, action);
-		validateTimePatternRollForward(toAcadSession, action);
-		validateLearningManagementSystemRollForward(toAcadSession, action);
-		validateSubjectAreaRollForward(toAcadSession, action);
-		validateCourseOfferingRollForward(toAcadSession, null, action);
-		validateTeachingRequestsRollForward(toAcadSession, null, action);
-		validateClassInstructorRollForward(toAcadSession, null, action);
-		validateOfferingCoordinatorsRollForward(toAcadSession, null, action);
-		validateExamConfigurationRollForward(toAcadSession, action);
-		validateMidtermExamRollForward(toAcadSession, action);
-		validateFinalExamRollForward(toAcadSession, action);
-		validateLastLikeDemandRollForward(toAcadSession, action);
-		validateCurriculaRollForward(toAcadSession, action);
-		validatePeriodicTasksForward(toAcadSession, action);
-	}
-	
 	@Override
 	public void reset() {
 		subjectAreas = new ArrayList<SubjectArea>();
@@ -538,7 +204,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 		rollForwardLearningManagementSystems = Boolean.valueOf(false);
 		sessionToRollLearningManagementSystemsForwardFrom = null;
 		rollForwardWaitListsProhibitedOverrides = false;
-		roolForwardParentOfferings = false;
+		rollForwardParentOfferings = false;
 	}
 
 	public String getButtonAction() {
@@ -1103,7 +769,7 @@ public class RollForwardSessionForm implements UniTimeForm {
 		form.rollForwardLearningManagementSystems = rollForwardLearningManagementSystems;
 		form.sessionToRollLearningManagementSystemsForwardFrom = sessionToRollLearningManagementSystemsForwardFrom;
 		form.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides;
-		form.roolForwardParentOfferings = roolForwardParentOfferings;
+		form.rollForwardParentOfferings = rollForwardParentOfferings;
 		form.rollForwardUniversalReservations = rollForwardUniversalReservations;
 		form.expirationUniversalReservations = expirationUniversalReservations;
 		form.startDateUniversalReservations = startDateUniversalReservations;
@@ -1123,29 +789,6 @@ public class RollForwardSessionForm implements UniTimeForm {
 
 	public void setRollForwardTeachingRequestsSubjectIds(String[] rollForwardTeachingRequestsSubjectIds) {
 		this.rollForwardTeachingRequestsSubjectIds = rollForwardTeachingRequestsSubjectIds;
-	}
-	
-	public boolean validateTeachingRequestsRollForward(Session toAcadSession, SubjectArea toSubjectArea, RollForwardErrors action){
-		if (getRollForwardTeachingRequests().booleanValue()) {
-			if (getRollForwardOfferingCoordinatorsSubjectIds() == null || getRollForwardOfferingCoordinatorsSubjectIds().length == 0) {
-				action.addFieldError("mustSelectDepartment", MSG.errorRollForwardGeneric(MSG.rollForwardTeachingRequests(), MSG.infoNoSubjectAreaSelected()));
-				return false;
-			} else if (toSubjectArea == null) {
-				return validateRollForward(action, toAcadSession, getSessionToRollInstructorDataForwardFrom(), MSG.rollForwardTeachingRequests(),
-						TeachingRequestDAO.getInstance().getSession().createQuery(
-								"select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and cast(co.subjectArea.uniqueId as string) in :subjectIds",
-								TeachingRequest.class)
-					.setParameterList("subjectIds", getRollForwardOfferingCoordinatorsSubjectIds(), String.class).list());
-			} else {
-				return validateRollForward(action, toAcadSession, getSessionToRollInstructorDataForwardFrom(), MSG.rollForwardTeachingRequests(),
-						TeachingRequestDAO.getInstance().getSession().createQuery(
-								"select tr from TeachingRequest tr inner join tr.offering.courseOfferings co where co.isControl = true and co.subjectArea.uniqueId = :subjectId",
-								TeachingRequest.class)
-					.setParameter("subjectId", toSubjectArea.getUniqueId()).list());
-			}
-		} else {
-			return true;
-		}
 	}
 	
 	public Boolean getRollForwardPeriodicTasks() { return rollForwardPeriodicTasks; }
@@ -1177,8 +820,8 @@ public class RollForwardSessionForm implements UniTimeForm {
 	public Boolean getRollForwardWaitListsProhibitedOverrides() { return rollForwardWaitListsProhibitedOverrides; }
 	public void setRollForwardWaitListsProhibitedOverrides(Boolean rollForwardWaitListsProhibitedOverrides) { this.rollForwardWaitListsProhibitedOverrides = rollForwardWaitListsProhibitedOverrides; }
 	
-	public Boolean getRoolForwardParentOfferings() { return roolForwardParentOfferings; }
-	public void setRoolForwardParentOfferings(Boolean roolForwardParentOfferings) { this.roolForwardParentOfferings = roolForwardParentOfferings; }
+	public Boolean getRollForwardParentOfferings() { return rollForwardParentOfferings; }
+	public void setRollForwardParentOfferings(Boolean roolForwardParentOfferings) { this.rollForwardParentOfferings = roolForwardParentOfferings; }
 
 
 	public Object clone() {
@@ -1193,5 +836,233 @@ public class RollForwardSessionForm implements UniTimeForm {
 	
 	public int getSubjectAreasListSize() {
 		return Math.min(7,getSubjectAreas().size());
+	}
+	
+	public static List<Long> toList(String[] data) {
+		if (data == null) return null;
+		List<Long> ret = new ArrayList<Long>();
+		for (String id: data)
+			ret.add(Long.valueOf(id));
+		return ret;
+	}
+	
+	public static Date toDate(String date) {
+		if (date == null || date.isEmpty()) return null;
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+		try {
+			return df.parse(date);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public RollForwardSessionInterface toRollForwardSessionInterface() {
+		RollForwardSessionInterface form = new RollForwardSessionInterface();
+		// form.setSubjectAreas(getSubjectAreas());
+		// form.setSubjectAreaIds(toSet(getSubjectAreaIds())); -- NOT USED
+		// form.setButtonAction(getButtonAction());
+		// form.setToSessions(getToSessions());
+		// form.setFromSessions(getFromSessions());
+		form.setSessionToRollForwardTo(getSessionToRollForwardTo());
+		form.setRollForwardDatePatterns(getRollForwardDatePatterns());
+		form.setSessionToRollDatePatternsForwardFrom(getSessionToRollDatePatternsForwardFrom());
+		form.setRollForwardTimePatterns(getRollForwardTimePatterns());
+		form.setSessionToRollTimePatternsForwardFrom(getSessionToRollTimePatternsForwardFrom());
+		form.setRollForwardDepartments(getRollForwardDepartments());
+		form.setSessionToRollDeptsFowardFrom(getSessionToRollDeptsFowardFrom());
+		form.setRollForwardManagers(getRollForwardManagers());
+		form.setSessionToRollManagersForwardFrom(getSessionToRollManagersForwardFrom());
+		form.setRollForwardRoomData(getRollForwardRoomData());
+		// form.setDepartments(getDepartments());
+		form.setRollForwardDepartmentIds(toList(getRollForwardDepartmentIds()));
+		form.setSessionToRollRoomDataForwardFrom(getSessionToRollRoomDataForwardFrom());
+		form.setRollForwardSubjectAreas(getRollForwardSubjectAreas());
+		form.setSessionToRollSubjectAreasForwardFrom(getSessionToRollSubjectAreasForwardFrom());
+		form.setRollForwardInstructorData(getRollForwardInstructorData());
+		form.setSessionToRollInstructorDataForwardFrom(getSessionToRollInstructorDataForwardFrom());
+		form.setRollForwardCourseOfferings(getRollForwardCourseOfferings());
+		form.setSessionToRollCourseOfferingsForwardFrom(getSessionToRollCourseOfferingsForwardFrom());
+		form.setRollForwardSubjectAreaIds(toList(getRollForwardSubjectAreaIds()));
+		form.setRollForwardClassInstructors(getRollForwardClassInstructors());
+		form.setRollForwardClassInstrSubjectIds(toList(getRollForwardClassInstrSubjectIds()));
+		form.setAddNewCourseOfferings(getAddNewCourseOfferings());
+		form.setAddNewCourseOfferingsSubjectIds(toList(getAddNewCourseOfferingsSubjectIds()));
+		form.setRollForwardExamConfiguration(getRollForwardExamConfiguration());
+		form.setSessionToRollExamConfigurationForwardFrom(getSessionToRollExamConfigurationForwardFrom());
+		form.setRollForwardMidtermExams(getRollForwardMidtermExams());
+		form.setRollForwardFinalExams(getRollForwardFinalExams());
+		form.setRollForwardStudents(getRollForwardStudents());
+		form.setRollForwardStudentsMode(StudentEnrollmentMode.fromString(getRollForwardStudentsMode()));
+		form.setPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom(getPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom());
+		// form.setFromPointInTimeDataSnapshots(getFromPointInTimeDataSnapshots());
+		form.setSubpartLocationPrefsAction(RollAction.fromLegacy(getSubpartLocationPrefsAction()));
+		form.setSubpartTimePrefsAction(RollAction.fromLegacy(getSubpartTimePrefsAction()));
+		form.setClassPrefsAction(RollAction.fromLegacy(getClassPrefsAction()));
+		form.setCancelledClassAction(CancelledClassAction.fromString(getCancelledClassAction()));
+		form.setRollForwardCurricula(getRollForwardCurricula());
+		form.setSessionToRollCurriculaForwardFrom(getSessionToRollCurriculaForwardFrom());
+		form.setMidtermExamsPrefsAction(RollAction.fromLegacy(getMidtermExamsPrefsAction()));
+		form.setFinalExamsPrefsAction(RollAction.fromLegacy(getFinalExamsPrefsAction()));
+		form.setRollForwardSessionConfig(getRollForwardSessionConfig());
+		form.setSessionToRollSessionConfigForwardFrom(getSessionToRollSessionConfigForwardFrom());
+		form.setRollForwardReservations(getRollForwardReservations());
+		form.setSessionToRollReservationsForwardFrom(getSessionToRollReservationsForwardFrom());
+		form.setRollForwardReservationsSubjectIds(toList(getRollForwardReservationsSubjectIds()));
+		form.setRollForwardCurriculumReservations(getRollForwardCurriculumReservations());
+		form.setRollForwardCourseReservations(getRollForwardCourseReservations());
+		form.setRollForwardGroupReservations(getRollForwardGroupReservations());
+		form.setExpirationCourseReservations(toDate(getExpirationCourseReservations()));
+		form.setExpirationCurriculumReservations(toDate(getExpirationCurriculumReservations()));
+		form.setExpirationGroupReservations(toDate(getExpirationGroupReservations()));
+		form.setCreateStudentGroupsIfNeeded(getCreateStudentGroupsIfNeeded());
+		form.setRollForwardOfferingCoordinators(getRollForwardOfferingCoordinators());
+		form.setRollForwardOfferingCoordinatorsSubjectIds(toList(getRollForwardOfferingCoordinatorsSubjectIds())); 
+		form.setRollForwardTeachingRequests(getRollForwardTeachingRequests());
+		form.setRollForwardTeachingRequestsSubjectIds(toList(getRollForwardTeachingRequestsSubjectIds()));
+		form.setRollForwardDistributions(DistributionMode.fromString(getRollForwardDistributions()));
+		form.setRollForwardPeriodicTasks(getRollForwardPeriodicTasks());
+		form.setSessionToRollPeriodicTasksFrom(getSessionToRollPeriodicTasksFrom());
+		form.setStartDateCourseReservations(toDate(getStartDateCourseReservations()));
+		form.setStartDateCurriculumReservations(toDate(getStartDateCurriculumReservations()));
+		form.setStartDateGroupReservations(toDate(getStartDateGroupReservations()));
+		form.setRollForwardLearningManagementSystems(getRollForwardLearningManagementSystems());
+		form.setSessionToRollLearningManagementSystemsForwardFrom(getSessionToRollLearningManagementSystemsForwardFrom());
+		form.setRollForwardWaitListsProhibitedOverrides(getRollForwardWaitListsProhibitedOverrides());
+		form.setRollForwardParentOfferings(getRollForwardParentOfferings());
+		form.setRollForwardUniversalReservations(getRollForwardUniversalReservations());
+		form.setExpirationUniversalReservations(toDate(getExpirationUniversalReservations()));
+		form.setStartDateUniversalReservations(toDate(getStartDateUniversalReservations()));
+		return form;
+	}
+	
+	public static String[] fromList(List<Long> data) {
+		if (data == null) return null;
+		String[] ret = new String[data.size()];
+		int i = 0;
+		for (Long id: data)
+			ret[i++] = id.toString();
+		return ret;
+	}
+	
+	public static String fromDate(Date date) {
+		if (date == null) return null;
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
+		return df.format(date);
+	}
+	
+	public static String toString(RollAction a) {
+		return a == null ? null : a.toLegacyConstant();
+	}
+	
+	public static String toString(DistributionMode a) {
+		return a == null ? null : a.name();
+	}
+	
+	public static String toString(StudentEnrollmentMode a) {
+		return a == null ? null : a.name();
+	}
+	
+	public static String toString(CancelledClassAction a) {
+		return a == null ? null : a.name();
+	}
+	
+	public void copyFromRollForwardSessionInterface(RollForwardSessionInterface form) {
+		// setSubjectAreas(form.getSubjectAreas());
+		// setSubjectAreaIds(fromSet(form.getSubjectAreaIds()));
+		setButtonAction(MSG.actionRollForward());
+		// setToSessions(form.getToSessions());
+		// setFromSessions(form.getFromSessions());
+		setSessionToRollForwardTo(form.getSessionToRollForwardTo());
+		setRollForwardDatePatterns(form.getRollForwardDatePatterns());
+		setSessionToRollDatePatternsForwardFrom(form.getSessionToRollDatePatternsForwardFrom());
+		setRollForwardTimePatterns(form.getRollForwardTimePatterns());
+		setSessionToRollTimePatternsForwardFrom(form.getSessionToRollTimePatternsForwardFrom());
+		setRollForwardDepartments(form.getRollForwardDepartments());
+		setSessionToRollDeptsFowardFrom(form.getSessionToRollDeptsFowardFrom());
+		setRollForwardManagers(form.getRollForwardManagers());
+		setSessionToRollManagersForwardFrom(form.getSessionToRollManagersForwardFrom());
+		setRollForwardRoomData(form.getRollForwardRoomData());
+		// setDepartments(form.getDepartments());
+		setRollForwardDepartmentIds(fromList(form.getRollForwardDepartmentIds()));
+		setSessionToRollRoomDataForwardFrom(form.getSessionToRollRoomDataForwardFrom());
+		setRollForwardSubjectAreas(form.getRollForwardSubjectAreas());
+		setSessionToRollSubjectAreasForwardFrom(form.getSessionToRollSubjectAreasForwardFrom());
+		setRollForwardInstructorData(form.getRollForwardInstructorData());
+		setSessionToRollInstructorDataForwardFrom(form.getSessionToRollInstructorDataForwardFrom());
+		setRollForwardCourseOfferings(form.getRollForwardCourseOfferings());
+		setSessionToRollCourseOfferingsForwardFrom(form.getSessionToRollCourseOfferingsForwardFrom());
+		setRollForwardSubjectAreaIds(fromList(form.getRollForwardSubjectAreaIds()));
+		setRollForwardClassInstructors(form.getRollForwardClassInstructors());
+		setRollForwardClassInstrSubjectIds(fromList(form.getRollForwardClassInstrSubjectIds()));
+		setAddNewCourseOfferings(form.getAddNewCourseOfferings());
+		setAddNewCourseOfferingsSubjectIds(fromList(form.getAddNewCourseOfferingsSubjectIds()));
+		setRollForwardExamConfiguration(form.getRollForwardExamConfiguration());
+		setSessionToRollExamConfigurationForwardFrom(form.getSessionToRollExamConfigurationForwardFrom());
+		setRollForwardMidtermExams(form.getRollForwardMidtermExams());
+		setRollForwardFinalExams(form.getRollForwardFinalExams());
+		setRollForwardStudents(form.getRollForwardStudents());
+		setRollForwardStudentsMode(toString(form.getRollForwardStudentsMode()));
+		setPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom(form.getPointInTimeSnapshotToRollCourseEnrollmentsForwardFrom());
+		// setFromPointInTimeDataSnapshots(form.getFromPointInTimeDataSnapshots());
+		setSubpartLocationPrefsAction(toString(form.getSubpartLocationPrefsAction()));
+		setSubpartTimePrefsAction(toString(form.getSubpartTimePrefsAction()));
+		setClassPrefsAction(toString(form.getClassPrefsAction()));
+		setCancelledClassAction(toString(form.getCancelledClassAction()));
+		setRollForwardCurricula(form.getRollForwardCurricula());
+		setSessionToRollCurriculaForwardFrom(form.getSessionToRollCurriculaForwardFrom());
+		setMidtermExamsPrefsAction(toString(form.getMidtermExamsPrefsAction()));
+		setFinalExamsPrefsAction(toString(form.getFinalExamsPrefsAction()));
+		setRollForwardSessionConfig(form.getRollForwardSessionConfig());
+		setSessionToRollSessionConfigForwardFrom(form.getSessionToRollSessionConfigForwardFrom());
+		setRollForwardReservations(form.getRollForwardReservations());
+		setSessionToRollReservationsForwardFrom(form.getSessionToRollReservationsForwardFrom());
+		setRollForwardReservationsSubjectIds(fromList(form.getRollForwardReservationsSubjectIds()));
+		setRollForwardCurriculumReservations(form.getRollForwardCurriculumReservations());
+		setRollForwardCourseReservations(form.getRollForwardCourseReservations());
+		setRollForwardGroupReservations(form.getRollForwardGroupReservations());
+		setExpirationCourseReservations(fromDate(form.getExpirationCourseReservations()));
+		setExpirationCurriculumReservations(fromDate(form.getExpirationCurriculumReservations()));
+		setExpirationGroupReservations(fromDate(form.getExpirationGroupReservations()));
+		setCreateStudentGroupsIfNeeded(form.getCreateStudentGroupsIfNeeded());
+		setRollForwardOfferingCoordinators(form.getRollForwardOfferingCoordinators());
+		setRollForwardOfferingCoordinatorsSubjectIds(fromList(form.getRollForwardOfferingCoordinatorsSubjectIds())); 
+		setRollForwardTeachingRequests(form.getRollForwardTeachingRequests());
+		setRollForwardTeachingRequestsSubjectIds(fromList(form.getRollForwardTeachingRequestsSubjectIds()));
+		setRollForwardDistributions(toString(form.getRollForwardDistributions()));
+		setRollForwardPeriodicTasks(form.getRollForwardPeriodicTasks());
+		setSessionToRollPeriodicTasksFrom(form.getSessionToRollPeriodicTasksFrom());
+		setStartDateCourseReservations(fromDate(form.getStartDateCourseReservations()));
+		setStartDateCurriculumReservations(fromDate(form.getStartDateCurriculumReservations()));
+		setStartDateGroupReservations(fromDate(form.getStartDateGroupReservations()));
+		setRollForwardLearningManagementSystems(form.getRollForwardLearningManagementSystems());
+		setSessionToRollLearningManagementSystemsForwardFrom(form.getSessionToRollLearningManagementSystemsForwardFrom());
+		setRollForwardWaitListsProhibitedOverrides(form.getRollForwardWaitListsProhibitedOverrides());
+		setRollForwardParentOfferings(form.getRollForwardParentOfferings());
+		setRollForwardUniversalReservations(form.getRollForwardUniversalReservations());
+		setExpirationUniversalReservations(fromDate(form.getExpirationUniversalReservations()));
+		setStartDateUniversalReservations(fromDate(form.getStartDateUniversalReservations()));
+	}
+	
+	protected boolean validateRollForward(RollForwardErrors action, Session sessionToRollForwardTo, Long sessionIdToRollForwardFrom, String rollForwardType, Collection checkCollection){
+		if (!validateRollForwardSessionHasNoDataOfType(action, sessionToRollForwardTo, rollForwardType,  checkCollection))
+			return false;
+		Session sessionToRollForwardFrom = Session.getSessionById(sessionIdToRollForwardFrom);
+		if (sessionToRollForwardFrom == null){
+			action.addFieldError("mustSelectSession", MSG.errorRollForwardMissingFromSession(rollForwardType));
+			return false;
+		}
+		if (sessionToRollForwardFrom.equals(sessionToRollForwardTo)){
+			action.addFieldError("sessionsMustBeDifferent", MSG.errorRollForwardSessionsMustBeDifferent(rollForwardType, sessionToRollForwardTo.getLabel()));
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean validateRollForwardSessionHasNoDataOfType(RollForwardErrors action, Session sessionToRollForwardTo, String rollForwardType, Collection checkCollection){
+		if (checkCollection != null && !checkCollection.isEmpty()){
+			action.addFieldError("sessionHasData", MSG.errorRollForwardNoData(rollForwardType, sessionToRollForwardTo.getLabel()));
+			return false;
+		}
+		return true;
 	}
 }

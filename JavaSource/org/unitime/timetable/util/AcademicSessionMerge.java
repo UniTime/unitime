@@ -37,6 +37,9 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollAction;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -131,8 +134,6 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.TravelTimeDAO;
-import org.unitime.timetable.util.SessionRollForward.CancelledClassAction;
-import org.unitime.timetable.util.SessionRollForward.DistributionMode;
 
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
@@ -3393,10 +3394,10 @@ public class AcademicSessionMerge {
 			CancelledClassAction cancelledClassAction,
 			String prefix) {
 
-		boolean isClassMerge = (classPrefsAction != null && classPrefsAction.equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION) ? true : false);
-		boolean isClassPrefsPushUp = (classPrefsAction != null && classPrefsAction.equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION) ? true : false);
-		boolean isSubpartTimePrefMerge = (subpartTimePrefsAction != null && subpartTimePrefsAction.equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION) ? false : true);
-		boolean isSubpartLocationPrefMerge = (subpartLocationPrefsAction != null && subpartLocationPrefsAction.equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION) ? false : true);
+		boolean isClassMerge = (classPrefsAction != null && classPrefsAction.equalsIgnoreCase(RollAction.ROLL_PREFS_ACTION.toLegacyConstant()) ? true : false);
+		boolean isClassPrefsPushUp = (classPrefsAction != null && classPrefsAction.equalsIgnoreCase(RollAction.PUSH_UP_ACTION.toLegacyConstant()) ? true : false);
+		boolean isSubpartTimePrefMerge = (subpartTimePrefsAction != null && subpartTimePrefsAction.equalsIgnoreCase(RollAction.DO_NOT_ROLL_ACTION.toLegacyConstant()) ? false : true);
+		boolean isSubpartLocationPrefMerge = (subpartLocationPrefsAction != null && subpartLocationPrefsAction.equalsIgnoreCase(RollAction.DO_NOT_ROLL_ACTION.toLegacyConstant()) ? false : true);
 		
 		if (iMergedSession.getSubjectAreas() != null) {
 			List<SubjectArea> fromSubjectAreas = SubjectAreaDAO.getInstance().findBySession(SubjectAreaDAO.getInstance().getSession(), fromSession.getUniqueId());

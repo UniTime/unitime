@@ -19,11 +19,12 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.Serializable;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,25 +33,29 @@ import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.tiles.annotation.TilesDefinition;
 import org.apache.struts2.tiles.annotation.TilesPutAttribute;
-import org.hibernate.Transaction;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardError;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrors;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.PointInTimeDataDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Formats;
-import org.unitime.timetable.util.SessionRollForward;
 import org.unitime.timetable.util.queue.QueueItem;
+import org.unitime.timetable.util.queue.RollForwardQueueItem;
 
 
 /** 
@@ -74,6 +79,17 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 	
 	@Override
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyRollForward.isFalse()) {
+    		String url = "rollForward";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
 		if (form == null) form = new RollForwardSessionForm();
         
         // Get operation
@@ -84,7 +100,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
     		form.validate(this);
             if (!hasFieldErrors()) {
             	getSolverServerService().getQueueProcessor().add(new RollForwardQueueItem(
-            			SessionDAO.getInstance().get(form.getSessionToRollForwardTo()), sessionContext.getUser(), (RollForwardSessionForm)form.clone()));
+            			SessionDAO.getInstance().get(form.getSessionToRollForwardTo()), sessionContext.getUser(), form.toRollForwardSessionInterface()));
             }
         }
 
@@ -104,23 +120,23 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 		if (op == null)
 			setExpirationDates(form);
 		if (form.getSubpartLocationPrefsAction() == null){
-			form.setSubpartLocationPrefsAction(SessionRollForward.ROLL_PREFS_ACTION);
+			form.setSubpartLocationPrefsAction(RollAction.ROLL_PREFS_ACTION.toLegacyConstant());
 		}
 		if (form.getSubpartTimePrefsAction() == null){
-			form.setSubpartTimePrefsAction(SessionRollForward.ROLL_PREFS_ACTION);			
+			form.setSubpartTimePrefsAction(RollAction.ROLL_PREFS_ACTION.toLegacyConstant());			
 		}
 		if (form.getClassPrefsAction() == null){
-			form.setClassPrefsAction(SessionRollForward.DO_NOT_ROLL_ACTION);
+			form.setClassPrefsAction(RollAction.DO_NOT_ROLL_ACTION.toLegacyConstant());
 		}
 		if (form.getRollForwardDistributions() == null)
-			form.setRollForwardDistributions(SessionRollForward.DistributionMode.MIXED.name());
+			form.setRollForwardDistributions(DistributionMode.MIXED.name());
 		if (form.getCancelledClassAction() == null) {
-			form.setCancelledClassAction(SessionRollForward.CancelledClassAction.REOPEN.name());
+			form.setCancelledClassAction(CancelledClassAction.REOPEN.name());
 		}
 		if (form.getMidtermExamsPrefsAction() == null)
-			form.setMidtermExamsPrefsAction(SessionRollForward.EXAMS_ROOM_PREFS);
+			form.setMidtermExamsPrefsAction(RollAction.EXAMS_ROOM_PREFS.toLegacyConstant());
 		if (form.getFinalExamsPrefsAction() == null)
-			form.setFinalExamsPrefsAction(SessionRollForward.EXAMS_ROOM_PREFS);
+			form.setFinalExamsPrefsAction(RollAction.EXAMS_ROOM_PREFS.toLegacyConstant());
 
   		return "displayRollForwardSessionForm";
 	}
@@ -183,7 +199,7 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 				request.setAttribute("logname", name);
 				request.setAttribute("logid", item.getId().toString());
 				request.setAttribute("log", item.log());
-				((RollForwardQueueItem)item).getForm().copyTo(form);
+				form.copyFromRollForwardSessionInterface(((RollForwardQueueItem)item).getForm());
 				saveErrors(((RollForwardQueueItem)item).getErrors());
 				line.setBgColor("rgb(168,187,225)");
 			}
@@ -191,394 +207,12 @@ public class RollForwardSessionAction extends UniTimeAction<RollForwardSessionFo
 		return table;
 	}
 	
-	protected void saveErrors(List<RollForwardError> errors) {
+	protected void saveErrors(RollForwardErrors errors) {
 		if (errors != null)
 			for (RollForwardError e: errors)
 				addFieldError(e.getType(), e.getMessage());
 	}
-	
-	public static class RollForwardError implements Serializable {
-		private static final long serialVersionUID = -8383522549018220760L;
-		private String iType, iMessage;
-		RollForwardError(String type, String message) {
-			iType = type; iMessage = message;
-		}
-		public String getType() { return iType; }
-		public String getMessage() { return iMessage; }
-	}
-	
-	public static class RollForwardErrors extends ArrayList<RollForwardError> {
-		private static final long serialVersionUID = 6152383035137322209L;
 
-		public void addFieldError(String type, String message) {
-			add(new RollForwardError(type, message));
-		}
-	}
-	
-	private static class RollForwardQueueItem extends QueueItem {
-		private static final long serialVersionUID = 1L;
-		private RollForwardSessionForm iForm;
-		private int iProgress = 0;
-		private RollForwardErrors iErrors = new RollForwardErrors();
-		
-		public RollForwardQueueItem(Session session, UserContext owner, RollForwardSessionForm form) {
-			super(session, owner);
-			iForm = form;
-		}
-		
-		public RollForwardErrors getErrors() {
-			return iErrors;
-		}
-		
-		public RollForwardSessionForm getForm() {
-			return iForm;
-		}
-		
-		@Override
-		public void error(Object message, Throwable t) {
-			super.error(message, t);
-			setError(t);
-		}
-		
-		@Override
-		protected void execute() throws Exception {
-			SessionRollForward sessionRollForward = new SessionRollForward(this);
-	        Session toAcadSession = Session.getSessionById(iForm.getSessionToRollForwardTo());
-			if (toAcadSession == null){
-	   			iErrors.addFieldError("mustSelectSession", MSG.errorRollForwardMissingToSession());
-			}
-			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
-
-        	if (iErrors.isEmpty() && iForm.getRollForwardDepartments()) {
-    			Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardDepartments() + " ...");
-    				if (iForm.validateDepartmentRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollDepartmentsForward(iErrors, iForm);	
-    		        tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardDepartments()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	        }
-	        iProgress++;
-
-        	if (iErrors.isEmpty() && iForm.getRollForwardSessionConfig()) {
-        		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardSessionConfiguration() + " ...");
-    				sessionRollForward.rollSessionConfigurationForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardSessionConfiguration()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-        	}
-	        iProgress++;
-
-        	if (iErrors.isEmpty() && iForm.getRollForwardManagers()) {
-        		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardManagers() + " ...");
-    				if (iForm.validateManagerRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollManagersForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardManagers()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-        	}
-	        iProgress++;
-
-        	if (iErrors.isEmpty() && iForm.getRollForwardRoomData()) {
-        		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardRooms() + " ...");
-    				if (iForm.validateBuildingAndRoomRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollBuildingAndRoomDataForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardRooms()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-        	}
-	        iProgress++;
-	        
-	        if (iErrors.isEmpty() && iForm.getRollForwardDatePatterns()) {
-        		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardDatePatterns() + " ...");
-    				if (iForm.validateDatePatternRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollDatePatternsForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardDatePatterns()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	        }
-	        iProgress++;
-	        
-            if (iErrors.isEmpty() && iForm.getRollForwardTimePatterns()) {
-            	Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardTimePatterns() + " ...");
-    				if (iForm.validateTimePatternRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollTimePatternsForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardTimePatterns()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	        }
-	        iProgress++;
-
-	        if (iErrors.isEmpty() && iForm.getRollForwardLearningManagementSystems()) {
-            	Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardLMSInfo() + " ...");
-    				if (iForm.validateLearningManagementSystemRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollLearningManagementSystemInfoForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardLMSInfo()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	        }
-	        iProgress++;
-	        
-	        if (iErrors.isEmpty() && iForm.getRollForwardSubjectAreas()) {
-	        	Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardSubjectAreas() + " ...");
-    				if (iForm.validateSubjectAreaRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollSubjectAreasForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardSubjectAreas()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardInstructorData()) {
-	    		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardInstructors() + " ...");
-    				sessionRollForward.rollInstructorDataForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardInstructors()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-			if (iErrors.isEmpty() && iForm.getRollForwardCourseOfferings()) {
-				setStatus(MSG.rollForwardCourseOfferings() + " ...");
-				sessionRollForward.rollCourseOfferingsForward(iErrors, iForm);
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardClassInstructors()) {
-	    		setStatus(MSG.rollForwardClassInstructors() + " ...");
-	    		sessionRollForward.rollClassInstructorsForward(iErrors, iForm);
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardOfferingCoordinators()) {
-				setStatus(MSG.rollForwardOfferingCoordinators() + " ...");
-				sessionRollForward.rollOfferingCoordinatorsForward(iErrors, iForm);
-	    	}
-			iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardTeachingRequests()) {
-				setStatus(MSG.rollForwardTeachingRequests() + " ...");
-				sessionRollForward.rollTeachingRequestsForward(iErrors, iForm);
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getAddNewCourseOfferings()) {
-	    		setStatus(MSG.rollForwardNewCourses() + " ...");
-	    		sessionRollForward.addNewCourseOfferings(iErrors, iForm);
-	    	}
-	        iProgress++;
-
-			if (iErrors.isEmpty() && iForm.getRollForwardExamConfiguration()) {
-				Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardExamConfiguration() + " ...");
-    				if (iForm.validateExamConfigurationRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollExamConfigurationDataForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardExamConfiguration()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardMidtermExams()) {
-	    		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardMidtermExams() + " ...");
-    	    		if (iForm.validateMidtermExamRollForward(toAcadSession, iErrors))
-    	    			sessionRollForward.rollMidtermExamsForward(iErrors, iForm);
-    	    		tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardMidtermExams()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardFinalExams()) {
-	    		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardFinalExams() + " ...");
-    				if (iForm.validateFinalExamRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollFinalExamsForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardFinalExams()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-			if (iErrors.isEmpty() && iForm.getRollForwardStudents()) {
-				Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardStudents() + " ...");
-    				if (iForm.validateLastLikeDemandRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollStudentsForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardStudents()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardCurricula()) {
-	    		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardCurricula() + " ...");
-    				if (iForm.validateCurriculaRollForward(toAcadSession, iErrors))
-    					sessionRollForward.rollCurriculaForward(iErrors, iForm);
-    				tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardCurricula()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	    	if (iErrors.isEmpty() && iForm.getRollForwardReservations()) {
-	    		Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardReservations() + " ...");
-    	    	    sessionRollForward.rollReservationsForward(iErrors, iForm);
-    	    	    tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardReservations()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	        if (iErrors.isEmpty() && iForm.getRollForwardPeriodicTasks()) {
-	        	Transaction tx = hibSession.beginTransaction();
-    			try {
-    				setStatus(MSG.rollForwardScheduledTasks() + " ...");
-    	    	    sessionRollForward.rollPeriodicTasksForward(iErrors, iForm);
-    	    	    tx.commit();
-    			} catch (Exception e) {
-    				tx.rollback();
-    				error(MSG.errorRollForwardFailedAll(MSG.rollForwardScheduledTasks()), e);
-    				iErrors.addFieldError("rollForward", e.getMessage());
-    			}
-    			hibSession.clear();
-	    	}
-	        iProgress++;
-
-	        if (!iErrors.isEmpty()) {
-	        	setError(new Exception(iErrors.get(0).getMessage()));
-	        } else {
-	        	log(MSG.logAllDone());
-	        }
-		}
-
-		@Override
-		public String name() {
-			List<String> names = new ArrayList<String>();
-        	if (iForm.getRollForwardDepartments()) names.add(MSG.rollForwardDepartments());
-			if (iForm.getRollForwardSessionConfig()) names.add(MSG.rollForwardConfiguration());
-        	if (iForm.getRollForwardManagers()) names.add(MSG.rollForwardManagers());
-        	if (iForm.getRollForwardRoomData()) names.add(MSG.rollForwardRooms());
-			if (iForm.getRollForwardDatePatterns()) names.add(MSG.rollForwardDatePatterns());
-            if (iForm.getRollForwardTimePatterns()) names.add(MSG.rollForwardTimePatterns());
-            if (iForm.getRollForwardLearningManagementSystems()) names.add(MSG.rollForwardLMS());
-        	if (iForm.getRollForwardSubjectAreas()) names.add(MSG.rollForwardSubjectAreas());
-        	if (iForm.getRollForwardInstructorData()) names.add(MSG.rollForwardInstructors());
-        	if (iForm.getRollForwardCourseOfferings()) names.add(MSG.rollForwardCourseOfferings());
-        	if (iForm.getRollForwardClassInstructors()) names.add(MSG.rollForwardClassInstructors());
-        	if (iForm.getRollForwardOfferingCoordinators()) names.add(MSG.rollForwardOfferingCoordinators());
-        	if (iForm.getRollForwardTeachingRequests()) names.add(MSG.rollForwardTeachingRequests());
-        	if (iForm.getAddNewCourseOfferings()) names.add(MSG.rollForwardNewCourses());
-        	if (iForm.getRollForwardExamConfiguration()) names.add(MSG.rollForwardExamConfiguration());
-        	if (iForm.getRollForwardMidtermExams()) names.add(MSG.rollForwardMidtermExams());
-        	if (iForm.getRollForwardFinalExams()) names.add(MSG.rollForwardFinalExams());
-        	if (iForm.getRollForwardStudents()) names.add(MSG.rollForwardStudents());
-        	if (iForm.getRollForwardCurricula()) names.add(MSG.rollForwardCurricula());
-        	if (iForm.getRollForwardReservations()) names.add(MSG.rollForwardReservations());
-        	if (iForm.getRollForwardPeriodicTasks()) names.add(MSG.rollForwardScheduledTasks());
-        	String name = names.toString().replace("[", "").replace("]", "");
-        	if (name.length() > 50) name = name.substring(0, 47) + "...";
-        	return name;
-		}
-
-		@Override
-		public double progress() {
-			return 100 * iProgress / 21;
-		}
-
-		@Override
-		public String type() {
-			return "Roll Forward";
-		}
-		
-	}
-	
 	protected void setToFromSessionsInForm(){
 		List<Session> sessionList = new ArrayList<Session>();
 		sessionList.addAll(Session.getAllSessions());

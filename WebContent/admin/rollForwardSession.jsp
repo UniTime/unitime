@@ -180,7 +180,7 @@
 			</td></tr>
 			<tt:propertyEquals name="unitime.sectioning.parentCourse" value="true">
 				<tr><td valign="top" colspan="2">
-					<s:checkbox name="form.roolForwardParentOfferings"/>
+					<s:checkbox name="form.rollForwardParentOfferings"/>
 					<loc:message name="checkIncludeParentOfferings"/>
 				</td></tr>
 			</tt:propertyEquals>

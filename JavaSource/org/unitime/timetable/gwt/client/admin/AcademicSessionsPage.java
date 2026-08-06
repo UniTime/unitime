@@ -360,7 +360,7 @@ public class AcademicSessionsPage extends Composite {
 
 				iEventEnd = new SingleDateSelector(null, false);
 				iEventEnd.setValue(iSession.getEventEnd());
-				iPanel.addRow(COURSE.columnClassesEndDate() + ":", iEventEnd);
+				iPanel.addRow(COURSE.columnEventEndDate() + ":", iEventEnd);
 				iEventEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {

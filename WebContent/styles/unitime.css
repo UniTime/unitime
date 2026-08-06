@@ -9239,3 +9239,77 @@ div.gwt-MenuBarPopup {
 	min-width: 600px;
 	height: 400px;
 }
+
+.unitime-RollForwardSessionPage .roll-action .gwt-ListBox {
+	margin-left: 5px;
+} 
+
+.unitime-RollForwardSessionPage .roll-action .note {
+	width: 800px;
+}
+
+.unitime-RollForwardSessionPage .roll-action-subjects .gwt-CheckBox {
+	vertical-align: top;
+}
+
+.unitime-RollForwardSessionPage .roll-action-subjects .gwt-ListBox {
+	margin-left: 5px;
+} 
+
+.unitime-RollForwardSessionPage .multi-selection .gwt-RadioButton {
+	display: block;
+}
+
+.unitime-RollForwardSessionPage .sub-header {
+	padding-left: 50px;
+}
+
+.unitime-RollForwardSessionPage  .sub-sub-header {
+	padding-left: 75px;
+}
+
+.unitime-RollForwardSessionPage .note {
+	font-style: italic;
+	white-space: pre-wrap;
+	padding-left: 20px;
+}
+
+.unitime-RollForwardSessionPage .check-with-note {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.unitime-RollForwardSessionPage .label-td {
+	width: 25%
+}
+
+.unitime-RollForwardSessionPage .widget-td {
+	width: 60%;
+}
+
+.unitime-RollForwardSessionPage .label-cell {
+	white-space: pre-wrap;
+}
+
+.unitime-RollForwardSessionPage .error-messages {
+	color: #ec0000;
+	white-space: pre-wrap;
+	font-style: italic;
+	padding-bottom: 10px;
+}
+
+.unitime-RollForwardSessionPage .extra-space-below td {
+	padding-bottom: 20px;
+}
+
+.unitime-ErrorMessages {
+	color: #ec0000;
+	border: 1px solid #ec0000;
+	padding: 2px;
+}
+
+.unitime-ErrorMessages ul {
+	display: inline-block;
+	padding: 0px 0px 0px 20px;
+	margin: 0px;
+}

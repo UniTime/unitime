@@ -5415,11 +5415,20 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Roll {0} Forward Error: Must select a session from which to roll forward.")
 	String errorRollForwardMissingFromSession(String type);
 	
+	@DefaultMessage("Roll {0} Forward Error: Must select one or more subject areas to roll the data for.")
+	String errorRollForwardMissingSubjectArea(String type);
+
+	@DefaultMessage("Roll {0} Forward Error: Must select one or more departments to roll the data for.")
+	String errorRollForwardMissingDepartment(String type);
+
 	@DefaultMessage("Roll {0} Forward Error: From session and to session cannot be the same: {1}.")
 	String errorRollForwardSessionsMustBeDifferent(String type, String session);
 	
 	@DefaultMessage("Roll Forward Error: Must select a session to which to roll forward.")
 	String errorRollForwardMissingToSession();
+	
+	@DefaultMessage("Roll Forward Error: Must select at least one roll forward action.")
+	String errorRollForwardMissingAction();
 	
 	@DefaultMessage("Roll {0} Forward Error: {1}")
 	String errorRollForwardGeneric(String type, String error);
@@ -6183,4 +6192,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("GWT Calls per Minute")
 	String axeQueryLogCalls();
+	
+	@DefaultMessage("No reservation type selected.")
+	String errorNoReservationTypeSelected();
 }
