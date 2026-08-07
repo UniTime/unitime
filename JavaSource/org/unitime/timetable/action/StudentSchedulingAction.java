@@ -167,7 +167,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 							}
 						}
 					}
-			} catch (SectioningException e) {}
+			} catch (SectioningException e) {
+				log.warn("SectioningException while listing academic sessions", e);
+			}
 			if (preferredAuthority == null && sessionContext.getUser().getCurrentAuthority() != null) {
 				for (UserAuthority auth: sessionContext.getUser().getAuthorities(null, sessionContext.getUser().getCurrentAuthority().getAcademicSession())) {
 					if (preferredAuthority == null && Roles.ROLE_STUDENT.equals(auth.getRole())) {
@@ -222,7 +224,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								return null;
 							}
 						}
-					} catch (SectioningException e) {}
+					} catch (SectioningException e) {
+						log.warn("SectioningException while listing academic sessions", e);
+					}
 					// 2. Scheduling Assistant with the enrollment enabled
 					try {
 						for (AcademicSessionInfo session:  service.listAcademicSessions(true)) {
@@ -239,7 +243,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								return null;
 							}
 						}
-					} catch (SectioningException e) {}
+					} catch (SectioningException e) {
+						log.warn("SectioningException while listing academic sessions", e);
+					}
 				} else {
 					// 1. Scheduling Assistant with the enrollment enabled
 					try {
@@ -257,7 +263,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 								return null;
 							}
 						}
-					} catch (SectioningException e) {}
+					} catch (SectioningException e) {
+						log.warn("SectioningException while listing academic sessions", e);
+					}
 					// 2. Course Requests with the registration enabled
 					try {
 						for (AcademicSessionInfo session:  service.listAcademicSessions(false)) {
@@ -285,7 +293,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 					return null;
 				}
 			}
-		} catch (SectioningException e) {}
+		} catch (SectioningException e) {
+			log.warn("SectioningException while listing academic sessions", e);
+		}
 		
 		// 4. Course Requests
 		try {
@@ -295,7 +305,9 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 					return null;
 				}
 			}
-		} catch (SectioningException e) {}
+		} catch (SectioningException e) {
+			log.warn("SectioningException while listing academic sessions", e);
+		}
 		
 		// 5. Main page fallback
 		return "main";
