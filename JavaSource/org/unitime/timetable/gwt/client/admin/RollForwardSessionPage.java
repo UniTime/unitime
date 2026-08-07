@@ -51,6 +51,7 @@ import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.StudentEnrol
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueType;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -1022,6 +1023,7 @@ public class RollForwardSessionPage extends Composite {
 			iCheckBox = new CheckBox(label);
 			iCheckBox.setValue(Boolean.TRUE.equals(check));
 			iListBox = new SingleIdListBox(iConfig.getFromSessions(), fromSessionId);
+			Roles.getListboxRole().setAriaLabelProperty(iListBox.getElement(), label);
 			add(iCheckBox);
 			add(iListBox);
 			if (note != null) {
@@ -1064,6 +1066,7 @@ public class RollForwardSessionPage extends Composite {
 			iCheckBox = new CheckBox(label);
 			iCheckBox.setValue(Boolean.TRUE.equals(check));
 			iListBox = new MultipleIdsListBox(iConfig.getSubjects(), subjectIds);
+			Roles.getListboxRole().setAriaLabelProperty(iListBox.getElement(), label);
 			if (note != null && iConfig.hasSubjects()) {
 				iNote = new P("note");
 				iNote.setText(note);
