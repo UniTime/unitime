@@ -77,6 +77,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Assignment: Available Rooms</name>
+			<description>
+				<line>Include examination period event offsets when checking room availability.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
