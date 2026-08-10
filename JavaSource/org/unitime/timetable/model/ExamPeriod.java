@@ -102,6 +102,18 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         c.set(Calendar.MINUTE, getStartMinute());
         return c.getTime();
     }
+	
+	@Transient
+    public Date getEventStartTime() {
+        Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getSession().getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, getDateOffset());
+        c.set(Calendar.HOUR, getStartHour());
+        c.set(Calendar.MINUTE, getStartMinute());
+        if (getEventStartOffset() != 0)
+            c.add(Calendar.MINUTE, -getEventStartOffset() * Constants.SLOT_LENGTH_MIN);
+        return c.getTime();
+    }
     
 	@Transient
     public int getEndSlot() {
@@ -125,6 +137,18 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         c.add(Calendar.DAY_OF_YEAR, getDateOffset());
         c.set(Calendar.HOUR, getEndHour());
         c.set(Calendar.MINUTE, getEndMinute());
+        return c.getTime();
+    }
+	
+	@Transient
+    public Date getEventEndTime() {
+		Calendar c = Calendar.getInstance(Locale.US);
+        c.setTime(getSession().getExamBeginDate());
+        c.add(Calendar.DAY_OF_YEAR, getDateOffset());
+        c.set(Calendar.HOUR, getEndHour());
+        c.set(Calendar.MINUTE, getEndMinute());
+        if (getEventStopOffset() != 0)
+            c.add(Calendar.MINUTE, getEventStopOffset() * Constants.SLOT_LENGTH_MIN);
         return c.getTime();
     }
     
@@ -679,25 +703,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean overlap(TimeBlock time) {
-//        int breakTimeStart = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.start", "0"));
-//        int breakTimeStop = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.room.availability."+Exam.sExamTypes[getExamType()].toLowerCase()+".breakTime.stop", "0"));
-        int breakTimeStart = getEventStartOffset().intValue() * Constants.SLOT_LENGTH_MIN;
-        int breakTimeStop = getEventStopOffset().intValue() * Constants.SLOT_LENGTH_MIN;
-        Date start = time.getStartTime();
-        if (breakTimeStart!=0) {
-            Calendar c = Calendar.getInstance(Locale.US); 
-            c.setTime(start);
-            c.add(Calendar.MINUTE, -breakTimeStart);
-            start = c.getTime();
-        }
-        Date stop = time.getEndTime();
-        if (breakTimeStop!=0) {
-            Calendar c = Calendar.getInstance(Locale.US); 
-            c.setTime(stop);
-            c.add(Calendar.MINUTE, breakTimeStop);
-            stop = c.getTime();
-        }
-        return getStartTime().compareTo(stop)<0 && start.compareTo(getEndTime()) < 0;
+        return getEventStartTime().compareTo(time.getEndTime())<0 && time.getStartTime().compareTo(getEventEndTime()) < 0;
     }
     
     public static Date[] getBounds(Session session, Long examTypeId) {
