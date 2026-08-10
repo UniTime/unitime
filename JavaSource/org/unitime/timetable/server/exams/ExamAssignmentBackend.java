@@ -1092,7 +1092,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
             if (!room.isIgnoreRoomCheck() && RoomAvailability.getInstance()!=null) {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                         room.getUniqueId(),
-                        period.getStartTime(), period.getEndTime(), 
+                        period.getEventStartTime(), period.getEventEndTime(), 
                         period.getExamType().getReference());
                 if (times!=null) for (TimeBlock time : times) {
                     if (period.overlap(time)) {
@@ -1107,7 +1107,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
             	if (r.getParentRoom() != null && !r.getParentRoom().isIgnoreRoomCheck()) {
             		Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                             r.getParentRoom().getUniqueId(),
-                            period.getStartTime(), period.getEndTime(), 
+                            period.getEventStartTime(), period.getEventEndTime(), 
                             period.getExamType().getReference());
                     if (times!=null) for (TimeBlock time : times) {
                         if (period.overlap(time)) {
@@ -1121,7 +1121,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
             		if (!p.isIgnoreRoomCheck()) {
             			Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                                 p.getUniqueId(),
-                                period.getStartTime(), period.getEndTime(), 
+                                period.getEventStartTime(), period.getEventEndTime(), 
                                 period.getExamType().getReference());
                         if (times!=null) for (TimeBlock time : times) {
                             if (period.overlap(time)) {
