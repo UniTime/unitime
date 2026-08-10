@@ -3824,4 +3824,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course {0} {1} does not exist in the catalog.")
 	String catalogCourseNotInCatalog(String subject, String course);
+	
+	@DefaultMessage("Unable to update student status. Either the student(s) have a status that cannot be changed, or the new status is not of the same type as the old status (pre-registration vs open registration).")
+	String warnStudentStatusNotChanged();
+	
+	@DefaultMessage("{0} student(s) have their status updated to {1}.")
+	String infoStudentStatusChanged(int nbrStudents, String newStatus);
+	
+	@DefaultMessage("{0} student(s) have their note updated.")
+	String infoStudentNoteChanged(int nbrStudents);
 }

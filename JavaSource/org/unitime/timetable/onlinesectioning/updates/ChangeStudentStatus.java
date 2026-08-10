@@ -21,8 +21,11 @@ package org.unitime.timetable.onlinesectioning.updates;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.Student;
@@ -40,7 +43,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudentNote;
 /**
  * @author Tomas Muller
  */
-public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
+public class ChangeStudentStatus implements OnlineSectioningAction<Set<Long>> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 
@@ -73,10 +76,14 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 	public Collection<Long> getStudentIds() { return iStudentIds; }
 
 	@Override
-	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
+	public Set<Long> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		StudentSectioningStatus status = (changeStatus() && hasStatus() ? helper.getHibSession().createQuery(
-				"from StudentSectioningStatus where reference = :ref and (session is null or session.uniqueId = :sessionId)", StudentSectioningStatus.class).setParameter("ref", getStatus()).setParameter("sessionId", server.getAcademicSession().getUniqueId()).uniqueResult() : null);
+				"from StudentSectioningStatus where reference = :ref and (session is null or session.uniqueId = :sessionId)", StudentSectioningStatus.class)
+				.setParameter("ref", getStatus()).setParameter("sessionId", server.getAcademicSession().getUniqueId())
+				.setMaxResults(1)
+				.uniqueResult() : null);
 		Date ts = new Date();
+		Set<Long> updated = new HashSet<Long>();
 		for (Long studentId: getStudentIds()) {
 			Lock lock = server.lockStudent(studentId, null, name());
 			try {
@@ -85,7 +92,12 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 				try {
 					Student dbStudent = StudentDAO.getInstance().get(studentId, helper.getHibSession());
 					if (student != null && dbStudent != null) {
-						
+
+						if (changeStatus() && !hasCompatibleStatus(
+								dbStudent.getEffectiveStatus(),
+								status == null ? dbStudent.getSession().getDefaultSectioningStatus() : status,
+								helper)) continue;
+
 						OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 						action.setStudent(OnlineSectioningLog.Entity.newBuilder()
 							.setUniqueId(student.getStudentId())
@@ -131,6 +143,8 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 								action.addMessage(OnlineSectioningLog.Message.newBuilder().setText(oldStatus + " &rarr; " + newStatus).setTimeStamp(ts.getTime()).setLevel(OnlineSectioningLog.Message.Level.INFO));
 						}
 						
+						updated.add(student.getStudentId());
+						
 						helper.getHibSession().merge(dbStudent);
 						server.update(student, false);
 					}
@@ -145,7 +159,29 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Boolean> {
 				lock.release();
 			}
 		}
-		return true;			
+		return updated;			
+	}
+	
+	public boolean hasCompatibleStatus(StudentSectioningStatus oldStatus, StudentSectioningStatus newStatus, OnlineSectioningHelper helper) {
+		//if (helper.hasAdminPermission()) return true;
+		// can advisor unset the status?
+		if (ApplicationProperty.AdvisorCourseRequestsRestrictedStatusChange.isTrue()) {
+			if (oldStatus == null || !oldStatus.hasOption(StudentSectioningStatus.Option.advcanset))
+				return false;
+		}
+		// can advisor set the new status?
+		if (newStatus == null || !newStatus.hasOption(StudentSectioningStatus.Option.advcanset))
+			return false;
+		// can advisor change the page student can access?
+		if (ApplicationProperty.AdvisorCourseRequestsOnlySameTypeStatusChange.isTrue()) {
+			if ((oldStatus != null && oldStatus.hasOption(StudentSectioningStatus.Option.enabled))
+					&& (newStatus == null || !newStatus.hasOption(StudentSectioningStatus.Option.enabled)))
+				return false;
+			if ((oldStatus != null && oldStatus.hasOption(StudentSectioningStatus.Option.regenabled))
+					&& (newStatus == null || !newStatus.hasOption(StudentSectioningStatus.Option.regenabled)))
+				return false;
+		}
+		return true;
 	}
 
 	@Override

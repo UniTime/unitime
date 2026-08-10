@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -101,7 +102,7 @@ public interface SectioningServiceAsync {
 	void selectSession(Long sessionId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void lookupStudentSectioningStates(AsyncCallback<List<StudentStatusInfo>> callback) throws SectioningException, PageAccessException;
 	void sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional, String sourceOperation, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
-	void changeStatus(List<Long> studentIds, String note, String status, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
+	void changeStatus(List<Long> studentIds, String note, String status, AsyncCallback<Set<Long>> callback) throws SectioningException, PageAccessException;
 	void changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeLog(String query, AsyncCallback<List<ClassAssignmentInterface.SectioningAction>> callback) throws SectioningException, PageAccessException;
 	void massCancel(List<Long> studentIds, String status, String subject, String message, String cc, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
