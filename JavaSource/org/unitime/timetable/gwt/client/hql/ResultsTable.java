@@ -500,10 +500,11 @@ public class ResultsTable extends UniTimeTable<String[]> {
 								@Override
 								public void execute() {
 									final String statusRef = iStudentStatusDialog.getStatus();
+									final String statusLabel = iStudentStatusDialog.getStatusLabel();
 									if ("-".equals(statusRef)) return;
 									List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 									LoadingWidget.getInstance().show(SCT_MSG.changingStatusTo(statusRef));
-									iSectioningService.changeStatus(studentIds, null, statusRef, new AsyncCallback<Boolean>() {
+									iSectioningService.changeStatus(studentIds, null, statusRef, new AsyncCallback<Set<Long>>() {
 
 										@Override
 										public void onFailure(Throwable caught) {
@@ -512,8 +513,14 @@ public class ResultsTable extends UniTimeTable<String[]> {
 										}
 
 										@Override
-										public void onSuccess(Boolean result) {
+										public void onSuccess(Set<Long> result) {
 											LoadingWidget.getInstance().hide();
+											if (result == null || result.isEmpty())
+												UniTimeNotifications.warn(SCT_MSG.warnStudentStatusNotChanged());
+											else if ("-".equals(statusRef))
+												UniTimeNotifications.info(SCT_MSG.infoStudentNoteChanged(result.size()));
+											else
+												UniTimeNotifications.info(SCT_MSG.infoStudentStatusChanged(result.size(), statusLabel));
 										}
 									});
 									
@@ -542,8 +549,9 @@ public class ResultsTable extends UniTimeTable<String[]> {
 									LoadingWidget.getInstance().show(SCT_MSG.changingStudentNote());
 									List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 									final String statusRef = iStudentStatusDialog.getStatus();
+									final String statusLabel = iStudentStatusDialog.getStatusLabel();
 									final String note = iStudentStatusDialog.getNote();
-									iSectioningService.changeStatus(studentIds, note, statusRef, new AsyncCallback<Boolean>() {
+									iSectioningService.changeStatus(studentIds, note, statusRef, new AsyncCallback<Set<Long>>() {
 										@Override
 										public void onFailure(Throwable caught) {
 											LoadingWidget.getInstance().hide();
@@ -551,8 +559,14 @@ public class ResultsTable extends UniTimeTable<String[]> {
 										}
 
 										@Override
-										public void onSuccess(Boolean result) {
+										public void onSuccess(Set<Long> result) {
 											LoadingWidget.getInstance().hide();
+											if (result == null || result.isEmpty())
+												UniTimeNotifications.warn(SCT_MSG.warnStudentStatusNotChanged());
+											else if ("-".equals(statusRef))
+												UniTimeNotifications.info(SCT_MSG.infoStudentNoteChanged(result.size()));
+											else
+												UniTimeNotifications.info(SCT_MSG.infoStudentStatusChanged(result.size(), statusLabel));
 										}
 									});
 								}

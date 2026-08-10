@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -102,7 +103,7 @@ public interface SectioningService extends RemoteService {
 	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
 	List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
 	Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional, String sourceOperation) throws SectioningException, PageAccessException;
-	Boolean changeStatus(List<Long> studentIds, String note, String status) throws SectioningException, PageAccessException;
+	Set<Long> changeStatus(List<Long> studentIds, String note, String status) throws SectioningException, PageAccessException;
 	Boolean changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.SectioningAction> changeLog(String query) throws SectioningException, PageAccessException;
 	Boolean massCancel(List<Long> studentIds, String status, String subject, String message, String cc) throws SectioningException, PageAccessException;

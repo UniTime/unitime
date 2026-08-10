@@ -2959,7 +2959,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public Boolean changeStatus(List<Long> studentIds, String note, String ref) throws SectioningException, PageAccessException {
+	public Set<Long> changeStatus(List<Long> studentIds, String note, String ref) throws SectioningException, PageAccessException {
 		try {
 			OnlineSectioningServer server = getServerInstance(getStatusPageSessionId(), true);
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
@@ -2977,7 +2977,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					}
 				}
 			}
-			Boolean ret = server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref).withNote(note), currentUser());
+			Set<Long> ret = server.execute(server.createAction(ChangeStudentStatus.class).forStudents(studentIds).withStatus(ref).withNote(note), currentUser());
 			try {
 		        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
 		        for (Long studentId: studentIds)
@@ -3830,6 +3830,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 
 		if (ret.isCanUpdate() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingChangeStudentStatus)) {
 			boolean canChange = true;
+			boolean hasAssistant = false, hasReq = false;
 			if (admin) {
 				Session session = student.getSession();
 				StudentStatusInfo info = null;
@@ -3846,13 +3847,22 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					info.setAllEnabled();
 				}
 				ret.addStatus(info);
-			} else if (ApplicationProperty.AdvisorCourseRequestsRestrictedStatusChange.isTrue()) {
-				StudentSectioningStatus status = (student.getSectioningStatus() == null ? student.getSession().getDefaultSectioningStatus() : student.getSectioningStatus());
-				canChange = (status != null && status.hasOption(StudentSectioningStatus.Option.advcanset));
+			} else {
+				if (ApplicationProperty.AdvisorCourseRequestsRestrictedStatusChange.isTrue()) {
+					StudentSectioningStatus status = (student.getSectioningStatus() == null ? student.getSession().getDefaultSectioningStatus() : student.getSectioningStatus());
+					canChange = (status != null && status.hasOption(StudentSectioningStatus.Option.advcanset));
+				}
+				if (ApplicationProperty.AdvisorCourseRequestsOnlySameTypeStatusChange.isTrue()) {
+					StudentSectioningStatus effective = student.getEffectiveStatus();
+					hasAssistant = (effective != null && effective.hasOption(StudentSectioningStatus.Option.enabled));
+					hasReq = (effective != null && effective.hasOption(StudentSectioningStatus.Option.regenabled));
+				}
 			}
 			if (canChange) {
 				for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
 					if (s.isPast()) continue;
+					if (!admin && hasAssistant && !s.hasOption(StudentSectioningStatus.Option.enabled)) continue;
+					if (!admin && hasReq && !s.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
 					if (!admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
 					ret.addStatus(toStudentStatusInfo(s, courseTypes, admin, adv));
 				}

@@ -3004,6 +3004,12 @@ public enum ApplicationProperty {
 	@Since(4.5)
 	AdvisorCourseRequestsRestrictedStatusChange("unitime.acrf.restrictedStatusChange"),
 	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Advisor Course Recommendations: advisors can only change status to a status with access to the same page (Course Requests or Scheduling Assistant)")
+	@Since(4.9)
+	AdvisorCourseRequestsOnlySameTypeStatusChange("unitime.acrf.sameTypeStatusChangeOnly"),
+	
 	@Type(String.class)
 	@DefaultValue("Your Course Requests have been pre-populated with advisor recommendations. Please review the requested courses and hit the <b>Submit Requests</b> button to finalize your pre-registration.")
 	@Description("Student Course Requests: popup message when the page shows pre-populated course requests based on the advisor recommendations")

@@ -65,6 +65,15 @@
 				<line>Corrected computation of student filter reservation limit (already enrolled but not loaded students did not get correctly excluded).</line>
 			</description>
 		</item>
+		<item>
+			<name>Advisor Course Recommendations: Student Status</name>
+			<description>
+				<line>Added an option to only allow advisors to change student status to a status with access to the same page (Course Requests or Scheduling Assistant).</line>
+				<line>This means that when enabled, advisors cannot move students between pre-registration and open registration statuses.
+					<line>Disabled by default; enable by setting unitime.acrf.sameTypeStatusChangeOnly to true.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

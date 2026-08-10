@@ -1694,7 +1694,7 @@ public class SectioningStatusPage extends Composite {
 						private void changeStatus() {
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							LoadingWidget.getInstance().show(MESSAGES.changingStatusTo(info.getLabel()));
-							iSectioningService.changeStatus(studentIds, null, info.getReference(), new AsyncCallback<Boolean>() {
+							iSectioningService.changeStatus(studentIds, null, info.getReference(), new AsyncCallback<Set<Long>>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
@@ -1703,17 +1703,20 @@ public class SectioningStatusPage extends Composite {
 								}
 
 								@Override
-								public void onSuccess(Boolean result) {
+								public void onSuccess(Set<Long> result) {
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
 										if (i != null && i.getStudent() != null) {
-											Widget w = iStudentTable.getWidget(row, 0);
-											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+											if (result != null && result.contains(i.getStudent().getId())) {
 												i.setStatus(info);
 												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(info.getReference());
 											}
 										}
 									}
+									if (result == null || result.isEmpty())
+										UniTimeNotifications.warn(MESSAGES.warnStudentStatusNotChanged());
+									else
+										UniTimeNotifications.info(MESSAGES.infoStudentStatusChanged(result.size(), info.getLabel()));
 									LoadingWidget.getInstance().hide();
 								}
 							});
@@ -1763,10 +1766,11 @@ public class SectioningStatusPage extends Composite {
 						@Override
 						public void execute() {
 							final String statusRef = iStudentStatusDialog.getStatus();
+							final String statusLabel = iStudentStatusDialog.getStatusLabel();
 							if ("-".equals(statusRef)) return;
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							LoadingWidget.getInstance().show(MESSAGES.changingStatusTo(statusRef));
-							iSectioningService.changeStatus(studentIds, null, statusRef, new AsyncCallback<Boolean>() {
+							iSectioningService.changeStatus(studentIds, null, statusRef, new AsyncCallback<Set<Long>>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
@@ -1775,18 +1779,21 @@ public class SectioningStatusPage extends Composite {
 								}
 
 								@Override
-								public void onSuccess(Boolean result) {
+								public void onSuccess(Set<Long> result) {
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
 										if (i != null && i.getStudent() != null) {
-											Widget w = iStudentTable.getWidget(row, 0);
-											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+											if (result != null && result.contains(i.getStudent().getId())) {
 												i.setStatus(iStudentStatusDialog.getStudentStatusInfo(statusRef));
 												((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
 											}
 										}
 									}
 									LoadingWidget.getInstance().hide();
+									if (result == null || result.isEmpty())
+										UniTimeNotifications.warn(MESSAGES.warnStudentStatusNotChanged());
+									else
+										UniTimeNotifications.info(MESSAGES.infoStudentStatusChanged(result.size(), statusLabel));
 								}
 							});
 							
@@ -1815,9 +1822,10 @@ public class SectioningStatusPage extends Composite {
 							LoadingWidget.getInstance().show(MESSAGES.changingStudentNote());
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);
 							final String statusRef = iStudentStatusDialog.getStatus();
+							final String statusLabel = iStudentStatusDialog.getStatusLabel();
 							final String note = iStudentStatusDialog.getNote();
 							final StudentStatusInfo status = iStudentStatusDialog.getStudentStatusInfo(statusRef);
-							iSectioningService.changeStatus(studentIds, note, statusRef, new AsyncCallback<Boolean>() {
+							iSectioningService.changeStatus(studentIds, note, statusRef, new AsyncCallback<Set<Long>>() {
 								
 								@Override
 								public void onFailure(Throwable caught) {
@@ -1826,12 +1834,11 @@ public class SectioningStatusPage extends Composite {
 								}
 
 								@Override
-								public void onSuccess(Boolean result) {
+								public void onSuccess(Set<Long> result) {
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
 										if (i != null && i.getStudent() != null) {
-											Widget w = iStudentTable.getWidget(row, 0);
-											if (w instanceof CheckBox && ((CheckBox)w).getValue()) {
+											if (result != null && result.contains(i.getStudent().getId())) {
 												if (!"-".equals(statusRef)) {
 													i.setStatus(status);
 													((HTML)iStudentTable.getWidget(row, iStatusColumn)).setHTML(statusRef);
@@ -1845,6 +1852,12 @@ public class SectioningStatusPage extends Composite {
 										}
 									}
 									LoadingWidget.getInstance().hide();
+									if (result == null || result.isEmpty())
+										UniTimeNotifications.warn(MESSAGES.warnStudentStatusNotChanged());
+									else if ("-".equals(statusRef))
+										UniTimeNotifications.info(MESSAGES.infoStudentNoteChanged(result.size()));
+									else
+										UniTimeNotifications.info(MESSAGES.infoStudentStatusChanged(result.size(), statusLabel));
 								}
 							});
 						}

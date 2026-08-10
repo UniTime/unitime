@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -402,9 +403,9 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 						);
 			}
 		}, Flag.GET, Flag.POST),
-		changeStatus(new OpExecution<Boolean>() {
+		changeStatus(new OpExecution<Set<Long>>() {
 			@Override
-			public Boolean execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
+			public Set<Long> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
 				ChangeStatusRequest request = helper.getRequest(ChangeStatusRequest.class);
 				if (request == null)
 					request = new ChangeStatusRequest();
