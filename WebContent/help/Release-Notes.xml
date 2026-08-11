@@ -29,6 +29,15 @@
 	<version>4.8.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Timetable Grid: Instructors</name>
+			<description>
+				<line>Fixed a bug causing instructors not to be displayed for the Instructional Type background when showing solver data.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Examination Timetabling</title>
 		<item>
 			<name>Examination Assignment: Available Rooms</name>

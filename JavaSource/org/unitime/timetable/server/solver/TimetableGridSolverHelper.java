@@ -947,7 +947,6 @@ public class TimetableGridSolverHelper extends TimetableGridHelper {
 				cells = new ArrayList<TimetableGridCell>();
 				id2cells.put(cell.getId(), cells);
 			}
-			cell.resetInstructors();
 			cells.add(cell);
 		}
 		if (id2cells.isEmpty()) return;
