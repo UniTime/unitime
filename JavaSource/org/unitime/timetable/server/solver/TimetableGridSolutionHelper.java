@@ -73,6 +73,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TeachingResponsibility.Option;
 import org.unitime.timetable.model.dao.SolutionDAO;
+import org.unitime.timetable.server.solver.TimetableGridHelper.BgMode;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.StudentGroupInfo;
@@ -914,12 +915,11 @@ public class TimetableGridSolutionHelper extends TimetableGridHelper {
 		q.setCacheable(true);
 		List assignments = q.list();
 		model.setSize((int)Math.round(g.countStudentWeights()));
-		
 		for (Iterator i = assignments.iterator(); i.hasNext(); ) {
 			Assignment assignment = (Assignment)i.next();
 			List<TimetableGridCell> cells = createCells(model, assignment, hibSession, context, false); 
 			StudentGroupInfo.ClassInfo ci = g.getGroupAssignment(assignment.getClassId());
-			if (ci != null) {
+			if (ci != null && context.getBgMode() == BgMode.StudentGroups.ordinal()) {
 				int total = g.countStudentsOfOffering(assignment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
 				for (TimetableGridCell cell: cells) {
 					cell.setGroup("(" + Math.round(ci.countStudentsWeight()) + ")");
