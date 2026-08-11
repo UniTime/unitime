@@ -103,7 +103,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				for (ManagerRole role: manager.getManagerRoles()) {
 					if (!role.getRole().isEnabled()) continue;
 					TreeSet<Session> sessions = new TreeSet<Session>();
-					if (role.getRole().hasRight(Right.SessionIndependent) || (sessions.isEmpty() && role.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven)))
+					if (role.getRole().hasRight(Right.SessionIndependent) || (manager.getDepartments().isEmpty() && role.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven)))
 						sessions.addAll(SessionDAO.getInstance().findAll(hibSession));
 					else
 						for (Department department: manager.getDepartments())
