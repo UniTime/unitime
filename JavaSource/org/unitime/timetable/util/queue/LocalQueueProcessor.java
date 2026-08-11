@@ -32,6 +32,8 @@ import jakarta.activation.FileDataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
+import org.unitime.timetable.server.script.GetQueueTableBackend;
 
 
 /**
@@ -265,5 +267,38 @@ public class LocalQueueProcessor extends Thread implements QueueProcessor {
 		QueueItem item = get(id);
 		if (item != null && item.hasOutput()) return new FileDataSource(item.output());
 		return null;
+	}
+
+	@Override
+	public List<QueueItemInterface> getItemsTable(String ownerId, Long sessionId, String type, Integer timeToShow) {
+		synchronized (iQueue) {
+			List<QueueItemInterface> ret = new ArrayList<QueueItemInterface>();
+			
+			long now = new Date().getTime();
+			for (QueueItem item: iFinished) {
+				if (ownerId != null && !ownerId.equals(item.getOwnerId())) continue;
+				if (sessionId != null && !sessionId.equals(item.getSessionId())) continue;
+				if (type!=null && !type.equals(item.type())) continue;
+				if (timeToShow != null && item.finished() != null && now - item.finished().getTime() > timeToShow) continue;
+				ret.add(GetQueueTableBackend.convert(item, null));
+			}
+			
+			if (iItem != null) {
+				boolean add = true;
+				if (ownerId != null && !ownerId.equals(iItem.getOwnerId())) add = false;
+				if (sessionId != null && !sessionId.equals(iItem.getSessionId())) add = false;
+				if (type!=null && !type.equals(iItem.type())) add = false;
+				if (add) ret.add(GetQueueTableBackend.convert(iItem, null));
+			}
+			
+			for (QueueItem item: iQueue) {
+				if (ownerId != null && !ownerId.equals(item.getOwnerId())) continue;
+				if (sessionId != null && !sessionId.equals(item.getSessionId())) continue;
+				if (type!=null && !type.equals(item.type())) continue;
+				ret.add(GetQueueTableBackend.convert(item, null));
+			}
+			
+			return ret;
+		}
 	}
 }

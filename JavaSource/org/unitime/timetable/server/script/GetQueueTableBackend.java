@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.server.script;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,15 +74,12 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		if (request.getDeleteId() != null)
 			solverServerService.getQueueProcessor().remove(request.getDeleteId());
 
-		List<QueueItem> queue = solverServerService.getQueueProcessor().getItems(null, null, type);
+		List<QueueItemInterface> queue = solverServerService.getQueueProcessor().getItemsTable(null, null, type, 1000 * 60 * 60);
 		GwtRpcResponseList<QueueItemInterface> table = new GwtRpcResponseList<QueueItemInterface>();
 		
-		Date now = new Date();
-		long timeToShow = 1000 * 60 * 60;
-		for (QueueItem item: queue) {
-			if (item.finished() != null && now.getTime() - item.finished().getTime() > timeToShow) continue;
-
-			table.add(convert(item, context));
+		for (QueueItemInterface item: queue) {
+			item.setCanDelete(context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId()));
+			table.add(item);
 		}
 		
 		return table;
@@ -97,7 +93,9 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		q.setName(item.name());
 		q.setStatus(item.status());
 		q.setProgress(item.progress() <= 0.0 || item.progress() >= 1.0 ? "" : String.valueOf(Math.round(100 * item.progress())) + "%");
+		q.setOwnerId(item.getOwnerId());
 		q.setOwner(item.getOwnerName());
+		q.setSessionId(item.getSessionId());
 		q.setSession(item.getSession() == null ? "None" : item.getSession().getLabel());
 		q.setCreated(item.created());
 		q.setStarted(item.started());
@@ -106,8 +104,9 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 			q.setOutput(item.getOutputName());
 			q.setOutputLink(item.getOutputLink());
 		}
-		q.setLog(item.log());
-		q.setCanDelete((context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId())));
+		//q.setLog(item.log());
+		if (context != null)
+			q.setCanDelete((context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId())));
 		
 		if (item instanceof ScriptExecution)
 			q.setExecutionRequest(((ScriptExecution)item).getRequest());

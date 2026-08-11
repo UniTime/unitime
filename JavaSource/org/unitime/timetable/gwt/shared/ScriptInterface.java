@@ -304,11 +304,13 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		}
 	}
 	
-	public static class QueueItemInterface implements GwtRpcResponse {
+	public static class QueueItemInterface implements GwtRpcResponse, Serializable, Comparable<QueueItemInterface> {
+		private static final long serialVersionUID = 1340054876001703551L;
 		private String iId;
-		private String iName, iStatus, iProgress, iOwner, iSession, iOutput, iLog, iHost, iOutputLink;
+		private String iName, iStatus, iProgress, iOwner, iSession, iOutput, iHost, iOutputLink, iOwnerId;
 		private Date iCreated, iStarted, iFinished;
-		private boolean iCanDelete = false;
+		private Boolean iCanDelete;
+		private Long iSessionId;
 		
 		private ExecuteScriptRpcRequest iExecutionRequest;
 		
@@ -329,9 +331,15 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public String getProgress() { return iProgress; }
 		public void setProgress(String progress) { iProgress = progress; }
 		
+		public String getOwnerId() { return iOwnerId; }
+		public void setOwnerId(String ownerId) { iOwnerId = ownerId; }
+
 		public String getOwner() { return iOwner; }
 		public void setOwner(String owner) { iOwner = owner; }
 		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
 		public String getSession() { return iSession; }
 		public void setSession(String session) { iSession = session; }
 		
@@ -349,15 +357,19 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		
 		public Date getFinished() { return iFinished; }
 		public void setFinished(Date finished) { iFinished = finished; }
-		
-		public String getLog() { return iLog; }
-		public void setLog(String log) { iLog = log; }
-		
+
 		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
-		public boolean isCanDelete() { return iCanDelete; }
+		public boolean isCanDelete() { return Boolean.TRUE.equals(iCanDelete); }
 		
 		public void setExecutionRequest(ExecuteScriptRpcRequest request) { iExecutionRequest = request; }
 		public ExecuteScriptRpcRequest getExecutionRequest() { return iExecutionRequest; }
+
+		@Override
+		public int compareTo(QueueItemInterface item) {
+			int cmp = getCreated().compareTo(item.getCreated());
+			if (cmp != 0) return cmp;
+			return getId().compareTo(item.getId());
+		}
 	}
 	
 	public static enum QueueType implements IsSerializable {
@@ -383,5 +395,37 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public String toString() {
 			return (iDeleteId == null ? "" : iDeleteId);
 		}
+	}
+	
+	public static class GetQueueLogRpcRequest implements GwtRpcRequest<QueueItemLogInterface> {
+		private String iQueueId = null;
+		private QueueType iType = QueueType.Script;
+
+		public GetQueueLogRpcRequest() {}
+		public GetQueueLogRpcRequest(String queueId) {  iQueueId = queueId; }
+		
+		public String getQueueId() { return iQueueId; }
+		public QueueType getType() { return iType; }
+		public GetQueueLogRpcRequest setType(QueueType type) { iType = type; return this; }
+		
+		@Override
+		public String toString() {
+			return (iQueueId == null ? "" : iQueueId);
+		}
+	}
+	
+	public static class QueueItemLogInterface implements GwtRpcResponse {
+		private String iId;
+		private String iName;
+		private String iLog;
+		
+		public String getId() { return iId; }
+		public void setId(String id) { iId = id; }
+
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+
+		public String getLog() { return iLog; }
+		public void setLog(String log) { iLog = log; }
 	}
 }

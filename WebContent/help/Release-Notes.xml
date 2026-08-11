@@ -52,6 +52,15 @@
 	<category>
 		<title>Administration</title>
 		<item>
+			<name>Scripts: Log</name>
+			<description>
+				<line>Scripts in progress: Improved the responsiveness of the Scripts page when a script has a very long log.
+					<line>Avoid stacking of log update requests.</line>
+					<line>Only load the log for the selected script.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Technology Update / GWT</name>
 			<description>
 				<line>The following pages have been rewritten to GWT:
