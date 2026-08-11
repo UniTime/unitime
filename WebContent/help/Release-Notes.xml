@@ -39,6 +39,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Status: Priority Selection</name>
+			<description>
+				<line>Added a new flag named &quot;Priority Selection&quot;.</line>
+				<line>It only applies to student statuses with a fallback status defined.</line>
+				<line>When both the status and the fallback status are available (not expired), the user cannot use the fallback status when the original status has the Priority Selection flag.</line>
+				<line>Does not apply to administrators (they can still use any status that has not expired yet).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

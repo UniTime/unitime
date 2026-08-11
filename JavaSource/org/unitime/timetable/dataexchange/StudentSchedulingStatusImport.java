@@ -234,6 +234,7 @@ public class StudentSchedulingStatusImport extends BaseImport {
 		case noschedule: return "noSchedule";
 		case nosubs: return "noSubs";
 		case reschedule: return "reschedule";
+		case priority: return "priority";
 		default: return option.name();
 		}
 	}
