@@ -38,6 +38,7 @@ import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.solver.jgroups.UniTimeRpcDispatcher;
+import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 
 /**
@@ -140,6 +141,21 @@ public class RemoteQueueProcessor extends LocalQueueProcessor {
 					other.remove(iDispatcher.getChannel().getAddress());
 					RspList<List<QueueItem>> ret = iDispatcher.callRemoteMethods(other, "invoke",  new Object[] { method.getName(), method.getParameterTypes(), args }, new Class[] { String.class, Class[].class, Object[].class }, SolverServerImplementation.sAllResponses);
 					for (Rsp<List<QueueItem>> rsp : ret) {
+						if (rsp != null && rsp.getValue() != null)
+							items.addAll(rsp.getValue());
+						if (rsp != null && rsp.hasException())
+							sLog.error("Excution of queue processor method " + method + " failed: " + rsp.getException().getMessage(), rsp.getException());
+					}
+					Collections.sort(items);
+				}
+				return items;
+			} else if ("getItemsTable".equals(method.getName())) {
+				List<QueueItemInterface> items = (List<QueueItemInterface>)method.invoke(this, args);
+				if (iDispatcher.getChannel().getView().getMembers().size() > 1) {
+					List<Address> other = new ArrayList<Address>(iDispatcher.getChannel().getView().getMembers());
+					other.remove(iDispatcher.getChannel().getAddress());
+					RspList<List<QueueItemInterface>> ret = iDispatcher.callRemoteMethods(other, "invoke",  new Object[] { method.getName(), method.getParameterTypes(), args }, new Class[] { String.class, Class[].class, Object[].class }, SolverServerImplementation.sAllResponses);
+					for (Rsp<List<QueueItemInterface>> rsp : ret) {
 						if (rsp != null && rsp.getValue() != null)
 							items.addAll(rsp.getValue());
 						if (rsp != null && rsp.hasException())

@@ -35,7 +35,9 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.ScriptInterface;
+import org.unitime.timetable.gwt.shared.ScriptInterface.GetQueueLogRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
+import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemLogInterface;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueType;
 
 import com.google.gwt.core.client.GWT;
@@ -65,6 +67,7 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	private int iQueueRow, iLogRow;
 	private SimpleForm iPanel;	
 	private UniTimeHeaderPanel iQueueHeader, iLogHeader;
+	private Timer iTimer;
 
 	public ReportQueueTable(QueueType type) {
 		iType = type;
@@ -84,13 +87,23 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 		setAllowSelection(true);
 		addStyleName("unitime-QueueTable");
 		
-		refreshQueue(null, null);
-		new Timer() {
+		iQueueHeader = new UniTimeHeaderPanel("");
+		iQueueHeader.addButton("refresh", MESSAGES.buttonRefresh(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				refreshQueue();
+			}
+		});
+		iLogHeader = new UniTimeHeaderPanel();
+		iLog = new HTML();
+		iLog.addStyleName("unitime-QueueLog");
+		
+		iTimer = new Timer() {
 			@Override
 			public void run() {
 				refreshQueue(null, null);
 			}
-		}.scheduleRepeating(5000);
+		};
 		
 		addMouseClickListener(new MouseClickListener<ScriptInterface.QueueItemInterface>() {
 			@Override
@@ -111,23 +124,18 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	
 	public ReportQueueTable attach(SimpleForm panel, String headerLabel) {
 		iPanel = panel;
-		if (iQueueHeader == null) {
-			iQueueHeader = new UniTimeHeaderPanel(headerLabel);
-			iQueueHeader.addButton("refresh", MESSAGES.buttonRefresh(), new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					refreshQueue();
-				}
-			});
-			iLogHeader = new UniTimeHeaderPanel();
-			iLog = new HTML();
-			iLog.addStyleName("unitime-QueueLog");
-		}
+		iQueueHeader.setHeaderTitle(headerLabel);
 		iQueueRow = iPanel.addHeaderRow(iQueueHeader);
 		iPanel.addRow(this);
+		iPanel.getRowFormatter().setVisible(iQueueRow, false);
+		iPanel.getRowFormatter().setVisible(iQueueRow + 1, false);
 		
 		iLogRow = iPanel.addHeaderRow(iLogHeader);
 		iPanel.addRow(iLog);
+		iPanel.getRowFormatter().setVisible(iLogRow, false);
+		iPanel.getRowFormatter().setVisible(iLogRow + 1, false);
+		
+		iTimer.schedule(100);
 		return this;
 	}
 	
@@ -140,14 +148,19 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	}
 	
 	private void refreshQueue(String deleteId, final String selectId) {
+		iTimer.cancel();
+		iQueueHeader.showLoading();
 		RPC.execute(new ScriptInterface.GetQueueTableRpcRequest(deleteId).setType(iType), new AsyncCallback<GwtRpcResponseList<QueueItemInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
+				iQueueHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
 				UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
+				iTimer.schedule(5000);
 			}
 
 			@Override
 			public void onSuccess(GwtRpcResponseList<QueueItemInterface> result) {
+				iQueueHeader.clearMessage();
 				populate(result, selectId);
 			}
 		});
@@ -212,14 +225,35 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	}
 	
 	protected void showLog(QueueItemInterface item) {
-		if (item == null || item.getLog() == null || item.getLog().isEmpty()) {
+		if (item == null) {
 			iPanel.getRowFormatter().setVisible(iLogRow, false);
 			iPanel.getRowFormatter().setVisible(iLogRow + 1, false);
+			iTimer.schedule(5000);
 		} else {
-			iLogHeader.setHeaderTitle(MESSAGES.sectScriptLog(item.getName()));
-			iPanel.getRowFormatter().setVisible(iLogRow, true);
-			iPanel.getRowFormatter().setVisible(iLogRow + 1, true);
-			iLog.setHTML(item.getLog());
+			iLogHeader.showLoading();
+			RPC.execute(new GetQueueLogRpcRequest(item.getId()), new AsyncCallback<QueueItemLogInterface>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iLogHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
+					UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
+					iTimer.schedule(5000);
+				}
+
+				@Override
+				public void onSuccess(QueueItemLogInterface result) {
+					iLogHeader.clearMessage();
+					if (result == null || result.getLog() == null || result.getLog().isEmpty()) {
+						iPanel.getRowFormatter().setVisible(iLogRow, false);
+						iPanel.getRowFormatter().setVisible(iLogRow + 1, false);
+					} else {
+						iLogHeader.setHeaderTitle(MESSAGES.sectScriptLog(result.getName()));
+						iPanel.getRowFormatter().setVisible(iLogRow, true);
+						iPanel.getRowFormatter().setVisible(iLogRow + 1, true);
+						iLog.setHTML(result.getLog());
+					}
+					iTimer.schedule(5000);
+				}
+			});
 		}
 	}
 
