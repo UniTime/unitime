@@ -5405,6 +5405,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No Personal Schedule")
 	String toggleNoSchedule();
 	
+	@DefaultMessage("Priority Selection")
+	String togglePrioritySelection();
+	
 	@DefaultMessage("Final Examinations")
 	String finalExaminations();
 	

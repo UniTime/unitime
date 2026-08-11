@@ -2900,9 +2900,25 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			ret.add(info);
 		}
-		for (StudentSectioningStatus s: StudentSectioningStatus.findAll(getStatusPageSessionId())) {
+		List<StudentSectioningStatus> statuses = StudentSectioningStatus.findAll(getStatusPageSessionId());
+		Set<StudentSectioningStatus> skipStatuses = null;
+		if (advisor) {
+			skipStatuses  = new HashSet<StudentSectioningStatus>();
+			for (StudentSectioningStatus s: statuses) {
+				if (s.isPast()) continue;
+				if (advisor && !admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+				// if priority selection status and available -> remove all the fallback statuses 
+				if (s.hasOption(StudentSectioningStatus.Option.priority)) {
+					StudentSectioningStatus fallbback = s.getFallBackStatus();
+					while (fallbback != null && skipStatuses.add(fallbback))
+						fallbback = fallbback.getFallBackStatus();
+				}
+			}
+		}
+		for (StudentSectioningStatus s: statuses) {
 			if (s.isPast()) continue;
 			if (advisor && !admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+			if (skipStatuses != null && skipStatuses.contains(s)) continue;
 			StudentStatusInfo info = toStudentStatusInfo(s, courseTypes, admin, advisor);
 			info.setEmail(email && s.hasOption(StudentSectioningStatus.Option.email));
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
@@ -3831,6 +3847,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		if (ret.isCanUpdate() && getSessionContext().hasPermissionAnySession(sessionId, Right.StudentSchedulingChangeStudentStatus)) {
 			boolean canChange = true;
 			boolean hasAssistant = false, hasReq = false;
+			Set<StudentSectioningStatus> skipStatuses = null;
 			if (admin) {
 				Session session = student.getSession();
 				StudentStatusInfo info = null;
@@ -3857,6 +3874,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					hasAssistant = (effective != null && effective.hasOption(StudentSectioningStatus.Option.enabled));
 					hasReq = (effective != null && effective.hasOption(StudentSectioningStatus.Option.regenabled));
 				}
+				if (canChange) {
+					skipStatuses  = new HashSet<StudentSectioningStatus>();
+					for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
+						if (s.isPast()) continue;
+						if (hasAssistant && !s.hasOption(StudentSectioningStatus.Option.enabled)) continue;
+						if (hasReq && !s.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
+						if (!s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+						// if priority selection status and available -> remove all the fallback statuses 
+						if (s.hasOption(StudentSectioningStatus.Option.priority)) {
+							StudentSectioningStatus fallbback = s.getFallBackStatus();
+							while (fallbback != null && skipStatuses.add(fallbback))
+								fallbback = fallbback.getFallBackStatus();
+						}
+					}
+				}
 			}
 			if (canChange) {
 				for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
@@ -3864,6 +3896,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					if (!admin && hasAssistant && !s.hasOption(StudentSectioningStatus.Option.enabled)) continue;
 					if (!admin && hasReq && !s.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
 					if (!admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+					if (skipStatuses != null && skipStatuses.contains(s)) continue;
 					ret.addStatus(toStudentStatusInfo(s, courseTypes, admin, adv));
 				}
 			}

@@ -163,7 +163,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Set<Long>> {
 	}
 	
 	public boolean hasCompatibleStatus(StudentSectioningStatus oldStatus, StudentSectioningStatus newStatus, OnlineSectioningHelper helper) {
-		//if (helper.hasAdminPermission()) return true;
+		if (helper.hasAdminPermission()) return true;
 		// can advisor unset the status?
 		if (ApplicationProperty.AdvisorCourseRequestsRestrictedStatusChange.isTrue()) {
 			if (oldStatus == null || !oldStatus.hasOption(StudentSectioningStatus.Option.advcanset))

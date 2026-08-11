@@ -67,6 +67,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		/*65536 */ noschedule("Do Not Show Personal Schedule"),
 		/*131072*/ nosubs("No-Substitutions Enabled"),
 		/*262144*/ reschedule("Re-Scheduling Allowed"),
+		/*524288*/ priority("Priority Selection"),
 		;
 		
 		private String iName;

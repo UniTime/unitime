@@ -104,7 +104,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 	public SimpleEditInterface load(SessionContext context, org.hibernate.Session hibSession) {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
-		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 10 + StatusOption.values().length : 11 + StatusOption.values().length];
+		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 11 + StatusOption.values().length : 12 + StatusOption.values().length];
 		int idx = 0;
 		fields[idx++] = new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE);
 		fields[idx++] = new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE);
@@ -135,6 +135,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndDate(), FieldType.date, 80);
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusEffectiveEndTime(), FieldType.time, 50);
 		fields[idx++] = new Field(MESSAGES.fieldStudentStatusFallback(), FieldType.list, 100, fallbacks, Flag.NO_CYCLE);
+		fields[idx++] = new Field(MESSAGES.togglePrioritySelection(), FieldType.toggle, 40);
 		fields[idx++] = new Field(MESSAGES.fieldSession(), FieldType.toggle, 40);
 		
 		SimpleEditInterface data = new SimpleEditInterface(fields);
@@ -168,6 +169,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			r.setField(idx++, status.getEffectiveStopDate() == null ? "" : dateFormat.format(status.getEffectiveStopDate()));
 			r.setField(idx++, status.getEffectiveStopPeriod() == null ? "" : status.getEffectiveStopPeriod().toString());
 			r.setField(idx++, status.getFallBackStatus() == null ? "" : status.getFallBackStatus().getUniqueId().toString());
+			r.setField(idx++, status.hasOption(StudentSectioningStatus.Option.priority) ? "true" : "false");
 			r.setField(idx++, status.getSession() == null ? "false" : "true");
 		}
 		data.setEditable(context.hasPermission(Right.StudentSchedulingStatusTypeEdit));
@@ -200,7 +202,6 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 				"from CourseType order by reference", CourseType.class).setCacheable(true).list();
 		status.setReference(record.getField(0));
 		status.setLabel(record.getField(1));
-		status.setStatus(value);
 		status.setMessage(record.getField(2 + StatusOption.values().length));
 		
 		int notification = 0;
@@ -236,7 +237,10 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		} catch (ParseException e) {}
 		Integer endTime = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Integer.valueOf(record.getField(idx))); idx++;
 		Long fallBackId = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Long.valueOf(record.getField(idx))); idx++;
+		if ("true".equals(record.getField(idx++)))
+			value += StudentSectioningStatus.Option.priority.toggle();
 		boolean session = "true".equals(record.getField(idx)); idx++;
+		status.setStatus(value);
 		status.setEffectiveStartDate(startDate);
 		status.setEffectiveStartPeriod(startTime);
 		status.setEffectiveStopDate(endDate);
@@ -294,6 +298,8 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		} catch (ParseException e) {}
 		Integer endTime = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Integer.valueOf(record.getField(idx))); idx++;
 		Long fallBackId = (record.getField(idx) == null || record.getField(idx).isEmpty() ? null : Long.valueOf(record.getField(idx))); idx++;
+		if ("true".equals(record.getField(idx++)))
+			value += StudentSectioningStatus.Option.priority.toggle();
 		boolean session = "true".equals(record.getField(idx)); idx++;
 		
 		boolean changed = 
