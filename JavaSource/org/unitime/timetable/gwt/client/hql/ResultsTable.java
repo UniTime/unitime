@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.sectioning.StudentStatusDialog;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -101,7 +102,11 @@ public class ResultsTable extends UniTimeTable<String[]> {
 						et.setAdvisorRecommendations(iSectioningProperties != null && iSectioningProperties.isAdvisorCourseRequests());
 						et.setEmail(iSectioningProperties != null && iSectioningProperties.isEmail());
 						et.showStudentSchedule(Long.valueOf(event.getData()[0]));
-					}
+					} else if ("__Link".equals(iFirstField))
+						ToolBox.open(GWT.getHostPageBaseURL() + event.getData()[0]);
+					else if ("__Details".equals(iFirstField))
+						UniTimeFrameDialog.openDialog(MESSAGES.dialogDetails(),
+								GWT.getHostPageBaseURL() + event.getData()[0], "90%", "85%");
 				}
 			}
 		});

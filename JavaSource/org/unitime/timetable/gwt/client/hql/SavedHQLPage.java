@@ -1069,27 +1069,29 @@ public class SavedHQLPage extends Composite {
 	
 	public void setBack() {
 		if (iTable.getFirstField() == null || !iTable.getFirstField().startsWith("__") || iTable.getRowCount() <= 1) return;
-		HQLSetBackRpcRequest request = new HQLSetBackRpcRequest();
-		for (int i = 1; i < iTable.getRowCount(); i++) {
-			String[] row = iTable.getData(i);
-			if (row != null) {
-				Long id = Long.valueOf(row[0]);
-				request.addId(id);
+		try {
+			HQLSetBackRpcRequest request = new HQLSetBackRpcRequest();
+			for (int i = 1; i < iTable.getRowCount(); i++) {
+				String[] row = iTable.getData(i);
+				if (row != null) {
+					Long id = Long.valueOf(row[0]);
+					request.addId(id);
+				}
 			}
-		}
-		request.setAppearance(iAppearance);
-		request.setHistory(History.getToken());
-		request.setType(iTable.getFirstField());
-		RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage(caught.getMessage());
-			}
+			request.setAppearance(iAppearance);
+			request.setHistory(History.getToken());
+			request.setType(iTable.getFirstField());
+			RPC.execute(request, new AsyncCallback<GwtRpcResponseNull>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iHeader.setErrorMessage(caught.getMessage());
+				}
 
-			@Override
-			public void onSuccess(GwtRpcResponseNull result) {
-			}
-		});
+				@Override
+				public void onSuccess(GwtRpcResponseNull result) {
+				}
+			});
+		} catch (NumberFormatException e) {}
 	}
 	
 	public void reload(String history) {
