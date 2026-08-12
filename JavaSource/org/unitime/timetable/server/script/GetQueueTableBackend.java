@@ -22,6 +22,7 @@ package org.unitime.timetable.server.script;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -77,8 +78,11 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		List<QueueItemInterface> queue = solverServerService.getQueueProcessor().getItemsTable(null, null, type, 1000 * 60 * 60);
 		GwtRpcResponseList<QueueItemInterface> table = new GwtRpcResponseList<QueueItemInterface>();
 		
+		String local = solverServerService.getLocalServer().getHost();
 		for (QueueItemInterface item: queue) {
 			item.setCanDelete(context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId()));
+			if (item.getOtuput() != null && !local.equals(item.getHost()))
+				item.setOutputLink("qpfile?q=" + QueryEncoderBackend.encode(item.getId()));
 			table.add(item);
 		}
 		
