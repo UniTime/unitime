@@ -4311,6 +4311,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Information")
 	String dialogInfo();
 	
+	@DefaultMessage("Details")
+	String dialogDetails();
+	
 	@DefaultMessage("Details of {0}")
 	String dialogDetailsOf(String item);
 	

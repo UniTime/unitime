@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -378,7 +379,11 @@ public class SectioningReports extends Composite {
 						et.setAdvisorRecommendations(iSectioningProperties != null && iSectioningProperties.isAdvisorCourseRequests());
 						et.setEmail(iSectioningProperties != null && iSectioningProperties.isEmail());
 						et.showStudentSchedule(Long.valueOf(event.getData().getCell(0)));
-					}
+					} else if ("__Link".equals(iHead.getCell(0)))
+						ToolBox.open(GWT.getHostPageBaseURL() + event.getData().getCell(0));
+					else if ("__Details".equals(iHead.getCell(0)))
+						UniTimeFrameDialog.openDialog(MESSAGES.dialogDetails(),
+								GWT.getHostPageBaseURL() + event.getData().getCell(0), "90%", "85%");
 				}
 			}
 		});

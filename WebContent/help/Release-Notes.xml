@@ -61,6 +61,13 @@
 			</description>
 		</item>
 		<item>
+			<name>Test HQL, HQL Reports</name>
+			<description>
+				<line>Added the ability to link another UniTime page from a report on click.</line>
+				<line>Either using the first column named __Link, which opens a new page, or __Dialog, which opens a frame dialog with the page.</line>
+			</description>
+		</item>
+		<item>
 			<name>Technology Update / GWT</name>
 			<description>
 				<line>The following pages have been rewritten to GWT:
