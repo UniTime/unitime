@@ -411,8 +411,11 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		}
 		if (request.hasOptions("room")) {
 			String ids = "";
-			for (String id: request.getOptions("room")) {
-				ids += (ids.isEmpty() ? "" : ",") + id;
+			int id = 0;
+			for (String s: request.getOptions("room")) {
+				ids += (ids.isEmpty() ? "" : ", ") + ":Xroom" + id;
+				query.addParameter("room", "Xroom" + id, Long.valueOf(s));
+				id++;
 			}
 			query.addWhere("room", "l.uniqueId in (" + ids + ")");
 		}
