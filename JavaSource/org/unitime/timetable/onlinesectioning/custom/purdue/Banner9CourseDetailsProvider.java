@@ -220,10 +220,10 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 			return s.toString();
 		} catch (SectioningException e) {
 			sLog.info(e.getMessage(), e);
-			return MSG.exceptionCustomCourseDetailsFailed(e.getMessage());
+			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed(e.getMessage()), e);
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
-			return MSG.exceptionCustomCourseDetailsFailed(e.getMessage());
+			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed(e.getMessage()), e);
 		}
 	}
 	
