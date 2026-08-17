@@ -181,17 +181,15 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	private CourseOffering findCourse(VariableTitleQuery variableTitleQuery, org.hibernate.Session hibSession) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("from CourseOffering co")
-		  .append(" where co.instructionalOffering.session.uniqueId = ")
-		  .append(getAcadSession(variableTitleQuery, hibSession).getUniqueId())
-		  .append(" and co.subjectArea.uniqueId = ")
-		  .append(getSubjectObject(variableTitleQuery, hibSession).getUniqueId())
-		  .append(" and co.courseNbr like '")
-		  .append(variableTitleQuery.getCourseNumber())
-		  .append("%'")
-		  ;
+		  .append(" where co.instructionalOffering.session.uniqueId = :sessionId ")
+		  .append(" and co.subjectArea.uniqueId = :subjectId ")
+		  .append(" and co.courseNbr like :courseNbr");
 		
-		@SuppressWarnings("unchecked")
-		List<CourseOffering> courses = hibSession.createQuery(sb.toString(), CourseOffering.class).setCacheable(true).list();
+		List<CourseOffering> courses = hibSession.createQuery(sb.toString(), CourseOffering.class)
+			.setParameter("sessionId", getAcadSession(variableTitleQuery, hibSession).getUniqueId())
+			.setParameter("subjectId", getSubjectObject(variableTitleQuery, hibSession).getUniqueId())
+			.setParameter("courseNbr", variableTitleQuery.getCourseNumber() + "%")
+			.setCacheable(true).list();
 		CourseOffering co = null;
 		for (CourseOffering c : courses) {
 			if (c.getTitle() != null && c.getTitle().trim().equalsIgnoreCase(variableTitleQuery.getCourseTitle().trim())) {
@@ -295,8 +293,11 @@ public class VariableTitleCourseConnector extends ApiConnector {
 	@SuppressWarnings("unchecked")
 	private String generateCourseNumber(SubjectArea subjectArea, String courseNumber, org.hibernate.Session hibSession) {
 		HashSet<String> existingNumbers = new HashSet<String>();
-		String query = "select co.courseNbr from CourseOffering co where co.subjectArea.uniqueId = :subjId and co.courseNbr like '" + courseNumber + "%'";
-		existingNumbers.addAll(hibSession.createQuery(query, String.class).setParameter("subjId", subjectArea.getUniqueId()).list());
+		existingNumbers.addAll(hibSession.createQuery(
+				"select co.courseNbr from CourseOffering co where co.subjectArea.uniqueId = :subjId and co.courseNbr like :courseNbr", String.class)
+				.setParameter("subjId", subjectArea.getUniqueId())
+				.setParameter("courseNbr", courseNumber + "%")
+				.list());
 		
 		char char1 = 'A', char2 = 'A';
 		boolean needSecondCharacter = false;
@@ -709,12 +710,13 @@ public class VariableTitleCourseConnector extends ApiConnector {
 		StringBuffer sb = new StringBuffer();
 		sb.append("from DatePattern dp")
 		  .append(" where dp.session.uniqueId = :sessionId")
-		  .append(" and dp.type = ")
-		  .append(DatePatternType.Extended.ordinal())
-		  .append(" and dp.name = '")
-		  .append(generatedVariableTitleDatePatternName(variableTitleQuery))
-		  .append("'");
-		DatePattern dp = hibSession.createQuery(sb.toString(), DatePattern.class).setParameter("sessionId", s.getUniqueId()).uniqueResult();
+		  .append(" and dp.type = :type ")
+		  .append(" and dp.name = :name");
+		DatePattern dp = hibSession.createQuery(sb.toString(), DatePattern.class)
+				.setParameter("sessionId", s.getUniqueId())
+				.setParameter("type", DatePatternType.Extended.ordinal())
+				.setParameter("name", generatedVariableTitleDatePatternName(variableTitleQuery))
+				.uniqueResult();
 		if (dp == null) {
 			for (DatePattern sdp : DatePattern.findAll(s, false, null, null)) {
 				if ((sdp.getType().equals(DatePatternType.Standard.ordinal()) 
