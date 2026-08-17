@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.cpsolver.coursett.model.Placement;
 import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.DisposableBean;
@@ -408,9 +409,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				}
 			}
 			
-			String types = "";
+			List<String> types = new ArrayList<String>();;
 			for (String ref: matcher.getAllowedCourseTypes())
-				types += (types.isEmpty() ? "" : ", ") + "'" + ref + "'";
+				types.add(ref);
 			if (!matcher.isAllCourseTypes() && !matcher.isNoCourseType() && types.isEmpty()) throw new SectioningException(MSG.exceptionCourseDoesNotExist(query));
 
 			List<OverrideType> overrides = hibSession.createQuery("from OverrideType order by label", OverrideType.class).setCacheable(true).list();
@@ -420,7 +421,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			boolean excludeNotOffered = ApplicationProperty.CourseRequestsShowNotOffered.isFalse();
 			ArrayList<ClassAssignmentInterface.CourseAssignment> results = new ArrayList<ClassAssignmentInterface.CourseAssignment>();
 			org.unitime.timetable.onlinesectioning.match.CourseMatcher parent = matcher.getParentCourseMatcher();
-			for (CourseOffering c: hibSession.createQuery(
+			Query<CourseOffering> q = hibSession.createQuery(
 					"select c from CourseOffering c left outer join c.courseType ct where " +
 					(excludeNotOffered ? "c.instructionalOffering.notOffered = false and " : "") +
 					"c.subjectArea.session.uniqueId = :sessionId and c.subjectArea.department.allowStudentScheduling = true and (" +
@@ -429,10 +430,13 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 					" or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like '% - ' || :q || '%'" +
 					" or lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr || ' - ' || c.title) like '% - ' || :q || '%'" +
 					" or lower(c.courseNbr) like :q || '%') " +
-					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and ct is null " : " and (ct is null or ct.reference in (" + types + ")) " : " and ct.reference in (" + types + ") ") +
+					(matcher.isAllCourseTypes() ? "" : matcher.isNoCourseType() ? types.isEmpty() ? " and ct is null " : " and (ct is null or ct.reference in :types) " : " and ct.reference in :types ") +
 					"order by case " +
 					"when lower(c.subjectArea.subjectAreaAbbreviation || ' ' || c.courseNbr) like :q || '%' then 0 else 1 end," + // matches on course name first
-					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class)
+					"c.subjectArea.subjectAreaAbbreviation, c.courseNbr", CourseOffering.class);
+			if (!matcher.isAllCourseTypes() && !types.isEmpty())
+				q.setParameterList("types", types);
+			for (CourseOffering c: q
 					.setParameter("q", query.toLowerCase())
 					.setParameter("sessionId", cx.getSessionId())
 					.setCacheable(true).setMaxResults(limit == null || limit <= 0 || parent != null ? Integer.MAX_VALUE : limit).list()) {
