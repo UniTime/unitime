@@ -79,6 +79,7 @@ public class DbFindOnlineSectioningLogAction extends FindOnlineSectioningLogActi
 					) + "order by l.uniqueId desc", Object[].class);
 
 			q.setParameter("sessionId", session.getUniqueId());
+			formatter.setParameters(q);
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			

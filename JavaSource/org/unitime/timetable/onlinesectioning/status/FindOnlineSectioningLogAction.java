@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,6 +115,7 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 					) + "order by l.uniqueId desc", Object[].class);
 
 			q.setParameter("sessionId", session.getUniqueId());
+			formatter.setParameters(q);
 			if (getLimit() != null)
 				q.setMaxResults(getLimit());
 			
@@ -558,12 +561,45 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 		Set<String> iGroupTypes = new HashSet<String>();
 		AcademicSessionInfo iSession = null;
 		OnlineSectioningHelper iHelper = null;
+		Map<String, Object> iParams = new HashMap<String, Object>();
 		
 		public SectioningLogQueryFormatter(AcademicSessionInfo session, OnlineSectioningHelper helper) {
 			iSession = session;
 			iHelper = helper;
 			for (StudentGroupType type: StudentGroupTypeDAO.getInstance().findAll(helper.getHibSession()))
 				iGroupTypes.add(type.getReference().replace(' ', '_').toLowerCase());
+		}
+		
+		public String param(Object value) {
+			String name = "X" + (1 + iParams.size());
+			iParams.put(name, value);
+			return ":" + name;
+		}
+		
+		public void setParameters(org.hibernate.query.Query<?> query) {
+			for (Map.Entry<String, Object> param: iParams.entrySet()) {
+				if (param.getValue() instanceof Collection<?>) {
+					query.setParameterList(param.getKey(), (Collection<?>)param.getValue());
+				} else if (param.getValue() instanceof Integer) {
+					query.setParameter(param.getKey(), (Integer)param.getValue());
+				} else if (param.getValue() instanceof Long) {
+					query.setParameter(param.getKey(), (Long)param.getValue());
+				} else if (param.getValue() instanceof Float) {
+					query.setParameter(param.getKey(), (Float)param.getValue());
+				} else if (param.getValue() instanceof Double) {
+					query.setParameter(param.getKey(), (Double)param.getValue());
+				} else if (param.getValue() instanceof Number) {
+					query.setParameter(param.getKey(), ((Number)param.getValue()).doubleValue());
+				} else if (param.getValue() instanceof String) {
+					query.setParameter(param.getKey(), (String)param.getValue());
+				} else if (param.getValue() instanceof Boolean) {
+					query.setParameter(param.getKey(), (Boolean)param.getValue());
+				} else if (param.getValue() instanceof Date) {
+					query.setParameter(param.getKey(), (Date)param.getValue());
+				} else {
+					query.setParameter(param.getKey(), param.getValue().toString());
+				}
+			}
 		}
 
 		@Override
@@ -572,48 +608,49 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				body = HibernateUtil.escapeSql(body);
 			if ("id".equalsIgnoreCase(attr) || "student".equalsIgnoreCase(attr)) {
 				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && body.startsWith("0")) {
-					return "s.externalUniqueId = '" + body.replaceFirst("^0+(?!$)", "") + "'";
+					return "s.externalUniqueId = " + param(body.replaceFirst("^0+(?!$)", ""));
 				} else {
-					return "s.externalUniqueId = '" + body + "'";
+					return "s.externalUniqueId = " + param(body);
 				}
 			} else if ("advisor".equalsIgnoreCase(attr)) {
 				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && body.startsWith("0")) {
-					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = '" + body.replaceFirst("^0+(?!$)", "") + "' and adv.session.uniqueId = s.session.uniqueId)";
+					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = " + param(body.replaceFirst("^0+(?!$)", "")) + " and adv.session.uniqueId = s.session.uniqueId)";
 				} else {
-					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = '" + body + "' and adv.session.uniqueId = s.session.uniqueId)";
+					return "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = " + param(body) + " and adv.session.uniqueId = s.session.uniqueId)";
 				}
+				
 			} else if ("operation".equalsIgnoreCase(attr) || "op".equalsIgnoreCase(attr)) {
-				return "l.operation = '" + body.toLowerCase() + "'";
+				return "l.operation = " + param(body.toLowerCase());
 			} else if ("max-age".equalsIgnoreCase(attr) || "age".equalsIgnoreCase(attr)) {
-				return HibernateUtil.addDate("l.timeStamp", body) + " > current_date()";
+				return HibernateUtil.addDate("l.timeStamp", param(Integer.valueOf(body.trim()))) + " > current_date()";
 			} else if ("limit".equalsIgnoreCase(attr)) {
 				return "1 = 1";
 			} else if ("area".equalsIgnoreCase(attr)) {
-				return "lower(m.academicArea.academicAreaAbbreviation) = '" + body.toLowerCase() + "'";
+				return "lower(m.academicArea.academicAreaAbbreviation) = " + param(body.toLowerCase());
 			} else if ("clasf".equalsIgnoreCase(attr) || "classification".equalsIgnoreCase(attr)) {
-				return "lower(m.academicClassification.code) = '" + body.toLowerCase() + "'";
+				return "lower(m.academicClassification.code) = " + param(body.toLowerCase());
 			} else if ("major".equalsIgnoreCase(attr)) {
-				return "lower(m.major.code) = '" + body.toLowerCase() + "'";
+				return "lower(m.major.code) = " + param(body.toLowerCase());
 			} else if ("concentration".equalsIgnoreCase(attr)) {
-				return "lower(m.concentration.code) = '" + body.toLowerCase() + "'";
+				return "lower(m.concentration.code) = " + param(body.toLowerCase());
 			} else if ("program".equalsIgnoreCase(attr)) {
-				return "lower(m.program.reference) = '" + body.toLowerCase() + "'";
+				return "lower(m.program.reference) = " + param(body.toLowerCase());
 			} else if ("campus".equalsIgnoreCase(attr)) {
-				return "lower(m.campus.reference) = '" + body.toLowerCase() + "'";
+				return "lower(m.campus.reference) = " + param(body.toLowerCase());
 			} else if ("minor".equalsIgnoreCase(attr)) {
-				return "lower(n.minor.code) = '" + body.toLowerCase() + "'";
+				return "lower(n.minor.code) = " + param(body.toLowerCase());
 			} else if ("group".equalsIgnoreCase(attr)) {
-				return "lower(g.groupAbbreviation) = '" + body.toLowerCase() + "'";
+				return "lower(g.groupAbbreviation) = " + param(body.toLowerCase());
 			} else if (attr != null && iGroupTypes.contains(attr.toLowerCase())) {
-				return "lower(G_" + attr + ".groupAbbreviation) = '" + body.toLowerCase() + "'";
+				return "lower(G_" + attr + ".groupAbbreviation) = " + param(body.toLowerCase());
 			} else if ("accommodation".equalsIgnoreCase(attr)) {
-				return "lower(a.abbreviation) = '" + body.toLowerCase() + "'";
+				return "lower(a.abbreviation) = " + param(body.toLowerCase());
 			} else if ("user".equalsIgnoreCase(attr)) {
-				return ("none".equalsIgnoreCase(body) ? "l.user is null" : "l.user = '" + body + "'");				
+				return ("none".equalsIgnoreCase(body) ? "l.user is null" : "l.user = " + param(body));				
 			} else if ("result".equalsIgnoreCase(attr)) {
 				for (OnlineSectioningLog.Action.ResultType t: OnlineSectioningLog.Action.ResultType.values())
 					if (t.name().equalsIgnoreCase(body))
-						return "l.result = " + t.getNumber();
+						return "l.result = " + param(t.getNumber());
 				if ("none".equalsIgnoreCase(body) || "unknown".equalsIgnoreCase(body))
 					return "l.result is null";
 				else
@@ -622,61 +659,60 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 				if ("Not Set".equalsIgnoreCase(body))
 					return "s.sectioningStatus is null";
 				else
-					return "lower(s.sectioningStatus.reference) = '" + body.toLowerCase() + "'";
+					return "lower(s.sectioningStatus.reference) = " + param(body.toLowerCase());
 			} else if ("over".equalsIgnoreCase(attr)) {
 				try {
-					return "l.wallTime >= " + 1000 * Integer.parseInt(body.trim());
+					return "l.wallTime >= " + param(1000 * Integer.parseInt(body.trim()));
 				} catch (Exception e) {
 					return "1 = 1";
 				}
 			} else if ("under".equalsIgnoreCase(attr)) {
 				try {
-					return "l.wallTime <= " + 1000 * Integer.parseInt(body.trim());
+					return "l.wallTime <= " + param(1000 * Integer.parseInt(body.trim()));
 				} catch (Exception e) {
 					return "1 = 1";
 				}
 			} else if ("api".equalsIgnoreCase(attr)) {
 				try {
-					return "l.apiGetTime >= " + 1000 * Integer.parseInt(body.trim()) + "or l.apiPostTime >= " + 1000 * Integer.parseInt(body.trim()) + " or (l.apiGetTime + l.apiPostTime) >= " + 1000 * Integer.parseInt(body.trim());
+					String p = param(1000 * Integer.parseInt(body.trim()));
+					return "l.apiGetTime >= " + p + "or l.apiPostTime >= " + p + " or (l.apiGetTime + l.apiPostTime) >= " + p;
 				} catch (Exception e) {
-					return "l.apiException like '%" + body + "%'";
+					return "l.apiException like " + param("%" + body + "%");
 				}
 			} else if ("message".equalsIgnoreCase(attr)) {
-				return "l.message like '%" + body + "%' or l.apiException like '%" + body + "%'";
+				String p = param("%" + body + "%");
+				return "l.message like " + p + " or l.apiException like " + p;
 			} else if ("get".equalsIgnoreCase(attr)) {
 				try {
-					return "l.apiGetTime >= " + 1000 * Integer.parseInt(body.trim());
+					return "l.apiGetTime >= " + param(1000 * Integer.parseInt(body.trim()));
 				} catch (Exception e) {
 					return "1 = 1";
 				}
 			} else if ("post".equalsIgnoreCase(attr)) {
 				try {
-					return "l.apiPostTime >= " + 1000 * Integer.parseInt(body.trim());
+					return "l.apiPostTime >= " + param(1000 * Integer.parseInt(body.trim()));
 				} catch (Exception e) {
 					return "1 = 1";
 				}
 			} else if ("course".equalsIgnoreCase(attr)) {
-				return "cr.courseOffering.subjectAreaAbbv = '" + body + "' or (cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr) = '" + body + "'";
+				String p = param(body);
+				return "cr.courseOffering.subjectAreaAbbv = " + p + " or (cr.courseOffering.subjectAreaAbbv || ' ' || cr.courseOffering.courseNbr) = " + p;
 			} else if ("lookup".equalsIgnoreCase(attr)) {
 				if (CustomCourseLookupHolder.hasProvider()) {
 					Set<Long> courseIds = CustomCourseLookupHolder.getProvider().getCourseIds(iSession, iHelper.getHibSession(), body, true);
 					if (courseIds != null && !courseIds.isEmpty()) {
-						String ret = "";
-						for (Long courseId: courseIds) {
-							ret += (ret.isEmpty() ? "" : ",") + courseId; 
-						}
-						return "cr.courseOffering.uniqueId in (" + ret + ")";
+						return "cr.courseOffering.uniqueId in " + param(courseIds);
 					}
 				}
 				return "1 = 1";
 			} else if ("im".equalsIgnoreCase(attr)) {
 				if (body != null && body.equals(iSession.getDefaultInstructionalMethod())) {
-					return "im is null or im.reference = '" + body + "'";
+					return "im is null or im.reference = " + param(body);
 				} else {
-					return "im.reference = '" + body + "'";
+					return "im.reference = " + param(body);
 				}
 			} else if (attr == null && !body.isEmpty()) {
-				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like '%" + body.toLowerCase() + "%'";
+				return "lower(s.firstName || ' ' || s.middleName || ' ' || s.lastName) like " + param("%" + body.toLowerCase() + "%");
 			} else {
 				return "1 = 1";
 			}
