@@ -1093,17 +1093,14 @@ public abstract class PdfLegacyExamReport extends AbstractReport {
             TreeSet<SubjectArea> subjects = null;
             if (System.getProperty("subject")!=null) {
                 sLog.info("Loading subjects...");
-                subjects = new TreeSet();
-                String inSubjects = "";
-                for (StringTokenizer s=new StringTokenizer(System.getProperty("subject"),",");s.hasMoreTokens();)
-                    inSubjects += "'"+s.nextToken()+"'"+(s.hasMoreTokens()?",":"");
-                subjects.addAll(new _RootDAO().getSession().createQuery(
-                        "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in ("+inSubjects+")", SubjectArea.class
-                        ).setParameter("sessionId", session.getUniqueId()).list());
+                subjects = new TreeSet<SubjectArea>(new _RootDAO().getSession().createQuery(
+                        "select sa from SubjectArea sa where sa.session.uniqueId=:sessionId and sa.subjectAreaAbbreviation in :subjects", SubjectArea.class
+                        ).setParameterList("subjects", System.getProperty("subject").split(","))
+                		.setParameter("sessionId", session.getUniqueId()).list());
             }
             TreeSet<ExamAssignmentInfo> exams = loadExams(session.getUniqueId(), examType.getUniqueId(), assgn, ignempty, true);
             if (subjects==null) {
-                subjects = new TreeSet();
+                subjects = new TreeSet<SubjectArea>();
                 for (ExamAssignmentInfo exam: exams)
                     for (ExamSectionInfo section: exam.getSections())
                         subjects.add(section.getOwner().getCourse().getSubjectArea());
