@@ -78,7 +78,7 @@ import org.unitime.timetable.model.UniversalOverrideReservation;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
 /**

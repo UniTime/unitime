@@ -80,7 +80,6 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.model.XSubpart;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
 import org.unitime.timetable.onlinesectioning.updates.WaitlistedOnlineSectioningAction;
 import org.unitime.timetable.solver.studentsct.StudentSolver;
 
@@ -202,7 +201,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 				wl = WaitListMode.NoSubs;
 			
 			if (request.getEnrollment() == null && !student.canAssign(request, wl)) continue;
-			if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, wl))) continue;
+			if (!query().match(new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, wl))) continue;
 			if (classId() != null && request.getEnrollment() == null) {
 				boolean hasEnrollment = false;
 				Assignment<Request, Enrollment> assignment = new AssignmentMap<Request, Enrollment>();
@@ -210,7 +209,7 @@ public class FindEnrollmentAction extends WaitlistedOnlineSectioningAction<List<
 				Section s = r.getSection(classId());
 				values: for (Enrollment en: r.values(assignment)) {
 					if (!en.getSections().contains(s)) continue;
-					if (!query().match(new StatusPageSuggestionsAction.CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, wl).setEnrollment(new XEnrollment(en)))) continue;
+					if (!query().match(new CourseRequestMatcher(session, course, student, offering, request, isConsentToDoCourse(), isMyStudent(student), lookup, server, wl).setEnrollment(new XEnrollment(en)))) continue;
 					for (Request x: r.getStudent().getRequests()) {
 						Enrollment xe = assignment.getValue(x);
 						if (!x.equals(r) && xe != null && xe.isOverlapping(en)) {

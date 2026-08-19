@@ -94,8 +94,6 @@ public interface SectioningServiceAsync {
 	void findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, AsyncCallback<List<ClassAssignmentInterface.EnrollmentInfo>> callback) throws SectioningException, PageAccessException;
 	void findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, AsyncCallback<List<ClassAssignmentInterface.StudentInfo>> callback) throws SectioningException, PageAccessException;
 	void findEnrollments(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId, AsyncCallback<List<ClassAssignmentInterface.Enrollment>> callback) throws SectioningException, PageAccessException;
-	@Deprecated
-	void querySuggestions(boolean online, String query, int limit, AsyncCallback<List<String[]>> callback) throws SectioningException, PageAccessException;
 	void canEnroll(StudentSectioningContext cx, AsyncCallback<Long> callback) throws SectioningException, PageAccessException;
 	void savedRequest(StudentSectioningContext cx, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void savedResult(StudentSectioningContext cx, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;

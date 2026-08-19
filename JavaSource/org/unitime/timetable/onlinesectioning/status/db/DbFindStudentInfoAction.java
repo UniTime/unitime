@@ -64,11 +64,9 @@ import org.unitime.timetable.model.StudentSectioningStatus.Option;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.status.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.SectioningStatusFilterAction;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbFindStudentInfoMatcher;
 import org.unitime.timetable.util.Formats;
 
 /**

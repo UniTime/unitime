@@ -830,7 +830,7 @@ public abstract class AbstractServer implements OnlineSectioningServer {
 		if (iRules != null)
 			return iRules.getRule(student, mode, this, isAdvisor, isAdmin);
 		StudentSchedulingRule rule = StudentSchedulingRule.getRule(
-				new org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher(student, getAcademicSession().getDefaultSectioningStatus(), this, false),
+				new org.unitime.timetable.onlinesectioning.status.StudentMatcher(student, getAcademicSession().getDefaultSectioningStatus(), this, false),
 				getAcademicSession(),
 				isAdvisor,
 				isAdmin,

@@ -171,7 +171,7 @@ import org.unitime.timetable.onlinesectioning.custom.Customization;
 import org.unitime.timetable.onlinesectioning.custom.StudentHoldsCheckProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.db.DbStudentMatcher;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;

@@ -96,7 +96,6 @@ public interface SectioningService extends RemoteService {
 	List<ClassAssignmentInterface.EnrollmentInfo> findEnrollmentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.StudentInfo> findStudentInfos(boolean online, String query, SectioningStatusFilterRpcRequest filter) throws SectioningException, PageAccessException;
 	List<ClassAssignmentInterface.Enrollment> findEnrollments(boolean online, String query, SectioningStatusFilterRpcRequest filter, Long courseId, Long classId) throws SectioningException, PageAccessException;
-	List<String[]> querySuggestions(boolean online, String query, int limit) throws SectioningException, PageAccessException;
 	Long canEnroll(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	CourseRequestInterface savedRequest(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface savedResult(StudentSectioningContext cx) throws SectioningException, PageAccessException;

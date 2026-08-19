@@ -31,7 +31,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.custom.CriticalCoursesProvider;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
 
 /**
  * @author Tomas Muller

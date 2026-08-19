@@ -48,7 +48,7 @@ import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudent.XGroup;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequestComparator;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
 
 /**
  * @author Tomas Muller
@@ -206,7 +206,7 @@ public abstract class WaitlistedOnlineSectioningAction<T> implements OnlineSecti
         	if (priority == StudentPriority.Normal) break;
         	Query query = iPriorityStudentQuery.get(priority);
         	String groupRef = iPriorityStudentGroupReference.get(priority);
-        	if (query != null && query.match(new StatusPageSuggestionsAction.StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+        	if (query != null && query.match(new StudentMatcher(student, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
             	return priority;
         	} else if (groupRef != null) {
         		for (XGroup g: student.getGroups()) {

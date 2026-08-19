@@ -80,7 +80,7 @@ import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.model.XStudentId;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
