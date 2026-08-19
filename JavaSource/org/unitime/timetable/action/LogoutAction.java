@@ -21,8 +21,6 @@ package org.unitime.timetable.action;
 
 import java.util.Enumeration;
 
-import jakarta.servlet.http.Cookie;
-
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Result;
 import org.unitime.timetable.form.BlankForm;
@@ -37,9 +35,6 @@ public class LogoutAction extends UniTimeAction<BlankForm>{
 	private static final long serialVersionUID = 3587561668566677588L;
 	
 	public String execute() throws Exception {
-		Cookie cookie = new Cookie("loggedOn", "false" );    	
-		response.addCookie( cookie );
-
 		Enumeration<String> e = request.getSession().getAttributeNames();
 		while (e.hasMoreElements()) {
 			String key = e.nextElement();
