@@ -604,8 +604,6 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 
 		@Override
 		public String format(String attr, String body) {
-			if (body != null && !body.isEmpty())
-				body = HibernateUtil.escapeSql(body);
 			if ("id".equalsIgnoreCase(attr) || "student".equalsIgnoreCase(attr)) {
 				if (ApplicationProperty.DataExchangeTrimLeadingZerosFromExternalIds.isTrue() && body.startsWith("0")) {
 					return "s.externalUniqueId = " + param(body.replaceFirst("^0+(?!$)", ""));
