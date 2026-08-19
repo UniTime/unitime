@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.courses;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -230,8 +231,10 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 			for (String filterManager: filter.getParameterValue("filterManager").split(","))
 				filterManagers.add(Long.valueOf(filterManager));
 		}
-        
-		if (subjectIds != null && subjectIds.length > 0){
+		if (subjectIds != null && subjectIds.length > 0) {
+			List<Long> filterSubjects = new ArrayList<Long>();
+			for (String subjectId: subjectIds)
+				filterSubjects.add(Long.valueOf(subjectId));
 			StringBuffer query = new StringBuffer();
 			query.append("select c, co from Class_ as c ");
 			query.append("left join fetch c.childClasses as cc ");
@@ -241,17 +244,7 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 			query.append("left join fetch ioc.instructionalOffering as io ");
 			query.append("left join fetch io.courseOfferings as cox ");
 			query.append("inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as co ");
-			query.append(" where co.subjectArea.uniqueId in ( ");
-			boolean first = true;
-			for(int i = 0; i < subjectIds.length; i++){
-				if (!first){
-					query.append(", ");
-				} else {
-					first = false;
-				}
-				query.append(subjectIds[i]);
-			}
-			query.append(") ");
+			query.append(" where co.subjectArea.uniqueId in :subjectIds ");
 			String courseNbr = filter.getParameterValue("courseNbr");
 			if (ApplicationProperty.CourseOfferingTitleSearch.isTrue() && courseNbr != null && courseNbr.length() > 2) {
 				if (courseNbr.indexOf('*') >= 0) {
@@ -291,6 +284,7 @@ public class ClassesTableBuilder extends InstructionalOfferingTableBuilder {
 	        }
 			Query<Object[]> q = hibSession.createQuery(query.toString(), Object[].class);
 			q.setFetchSize(1000);
+			q.setParameterList("subjectIds", filterSubjects);
 			if (courseNbr != null && courseNbr.length() > 0) {
 				if (ApplicationProperty.CourseOfferingNumberUpperCase.isTrue())
 	            	courseNbr = courseNbr.toUpperCase();
