@@ -72,7 +72,7 @@
 				return this.replace(/^\s+|\s+$/g,"");
 			};
 		}
-		setPageLoadingMessage("<%=GWTMSG.waitLoadingPage().replace("\"", "\"\"")%>");
+		setPageLoadingMessage("<%=GWTMSG.waitLoadingPage().replaceAll("\"", "\"\"")%>");
 	</script>
 	</loc:bundle>
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
