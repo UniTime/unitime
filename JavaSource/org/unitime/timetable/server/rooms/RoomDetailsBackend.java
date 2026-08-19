@@ -464,10 +464,4 @@ public class RoomDetailsBackend extends RoomFilterBackend {
 			return signature;
 		}
 	}
-	
-	public static void main(String[] args) throws Exception {
-		String url = "https://maps.googleapis.com/maps/api/staticmap?key=AIzaSyDpUnTRgd4mB7HdVt5ug_LwKzdNfTQVA14&center=48.8584,2.2945&size=600x400&zoom=16&maptype=roadmap&sensor=false&markers=color:blue%7c48.8584,2.2945";
-		System.out.println(url + "&signature=" + new UrlSigner("oJaEChTm5G0AZsqWVQJcb-9SXHY=").signRequest(url));
-	}
-
 }
