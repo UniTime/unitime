@@ -32,7 +32,7 @@ import org.unitime.timetable.model.StudentSchedulingRule;
 import org.unitime.timetable.model.StudentSchedulingRule.Mode;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
 
 /**
  * @author Tomas Muller

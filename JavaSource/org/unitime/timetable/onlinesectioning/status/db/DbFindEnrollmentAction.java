@@ -61,9 +61,8 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.status.CourseLookup;
 import org.unitime.timetable.onlinesectioning.status.FindEnrollmentAction;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.CourseLookup;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbCourseRequestMatcher;
 
 /**
  * @author Tomas Muller

@@ -25,7 +25,7 @@ import java.io.ObjectOutput;
 
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.UniversalOverrideReservation;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
 
 import jakarta.persistence.Transient;
 

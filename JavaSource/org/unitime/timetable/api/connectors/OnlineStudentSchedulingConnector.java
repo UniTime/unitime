@@ -361,12 +361,6 @@ public class OnlineStudentSchedulingConnector extends ApiConnector {
 						helper.getOptinalParameterLong("classId", request.classId));
 			}
 		}, Flag.GET, Flag.POST),
-		querySuggestions(new OpExecution<List<String[]>>() {
-			@Override
-			public List<String[]> execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {
-				return service.querySuggestions(helper.getOptinalParameterBoolean("online", true), helper.getOptinalParameter("query", ""), helper.getOptinalParameterInteger("limit", null));
-			}
-		}, Flag.GET),
 		canEnroll(new OpExecution<Long>() {
 			@Override
 			public Long execute(SectioningService service, ApiHelper helper, Flag type, StudentSectioningContext cx) throws IOException {

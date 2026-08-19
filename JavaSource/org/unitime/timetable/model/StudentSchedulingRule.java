@@ -40,8 +40,8 @@ import org.unitime.timetable.onlinesectioning.model.XInstructionalMethod;
 import org.unitime.timetable.onlinesectioning.model.XOffering;
 import org.unitime.timetable.onlinesectioning.model.XStudent;
 import org.unitime.timetable.onlinesectioning.server.DatabaseServer;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction.StudentMatcher;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.StudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.db.DbStudentMatcher;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 

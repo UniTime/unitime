@@ -29,7 +29,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.model.base.BaseUniversalOverrideReservation;
 import org.unitime.timetable.onlinesectioning.model.XReservation.Flags;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.db.DbStudentMatcher;
 
 @Entity
 @DiscriminatorValue("9")

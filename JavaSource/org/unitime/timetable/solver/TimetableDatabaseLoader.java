@@ -132,7 +132,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction.DbStudentMatcher;
+import org.unitime.timetable.onlinesectioning.status.db.DbStudentMatcher;
 import org.unitime.timetable.solver.course.weights.ClassWeightProvider;
 import org.unitime.timetable.solver.course.weights.DefaultClassWeights;
 import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;

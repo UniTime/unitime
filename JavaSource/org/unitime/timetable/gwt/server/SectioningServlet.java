@@ -229,7 +229,6 @@ import org.unitime.timetable.onlinesectioning.status.FindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.FindStudentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.GetReservationsAction;
 import org.unitime.timetable.onlinesectioning.status.FindOnlineSectioningLogAction;
-import org.unitime.timetable.onlinesectioning.status.StatusPageSuggestionsAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindEnrollmentInfoAction;
 import org.unitime.timetable.onlinesectioning.status.db.DbFindOnlineSectioningLogAction;
@@ -2306,40 +2305,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 								getSessionContext().hasPermission(Right.StudentSchedulingAdvisorCanModifyAllStudents),
 								getSessionContext().hasPermission(Right.StudentSchedulingChangeStudentStatus) || getSessionContext().hasPermission(Right.StudentSchedulingEmailStudent)),
 						currentUser());
-			}
-		} catch (PageAccessException e) {
-			throw e;
-		} catch (SectioningException e) {
-			throw e;
-		} catch  (Exception e) {
-			sLog.error(e.getMessage(), e);
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-		}
-	}
-	public List<String[]> querySuggestions(boolean online, String query, int limit) throws SectioningException, PageAccessException {
-		try {
-			if (online) {
-				Long sessionId = getStatusPageSessionId();
-				getSessionContext().checkPermission(sessionId, Right.SchedulingDashboard);
-				
-				OnlineSectioningServer server = getServerInstance(sessionId, true);
-				if (server == null)
-					throw new SectioningException(MSG.exceptionBadSession());
-				
-				UserContext user = getSessionContext().getUser();
-				return server.execute(server.createAction(StatusPageSuggestionsAction.class).withParams(
-						user.getExternalUserId(), user.getName(),
-						query, limit), currentUser());				
-			} else {
-				getSessionContext().checkPermission(Right.StudentSectioningSolverDashboard);
-				OnlineSectioningServer server = getStudentSolver();
-				if (server == null) 
-					throw new SectioningException(MSG.exceptionNoSolver());
-
-				UserContext user = getSessionContext().getUser();
-				return server.execute(server.createAction(StatusPageSuggestionsAction.class).withParams(
-						user.getExternalUserId(), user.getName(),
-						query, limit), currentUser());				
 			}
 		} catch (PageAccessException e) {
 			throw e;
