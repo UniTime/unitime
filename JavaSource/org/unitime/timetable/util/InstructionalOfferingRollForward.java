@@ -67,10 +67,12 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	
 	public void rollForwardInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
 		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
-		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
-			+ "' and co.isControl = true"
-			+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
+		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = :subjectAbbv and co.isControl = true"
+			+ " and co.subjectArea.session.uniqueId = :sessionId";
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class)
+				.setParameter("subjectAbbv", subjectAreaAbbreviation)
+				.setParameter("sessionId", fromSession.getUniqueId())
+				.list();
 		if (l != null){
 			CourseOffering co = null;
 			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
@@ -82,19 +84,23 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	public void rollForwardExpiredInstructionalOfferingsForASubjectArea(String subjectAreaAbbreviation, Session fromSession, Session toSession){
 		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
 		String query = "select co from CourseOffering co"
-				+ " where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation + "'"
-				+ "  and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId().longValue()
+				+ " where co.subjectArea.subjectAreaAbbreviation = :subjectAbbv"
+				+ "  and co.subjectArea.session.uniqueId = :fromSessionId"
 				+ "  and co.isControl = true"
 				+ "  and co.instructionalOffering.notOffered = false"
 				+ "  and 0 = (select count(cc) from CourseCatalog cc"
-				+ " where cc.session.uniqueId = " + toSession.getUniqueId().longValue()
+				+ " where cc.session.uniqueId = :toSessionId"
                 + "  and cc.subject = co.subjectArea.subjectAreaAbbreviation"
                 + "  and (cc.courseNumber = co.courseNbr or cc.previousCourseNumber= co.courseNbr))"
                 + " and 0 = (select count(co2) from CourseOffering co2"
-                + "  where co2.subjectArea.session.uniqueId = " + toSession.getUniqueId().longValue()
+                + "  where co2.subjectArea.session.uniqueId = :toSessionId"
                 + "   and co2.subjectArea.subjectAreaAbbreviation = co.subjectArea.subjectAreaAbbreviation"
                 + "   and co2.courseNbr = co.courseNbr)";
-		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class)
+				.setParameter("subjectAbbv", subjectAreaAbbreviation)
+				.setParameter("fromSessionId", fromSession.getUniqueId())
+				.setParameter("toSessionId", toSession.getUniqueId())
+				.list();
 		if (l != null){
 			CourseOffering co = null;
 			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
@@ -166,11 +172,15 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 
 	public void rollForwardInstructionalOfferingsForACourseOffering(String subjectAreaAbbreviation, String courseNumber, Session fromSession, Session toSession){
 		CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
-		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = '" + subjectAreaAbbreviation
-		+ "' and co.getCourseNbr = '" + courseNumber
-		+ "' and co.isControl = true"
-		+ " and co.subjectArea.session.uniqueId = " + fromSession.getUniqueId();
-		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class).list();
+		String query = "from CourseOffering as co where co.subjectArea.subjectAreaAbbreviation = :subjectAbbv"
+		+ " and co.getCourseNbr = :courseNumber"
+		+ " and co.isControl = true"
+		+ " and co.subjectArea.session.uniqueId = :fromSessionId";
+		List<CourseOffering> l = coDao.getSession().createQuery(query, CourseOffering.class)
+				.setParameter("subjectAbbv", subjectAreaAbbreviation)
+				.setParameter("courseNumber", courseNumber)
+				.setParameter("fromSessionId", fromSession.getUniqueId())
+				.list();
 		if (l != null && l.size() > 0){
 			CourseOffering co = null;
 			for (Iterator<CourseOffering> it = l.iterator(); it.hasNext();){
