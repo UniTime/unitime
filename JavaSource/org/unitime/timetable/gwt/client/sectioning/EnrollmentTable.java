@@ -61,7 +61,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Student;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface.Request;
 import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.EligibilityCheck;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.gwt.shared.UserAuthenticationProvider;
@@ -410,7 +410,7 @@ public class EnrollmentTable extends Composite {
 					buttons.addButton("email", MESSAGES.buttonSendStudentEmail(), new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
+							final StudentStatusDialog dialog = new StudentStatusDialog(new StudentStatusInfos(), null);
 							if (!iOnline)
 								dialog.getClassScheduleCheckBox().setVisible(false);
 							dialog.sendStudentEmail(new Command() {

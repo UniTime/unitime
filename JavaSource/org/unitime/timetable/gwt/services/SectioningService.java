@@ -63,6 +63,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProp
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -100,7 +101,8 @@ public interface SectioningService extends RemoteService {
 	CourseRequestInterface savedRequest(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface savedResult(StudentSectioningContext cx) throws SectioningException, PageAccessException;
 	Boolean selectSession(Long sessionId) throws SectioningException, PageAccessException;
-	List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException;
+	StudentStatusInfos lookupStudentSectioningStates() throws SectioningException, PageAccessException;
+	List<StudentStatusInfo> lookupApplicableStudentSectioningStates(Set<Long> studentIds) throws SectioningException, PageAccessException;
 	Boolean sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional, String sourceOperation) throws SectioningException, PageAccessException;
 	Set<Long> changeStatus(List<Long> studentIds, String note, String status) throws SectioningException, PageAccessException;
 	Boolean changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove) throws SectioningException, PageAccessException;

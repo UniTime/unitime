@@ -45,6 +45,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProp
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityRequest;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationEligibilityResponse;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.CancelSpecialRegistrationRequest;
@@ -98,7 +99,8 @@ public interface SectioningServiceAsync {
 	void savedRequest(StudentSectioningContext cx, AsyncCallback<CourseRequestInterface> callback) throws SectioningException, PageAccessException;
 	void savedResult(StudentSectioningContext cx, AsyncCallback<ClassAssignmentInterface> callback) throws SectioningException, PageAccessException;
 	void selectSession(Long sessionId, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
-	void lookupStudentSectioningStates(AsyncCallback<List<StudentStatusInfo>> callback) throws SectioningException, PageAccessException;
+	void lookupStudentSectioningStates(AsyncCallback<StudentStatusInfos> callback) throws SectioningException, PageAccessException;
+	void lookupApplicableStudentSectioningStates(Set<Long> studentIds, AsyncCallback<List<StudentStatusInfo>> callback) throws SectioningException, PageAccessException;
 	void sendEmail(Long sessionId, Long studentId, String subject, String message, String cc, Boolean courseRequests, Boolean classSchedule, Boolean advisorRequests, Boolean optional, String sourceOperation, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;
 	void changeStatus(List<Long> studentIds, String note, String status, AsyncCallback<Set<Long>> callback) throws SectioningException, PageAccessException;
 	void changeStudentGroup(List<Long> studentIds, Long groupId, boolean remove, AsyncCallback<Boolean> callback) throws SectioningException, PageAccessException;

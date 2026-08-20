@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -73,6 +72,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.AdvisorNote;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.SpecialRegistrationInterface.SpecialRegistrationContext;
 
@@ -1096,7 +1096,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				if (result.isUpdated()) {
 					iStatusBox.info(MESSAGES.advisorRequestsSubmitOK() + statusLink);
 					if (isSendEmailConformation()) {
-						final StudentStatusDialog dialog = new StudentStatusDialog(new HashSet<StudentStatusInfo>(), null);
+						final StudentStatusDialog dialog = new StudentStatusDialog(new StudentStatusInfos(), null);
 						if (SectioningStatusCookie.getInstance().hasEmailCC())
 							dialog.setCC(SectioningStatusCookie.getInstance().getEmailCC());
 						else

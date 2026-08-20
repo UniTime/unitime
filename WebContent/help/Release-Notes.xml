@@ -40,6 +40,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Online Student Scheduling Dashboard, Reports: Student Status</name>
+			<description>
+				<line>Allow advisors to set the default status if the Can Advisor Set toggle is set.</line>
+				<line>Only list statuses that the advisor can set to at least one of the selected students.
+					<line>E.g., when only compatible statuses can be set, and all students have a pre-reg status, list only available pre-reg statuses as options.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Student Scheduling Status: Priority Selection</name>
 			<description>
 				<line>Added a new flag named &quot;Priority Selection&quot;.</line>
