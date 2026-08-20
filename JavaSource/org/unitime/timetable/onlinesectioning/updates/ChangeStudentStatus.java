@@ -94,7 +94,7 @@ public class ChangeStudentStatus implements OnlineSectioningAction<Set<Long>> {
 					if (student != null && dbStudent != null) {
 
 						if (changeStatus() && !hasCompatibleStatus(
-								dbStudent.getEffectiveStatus(),
+								dbStudent.getSectioningStatus() == null ? dbStudent.getSession().getDefaultSectioningStatus() : dbStudent.getSectioningStatus(),
 								status == null ? dbStudent.getSession().getDefaultSectioningStatus() : status,
 								helper)) continue;
 
