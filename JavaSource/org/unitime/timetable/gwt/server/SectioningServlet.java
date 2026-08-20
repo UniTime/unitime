@@ -3178,12 +3178,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		if (cx.getStudentId() == null)
 			sLog.debug("ContextCheck: no student id (assuming guess access)");
+		else if (cx.isSectioning()) {
+			if (cx.isOnline())
+				getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.SchedulingAssistant);
+			else
+				getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.StudentSectioningSolverDashboard);
+		} else if (!cx.isSectioning())
+			getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.CourseRequests);
 		if (cx.getStudentId() != null && !cx.getStudentId().equals(getStudentId(cx.getSessionId()))) {
 			boolean check = getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor);
 			if (check)
 				sLog.debug("ContextCheck: different student id, permission check: " + check);
-			else
+			else {
 				sLog.info("ContextCheck: different student id, permission check: " + check);
+				cx.setStudentId(getStudentId(cx.getSessionId()));
+			}
 		}
 	}
 	
@@ -4372,6 +4381,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	@Override
 	public StudentSchedulingPreferencesInterface getStudentSchedulingPreferences(StudentSectioningContext cx) throws SectioningException, PageAccessException {
 		checkContext(cx);
+		if (cx.getStudentId() == null) throw new PageAccessException(MSG.exceptionNoStudent());
 		OnlineSectioningServer server = getServerInstance(cx.getSessionId(), false);
 		if (server != null) {
 			return server.execute(server.createAction(GetStudentPreferences.class).forStudent(cx.getStudentId()), currentUser(cx));
