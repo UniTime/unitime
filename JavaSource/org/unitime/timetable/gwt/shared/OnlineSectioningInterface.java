@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.shared;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -312,6 +313,45 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		}
 	}
 	
+	public static class StudentStatusInfos extends ArrayList<StudentStatusInfo> implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1L;
+		private boolean iRestrictedStatusChange = false, iSameTypeCheck = false;
+
+		public void setRestrictedStatusChange(boolean restrictedStatusChange) { iRestrictedStatusChange = restrictedStatusChange; }
+		public boolean isRestrictedStatusChange() { return iRestrictedStatusChange; }
+		public void setSameTypeCheck(boolean sameTypeCheck) { iSameTypeCheck = sameTypeCheck; }
+		public boolean isSameTypeCheck() { return iSameTypeCheck; }
+		
+		public StudentStatusInfo getStatus(String ref) {
+			if (ref == null) return null;
+			for (StudentStatusInfo s: this) {
+				if (ref.equals(s.getReference())) return s;
+			}
+			return null;
+		}
+		
+		public boolean canSetStatus(String oldStatus, StudentStatusInfo newStatus) {
+			if (isRestrictedStatusChange() || isSameTypeCheck())
+				return newStatus.isCanSetFromStatus(oldStatus);
+			return true;
+		}
+		
+		public boolean canSetStatus(StudentStatusInfo oldStatus, StudentStatusInfo newStatus) {
+			if (isRestrictedStatusChange()) {
+				if (oldStatus != null && !oldStatus.isCanAdvisorSet()) return false;
+			}
+			if (isSameTypeCheck()) {
+				if ((oldStatus != null && oldStatus.isCanAccessRequestsPage()) && 
+						(newStatus == null || !newStatus.isCanAccessRequestsPage()))
+					return false;
+				if ((oldStatus != null && oldStatus.isCanAccessAssistantPage()) && 
+						(newStatus == null || !newStatus.isCanAccessAssistantPage()))
+					return false;
+			}
+			return true;
+		}
+	}
+	
 	public static class StudentStatusInfo implements IsSerializable, Serializable, Comparable<StudentStatusInfo> {
 		private static final long serialVersionUID = 1L;
 		private Long iUniqueId;
@@ -327,7 +367,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private String iMessage;
 		private String iFallback;
 		private boolean iCanUseAssitant = false, iCanRegister = false;
+		private boolean iCanAdvisorSet = false;
 		private String iNotifications;
+		private Set<String> iCanSetFromStatus = null;
 		
 		public StudentStatusInfo() {}
 		
@@ -376,6 +418,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public void setReSchedule(boolean reSchedule) { iReSchedule = reSchedule; }
 		public boolean isReSchedule() { return iReSchedule; }
 		
+		public void setCanAdvisorSet(boolean canAdvisorSet) { iCanAdvisorSet = canAdvisorSet; }
+		public boolean isCanAdvisorSet() { return iCanAdvisorSet; }
+		
 		public void setAllEnabled() {
 			iAssistantPage = true;
 			iRequestsPage = true;
@@ -413,6 +458,17 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasNotifications() { return iNotifications != null && !iNotifications.isEmpty(); }
 		public String getNotifications() { return iNotifications; }
 		public void setNotifications(String notifications) { iNotifications = notifications; }
+		
+		public void addCanSetFromStatus(String ref) {
+			if (iCanSetFromStatus == null) iCanSetFromStatus = new HashSet<String>();
+			iCanSetFromStatus.add(ref);
+		}
+		public boolean isCanSetFromStatus(String ref) {
+			return iCanSetFromStatus != null && iCanSetFromStatus.contains(ref);
+		}
+		public Set<String> getCanSetFromStatus() {
+			return iCanSetFromStatus;
+		}
 		
 		@Override
 		public String toString() { return getReference(); }

@@ -85,6 +85,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverPageMessages;
@@ -203,7 +204,7 @@ public class SectioningStatusPage extends Composite {
 	private HTML iError = null, iCourseTableHint, iStudentTableHint;
 	private String iLastFilterOnEnter = null, iCourseFilter = null;
 	private SectioningStatusFilterRpcRequest iCourseFilterRequest = null;
-	private Set<StudentStatusInfo> iStates = null;
+	private StudentStatusInfos iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
 	private int iStatusColumn = 0, iNoteColumn = 0, iGroupColumn = 0, iPinColumn = -1;
 	private Map<String, Integer> iGroupsColumn = new HashMap<String, Integer>();
@@ -779,15 +780,15 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		iSectioningService.lookupStudentSectioningStates(new AsyncCallback<List<StudentStatusInfo>>() {
+		iSectioningService.lookupStudentSectioningStates(new AsyncCallback<StudentStatusInfos>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
 			}
 
 			@Override
-			public void onSuccess(List<StudentStatusInfo> result) {
-				iStates = new TreeSet<StudentStatusInfo>(result);
+			public void onSuccess(StudentStatusInfos result) {
+				iStates = result;
 				iStudentStatusDialog = new StudentStatusDialog(iStates, new StudentStatusDialog.StudentStatusConfirmation() {
 					@Override
 					public boolean isAllMyStudents() {
@@ -807,6 +808,11 @@ public class SectioningStatusPage extends Composite {
 					@Override
 					public int getStudentCount() {
 						return iSelectedStudentIds.size();
+					}
+					
+					@Override
+					public Set<Long> getStudentIds() {
+						return iSelectedStudentIds;
 					}
 				});
 			}
@@ -1689,7 +1695,21 @@ public class SectioningStatusPage extends Composite {
 						}
 						@Override
 						public boolean isApplicable() {
-							return iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isChangeStatus();
+							if (iSelectedStudentIds.size() > 0 && iProperties != null && iProperties.isChangeStatus()) {
+								if (iStates.isRestrictedStatusChange() || iStates.isSameTypeCheck()) {
+									for (StudentInfo s: iStudentInfos) {
+										if (s == null || s.getStudent() == null) continue;
+										if (iSelectedStudentIds.contains(s.getStudent().getId())) {
+											if (iStates.canSetStatus(s.getStatus(), info)) return true;
+										}
+									}
+									return false;
+								} else {
+									return true;
+								}
+							} else {
+								return false;
+							}
 						}
 						private void changeStatus() {
 							List<Long> studentIds = new ArrayList<Long>(iSelectedStudentIds);

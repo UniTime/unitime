@@ -85,6 +85,7 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentGroupIn
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentInfo;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentSectioningContext;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.WaitListMode;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
@@ -2766,6 +2767,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		info.setEmail(status.hasOption(StudentSectioningStatus.Option.email));
 		info.setNoSchedule(status.hasOption(StudentSectioningStatus.Option.noschedule));
 		info.setReSchedule(status.hasOption(StudentSectioningStatus.Option.reschedule));
+		info.setCanAdvisorSet(status.hasOption(StudentSectioningStatus.Option.advcanset));
 		info.setMessage(status.getMessage());
 		if (status.getFallBackStatus() != null)
 			info.setFallback(status.getFallBackStatus().getLabel());
@@ -2831,19 +2833,33 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public List<StudentStatusInfo> lookupStudentSectioningStates() throws SectioningException, PageAccessException {
+	public StudentStatusInfos lookupStudentSectioningStates() throws SectioningException, PageAccessException {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().getSession().createQuery(
 				"select distinct t from CourseOffering c inner join c.courseType t where c.instructionalOffering.session.uniqueId = :sessionId order by t.reference", CourseType.class
 				).setParameter("sessionId", getStatusPageSessionId()).setCacheable(true).list();
-		List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
+		StudentStatusInfos ret = new StudentStatusInfos();
+		if (!getSessionContext().hasPermission(getStatusPageSessionId(), Right.StudentSchedulingChangeStudentStatus))
+			return ret;
 		boolean advisor = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdvisor);
 		boolean admin = getSessionContext().hasPermissionAnySession(getStatusPageSessionId(), Right.StudentSchedulingAdmin);
 		boolean email = true;
 		boolean waitlist = CustomStudentEnrollmentHolder.isAllowWaitListing();
 		boolean specreg = CustomSpecialRegistrationHolder.hasProvider();
 		boolean reqval = CustomCourseRequestsValidationHolder.hasProvider();
-		if (admin) {
-			Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
+		boolean canSetDefault = admin;
+		Session session = SessionDAO.getInstance().get(getStatusPageSessionId());
+		if (!admin && advisor) {
+			// advisor can set default status if it has the advisor can set flag
+			if (session.getDefaultSectioningStatus() != null && 
+					session.getDefaultSectioningStatus().hasOption(StudentSectioningStatus.Option.advcanset))
+				canSetDefault = true;
+		}
+		List<StudentSectioningStatus> statuses = StudentSectioningStatus.findAll(getStatusPageSessionId());
+		if (advisor && !admin) {
+			ret.setRestrictedStatusChange(ApplicationProperty.AdvisorCourseRequestsRestrictedStatusChange.isTrue());
+			ret.setSameTypeCheck(ApplicationProperty.AdvisorCourseRequestsOnlySameTypeStatusChange.isTrue());
+		}
+		if (canSetDefault) {
 			StudentStatusInfo info = null;
 			if (session.getDefaultSectioningStatus() != null) {
 				StudentSectioningStatus s = session.getDefaultSectioningStatus();
@@ -2856,6 +2872,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 				info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
 				info.setReSchedule(waitlist && s.hasOption(StudentSectioningStatus.Option.reschedule));
+				if (advisor && !admin && (ret.isRestrictedStatusChange() || ret.isSameTypeCheck())) {
+					for (StudentSectioningStatus prev: statuses) {
+						if (ret.isRestrictedStatusChange() && !prev.hasOption(StudentSectioningStatus.Option.advcanset))
+							continue;
+						if (ret.isSameTypeCheck()) {
+							if (prev.hasOption(StudentSectioningStatus.Option.enabled) && !s.hasOption(StudentSectioningStatus.Option.enabled))
+								continue;
+							if (prev.hasOption(StudentSectioningStatus.Option.regenabled) && !s.hasOption(StudentSectioningStatus.Option.regenabled))
+								continue;
+						}
+						info.addCanSetFromStatus(prev.getReference());
+						if (canSetDefault && prev.equals(session.getDefaultSectioningStatus()))
+							info.addCanSetFromStatus("");
+					}
+				}
 			} else {
 				info = new StudentStatusInfo();
 				info.setReference("");
@@ -2869,7 +2900,6 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			ret.add(info);
 		}
-		List<StudentSectioningStatus> statuses = StudentSectioningStatus.findAll(getStatusPageSessionId());
 		Set<StudentSectioningStatus> skipStatuses = null;
 		if (advisor) {
 			skipStatuses  = new HashSet<StudentSectioningStatus>();
@@ -2893,6 +2923,21 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			info.setWaitList(waitlist && s.hasOption(StudentSectioningStatus.Option.waitlist));
 			info.setSpecialRegistration(specreg && s.hasOption(StudentSectioningStatus.Option.specreg));
 			info.setRequestValiadtion(reqval && s.hasOption(StudentSectioningStatus.Option.reqval));
+			if (advisor && !admin && (ret.isRestrictedStatusChange() || ret.isSameTypeCheck())) {
+				for (StudentSectioningStatus prev: statuses) {
+					if (ret.isRestrictedStatusChange() && !prev.hasOption(StudentSectioningStatus.Option.advcanset))
+						continue;
+					if (ret.isSameTypeCheck()) {
+						if (prev.hasOption(StudentSectioningStatus.Option.enabled) && !s.hasOption(StudentSectioningStatus.Option.enabled))
+							continue;
+						if (prev.hasOption(StudentSectioningStatus.Option.regenabled) && !s.hasOption(StudentSectioningStatus.Option.regenabled))
+							continue;
+					}
+					info.addCanSetFromStatus(prev.getReference());
+					if (canSetDefault && prev.equals(session.getDefaultSectioningStatus()))
+						info.addCanSetFromStatus("");
+				}
+			}
 			ret.add(info);
 		}
 		return ret;
@@ -4554,6 +4599,30 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
+		}
+	}
+
+	@Override
+	public List<StudentStatusInfo> lookupApplicableStudentSectioningStates(Set<Long> studentIds) throws SectioningException, PageAccessException {
+		StudentStatusInfos infos = lookupStudentSectioningStates();
+		if (infos.isEmpty()) return infos;
+		if (infos.isRestrictedStatusChange() || infos.isSameTypeCheck()) {
+			List<String> refs = SessionDAO.getInstance().getSession().createQuery(
+					"select distinct t.reference " +
+					"from Student s left outer join s.sectioningStatus t where s.uniqueId in :studentIds",
+					String.class).setParameterList("studentIds", studentIds).list();
+			List<StudentStatusInfo> ret = new ArrayList<StudentStatusInfo>();
+			for (StudentStatusInfo newStatus: infos) {
+				for (String ref: refs) {
+					if (infos.canSetStatus(ref == null ? "" : ref, newStatus)) {
+						ret.add(newStatus);
+						break;
+					}
+				}
+			}
+			return ret;
+		} else {
+			return infos;
 		}
 	}	
 }

@@ -19,8 +19,10 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import java.util.List;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
@@ -31,7 +33,10 @@ import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
+import org.unitime.timetable.gwt.services.SectioningService;
+import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -39,6 +44,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -51,11 +57,12 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
+	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	private UniTimeTextBox iSubject, iCC;
 	private CheckBox iCourseRequests, iClassSchedule, iAdvisorRequests;
 	private CheckBox iOptionalEmailToggle = null;
 	private TextArea iMessage, iNote;
-	private Set<StudentStatusInfo> iStates;
+	private StudentStatusInfos iStates;
 	private ListBox iStatus;
 	private int iStatusRow;
 	private UniTimeHeaderPanel iButtons;
@@ -63,7 +70,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	private Command iCommand;
 	private StudentStatusConfirmation iConfirmation = null;
 	
-	public StudentStatusDialog(Set<StudentStatusInfo> states, StudentStatusConfirmation confirmation) {
+	public StudentStatusDialog(StudentStatusInfos states, StudentStatusConfirmation confirmation) {
 		super(true, false);
 		iStates = states;
 		iConfirmation = confirmation;
@@ -163,6 +170,28 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		setWidget(iForm);
 	}
 	
+	protected void filterStatuses(Command callback) {
+		if (iConfirmation == null || iConfirmation.getStudentIds() == null)
+			return;
+		iSectioningService.lookupApplicableStudentSectioningStates(iConfirmation.getStudentIds(), new AsyncCallback<List<StudentStatusInfo>>() {
+			@Override
+			public void onSuccess(List<StudentStatusInfo> result) {
+				iStatus.clear();
+				iStatus.addItem(MESSAGES.statusNoChange(), "-");
+				iStatus.setSelectedIndex(0);
+				for (StudentStatusInfo s: result)
+					iStatus.addItem(s.getLabel(), s.getReference());
+				callback.execute();
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught.getMessage());
+				callback.execute();
+			}
+		});
+	}
+	
 	protected void statusChanged() {
 		while (iForm.getRowCount() > iStatusRow + 1)
 			iForm.removeRow(iStatusRow + 1);
@@ -240,22 +269,33 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iForm.addBottomRow(iButtons);
 	}
 	
-	public Set<StudentStatusInfo> getStatuses() { return iStates; }
+	public StudentStatusInfos getStatuses() { return iStates; }
 	
 	public void setStudentNote(Command command) {
 		iCommand = command;
 		iForm.clear();
 		iForm.addRow(MESSAGES.propNote(), iNote);
 		iStatusRow = iForm.addRow(MESSAGES.newStatus(), iStatus);
-		iStatus.setSelectedIndex(0);
 		iForm.addBottomRow(iButtons);
 		iButtons.setEnabled("set-note", true);
 		iButtons.setEnabled("send-email", false);
 		iButtons.setEnabled("mass-cancel", false);
 		iButtons.setEnabled("set-status", false);
 		setText(MESSAGES.setStudentNote());
-		statusChanged();
-		center();
+		if (iStates.isRestrictedStatusChange() || iStates.isSameTypeCheck()) {
+			filterStatuses(new Command() {
+				@Override
+				public void execute() {
+					iStatus.setSelectedIndex(0);
+					statusChanged();
+					center();
+				}
+			});
+		} else {
+			iStatus.setSelectedIndex(0);
+			statusChanged();
+			center();
+		}
 	}
 	
 	public void sendStudentEmail(Command command, String optionalToggleCaption, boolean optionalToggleDefault) {
@@ -299,12 +339,6 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iForm.addRow(MESSAGES.emailSubject(), iSubject);
 		iForm.addRow(MESSAGES.emailCC(), iCC);
 		iForm.addRow(MESSAGES.emailBody(), iMessage);
-		iStatus.setSelectedIndex(0);
-		for (int i = 0; i < iStatus.getItemCount(); i++)
-			if ("Cancelled".equalsIgnoreCase(iStatus.getValue(i))) {
-				iStatus.setSelectedIndex(i);
-				break;
-			}
 		iStatusRow = iForm.addRow(MESSAGES.newStatus(), iStatus);
 		iForm.addBottomRow(iButtons);
 		iButtons.setEnabled("set-note", false);
@@ -312,8 +346,30 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iButtons.setEnabled("mass-cancel", true);
 		iButtons.setEnabled("set-status", false);
 		setText(MESSAGES.massCancel());
-		statusChanged();
-		center();
+		if (iStates.isRestrictedStatusChange() || iStates.isSameTypeCheck()) {
+			filterStatuses(new Command() {
+				@Override
+				public void execute() {
+					iStatus.setSelectedIndex(0);
+					for (int i = 0; i < iStatus.getItemCount(); i++)
+						if ("Cancelled".equalsIgnoreCase(iStatus.getValue(i))) {
+							iStatus.setSelectedIndex(i);
+							break;
+						}
+					statusChanged();
+					center();
+				}
+			});
+		} else {
+			iStatus.setSelectedIndex(0);
+			for (int i = 0; i < iStatus.getItemCount(); i++)
+				if ("Cancelled".equalsIgnoreCase(iStatus.getValue(i))) {
+					iStatus.setSelectedIndex(i);
+					break;
+				}
+			statusChanged();
+			center();
+		}
 	}
 	
 	public void setStatus(Command command) {
@@ -326,8 +382,18 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 		iButtons.setEnabled("mass-cancel", false);
 		iButtons.setEnabled("set-status", true);
 		setText(MESSAGES.setStudentStatus());
-		statusChanged();
-		center();
+		if (iStates.isRestrictedStatusChange() || iStates.isSameTypeCheck()) {
+			filterStatuses(new Command() {
+				@Override
+				public void execute() {
+					statusChanged();
+					center();
+				}
+			});
+		} else {
+			statusChanged();
+			center();
+		}
 	}
 	
 	public String getStatus() {
@@ -399,6 +465,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public static interface StudentStatusConfirmation {
 		public boolean isAllMyStudents();
 		public int getStudentCount();
+		public Set<Long> getStudentIds();
 	}
 	
 	public CheckBox getCourseRequestsCheckBox() { return iCourseRequests; }

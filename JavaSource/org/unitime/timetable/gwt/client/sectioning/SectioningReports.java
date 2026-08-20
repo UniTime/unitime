@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -57,7 +56,7 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.SectioningProperties;
-import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfo;
+import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusInfos;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessage;
 import org.unitime.timetable.gwt.shared.SolverInterface.PageMessageType;
 import org.unitime.timetable.gwt.shared.SolverInterface.SolverPageMessages;
@@ -116,7 +115,7 @@ public class SectioningReports extends Composite {
 	
 	private SectioningProperties iSectioningProperties = null;
 	private Set<Long> iSelectedStudentIds = new HashSet<Long>();
-	private Set<StudentStatusInfo> iStates = null;
+	private StudentStatusInfos iStates = null;
 	private StudentStatusDialog iStudentStatusDialog = null;
 	private Map<Long, List<CheckBox>> iStudentId2Checks = new HashMap<Long, List<CheckBox>>();
 	private SectioningStatusFilterBox iFilter = null;
@@ -425,15 +424,15 @@ public class SectioningReports extends Composite {
 			@Override
 			public void onSuccess(SectioningProperties result) {
 				iSectioningProperties = result;
-				iSectioningService.lookupStudentSectioningStates(new AsyncCallback<List<StudentStatusInfo>>() {
+				iSectioningService.lookupStudentSectioningStates(new AsyncCallback<StudentStatusInfos>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
 					}
 
 					@Override
-					public void onSuccess(List<StudentStatusInfo> result) {
-						iStates = new TreeSet<StudentStatusInfo>(result);
+					public void onSuccess(StudentStatusInfos result) {
+						iStates = result;
 						iStudentStatusDialog = new StudentStatusDialog(iStates, new StudentStatusDialog.StudentStatusConfirmation() {
 							@Override
 							public boolean isAllMyStudents() {
@@ -442,6 +441,10 @@ public class SectioningReports extends Composite {
 							@Override
 							public int getStudentCount() {
 								return iSelectedStudentIds.size();
+							}
+							@Override
+							public Set<Long> getStudentIds() {
+								return iSelectedStudentIds;
 							}
 						});
 					}
