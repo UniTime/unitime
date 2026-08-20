@@ -37,6 +37,7 @@
 				<line>This means that when enabled, advisors cannot move students between pre-registration and open registration statuses.
 					<line>Disabled by default; enable by setting unitime.acrf.sameTypeStatusChangeOnly to true.</line>
 				</line>
+				<line>Allow advisors to set the default status if the Can Advisor Set toggle is set.</line>
 			</description>
 		</item>
 		<item>

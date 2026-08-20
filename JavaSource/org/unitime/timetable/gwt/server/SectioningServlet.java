@@ -3915,11 +3915,19 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 			}
 			if (canChange) {
 				for (StudentSectioningStatus s: StudentSectioningStatus.findAll(sessionId)) {
-					if (s.isPast()) continue;
 					if (!admin && hasAssistant && !s.hasOption(StudentSectioningStatus.Option.enabled)) continue;
 					if (!admin && hasReq && !s.hasOption(StudentSectioningStatus.Option.regenabled)) continue;
 					if (!admin && !s.hasOption(StudentSectioningStatus.Option.advcanset)) continue;
+					if (!admin && s.equals(student.getSession().getDefaultSectioningStatus())) {
+						StudentStatusInfo info = toStudentStatusInfo(s, courseTypes, admin, adv);
+						info.setUniqueId(null);
+						info.setReference("");
+						info.setLabel(MSG.studentStatusSessionDefault(s.getLabel()));
+						info.setEffectiveStart(null); info.setEffectiveStop(null);
+						ret.addStatus(info);
+					}
 					if (skipStatuses != null && skipStatuses.contains(s)) continue;
+					if (s.isPast()) continue;
 					ret.addStatus(toStudentStatusInfo(s, courseTypes, admin, adv));
 				}
 			}
