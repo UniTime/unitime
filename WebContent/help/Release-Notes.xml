@@ -29,6 +29,73 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Advisor Course Recommendations: Student Status</name>
+			<description>
+				<line>Added an option to only allow advisors to change student status to a status with access to the same page (Course Requests or Scheduling Assistant).</line>
+				<line>This means that when enabled, advisors cannot move students between pre-registration and open registration statuses.
+					<line>Disabled by default; enable by setting unitime.acrf.sameTypeStatusChangeOnly to true.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Status: Priority Selection</name>
+			<description>
+				<line>Added a new flag named &quot;Priority Selection&quot;.</line>
+				<line>It only applies to student statuses with a fallback status defined.</line>
+				<line>When both the status and the fallback status are available (not expired), the user cannot use the fallback status when the original status has the Priority Selection flag.</line>
+				<line>Does not apply to administrators (they can still use any status that has not expired yet).</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Administration</title>
+		<item>
+			<name>Scripts: Log</name>
+			<description>
+				<line>Scripts in progress: Improved the responsiveness of the Scripts page when a script has a very long log.
+					<line>Avoid stacking of log update requests.</line>
+					<line>Only load the log for the selected script.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Test HQL, HQL Reports</name>
+			<description>
+				<line>Added the ability to link another UniTime page from a report on click.</line>
+				<line>Either using the first column named __Link, which opens a new page, or __Dialog, which opens a frame dialog with the page.</line>
+			</description>
+		</item>
+		<item>
+			<name>Technology Update / GWT</name>
+			<description>
+				<line>The following pages have been rewritten to GWT:
+					<line>Test HQL</line>
+					<line>Academic Sessions, Add/Edit Academic Session</line>
+					<line>Timetable Managers, Add/Edit Timetable Manager</line>
+					<line>Solver Groups, Add/Edit Solver Group</line>
+					<line>Exact Times</line>
+					<line>Last Changes</line>
+					<line>Date Patterns</line>
+					<line>Time Patterns</line>
+					<line>Examination Periods</line>
+					<line>Data Exchange</line>
+					<line>Distribution Types, Edit Distribution Type</line>
+					<line>Access Statistics</line>
+					<line>Page Statistics</line>
+					<line>Manage Solvers</line>
+					<line>Roll Forward Session</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>4.9.146</version>
+	<release-date>Fri, 14 Aug 2026</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Instructional Offering Cross Lists: Bugfix</name>
@@ -71,24 +138,6 @@
 				<line>Corrected computation of student filter reservation limit (already enrolled but not loaded students did not get correctly excluded).</line>
 			</description>
 		</item>
-		<item>
-			<name>Advisor Course Recommendations: Student Status</name>
-			<description>
-				<line>Added an option to only allow advisors to change student status to a status with access to the same page (Course Requests or Scheduling Assistant).</line>
-				<line>This means that when enabled, advisors cannot move students between pre-registration and open registration statuses.
-					<line>Disabled by default; enable by setting unitime.acrf.sameTypeStatusChangeOnly to true.</line>
-				</line>
-			</description>
-		</item>
-		<item>
-			<name>Student Scheduling Status: Priority Selection</name>
-			<description>
-				<line>Added a new flag named &quot;Priority Selection&quot;.</line>
-				<line>It only applies to student statuses with a fallback status defined.</line>
-				<line>When both the status and the fallback status are available (not expired), the user cannot use the fallback status when the original status has the Priority Selection flag.</line>
-				<line>Does not apply to administrators (they can still use any status that has not expired yet).</line>
-			</description>
-		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
@@ -124,13 +173,6 @@
 			</description>
 		</item>
 		<item>
-			<name>Test HQL, HQL Reports</name>
-			<description>
-				<line>Added the ability to link another UniTime page from a report on click.</line>
-				<line>Either using the first column named __Link, which opens a new page, or __Dialog, which opens a frame dialog with the page.</line>
-			</description>
-		</item>
-		<item>
 			<name>Technology Update / GWT</name>
 			<description>
 				<line>The following pages have been rewritten to GWT:
@@ -158,12 +200,6 @@
 					<line>Date Patterns</line>
 					<line>Time Patterns</line>
 					<line>Examination Periods</line>
-					<line>Data Exchange</line>
-					<line>Distribution Types, Edit Distribution Type</line>
-					<line>Access Statistics</line>
-					<line>Page Statistics</line>
-					<line>Manage Solvers</line>
-					<line>Roll Forward Session</line>
 				</line>
 			</description>
 		</item>
