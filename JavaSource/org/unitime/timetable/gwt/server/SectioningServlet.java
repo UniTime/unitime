@@ -3223,13 +3223,17 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		}
 		if (cx.getStudentId() == null)
 			sLog.debug("ContextCheck: no student id (assuming guess access)");
-		else if (cx.isSectioning()) {
-			if (cx.isOnline())
-				getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.SchedulingAssistant);
-			else
-				getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.StudentSectioningSolverDashboard);
-		} else if (!cx.isSectioning())
-			getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.CourseRequests);
+		if (cx.hasSectioning()) {
+			if (cx.isSectioning()) {
+				if (cx.hasOnline()) {
+					if (cx.isOnline())
+						getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.SchedulingAssistant);
+					else
+						getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.StudentSectioningSolverDashboard);
+				}
+			} else if (!cx.isSectioning())
+				getSessionContext().checkPermissionAnyAuthority(cx.getSessionId(), Right.CourseRequests);
+		}
 		if (cx.getStudentId() != null && !cx.getStudentId().equals(getStudentId(cx.getSessionId()))) {
 			boolean check = getSessionContext().hasPermissionAnySession(cx.getSessionId(), Right.StudentSchedulingAdvisor);
 			if (check)
