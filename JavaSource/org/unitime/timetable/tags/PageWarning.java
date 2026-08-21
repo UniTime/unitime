@@ -20,6 +20,7 @@
 package org.unitime.timetable.tags;
 
 import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.jsp.tagext.TagSupport;
 
 import org.apache.struts2.ServletActionContext;
@@ -54,12 +55,26 @@ public class PageWarning extends TagSupport {
     	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 	
+	public String getPage(ServletRequest request) {
+		if (request instanceof HttpServletRequest) {
+			HttpServletRequest r = (HttpServletRequest)request;
+	    	String page = r.getRequestURI();
+	    	if (page.indexOf('/') >= 0) page = page.substring(page.lastIndexOf('/') + 1);
+	    	if (page.endsWith(".p")) page = page.substring(0, page.length() - 2);
+	    	if (page.endsWith(".page")) page = page.substring(0, page.length() - 5);
+	    	if ("gwt.jsp".equals(page) || "gwt.action".equals(page))
+	    		return request.getParameter("page");
+	    	return page;
+		}
+		return request.getParameter("page");
+	}
+	
 	public String getPageWarning(ServletRequest request) {
 		if (iPage != null && !iPage.isEmpty()) {
 			String warning = ApplicationProperties.getProperty(getPrefix() + iPage);
 			if (warning != null && !warning.isEmpty()) return warning;
 		} else {
-			String page = request.getParameter("page");
+			String page = getPage(request);
 			if (page != null) {
 				if ("admin".equals(page)) {
 					String type = request.getParameter("type");
