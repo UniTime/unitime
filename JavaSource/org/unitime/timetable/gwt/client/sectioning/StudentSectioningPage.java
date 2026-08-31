@@ -250,6 +250,7 @@ public class StudentSectioningPage extends Composite {
 				if (sessionSelector.getAcademicSessionInfo() != null && sessionSelector.getAcademicSessionInfo().isSectioning() != mode.isSectioning()) {
 					AcademicSessionInfo s = sessionSelector.getAcademicSessionInfo();
 					ToolBox.open(GWT.getHostPageBaseURL() + (s.isSectioning() ? "sectioning" : "requests") + "#@" + s.getTerm() + s.getYear() + s.getInitiative());
+					return;
 				}
 				if (event.isChanged()) {
 					widget.clearMessage();

@@ -112,7 +112,8 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	public Long getUniqueId() { return iUniqueId; }
 	public String getTerm() { return iTerm; }
 	public String getInitiative() { return iInitiative; }
-	public String getCampus() { return iCampus; }
+	public String getCampus() { return iInitiative; }
+	public String getSchedulingCampus() { return iCampus; }
 	public String getYear() { return iYear; }
 	
 	public Long getDefaultDatePatternId() { return iDatePatternId; }

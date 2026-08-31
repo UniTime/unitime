@@ -64,6 +64,7 @@
 				<line>Show the optional academic session scheduling campus when available.</line>
 				<line>Added an option to switch between Scheduling Assistant and Course Requests pages.
 					<line>All available sessions for both modes are listed, and the appropriate page is shown in the Mode column.</line>
+					<line>Disable by setting unitime.studentScheduling.availableSessionsMixModes to false (default is true).</line>
 				</line>
 			</description>
 		</item>
