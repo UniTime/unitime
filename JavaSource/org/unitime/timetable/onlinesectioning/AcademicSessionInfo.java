@@ -34,7 +34,7 @@ import org.unitime.timetable.util.DateUtils;
 public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Serializable, Qualifiable {
 	private static final long serialVersionUID = 1L;
 	private Long iUniqueId;
-	private String iYear, iTerm, iCampus;
+	private String iYear, iTerm, iInitiative, iCampus;
 	private Long iDatePatternId = null;
 	private BitSet iWeekPattern = null;
 	private BitSet iFreeTimePattern = null;
@@ -56,7 +56,8 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		iUniqueId = session.getUniqueId();
 		iYear = session.getAcademicYear();
 		iTerm = session.getAcademicTerm();
-		iCampus = session.getAcademicInitiative();
+		iInitiative = session.getAcademicInitiative();
+		iCampus = session.effectiveCampus();
 		if (session.getDefaultDatePattern()!=null) {
 			iDatePatternId = session.getDefaultDatePattern().getUniqueId();
 			iWeekPattern = session.getDefaultDatePattern().getPatternBitSet();
@@ -81,10 +82,15 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		iNotificationsEndDate = session.getNotificationsEndDate();
 	}
 	
-	public AcademicSessionInfo(Long uniqueId, String year, String term, String campus) {
+	public AcademicSessionInfo(Long uniqueId, String year, String term, String initiative) {
+		this(uniqueId, year, term, initiative, initiative);
+	}
+	
+	public AcademicSessionInfo(Long uniqueId, String year, String term, String initiative, String campus) {
 		iUniqueId = uniqueId;
 		iYear = year;
 		iTerm = term;
+		iInitiative = initiative;
 		iCampus = campus;
 	}
 	
@@ -105,6 +111,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 	
 	public Long getUniqueId() { return iUniqueId; }
 	public String getTerm() { return iTerm; }
+	public String getInitiative() { return iInitiative; }
 	public String getCampus() { return iCampus; }
 	public String getYear() { return iYear; }
 	

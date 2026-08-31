@@ -2986,6 +2986,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 
 		getModel().getProperties().setProperty("Data.Term",iSession.getAcademicYearTerm());
 		getModel().getProperties().setProperty("Data.Initiative",iSession.getAcademicInitiative());
+		getModel().getProperties().setProperty("Data.Campus", iSession.effectiveCampus());
 		getModel().setYear(iSession.getSessionStartYear());
 		getModel().getProperties().setProperty("DatePattern.DayOfWeekOffset", String.valueOf(
 				Constants.getDayOfWeek(DateUtils.getDate(1, iSession.getPatternStartMonth(), iSession.getSessionStartYear()))));

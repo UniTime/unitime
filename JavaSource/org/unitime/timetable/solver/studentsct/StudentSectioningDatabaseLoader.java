@@ -499,6 +499,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                     getModel().getProperties().setProperty("Data.Year", iYear);
                     getModel().getProperties().setProperty("Data.Term", iTerm);
                     getModel().getProperties().setProperty("Data.Initiative", iInitiative);
+                    getModel().getProperties().setProperty("Data.Campus", session.effectiveCampus());
                 }
             } else {
                 session = Session.getSessionUsingInitiativeYearTerm(iInitiative, iYear, iTerm);

@@ -58,6 +58,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	private String iAcademicInitiative;
 	private String iAcademicYear;
 	private String iAcademicTerm;
+	private String iCampus;
 	private Date iSessionBeginDateTime;
 	private Date iClassesEndDateTime;
 	private Date iSessionEndDateTime;
@@ -101,6 +102,10 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 	@Column(name = "academic_term", nullable = false, length = 20)
 	public String getAcademicTerm() { return iAcademicTerm; }
 	public void setAcademicTerm(String academicTerm) { iAcademicTerm = academicTerm; }
+
+	@Column(name = "campus", nullable = true, length = 100)
+	public String getCampus() { return iCampus; }
+	public void setCampus(String campus) { iCampus = campus; }
 
 	@Column(name = "session_begin_date_time", nullable = false)
 	public Date getSessionBeginDateTime() { return iSessionBeginDateTime; }
@@ -263,6 +268,7 @@ public abstract class BaseSession extends PreferenceGroup implements Serializabl
 			"\n	AcademicInitiative: " + getAcademicInitiative() +
 			"\n	AcademicTerm: " + getAcademicTerm() +
 			"\n	AcademicYear: " + getAcademicYear() +
+			"\n	Campus: " + getCampus() +
 			"\n	ClassesEndDateTime: " + getClassesEndDateTime() +
 			"\n	DefaultClassDurationType: " + getDefaultClassDurationType() +
 			"\n	DefaultDatePattern: " + getDefaultDatePattern() +

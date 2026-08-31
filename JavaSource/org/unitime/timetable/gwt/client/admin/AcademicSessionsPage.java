@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeConfirmationDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -203,7 +204,7 @@ public class AcademicSessionsPage extends Composite {
 		}
 	}
 	
-	private TextBox iInitiative, iTerm;
+	private TextBox iInitiative, iTerm, iCampus;
 	private NumberBox iYear, iWkEnroll, iWkChange, iWkDrop;
 	private ListBox iDatePattern, iSessionStatus, iClassDuration, iStudentStatus, iInstructionalMethod;
 	private SingleDateSelector iSessionStart, iClassEnd, iExamStart, iSessionEnd, iEventStart, iEventEnd, iNotificationStart, iNotificationEnd;
@@ -435,6 +436,20 @@ public class AcademicSessionsPage extends Composite {
 				iPanel.addRow(COURSE.columnHolidays() + ":", iHolidays);
 
 				iPanel.addHeaderRow(COURSE.sectOnlineStudentSchedulingDefaultSettings());
+				
+				iCampus = new TextBox(); iCampus.setMaxLength(100); iCampus.setWidth("300px");
+				if (iSession.hasCampus()) iCampus.setValue(iSession.getCampus());
+				P camp = new P("campus-line");
+				camp.add(iCampus);
+				camp.add(new Label(COURSE.infoSessionCampusLabel()));
+				iPanel.addRow(COURSE.columnAcademicSessionCampus() + ":", camp);
+				iCampus.addValueChangeHandler(new ValueChangeHandler<String>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<String> event) {
+						iSession.setCampus(event.getValue());
+					}
+				});
+
 				iWkEnroll = new NumberBox(); iWkEnroll.setMaxLength(4); iWkEnroll.setDecimal(false); iWkEnroll.setNegative(false); iWkEnroll.setWidth("40px");
 				iWkEnroll.setValue(iSession.getNewEnrollmentDeadline());
 				Label wkEnrollDesc = new Label(COURSE.descNewEnrollmentDeadline(), false);
@@ -756,7 +771,7 @@ public class AcademicSessionsPage extends Composite {
 	
 	public static class AcademicSessionInterface implements IsSerializable {
 		private Long iSessionId;
-		private String iInitiative, iTerm, iYear;
+		private String iInitiative, iTerm, iYear, iCampus;
 		private Long iDefaultDatePatternId, iSessionStatusId, iDefaultClassDurationId, iStudentStatusId, iInstructionalMethodId;
 		private Date iSessionStart, iClassEnd, iExamStart, iSessionEnd, iEventStart, iEventEnd, iNotificationStart, iNotificationEnd;
 		private String iHolidays;
@@ -773,6 +788,9 @@ public class AcademicSessionsPage extends Composite {
 		public String getYear() { return iYear; }
 		public void setYear(String year) { iYear = year; }
 		public boolean hasYear() { return iYear != null && !iYear.isEmpty(); }
+		public String getCampus() { return iCampus; }
+		public void setCampus(String campus) { iCampus = campus; }
+		public boolean hasCampus() { return iCampus != null && !iCampus.isEmpty(); }
 		
 		public Long getDefaultDatePatternId() { return iDefaultDatePatternId; }
 		public void setDefaultDatePatternId(Long defaultDatePatternId) { iDefaultDatePatternId = defaultDatePatternId; }

@@ -820,4 +820,10 @@ public class Session extends BaseSession implements Comparable<Session>, Qualifi
 				.setParameter("sessId", getUniqueId().longValue())
 				.uniqueResult();
     }
+	
+	public String effectiveCampus() {
+		if (getCampus() != null && !getCampus().isEmpty())
+			return getCampus();
+		return getAcademicInitiative();
+	}
 }

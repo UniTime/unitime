@@ -72,6 +72,7 @@ public class AcademicSessionsBackend implements GwtRpcImplementation<AcademicSes
         header.addCell(MSG.columnAcademicSessionClassDuration()).setTextAlignment(Alignment.CENTER);
         header.addCell(MSG.columnAcademicSessionEventStartDate());
         header.addCell(MSG.columnAcademicSessionEventEndDate());
+        header.addCell(MSG.columnAcademicSessionCampus());
         header.addCell(MSG.columnAcademicSessionEnrollmentAddDeadline());
         header.addCell(MSG.columnAcademicSessionEnrollmentChangeDeadline());
         header.addCell(MSG.columnAcademicSessionEnrollmentDropDeadline());
@@ -129,6 +130,8 @@ public class AcademicSessionsBackend implements GwtRpcImplementation<AcademicSes
 			line.addCell(s.getDefaultClassDurationType() == null ? "" : s.getDefaultClassDurationType().getAbbreviation());
 			line.addCell(s.getEventBeginDate() == null ? MSG.notApplicable() : df.format(s.getEventBeginDate())).setComparable(s.getEventBeginDate());
 			line.addCell(s.getEventEndDate() == null ? MSG.notApplicable() : df.format(s.getEventEndDate())).setComparable(s.getEventEndDate());
+			line.addCell(s.effectiveCampus()).setComparable(s.effectiveCampus(), s.getSessionBeginDateTime())
+				.addStyle(s.getCampus() == null ? "font-style: italic;" : null); 
 			line.addCell(df.format(ce.getTime())).setComparable(ce.getTime());
 			line.addCell(df.format(cc.getTime())).setComparable(cc.getTime());
 			line.addCell(df.format(cd.getTime())).setComparable(cd.getTime());

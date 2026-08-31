@@ -50,7 +50,7 @@ import com.google.gwt.user.client.ui.Label;
 /**
  * @author Tomas Muller
  */
-public class AcademicSessionSelector implements AcademicSessionProvider {
+public class AcademicSessionSelector implements AcademicSessionProvider, AcademicSessionProvider.HasMode {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
@@ -86,7 +86,8 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 		iSessions.addRow(null,
 				new UniTimeTableHeader(MESSAGES.colYear()),
 				new UniTimeTableHeader(MESSAGES.colTerm()),
-				new UniTimeTableHeader(MESSAGES.colCampus()));
+				new UniTimeTableHeader(MESSAGES.colCampus()),
+				new UniTimeTableHeader(MESSAGES.colMode()));
 		iSessions.addRow(null, new EmptyTableCell(MESSAGES.sessionSelectorLoading()));
 		iSessions.setAllowSelection(true);
 		iSessions.setWidth("100%");
@@ -114,7 +115,7 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 	
 	private void rowSelected(int row, AcademicSessionInfo session) {
 		iDialog.hide();
-		iPanel.setText(MESSAGES.sessionSelectorLabel(session.getYear(), session.getTerm(), session.getCampus()));
+		iPanel.setText(MESSAGES.sessionSelectorLabel(session.getYear(), session.getTerm(), session.getInitiative()));
 		iPanel.setAriaLabel(ARIA.sessionCurrent(session.getYear(), session.getTerm(), session.getCampus()));
 		selectSession(session, true);
 		if (iSessions.getSelectedRow() >= 0)
@@ -138,7 +139,9 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 					iSessions.addRow(session, 
 							new Label(session.getYear()),
 							new Label(session.getTerm()),
-							new Label(session.getCampus()));
+							new Label(session.getCampus()),
+							new Label(session.isSectioning() ? MESSAGES.modeSectioning() : MESSAGES.modeRequests())
+							);
 					if (session.equals(iSession)) lastSession = row;
 					row++;
 				}
@@ -167,8 +170,12 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 		});
 	}
 	
-	public void selectSession(final Long sessionId, final AsyncCallback<Boolean> callback) {
-		selectSession(new AcademicSessionMatchSessionId(sessionId), callback);
+	public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
+		selectSession(sessionId, iMode.isSectioning(), callback);
+	}
+	
+	public void selectSession(final Long sessionId, final boolean sectioning, final AsyncCallback<Boolean> callback) {
+		selectSession(new AcademicSessionMatchSessionId(sessionId, sectioning), callback);
 	}
 	
 	public void selectSession(final AcademicSessionMatcher matcher, final AsyncCallback<Boolean> callback) {
@@ -209,7 +216,7 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 			iPanel.setText(MESSAGES.sessionSelectorNoSession());
 			iPanel.setAriaLabel(ARIA.sessionNoSession());
 		} else {
-			iPanel.setText(MESSAGES.sessionSelectorLabel(iSession.getYear(), iSession.getTerm(), iSession.getCampus()));
+			iPanel.setText(MESSAGES.sessionSelectorLabel(iSession.getYear(), iSession.getTerm(), iSession.getInitiative()));
 			iPanel.setAriaLabel(ARIA.sessionCurrent(iSession.getYear(), iSession.getTerm(), iSession.getCampus()));
 			if (fireChangeEvent || !iSession.getSessionId().equals(oldSessionId)) {
 				AcademicSessionChangeEvent changeEvent = new AcademicSessionChangeEvent(oldSessionId, iSession.getSessionId());
@@ -221,6 +228,10 @@ public class AcademicSessionSelector implements AcademicSessionProvider {
 	
 	public Long getAcademicSessionId() {
 		return iSession == null ? null : iSession.getSessionId();
+	}
+	
+	public boolean isSectioningMode() {
+		return iSession == null || !iSession.hasSectioning() ? iMode.isSectioning() : iSession.isSectioning();
 	}
 	
 	public String getAcademicSessionName() {

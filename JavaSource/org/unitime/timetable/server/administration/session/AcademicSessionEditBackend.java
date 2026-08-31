@@ -143,6 +143,7 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
 		form.setInitiative(acadSession.getAcademicInitiative());
 		form.setYear(acadSession.getAcademicYear());
 		form.setTerm(acadSession.getAcademicTerm());
+		form.setCampus(acadSession.getCampus());
 		
 		form.setSessionStart(acadSession.getSessionBeginDateTime());
 		form.setSessionEnd(acadSession.getSessionEndDateTime());
@@ -188,6 +189,7 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
             sessn.setStatusType(form.getSessionStatusId() == null ? null : DepartmentStatusTypeDAO.getInstance().get(form.getSessionStatusId(), hibSession));
             sessn.setAcademicYear(form.getYear());
     		sessn.setAcademicTerm(form.getTerm());
+    		sessn.setCampus(form.getCampus());
     		sessn.setSessionBeginDateTime(form.getSessionStart());
     		sessn.setSessionEndDateTime(form.getSessionEnd());
     		sessn.setClassesEndDateTime(form.getClassEnd());

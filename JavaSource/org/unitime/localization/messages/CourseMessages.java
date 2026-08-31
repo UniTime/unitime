@@ -6195,4 +6195,10 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("No reservation type selected.")
 	String errorNoReservationTypeSelected();
+	
+	@DefaultMessage("Scheduling Campus")
+    String columnAcademicSessionCampus();
+	
+	@DefaultMessage("An optional campus name to be used in the academic session selection on Scheduling Assistant and Course Requests.\nDefaults to the academic initiative when not set.")
+	String infoSessionCampusLabel();
 }

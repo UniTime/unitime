@@ -120,6 +120,7 @@ public class StudentSectioningPage extends Composite {
 			});
 		
 		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), mode);
+		final String hash = Location.getHash();
 		
 		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {
 			public void onFailure(Throwable caught) {
@@ -127,31 +128,37 @@ public class StudentSectioningPage extends Composite {
 
 			public void onSuccess(SectioningProperties result) {
 				userAuthentication.setAllowLookup(result.isAdminOrAdvisor());
-				if (Location.getParameter("session") != null || Location.getParameter("term") != null)
+				if (Location.getParameter("session") != null || Location.getParameter("term") != null || (hash != null && hash.startsWith("#@")))
 					sessionSelector.selectSession(new AcademicSessionMatcher() {
 						protected boolean matchCampus(AcademicSessionInfo info, String campus) {
 							if (info.hasExternalCampus() && campus.equalsIgnoreCase(info.getExternalCampus())) return true;
-							return campus.equalsIgnoreCase(info.getCampus());
+							return campus.equalsIgnoreCase(info.getInitiative());
 						}
 
 						protected boolean matchTerm(AcademicSessionInfo info, String term) {
 							if (info.hasExternalTerm() && term.equalsIgnoreCase(info.getExternalTerm())) return true;
-							return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus());
+							return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getInitiative());
 						}
 
 						protected boolean matchSession(AcademicSessionInfo info, String session) {
 							if (info.hasExternalTerm() && info.hasExternalCampus() && session.equalsIgnoreCase(info.getExternalTerm() + info.hasExternalCampus())) return true;
-							return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
+							return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getInitiative()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
+						}
+						
+						protected boolean matchMode(AcademicSessionInfo info) {
+							return info.isSectioning() == mode.isSectioning();
 						}
 
 						@Override
 						public boolean match(AcademicSessionInfo info) {
+							if (!matchMode(info)) return false;
 							String campus = Location.getParameter("campus");
 							if (campus != null && !matchCampus(info, campus)) return false;
 							String term = Location.getParameter("term");
 							if (term != null && !matchTerm(info, term)) return false;
 							String session = Location.getParameter("session");
 							if (session != null && !matchSession(info, session)) return false;
+							if (hash != null && hash.startsWith("#@") && !matchSession(info, hash.substring(2))) return false;
 							return true;
 						}
 					}, new AsyncCallback<Boolean>() {
@@ -240,6 +247,10 @@ public class StudentSectioningPage extends Composite {
 		
 		sessionSelector.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
 			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
+				if (sessionSelector.getAcademicSessionInfo() != null && sessionSelector.getAcademicSessionInfo().isSectioning() != mode.isSectioning()) {
+					AcademicSessionInfo s = sessionSelector.getAcademicSessionInfo();
+					ToolBox.open(GWT.getHostPageBaseURL() + (s.isSectioning() ? "sectioning" : "requests") + "#@" + s.getTerm() + s.getYear() + s.getInitiative());
+				}
 				if (event.isChanged()) {
 					widget.clearMessage();
 					widget.clear();
@@ -251,7 +262,7 @@ public class StudentSectioningPage extends Composite {
 			}
 		});
 		
-		if (Location.getParameter("session") == null && Location.getParameter("term") == null)
+		if (Location.getParameter("session") == null && Location.getParameter("term") == null && (hash == null || !hash.startsWith("#@")))
 			iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 				public void onFailure(Throwable caught) {
 					if (!userAuthentication.isShowing() && !UniTimeFrameDialog.hasDialog())

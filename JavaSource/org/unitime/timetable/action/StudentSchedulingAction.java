@@ -71,17 +71,17 @@ public class StudentSchedulingAction extends UniTimeAction<BlankForm> {
 
 	protected boolean matchCampus(AcademicSessionInfo info, String campus) {
 		if (info.hasExternalCampus() && campus.equalsIgnoreCase(info.getExternalCampus())) return true;
-		return campus.equalsIgnoreCase(info.getCampus());
+		return campus.equalsIgnoreCase(info.getInitiative());
 	}
 
 	protected boolean matchTerm(AcademicSessionInfo info, String term) {
 		if (info.hasExternalTerm() && term.equalsIgnoreCase(info.getExternalTerm())) return true;
-		return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus());
+		return term.equalsIgnoreCase(info.getTerm() + info.getYear()) || term.equalsIgnoreCase(info.getYear() + info.getTerm()) || term.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getInitiative());
 	}
 
 	protected boolean matchSession(AcademicSessionInfo info, String session) {
 		if (info.hasExternalTerm() && info.hasExternalCampus() && session.equalsIgnoreCase(info.getExternalTerm() + info.hasExternalCampus())) return true;
-		return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getCampus()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
+		return session.equalsIgnoreCase(info.getTerm() + info.getYear() + info.getInitiative()) || session.equalsIgnoreCase(info.getTerm() + info.getYear()) || session.equals(info.getSessionId().toString());
 	}
 
 	public boolean match(HttpServletRequest request, AcademicSessionInfo info, boolean useDefault) {
