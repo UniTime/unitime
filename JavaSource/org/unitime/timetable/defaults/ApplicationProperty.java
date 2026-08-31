@@ -3680,6 +3680,12 @@ public enum ApplicationProperty {
 	StudentSchedulingPreferStudentCampus("unitime.studentScheduling.preferSessionsWithMatchingCampus"),
 	
 	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Student Scheduling Available Sessions: allow for academic sessions for both modes (scheduling assistant and course requests)")
+	@Since(4.9)
+	StudentSchedulingSessionsMixModes("unitime.studentScheduling.availableSessionsMixModes"),
+	
+	@Type(Boolean.class)
 	@Description("Student Scheduling Available Sessions: preferred student camus (defaults to academic session initiative); can contain a regular expression in which case student campus is matched to the provided value")
 	@Since(4.8)
 	StudentSchedulingPreferredCampus("unitime.studentScheduling.preferredStudentCampus"),
