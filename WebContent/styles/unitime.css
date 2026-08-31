@@ -9091,6 +9091,18 @@ div.gwt-MenuBarPopup {
 	border-bottom: 1px dashed #9CB0CE;	
 }
 
+.unitime-AcademicSessionsPage .campus-line input {
+	vertical-align: top;
+	margin-top: 3px;
+}
+
+.unitime-AcademicSessionsPage .campus-line .gwt-Label {
+	padding-left: 10px;
+	font-style: italic;
+	display: inline-block;
+	white-space: pre-wrap;
+}
+
 .unitime-TimetableManagersPage .table tr:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;	
 }

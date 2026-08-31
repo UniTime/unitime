@@ -48,21 +48,27 @@ public interface AcademicSessionProvider {
 	
 	public static class AcademicSessionInfo implements IsSerializable, Comparable<AcademicSessionInfo> {
 		private Long iSessionId;
-		private String iYear, iTerm, iCampus, iName;
+		private String iYear, iTerm, iInitiative, iCampus, iName;
 		private String iExternalTerm, iExternalCampus;
 		private Date iStartDate;
 		private Boolean iPrimary = null;
 		private Boolean iOnline = null;
+		private Boolean iSectioning = null;
 		
 		public AcademicSessionInfo() {}
 		
-		public AcademicSessionInfo(Long sessionId, String year, String term, String campus, String name, Date sessionStartDate) {
+		public AcademicSessionInfo(Long sessionId, String year, String term, String initiative, String campus, String name, Date sessionStartDate) {
 			iSessionId = sessionId;
 			iTerm = term;
 			iYear = year;
+			iInitiative = initiative;
 			iCampus = campus;
 			iName = name;
 			iStartDate = sessionStartDate;
+		}
+
+		public AcademicSessionInfo(Long sessionId, String year, String term, String initiative, String name, Date sessionStartDate) {
+			this(sessionId, year, term, initiative, initiative, name, sessionStartDate);
 		}
 		
 		public Long getSessionId() { return iSessionId; }
@@ -71,13 +77,16 @@ public interface AcademicSessionProvider {
 		public String getYear() { return iYear; }
 		public void setYear(String year) { iYear = year; }
 		
+		public String getInitiative() { return iInitiative; }
+		public void setInitiative(String initiative) { iInitiative = initiative; }
+
 		public String getCampus() { return iCampus; }
 		public void setCampus(String campus) { iCampus = campus; }
 		
 		public String getTerm() { return iTerm; }
 		public void setTerm(String term) { iTerm = term; }
 		
-		public String getName() { return (iName == null || iName.isEmpty() ? iTerm + " " + iYear + " (" + iCampus + ")" : iName); }
+		public String getName() { return (iName == null || iName.isEmpty() ? iTerm + " " + iYear + " (" + iInitiative + ")" : iName); }
 		public void setName(String name) { iName = name; }
 		
 		public String getExternalCampus() { return iExternalCampus; }
@@ -97,6 +106,12 @@ public interface AcademicSessionProvider {
 			iPrimary = primary;
 			return this;
 		}
+		public boolean hasSectioning() { return iSectioning; }
+		public boolean isSectioning() { return Boolean.TRUE.equals(iSectioning); }
+		public AcademicSessionInfo setSectioning(boolean sectioning) {
+			iSectioning = sectioning;
+			return this;
+		}
 		
 		public boolean isOnline() { return !Boolean.FALSE.equals(iOnline); }
 		public AcademicSessionInfo setOnline(boolean online) {
@@ -112,17 +127,18 @@ public interface AcademicSessionProvider {
 		@Override
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof AcademicSessionInfo)) return false;
+			if (isSectioning() != ((AcademicSessionInfo)o).isSectioning()) return false;
 			return getSessionId().equals(((AcademicSessionInfo)o).getSessionId());
 		}
 
 		@Override
 		public int compareTo(AcademicSessionInfo s) {
-			if (isOnline() != s.isOnline())
-				return isOnline() ? -1 : 1;
+			// if (isOnline() != s.isOnline()) return isOnline() ? -1 : 1;
 			int cmp = s.getStartDate().compareTo(getStartDate());
-			if (cmp != 0) return (isOnline() ? cmp : -cmp);
+			if (cmp != 0) return cmp; //(isOnline() ? cmp : -cmp);
 			if (isPrimary() != s.isPrimary())
 				return isPrimary() ? -1 : 1;
+			if (isSectioning() != s.isSectioning()) return (isSectioning() ? 1 : -1);
 			cmp = getName().compareTo(s.getName());
 			if (cmp != 0) return cmp;
 			return getSessionId().compareTo(s.getSessionId());
@@ -135,9 +151,14 @@ public interface AcademicSessionProvider {
 	
 	public static class AcademicSessionMatchSessionId implements AcademicSessionMatcher {
 		Long iSessionId;
-		public AcademicSessionMatchSessionId(Long sessionId) { iSessionId = sessionId; }
+		boolean iSectioning;
+		public AcademicSessionMatchSessionId(Long sessionId, boolean sectioning) { iSessionId = sessionId; iSectioning = sectioning; }
 		public boolean match(AcademicSessionInfo session) {
-			return session.getSessionId().equals(iSessionId);
+			return session.getSessionId().equals(iSessionId) && iSectioning == session.isSectioning();
 		}
+	}
+	
+	public static interface HasMode {
+		public void selectSession(Long sessionId, boolean sectioning, AsyncCallback<Boolean> callback);
 	}
 }

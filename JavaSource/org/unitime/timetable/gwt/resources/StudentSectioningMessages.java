@@ -3833,4 +3833,13 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("{0} student(s) have their note updated.")
 	String infoStudentNoteChanged(int nbrStudents);
+	
+	@DefaultMessage("Mode")
+	String colMode();
+	
+	@DefaultMessage("Scheduling Assistant")
+	String modeSectioning();
+	
+	@DefaultMessage("Course Requests")
+	String modeRequests();
 }

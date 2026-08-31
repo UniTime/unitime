@@ -515,7 +515,8 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
 				iSession = new AcademicSessionInfo(getSessionId(),
 						getConfig().getProperty("Data.Year"),
 						getConfig().getProperty("Data.Term"),
-						getConfig().getProperty("Data.Initiative"));
+						getConfig().getProperty("Data.Initiative"),
+						getConfig().getProperty("Data.Campus", getConfig().getProperty("Data.Initiative")));
 			}
 		}
 		return iSession;

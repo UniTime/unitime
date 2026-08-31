@@ -647,6 +647,13 @@
                 access="property"
                 column="academic_term"/>
 
+			<property
+                name="campus"
+                type="java.lang.String"
+                length="100"
+                not-null="false"
+                column="campus"/>
+
             <property
                 name="sessionBeginDateTime"
                 type="java.sql.Timestamp"

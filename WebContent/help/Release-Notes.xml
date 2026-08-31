@@ -58,6 +58,15 @@
 				<line>Does not apply to administrators (they can still use any status that has not expired yet).</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant, Student Course Requests: Select Academic Session</name>
+			<description>
+				<line>Show the optional academic session scheduling campus when available.</line>
+				<line>Added an option to switch between Scheduling Assistant and Course Requests pages.
+					<line>All available sessions for both modes are listed, and the appropriate page is shown in the Mode column.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>
@@ -77,6 +86,14 @@
 				<line>Either using the first column named __Link, which opens a new page, or __Dialog, which opens a frame dialog with the page.</line>
 			</description>
 		</item>
+		<item>
+			<name>Academic Sessions: Scheduling Campus</name>
+			<description>
+				<line>Added an ability to provide an optional campus name to be used in the academic session selection on Scheduling Assistant and Course Requests.</line>
+				<line>Defaults to the academic initiative when not set.</line>
+			</description>
+		</item>
+		
 		<item>
 			<name>Technology Update / GWT</name>
 			<description>

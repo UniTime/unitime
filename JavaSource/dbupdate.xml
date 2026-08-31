@@ -15805,4 +15805,15 @@
 		</pgsql>
 		<pgsql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</pgsql>
 	</update>
+	<update version="278" date="31-Aug-2026" comment="Academic Session Scheduling Campus">
+		<mysql>
+			alter table %SCHEMA%.sessions add campus varchar(100) null
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.sessions add campus varchar2(100 char)
+		</plsql>
+		<pgsql>
+			alter table %SCHEMA%.sessions add campus varchar(100)
+		</pgsql>
+	</update>
 </dbupdate>

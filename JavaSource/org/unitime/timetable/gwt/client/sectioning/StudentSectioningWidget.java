@@ -1453,6 +1453,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		if (iTrackHistory) {
 			History.addValueChangeHandler(new ValueChangeHandler<String>() {
 				public void onValueChange(ValueChangeEvent<String> event) {
+					if (event.getValue().startsWith("@")) return;
 					if (!event.getValue().isEmpty()) {
 						int item = iHistory.size() - 1;
 						try {
@@ -2845,7 +2846,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iUserAuthentication.setUser(iUser, new AsyncCallback<Boolean>() {
 				public void onSuccess(Boolean result) {
 					if (result) {
-						iSessionSelector.selectSession(iRequest.getSessionId(), new AsyncCallback<Boolean>() {
+						AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 							public void onSuccess(Boolean result) {
 								if (result) {
 									iSpecRegCx.copy(iSRCx);
@@ -2877,7 +2878,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							public void onFailure(Throwable reason) {
 								iInRestore = false;
 							}
-						});
+						};
+						if (iSessionSelector instanceof AcademicSessionProvider.HasMode)
+							((AcademicSessionProvider.HasMode)iSessionSelector).selectSession(iRequest.getSessionId(), iMode.isSectioning(), callback);
+						else
+							iSessionSelector.selectSession(iRequest.getSessionId(), callback);
 					} else {
 						iInRestore = false;
 					}
