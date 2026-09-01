@@ -120,6 +120,7 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
     	header.addCell(MSG.columnUserRole()).setSortable(true);
     	header.addCell(MSG.columnAcademicSession()).setSortable(true);
     	header.addCell(MSG.columnAcademicInitiative()).setSortable(true);
+    	header.addCell(MSG.columnCampus()).setSortable(true);
     	header.addCell(MSG.columnAcademicSessionStatus()).setSortable(true);
     	for (CellInterface h: header.getCells())
         	h.setClassName("WebTableHeader");
@@ -128,6 +129,7 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
 
     	int nrLines = 0;
     	UserAuthority firstAuthority = null;
+    	boolean hasCampus = false;
     	for (UserAuthority authority: user.getAuthorities()) {
     		Session session = (authority.getAcademicSession() == null ? null : SessionDAO.getInstance().get((Long)authority.getAcademicSession().getQualifierId()));
     		if (session == null) continue;
@@ -142,6 +144,8 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
     			line.setClassName("unitime-TableRowSelected" + (active ? "" : " inactive-session"));
     		else if (!active)
     			line.setClassName("inactive-session");
+    		if (!hasCampus && session.getCampus() != null && !session.getCampus().equals(session.getAcademicInitiative()))
+    			hasCampus = true;
     		
     		line.addCell(authority.getLabel())
     			.setComparable(authority.getLabel(), session.getSessionBeginDateTime(), session.getAcademicInitiative());
@@ -149,6 +153,8 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
     			.setComparable(session.getSessionBeginDateTime(), session.getAcademicInitiative(), authority.getLabel());
     		line.addCell(session.getAcademicInitiative())
 				.setComparable(session.getAcademicInitiative(), session.getSessionBeginDateTime(), authority.getLabel());
+    		line.addCell(session.effectiveCampus())
+    			.setComparable(session.effectiveCampus(), session.getSessionBeginDateTime(), authority.getLabel());
     		line.addCell(session.getStatusType() == null ? "" : session.getStatusType().getLabel())
 				.setComparable(session.getStatusType()==null ? -1 : session.getStatusType().getOrd(), session.getSessionBeginDateTime(), session.getAcademicInitiative(), authority.getLabel());
     		if (firstAuthority == null) firstAuthority = authority;
@@ -163,6 +169,14 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
     	} else {
     		table.setName(MSG.sectSelectAcademicSession());
     		response.setPageName("Select Academic Session");
+    	}
+    	
+    	// remove campus column when not needed
+    	if (!hasCampus) {
+    		header.getCells().remove(3);
+    		if (table.hasLines())
+    			for (LineInterface line: table.getLines())
+    				line.getCells().remove(3);
     	}
     	
         if (user.getCurrentAuthority() == null && nrLines == 0)
