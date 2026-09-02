@@ -88,6 +88,12 @@
 			</description>
 		</item>
 		<item>
+			<name>Date Patterns: Holidays</name>
+			<description>
+				<line>Added Holidays column, which lists all the dates of the date pattern that are over a break or a holiday.</line>
+			</description>
+		</item>
+		<item>
 			<name>Academic Sessions: Scheduling Campus</name>
 			<description>
 				<line>Added an ability to provide an optional campus name to be used in the academic session selection on Scheduling Assistant and Course Requests.</line>
