@@ -21,10 +21,12 @@ package org.unitime.timetable.server.administration.session;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -41,6 +43,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(DatePatternsRequest.class)
@@ -73,9 +76,11 @@ public class DatePatternsBackend implements GwtRpcImplementation<DatePatternsReq
         }
         if (hasSet) {
         	header.addCell(MSG.columnDatePatternDatesOrPatterns());
+            header.addCell(MSG.columnHolidays());
         	header.addCell(MSG.columnDatePatternPatternSets());
         } else {
         	header.addCell(MSG.columnDatePatternDates());
+            header.addCell(MSG.columnHolidays());
         }
         header.addCell(MSG.columnDatePatternDepartments());
         for (CellInterface cell: header.getCells()) {
@@ -137,6 +142,7 @@ public class DatePatternsBackend implements GwtRpcImplementation<DatePatternsReq
 			} else {
             	line.addCell(getPatternCell(pattern));
             }
+        	line.addCell(getHollidaysCell(pattern));
 			
 			if (hasSet) {
 				CellInterface cell = line.addCell();
@@ -182,6 +188,101 @@ public class DatePatternsBackend implements GwtRpcImplementation<DatePatternsReq
 				cell.add(df.format(startDate) + (i.hasNext() ? ", " : ""));
 			} else {
 				cell.add(df.format(startDate) + "-" + df.format(endDate) + (i.hasNext() ? ", " : ""));
+			}
+		}
+		return cell;
+	}
+	
+	protected static CellInterface getHollidaysCell(DatePattern dp) {
+		CellInterface cell = new CellInterface();
+		if (dp.isPatternSet()) return cell;
+		String holidays = dp.getSession().getHolidays();
+		if (holidays == null || holidays.isEmpty()) return cell;
+		String pattern = dp.getPattern();
+		if (pattern == null || pattern.isEmpty()) return cell;
+		
+		Calendar startDate = Calendar.getInstance(Locale.US);
+		startDate.setTime(dp.getStartDate());
+		Calendar endDate = Calendar.getInstance(Locale.US);
+		endDate.setTime(dp.getEndDate());
+
+		int startMonth = startDate.get(Calendar.MONTH);
+		int endMonth = endDate.get(Calendar.MONTH);
+		int startYear = startDate.get(Calendar.YEAR);
+		int endYear = endDate.get(Calendar.YEAR);
+		if (endYear > startYear)
+			endMonth += (12 * (endYear - startYear));
+		
+		int charPosition = 0;
+		Calendar cal = Calendar.getInstance(Locale.US);
+		
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_SHORT);
+
+		int idx = DateUtils.getDayOfYear(startDate.get(Calendar.DAY_OF_MONTH), startMonth, startYear)
+				- DateUtils.getDayOfYear(1, dp.getSession().getStartMonth(), dp.getSession().getSessionStartYear());
+		
+		Date first = null, previous = null;
+		char firstHoliday = '1';
+		
+		for (int m=startMonth;m<=endMonth;m++) {
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, startYear);
+			int d;
+			if (m == startMonth){
+				d = startDate.get(Calendar.DAY_OF_MONTH);
+			} else {
+				d = 1;
+			}
+			for (;d<=daysOfMonth && charPosition < pattern.length() ;d++) {
+				char holiday = (idx < 0 || idx >= holidays.length() ? '0' : holidays.charAt(idx));
+				if (first != null && holiday != firstHoliday) {
+					if (cell.hasItems())
+						cell.getItems().get(cell.getItems().size() - 1).add(", ");
+					if (first.equals(previous)) {
+						cell.add(df.format(first))
+							.setColor(firstHoliday == '1' ? "#e50000" : "#800080");
+					} else {
+						cell.add(df.format(first) + "-" + df.format(previous))
+							.setColor(firstHoliday == '1' ? "#e50000" : "#800080");
+					}
+					first = null;
+				}
+				if (holiday != '0' && pattern.charAt(charPosition) == '1' && (first == null || firstHoliday == holiday)) {
+					if (first==null) {
+						cal.setTime(dp.getStartDate());
+						cal.add(Calendar.DAY_OF_YEAR, charPosition);
+						first = cal.getTime();
+						firstHoliday = holiday;
+					}
+				} else {
+					if (first != null) {
+						if (cell.hasItems())
+							cell.getItems().get(cell.getItems().size() - 1).add(", ");
+						if (first.equals(previous)) {
+							cell.add(df.format(first))
+								.setColor(firstHoliday == '1' ? "#e50000" : "#800080");
+						} else {
+							cell.add(df.format(first) + "-" + df.format(previous))
+								.setColor(firstHoliday == '1' ? "#e50000" : "#800080");
+						}
+						first = null;
+					}
+				}
+				cal.setTime(dp.getStartDate());
+				cal.add(Calendar.DAY_OF_YEAR, charPosition);
+				previous = cal.getTime();
+				charPosition++;
+				idx ++;
+			}
+		}
+		if (first != null) {
+			if (cell.hasItems())
+				cell.getItems().get(cell.getItems().size() - 1).add(", ");
+			if (first.equals(previous)) {
+				cell.add(df.format(first))
+					.setColor(firstHoliday == '1' ? "#e50000" : "#800080");
+			} else {
+				cell.add(df.format(first) + "-" + df.format(previous))
+					.setColor(firstHoliday == '1' ? "#e50000" : "#800080");
 			}
 		}
 		return cell;
