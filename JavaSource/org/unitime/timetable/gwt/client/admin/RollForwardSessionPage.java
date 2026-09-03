@@ -399,7 +399,7 @@ public class RollForwardSessionPage extends Composite {
 		}
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollDepartmentsForwardFromSession(), null,
-				iData.getRollForwardDepartments(), iData.getSessionToRollDeptsFowardFrom()) {
+				iData.getRollForwardDepartments(), iData.getSessionToRollDeptsFowardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardDepartments(check);
@@ -408,7 +408,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollSessionConfigFromSession(), MSG.infoRollSessionConfigFromSession(),
-				iData.getRollForwardSessionConfig(), iData.getSessionToRollSessionConfigForwardFrom()) {
+				iData.getRollForwardSessionConfig(), iData.getSessionToRollSessionConfigForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardSessionConfig(check);
@@ -417,7 +417,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollManagersFromSession(), null,
-				iData.getRollForwardManagers(), iData.getSessionToRollManagersForwardFrom()) {
+				iData.getRollForwardManagers(), iData.getSessionToRollManagersForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardManagers(check);
@@ -426,7 +426,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 
 		iPanel.addRow(new SimpleAction(MSG.propRollRoomsFromSession(), null,
-				iData.getRollForwardRoomData(), iData.getSessionToRollRoomDataForwardFrom()) {
+				iData.getRollForwardRoomData(), iData.getSessionToRollRoomDataForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardRoomData(check);
@@ -435,7 +435,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 
 		iPanel.addRow(new SimpleAction(MSG.propRollDatePatternsFromSession(), null,
-				iData.getRollForwardDatePatterns(), iData.getSessionToRollDatePatternsForwardFrom()) {
+				iData.getRollForwardDatePatterns(), iData.getSessionToRollDatePatternsForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardDatePatterns(check);
@@ -444,7 +444,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 
 		iPanel.addRow(new SimpleAction(MSG.propRollTimePatternsFromSession(), null,
-				iData.getRollForwardTimePatterns(), iData.getSessionToRollTimePatternsForwardFrom()) {
+				iData.getRollForwardTimePatterns(), iData.getSessionToRollTimePatternsForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardTimePatterns(check);
@@ -453,7 +453,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollLMSFromSession(), null,
-				iData.getRollForwardLearningManagementSystems(), iData.getSessionToRollLearningManagementSystemsForwardFrom()) {
+				iData.getRollForwardLearningManagementSystems(), iData.getSessionToRollLearningManagementSystemsForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardLearningManagementSystems(check);
@@ -462,7 +462,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollSubjectsFromSession(), null,
-				iData.getRollForwardSubjectAreas(), iData.getSessionToRollSubjectAreasForwardFrom()) {
+				iData.getRollForwardSubjectAreas(), iData.getSessionToRollSubjectAreasForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardSubjectAreas(check);
@@ -471,7 +471,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 		
 		SimpleAction rollForwardInstructorData = new SimpleAction(MSG.propRollInstructorsFromSession(), null,
-				iData.getRollForwardInstructorData(), iData.getSessionToRollInstructorDataForwardFrom()) {
+				iData.getRollForwardInstructorData(), iData.getSessionToRollInstructorDataForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardInstructorData(check);
@@ -489,7 +489,7 @@ public class RollForwardSessionPage extends Composite {
 		addSubRow(rollForwardInstructorData.getCheckBox(), MSG.propForDepartments(), departments);
 		
 		SimpleAction rollForwardCourseOfferings = new SimpleAction(MSG.propRollCoursesFormSession(), null,
-				iData.getRollForwardCourseOfferings(), iData.getSessionToRollCourseOfferingsForwardFrom()) {
+				iData.getRollForwardCourseOfferings(), iData.getSessionToRollCourseOfferingsForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardCourseOfferings(check);
@@ -614,7 +614,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 
 		iPanel.addRow(new SimpleAction(MSG.propRollExamConfigFromSession(), null,
-				iData.getRollForwardExamConfiguration(), iData.getSessionToRollExamConfigurationForwardFrom()) {
+				iData.getRollForwardExamConfiguration(), iData.getSessionToRollExamConfigurationForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardExamConfiguration(check);
@@ -689,7 +689,7 @@ public class RollForwardSessionPage extends Composite {
 		addSubRow(rollForwardStudents, MSG.propPointInTimeSnapshot(), pointInTimeSnapshotToRollCourseEnrollmentsForwardFrom);
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollCurriculaFromSession(), MSG.infoRollCurriculaFromSession(),
-				iData.getRollForwardCurricula(), iData.getSessionToRollCurriculaForwardFrom()) {
+				iData.getRollForwardCurricula(), iData.getSessionToRollCurriculaForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardCurricula(check);
@@ -698,7 +698,7 @@ public class RollForwardSessionPage extends Composite {
 		});
 		
 		SimpleAction rollForwardReservations = new SimpleAction(MSG.propRollReservationsFromSession(), null,
-				iData.getRollForwardReservations(), iData.getSessionToRollReservationsForwardFrom()) {
+				iData.getRollForwardReservations(), iData.getSessionToRollReservationsForwardFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardReservations(check);
@@ -837,7 +837,7 @@ public class RollForwardSessionPage extends Composite {
 		addSubSubRow(rollForwardReservations.getCheckBox(), rollForwardUniversalReservations, MSG.propNewExpirationDate(), expirationUniversalReservations, MSG.infoNewExpirationDateUniversal());
 		
 		iPanel.addRow(new SimpleAction(MSG.propRollScheduledTasksFromSession(), null,
-				iData.getRollForwardPeriodicTasks(), iData.getSessionToRollPeriodicTasksFrom()) {
+				iData.getRollForwardPeriodicTasks(), iData.getSessionToRollPeriodicTasksFrom(), iConfig) {
 			@Override
 			public void update(Boolean check, Long fromSessionId) {
 				iData.setRollForwardPeriodicTasks(check);
@@ -914,7 +914,7 @@ public class RollForwardSessionPage extends Composite {
 		return ret;
 	}
 	
-	protected static class SingleIdListBox extends ListBox implements HasValue<Long>{
+	public static class SingleIdListBox extends ListBox implements HasValue<Long>{
 		public SingleIdListBox(List<IdLabel> items) {
 			addItem(MSG.itemSelect(), "");
 			if (items != null)
@@ -1014,15 +1014,15 @@ public class RollForwardSessionPage extends Composite {
 		}
 	}
 	
-	protected class SimpleAction extends P {
+	public static class SimpleAction extends P {
 		private CheckBox iCheckBox;
 		private SingleIdListBox iListBox;
 		private P iNote;
-		SimpleAction(String label, String note, Boolean check, Long fromSessionId) {
+		public SimpleAction(String label, String note, Boolean check, Long fromSessionId, RollForwardSessionResponse config) {
 			super("roll-action");
 			iCheckBox = new CheckBox(label);
 			iCheckBox.setValue(Boolean.TRUE.equals(check));
-			iListBox = new SingleIdListBox(iConfig.getFromSessions(), fromSessionId);
+			iListBox = new SingleIdListBox(config.getFromSessions(), fromSessionId);
 			Roles.getListboxRole().setAriaLabelProperty(iListBox.getElement(), label);
 			add(iCheckBox);
 			add(iListBox);
@@ -1135,7 +1135,7 @@ public class RollForwardSessionPage extends Composite {
 			setVisible(false);
 		}
 		
-		protected void clearErrors() {
+		public void clearErrors() {
 			iErrors.clear();
 			setVisible(false);
 		}
@@ -1150,7 +1150,7 @@ public class RollForwardSessionPage extends Composite {
 			setVisible(iErrors.getWidgetCount() > 0);
 		}
 		
-		protected void setErrors(List<String> errors) {
+		public void setErrors(List<String> errors) {
 			iErrors.clear();
 			if (errors == null || errors.isEmpty()) {
 				setVisible(false);
@@ -1164,7 +1164,7 @@ public class RollForwardSessionPage extends Composite {
 			}
 		}
 		
-		protected void setErrors(RollForwardErrors errors) {
+		public void setErrors(RollForwardErrors errors) {
 			iErrors.clear();
 			if (errors == null || errors.isEmpty()) {
 				setVisible(false);

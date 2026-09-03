@@ -857,7 +857,10 @@ public class RollForwardSessionForm implements UniTimeForm {
 	}
 	
 	public RollForwardSessionInterface toRollForwardSessionInterface() {
-		RollForwardSessionInterface form = new RollForwardSessionInterface();
+		return toRollForwardSessionInterface(new RollForwardSessionInterface());
+	}
+	
+	protected <T extends RollForwardSessionInterface> T toRollForwardSessionInterface(T form) {
 		// form.setSubjectAreas(getSubjectAreas());
 		// form.setSubjectAreaIds(toSet(getSubjectAreaIds())); -- NOT USED
 		// form.setButtonAction(getButtonAction());

@@ -71,8 +71,8 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 
 public class SessionRollForwardValidators {
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
-	private RollForwardSessionInterface iForm;
-	private RollForwardErrorLogger iErrors;
+	protected RollForwardSessionInterface iForm;
+	protected RollForwardErrorLogger iErrors;
 	
 	public SessionRollForwardValidators(RollForwardSessionInterface form, RollForwardErrorLogger errors) {
 		iForm = form;

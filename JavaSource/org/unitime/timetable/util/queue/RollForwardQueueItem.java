@@ -38,9 +38,9 @@ public class RollForwardQueueItem extends QueueItem {
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 1L;
 
-	private RollForwardSessionInterface iForm;
-	private int iProgress = 0;
-	private RollForwardErrors iErrors = new RollForwardErrors();
+	protected RollForwardSessionInterface iForm;
+	protected int iProgress = 0;
+	protected RollForwardErrors iErrors = new RollForwardErrors();
 	
 	public RollForwardQueueItem(Session session, UserContext owner, RollForwardSessionInterface form) {
 		super(session, owner);
