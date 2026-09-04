@@ -29,6 +29,22 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Add/Edit Examination: Size Note</name>
+			<description>
+				<line>Corrected the note next to the size to follow the tmtbl.exam.useLimit.&lt;type&gt; setting.</line>
+			</description>
+		</item>
+		<item>
+			<name>Examination Assignment: Minimal Room Size</name>
+			<description>
+				<line>When no size is set on the exam, use enrolled students when used without a solver, regardless of the tmtbl.exam.useLimit.&lt;type&gt; setting.</line>
+				<line>This preserves the same behavior as the old Struts-based Class Assignments page.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Student Scheduling</title>
 		<item>
 			<name>Advisor Course Recommendations: Student Status</name>

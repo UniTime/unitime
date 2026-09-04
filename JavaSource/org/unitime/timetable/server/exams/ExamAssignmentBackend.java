@@ -220,11 +220,11 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
 		
 		response.setSelectedExamId(request.getSelectedExamId());
 		response.setSessionId(selected.getSession().getUniqueId());
-		response.setMaxRooms(selected.getMaxNbrRooms());
-		response.setMinRoomCapacity(selected.getSize());
+		response.setMaxRooms(examInfo.getMaxRooms());
+		response.setMinRoomCapacity(examInfo.getNrStudents());
 		response.setExamName(selected.getLabel());
 		response.setExamType(selected.getExamType().getReference());
-		response.setProperties(getProperties(selected, context));
+		response.setProperties(getProperties(selected, examInfo, context));
 		if (examInfo.getPeriodId() != null)
 			response.getProperties().addProperty(MSG.propAssignedPeriod()).addItem(examInfo.getPeriodCell());
         if (examInfo.getRooms() != null && !examInfo.getRooms().isEmpty()) {
@@ -538,15 +538,15 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
         		if (filter == null) {
         			filter = new RoomFilterRpcRequest();
         			filter.setOption("department", selected.getExamType().getReference());
-        			if (selected.getMaxNbrRooms() == 1 || selected.getSize() < 66)
-        				filter.setOption("size", ">=" + selected.getSize());
-        			else if (selected.getMaxNbrRooms() > 1)
-        				filter.setOption("size", ">=" + (selected.getSize() / selected.getMaxNbrRooms()));
+        			if (examInfo.getMaxRooms() == 1 || examInfo.getNrStudents() < 66)
+        				filter.setOption("size", ">=" + examInfo.getNrStudents());
+        			else if (examInfo.getMaxRooms() > 1)
+        				filter.setOption("size", ">=" + (examInfo.getNrStudents() / examInfo.getMaxRooms()));
         		} else if (request.getPreviousExamId() == null || !request.getPreviousExamId().equals(request.getSelectedExamId())) {
-        			if (selected.getMaxNbrRooms() == 1 || selected.getSize() < 66)
-        				filter.setOption("size", ">=" + selected.getSize());
-        			else if (selected.getMaxNbrRooms() > 1)
-        				filter.setOption("size", ">=" + (selected.getSize() / selected.getMaxNbrRooms()));
+        			if (examInfo.getMaxRooms() == 1 || examInfo.getNrStudents() < 66)
+        				filter.setOption("size", ">=" + examInfo.getNrStudents());
+        			else if (examInfo.getMaxRooms() > 1)
+        				filter.setOption("size", ">=" + (examInfo.getNrStudents() / examInfo.getMaxRooms()));
         			else
         				filter.setOption("size", null);
         		}
@@ -705,7 +705,7 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
     			.setCacheable(true).list());
     }
 	
-	public static TableInterface getProperties(Exam exam, SessionContext context) {
+	public static TableInterface getProperties(Exam exam, ExamAssignmentInfo examInfo, SessionContext context) {
 		TableInterface response = new TableInterface();
 		CellInterface owners = response.addProperty(MSG.sectExamOwners());
 		for (ExamOwner owner: new TreeSet<ExamOwner>(exam.getOwners()))
@@ -713,8 +713,8 @@ public class ExamAssignmentBackend implements GwtRpcImplementation<ExamAssignmen
 		response.addProperty(MSG.propExamType()).setText(exam.getExamType().getLabel());
 		response.addProperty(MSG.propExamLength()).setText(exam.getLength());
 		response.addProperty(MSG.propExamSeatingType()).setText(exam.getSeatingType() == Exam.sSeatingTypeNormal ? MSG.seatingNormal() : MSG.seatingExam());
-		response.addProperty(MSG.propExamMaxRooms()).setText(exam.getMaxNbrRooms());
-		response.addProperty(MSG.propExamSize()).setText(exam.getSize()).addStyle(exam.getExamSize() == null ? "font-style: italic;" : "");
+		response.addProperty(MSG.propExamMaxRooms()).setText(examInfo.getMaxRooms());
+		response.addProperty(MSG.propExamSize()).setText(examInfo.getNrStudents()).addStyle(exam.getExamSize() == null ? "font-style: italic;" : "");
 		if (exam.getPrintOffset() != null && exam.getPrintOffset() != 0)
 			response.addProperty(MSG.propExamPrintOffset()).setText(exam.getPrintOffset()).add(" " + MSG.offsetUnitMinutes());
 		if (exam.getInstructors() != null && !exam.getInstructors().isEmpty()) {

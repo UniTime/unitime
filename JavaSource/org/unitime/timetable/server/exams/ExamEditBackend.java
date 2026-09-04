@@ -245,6 +245,7 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 				ret = request.getPayLoad();
 				ExamType examType = ExamTypeDAO.getInstance().get(ret.getExamTypeId());
 				fillInPreferences(ret, null, examType, ret.isExamSeating(), context);
+				ret.setSizeUseLimitInsteadOfEnrollment(ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(examType.getReference(), examType.getType() != ExamType.sExamTypeFinal));
 				return ret;
 			case EXAM_SEATING:
 				ret = request.getPayLoad();
@@ -375,6 +376,7 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 				TreeSet<ExamPeriod>  periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), examType);
 				if (!periods.isEmpty())
 					ret.setLength(Constants.SLOT_LENGTH_MIN * periods.first().getLength());
+				ret.setSizeUseLimitInsteadOfEnrollment(ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(examType.getReference(), examType.getType() != ExamType.sExamTypeFinal));
 			}
             SolverParameterDef maxRoomsParam = SolverParameterDef.findByNameType("Exams.MaxRooms", SolverParameterGroup.SolverType.EXAM);
             if (maxRoomsParam != null && maxRoomsParam.getDefault() != null) 
