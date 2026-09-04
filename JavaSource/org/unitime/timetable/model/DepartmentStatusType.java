@@ -103,8 +103,8 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
                 .uniqueResult();
 	}
 	
-	public static TreeSet findAll() {
-		return new TreeSet((DepartmentStatusTypeDAO.getInstance().findAll()));
+	public static TreeSet<DepartmentStatusType> findAll() {
+		return new TreeSet<DepartmentStatusType>((DepartmentStatusTypeDAO.getInstance().findAll()));
 	}
 	
 	public static TreeSet<DepartmentStatusType> findAll(int apply) {

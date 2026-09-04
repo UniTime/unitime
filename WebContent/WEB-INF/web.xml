@@ -293,6 +293,7 @@
     	<url-pattern>/stats</url-pattern>
     	<url-pattern>/manageSolvers</url-pattern>
     	<url-pattern>/rollForward</url-pattern>
+    	<url-pattern>/statusTypes</url-pattern>
     </servlet-mapping>
 	
 	<filter>
