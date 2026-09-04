@@ -9325,3 +9325,7 @@ div.gwt-MenuBarPopup {
 	padding: 0px 0px 0px 20px;
 	margin: 0px;
 }
+
+.unitime-StatusTypesPage .gwt-CheckBox label {
+	font-style: italic;	
+}

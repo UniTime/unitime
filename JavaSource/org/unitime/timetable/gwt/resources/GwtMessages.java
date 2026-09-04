@@ -4244,6 +4244,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Roll Forward Session")
 	@DoNotTranslate
 	String pageRollForwardSession();
+	
+	@DefaultMessage("Status Types")
+	@DoNotTranslate
+	String pageStatusTypes();
+	
+	@DefaultMessage("Add Status Type")
+	@DoNotTranslate
+	String pageAddStatusType();
+	
+	@DefaultMessage("Edit Status Type")
+	@DoNotTranslate
+	String pageEditStatusType();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
