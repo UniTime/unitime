@@ -332,7 +332,7 @@ public class ExamEditPage extends Composite {
 				size.setValue(iData.getSize());
 				P sizeBox = new P("exam-size");
 				sizeBox.add(size);
-				sizeBox.add(new Label(iData.isSizeUseLimitInsteadOfEnrollment() ? EXAM.noteBlankSizeEnrolledStudents() : EXAM.noteBlankSizeEnrolledStudents()));
+				sizeBox.add(new Label(iData.isSizeUseLimitInsteadOfEnrollment() ? EXAM.noteBlankSizeLimit() : EXAM.noteBlankSizeEnrolledStudents()));
 				iPanel.addRow(EXAM.propExamSize(), sizeBox);
 				size.addValueChangeHandler(new ValueChangeHandler<String>() {
 					@Override
