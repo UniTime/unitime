@@ -43,6 +43,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.server.admin.AdminTable.HasFilter;
 import org.unitime.timetable.server.admin.AdminTable.HasLazyFields;
+import org.unitime.timetable.server.admin.AdminTable.HasUpDown;
 
 /**
  * @author Tomas Muller
@@ -82,6 +83,7 @@ public class AdminBackend {
 				
 				if (!data.hasConfirmDelete() && CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)))
 					data.setConfirmDelete(MESSAGES.confirmDeleteItem(at.name().singular().toLowerCase()));
+				data.setHasUpDownInterface(at instanceof HasUpDown);
 				
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -280,6 +282,40 @@ public class AdminBackend {
 				tx.commit(); tx = null;
 				
 				return ret;
+			} catch (PageAccessException e) {
+				throw e;
+			} catch (GwtRpcException e) {
+				throw e;
+			} catch (Exception e) {
+				sLog.error(e.getMessage(), e);
+				throw new GwtRpcException(e.getMessage(), e);
+			} finally {
+				try {
+					if (tx != null && tx.isActive()) {
+						tx.rollback();
+					}
+				} catch (Exception e) {}
+			}
+		}
+	}
+	
+	@GwtRpcImplements(SimpleEditInterface.MoveRecordRpcRequest.class)
+	public static class MoveRecordBackend implements GwtRpcImplementation<SimpleEditInterface.MoveRecordRpcRequest, SimpleEditInterface.Record> {
+		@Autowired ApplicationContext applicationContext;
+
+		@Override
+		public SimpleEditInterface.Record execute(SimpleEditInterface.MoveRecordRpcRequest request, SessionContext context) {
+			org.hibernate.Session hibSession = new _RootDAO().getSession();
+			Transaction tx = null;
+			try {
+				tx = hibSession.beginTransaction();
+				
+				((HasUpDown)getTable(applicationContext, request.getType())).move(request.getRecord(), request.isUp(), context, hibSession);
+				
+				hibSession.flush();
+				tx.commit(); tx = null;
+				
+				return request.getRecord();
 			} catch (PageAccessException e) {
 				throw e;
 			} catch (GwtRpcException e) {

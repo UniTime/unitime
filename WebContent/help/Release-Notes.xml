@@ -116,7 +116,12 @@
 				<line>Defaults to the academic initiative when not set.</line>
 			</description>
 		</item>
-		
+		<item>
+			<name>Room Types, Instructor Survey Note Types, Student Scheduling Rules, Solver Parameter Groups, Solver Parameters: Sort Order</name>
+			<description>
+				<line>Added an ability to move individual records up and down on the detail screen.</line>
+			</description>
+		</item>
 		<item>
 			<name>Technology Update / GWT</name>
 			<description>

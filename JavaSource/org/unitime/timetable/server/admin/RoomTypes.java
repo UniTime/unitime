@@ -48,7 +48,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @Service("gwtAdminTable[type=roomType]")
-public class RoomTypes implements AdminTable {
+public class RoomTypes implements AdminTable, AdminTable.HasUpDown {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
@@ -194,6 +194,25 @@ public class RoomTypes implements AdminTable {
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		delete(RoomTypeDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
 	}
-
-
+	
+	@Override
+	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
+		RoomType type = RoomTypeDAO.getInstance().get(record.getUniqueId(), hibSession);
+		if (type != null) {
+			boolean found = false;
+			int add = (up ? 1 : -1);
+			for (RoomType r: RoomTypeDAO.getInstance().findAll()) {
+				if (r.getOrd() + add == type.getOrd()) {
+					r.setOrd(r.getOrd() + add); 
+                    hibSession.merge(r);
+                    found = true;
+                }
+			}
+			if (found) {
+                type.setOrd(type.getOrd() - add);
+                record.setOrder(type.getOrd());
+                hibSession.merge(type);
+            }
+		}
+	}
 }
