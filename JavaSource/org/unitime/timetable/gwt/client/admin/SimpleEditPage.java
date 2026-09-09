@@ -290,6 +290,7 @@ public class SimpleEditPage extends Composite {
 		iPanel.addNotPrintableBottomRow(iBottom);
 		
 		iSimple = new SimplePanel(iPanel);
+		iSimple.addStyleName("unitime-SimpleEditPage");
 		
 		initWidget(iSimple);
 		
@@ -1059,6 +1060,9 @@ public class SimpleEditPage extends Composite {
 				iOrderColumn = col;
 				header.add(new UniTimeTableHeader(MESSAGES.colOrder(), 2));
 			}
+		} else if (iData.isEditable() && !iEditable && iData.isCanMoveUpAndDown() && iData.isHasUpDownInterface()) {
+			iOrderColumn = col;
+			header.add(new UniTimeTableHeader(MESSAGES.colOrder(), 2));
 		}
 		if (iData.isEditable() && iEditable) {
 			header.add(new UniTimeTableHeader());
@@ -1184,6 +1188,80 @@ public class SimpleEditPage extends Composite {
 					int row = iTable.getRowForWidget(down);
 					iTable.moveDown(row, true);
 					fixOrderArrows(row);
+				}
+			});
+			line.add(down);
+			col++;
+		}
+		if (!iEditable && iData.isCanMoveUpAndDown() && iData.isHasUpDownInterface()) {
+			final ImageButton up = new ImageButton(RESOURCES.orderUp());
+			up.getElement().getStyle().setCursor(Cursor.POINTER);
+			up.setTitle(MESSAGES.titleMoveUp());
+			up.setAltText(MESSAGES.titleMoveUp());
+			up.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.preventDefault();
+					event.stopPropagation();
+					int row = iTable.getRowForWidget(up);
+					final Record record = iTable.getData(row);
+					RPC.execute(SimpleEditInterface.MoveRecordRpcRequest.moveRecordUp(iType, record), new AsyncCallback<Record>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							UniTimeNotifications.error(MESSAGES.failedSave(caught.getMessage()), caught);
+						}
+						@Override
+						public void onSuccess(Record result) {
+							Integer oldOrd = record.getOrder();
+							Integer newOrd = result.getOrder();
+							record.setOrder(newOrd);
+							if (newOrd != null && !newOrd.equals(oldOrd)) {
+								for (int i = 0; i < iTable.getRowCount(); i++) {
+									Record r = iTable.getData(i);
+									if (r != null && newOrd.equals(r.getOrder()))
+										r.setOrder(oldOrd);
+								}
+								iTable.moveUp(row, true);
+								fixOrderArrows(row);
+							}
+						}
+					}); 
+				}
+			});
+			line.add(up);
+			col++;
+			final ImageButton down = new ImageButton(RESOURCES.orderDown());
+			down.getElement().getStyle().setCursor(Cursor.POINTER);
+			down.setTitle(MESSAGES.titleMoveDown());
+			down.setAltText(MESSAGES.titleMoveDown());
+			down.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					event.preventDefault();
+					event.stopPropagation();
+					int row = iTable.getRowForWidget(up);
+					final Record record = iTable.getData(row);
+					RPC.execute(SimpleEditInterface.MoveRecordRpcRequest.moveRecordDown(iType, record), new AsyncCallback<Record>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							UniTimeNotifications.error(MESSAGES.failedSave(caught.getMessage()), caught);
+						}
+						@Override
+						public void onSuccess(Record result) {
+							Integer oldOrd = record.getOrder();
+							Integer newOrd = result.getOrder();
+							record.setOrder(newOrd);
+							if (newOrd != null && !newOrd.equals(oldOrd)) {
+								for (int i = 0; i < iTable.getRowCount(); i++) {
+									Record r = iTable.getData(i);
+									if (r != null && newOrd.equals(r.getOrder()))
+										r.setOrder(oldOrd);
+								}
+								iTable.moveDown(row, true);
+								fixOrderArrows(row);
+							}
+						}
+					}); 
 				}
 			});
 			line.add(down);
@@ -1699,6 +1777,28 @@ public class SimpleEditPage extends Composite {
 			}
 		}
 		
+		@Override
+		protected void initWidget(Widget w) {
+			if (iField.hasDescription()) {
+				if (iDetail) {
+					super.initWidget(new WidgetWithDescription(w, iField.getDescription()));
+				} else {
+					w.setTitle(iField.getDescription());
+					super.initWidget(w);;
+				}
+			} else {
+				super.initWidget(w);;
+			}
+		}
+		
+		@Override
+		protected Widget getWidget() {
+			Widget w = super.getWidget();
+			if (w instanceof WidgetWithDescription)
+				return ((WidgetWithDescription)w).getWidget();
+			return w;
+		}
+		
 		public String getParentValue() {
 			if (!isChild(iRecord)) return null;
 			Record parent = iData.getRecord(Long.valueOf(iRecord.getField(0)));
@@ -1780,6 +1880,18 @@ public class SimpleEditPage extends Composite {
 			default:
 				return HasHorizontalAlignment.ALIGN_LEFT;
 			}
+		}
+	}
+	
+	public class WidgetWithDescription extends P {
+		public WidgetWithDescription(Widget w, String description) {
+			super("widget-with-description");
+			add(w);
+			P d = new P("description"); d.setText(description); add(d);
+		}
+		
+		public Widget getWidget() {
+			return getWidget(0);
 		}
 	}
 

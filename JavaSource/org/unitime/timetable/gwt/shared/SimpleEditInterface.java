@@ -62,7 +62,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	// private Type iType = null;
 	private List<Record> iRecords = new ArrayList<Record>();
 	private Field[] iFields = null;
-	private boolean iEditable = true, iAddable = true, iSaveOrder = true, iCanMoveUpAndDown = false, iAllowSort = true;
+	private boolean iEditable = true, iAddable = true, iSaveOrder = true, iCanMoveUpAndDown = false, iAllowSort = true, iHasUpDownInterface = false;
 	private int[] iSort = null;
 	private Long iSessionId = null;
 	private String iSessionName = null;
@@ -84,6 +84,9 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public boolean isAllowSort() { return iAllowSort; }
 	public void setAllowSort(boolean allowSort) { iAllowSort = allowSort; }
+	
+	public boolean isHasUpDownInterface() { return iHasUpDownInterface; }
+	public void setHasUpDownInterface(boolean hasUpDownInterface) { iHasUpDownInterface = hasUpDownInterface; }
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
@@ -390,6 +393,7 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		private int iLength = 0, iWidth = 0, iHeight = 1, iFlags = 0;
 		private List<ListItem> iValues = null;
 		private String iDefault;
+		private String iDescription;
 		
 		public Field() {}
 		
@@ -448,6 +452,10 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public boolean isNoCycle() { return Flag.NO_CYCLE.has(iFlags); }
 		public boolean isNoDetail() { return Flag.NO_DETAIL.has(iFlags); }
 		public boolean isNoList() { return Flag.NO_LIST.has(iFlags); }
+		
+		public Field setDescription(String description) { iDescription = description; return this; }
+		public String getDescription() { return iDescription; }
+		public boolean hasDescription() { return iDescription != null && !iDescription.isEmpty(); }
 		
 		public int hashCode() {
 			return getName().hashCode();
@@ -582,6 +590,30 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 			DeleteRecordRpcRequest request = new DeleteRecordRpcRequest();
 			request.setType(type);
 			request.setRecord(record);
+			return request;
+		}
+	}
+	
+	public static class MoveRecordRpcRequest extends SaveRecordRpcRequest {
+		private boolean iUp = true;
+		
+		public MoveRecordRpcRequest() {}
+		
+		public boolean isUp() { return iUp; }
+		public void setUp(boolean up) { iUp = up; }
+		
+		public static MoveRecordRpcRequest moveRecordUp(String type, Record record) {
+			MoveRecordRpcRequest request = new MoveRecordRpcRequest();
+			request.setType(type);
+			request.setRecord(record);
+			request.setUp(true);
+			return request;
+		}
+		public static MoveRecordRpcRequest moveRecordDown(String type, Record record) {
+			MoveRecordRpcRequest request = new MoveRecordRpcRequest();
+			request.setType(type);
+			request.setRecord(record);
+			request.setUp(false);
 			return request;
 		}
 	}

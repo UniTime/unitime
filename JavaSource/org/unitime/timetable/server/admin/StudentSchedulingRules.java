@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cpsolver.ifs.util.ToolBox;
+import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
@@ -45,6 +46,7 @@ import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.dao.StudentSchedulingRuleDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.admin.AdminTable.HasUpDown;
 import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
 
@@ -52,7 +54,7 @@ import org.unitime.timetable.spring.SpringApplicationContextHolder;
  * @author Tomas Muller
  */
 @Service("gwtAdminTable[type=studentSchedulingRules]")
-public class StudentSchedulingRules implements AdminTable {
+public class StudentSchedulingRules implements AdminTable, HasUpDown {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
@@ -267,5 +269,26 @@ public class StudentSchedulingRules implements AdminTable {
 	public void delete(Record record, SessionContext context, org.hibernate.Session hibSession) {
 		delete(StudentSchedulingRuleDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
 		notifyOnlineServers(context, hibSession);
+	}
+
+	@Override
+	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
+		StudentSchedulingRule rule = StudentSchedulingRuleDAO.getInstance().get(record.getUniqueId(), hibSession);
+		if (rule != null) {
+			boolean found = false;
+			int add = (up ? 1 : -1);
+			for (StudentSchedulingRule r: StudentSchedulingRuleDAO.getInstance().findAll()) {
+				if (r.getOrd() + add == rule.getOrd()) {
+					r.setOrd(r.getOrd() + add); 
+                    hibSession.merge(r);
+                    found = true;
+                }
+			}
+			if (found) {
+                rule.setOrd(rule.getOrd() - add);
+                record.setOrder(rule.getOrd());
+                hibSession.merge(rule);
+            }
+		}
 	}
 }

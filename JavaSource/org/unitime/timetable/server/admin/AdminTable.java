@@ -44,6 +44,10 @@ public interface AdminTable {
 		public void save(String[] filter, SimpleEditInterface data, SessionContext context, org.hibernate.Session hibSession);
 	}
 	
+	public interface HasUpDown {
+		public void move(SimpleEditInterface.Record record, boolean up, SessionContext context, org.hibernate.Session hibSession);
+	}
+	
 	public interface HasLazyFields {
 		public void load(SimpleEditInterface.Record record, SessionContext context, org.hibernate.Session hibSession);
 	}

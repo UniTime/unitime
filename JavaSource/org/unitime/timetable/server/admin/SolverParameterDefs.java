@@ -54,7 +54,7 @@ import org.unitime.timetable.server.admin.AdminTable.HasFilter;
  * @author Tomas Muller
  */
 @Service("gwtAdminTable[type=solverParamDef]")
-public class SolverParameterDefs implements AdminTable, HasFilter {
+public class SolverParameterDefs implements AdminTable, HasFilter, AdminTable.HasUpDown {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
@@ -305,5 +305,26 @@ public class SolverParameterDefs implements AdminTable, HasFilter {
 		if (lastId != null)
 			filter.getDefaultValue().setField(0, lastId);
 		return filter;
+	}
+	
+	@Override
+	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
+		SolverParameterDef type = SolverParameterDefDAO.getInstance().get(record.getUniqueId(), hibSession);
+		if (type != null) {
+			boolean found = false;
+			int add = (up ? 1 : -1);
+			for (SolverParameterDef r: SolverParameterDefDAO.getInstance().findAll()) {
+				if (r.getOrder() + add == type.getOrder() && r.getGroup().equals(type.getGroup())) {
+					r.setOrder(r.getOrder() + add); 
+                    hibSession.merge(r);
+                    found = true;
+                }
+			}
+			if (found) {
+                type.setOrder(type.getOrder() - add);
+                record.setOrder(type.getOrder());
+                hibSession.merge(type);
+            }
+		}
 	}
 }

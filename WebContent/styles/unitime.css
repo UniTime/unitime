@@ -9329,3 +9329,11 @@ div.gwt-MenuBarPopup {
 .unitime-StatusTypesPage .gwt-CheckBox label {
 	font-style: italic;	
 }
+
+.unitime-SimpleEditPage .widget-with-description .description {
+	padding-left: 10px;
+	font-style: italic;
+	white-space: pre;
+	display: inline;
+	vertical-align: top;
+}

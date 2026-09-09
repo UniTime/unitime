@@ -48,7 +48,7 @@ import org.unitime.timetable.security.rights.Right;
  * @author Tomas Muller
  */
 @Service("gwtAdminTable[type=instrSurveyNoteTypes]")
-public class InstructorSurveyNoteTypes implements AdminTable {
+public class InstructorSurveyNoteTypes implements AdminTable, AdminTable.HasUpDown {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
@@ -188,5 +188,26 @@ public class InstructorSurveyNoteTypes implements AdminTable {
 	@PreAuthorize("checkPermission('InstructorSurveyNoteTypeEdit')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		delete(InstructorCourseRequirementTypeDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
+	}
+	
+	@Override
+	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
+		InstructorCourseRequirementType type = InstructorCourseRequirementTypeDAO.getInstance().get(record.getUniqueId(), hibSession);
+		if (type != null) {
+			boolean found = false;
+			int add = (up ? 1 : -1);
+			for (InstructorCourseRequirementType r: InstructorCourseRequirementTypeDAO.getInstance().findAll()) {
+				if (r.getSortOrder() + add == type.getSortOrder()) {
+					r.setSortOrder(r.getSortOrder() + add); 
+                    hibSession.merge(r);
+                    found = true;
+                }
+			}
+			if (found) {
+                type.setSortOrder(type.getSortOrder() - add);
+                record.setOrder(type.getSortOrder());
+                hibSession.merge(type);
+            }
+		}
 	}
 }
