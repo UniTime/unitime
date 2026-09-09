@@ -4038,6 +4038,13 @@ public enum ApplicationProperty {
 	@Description("Class Assignment: ignore parent/child class conflicts within a course when &quot;Do not unassign conflicting classes&quot; toggle is checked.")
 	@Since(4.9)
 	ClassAssignmentAllowCourseTimeConflicts("tmtbl.classAssign.allowCourseTimeConflicts"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("partial")
+	@Values({"never", "partial", "always"})
+	@Description("Instructors: show percent share next to the class assignment (never, always, or when there is a partial assignment below 100%)")
+	@Since(4.9)
+	InstructorsShowPercentShare("unitime.instructors.showPercentShare"),
 	;
 
 	String iKey;

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
@@ -51,6 +52,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
@@ -257,6 +259,7 @@ public class InstructorsTableBuilder extends TableBuilder{
 			TreeSet<ClassInstructor> classes = new TreeSet<ClassInstructor>(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_LABEL)));
 			classes.addAll(di.getClasses());
 			CellInterface cls = line.addCell();
+			String showPercentShare = ApplicationProperty.InstructorsShowPercentShare.value();
 			for (ClassInstructor ci: classes) {
 				Class_ c = ci.getClassInstructing();
 				String className = c.getClassLabel();
@@ -277,6 +280,14 @@ public class InstructorsTableBuilder extends TableBuilder{
 	    		if (!c.isDisplayInstructor())
 	    			cl.addStyle("font-style:italic;");
 	    		cl.setNoWrap(true).setInline(false);
+	    		if ("partial".equalsIgnoreCase(showPercentShare)) {
+	    			if (ci.getPercentShare() != 100)
+		    			cl.add(" (" + ci.getPercentShare() + "%" + (ci.getResponsibility() == null || ci.getResponsibility().hasOption(TeachingResponsibility.Option.isdefault) ? "" : " " + ci.getResponsibility().getAbbreviation()) + ")");
+		    		else if (ci.getResponsibility() != null && !ci.getResponsibility().hasOption(TeachingResponsibility.Option.isdefault))
+		    			cl.add(" (" + ci.getResponsibility().getAbbreviation() + ")");
+	    		} else if ("always".equalsIgnoreCase(showPercentShare)) {
+	    			cl.add(" (" + ci.getPercentShare() + "%" + (ci.getResponsibility() == null || ci.getResponsibility().hasOption(TeachingResponsibility.Option.isdefault) ? "" : " " + ci.getResponsibility().getAbbreviation()) + ")");
+	    		}
 			}
 			
 			TreeSet<Exam> exams = new TreeSet<Exam>(di.getExams());
