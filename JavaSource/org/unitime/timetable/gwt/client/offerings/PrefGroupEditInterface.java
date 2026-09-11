@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.offerings;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -620,7 +621,8 @@ public class PrefGroupEditInterface {
 		}
 	}
 	
-	public static class PrefLevel implements IsSerializable {
+	public static class PrefLevel implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 3558922770019241150L;
 		private Long iId;
 		private String iLabel;
 		private String iTitle;
@@ -716,7 +718,8 @@ public class PrefGroupEditInterface {
 		public int getCode() { return iCode; }
 	}
 	
-	public static class TimePatternModel implements IsSerializable {
+	public static class TimePatternModel implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 1498185789505531536L;
 		private boolean iHardAllowed = true;
 		private List<Integer> iTimes;
 		private List<Integer> iDays;
