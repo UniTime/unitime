@@ -142,7 +142,6 @@ public class OfferingDetailBackend implements GwtRpcImplementation<OfferingDetai
 				case Delete:
 					context.checkPermission(io, Right.OfferingDelete);
 					deleteOffering(io, context);
-					context.removeAttribute(SessionAttribute.OfferingsCourseNumber);
 					response.setUrl("offerings");
 					return response;
 				}
