@@ -452,7 +452,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		}
 		CBSConstraint(CBSValue value, Element element) {
 			iValue = value;
-			iId = Integer.parseInt(element.attributeValue("id"));
+			iId = Long.parseLong(element.attributeValue("id"));
 			iType = Integer.parseInt(element.attributeValue("type"));
 			iName = element.attributeValue("name");
 			iPref = element.attributeValue("pref");
