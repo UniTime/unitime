@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.tables;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,7 +34,8 @@ import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class TableInterface implements GwtRpcResponse {
+public class TableInterface implements GwtRpcResponse, Serializable {
+	private static final long serialVersionUID = -4637363090129216977L;
 	private String iId;
 	private String iName;
 	private String iStyle;
@@ -162,7 +164,8 @@ public class TableInterface implements GwtRpcResponse {
 	public boolean isBlankWhenSame() { return iBlankWhenSame != null && iBlankWhenSame.booleanValue(); }
 	public void setBlankWhenSame(boolean blankWhenSame) { iBlankWhenSame = blankWhenSame; }
 	
-	public static class PropertyInterface implements IsSerializable {
+	public static class PropertyInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = -876791922511430431L;
 		private String iName;
 		private CellInterface iCell;
 		private String iStyle;
@@ -184,7 +187,8 @@ public class TableInterface implements GwtRpcResponse {
 		}
 	}
 	
-	public static class LineInterface implements IsSerializable {
+	public static class LineInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = -276797146040551829L;
 		private ArrayList<CellInterface> iCells;
 		private String iStyle;
 		private String iClassName;
@@ -284,7 +288,8 @@ public class TableInterface implements GwtRpcResponse {
 		}
 	}
 	
-	public static class LinkInteface implements IsSerializable {
+	public static class LinkInteface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 8712199103817913883L;
 		private String iHref;
 		private String iText;
 		
@@ -297,7 +302,8 @@ public class TableInterface implements GwtRpcResponse {
 		public LinkInteface setHref(String href) { iHref = href; return this; }
 	}
 	
-	public static class CellInterface implements IsSerializable, Comparable<CellInterface> {
+	public static class CellInterface implements IsSerializable, Comparable<CellInterface>, Serializable {
+		private static final long serialVersionUID = -4977810273684235078L;
 		public static enum Alignment {
 			LEFT, CENTER, RIGHT,
 			TOP, MIDLE, BOTTOM,
@@ -591,7 +597,8 @@ public class TableInterface implements GwtRpcResponse {
 		}
 	}
 	
-	public static class ImageInterface implements IsSerializable {
+	public static class ImageInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = -2079289115386190236L;
 		private String iSource;
 		private String iTitle;
 		private String iAlt;
@@ -625,7 +632,8 @@ public class TableInterface implements GwtRpcResponse {
 
 	}
 	
-	public static class ButtonInterface implements IsSerializable {
+	public static class ButtonInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 8433732392275558264L;
 		private String iUrl;
 		private String iTitle;
 		private String iText;
@@ -647,7 +655,8 @@ public class TableInterface implements GwtRpcResponse {
 		public boolean hasConfirm() { return iConfirm != null && !iConfirm.isEmpty(); }
 	}
 	
-	public static class CourseLinkInterface implements IsSerializable {
+	public static class CourseLinkInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = -9206415392022614549L;
 		private Long iCourseId;
 		private Boolean iAnchor = true;
 		
@@ -659,7 +668,8 @@ public class TableInterface implements GwtRpcResponse {
 		public boolean isAnchor() { return iAnchor == null || iAnchor.booleanValue(); }
 	}
 	
-	public static class WidgetInterface implements IsSerializable {
+	public static class WidgetInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = -2695404804658771399L;
 		private String iId;
 		private String iContent;
 		

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -925,7 +926,8 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 	
-	public static class ExamTypeInterface implements GwtRpcResponse {
+	public static class ExamTypeInterface implements GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = -3050195782703315805L;
 		private Long iId;
 		private String iReference;
 		private String iLabel;
@@ -1765,7 +1767,8 @@ public class RoomInterface implements IsSerializable {
 		}
 	}
 	
-	public static class PeriodInterface implements IsSerializable {
+	public static class PeriodInterface implements IsSerializable, Serializable {
+		private static final long serialVersionUID = 7150811274292451333L;
 		private Long iId;
 		private int iDay, iStart, iLength;
 		
@@ -1789,7 +1792,8 @@ public class RoomInterface implements IsSerializable {
 		
 	}
 	
-	public static class PeriodPreferenceModel implements IsSerializable, GwtRpcResponse {
+	public static class PeriodPreferenceModel implements IsSerializable, GwtRpcResponse, Serializable {
+		private static final long serialVersionUID = -6310522422646019946L;
 		private ExamTypeInterface iExamType;
 		private Long iLocationId;
 		private Long iExamId;
