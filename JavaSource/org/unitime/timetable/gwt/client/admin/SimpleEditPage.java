@@ -1407,6 +1407,7 @@ public class SimpleEditPage extends Composite {
 					final NumberBox number = new NumberBox();
 					number.getElement().getStyle().setTextAlign(TextAlign.RIGHT);
 					number.setText(record.getField(index));
+					number.setMaxLength(field.getLength());
 					number.setDecimal(field.isAllowFloatingPoint());
 					number.setNegative(field.isAllowNegative());
 					number.setWidth(field.getWidth() + "px");
@@ -1465,8 +1466,21 @@ public class SimpleEditPage extends Composite {
 					break;
 				case multi:
 					final MultiSelect<String> multi = new MultiSelect<String>();
-					for (ListItem item: field.getValues())
-						multi.addItem(item.getValue(), item.getText());
+					if (detail && field.isUnique()) {
+						Set<String> other = new HashSet<String>();
+						Set<String> current = new HashSet<String>();
+						for (Record r: iData.getRecords())
+							for (String val: r.getValues(index))
+								other.add(val);
+						for (String val: record.getValues(index))
+							current.add(val);
+						for (ListItem item: field.getValues())
+							if (!other.contains(item.getValue()) || current.contains(item.getValue()))
+								multi.addItem(item.getValue(), item.getText());
+					} else {
+						for (ListItem item: field.getValues())
+							multi.addItem(item.getValue(), item.getText());
+					}
 					if (detail)
 						multi.getElement().getStyle().setProperty("max-height", "200px");
 					else
@@ -1969,12 +1983,26 @@ public class SimpleEditPage extends Composite {
 							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					} else {
-						MyCell old = values.put(value, widget);
-						if (old != null) {
-							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
-							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
-							if (valid == null && detailRecord == null) {
-								valid = MESSAGES.errorMustBeUnique(field.getName());
+						if (field.getType() == FieldType.multi) {
+							for (String v: value.split("\\|")) {
+								if (v == null || v.isEmpty()) continue;
+								MyCell old = values.put(v, widget);
+								if (old != null) {
+									widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+									old.setError(MESSAGES.errorMustBeUnique(field.getName()));
+									if (valid == null && detailRecord == null) {
+										valid = MESSAGES.errorMustBeUnique(field.getName());
+									}
+								}
+							}
+						} else {
+							MyCell old = values.put(value, widget);
+							if (old != null) {
+								widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+								old.setError(MESSAGES.errorMustBeUnique(field.getName()));
+								if (valid == null && detailRecord == null) {
+									valid = MESSAGES.errorMustBeUnique(field.getName());
+								}
 							}
 						}
 					}
