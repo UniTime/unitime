@@ -63,7 +63,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	
 	public UniTimeTableHeader(String title, int colSpan, HorizontalAlignmentConstant align) {
 		super(title, false);
-		getElement().getStyle().setWhiteSpace(WhiteSpace.PRE);
+		getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
 		iColSpan = colSpan;
 		iAlign = align;
 		iTitle = title;
