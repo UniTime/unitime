@@ -1439,8 +1439,21 @@ public class SimpleEditPage extends Composite {
 						&& (field.getValues().isEmpty() || !field.getValues().get(0).getValue().isEmpty())) {
 						list.addItem("", "");
 					}
-					for (ListItem item: field.getValues())
-						list.addItem(item.getText(), item.getValue());
+					if (detail && field.isUnique()) {
+						Set<String> other = new HashSet<String>();
+						Set<String> current = new HashSet<String>();
+						for (Record r: iData.getRecords())
+							for (String val: r.getValues(index))
+								other.add(val);
+						for (String val: record.getValues(index))
+							current.add(val);
+						for (ListItem item: field.getValues())
+							if (!other.contains(item.getValue()) || current.contains(item.getValue()))
+								list.addItem(item.getText(detail), item.getValue());
+					} else {
+						for (ListItem item: field.getValues())
+							list.addItem(item.getText(detail), item.getValue());
+					}
 					for (int i = 0; i < list.getItemCount(); i++)
 						if (list.getValue(i).equals(record.getField(index)))
 							list.setSelectedIndex(i);
@@ -1476,10 +1489,10 @@ public class SimpleEditPage extends Composite {
 							current.add(val);
 						for (ListItem item: field.getValues())
 							if (!other.contains(item.getValue()) || current.contains(item.getValue()))
-								multi.addItem(item.getValue(), item.getText());
+								multi.addItem(item.getValue(), item.getText(detail));
 					} else {
 						for (ListItem item: field.getValues())
-							multi.addItem(item.getValue(), item.getText());
+							multi.addItem(item.getValue(), item.getText(detail));
 					}
 					if (detail)
 						multi.getElement().getStyle().setProperty("max-height", "200px");
@@ -1798,7 +1811,7 @@ public class SimpleEditPage extends Composite {
 					super.initWidget(new WidgetWithDescription(w, iField.getDescription()));
 				} else {
 					w.setTitle(iField.getDescription());
-					super.initWidget(w);;
+					super.initWidget(w);
 				}
 			} else {
 				super.initWidget(w);;
@@ -1901,7 +1914,7 @@ public class SimpleEditPage extends Composite {
 		public WidgetWithDescription(Widget w, String description) {
 			super("widget-with-description");
 			add(w);
-			P d = new P("description"); d.setText(description); add(d);
+			P d = new P("description"); d.setHTML(description); add(d);
 		}
 		
 		public Widget getWidget() {

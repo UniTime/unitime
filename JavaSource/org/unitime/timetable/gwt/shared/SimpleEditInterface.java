@@ -361,14 +361,19 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	}
 	
 	public static class ListItem implements IsSerializable, Comparable<ListItem> {
-		private String iValue, iText;
+		private String iValue, iText, iLongText;
 		private String iColor;
 		public ListItem() {}
 		public ListItem(String value, String text) {
 			iValue = value; iText = text;
 		}
+		public ListItem(String value, String text, String longText) {
+			iValue = value; iText = text; iLongText = longText;
+		}
 		public String getValue() { return iValue; }
 		public String getText() { return iText; }
+		public String getLongText() { return iLongText == null || iLongText.isEmpty() ? iText : iLongText; }
+		public String getText(boolean detail) { return detail ? getLongText() : getText(); }
 		@Override
 		public int compareTo(ListItem o) {
 			return getText().compareTo(o.getText());
