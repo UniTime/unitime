@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.gwt.resources;
 
+import org.unitime.timetable.gwt.resources.Messages.DoNotTranslate;
+
 /**
  * @author Tomas Muller
  */
@@ -4256,6 +4258,22 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Status Type")
 	@DoNotTranslate
 	String pageEditStatusType();
+	
+	@DefaultMessage("Instructional Type")
+	@DoNotTranslate
+	String pageInstructionalType();
+	
+	@DefaultMessage("Instructional Types")
+	@DoNotTranslate
+	String pageInstructionalTypes();
+	
+	@DefaultMessage("Users (Database Authentication)")
+	@DoNotTranslate
+	String pageUsers();
+	
+	@DefaultMessage("User")
+	@DoNotTranslate
+	String pageUser();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -8338,4 +8356,8 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to upload a file. Please check the server log for more details.")
 	String failedUploadUnknown();
+	
+	@DefaultMessage("**********")
+	@DoNotTranslate
+	String password();
 }

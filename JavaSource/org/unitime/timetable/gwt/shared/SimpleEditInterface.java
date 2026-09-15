@@ -35,7 +35,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public static enum FieldType implements IsSerializable {
-		text, textarea, number, toggle, list, multi, students, person, date, parent, time;
+		text, textarea, number, toggle, list, multi, students, person, date, parent, time, password;
 	}
 	
 	public static enum Flag implements IsSerializable {
@@ -62,7 +62,8 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	// private Type iType = null;
 	private List<Record> iRecords = new ArrayList<Record>();
 	private Field[] iFields = null;
-	private boolean iEditable = true, iAddable = true, iSaveOrder = true, iCanMoveUpAndDown = false, iAllowSort = true, iHasUpDownInterface = false;
+	private boolean iEditable = true, iAddable = true, iSaveOrder = true, iCanMoveUpAndDown = false, iAllowSort = true,
+			iHasUpDownInterface = false, iAllowMultiEdit = true;
 	private int[] iSort = null;
 	private Long iSessionId = null;
 	private String iSessionName = null;
@@ -87,6 +88,9 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public boolean isHasUpDownInterface() { return iHasUpDownInterface; }
 	public void setHasUpDownInterface(boolean hasUpDownInterface) { iHasUpDownInterface = hasUpDownInterface; }
+	
+	public boolean isAllowMultiEdit() { return iAllowMultiEdit; }
+	public void setAllowMultiEdit(boolean allowMultiEdit) { iAllowMultiEdit = allowMultiEdit; }
 	
 	public Long getSessionId() { return iSessionId; }
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }

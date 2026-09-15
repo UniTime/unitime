@@ -111,6 +111,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -1107,7 +1108,7 @@ public class SimpleEditPage extends Composite {
 		if (iData.isEditable()) {
 			iHeader.setEnabled("back", iEditable);
 			iHeader.setEnabled("save", iEditable);
-			iHeader.setEnabled("edit", !iEditable && !iHasLazy);
+			iHeader.setEnabled("edit", !iEditable && !iHasLazy && iData.isAllowMultiEdit());
 			iHeader.setEnabled("add", !iEditable && iData.isAddable());
 			iHeader.setEnabled("search", !iEditable && iFilter != null);
 			iHeader.setEnabled("export-csv", !iEditable);
@@ -1362,6 +1363,33 @@ public class SimpleEditPage extends Composite {
 					initWidget(new UniTimeWidget<TextBox>(text));
 					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
 						text.addChangeHandler(new ChangeHandler() {
+							@Override
+							public void onChange(ChangeEvent event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+									fixOrderArrows(iTable.getRowCount() - 1);
+								}
+							}
+						});
+					}
+					break;
+				case password:
+					final TextBox password = new PasswordTextBox();
+					password.setStyleName("unitime-TextBox");
+					password.setMaxLength(field.getLength());
+					password.setText(record.getField(index));
+					password.setWidth(field.getWidth() + "px");
+					if (!detail) password.getElement().getStyle().setProperty("maxWidth", "20vw");
+					password.addChangeHandler(new ChangeHandler() {
+						@Override
+						public void onChange(ChangeEvent event) {
+							record.setField(index, password.getText());
+							setError(null);
+						}
+					});
+					initWidget(new UniTimeWidget<TextBox>(password));
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						password.addChangeHandler(new ChangeHandler() {
 							@Override
 							public void onChange(ChangeEvent event) {
 								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty()) {
@@ -1769,6 +1797,15 @@ public class SimpleEditPage extends Composite {
 					html.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 					html.setTitle(getValue());
 					initWidget(html);
+					break;
+				case password:
+					Label password = new Label(MESSAGES.password());
+					password.getElement().getStyle().setWhiteSpace(WhiteSpace.NORMAL);
+					password.getElement().getStyle().setProperty("maxWidth", field.getWidth()+ "px");
+					password.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					password.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
+					password.setTitle(getValue());
+					initWidget(password);
 					break;
 				default:
 					Label label = new Label(getValue());
