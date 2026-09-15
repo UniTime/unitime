@@ -71,6 +71,10 @@ public class UserEditAction extends UniTimeAction<UserEditForm> {
 	public void setId(String id) { this.id = id; }
 
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyUsers.isFalse()) {
+			response.sendRedirect("admin?type=user");
+			return null;
+    	}
 		if (form == null)
 			form = new UserEditForm();
 		

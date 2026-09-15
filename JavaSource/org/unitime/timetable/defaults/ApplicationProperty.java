@@ -3957,6 +3957,16 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Instructional Types: switch the user interface back to the old (Struts-based) instructional types page")
+	LegacyItypes("unitime.legacy.itypes"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Users: switch the user interface back to the old (Struts-based) users page")
+	LegacyUsers("unitime.legacy.users"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Student Scheduling: provide associated (parent) course -- a student requesting both courses cannot get the course without also getting the associated course")
 	@Since(4.9)
 	StudentSchedulingParentCourse("unitime.sectioning.parentCourse"),

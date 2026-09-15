@@ -29,6 +29,7 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.security.rights.Right;
@@ -62,6 +63,10 @@ public class ItypeDescListAction extends UniTimeAction<BlankForm> {
 
 	@Override
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyItypes.isFalse()) {
+			response.sendRedirect("admin?type=itype");
+			return null;
+    	}
 		// Check if user is logged in
 		sessionContext.checkPermission(Right.InstructionalTypes);
 

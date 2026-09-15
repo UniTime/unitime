@@ -6201,4 +6201,19 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("An optional campus name to be used in the academic session selection on Scheduling Assistant and Course Requests.\nDefaults to the academic initiative when not set.")
 	String infoSessionCampusLabel();
+	
+	@DefaultMessage("Basic")
+	String itypeBasic();
+	
+	@DefaultMessage("Extended")
+	String itypeExtended();
+	
+	@DefaultMessage("Basic instructional type cannot have a parent.")
+	String errorItypeBasicCannotHaveParent();
+	
+	@DefaultMessage("Extended instructional type must have a parent.")
+	String errorItypeExtendedMustHaveParent();
+	
+	@DefaultMessage("Parent instructional type must be basic.")
+	String errorItypeParentMustBeBasic();
 }
