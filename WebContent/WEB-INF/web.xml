@@ -294,6 +294,7 @@
     	<url-pattern>/manageSolvers</url-pattern>
     	<url-pattern>/rollForward</url-pattern>
     	<url-pattern>/statusTypes</url-pattern>
+    	<url-pattern>/roomAvailability</url-pattern>
     </servlet-mapping>
 	
 	<filter>

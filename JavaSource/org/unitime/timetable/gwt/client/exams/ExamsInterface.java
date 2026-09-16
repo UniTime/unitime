@@ -700,6 +700,7 @@ public class ExamsInterface {
 	}
 	
 	public static class ExamGridCell extends CellInterface {
+		private static final long serialVersionUID = -8351417633469542734L;
 		private Long iId;
 		private Long iPeriodId;
 		private String iBgColor;
@@ -794,4 +795,22 @@ public class ExamsInterface {
 	public static class EnrollmentAuditPdfReportFilterRequest extends ExaminationPdfReportFilterRequest {}
 	
 	public static class EnrollmentAuditPdfReportRequest extends ExaminationPdfReportRequest {}
+	
+	public static class RoomAvailabilityFilterRequest implements GwtRpcRequest<ClassesFilterResponse> {}
+	
+	public static class RoomAvailabilityRequest implements GwtRpcRequest<RoomAvailabilityResponse> {
+		private FilterInterface iFilter;
+		
+		public FilterInterface getFilter() { return iFilter; }
+		public void setFilter(FilterInterface filter) { iFilter = filter; }
+	}
+	
+	public static class RoomAvailabilityResponse extends TableInterface {
+		private static final long serialVersionUID = 8441497888414313752L;
+		private String iInfoMessage;
+		
+		public boolean hasInfoMessage() { return iInfoMessage != null && !iInfoMessage.isEmpty(); }
+		public String getInfoMessage() { return iInfoMessage; }
+		public void setInfoMessage(String infoMessage) { iInfoMessage = infoMessage; }
+	}
 }

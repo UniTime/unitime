@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -41,6 +43,7 @@ import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.RoomAvailabilityForm;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -83,6 +86,17 @@ public class RoomAvailabilityAction extends UniTimeAction<RoomAvailabilityForm> 
 	protected static final GwtConstants GWT_CONST = Localization.create(GwtConstants.class);
 
     public String execute() throws Exception {
+    	if (ApplicationProperty.LegacyRoomAvailability.isFalse()) {
+    		String url = "roomAvailability";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
         // Check Access
         sessionContext.checkPermission(Right.RoomAvailability);
         

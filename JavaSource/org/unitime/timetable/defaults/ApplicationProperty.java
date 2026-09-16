@@ -3967,6 +3967,11 @@ public enum ApplicationProperty {
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")
+	@Description("Room Availability: switch the user interface back to the old (Struts-based) room availability page")
+	LegacyRoomAvailability("unitime.legacy.roomAvailability"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
 	@Description("Student Scheduling: provide associated (parent) course -- a student requesting both courses cannot get the course without also getting the associated course")
 	@Since(4.9)
 	StudentSchedulingParentCourse("unitime.sectioning.parentCourse"),

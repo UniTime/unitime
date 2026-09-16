@@ -4274,6 +4274,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("User")
 	@DoNotTranslate
 	String pageUser();
+	
+	@DefaultMessage("Room Availability")
+	@DoNotTranslate
+	String pageRoomAvailability();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

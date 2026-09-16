@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ClassEvent;
@@ -350,7 +351,8 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
         
         public TreeSet<TimeBlock> get(Long roomPermId, String excludeType) {
             TreeSet<TimeBlock> roomAvailability = iAvailability.get(roomPermId);
-            if (roomAvailability==null || excludeType==null || excludeType.equals(iExcludeType)) return roomAvailability;
+            if (roomAvailability==null || ToolBox.equals(excludeType, iExcludeType)) return roomAvailability;
+            if (iExcludeType != null && excludeType == null) return null;
             TreeSet<TimeBlock> ret = new TreeSet();
             for (TimeBlock block : roomAvailability) {
             	if (excludeType.equals(block.getEventType())) continue;
@@ -396,7 +398,15 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             iMeetingId = m.getUniqueId();
             iLocationPermanentId = m.getLocationPermanentId();
             iEventName = m.getEvent().getEventName();
-            iEventType = m.getEvent().getEventTypeAbbv();
+            if (m.getEvent() instanceof ClassEvent) {
+            	iEventType = sClassType;
+            } else if (m.getEvent() instanceof FinalExamEvent) {
+            	iEventType = sFinalExamType;
+            } else if (m.getEvent() instanceof MidtermExamEvent) {
+            	iEventType = sMidtermExamType;
+            } else {
+            	iEventType = m.getEvent().getEventTypeAbbv();
+            }
             iStart = m.getTrueStartTime(class2eventDateMap);
             iEnd = m.getTrueStopTime(class2eventDateMap);
         }
