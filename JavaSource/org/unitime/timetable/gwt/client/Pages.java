@@ -56,6 +56,7 @@ import org.unitime.timetable.gwt.client.exams.ExamPdfReportPage;
 import org.unitime.timetable.gwt.client.exams.ExamReportsPage;
 import org.unitime.timetable.gwt.client.exams.ExamsPage;
 import org.unitime.timetable.gwt.client.exams.NotAssignedExamsPage;
+import org.unitime.timetable.gwt.client.exams.RoomAvailabilityPage;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.hql.TestHQLPage;
 import org.unitime.timetable.gwt.client.instructor.InstructorAssignmentPreferencesPage;
@@ -582,6 +583,10 @@ public enum Pages {
 	statusTypes(new PageFactory() {
 		public Widget create() { return new StatusTypesPage(); }
 		public String name(GwtMessages messages) { return messages.pageStatusTypes(); }
+		}),
+	roomAvailability(new PageFactory() {
+		public Widget create() { return new RoomAvailabilityPage(); }
+		public String name(GwtMessages messages) { return messages.pageRoomAvailability(); }
 		}),
 	;
 	
