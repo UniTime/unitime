@@ -24,10 +24,11 @@ import java.util.HashMap;
 import org.apache.commons.logging.Log;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollAction;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.util.SessionRollForward.CancelledClassAction;
-import org.unitime.timetable.util.SessionRollForward.DistributionMode;
 
 
 public class AcademicSessionMerge {
@@ -199,14 +200,16 @@ public class AcademicSessionMerge {
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 
 			log.info("Copying Primary Session Course Offerings: " + iPrimarySession.getLabel());
-			copyBetweenSessionHelper.copyMergeCourseOfferingsToSession(iPrimarySession, classPrefsAction, subpartLocationPrefsAction,
-					subpartTimePrefsAction, mergeWaitListsProhibitedOverrides, distributionPrefMode, 
+			copyBetweenSessionHelper.copyMergeCourseOfferingsToSession(iPrimarySession, RollAction.fromLegacy(subpartTimePrefsAction), 
+					RollAction.fromLegacy(subpartLocationPrefsAction),
+					RollAction.fromLegacy(subpartTimePrefsAction), mergeWaitListsProhibitedOverrides, distributionPrefMode, 
 					cancelledClassAction, primarySessionDefaultPrefix);
 
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 			log.info("Copying Secondary Session Course Offerings: " + iSecondarySession.getLabel());
-			copyBetweenSessionHelper.copyMergeCourseOfferingsToSession(iSecondarySession, classPrefsAction, subpartLocationPrefsAction,
-					subpartTimePrefsAction, mergeWaitListsProhibitedOverrides, distributionPrefMode, 
+			copyBetweenSessionHelper.copyMergeCourseOfferingsToSession(iSecondarySession, RollAction.fromLegacy(classPrefsAction), 
+					RollAction.fromLegacy(subpartLocationPrefsAction),
+					RollAction.fromLegacy(subpartTimePrefsAction), mergeWaitListsProhibitedOverrides, distributionPrefMode, 
 					cancelledClassAction, secondarySessionDefaultPrefix);
 
 			// Pull the instructors onto their classes

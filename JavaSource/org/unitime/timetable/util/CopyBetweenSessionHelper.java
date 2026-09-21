@@ -21,10 +21,13 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.action.RollForwardSessionAction.RollForwardErrors;
+//import org.unitime.timetable.action.RollForwardSessionAction.RollForwardErrors;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.form.RollForwardSessionForm;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrors;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -97,8 +100,6 @@ import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.util.SessionRollForward.CancelledClassAction;
-import org.unitime.timetable.util.SessionRollForward.DistributionMode;
 
 public class CopyBetweenSessionHelper {
 
@@ -123,7 +124,7 @@ public class CopyBetweenSessionHelper {
 	private HashMap<String, String> iDepartmentCodesWithDifferentPrefix;
 	private boolean iResetClassSuffix;
 	private HashMap<String, HashMap<String, Long>> dbColumnLengths = new HashMap<String, HashMap<String,Long>>();
-	private RollForwardSessionForm iRollForwardSessionForm;
+	private RollForwardSessionInterface iRollForwardSessionForm;
 
 	
 	public CopyBetweenSessionHelper(Long mergedSessionId, 
@@ -166,7 +167,24 @@ public class CopyBetweenSessionHelper {
 		resetHibSession(mergedSessionId, primarySessionId, secondarySessionId);
 	}
 	
-	public CopyBetweenSessionHelper(RollForwardSessionForm rollForwardSessionForm, org.hibernate.Session hibSession,
+//	public CopyBetweenSessionHelper(RollForwardSessionForm rollForwardSessionForm, org.hibernate.Session hibSession,
+//			Log log) {
+//		setHibSession(hibSession);
+//		iUseCampusPrefixForDepartments = false;
+//		iUseCampusPrefixForSubjectAreas = false;
+//		iPrefixSeparator = null;
+//		iDepartmentCodesWithDifferentPrefix = new HashMap<String, String>();
+//		iLog = log;
+//		iResetClassSuffix = ApplicationProperty.RollForwardResetClassSuffix.isTrue();
+//		initDbColumnLengths();
+//		iMergedSession = SessionDAO.getInstance().get(rollForwardSessionForm.getSessionToRollForwardTo(), getHibSession());
+//		iRollForwardSessionForm = rollForwardSessionForm;
+//		iSessionRollForward = new SessionRollForward(iLog);
+//		
+////	 	resetHibSession(rollForwardSessionForm.getSessionToRollForwardTo(), rollForwardSessionForm.getSessionToRollDeptsFowardFrom(), null);
+//	}
+
+	public CopyBetweenSessionHelper(RollForwardSessionInterface rollForwardSessionForm, org.hibernate.Session hibSession,
 			Log log) {
 		setHibSession(hibSession);
 		iUseCampusPrefixForDepartments = false;
@@ -182,7 +200,6 @@ public class CopyBetweenSessionHelper {
 		
 //	 	resetHibSession(rollForwardSessionForm.getSessionToRollForwardTo(), rollForwardSessionForm.getSessionToRollDeptsFowardFrom(), null);
 	}
-
 	public org.hibernate.Session getHibSession() {
 		return iHibSession;
 	}
@@ -1723,7 +1740,7 @@ public class CopyBetweenSessionHelper {
 			if (!isExamPref && locations == null){
 				return;
 			}
-			for (Iterator it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
+			for (Iterator<BuildingPref> it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
 				createToBuildingPref((BuildingPref) it.next(), fromPrefGroup, toPrefGroup, locations, isExamPref, isClassMerge);
 			}
 		}		
@@ -1741,7 +1758,7 @@ public class CopyBetweenSessionHelper {
 					if (CancelledClassAction.SKIP == cancelledClassAction && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getBuildingPreferences() != null && !c.getBuildingPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getBuildingPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<BuildingPref> rfpIt = c.getBuildingPreferences().iterator(); rfpIt.hasNext();){
 							BuildingPref rfp = (BuildingPref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getBuilding().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -1880,7 +1897,7 @@ public class CopyBetweenSessionHelper {
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartMerge)){
 			locations = getLocationsFor(fromPrefGroup, toPrefGroup, defaultPrefix);
 			if (locations != null && locations.size() >0 ){					
-				for (Iterator it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
+				for (Iterator<RoomPref> it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
 					createToRoomPref((RoomPref) it.next(), fromPrefGroup, toPrefGroup, locations, isClassMerge);
 				}
 			}
@@ -1899,7 +1916,7 @@ public class CopyBetweenSessionHelper {
 					if (CancelledClassAction.SKIP == cancelledClassAction && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getRoomPreferences() != null && !c.getRoomPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getRoomPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<RoomPref> rfpIt = c.getRoomPreferences().iterator(); rfpIt.hasNext();){
 							RoomPref rfp = (RoomPref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getRoom().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -1968,7 +1985,7 @@ public class CopyBetweenSessionHelper {
 				&& !fromPrefGroup.getRoomFeaturePreferences().isEmpty() 
 				&& (!(fromPrefGroup instanceof Class_) || isClassMerge)
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartMerge)){
-			for (Iterator it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
+			for (Iterator<RoomFeaturePref> it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
 				createToRoomFeaturePref((RoomFeaturePref) it.next(), fromPrefGroup, toPrefGroup, isClassMerge, defaultPrefix);
 			}
 		}
@@ -1983,7 +2000,7 @@ public class CopyBetweenSessionHelper {
 					if (CancelledClassAction.SKIP == cancelledClassAction && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getRoomFeaturePreferences() != null && !c.getRoomFeaturePreferences().isEmpty()){
-						for (Iterator rfpIt = c.getRoomFeaturePreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<RoomFeaturePref> rfpIt = c.getRoomFeaturePreferences().iterator(); rfpIt.hasNext();){
 							RoomFeaturePref rfp = (RoomFeaturePref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getRoomFeature().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -2056,7 +2073,7 @@ public class CopyBetweenSessionHelper {
 				&& !fromPrefGroup.getRoomGroupPreferences().isEmpty() 
 				&& (!(fromPrefGroup instanceof Class_) || isClassMerge)
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartMerge)){
-			for (Iterator it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
+			for (Iterator<RoomGroupPref> it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
 				createToRoomGroupPref((RoomGroupPref) it.next(), fromPrefGroup, toPrefGroup, isClassMerge, defaultPrefix);
 			}
 		}
@@ -2071,7 +2088,7 @@ public class CopyBetweenSessionHelper {
 					if (CancelledClassAction.SKIP == cancelledClassAction && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getRoomGroupPreferences() != null && !c.getRoomGroupPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getRoomGroupPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<RoomGroupPref> rfpIt = c.getRoomGroupPreferences().iterator(); rfpIt.hasNext();){
 							RoomGroupPref rfp = (RoomGroupPref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getRoomGroup().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -2102,7 +2119,7 @@ public class CopyBetweenSessionHelper {
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartMerge)){
 			TimePref fromTimePref = null;
 			TimePref toTimePref = null;
-			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
+			for (Iterator<TimePref> it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
 				fromTimePref = (TimePref) it.next();
 				if (fromTimePref.getTimePattern() == null) {
 					toTimePref = (TimePref)fromTimePref.clone();
@@ -2133,7 +2150,7 @@ public class CopyBetweenSessionHelper {
 		if (fromPrefGroup instanceof SchedulingSubpart && !isSubpartMerge){
 			TimePref fromTimePref = null;
 			TimePref toTimePref = null;
-			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
+			for (Iterator<TimePref> it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
 				fromTimePref = (TimePref) it.next();
 				if (fromTimePref.getTimePattern() == null) {
 					toTimePref = (TimePref)fromTimePref.clone();
@@ -2162,7 +2179,7 @@ public class CopyBetweenSessionHelper {
 					if (CancelledClassAction.SKIP == cancelledClassAction && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getTimePreferences() != null && !c.getTimePreferences().isEmpty()){
-						for (Iterator tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
+						for (Iterator<TimePref> tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
 							TimePref tp = (TimePref) tpIt.next();
 							key = tp.getPrefLevel().getPrefName() + tp.getTimePattern().getUniqueId().toString() + tp.getPreference();
 							prefMap.put(key, tp);
@@ -2568,7 +2585,7 @@ public class CopyBetweenSessionHelper {
 				}
 				if(fromCourseOffering.getCreditConfigs() != null && !fromCourseOffering.getCreditConfigs().isEmpty()){
 					CourseCreditUnitConfig ccuc = null;
-					for(Iterator ccIt = fromCourseOffering.getCreditConfigs().iterator(); ccIt.hasNext();){
+					for(Iterator<CourseCreditUnitConfig> ccIt = fromCourseOffering.getCreditConfigs().iterator(); ccIt.hasNext();){
 						ccuc = (CourseCreditUnitConfig) ccIt.next();
 						if (ccuc instanceof ArrangeCreditUnitConfig) {
 							ArrangeCreditUnitConfig fromAcuc = (ArrangeCreditUnitConfig) ccuc;
@@ -3269,22 +3286,20 @@ public class CopyBetweenSessionHelper {
 	public void copyMergeCourseOfferingsToSession(RollForwardErrors errors) {
 		
 //		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
-		boolean isClassMerge = (iRollForwardSessionForm.getClassPrefsAction() != null && iRollForwardSessionForm.getClassPrefsAction().equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION) ? true : false);
-		boolean isClassPrefsPushUp = (iRollForwardSessionForm.getClassPrefsAction() != null && iRollForwardSessionForm.getClassPrefsAction().equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION) ? true : false);
-		boolean isSubpartTimePrefMerge = (iRollForwardSessionForm.getSubpartTimePrefsAction() != null && iRollForwardSessionForm.getSubpartTimePrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION) ? false : true);
-		boolean isSubpartLocationPrefMerge = (iRollForwardSessionForm.getSubpartLocationPrefsAction() != null && iRollForwardSessionForm.getSubpartLocationPrefsAction().equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION) ? false : true);
-		DistributionMode distributionPrefMode = DistributionMode.valueOf(iRollForwardSessionForm.getRollForwardDistributions());
-		CancelledClassAction cancelledClassAction = CancelledClassAction.valueOf(iRollForwardSessionForm.getCancelledClassAction());
+		boolean isClassMerge = (iRollForwardSessionForm.getClassPrefsAction() != null && (iRollForwardSessionForm.getClassPrefsAction() == RollForwardSessionInterface.RollAction.ROLL_PREFS_ACTION) ? true : false);
+		boolean isClassPrefsPushUp = (iRollForwardSessionForm.getClassPrefsAction() != null && (iRollForwardSessionForm.getClassPrefsAction() == RollForwardSessionInterface.RollAction.PUSH_UP_ACTION) ? true : false);
+		boolean isSubpartTimePrefMerge = (iRollForwardSessionForm.getSubpartTimePrefsAction() != null && (iRollForwardSessionForm.getSubpartTimePrefsAction()== RollForwardSessionInterface.RollAction.DO_NOT_ROLL_ACTION) ? false : true);
+		boolean isSubpartLocationPrefMerge = (iRollForwardSessionForm.getSubpartLocationPrefsAction() != null && (iRollForwardSessionForm.getSubpartLocationPrefsAction() == RollForwardSessionInterface.RollAction.DO_NOT_ROLL_ACTION) ? false : true);
+		DistributionMode distributionPrefMode = iRollForwardSessionForm.getRollForwardDistributions();
+		CancelledClassAction cancelledClassAction = iRollForwardSessionForm.getCancelledClassAction();
 
-		for (String subjectId: iRollForwardSessionForm.getRollForwardSubjectAreaIds()) {
+		for (Long subjectId: iRollForwardSessionForm.getRollForwardSubjectAreaIds()) {
 			try {
-				SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.parseLong(subjectId), getHibSession());
-				if (iRollForwardSessionForm.validateCourseOfferingRollForward(iMergedSession, subjectArea, errors)) {
-//					resetHibSession(iRollForwardSessionForm.getSessionToRollForwardTo(), iRollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom(), null);
+				SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(subjectId, getHibSession());
+				SessionRollForwardValidators validator = new SessionRollForwardValidators(iRollForwardSessionForm, errors);
+				if (validator.validateCourseOfferingRollForward(iMergedSession, subjectArea)) {
 					Session fromSession = SessionDAO.getInstance().get(iRollForwardSessionForm.getSessionToRollCourseOfferingsForwardFrom(), getHibSession());
-					subjectArea = SubjectAreaDAO.getInstance().get(Long.parseLong(subjectId), getHibSession());
-//					getHibSession().refresh(fromSession);
-//					getHibSession().refresh(subjectArea);
+					subjectArea = SubjectAreaDAO.getInstance().get(subjectId, getHibSession());
 					mergeInstructionalOfferingsForASubjectAreaToSession(subjectArea, fromSession,
 							iRollForwardSessionForm.getRollForwardWaitListsProhibitedOverrides(), isClassMerge, 
 							isSubpartTimePrefMerge, isSubpartLocationPrefMerge, isClassPrefsPushUp, distributionPrefMode, cancelledClassAction, null);
@@ -3303,18 +3318,18 @@ public class CopyBetweenSessionHelper {
 	}
 	
 	public void copyMergeCourseOfferingsToSession(Session fromSession, 
-			String classPrefsAction,
-			String subpartLocationPrefsAction,
-			String subpartTimePrefsAction,
+			RollForwardSessionInterface.RollAction classPrefsAction,
+			RollForwardSessionInterface.RollAction subpartLocationPrefsAction,
+			RollForwardSessionInterface.RollAction subpartTimePrefsAction,
 			boolean mergeWaitListsProhibitedOverrides,
 			DistributionMode distributionPrefMode, 
-			CancelledClassAction cancelledClassAction,
+			RollForwardSessionInterface.CancelledClassAction cancelledClassAction,
 			String prefix) {
 
-		boolean isClassMerge = (classPrefsAction != null && classPrefsAction.equalsIgnoreCase(SessionRollForward.ROLL_PREFS_ACTION) ? true : false);
-		boolean isClassPrefsPushUp = (classPrefsAction != null && classPrefsAction.equalsIgnoreCase(SessionRollForward.PUSH_UP_ACTION) ? true : false);
-		boolean isSubpartTimePrefMerge = (subpartTimePrefsAction != null && subpartTimePrefsAction.equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION) ? false : true);
-		boolean isSubpartLocationPrefMerge = (subpartLocationPrefsAction != null && subpartLocationPrefsAction.equalsIgnoreCase(SessionRollForward.DO_NOT_ROLL_ACTION) ? false : true);
+		boolean isClassMerge = (classPrefsAction != null && (classPrefsAction == RollForwardSessionInterface.RollAction.ROLL_PREFS_ACTION) ? true : false);
+		boolean isClassPrefsPushUp = (classPrefsAction != null && (classPrefsAction  == RollForwardSessionInterface.RollAction.PUSH_UP_ACTION) ? true : false);
+		boolean isSubpartTimePrefMerge = (subpartTimePrefsAction != null && (subpartTimePrefsAction == RollForwardSessionInterface.RollAction.DO_NOT_ROLL_ACTION) ? false : true);
+		boolean isSubpartLocationPrefMerge = (subpartLocationPrefsAction != null && (subpartLocationPrefsAction == RollForwardSessionInterface.RollAction.DO_NOT_ROLL_ACTION) ? false : true);
 		
 		if (iMergedSession.getSubjectAreas() != null) {
 			List<SubjectArea> fromSubjectAreas = SubjectAreaDAO.getInstance().findBySession(getHibSession(), fromSession.getUniqueId());
