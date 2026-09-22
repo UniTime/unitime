@@ -33,12 +33,14 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.LineInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.PropertyInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface.Alignment;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -77,6 +79,7 @@ import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails.RoomInfo;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
@@ -98,6 +101,28 @@ public class InstructorDetailBackend implements GwtRpcImplementation<InstructorD
 	@Override
 	public InstructorDetailResponse execute(InstructorDetailRequest request, SessionContext context) {
 		org.hibernate.Session hibSession = SchedulingSubpartDAO.getInstance().getSession();
+		if (request.getInstructorId() == null) {
+			List<DepartmentalInstructor> instructors = DepartmentalInstructor.getUserInstructors(context.getUser());
+	    	if (instructors != null) {
+	    		String deptId = (String)context.getAttribute(SessionAttribute.DepartmentId);
+	    		if (deptId != null)
+	    			for (DepartmentalInstructor i: instructors)
+		    			if (i.getDepartment().getUniqueId().toString().equals(deptId) && context.hasPermission(i, Right.InstructorDetail)) {
+		    				request.setInstructorId(i.getUniqueId());
+		    				break;
+		    			}
+	    		if (request.getInstructorId() == null)
+		    		for (DepartmentalInstructor i: instructors)
+		    			if (context.hasPermission(i, Right.InstructorDetail)) {
+		    				request.setInstructorId(i.getUniqueId());
+		    				break;
+		    			}
+	    	}
+		}
+		if (request.getInstructorId() == null) {
+			throw new GwtRpcException(MSG.errorNoInstructorId());
+		}
+		
 		DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructorId(), hibSession);
 		context.checkPermission(instructor, Right.InstructorDetail);
 		
