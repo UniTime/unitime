@@ -66,8 +66,9 @@ public class InstructorDetailPage extends Composite {
 		if (id == null)
 			id = Window.Location.getParameter("instructorId");
 		if (id == null || id.isEmpty()) {	
-			LoadingWidget.getInstance().hide();
-			iHeader.setErrorMessage(COURSE.errorNoInstructorId());
+			// LoadingWidget.getInstance().hide();
+			// iHeader.setErrorMessage(COURSE.errorNoInstructorId());
+			load(null, null);
 		} else {
 			load(Long.valueOf(id), null);	
 		}
