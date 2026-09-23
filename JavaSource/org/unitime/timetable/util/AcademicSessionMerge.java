@@ -189,11 +189,11 @@ public class AcademicSessionMerge {
 			
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 			log.info("Copying Primary Session Departmental Instructors: " + iPrimarySession.getLabel());
-			copyBetweenSessionHelper.copyMergeInstructorDataToSession(iPrimarySession, primarySessionDefaultPrefix);
+			copyBetweenSessionHelper.copyMergeInstructorDataToSession(iPrimarySession, primarySessionDefaultPrefix, null);
 
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 			log.info("Copying Secondary Session Departmental Instructors: " + iSecondarySession.getLabel());
-			copyBetweenSessionHelper.copyMergeInstructorDataToSession(iSecondarySession, secondarySessionDefaultPrefix);
+			copyBetweenSessionHelper.copyMergeInstructorDataToSession(iSecondarySession, secondarySessionDefaultPrefix, null);
 			
 			// Pull the courses from both sessions together
 			log.info("Pull the courses from both sessions together");
@@ -217,10 +217,6 @@ public class AcademicSessionMerge {
 			log.info("Copying Session Instructors onto Classes");
 			copyBetweenSessionHelper.copyMergeClassInstructorsToSession();
 			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
-
-//			log.info("Copying Secondary Session Instructors onto Classes: " + iSecondarySession.getLabel());
-//			copyBetweenSessionHelper.copyMergeClassInstructorsToSession(iSecondarySession);
-//			resetHibSession(hibSession, mergedSessionId, primarySessionId, secondarySessionId);
 
 		} catch (Exception e) {
 			log.error(e.getMessage());

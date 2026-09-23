@@ -1,3 +1,22 @@
+/*
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+*/
 package org.unitime.timetable.util;
 
 import java.util.ArrayList;
@@ -21,13 +40,12 @@ import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
-//import org.unitime.timetable.action.RollForwardSessionAction.RollForwardErrors;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
-import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrors;
+import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrorLogger;
 import org.unitime.timetable.model.ArrangeCreditUnitConfig;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
@@ -104,18 +122,14 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 public class CopyBetweenSessionHelper {
 
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	//TODO: see if this can be switched to GwtMessages
 	protected static final CourseMessages MSG = Localization.create(CourseMessages.class);
-	private SessionRollForward iSessionRollForward;
+	private CopySessionRollForward iSessionRollForward;
 	private Log iLog;
 	private RoomFeatureType iCampusRoomFeatureType;
 	private HashMap<String, GlobalRoomFeature> iPrefixRoomFeatureMap = new HashMap<String, GlobalRoomFeature>();
 	private HashMap<Object, Set<Location>> iRoomList;
-//	private Long iMergedSessionId; 
 	private Session iMergedSession; 
-//	private Long iPrimarySessionId;
 	private Session iPrimarySession;
-//	private Long iSecondarySessionId;
 	private Session iSecondarySession;
 	private org.hibernate.Session iHibSession;
 	private boolean iUseCampusPrefixForDepartments; 
@@ -146,15 +160,7 @@ public class CopyBetweenSessionHelper {
 			Log log
 			) {
 		
-//		iMergedSessionId = mergedSessionId;
-//		iPrimarySessionId = primarySessionId;
-//		iSecondarySessionId = secondarySessionId;
 		setHibSession(hibSession);
-//	
-//		
-//		if (hibSession.getTransaction() != null && hibSession.getTransaction().isActive()) {
-//			hibSession.getTransaction().commit();
-//		}
 		
 		iUseCampusPrefixForDepartments = useCampusPrefixForDepartments;
 		iUseCampusPrefixForSubjectAreas = useCampusPrefixForSubjectAreas;
@@ -166,27 +172,9 @@ public class CopyBetweenSessionHelper {
 
 		resetHibSession(mergedSessionId, primarySessionId, secondarySessionId);
 	}
-	
-//	public CopyBetweenSessionHelper(RollForwardSessionForm rollForwardSessionForm, org.hibernate.Session hibSession,
-//			Log log) {
-//		setHibSession(hibSession);
-//		iUseCampusPrefixForDepartments = false;
-//		iUseCampusPrefixForSubjectAreas = false;
-//		iPrefixSeparator = null;
-//		iDepartmentCodesWithDifferentPrefix = new HashMap<String, String>();
-//		iLog = log;
-//		iResetClassSuffix = ApplicationProperty.RollForwardResetClassSuffix.isTrue();
-//		initDbColumnLengths();
-//		iMergedSession = SessionDAO.getInstance().get(rollForwardSessionForm.getSessionToRollForwardTo(), getHibSession());
-//		iRollForwardSessionForm = rollForwardSessionForm;
-//		iSessionRollForward = new SessionRollForward(iLog);
-//		
-////	 	resetHibSession(rollForwardSessionForm.getSessionToRollForwardTo(), rollForwardSessionForm.getSessionToRollDeptsFowardFrom(), null);
-//	}
 
-	public CopyBetweenSessionHelper(RollForwardSessionInterface rollForwardSessionForm, org.hibernate.Session hibSession,
-			Log log) {
-		setHibSession(hibSession);
+	public CopyBetweenSessionHelper(CopySessionRollForward rollForward, Log log, RollForwardSessionInterface rollForwardSessionForm) {
+		setHibSession(rollForward.getHibSession());
 		iUseCampusPrefixForDepartments = false;
 		iUseCampusPrefixForSubjectAreas = false;
 		iPrefixSeparator = null;
@@ -196,9 +184,7 @@ public class CopyBetweenSessionHelper {
 		initDbColumnLengths();
 		iMergedSession = SessionDAO.getInstance().get(rollForwardSessionForm.getSessionToRollForwardTo(), getHibSession());
 		iRollForwardSessionForm = rollForwardSessionForm;
-		iSessionRollForward = new SessionRollForward(iLog);
-		
-//	 	resetHibSession(rollForwardSessionForm.getSessionToRollForwardTo(), rollForwardSessionForm.getSessionToRollDeptsFowardFrom(), null);
+		iSessionRollForward = rollForward;
 	}
 	public org.hibernate.Session getHibSession() {
 		return iHibSession;
@@ -252,7 +238,7 @@ public class CopyBetweenSessionHelper {
 			iPrimarySession = SessionDAO.getInstance().get(psi, hs);
 			iSecondarySession = SessionDAO.getInstance().get(ssi, hs);	
 			iPrefixRoomFeatureMap = new HashMap<String, GlobalRoomFeature>();
-			iSessionRollForward = new SessionRollForward(iLog);
+			iSessionRollForward = new CopySessionRollForward(iLog, this);
 		} 
 		else if (msi != null && psi != null && ssi == null) {
 			if (startedWithActiveTransaction) {
@@ -268,15 +254,12 @@ public class CopyBetweenSessionHelper {
 			iMergedSession = SessionDAO.getInstance().get(msi, hs);
 			iPrimarySession = SessionDAO.getInstance().get(psi, hs);
 			iPrefixRoomFeatureMap = new HashMap<String, GlobalRoomFeature>();
-			iSessionRollForward = new SessionRollForward(iLog);
+			iSessionRollForward = new CopySessionRollForward(iLog, this);
 		}
 		setHibSession(hs);
 	}
 	
-	private void resetHibSession() {
-        resetHibSession(null, null, null);		
-	}
-	
+
 	private void addPrefixToDeptFields(Department department, String suffix) throws Exception {
 		if (isNewStringOfValidLength(suffix, iPrefixSeparator, department.getDeptCode(), Department.class.getName(), "deptCode")) {
 			department.setDeptCode(suffix + iPrefixSeparator + department.getDeptCode());			
@@ -633,7 +616,6 @@ public class CopyBetweenSessionHelper {
 			}
 			getHibSession().flush();
 		} catch (Exception e) {
-			//TODO: handle errors
 			iLog.error("Failed to merge all timetable managers to session.", e);
 		}
 	
@@ -688,35 +670,6 @@ public class CopyBetweenSessionHelper {
 		}
 		return rf;
 	}
-
-//TODO: look at external room features	
-//	private void rollRoomFeaturesForward(RollForwardErrors errors, Session fromSession, Session toSession) {
-//		if (sessionHasExternalRoomFeatureList(toSession)){
-//			GlobalRoomFeature grf = null;
-//			List<Object[]> newGlobalFeatures = getHibSession().createQuery("select distinct erf.value, erf.name from ExternalRoomFeature erf" +
-//				" where erf.room.building.session.uniqueId=:sessionId", Object[].class)
-//				.setParameter("sessionId", toSession.getUniqueId())
-//				.list();
-//			if (newGlobalFeatures != null){
-//				String newLabel = null;
-//				String newSisReference = null;
-//				for (Iterator<Object[]> nrfIt = newGlobalFeatures.iterator(); nrfIt.hasNext();){
-//					Object[] o = nrfIt.next();
-//					newLabel = (String)o[0];
-//					if (globalFeatures.contains(newLabel)) continue;
-//					newSisReference = (String)o[1];
-//					grf = new GlobalRoomFeature();
-//					grf.setLabel(newLabel);
-//					grf.setSisReference(newSisReference);
-//					grf.setSisValue(null);
-//					grf.setSession(toSession);
-//					getHibSession().persist(grf);
-//				}
-//			}
-//		}
-//		getHibSession().flush();
-//	}
-	
 	
 	public void copyMergeRoomFeaturesToSession(Session fromSession, String defaultPrefix) {
 
@@ -781,7 +734,6 @@ public class CopyBetweenSessionHelper {
 
 			}
 		} catch (Exception e) {
-			//TODO: handle errors
 			iLog.error("Failed to merge all room groups to session.", e);
 		}
 	
@@ -827,7 +779,6 @@ public class CopyBetweenSessionHelper {
 				}
 				getHibSession().flush();
 			} catch (Exception e) {
-				//TODO: handle errors
 				iLog.error("Failed to merge all buildings to session.", e);
 			}
 		}
@@ -1130,7 +1081,6 @@ public class CopyBetweenSessionHelper {
 				getHibSession().merge(toRoom);
 			}
 		} catch (Exception e) {
-			//TODO: log errors
 			iLog.error("Failed to merge all rooms to session.", e);
 		}
 	
@@ -1311,9 +1261,9 @@ public class CopyBetweenSessionHelper {
 						toDatePattern = (DatePattern) fromDatePattern.clone();
 						toDatePattern.setSession(iMergedSession);
 						getHibSession().persist(toDatePattern);
-						mergeDatePatternOntoDepartmentsToSession(fromDatePattern, toDatePattern, defaultPrefix);
-						getHibSession().merge(toDatePattern);
 					}
+					mergeDatePatternOntoDepartmentsToSession(fromDatePattern, toDatePattern, defaultPrefix);
+					getHibSession().merge(toDatePattern);
 					fromToDatePatternMap.put(fromDatePattern, toDatePattern);
 				}
 			}
@@ -1375,9 +1325,9 @@ public class CopyBetweenSessionHelper {
 						toTimePattern = (TimePattern) fromTimePattern.clone();
 						toTimePattern.setSession(iMergedSession);
 						getHibSession().persist(toTimePattern);
-						mergeTimePatternOntoDepartmentsToSession(fromTimePattern, toTimePattern, defaultPrefix);
-						getHibSession().merge(toTimePattern);
 					}
+					mergeTimePatternOntoDepartmentsToSession(fromTimePattern, toTimePattern, defaultPrefix);
+					getHibSession().merge(toTimePattern);
 				}
 			}
 			getHibSession().flush();
@@ -1463,8 +1413,7 @@ public class CopyBetweenSessionHelper {
 	}
 
 
-	public void copyMergeSubjectAreasToSession(Session fromSession, 
-			String prefix) throws Exception {
+	public void copyMergeSubjectAreasToSession(Session fromSession, String prefix) {
 		SubjectArea toSubjectArea = null;
 		Department toDepartment = null;
 		SubjectAreaDAO sDao = SubjectAreaDAO.getInstance();
@@ -2260,7 +2209,7 @@ public class CopyBetweenSessionHelper {
 		}
 	}
 	
-	public void copyMergeInstructorDataToSession(Session fromSession, String defaultPrefix) {
+	public void copyMergeInstructorDataToSession(Session fromSession, String defaultPrefix, List<Long> deptsToRollDataFor) {
 		DepartmentalInstructor toInstructor = null;
 		try {
 			if (fromSession.getDepartments() != null){
@@ -2281,8 +2230,8 @@ public class CopyBetweenSessionHelper {
 
 				for(Department fromDepartment: departments){
 					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
-						primaryToDepartment = findToDepartment(fromDepartment, defaultPrefix);							
-						if (primaryToDepartment != null){
+						primaryToDepartment = findToDepartment(fromDepartment, defaultPrefix);
+						if (primaryToDepartment != null && (deptsToRollDataFor == null || deptsToRollDataFor.contains(primaryToDepartment.getUniqueId()))) {
 							mergeDepartmentalInstructorAttributesToSession(fromDepartment, primaryToDepartment);							
 							for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
 								for (Department toDepartment : findToDepartmentsForInstructor(fromInstructor, defaultPrefix)) {
@@ -2315,7 +2264,8 @@ public class CopyBetweenSessionHelper {
 								}
 							}
 						} else {
-							iLog.info("Primary To Department Not Found For:  " + fromDepartment.getLabel());
+							if (primaryToDepartment == null)
+								iLog.info("Primary To Department Not Found For:  " + fromDepartment.getLabel());
 						}
 					}
 				}
@@ -3283,7 +3233,7 @@ public class CopyBetweenSessionHelper {
 		}
 	}
 	
-	public void copyMergeCourseOfferingsToSession(RollForwardErrors errors) {
+	public void copyMergeCourseOfferingsToSession(RollForwardErrorLogger errors) {
 		
 //		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		boolean isClassMerge = (iRollForwardSessionForm.getClassPrefsAction() != null && (iRollForwardSessionForm.getClassPrefsAction() == RollForwardSessionInterface.RollAction.ROLL_PREFS_ACTION) ? true : false);
@@ -3313,8 +3263,7 @@ public class CopyBetweenSessionHelper {
 				break;
 			}
 			getHibSession().clear();
-		}	
-		
+		}
 	}
 	
 	public void copyMergeCourseOfferingsToSession(Session fromSession, 
@@ -3429,9 +3378,7 @@ public class CopyBetweenSessionHelper {
 									}
 								}
 							}
-//							Transaction t = getHibSession().beginTransaction();
 							getHibSession().merge(toClass);
-//							t.commit();
 						} 
 					}
 				}

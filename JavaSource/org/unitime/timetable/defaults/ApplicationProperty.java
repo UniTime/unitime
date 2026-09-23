@@ -4060,6 +4060,12 @@ public enum ApplicationProperty {
 	@Description("Instructors: show percent share next to the class assignment (never, always, or when there is a partial assignment below 100%)")
 	@Since(4.9)
 	InstructorsShowPercentShare("unitime.instructors.showPercentShare"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Session Roll Forward: allow for the data to be merged from two or more academic sessions")
+	@Since(4.9)
+	RollForwardUseCopyHelper("unitime.rollforward.allowForMerge"),
 	;
 
 	String iKey;

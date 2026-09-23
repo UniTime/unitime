@@ -358,6 +358,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		                        DepartmentalInstructor instr = ci.getInstructor();
 		                        instr.removeClassInstructor(ci);
 		                        hibSession.remove(ci);
+		                        iterCi.remove();
 		                    }
 	                    }
 	                    

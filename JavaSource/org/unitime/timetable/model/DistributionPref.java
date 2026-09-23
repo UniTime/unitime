@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.query.Query;
-import org.python.jline.internal.Log;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
@@ -502,7 +501,7 @@ public class DistributionPref extends BaseDistributionPref {
         DistributionPref dp = null;
         for (DistributionPref d : prefs) {
         	if (prefs.size() > 1) {
-        		Log.info(d.preferenceText());
+        		Debug.info(d.preferenceText());
         	}
         	if (dp == null) {
         		dp = d;

@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.CancelledClassAction;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.DistributionMode;
@@ -118,23 +119,25 @@ public class SessionRollForwardValidators {
 			}
 			if (!validateRollForward(toAcadSession, iForm.getSessionToRollCourseOfferingsForwardFrom(), MSG.rollForwardCourseOfferings(), new ArrayList<CourseOffering>()))
 				ret = false;
-			CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
-			if (toSubjectArea == null) {
-				for (Long id: iForm.getRollForwardSubjectAreaIds()) {
+			if (!ApplicationProperty.RollForwardUseCopyHelper.isTrue()) {
+				CourseOfferingDAO coDao = CourseOfferingDAO.getInstance();
+				if (toSubjectArea == null) {
+					for (Long id: iForm.getRollForwardSubjectAreaIds()) {
+						String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
+							+ toAcadSession.getUniqueId().toString()
+							+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+						    + id;
+						if (!validateRollForwardSessionHasNoDataOfType(toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + id), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
+							ret = false;
+					}
+				} else {
 					String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
-						+ toAcadSession.getUniqueId().toString()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + id;
-					if (!validateRollForwardSessionHasNoDataOfType(toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + id), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
-						ret = false;
+							+ toAcadSession.getUniqueId()
+							+ " and co.isControl = true and co.subjectArea.uniqueId  = "
+						    + toSubjectArea.getUniqueId();
+						if (!validateRollForwardSessionHasNoDataOfType(toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
+							ret = false;
 				}
-			} else {
-				String queryStr = "from CourseOffering co where co.subjectArea.session.uniqueId = "
-						+ toAcadSession.getUniqueId()
-						+ " and co.isControl = true and co.subjectArea.uniqueId  = "
-					    + toSubjectArea.getUniqueId();
-					if (!validateRollForwardSessionHasNoDataOfType(toAcadSession, (MSG.rollForwardCourseOfferings() + ": " + toSubjectArea.getSubjectAreaAbbreviation()), coDao.getSession().createQuery(queryStr, CourseOffering.class).list()))
-						ret = false;
 			}
 		}
 		return ret;
@@ -246,7 +249,8 @@ public class SessionRollForwardValidators {
 	
 	public boolean validateLearningManagementSystemRollForward(Session toAcadSession){
 		if (iForm.getRollForwardLearningManagementSystems()){
-			return validateRollForward(toAcadSession, iForm.getSessionToRollLearningManagementSystemsForwardFrom(), MSG.rollForwardLMSInfo(), LearningManagementSystemInfo.findAll(toAcadSession.getUniqueId()));			
+			return validateRollForward(toAcadSession, iForm.getSessionToRollLearningManagementSystemsForwardFrom(), MSG.rollForwardLMSInfo(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : LearningManagementSystemInfo.findAll(toAcadSession.getUniqueId()));			
  		} else {
  			return true;
  		}
@@ -254,7 +258,8 @@ public class SessionRollForwardValidators {
 	
 	public boolean validateDatePatternRollForward(Session toAcadSession){
 		if (iForm.getRollForwardDatePatterns()){
-			return validateRollForward( toAcadSession, iForm.getSessionToRollDatePatternsForwardFrom(), MSG.rollForwardDatePatterns(), DatePattern.findAll(toAcadSession, true, null, null));			
+			return validateRollForward( toAcadSession, iForm.getSessionToRollDatePatternsForwardFrom(), MSG.rollForwardDatePatterns(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : DatePattern.findAll(toAcadSession, true, null, null));			
  		} else {
  			return true;
  		}
@@ -262,7 +267,8 @@ public class SessionRollForwardValidators {
 	
 	public boolean validateTimePatternRollForward(Session toAcadSession){
 		if (iForm.getRollForwardTimePatterns()){
-			return validateRollForward(toAcadSession, iForm.getSessionToRollTimePatternsForwardFrom(), MSG.rollForwardTimePatterns(), TimePattern.findAll(toAcadSession, null));			
+			return validateRollForward(toAcadSession, iForm.getSessionToRollTimePatternsForwardFrom(), MSG.rollForwardTimePatterns(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : TimePattern.findAll(toAcadSession, null));			
  		} else {
  			return true;
  		}
@@ -270,7 +276,8 @@ public class SessionRollForwardValidators {
 	
 	public boolean validateDepartmentRollForward(Session toAcadSession) {
 		if (iForm.getRollForwardDepartments()) {
-			return validateRollForward(toAcadSession, iForm.getSessionToRollDeptsFowardFrom(), MSG.rollForwardDepartments(), Department.findAll(toAcadSession.getUniqueId()));			
+			return validateRollForward(toAcadSession, iForm.getSessionToRollDeptsFowardFrom(), MSG.rollForwardDepartments(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : Department.findAll(toAcadSession.getUniqueId()));			
 		} else {
 			return true;
 		}
@@ -279,7 +286,8 @@ public class SessionRollForwardValidators {
 	public boolean validateManagerRollForward(Session toAcadSession) {
 		if (iForm.getRollForwardManagers()){
 			TimetableManagerDAO tmDao = TimetableManagerDAO.getInstance();
-			return validateRollForward(toAcadSession, iForm.getSessionToRollManagersForwardFrom(), MSG.rollForwardManagers(), tmDao.getSession().createQuery("from TimetableManager tm inner join tm.departments d where d.session.uniqueId =" + toAcadSession.getUniqueId().toString(), TimetableManager.class).list());
+			return validateRollForward(toAcadSession, iForm.getSessionToRollManagersForwardFrom(), MSG.rollForwardManagers(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : tmDao.getSession().createQuery("from TimetableManager tm inner join tm.departments d where d.session.uniqueId =" + toAcadSession.getUniqueId().toString(), TimetableManager.class).list());
 		} else {
 			return true;
 		}
@@ -288,12 +296,16 @@ public class SessionRollForwardValidators {
 	public boolean validateBuildingAndRoomRollForward(Session toAcadSession) {
 		if (iForm.getRollForwardRoomData()){
 			boolean vbf = validateRollForward(toAcadSession, iForm.getSessionToRollRoomDataForwardFrom(), MSG.rollForwardBuildings(), new ArrayList<Building>());
-			boolean vb = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardBuildings(), Building.findAll(toAcadSession.getUniqueId()));
-			boolean vrf = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardRooms(), Location.findAll(toAcadSession.getUniqueId()));
+			boolean vb = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardBuildings(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : Building.findAll(toAcadSession.getUniqueId()));
+			boolean vrf = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardRooms(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : Location.findAll(toAcadSession.getUniqueId()));
 			RoomFeatureDAO rfDao = RoomFeatureDAO.getInstance();
-			boolean vr = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardRoomsFeatures(), rfDao.getSession().createQuery("from RoomFeature rf where rf.department.session.uniqueId = " + toAcadSession.getUniqueId().toString(), RoomFeature.class).list());
+			boolean vr = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardRoomsFeatures(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : rfDao.getSession().createQuery("from RoomFeature rf where rf.department.session.uniqueId = " + toAcadSession.getUniqueId().toString(), RoomFeature.class).list());
 			RoomGroupDAO rgDao = RoomGroupDAO.getInstance();
-			boolean vn = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardRoomsGroups(), rgDao.getSession().createQuery("from RoomGroup rg where rg.session.uniqueId = " + toAcadSession.getUniqueId().toString() + " and rg.global = false", RoomGroup.class).list());
+			boolean vn = validateRollForwardSessionHasNoDataOfType(toAcadSession, MSG.rollForwardRoomsGroups(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : rgDao.getSession().createQuery("from RoomGroup rg where rg.session.uniqueId = " + toAcadSession.getUniqueId().toString() + " and rg.global = false", RoomGroup.class).list());
 			return vbf && vb && vrf && vr && vn;
 		} else {
 			return true;
@@ -302,7 +314,8 @@ public class SessionRollForwardValidators {
 	
 	public boolean validateSubjectAreaRollForward(Session toAcadSession){
 		if (iForm.getRollForwardSubjectAreas()){
-			return validateRollForward(toAcadSession, iForm.getSessionToRollSubjectAreasForwardFrom(), MSG.rollForwardSubjectAreas(), SubjectArea.getSubjectAreaList(toAcadSession.getUniqueId()));			
+			return validateRollForward(toAcadSession, iForm.getSessionToRollSubjectAreasForwardFrom(), MSG.rollForwardSubjectAreas(),
+					ApplicationProperty.RollForwardUseCopyHelper.isTrue() ? null : SubjectArea.getSubjectAreaList(toAcadSession.getUniqueId()));			
 		} else {
 			return true;
 		}
