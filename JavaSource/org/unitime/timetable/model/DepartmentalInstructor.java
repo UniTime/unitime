@@ -227,15 +227,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * @param ci
 	 */
 	public void removeClassInstructor(ClassInstructor classInstr) {
-		Set s = this.getClasses();
-		for (Iterator iter = s.iterator(); iter.hasNext();) {
-			ClassInstructor ci = (ClassInstructor) iter.next();
-			if (ci.getUniqueId().intValue() == classInstr.getUniqueId()
-					.intValue()) {
-				s.remove(ci);
-				break;
-			}
-		}
+		getClasses().remove(classInstr);
 	}
 
 	public String htmlLabel(){
