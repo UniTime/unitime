@@ -435,7 +435,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         ss.setAutoSpreadInTime(frm.getAutoSpreadInTime());
         ss.setStudentAllowOverlap(frm.getStudentAllowOverlap());
 
-        if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
+        if (frm.getDatePattern()==null || frm.getDatePattern()<0)
         	ss.setDatePattern(null);
         else
         	ss.setDatePattern(new DatePatternDAO().get(frm.getDatePattern()));

@@ -519,7 +519,7 @@ public class ClassEditAction extends PreferencesAction {
             org.hibernate.Session hibSession ) throws Exception {
 
         c.setExpectedCapacity(frm.getExpectedCapacity());
-        if (frm.getDatePattern()==null || frm.getDatePattern().intValue()<0)
+        if (frm.getDatePattern()==null || frm.getDatePattern()<0)
         	c.setDatePattern(null);
         else
         	c.setDatePattern(new DatePatternDAO().get(frm.getDatePattern()));
