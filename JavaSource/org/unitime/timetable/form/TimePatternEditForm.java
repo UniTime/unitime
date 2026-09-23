@@ -270,7 +270,7 @@ public class TimePatternEditForm implements UniTimeForm {
 	
 	public TimePattern saveOrUpdate(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		TimePattern tp = null;
-		if (getUniqueId().intValue()>=0)
+		if (getUniqueId()>=0)
 			tp = (new TimePatternDAO()).get(getUniqueId());
 		if (tp==null) {
 			tp = create(context, hibSession);
@@ -297,7 +297,7 @@ public class TimePatternEditForm implements UniTimeForm {
 	}
 	
 	public void delete(SessionContext context, org.hibernate.Session hibSession) throws Exception {
-		if (getUniqueId().intValue()<0)
+		if (getUniqueId()<0)
 			return;
 		if (!getEditable())
 			return;

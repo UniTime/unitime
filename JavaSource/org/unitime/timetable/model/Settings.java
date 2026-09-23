@@ -75,7 +75,7 @@ public class Settings extends BaseSettings {
 	            ManagerSettings mgrSettings = (ManagerSettings) i.next();
 				hibSession.update(mgrSettings);
 				
-	            if(mgrSettings.getKey().getUniqueId().intValue()==keyId.intValue()) {
+	            if(mgrSettings.getKey().getUniqueId().equals(keyId)) {
 	                data[0] = mgrSettings.getUniqueId().toString();
 	                data[1] = mgrSettings.getValue();
 	                break;

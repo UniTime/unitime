@@ -897,7 +897,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
     public String getFileName() {
     	StringBuffer fileName = new StringBuffer();
     	if (getTimePattern()!=null && getTimePattern().getUniqueId()!=null)
-    		fileName.append(Integer.toHexString(getTimePattern().getUniqueId().intValue()));
+    		fileName.append(Long.toHexString(getTimePattern().getUniqueId()));
     	else
     		fileName.append(getNrMeetings()+"x"+getSlotsPerMtg());
     	fileName.append("_");
