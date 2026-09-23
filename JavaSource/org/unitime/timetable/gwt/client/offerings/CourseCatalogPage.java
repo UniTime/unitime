@@ -59,9 +59,9 @@ public class CourseCatalogPage extends HTML {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						setHTML(MESSAGES.failedLoadData(caught.getMessage()));
+						setHTML(caught.getMessage());
 						addStyleName("unitime-ErrorMessage");
-						UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
+						UniTimeNotifications.error(caught.getMessage(), caught);
 					}
 				});
 	}

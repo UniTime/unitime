@@ -150,6 +150,23 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 			List<Map<?,?>> ret = new GsonRepresentation<List<Map<?,?>>>(resource.getResponseEntity(), ArrayList.class).getObject();
 			if (ret == null || ret.isEmpty()) return new HashMap();
 			return ret.get(0);
+		} catch (ResourceException e) {
+			sLog.info(e.getMessage(), e);
+			try {
+				Map<?,?> ret = new GsonRepresentation<Map<?,?>>(resource.getResponseEntity(), Map.class).getObject();
+				if (ret != null && ret.containsKey("errors")) {
+					sLog.info("Response: " + ret);
+					for (Map<?,?> error: (List<Map<?,?>>)ret.get("errors")) {
+						if (error.containsKey("message"))
+							throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed((String)error.get("message")));
+					}
+				}
+				throw e;
+			} catch (SectioningException x) {
+				throw x;
+			} catch (Exception x) {
+				throw e;
+			}
 		} finally {
 			if (resource != null) {
 				if (resource.getResponse() != null) resource.getResponse().release();
@@ -186,7 +203,7 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 			input.put("session", session);
 			Map<?, ?> base = executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-bases", accessToken, params);
 			if (base == null || base.isEmpty())
-				return MSG.catalogCourseNotInCatalog(subject, courseNbr);
+				throw new SectioningException(MSG.catalogCourseNotInCatalog(subject, courseNbr));
 			input.put("base", base);
 			input.put("details", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-additional-details", accessToken, params));
 			input.put("prerequisites", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
@@ -219,8 +236,7 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 
 			return s.toString();
 		} catch (SectioningException e) {
-			sLog.info(e.getMessage(), e);
-			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed(e.getMessage()), e);
+			throw e;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed(e.getMessage()), e);
@@ -254,7 +270,7 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 			input.put("session", session);
 			Map<?, ?> base = executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-bases", accessToken, params);
 			if (base == null || base.isEmpty())
-				return MSG.catalogCourseNotInCatalog(subject, courseNbr);
+				throw new SectioningException(MSG.catalogCourseNotInCatalog(subject, courseNbr));
 			input.put("base", base);
 			input.put("details", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-additional-details", accessToken, params));
 			input.put("prerequisites", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
@@ -265,8 +281,7 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 
 			return s.toString();
 		} catch (SectioningException e) {
-			sLog.info(e.getMessage(), e);
-			return MSG.exceptionCustomCourseDetailsFailed(e.getMessage());
+			throw e;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			return MSG.exceptionCustomCourseDetailsFailed(e.getMessage());
