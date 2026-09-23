@@ -257,7 +257,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
 	
 	public DepartmentStatusType saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         DepartmentStatusType s = null;
-		if (getUniqueId().intValue()>=0)
+		if (getUniqueId()>=0)
 			s = (new DepartmentStatusTypeDAO()).get(getUniqueId());
 		if (s==null) 
             s = new DepartmentStatusType();
@@ -272,7 +272,7 @@ public class DeptStatusTypeEditForm extends ActionForm {
 	}
 	
 	public void delete(org.hibernate.Session hibSession) throws Exception {
-		if (getUniqueId().intValue()<0) return;
+		if (getUniqueId()<0) return;
         DepartmentStatusType s = (new DepartmentStatusTypeDAO()).get(getUniqueId());
         for (Iterator i=hibSession.createQuery(
                 "select s from Session s where s.statusType.uniqueId=:id").
