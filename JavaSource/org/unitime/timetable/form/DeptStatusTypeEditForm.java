@@ -263,7 +263,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
 	
 	public DepartmentStatusType saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         DepartmentStatusType s = null;
-		if (getUniqueId().intValue()>=0)
+		if (getUniqueId()>=0)
 			s = (DepartmentStatusTypeDAO.getInstance()).get(getUniqueId());
 		if (s==null) 
             s = new DepartmentStatusType();
@@ -281,7 +281,7 @@ public class DeptStatusTypeEditForm implements UniTimeForm {
 	}
 	
 	public void delete(org.hibernate.Session hibSession) throws Exception {
-		if (getUniqueId().intValue()<0) return;
+		if (getUniqueId()<0) return;
         DepartmentStatusType s = (DepartmentStatusTypeDAO.getInstance()).get(getUniqueId());
         for (Session session: hibSession.createQuery(
                 "select s from Session s where s.statusType.uniqueId=:id", Session.class).
