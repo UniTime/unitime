@@ -471,7 +471,7 @@ public class ClassEditAction extends PreferencesAction2<ClassEditForm> {
     private void doUpdate(Class_ c, org.hibernate.Session hibSession ) {
 
         c.setExpectedCapacity(form.getExpectedCapacity());
-        if (form.getDatePattern()==null || form.getDatePattern().intValue()<0)
+        if (form.getDatePattern()==null || form.getDatePattern()<0)
         	c.setDatePattern(null);
         else
         	c.setDatePattern(DatePatternDAO.getInstance().get(form.getDatePattern()));
