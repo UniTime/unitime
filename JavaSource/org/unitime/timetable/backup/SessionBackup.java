@@ -65,6 +65,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OnlineSectioningLog;
+import org.unitime.timetable.model.PeriodicTask;
 import org.unitime.timetable.model.PitCourseOffering;
 import org.unitime.timetable.model.PitDepartmentalInstructor;
 import org.unitime.timetable.model.PitStudentAcadAreaMajorClassification;
@@ -214,6 +215,8 @@ public class SessionBackup implements SessionBackupInterface {
     		disallowedNotNullRelations.add(OnlineSectioningLog.class.getName() + ".session");
     		disallowedNotNullRelations.add(PointInTimeData.class.getName() + ".session");
     		disallowedNotNullRelations.add(SectioningSolutionLog.class.getName() + ".session");
+    		disallowedNotNullRelations.add(PeriodicTask.class.getName() + ".session");
+    		disallowedNotNullRelations.add(PeriodicTask.class.getName() + ".owner");
     		if (ApplicationProperty.SessionBackupPointInTime.isFalse()) {
         		disallowedNotNullRelations.add(PitStudentAcadAreaMajorClassification.class.getName() + ".academicArea");
         		disallowedNotNullRelations.add(PitStudentAcadAreaMajorClassification.class.getName() + ".academicClassification");
