@@ -253,7 +253,7 @@ public class ImportTranslations {
 				info("Updating GWT configuration, if needed.");
 				File config = new File(iSource,
 						"org" + File.separator + "unitime" + File.separator + "timetable" + File.separator + "gwt"+  File.separator + "UniTime.gwt.xml");
-				Document document = (new SAXReader()).read(config);
+				Document document = SAXReader.createDefault().read(config);
 				for (Iterator<Element> i = document.getRootElement().elementIterator("extend-property"); i.hasNext(); ) {
 					Element e = i.next();
 					if ("locale".equals(e.attributeValue("name")))

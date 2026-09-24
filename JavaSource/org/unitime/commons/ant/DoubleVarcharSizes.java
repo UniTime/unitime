@@ -46,8 +46,7 @@ public class DoubleVarcharSizes extends Task {
 	private String iConfig = "hibernate.cfg.xml";
 	
 	public DoubleVarcharSizes() throws DocumentException, SAXException {
-		iSAXReader = new SAXReader();
-		iSAXReader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		iSAXReader = SAXReader.createDefault();
 	}
 	
 	public void setSource(String source) {

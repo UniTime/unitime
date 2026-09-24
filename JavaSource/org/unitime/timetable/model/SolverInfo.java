@@ -265,7 +265,7 @@ public class SolverInfo extends BaseSolverInfo {
 	@Transient
 	public Document getValue() {
 		try {
-			SAXReader reader = new SAXReader();
+			SAXReader reader = SAXReader.createDefault();
 			GZIPInputStream gzipInput = new GZIPInputStream(new ByteArrayInputStream(getData()));
 			Document document = reader.read(gzipInput);
 			gzipInput.close();

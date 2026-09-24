@@ -215,7 +215,7 @@ public class PublishedSectioningSolutionsBackend implements GwtRpcImplementation
 	
 	protected DataProperties getConfig(byte[] data) {
 		try {
-			Document document = (new SAXReader()).read(new GZIPInputStream(new ByteArrayInputStream(data)));
+			Document document = SAXReader.createDefault().read(new GZIPInputStream(new ByteArrayInputStream(data)));
 			DataProperties config = new DataProperties();
 			for (Iterator i = document.getRootElement().element("configuration").elementIterator("property"); i.hasNext(); ) {
     			Element e = (Element)i.next();

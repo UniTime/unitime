@@ -72,10 +72,10 @@ public abstract class DatabaseUpdate {
         URL dbUpdateFileUrl = ApplicationProperties.class.getClassLoader().getResource(dbUpdateFile);
         if (dbUpdateFileUrl!=null) {
             Debug.info("Reading " + URLDecoder.decode(dbUpdateFileUrl.getPath(), "UTF-8") + " ...");
-            document = (new SAXReader()).read(dbUpdateFileUrl.openStream());
+            document = SAXReader.createDefault().read(dbUpdateFileUrl.openStream());
         } else if (new File(dbUpdateFile).exists()) {
             Debug.info("Reading " + dbUpdateFile + " ...");
-            document = (new SAXReader()).read(new File(dbUpdateFile));
+            document = SAXReader.createDefault().read(new File(dbUpdateFile));
         }
         if (document==null) {
             sLog.error("Unable to execute " + updateName() + " database auto-update, reason: resource "+dbUpdateFile+" not found.");

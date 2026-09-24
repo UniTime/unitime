@@ -49,7 +49,7 @@ public class ImportXmlFile {
 	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
 	        
 	        // Load an XML file
-	        Document document = (new SAXReader()).read(new File(args[0]));
+	        Document document = SAXReader.createDefault().read(new File(args[0]));
 	        
 	        // External id of the manager doing the import (can be null)
 	        String managerId = (args.length >= 2 ? args[1] : null);

@@ -1111,7 +1111,7 @@ public class StudentSolver extends AbstractSolver<Request, Enrollment, StudentSe
             setInitalSolution(model);
             initSolver();
 
-            Document document = (new SAXReader()).read(new GZIPInputStream(new ByteArrayInputStream(data)));
+            Document document = SAXReader.createDefault().read(new GZIPInputStream(new ByteArrayInputStream(data)));
             // readProperties(document);
 
             restureCurrentSolutionFromBackup(document);

@@ -94,7 +94,7 @@ public class TimetableInfoUtil implements TimetableInfoFileProxy {
 			GZIPInputStream gzipInput = null;
 			try {
 				gzipInput = new GZIPInputStream(new FileInputStream(file));
-				document = (new SAXReader()).read(gzipInput);
+				document = SAXReader.createDefault().read(gzipInput);
 			} finally {
 				if (gzipInput!=null) gzipInput.close();
 			}

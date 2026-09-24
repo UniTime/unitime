@@ -79,7 +79,7 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 	public Document getStudentsDocument() {
 		if (getStudents() == null) return null;
 		try {
-			return new SAXReader().read(new StringReader(getStudents()));
+			return SAXReader.createDefault().read(new StringReader(getStudents()));
 		} catch (Exception e) {
 			sLog.warn("Failed to load cached students for " + getCurriculum().getAbbv() + " " + getName() + ": " + e.getMessage(), e);
 			return null;

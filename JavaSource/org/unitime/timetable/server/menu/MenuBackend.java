@@ -90,7 +90,7 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 			String menu = ApplicationProperty.MenuFile.value();
 			Document document = null;
 	        URL menuUrl = ApplicationProperties.class.getClassLoader().getResource(menu);
-	        SAXReader sax = new SAXReader();
+	        SAXReader sax = SAXReader.createDefault();
 	        sax.setEntityResolver(new EntityResolver() {
 	        	public InputSource resolveEntity(String publicId, String systemId) {
 	        		if (publicId.equals("-//UniTime//UniTime Menu DTD/EN")) {

@@ -83,7 +83,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             }
             if (response==null || response.length()==0) return null;
             StringReader reader = new StringReader(response);
-            Document document = (new SAXReader()).read(reader);
+            Document document = SAXReader.createDefault().read(reader);
             reader.close();
             return document;
         } catch (Exception e) {

@@ -709,7 +709,7 @@ public class SessionRestore implements SessionRestoreInterface {
 				} else { // fall back to XML
 					element = getElement("value");
 					try {
-						Document value = new SAXReader().read(new StringReader(element.getValue(0)));
+						Document value = SAXReader.createDefault().read(new StringReader(element.getValue(0)));
 						info.setValue(value);
 					} catch (DocumentException e) {
 						sLog.warn("Failed to parse solver info for " + getId() + ": " + e.getMessage());
