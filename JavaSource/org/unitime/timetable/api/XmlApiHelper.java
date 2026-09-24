@@ -49,7 +49,7 @@ public class XmlApiHelper extends AbstractApiHelper {
 	public Document getRequest(Type requestType) throws IOException {
 		Reader reader = iRequest.getReader();
 		try {
-			return new SAXReader().read(reader);
+			return SAXReader.createDefault().read(reader);
 		} catch (DocumentException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {

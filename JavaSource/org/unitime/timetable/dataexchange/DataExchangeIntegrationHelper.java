@@ -39,7 +39,7 @@ import org.unitime.timetable.util.queue.QueueMessage;
 public class DataExchangeIntegrationHelper {
 	
 	public Document file2document(File file) throws DocumentException {
-		return new SAXReader().read(file);
+		return SAXReader.createDefault().read(file);
 	}
 	
 	public String exception2message(Exception exception) throws IOException {

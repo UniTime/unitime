@@ -65,7 +65,7 @@ public class CreateBaseModelFromXml extends Task {
 	private String iConfig = "hibernate.cfg.xml";
 	
 	public CreateBaseModelFromXml() throws DocumentException {
-		iSAXReader = new SAXReader();
+		iSAXReader = SAXReader.createDefault();
 		iSAXReader.setEntityResolver(iEntityResolver);
 	}
 	

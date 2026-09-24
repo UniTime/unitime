@@ -59,7 +59,7 @@ public class StaffImport extends BaseImport {
 
 	public void loadFromStream(FileInputStream fis) throws Exception {
 
-		Document document = (new SAXReader()).read(fis);
+		Document document = SAXReader.createDefault().read(fis);
         Element root = document.getRootElement();
         
         loadXml(root);

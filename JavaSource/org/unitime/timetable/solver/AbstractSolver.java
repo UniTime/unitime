@@ -462,7 +462,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
             if (isRunning()) stopSolver();
             disposeNoInherit(false);
 
-            Document document = (new SAXReader()).read(inXmlFile);
+            Document document = SAXReader.createDefault().read(inXmlFile);
             readProperties(document);
             
             model = createModel(getProperties());
@@ -657,7 +657,7 @@ public abstract class AbstractSolver<V extends Variable<V, T>, T extends Value<V
     
     public void importXml(byte[] data) throws IOException {
         try {
-            Document document = (new SAXReader()).read(new ByteArrayInputStream(data));
+            Document document = SAXReader.createDefault().read(new ByteArrayInputStream(data));
             readProperties(document);
             
             M model = createModel(getProperties());

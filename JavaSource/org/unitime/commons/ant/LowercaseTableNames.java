@@ -55,9 +55,8 @@ public class LowercaseTableNames extends Task {
 	private String iConfig = "hibernate.cfg.xml";
 	
 	public LowercaseTableNames() throws DocumentException, SAXException {
-		iSAXReader = new SAXReader();
+		iSAXReader = SAXReader.createDefault();
 		iSAXReader.setEntityResolver(iEntityResolver);
-		iSAXReader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 	}
 	
 	private EntityResolver iEntityResolver = new EntityResolver() {

@@ -795,7 +795,7 @@ public class ImportPreferences {
 		hibSession = (SessionDAO.getInstance()).getSession();
 		tx = hibSession.beginTransaction();
 		try {
-			Document document = (new SAXReader()).read(file);
+			Document document = SAXReader.createDefault().read(file);
 			Element root = document.getRootElement();
 			sLog.info("academicYearTerm:"+root.attributeValue("academicYearTerm"));
 			sLog.info("academicInitiative:"+root.attributeValue("academicInitiative"));

@@ -62,7 +62,7 @@ public class ImportXmlFromDB {
             session.getJdbcConnectionAccess().releaseConnection(connection);
             if (response==null || response.length()==0) return;
             StringReader reader = new StringReader(response);
-            Document document = (new SAXReader()).read(reader);
+            Document document = SAXReader.createDefault().read(reader);
             reader.close();
             DataExchangeHelper.importDocument(document, null, null);           
 		} catch (Exception e) {

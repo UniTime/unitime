@@ -46,7 +46,7 @@ public class UpdateSequencesFromXml {
 	private String iConfig = "hibernate.cfg.xml";
 	
 	public UpdateSequencesFromXml() throws DocumentException {
-		iSAXReader = new SAXReader();
+		iSAXReader = SAXReader.createDefault();
 		iSAXReader.setEntityResolver(iEntityResolver);
 	}
 	

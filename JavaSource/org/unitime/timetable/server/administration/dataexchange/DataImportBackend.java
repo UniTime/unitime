@@ -97,7 +97,7 @@ public class DataImportBackend implements GwtRpcImplementation<DataImportRequest
 				gzipInput.close();
 			} else if (iFileName.toLowerCase().endsWith(".xml.gz") || iFileName.toLowerCase().endsWith(".zxml")) {
 				GZIPInputStream gzipInput = new GZIPInputStream(fis);
-				DataExchangeHelper.importDocument((new SAXReader()).read(gzipInput), getOwnerId(), this);
+				DataExchangeHelper.importDocument(SAXReader.createDefault().read(gzipInput), getOwnerId(), this);
 				gzipInput.close();
 			} else if (iFileName.toLowerCase().endsWith(".zip")) {
 				ZipInputStream zipInput = new ZipInputStream(fis);
@@ -109,12 +109,12 @@ public class DataImportBackend implements GwtRpcImplementation<DataImportRequest
 						SessionRestoreInterface restore = (SessionRestoreInterface)Class.forName(ApplicationProperty.SessionRestoreInterface.value()).getConstructor().newInstance();
 						restore.restore(zipInput, this);
 					} else {
-						DataExchangeHelper.importDocument((new SAXReader()).read(new NotClosingInputStream(zipInput)), getOwnerId(), this);
+						DataExchangeHelper.importDocument(SAXReader.createDefault().read(new NotClosingInputStream(zipInput)), getOwnerId(), this);
 					}
 				}
 				zipInput.close();
 			} else {
-				DataExchangeHelper.importDocument((new SAXReader()).read(fis), getOwnerId(), this);
+				DataExchangeHelper.importDocument(SAXReader.createDefault().read(fis), getOwnerId(), this);
 			}
 			} finally {
 				fis.close();

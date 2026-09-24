@@ -145,7 +145,7 @@ public class Registration extends BodyTagSupport {
 			try { cr.release(); } catch (Exception e) {}
 
 			StringReader r = new StringReader(result);
-			Document output = (new SAXReader()).read(r);
+			Document output = SAXReader.createDefault().read(r);
 			r.close();
 			
 			HashMap<String, String> ret = new HashMap<String, String>();

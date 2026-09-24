@@ -230,7 +230,7 @@ public class RoomAvailabilityService implements RoomAvailabilityInterface {
         try {
             if (!iResponseFile.exists() || !iResponseFile.canRead()) return null;
             fis = new FileInputStream(iResponseFile);
-            Document document = (new SAXReader()).read(fis);
+            Document document = SAXReader.createDefault().read(fis);
             fis.close(); fis=null; if (iDelete) iResponseFile.delete();
             return document;
         } finally {

@@ -95,7 +95,7 @@ public class PageNameGenerator {
 	}
 	
 	public void checkMenuXML() throws DocumentException, IOException {
-        SAXReader sax = new SAXReader();
+        SAXReader sax = SAXReader.createDefault();
         Document document = null;
         InputStream is = PageNameGenerator.class.getClassLoader().getResourceAsStream("menu.xml");
         if (is != null) {
@@ -223,7 +223,7 @@ public class PageNameGenerator {
 	protected Document readHelpContentFeed(URL url) throws IOException, DocumentException {
 		InputStream in = url.openStream();
 		try {
-			return new SAXReader().read(in);
+			return SAXReader.createDefault().read(in);
 		} finally {
 			in.close();
 		}

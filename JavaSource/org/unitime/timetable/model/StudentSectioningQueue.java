@@ -109,7 +109,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 	@Transient
 	public Document getMessage() {
 		try {
-			return new SAXReader().read(new StringReader(getData()));
+			return SAXReader.createDefault().read(new StringReader(getData()));
 		} catch (DocumentException e) {
 			throw new HibernateException(e.getMessage(),e);
 		}
