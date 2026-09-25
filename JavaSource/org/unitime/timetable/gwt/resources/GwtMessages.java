@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.gwt.resources;
 
-import org.unitime.timetable.gwt.resources.Messages.DoNotTranslate;
-
 /**
  * @author Tomas Muller
  */

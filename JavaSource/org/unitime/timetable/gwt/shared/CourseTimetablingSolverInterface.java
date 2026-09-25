@@ -73,6 +73,7 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class AssignedClassesResponse extends org.unitime.timetable.gwt.client.tables.TableInterface implements HasPageMessages {
+		private static final long serialVersionUID = 7353697321074269923L;
 		private List<PageMessage> iPageMessages = null;
 		
 		public boolean hasPageMessages() { return iPageMessages != null && !iPageMessages.isEmpty(); }
@@ -91,6 +92,7 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class NotAssignedClassesResponse extends AssignedClassesResponse {
+		private static final long serialVersionUID = 9062794348035112572L;
 		private boolean iShowNote = false;
 		
 		public boolean isShowNote() { return iShowNote; }
@@ -134,6 +136,7 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class SolutionChangesResponse extends AssignedClassesResponse {
+		private static final long serialVersionUID = -4387171835404317171L;
 		private String iMessage = null;
 		
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
@@ -158,6 +161,8 @@ public class CourseTimetablingSolverInterface {
 	}
 	
 	public static class AssignmentHistoryResponse extends SolutionChangesResponse {
+
+		private static final long serialVersionUID = 5133759336723834413L;
 	}
 	
 	public static enum SolutionOperation implements IsSerializable {
