@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,6 +86,17 @@ public class ApplicationConfigAction extends UniTimeAction<ApplicationConfigForm
 
 	@Override
     public String execute() throws Exception {
+		if (ApplicationProperty.LegacyApplicationConfig.isFalse()) {
+    		String url = "applicationConfig";
+    		boolean first = true;
+    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
+    			String param = e.nextElement();
+    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
+    			first = false;
+    		}
+    		response.sendRedirect(url);
+			return null;
+    	}
     	sessionContext.checkPermission(Right.ApplicationConfig);
     	
     	if (form == null)

@@ -6216,4 +6216,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Parent instructional type must be basic.")
 	String errorItypeParentMustBeBasic();
+	
+	@DefaultMessage("Replace % with {0}.")
+	String errorSettingMissingReference(String reference);
 }

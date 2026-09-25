@@ -9337,3 +9337,35 @@ div.gwt-MenuBarPopup {
 	display: inline;
 	vertical-align: top;
 }
+
+.unitime-ApplicationConfigPage .table td {
+	white-space: pre-wrap;
+	word-break: break-all; 
+}
+
+.unitime-ApplicationConfigPage .table td:first-child {
+	max-width: calc(20vw - 2px);
+}
+
+.unitime-ApplicationConfigPage .table td:nth-child(2) {
+	max-width: calc(50vw - 5px);
+}
+
+.unitime-ApplicationConfigPage .table td:nth-child(3) {
+	max-width: calc(30vw - 3px);
+}
+
+.unitime-ApplicationConfigPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-ApplicationConfigPage .sessions-selection {
+	max-width: 1000px;
+}
+
+.unitime-ApplicationConfigPage .sessions-selection .gwt-CheckBox {
+	display: inline-block;
+	white-space: nowrap;
+	min-width: 200px;
+	padding-right: 10px;
+}
