@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage;
 import org.unitime.timetable.gwt.client.admin.AccessStatisticsPage;
+import org.unitime.timetable.gwt.client.admin.ApplicationConfigPage;
 import org.unitime.timetable.gwt.client.admin.ChameleonPage;
 import org.unitime.timetable.gwt.client.admin.DataExchangePage;
 import org.unitime.timetable.gwt.client.admin.DatePatternsPage;
@@ -587,6 +588,10 @@ public enum Pages {
 	roomAvailability(new PageFactory() {
 		public Widget create() { return new RoomAvailabilityPage(); }
 		public String name(GwtMessages messages) { return messages.pageRoomAvailability(); }
+		}),
+	applicationConfig(new PageFactory() {
+		public Widget create() { return new ApplicationConfigPage(); }
+		public String name(GwtMessages messages) { return messages.pageApplicationConfiguration(); }
 		}),
 	;
 	

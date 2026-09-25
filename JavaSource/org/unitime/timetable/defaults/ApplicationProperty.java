@@ -3025,7 +3025,7 @@ public enum ApplicationProperty {
 			)
 	@Since(4.7)
 	@DefaultValue("None")
-	@Values({"None, Critical, Vital, Important"})
+	@Values({"None", "Critical", "Vital", "Important"})
 	AdvisorCourseRequestsAllowCritical("unitime.acrf.setCriticalCourses"),
 	
 	@DefaultValue("Preferences")
@@ -3044,7 +3044,7 @@ public enum ApplicationProperty {
 	AdminStudentGroupsLazyStudents("unitime.admin.studentGroups.lazyLoad"),
 	
 	@DefaultValue("None")
-	@Values({"None, WaitList, NoSubs, Student"})
+	@Values({"None", "WaitList", "NoSubs", "Student"})
 	@Description("Advisor Course Recommendation: Allow for wait-lists, no-subs or none of the two. It set to Student, use the same setting as on the student (based on the student status).")
 	AdvisorRecommendationsWaitListMode("unitime.acr.waitlist"),
 	
@@ -3969,6 +3969,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Room Availability: switch the user interface back to the old (Struts-based) room availability page")
 	LegacyRoomAvailability("unitime.legacy.roomAvailability"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Application Configuration: switch the user interface back to the old (Struts-based) application configuration page")
+	LegacyApplicationConfig("unitime.legacy.applicationConfig"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

@@ -105,6 +105,14 @@ public class NumberBox extends AriaTextBox {
 		}
 	}
 	
+	public Long toLong() {
+		try {
+			return Long.parseLong(getValue());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+	
 	public void setValue(Number number) {
 		super.setValue(number == null ? "" : number.toString());
 	}
