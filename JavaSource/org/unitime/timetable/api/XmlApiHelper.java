@@ -35,6 +35,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.hibernate.CacheMode;
 import org.unitime.timetable.security.SessionContext;
+import org.xml.sax.SAXException;
 
 /**
  * @author Tomas Muller
@@ -49,7 +50,11 @@ public class XmlApiHelper extends AbstractApiHelper {
 	public Document getRequest(Type requestType) throws IOException {
 		Reader reader = iRequest.getReader();
 		try {
-			return SAXReader.createDefault().read(reader);
+			SAXReader saxReader = SAXReader.createDefault();
+			try {
+				saxReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			} catch (SAXException e) {}
+			return saxReader.read(reader);
 		} catch (DocumentException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
