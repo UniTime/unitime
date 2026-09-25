@@ -229,6 +229,7 @@ public class OfferingsInterface {
 	}
 	
 	public static class OfferingConfigInterface extends TableInterface {
+		private static final long serialVersionUID = 3937162647076045452L;
 		private Set<String> iOperations;
 		private Long iConfigId;
 		private String iSchedulingDisclaimer;

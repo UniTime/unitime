@@ -282,5 +282,6 @@ public class LastChangesPage extends Composite {
 	}
 	
 	public static class LastChangesResponse extends TableInterface {
+		private static final long serialVersionUID = 5857157116339791274L;
 	}
 }
