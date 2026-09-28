@@ -296,6 +296,7 @@
     	<url-pattern>/statusTypes</url-pattern>
     	<url-pattern>/roomAvailability</url-pattern>
     	<url-pattern>/applicationConfig</url-pattern>
+    	<url-pattern>/solverConfig</url-pattern>
     </servlet-mapping>
 	
 	<filter>

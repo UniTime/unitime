@@ -39,6 +39,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.SolverSettingsForm;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
@@ -86,6 +87,10 @@ public class SolverSettingsAction extends UniTimeAction<SolverSettingsForm> {
 	public void setOp2(String op2) { this.op2 = op2; }	
 	
 	public String execute() throws Exception {
+		if (ApplicationProperty.LegacySolverConfig.isFalse()) {
+    		response.sendRedirect("solverConfig");
+			return null;
+    	}
 		if (form == null) form = new SolverSettingsForm();
 		
         // Check Access

@@ -116,6 +116,9 @@ public class ListSolutionsPage extends SimpleForm {
 		case EXPORT:
 			ToolBox.open(GWT.getHostPageBaseURL() + "export?output=solution.csv&type=course" + (solutionId == null ? "" : "&solution=" + solutionId));
 			return;
+		case EXPORT_CONFIG:
+			ToolBox.open(GWT.getHostPageBaseURL() + "export?output=solver-config.properties" + (solutionId == null ? "" : "&solutionId=" + solutionId));
+			return;
 		}
 		final ListSolutionsRequest request = new ListSolutionsRequest(operation);
 		String confirmation = null;
@@ -367,6 +370,8 @@ public class ListSolutionsPage extends SimpleForm {
 					buttons.addButton("uncommit", MESSAGES.opSolutionUncommit(), createClickHandler(header, SolutionOperation.UNCOMMIT, note, selected.getId()));
 				if (response.canExecute(selected.getId(), SolutionOperation.EXPORT))
 					buttons.addButton("export", MESSAGES.opSolutionExport(), createClickHandler(header, SolutionOperation.EXPORT, selected.getId()));
+				if (response.canExecute(selected.getId(), SolutionOperation.EXPORT_CONFIG))
+					buttons.addButton("export-config", MESSAGES.opSolutionConfig(), createClickHandler(header, SolutionOperation.EXPORT_CONFIG, selected.getId()));
 				if (response.canExecute(selected.getId(), SolutionOperation.DELETE))
 					buttons.addButton("delete", MESSAGES.opSolutionDelete(), createClickHandler(header, SolutionOperation.DELETE, selected.getId()));
 				if (!response.canExecute(selected.getId(), SolutionOperation.LOAD))
