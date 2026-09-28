@@ -123,6 +123,19 @@ public class AriaButton extends Button implements HasAriaLabel {
 		else
 			Roles.getButtonRole().setAriaLabelProperty(getElement(), text);
 	}
+	
+	@Override
+	public void setAccessKey(char key) {
+		super.setAccessKey(key);
+		try {
+			if (getHTML().indexOf("<u>") >= 0) return;
+			int idx1 = getHTML().indexOf(Character.toLowerCase(key));
+			int idx2 = getHTML().indexOf(Character.toUpperCase(key));
+			int idx = (idx1 < 0 ? idx2 : idx2 < 0 ? idx1 : Math.min(idx1, idx2));
+			if (idx >= 0)
+				super.setHTML(getHTML().substring(0, idx) + "<u>" + getHTML().substring(idx, idx + 1) + "</u>" + getHTML().substring(idx + 1));
+		} catch (Exception e) {}
+	}
 
 	@Override
 	public String getAriaLabel() {
