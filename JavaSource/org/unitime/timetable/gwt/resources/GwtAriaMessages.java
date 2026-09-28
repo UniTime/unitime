@@ -696,4 +696,10 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Edit {0}")
 	String iconEdit(String name);
+	
+	@DefaultMessage("Value for {0}")
+	String valueForSolverConfiguration(String desc);
+	
+	@DefaultMessage("Use default settings for {0}")
+	String useDefaultForSolverConfiguration(String desc);
 }

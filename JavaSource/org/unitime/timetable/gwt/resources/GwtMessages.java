@@ -477,6 +477,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Export Solution")
 	String opSolutionExport();
 	
+	@DefaultMessage("Export Config")
+	String opSolutionConfig();
+	
 	@DefaultMessage("Delete")
 	String opSolutionDelete();
 	
@@ -4288,6 +4291,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Application Setting")
 	@DoNotTranslate
 	String pageEditApplicationSetting();
+	
+	@DefaultMessage("Solver Configurations")
+	@DoNotTranslate
+	String pageSolverConfigurations();
+
+	@DefaultMessage("Add Solver Configuration")
+	@DoNotTranslate
+	String pageAddSolverConfiguration();
+
+	@DefaultMessage("Edit Solver Configuration")
+	@DoNotTranslate
+	String pageEditSolverConfiguration();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -8374,4 +8389,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("**********")
 	@DoNotTranslate
 	String password();
+	
+	@DefaultMessage("\u2191 The checkboxes indicate that the default configuration values are used. Uncheck the left-hand checkbox to change the parameter value on the right.")
+	String hintDefaultCheckbox();
 }

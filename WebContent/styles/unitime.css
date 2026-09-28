@@ -9369,3 +9369,20 @@ div.gwt-MenuBarPopup {
 	min-width: 200px;
 	padding-right: 10px;
 }
+
+.unitime-SolverConfigsPage .table tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;	
+}
+
+.unitime-SolverConfigsPage input[type="text"]:disabled{
+	color: #aaa;
+}
+
+.unitime-SolverConfigsPage .TimePrefWidget {
+	margin-left: 22px;
+}
+
+.unitime-SolverConfigsPage .default-hint {
+	font-style: italic;
+	margin-left: 5px;
+}

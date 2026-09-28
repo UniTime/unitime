@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.admin.QueryLogStatsPage;
 import org.unitime.timetable.gwt.client.admin.RollForwardSessionPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
+import org.unitime.timetable.gwt.client.admin.SolverConfigsPage;
 import org.unitime.timetable.gwt.client.admin.SolverGroupsPage;
 import org.unitime.timetable.gwt.client.admin.StatusTypesPage;
 import org.unitime.timetable.gwt.client.admin.TasksPage;
@@ -592,6 +593,10 @@ public enum Pages {
 	applicationConfig(new PageFactory() {
 		public Widget create() { return new ApplicationConfigPage(); }
 		public String name(GwtMessages messages) { return messages.pageApplicationConfiguration(); }
+		}),
+	solverConfig(new PageFactory() {
+		public Widget create() { return new SolverConfigsPage(); }
+		public String name(GwtMessages messages) { return messages.pageSolverConfigurations(); }
 		}),
 	;
 	

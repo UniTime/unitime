@@ -461,6 +461,7 @@ public class ListSolutionsBackend implements GwtRpcImplementation<ListSolutionsR
 			response.setCanExecute(solutionId, SolutionOperation.UNCOMMIT, solution.isCommited() &&  context.hasPermission(solution.getOwner(), Right.TimetablesSolutionCommit));
 			response.setCanExecute(solutionId, SolutionOperation.DELETE, !solution.isCommited() && context.hasPermission(solution, Right.TimetablesSolutionDelete));
 			response.setCanExecute(solutionId, SolutionOperation.EXPORT, context.hasPermission(solution, Right.TimetablesSolutionExportCsv));
+			response.setCanExecute(solutionId, SolutionOperation.EXPORT_CONFIG, context.hasPermission(solution, Right.TimetablesSolutionExportCsv) && context.hasPermission(Right.SolverConfigurations));
 			response.setCanExecute(solutionId, SolutionOperation.LOAD, solver == null && context.hasPermission(solution, Right.TimetablesSolutionLoad));
 			si.setName(solution.getOwner().getName());
 			LogInfo logInfo = (LogInfo)solution.getInfo("LogInfo");

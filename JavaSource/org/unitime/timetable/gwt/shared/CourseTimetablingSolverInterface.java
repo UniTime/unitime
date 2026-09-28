@@ -167,7 +167,7 @@ public class CourseTimetablingSolverInterface {
 	
 	public static enum SolutionOperation implements IsSerializable {
 		INIT, CHECK, SELECT, DESELECT, LOAD, LOAD_EMPTY, UNLOAD, COMMIT, UNCOMMIT, EXPORT, UPDATE_NOTE, DELETE, RELOAD,
-		SAVE, SAVE_AS_NEW, SAVE_COMMIT, SAVE_AS_NEW_COMMIT,
+		SAVE, SAVE_AS_NEW, SAVE_COMMIT, SAVE_AS_NEW_COMMIT, EXPORT_CONFIG,
 		;
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
