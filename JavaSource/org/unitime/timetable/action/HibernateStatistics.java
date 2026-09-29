@@ -26,6 +26,7 @@ import org.apache.struts2.tiles.annotation.TilesPutAttribute;
 import org.unitime.commons.hibernate.stats.StatsProvider;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.BlankForm;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -49,7 +50,11 @@ public class HibernateStatistics extends UniTimeAction<BlankForm>{
 	public void setDetails(boolean details) { this.details = details; }
 
 	@Override
-	public String execute() {
+	public String execute() throws Exception {
+		if (ApplicationProperty.LegacyHibernateStats.isFalse()) {
+    		response.sendRedirect("hibernateStats");
+			return null;
+    	}
 		sessionContext.checkPermission(Right.HibernateStatistics);
 		if (MSG.actionEnableStatistics().equals(op)) {
 			new _RootDAO().getSession().getSessionFactory().getStatistics().setStatisticsEnabled(true);

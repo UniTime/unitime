@@ -39,6 +39,7 @@
 					<line>Room Availability</line>
 					<line>Application Configuration</line>
 					<line>Solver Configurations</line>
+					<line>Hibernate Statistics</line>
 				</line>
 			</description>
 		</item>

@@ -4303,6 +4303,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Solver Configuration")
 	@DoNotTranslate
 	String pageEditSolverConfiguration();
+	
+	@DefaultMessage("Hibernate Statistics")
+	@DoNotTranslate
+	String pageHibernateStatistics();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();

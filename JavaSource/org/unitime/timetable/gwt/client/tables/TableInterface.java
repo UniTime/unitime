@@ -223,6 +223,9 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public CellInterface addCell(String text) {
 			return addCell().setText(text);
 		}
+		public CellInterface addCell(long number) {
+			return addCell().setText(String.valueOf(number)).setComparable(number);
+		}
 		
 		public String getStyle() { return iStyle; }
 		public void setStyle(String style) { iStyle = style; }
@@ -344,6 +347,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 		public String getText() { return iText; }
 		public CellInterface setText(String text) { iText = text; return this; }
 		public CellInterface setText(Integer text) { iText = (text == null ? "0" : text.toString()); return this; }
+		public CellInterface setText(Long text) { iText = (text == null ? "0" : text.toString()); return this; }
 		public CellInterface setHtml(String text) { iText = text; iHtml = true; return this; }
 		public boolean hasText() { return iText != null && !iText.isEmpty(); }
 		@Deprecated
@@ -401,6 +405,9 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 			cell.setText(text);
 			addItem(cell);
 			return cell;
+		}
+		public CellInterface add(long number) {
+			return add(String.valueOf(number));
 		}
 		public CellInterface addRoom(String name, String color, Long id, String preference, String style) {
 			return add(name).setColor(color).setClassName(style)

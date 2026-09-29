@@ -297,6 +297,7 @@
     	<url-pattern>/roomAvailability</url-pattern>
     	<url-pattern>/applicationConfig</url-pattern>
     	<url-pattern>/solverConfig</url-pattern>
+    	<url-pattern>/hibernateStats</url-pattern>
     </servlet-mapping>
 	
 	<filter>

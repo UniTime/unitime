@@ -9356,7 +9356,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-ApplicationConfigPage .table tr:not(:last-child) td {
-	border-bottom: 1px dashed #9CB0CE;	
+	border-bottom: 1px dashed #9CB0CE;
 }
 
 .unitime-ApplicationConfigPage .sessions-selection {
@@ -9385,4 +9385,8 @@ div.gwt-MenuBarPopup {
 .unitime-SolverConfigsPage .default-hint {
 	font-style: italic;
 	margin-left: 5px;
+}
+
+.unitime-HibernateStatisticsPage .unitime-MainTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
 }
