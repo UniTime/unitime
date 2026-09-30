@@ -1351,7 +1351,8 @@ public class SimpleEditPage extends Composite {
 					text.setStyleName("unitime-TextBox");
 					text.setMaxLength(field.getLength());
 					text.setText(record.getField(index));
-					text.setWidth(field.getWidth() + "px");
+					if (field.getWidth() > 0)
+						text.setWidth(field.getWidth() + "px");
 					if (!detail) text.getElement().getStyle().setProperty("maxWidth", "20vw");
 					text.addChangeHandler(new ChangeHandler() {
 						@Override
@@ -1378,7 +1379,8 @@ public class SimpleEditPage extends Composite {
 					password.setStyleName("unitime-TextBox");
 					password.setMaxLength(field.getLength());
 					password.setText(record.getField(index));
-					password.setWidth(field.getWidth() + "px");
+					if (field.getWidth() > 0)
+						password.setWidth(field.getWidth() + "px");
 					if (!detail) password.getElement().getStyle().setProperty("maxWidth", "20vw");
 					password.addChangeHandler(new ChangeHandler() {
 						@Override
@@ -1405,10 +1407,12 @@ public class SimpleEditPage extends Composite {
 					textarea.setStyleName("unitime-TextArea");
 					if (detail) {
 						textarea.setVisibleLines(Math.max(5, field.getHeight()));
-						textarea.setCharacterWidth(Math.max(80, field.getWidth()));
+						if (field.getWidth() > 0)
+							textarea.setCharacterWidth(Math.max(80, field.getWidth()));
 					} else {
 						textarea.setVisibleLines(field.getHeight() <= 0 ? 2 : Math.min(3, field.getHeight()));
-						textarea.setCharacterWidth(field.getWidth() <= 0 ? 40: Math.min(60, field.getWidth()));
+						if (field.getWidth() > 0)
+							textarea.setCharacterWidth(field.getWidth() <= 0 ? 40: Math.min(60, field.getWidth()));
 					}
 					textarea.setText(record.getField(index));
 					textarea.addChangeHandler(new ChangeHandler() {
@@ -1438,7 +1442,8 @@ public class SimpleEditPage extends Composite {
 					number.setMaxLength(field.getLength());
 					number.setDecimal(field.isAllowFloatingPoint());
 					number.setNegative(field.isAllowNegative());
-					number.setWidth(field.getWidth() + "px");
+					if (field.getWidth() > 0)
+						number.setWidth(field.getWidth() + "px");
 					number.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
@@ -1663,7 +1668,8 @@ public class SimpleEditPage extends Composite {
 					HorizontalPanel hp = new HorizontalPanel();
 					String[] name = record.getValues(index);
 					final HTML label = new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name.length >= 6 && !name[6].isEmpty() ? name[6] : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
-					label.setWidth(field.getWidth() + "px");
+					if (field.getWidth() > 0)
+						label.setWidth(field.getWidth() + "px");
 					hp.add(label);
 					ImageButton change = new ImageButton(RESOURCES.edit());
 					change.setAltText(ARIA.iconEdit(field.getName()));
@@ -1792,7 +1798,8 @@ public class SimpleEditPage extends Composite {
 				case textarea:
 					HTML html = new HTML(getValue());
 					html.getElement().getStyle().setWhiteSpace(WhiteSpace.PRE_WRAP);
-					html.getElement().getStyle().setProperty("maxWidth", (10*field.getWidth())+ "px");
+					if (field.getWidth() > 0)
+						html.getElement().getStyle().setProperty("maxWidth", (10*field.getWidth())+ "px");
 					html.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
 					html.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 					html.setTitle(getValue());
@@ -1801,8 +1808,10 @@ public class SimpleEditPage extends Composite {
 				case password:
 					Label password = new Label(MESSAGES.password());
 					password.getElement().getStyle().setWhiteSpace(WhiteSpace.NORMAL);
-					password.getElement().getStyle().setProperty("maxWidth", field.getWidth()+ "px");
-					password.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					if (field.getWidth() > 0) {
+						password.getElement().getStyle().setProperty("maxWidth", field.getWidth()+ "px");
+						password.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					}
 					password.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 					password.setTitle(getValue());
 					initWidget(password);
@@ -1810,8 +1819,10 @@ public class SimpleEditPage extends Composite {
 				default:
 					Label label = new Label(getValue());
 					label.getElement().getStyle().setWhiteSpace(WhiteSpace.NORMAL);
-					label.getElement().getStyle().setProperty("maxWidth", field.getWidth()+ "px");
-					label.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					if (field.getWidth() > 0) {
+						label.getElement().getStyle().setProperty("maxWidth", field.getWidth()+ "px");
+						label.getElement().getStyle().setTextOverflow(TextOverflow.ELLIPSIS);
+					}
 					label.getElement().getStyle().setOverflowX(Overflow.HIDDEN);
 					label.setTitle(getValue());
 					initWidget(label);
