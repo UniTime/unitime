@@ -295,12 +295,12 @@ public class AcademicSessionsPage extends Composite {
 				}
 				
 				iSessionStart = new SingleDateSelector(null, false);
-				iSessionStart.setValue(iSession.getSessionStart());
+				iSessionStart.setValueInServerTimeZone(iSession.getSessionStart());
 				iPanel.addRow(COURSE.columnSessionStartDate() + ":", iSessionStart);
 				iSessionStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setSessionStart(event.getValue());
+						iSession.setSessionStart(iSessionStart.getValueInServerTimeZone());
 						datesChanged();
 					}
 				});
@@ -308,12 +308,12 @@ public class AcademicSessionsPage extends Composite {
 				iSessionStart.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 				
 				iClassEnd = new SingleDateSelector(null, false);
-				iClassEnd.setValue(iSession.getClassEnd());
+				iClassEnd.setValueInServerTimeZone(iSession.getClassEnd());
 				iPanel.addRow(COURSE.columnClassesEndDate() + ":", iClassEnd);
 				iClassEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setClassEnd(event.getValue());
+						iSession.setClassEnd(iClassEnd.getValueInServerTimeZone());
 						datesChanged();
 					}
 				});
@@ -321,12 +321,12 @@ public class AcademicSessionsPage extends Composite {
 				iClassEnd.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 				
 				iExamStart = new SingleDateSelector(null, false);
-				iExamStart.setValue(iSession.getExamStart());
+				iExamStart.setValueInServerTimeZone(iSession.getExamStart());
 				iPanel.addRow(COURSE.columnExamStartDate() + ":", iExamStart);
 				iExamStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setExamStart(event.getValue());
+						iSession.setExamStart(iExamStart.getValueInServerTimeZone());
 						datesChanged();
 					}
 				});
@@ -334,12 +334,12 @@ public class AcademicSessionsPage extends Composite {
 				iExamStart.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 
 				iSessionEnd = new SingleDateSelector(null, false);
-				iSessionEnd.setValue(iSession.getSessionEnd());
+				iSessionEnd.setValueInServerTimeZone(iSession.getSessionEnd());
 				iPanel.addRow(COURSE.columnSessionEndDate() + ":", iSessionEnd);
 				iSessionEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setSessionEnd(event.getValue());
+						iSession.setSessionEnd(iSessionEnd.getValueInServerTimeZone());
 						datesChanged();
 					}
 				});
@@ -347,12 +347,12 @@ public class AcademicSessionsPage extends Composite {
 				iSessionEnd.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 
 				iEventStart = new SingleDateSelector(null, false);
-				iEventStart.setValue(iSession.getEventStart());
+				iEventStart.setValueInServerTimeZone(iSession.getEventStart());
 				iPanel.addRow(COURSE.columnEventStartDate() + ":", iEventStart);
 				iEventStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setEventStart(event.getValue());
+						iSession.setEventStart(iEventStart.getValueInServerTimeZone());
 						datesChanged();
 					}
 				});
@@ -360,12 +360,12 @@ public class AcademicSessionsPage extends Composite {
 				iEventStart.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 
 				iEventEnd = new SingleDateSelector(null, false);
-				iEventEnd.setValue(iSession.getEventEnd());
+				iEventEnd.setValueInServerTimeZone(iSession.getEventEnd());
 				iPanel.addRow(COURSE.columnEventEndDate() + ":", iEventEnd);
 				iEventEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setEventEnd(event.getValue());
+						iSession.setEventEnd(iEventEnd.getValueInServerTimeZone());
 						datesChanged();
 					}
 				});
@@ -509,22 +509,22 @@ public class AcademicSessionsPage extends Composite {
 				iPanel.addRow(COURSE.propDefaultStudentStatus(), iStudentStatus);
 				
 				iNotificationStart = new SingleDateSelector(null, false);
-				iNotificationStart.setValue(iSession.getNotificationStart());
+				iNotificationStart.setValueInServerTimeZone(iSession.getNotificationStart());
 				iPanel.addRow(COURSE.columnNotificationsBeginDate() + ":", iNotificationStart);
 				iNotificationStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setNotificationStart(event.getValue());
+						iSession.setNotificationStart(iNotificationStart.getValueInServerTimeZone());
 					}
 				});
 				
 				iNotificationEnd = new SingleDateSelector(null, false);
-				iNotificationEnd.setValue(iSession.getNotificationEnd());
+				iNotificationEnd.setValueInServerTimeZone(iSession.getNotificationEnd());
 				iPanel.addRow(COURSE.columnNotificationsEndDate() + ":", iNotificationEnd);
 				iNotificationEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setNotificationEnd(event.getValue());
+						iSession.setNotificationEnd(iNotificationEnd.getValueInServerTimeZone());
 					}
 				});
 
