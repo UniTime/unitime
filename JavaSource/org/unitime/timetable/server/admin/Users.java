@@ -67,7 +67,7 @@ public class Users implements AdminTable {
 		fields.add(new Field(MSG.columnManager(), FieldType.text, 200, Flag.READ_ONLY, Flag.NO_DETAIL));
 		boolean apiKey = ApplicationProperty.ApiCanUseAPIToken.isTrue();
 		if (apiKey)
-			fields.add(new Field(MSG.columnAPIKey(), FieldType.text, 400, Flag.READ_ONLY));
+			fields.add(new Field(MSG.columnAPIKey(), FieldType.text, 0, Flag.READ_ONLY));
 		SimpleEditInterface data = new SimpleEditInterface(fields.toArray(new Field[fields.size()]));
 		data.setSortBy(1);
 		data.setAllowMultiEdit(false);
