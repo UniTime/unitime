@@ -127,12 +127,14 @@
 		
 <DIV align="center" class="H1">
 	<br><br>
-	<c:out value="${param.message}" escapeXml="true"/>
+	<c:if test="${param.message != null}">
+		<span style='color:#ec0000;'><c:out value="${param.message}" escapeXml="true"/></span>
+	</c:if>
 	<br><br>
 	<A class="l7" href="javascript:self.history.back();"><loc:message name="linkBACK"/></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<c:choose>
-		<c:when test="${param.target != null && !param.target.isEmpty()}">
-			<A class="l7" href="${pageContext.request.contextPath}/login?target=${param.target}" target="_top"><loc:message name="linkLOGIN"/></A>
+		<c:when test="${target != null && !target.isEmpty()}">
+			<A class="l7" href="${pageContext.request.contextPath}/login?target=${target}" target="_top"><loc:message name="linkLOGIN"/></A>
 		</c:when>
 		<c:otherwise>
 			<A class="l7" href="${pageContext.request.contextPath}/login" target="_top"><loc:message name="linkLOGIN"/></A>

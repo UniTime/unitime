@@ -462,6 +462,9 @@ public class RedirectFilter implements Filter {
 	}
 	
 	protected boolean loginRequired(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		String target = request.getParameter("target");
+		if (target != null && !target.isEmpty())
+			request.setAttribute("target", URLEncoder.encode(target, "UTF-8"));
 		request.getRequestDispatcher("loginRequired2.jsp").forward(request, response);
         return true;
 	}
