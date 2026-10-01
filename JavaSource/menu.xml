@@ -1307,6 +1307,7 @@
 			<not>
 				<hasRole name="Anonymous"/>
 			</not>
+			<propertyEquals name="unitime.legacy.login" value="true" defaultValue="false"/>
 		</condition>
 	</item>
 	<item name="Log In" page="login.action">
@@ -1317,6 +1318,27 @@
 				</not>
 				<hasRole name="Anonymous"/>
 			</or>
+			<propertyEquals name="unitime.legacy.login" value="true" defaultValue="false"/>
+		</condition>
+	</item>
+	<item name="Log Out" page="logout">
+		<condition>
+			<isAuthenticated/>
+			<not>
+				<hasRole name="Anonymous"/>
+			</not>
+			<propertyEquals name="unitime.legacy.login" value="false" defaultValue="false"/>
+		</condition>
+	</item>
+	<item name="Log In" page="login">
+		<condition>
+			<or>
+				<not>
+					<isAuthenticated/>
+				</not>
+				<hasRole name="Anonymous"/>
+			</or>
+			<propertyEquals name="unitime.legacy.login" value="false" defaultValue="false"/>
 		</condition>
 	</item>
 </unitime-menu>

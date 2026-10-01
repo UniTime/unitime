@@ -38,10 +38,10 @@
 		<intercept-url pattern="/*.action" access="isAuthenticated()"/>
 		<intercept-url pattern="/selectPrimaryRole" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
-		<form-login login-page="/login.action"
+		<form-login login-page="/login"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
-		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="/login.action"/>
+		<logout logout-url="/logout" delete-cookies="JSESSIONID" logout-success-url="/login"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>

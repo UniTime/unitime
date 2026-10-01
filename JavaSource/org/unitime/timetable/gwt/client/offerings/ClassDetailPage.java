@@ -137,7 +137,7 @@ public class ClassDetailPage extends Composite {
 		iHeader.addButton("back", COURSE.actionBackClassDetail(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "back.action?uri=" + URL.encodeQueryString(iResponse.getBackUrl()) +
+				ToolBox.open(GWT.getHostPageBaseURL() + "back?uri=" + URL.encodeQueryString(iResponse.getBackUrl()) +
 						"&backId=" + iResponse.getClassId() + "&backType=PreferenceGroup");
 			}
 		});
