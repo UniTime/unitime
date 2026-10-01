@@ -1941,7 +1941,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         CourseOffering co = io.findSortCourseOfferingForSubjectArea(subjectAreaId);
         boolean isEditable = getSessionContext().hasPermission(io, Right.InstructionalOfferingDetail);
         LineInterface row = (this.initRow(true));
-        if (isEditable) row.setURL("instructionalOfferingDetail.action?op=view&io=" + io.getUniqueId());
+        if (isEditable) row.setURL("offering?io=" + io.getUniqueId());
         boolean isManagedAs = !co.isIsControl().booleanValue(); 
         
         CellInterface cell = null;

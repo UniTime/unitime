@@ -73,7 +73,6 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TeachingResponsibility;
 import org.unitime.timetable.model.TeachingResponsibility.Option;
 import org.unitime.timetable.model.dao.SolutionDAO;
-import org.unitime.timetable.server.solver.TimetableGridHelper.BgMode;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.StudentGroupInfo;

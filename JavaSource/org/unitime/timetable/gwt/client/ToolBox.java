@@ -270,11 +270,7 @@ public class ToolBox {
 			String url = Window.Location.getHref();
 			if (url.startsWith(GWT.getHostPageBaseURL()))
 				url = url.substring(GWT.getHostPageBaseURL().length());
-			open(GWT.getHostPageBaseURL() + "login.action?menu=hide&m=" + URL.encodeQueryString(t.getMessage())+"&target=" + URL.encodeQueryString(url));
-			/*
-			UniTimeFrameDialog.openDialog("UniTime " + CONSTANTS.version() + "| Log In", "login.action?menu=hide&m=" + URL.encodeQueryString(t.getMessage())
-					+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "700px", "420px");
-			*/
+			open(GWT.getHostPageBaseURL() + "loginRequired?message=" + URL.encodeQueryString(t.getMessage())+"&target=" + URL.encodeQueryString(url));
 		}
 	}
 	
