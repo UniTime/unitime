@@ -155,7 +155,7 @@ public enum ApplicationProperty {
 	/**
 	 * Use the following property to set the login page when user types '/UniTime'
 	 */
-	@DefaultValue("login.jsp")
+	@DefaultValue("login")
 	@Description("Login: page url")
 	LoginPage("tmtbl.login_url"),
 	
@@ -3984,6 +3984,11 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Hibernate Statistics: switch the user interface back to the old (Struts-based) hibernate statistics page")
 	LegacyHibernateStats("unitime.legacy.hibernateStats"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("false")
+	@Description("Login/Logout: switch the user interface back to the old (Struts-based) login and logout pages")
+	LegacyLogin("unitime.legacy.login"),
 	
 	@Type(Boolean.class)
 	@DefaultValue("false")

@@ -216,7 +216,7 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("back", COURSE.actionBackIODetail(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "back.action?uri=" + URL.encodeQueryString(iResponse.getBackUrl()) +
+				ToolBox.open(GWT.getHostPageBaseURL() + "back?uri=" + URL.encodeQueryString(iResponse.getBackUrl()) +
 						"&backId=" + iResponse.getOfferingId() + "&backType=InstructionalOffering");
 			}
 		});

@@ -23,7 +23,7 @@
 <loc:bundle name="CourseMessages">
 <DIV align="center" class="H1">
 	<br><br>
-	<s:property value="message" escapeHtml="false"/>
+	<s:property value="message" escapeHtml="true"/>
 	<br><br>
 	<A class="l7" href="javascript:self.history.back();"><loc:message name="linkBACK"/></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<s:if test="target != null && !target.isEmpty()">

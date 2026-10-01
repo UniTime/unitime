@@ -69,12 +69,16 @@ public class MainPage extends P {
 				}
 
 				String message = Window.Location.getParameter("message");
-				if (message != null && "cas-logout".equals(Window.Location.getParameter("op")))
-					message = COURSE.casLoggedOut();
-				if (message != null && "logout".equals(Window.Location.getParameter("op")))
-					message = COURSE.opLoggedOut();
 				if (message != null && !message.isEmpty()) {
 					P m = new P("message"); m.setText((sysMessages.getWidgetCount() == 1 ? "" : "\n") + message);
+					sysMessages.add(m);
+				}
+				if ("cas-logout".equals(Window.Location.getParameter("op"))) {
+					P m = new P("message"); m.setHTML((sysMessages.getWidgetCount() == 1 ? "" : "\n") + COURSE.casLoggedOut());
+					sysMessages.add(m);
+				}
+				if ("logout".equals(Window.Location.getParameter("op"))) {
+					P m = new P("message"); m.setHTML((sysMessages.getWidgetCount() == 1 ? "" : "\n") + COURSE.opLoggedOut());
 					sysMessages.add(m);
 				}
 				if (sysMessages.getWidgetCount() > 1) {

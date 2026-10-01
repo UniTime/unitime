@@ -39,10 +39,10 @@
 		<intercept-url pattern="/selectPrimaryRole" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
 		
-		<form-login login-page="/login.action"
+		<form-login login-page="/login"
 			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
 			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
-		<logout logout-url="/logout.action" delete-cookies="JSESSIONID" logout-success-url="${unitime.cas.logout:/main.action?op=cas-logout}"/>
+		<logout logout-url="/logout" delete-cookies="JSESSIONID" logout-success-url="${unitime.cas.logout:/main?op=cas-logout}"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 		<anonymous enabled="false"/>
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
