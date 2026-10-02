@@ -440,7 +440,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 	
 	public static class JenrlInfo implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		public int iJenrl = 0;
+		public double iJenrl = 0;
 		public boolean iIsSatisfied = false;
 		public boolean iIsHard = false;
 		public boolean iIsDistance = false;
@@ -452,8 +452,9 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		public double iDistance = 0.0;
 		private TreeSet<CurriculumInfo> iCurriculum2nrStudents = null;
 	
-		public int getJenrl() { return iJenrl; }
+		public int getJenrl() { return (int)Math.round(iJenrl); }
 		public void setJenrl(int jenrl) { iJenrl = jenrl; }
+		public void addJenrl(double jenrl) { iJenrl += jenrl; }
 		public boolean isSatisfied() { return iIsSatisfied; }
 		public void setIsSatisfied(boolean isSatisfied) { iIsSatisfied = isSatisfied; }
 		public boolean isHard() { return iIsHard; }
