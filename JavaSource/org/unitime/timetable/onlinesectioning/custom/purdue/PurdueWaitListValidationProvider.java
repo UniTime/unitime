@@ -1434,6 +1434,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				student.setMaxCredit(status.data.maxCredit);
 				studentChanged = true;
 			}
+			if (status.data.minCredit != null && !status.data.minCredit.equals(student.getMinCredit())) {
+				student.setMinCredit(status.data.minCredit);
+				studentChanged = true;
+			}
 			if (student.getOverrideExternalId() != null) {
 				SpecialRegistration req = null;
 				for (SpecialRegistration r: status.data.requests) {
@@ -2031,6 +2035,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						student.setMaxCredit(status.maxCredit);
 						studentChanged = true;
 					}
+					if (status.minCredit != null && !status.minCredit.equals(student.getMinCredit())) {
+						student.setMinCredit(status.minCredit);
+						studentChanged = true;
+					}
 					if (student.getOverrideExternalId() != null) {
 						SpecialRegistration req = null;
 						for (SpecialRegistration r: status.requests) {
@@ -2168,6 +2176,15 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
 					dbStudent.setMaxCredit(status.data.maxCredit);
+					helper.getHibSession().merge(dbStudent);
+				}
+				studentChanged = true;
+			}
+			if (status.data.minCredit != null && !status.data.minCredit.equals(student.getMinCredit())) {
+				student.setMinCredit(status.data.minCredit);
+				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+				if (dbStudent != null) {
+					dbStudent.setMinCredit(status.data.minCredit);
 					helper.getHibSession().merge(dbStudent);
 				}
 				studentChanged = true;

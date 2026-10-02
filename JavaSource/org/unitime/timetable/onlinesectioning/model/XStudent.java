@@ -87,7 +87,7 @@ public class XStudent extends XStudentId implements Externalizable {
     private Date iEmailTimeStamp = null;
     private List<XInstructorAssignment> iInstructorAssignments = new ArrayList<XInstructorAssignment>();
     private XStudentNote iLastNote = null;
-    private Float iMaxCredit = null;
+    private Float iMaxCredit = null, iMinCredit = null;
     private XOverride iMaxCreditOverride = null;
     private boolean iAllowDisabled = false;
     private List<XAdvisor> iAdvisors = new ArrayList<XAdvisor>();
@@ -189,6 +189,7 @@ public class XStudent extends XStudentId implements Externalizable {
         iMaxCredit = student.getMaxCredit();
         if (student.getOverrideMaxCredit() != null)
         	iMaxCreditOverride = new XOverride(student.getOverrideExternalId(), student.getOverrideTimeStamp(), student.getOverrideStatus(), student.getOverrideMaxCredit());
+        iMinCredit = student.getMinCredit();
         
         setAdvisorRequests(student, helper, freeTimePattern);
         
@@ -251,6 +252,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iPin = student.iPin;
     	iPinReleased = student.iPinReleased;
     	iMaxCredit = student.iMaxCredit;
+    	iMinCredit = student.iMinCredit;
     	iMaxCreditOverride = student.iMaxCreditOverride;
     	iLastNote = student.iLastNote;
     	iClassStartDate = student.iClassStartDate;
@@ -270,6 +272,7 @@ public class XStudent extends XStudentId implements Externalizable {
     	iGroups.addAll(student.getGroups());
     	iAccomodations.addAll(student.getAccomodations());
     	iMaxCredit = student.getMaxCredit();
+    	iMinCredit = student.getMinCredit();
     	iMaxCreditOverride = student.getMaxCreditOverride();
     	iAllowDisabled = student.iAllowDisabled;
     	iAdvisors.addAll(student.getAdvisors());
@@ -414,6 +417,9 @@ public class XStudent extends XStudentId implements Externalizable {
     public Float getMaxCredit() { return iMaxCredit; }
     public boolean hasMaxCredit() { return iMaxCredit != null; }
     public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
+    public Float getMinCredit() { return iMinCredit; }
+    public boolean hasMinCredit() { return iMinCredit != null; }
+    public void setMinCredit(Float minCredit) { iMinCredit = minCredit; }
     public XOverride getMaxCreditOverride() { return iMaxCreditOverride; }
     public boolean isMaxCreditOverridePending() {
     	return (iMaxCreditOverride == null || iMaxCreditOverride.getStatus() == null ? false : iMaxCreditOverride.getStatus().intValue() == CourseRequestOverrideStatus.PENDING.ordinal());
@@ -694,6 +700,13 @@ public class XStudent extends XStudentId implements Externalizable {
 		iClassEndDate = (Integer)in.readObject();
 		iBackToBackPreference = BackToBackPreference.values()[in.readInt()];
 		iModalityPreference = ModalityPreference.values()[in.readInt()];
+		if (in.readBoolean())
+			iMaxCredit = in.readFloat();
+		if (in.readBoolean())
+			iMinCredit = in.readFloat();
+		if (in.readBoolean())
+			iMaxCreditOverride = new XOverride(in);
+		
 	}
 
 	@Override
@@ -761,6 +774,16 @@ public class XStudent extends XStudentId implements Externalizable {
 		out.writeObject(iClassEndDate);
 		out.writeInt(iBackToBackPreference.ordinal());
 		out.writeInt(iModalityPreference.ordinal());
+
+		out.writeBoolean(iMaxCredit != null);
+		if (iMaxCredit != null)
+			out.writeFloat(iMaxCredit);
+		out.writeBoolean(iMinCredit != null);
+		if (iMinCredit != null)
+			out.writeFloat(iMinCredit);
+		out.writeBoolean(iMaxCreditOverride != null);
+		if (iMaxCreditOverride != null)
+			iMaxCreditOverride.writeExternal(out);
 	}
 	
 	public static class XGroup implements Externalizable {

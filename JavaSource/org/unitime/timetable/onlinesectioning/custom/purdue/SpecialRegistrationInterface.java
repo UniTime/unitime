@@ -119,6 +119,10 @@ public class SpecialRegistrationInterface {
 		public String pgrmcode;
 		/** Primary campus code of the student */
 		public String studentCampus;
+		/** Min credit needed (only filled in when min override needs to be decreased!) */
+		public Float minCredit;
+		/** Student message probided with the min credit increase request */
+		public String minCreditRequestorNotes;
 	}
 	
 	/** Possible operations for a change (work order) */
@@ -347,6 +351,8 @@ public class SpecialRegistrationInterface {
 		public List<SpecialRegistration> requests;
 		/** Max credits that the student is allowed at the moment */
 		public Float maxCredit;
+		/** Min credits that the student is allowed at the moment */
+		public Float minCredit;
 		/** Student PUID including the leading zero (needed only in /checkAllSpecialRegistrationStatus) */
 		public String studentId;
 	}
@@ -413,6 +419,8 @@ public class SpecialRegistrationInterface {
 		public Set<String> overrides;
 		/** Student max credit (only used during registration) */
 		public Float maxCredit;
+		/** Student min credit (only used during registration) */
+		public Float minCredit;
 		/** Are there any not-cancelled requests for the student (only used during registration. indication that the Requested Overrides table should be shown) */
 		public Boolean hasNonCanceledRequest;
 	}
@@ -524,6 +532,18 @@ public class SpecialRegistrationInterface {
 		public ApiMode mode;
 	}
 	
+	/** Max credit override that have been denied for the student */
+	public static class DeniedMinCredit {
+		/** Registration error code */
+		public String code;
+		/** Registration error message */
+		public String errorMessage;
+		/** Min credit denied */
+		public Float minCredit;
+		/** Special Registration API mode (REG or PREREG) */
+		public ApiMode mode;
+	}
+	
 	/** Request message for the /checkRestrictions call */
 	public static class CheckRestrictionsRequest {
 		/** Student PUID including the leading zero */
@@ -548,10 +568,14 @@ public class SpecialRegistrationInterface {
 		public List<DeniedRequest> deniedRequests;
 		/** Max credit requests that have been denied (student should request that much credit) */
 		public List<DeniedMaxCredit> deniedMaxCreditRequests;
+		/** Min credit requests that have been denied (student should request that much credit) */
+		public List<DeniedMinCredit> deniedMinCreditRequests;
 		/** Student eligibility check (used only during registration) */
 		public SpecialRegistrationEligibility eligible;
 		/** Student's current max credit (used only during registration) */
 		public Float maxCredit;
+		/** Student's current min credit (used only during registration) */
+		public Float minCredit;
 		/** Validation response for the schedule changes */
 		public ScheduleRestrictions outJson;
 		/** Validation response for the alternative schedule changes (only used in pre-registration) */
@@ -605,6 +629,8 @@ public class SpecialRegistrationInterface {
 		public Float currentCredit;
 		/** Student's max credit */
 		public Float maxCredit;
+		/** Student's min credit */
+		public Float minCredit;
 	}
 	
 	/**

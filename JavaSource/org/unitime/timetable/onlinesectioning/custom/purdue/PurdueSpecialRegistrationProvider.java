@@ -2279,15 +2279,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				maxCredit = response.maxCredit;
 				check.setMaxCredit(response.maxCredit);
 			}
-			if (student.getStudentId() != null && ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())))) {
+			Float minCredit = null;
+			if (response.minCredit != null) {
+				minCredit = response.minCredit;
+			}
+			if (student.getStudentId() != null && ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))
+				|| (minCredit != null && !minCredit.equals(student.getMinCredit())))) {
 				Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 				if (dbStudent != null) {
 					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
+					if (minCredit != null) dbStudent.setMinCredit(minCredit);
 					if (pin != null) dbStudent.setPin(pin);
 					helper.getHibSession().merge(dbStudent);
 					helper.getHibSession().flush();
 				}
 				if (maxCredit != null) student.setMaxCredit(maxCredit);
+				if (minCredit != null) student.setMinCredit(minCredit);
 				if (pin != null) student.setPin(pin);
 				server.update(student, false);
 			}

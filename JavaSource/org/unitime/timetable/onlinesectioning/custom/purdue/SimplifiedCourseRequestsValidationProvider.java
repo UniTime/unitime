@@ -330,14 +330,18 @@ public class SimplifiedCourseRequestsValidationProvider extends DefaultCourseReq
 						check.setFlag(EligibilityCheck.EligibilityFlag.CAN_REGISTER, helper.isAdmin());
 					check.setMessage(MESSAGES.exceptionFailedEligibilityCheck(error));
 				}
-				if (student.getUniqueId() != null && original != null && original.maxHours != null && original.maxHours > 0 && original.maxHours != student.getMaxCredit()) {
+				if (student.getUniqueId() != null && original != null &&
+						((original.maxHours != null && original.maxHours > 0 && original.maxHours != student.getMaxCredit()) ||
+						(original.minHours != null && original.minHours > 0 && original.minHours != student.getMinCredit()))) {
 					Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
+					dbStudent.setMinCredit(original.minHours);
 					dbStudent.setMaxCredit(original.maxHours);
 					helper.getHibSession().merge(dbStudent);
 					helper.getHibSession().flush();
 					if (!(server instanceof DatabaseServer)) {
 						XStudent xs = server.getStudent(student.getUniqueId());
 						if (xs != null) {
+							xs.setMinCredit(original.minHours);
 							xs.setMaxCredit(original.maxHours);
 							server.update(xs, false);
 						}
@@ -410,9 +414,15 @@ public class SimplifiedCourseRequestsValidationProvider extends DefaultCourseReq
 					maxCredit = eligibility.maxCredit;
 					check.setMaxCredit(eligibility.maxCredit);
 				}
-				if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))) {
+				Float minCredit = null;
+				if (eligibility.minCredit != null) {
+					minCredit = eligibility.minCredit;
+				}
+				if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())) ||
+						(minCredit != null && !minCredit.equals(student.getMinCredit()))) {
 					Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
 					if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
+					if (minCredit != null) dbStudent.setMinCredit(minCredit);
 					if (pin != null) dbStudent.setPin(pin);
 					helper.getHibSession().merge(dbStudent);
 					helper.getHibSession().flush();
@@ -420,6 +430,7 @@ public class SimplifiedCourseRequestsValidationProvider extends DefaultCourseReq
 						XStudent xs = server.getStudent(student.getUniqueId());
 						if (xs != null) {
 							if (maxCredit != null) xs.setMaxCredit(maxCredit);
+							if (minCredit != null) xs.setMinCredit(minCredit);
 							if (pin != null) xs.setPin(pin);
 							server.update(xs, false);
 						}

@@ -2822,6 +2822,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				student.setMaxCredit(status.data.maxCredit);
 				studentChanged = true;
 			}
+			if (status.data.minCredit != null && !status.data.minCredit.equals(student.getMinCredit())) {
+				student.setMinCredit(status.data.minCredit);
+				studentChanged = true;
+			}
 			if (student.getOverrideExternalId() != null) {
 				SpecialRegistration req = null;
 				for (SpecialRegistration r: status.data.requests) {
@@ -3167,6 +3171,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			student.setMaxCredit(validation.maxCredit);
 			studentChanged = true;
 		}
+		if (validation != null && validation.minCredit != null && !validation.minCredit.equals(student.getMinCredit())) {
+			student.setMinCredit(validation.minCredit);
+			studentChanged = true;
+		}
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 
 		SpecialRegistrationRequest submitRequest = new SpecialRegistrationRequest();
@@ -3495,9 +3503,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				maxCredit = eligibility.maxCredit;
 				check.setMaxCredit(eligibility.maxCredit);
 			}
-			if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))) {
+			Float minCredit = null;
+			if (eligibility.minCredit != null) {
+				minCredit = eligibility.minCredit;
+			}
+			if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())) ||
+				(minCredit != null && !minCredit.equals(student.getMinCredit()))) {
 				org.unitime.timetable.model.Student dbStudent = StudentDAO.getInstance().get(student.getUniqueId(), helper.getHibSession());
 				if (maxCredit != null) dbStudent.setMaxCredit(maxCredit);
+				if (minCredit != null) dbStudent.setMinCredit(minCredit);
 				if (pin != null) dbStudent.setPin(pin);
 				helper.getHibSession().merge(dbStudent);
 				helper.getHibSession().flush();
@@ -3505,6 +3519,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					XStudent xs = server.getStudent(student.getUniqueId());
 					if (xs != null) {
 						if (maxCredit != null) xs.setMaxCredit(maxCredit);
+						if (minCredit != null) xs.setMinCredit(minCredit);
 						if (pin != null) xs.setPin(pin);
 						server.update(xs, false);
 					}
@@ -3628,6 +3643,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					boolean studentChanged = false;
 					if (status.maxCredit != null && !status.maxCredit.equals(student.getMaxCredit())) {
 						student.setMaxCredit(status.maxCredit);
+						studentChanged = true;
+					}
+					if (status.minCredit != null && !status.minCredit.equals(student.getMinCredit())) {
+						student.setMinCredit(status.minCredit);
 						studentChanged = true;
 					}
 					if (student.getOverrideExternalId() != null) {
