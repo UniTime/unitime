@@ -484,6 +484,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
 			if (assignment != null) {
 				if (assignment.getPeriodPref() != null) {
 	        		CellInterface cell = assPer.add(assignment.getPeriodAbbreviation()).setColor(PreferenceLevel.prolog2color(assignment.getPeriodPref()));
+	        		cell.setNoWrap(true);
 	            	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
 	            		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + "," + assignment.getPeriodId() + "');");
 	            		cell.setMouseOut("$wnd.hideGwtTimeHint();");
@@ -492,7 +493,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
 	            		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
 	            	}
 	        	} else {
-	        		assPer.add(assignment.getPeriodAbbreviation());
+	        		assPer.add(assignment.getPeriodAbbreviation()).setNoWrap(true);
 	        	}
 				assPer.setComparable(assignment.getPeriod().getStartTime());
 
@@ -500,6 +501,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
 	        		for (ExamRoomInfo room: assignment.getRooms()) {
 	        			CellInterface cell = assRoom.add(room.getName());
 	        			cell.setInline(false);
+	        			cell.setNoWrap(true);
 	    				cell.setColor(PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())));
 	    				cell.setMouseOver("$wnd.showGwtRoomHint($wnd.lastMouseOverElement, '" + room.getLocationId() + "', '" + PreferenceLevel.int2string(room.getPreference()) + "');");
 	    				cell.setMouseOut("$wnd.hideGwtRoomHint();");
