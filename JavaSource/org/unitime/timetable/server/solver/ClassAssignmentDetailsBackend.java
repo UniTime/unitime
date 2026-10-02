@@ -22,18 +22,22 @@ package org.unitime.timetable.server.solver;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.cpsolver.coursett.constraint.FlexibleConstraint;
 import org.cpsolver.coursett.constraint.GroupConstraint;
 import org.cpsolver.coursett.constraint.InstructorConstraint;
 import org.cpsolver.coursett.constraint.JenrlConstraint;
+import org.cpsolver.coursett.criteria.StudentConflict;
 import org.cpsolver.coursett.criteria.StudentOverlapConflict;
 import org.cpsolver.coursett.criteria.placement.DeltaTimePreference;
 import org.cpsolver.coursett.model.Lecture;
 import org.cpsolver.coursett.model.Placement;
 import org.cpsolver.coursett.model.RoomLocation;
+import org.cpsolver.coursett.model.Student;
 import org.cpsolver.coursett.model.TimeLocation;
+import org.cpsolver.coursett.model.TimetableModel;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.criteria.Criterion;
 import org.cpsolver.ifs.model.Constraint;
@@ -136,7 +140,7 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		return createClassAssignmentDetails(context, solver, lecture, (Placement)solver.currentSolution().getAssignment().getValue(lecture), includeDomain, includeConstraints);
 	}
 		
-	public static ClassAssignmentDetails createClassAssignmentDetails(SuggestionsContext context, Solver solver, Lecture lecture, Placement placement, boolean includeDomain, boolean includeConstraints) {
+	public static ClassAssignmentDetails createClassAssignmentDetails(SuggestionsContext context, Solver<Lecture, Placement> solver, Lecture lecture, Placement placement, boolean includeDomain, boolean includeConstraints) {
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
 		ClassAssignmentDetails details = new ClassAssignmentDetails();
 		details.setCanUnassign(!lecture.isCommitted());
@@ -263,13 +267,8 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 					details.addStudentConflict(new StudentConflictInfo(toJenrlInfo(new org.unitime.timetable.solver.ui.JenrlInfo(solver, jenrl)), createClassAssignmentDetails(context, solver, another, false, false)));
 			}
 			if (placement!=null) {
-				Hashtable infos = org.unitime.timetable.solver.ui.JenrlInfo.getCommitedJenrlInfos(solver, lecture);
-    			for (Iterator i2=infos.entrySet().iterator();i2.hasNext();) {
-    				Map.Entry entry = (Map.Entry)i2.next();
-    				Long assignmentId = (Long)entry.getKey();
-    				org.unitime.timetable.solver.ui.JenrlInfo jInfo = (org.unitime.timetable.solver.ui.JenrlInfo)entry.getValue();
-    				details.addStudentConflict(new StudentConflictInfo(toJenrlInfo(jInfo), createClassAssignmentDetailsFromAssignment(context, assignmentId, false)));
-    			}
+				for (Map.Entry<Placement, JenrlInfo> e: getCommitedJenrlInfos(solver, lecture).entrySet())
+					details.addStudentConflict(new StudentConflictInfo(e.getValue(), createClassAssignmentDetails(context, solver, lecture, placement, false, false)));
 			}
 			for (Constraint c: lecture.constraints()) {
 				if (c instanceof GroupConstraint) {
@@ -450,6 +449,55 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 		ret.setIsSatisfied(info.isSatisfied());
 		ret.setName(info.getName());
 		ret.setType(info.getType());
+		return ret;
+	}
+	
+	public static Map<Placement, JenrlInfo> getCommitedJenrlInfos(Solver<Lecture, Placement> solver, Lecture lecture) {
+		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
+		Hashtable<Placement, JenrlInfo> ret = new Hashtable<Placement, JenrlInfo>();
+		Hashtable<Placement, Hashtable<String, Double>> assignment2curriculum2nrStudents = new Hashtable<Placement, Hashtable<String,Double>>();
+		Placement placement = (Placement)assignment.getValue(lecture);
+		if (placement == null) return ret;
+		for (Student student: lecture.students()) {
+			Set<Placement> conflicts = student.conflictPlacements(placement);
+			if (conflicts==null) continue;
+			for (Placement pl: conflicts) {
+				JenrlInfo info = ret.get(pl);
+				if (info == null) {
+					info = new JenrlInfo();
+					info.setIsCommited(true);
+					info.setIsDistance(StudentConflict.distance(((TimetableModel)lecture.getModel()).getDistanceMetric(), pl, placement));
+					info.setIsWorkDay(StudentConflict.workday(((TimetableModel)lecture.getModel()).getStudentWorkDayLimit(), pl, placement));
+					info.setIsFixed(lecture.nrTimeLocations()==1);
+					info.setIsHard(lecture.isSingleSection());
+					if (info.isDistance())
+						info.setDistance(Placement.getDistanceInMeters(((TimetableModel)lecture.getModel()).getDistanceMetric(),placement,pl));
+					ret.put(pl, info);
+				}
+				if (student.getCurriculum() != null && !student.getCurriculum().isEmpty()) {
+					Hashtable<String, Double> curriculum2nrStudents = assignment2curriculum2nrStudents.get(pl);
+					if (curriculum2nrStudents == null) {
+						curriculum2nrStudents = new Hashtable<String, Double>();
+						assignment2curriculum2nrStudents.put(pl, curriculum2nrStudents);
+					}
+					for (String c: student.getCurriculum().split("\\|")) {
+						Double nrStudents = curriculum2nrStudents.get(c);
+						curriculum2nrStudents.put(student.getCurriculum(), student.getJenrlWeight(lecture, pl.variable()) + (nrStudents == null ? 0.0 : nrStudents));
+					}
+				}
+				info.addJenrl(student.getJenrlWeight(lecture, pl.variable()));
+			}
+		}
+		for (Map.Entry<Placement, Hashtable<String, Double>> entry: assignment2curriculum2nrStudents.entrySet()) {
+			Placement pl = entry.getKey();
+			Hashtable<String, Double> curriculum2nrStudents = entry.getValue();
+			if (!curriculum2nrStudents.isEmpty()) {
+				JenrlInfo info = ret.get(pl);
+				for (Map.Entry<String, Double> e: curriculum2nrStudents.entrySet()) {
+					info.addCurriculum(new CurriculumInfo(e.getKey(), e.getValue()));
+				}
+			}
+		}
 		return ret;
 	}
 }

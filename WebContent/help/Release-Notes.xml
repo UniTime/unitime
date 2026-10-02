@@ -29,6 +29,15 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Suggestions: Committed student conflicts</name>
+			<description>
+				<line>Improved handling of committed student conflict when they are loaded in (not computed).</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Update / GWT</name>

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +63,10 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.CPSolverMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.BtbInstructorInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.ClassAssignmentDetails;
+import org.unitime.timetable.gwt.shared.SuggestionsInterface.CurriculumInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.DistributionInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.InstructorInfo;
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.RoomInfo;
@@ -224,6 +227,7 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
 	}
 	
 	public static Suggestion createSuggestion(SuggestionsContext context, TimetableSolver solver, Map<Lecture, Placement> initialAssignments, List<Long> order, Collection<Placement> unresolvedConflicts, Map<Lecture, Placement> unresolvedAssignments) {
+        TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
 		Suggestion suggestion = new Suggestion();
 		Assignment<Lecture, Placement> assignment = solver.currentSolution().getAssignment();
     	if (unresolvedConflicts != null) {
@@ -349,6 +353,50 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
             	conf.setInfo(ClassAssignmentDetailsBackend.toJenrlInfo(new JenrlInfo(solver, jenrl)));
             	suggestion.addStudentConflict(conf);
             }
+            if (committed != null && !committed.isEmpty()) {
+            	for (Map.Entry<Placement, Map<Placement, Integer>> e: committed.entrySet()) {
+            		Placement first = e.getKey();
+            		for (Map.Entry<Placement, Integer> f: e.getValue().entrySet()) {
+            			Placement second = f.getKey();
+            			if (f.getValue() == null || f.getValue() <= 0) continue;
+            			StudentConflictInfo conf = new StudentConflictInfo();
+                    	conf.setOther(createClassAssignmentDetails(context, solver, first.variable(), first, null));
+                    	conf.setAnother(createClassAssignmentDetails(context, solver, second.variable(), second, null));
+                    	if (suggestion.hasDifferentAssignments()) {
+                    		int i1 = suggestion.getDifferentAssignments().indexOf(conf.getOther());
+                    		int i2 = suggestion.getDifferentAssignments().indexOf(conf.getAnother());
+                    		if (i2 > 0 && i1 < i2) {
+                    			ClassAssignmentDetails d = conf.getOther();
+                    			conf.setOther(conf.getAnother());
+                    			conf.setAnother(d);
+                    		}
+                    	}
+                    	SuggestionsInterface.JenrlInfo info = new SuggestionsInterface.JenrlInfo();
+                    	info.setJenrl(f.getValue());
+                    	info.setIsCommited(true);
+    					info.setIsDistance(StudentConflict.distance(m.getDistanceMetric(), first, second));
+    					info.setIsWorkDay(StudentConflict.workday(m.getStudentWorkDayLimit(), first, second));
+    					info.setIsFixed(first.variable().nrTimeLocations()==1);
+    					info.setIsHard(first.variable().isSingleSection());
+    					if (info.isDistance())
+    						info.setDistance(Placement.getDistanceInMeters(m.getDistanceMetric(), first, second));
+    					Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
+    					for (Student student: first.variable().students()) {
+    						if (student.getCurriculum() == null || student.getCurriculum().isEmpty()) continue;
+    						if (student.getCommitedPlacements() == null || !student.getCommitedPlacements().contains(second)) continue;
+    						for (String c: student.getCurriculum().split("\\|")) {
+    							Double nrStudents = curriculum2nrStudents.get(c);
+    							curriculum2nrStudents.put(student.getCurriculum(), student.getJenrlWeight(first.variable(), second.variable()) + (nrStudents == null ? 0.0 : nrStudents));
+    						}
+    					}
+    					if (!curriculum2nrStudents.isEmpty())
+    						for (Map.Entry<String, Double> entry: curriculum2nrStudents.entrySet())
+    							info.addCurriculum(new CurriculumInfo(entry.getKey(), entry.getValue()));
+                    	conf.setInfo(info);
+                    	suggestion.addStudentConflict(conf);
+            		}
+            	}
+            }
             for (GroupConstraint gc: gcs) {
             	if (gc.isSatisfied(assignment)) continue;
             	DistributionInfo dist = new DistributionInfo();
@@ -372,7 +420,6 @@ public class SelectedAssignmentBackend implements GwtRpcImplementation<SelectedA
             	suggestion.addDistributionConflict(dist);
             }
         }
-        TimetableModel m = (TimetableModel)solver.currentSolution().getModel();
         suggestion.setValue(m.getTotalValue(assignment));
         suggestion.setUnassignedVariables(m.nrUnassignedVariables(assignment));
         Map<String, String> translations = context.courseObjectives();
