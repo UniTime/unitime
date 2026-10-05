@@ -49,7 +49,7 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		private Set<String> iOverrides = null;
 		private String iOverrideRequestDisclaimer = null;
 		private GradeModes iGradeModes = null;
-		private Float iMaxCredit = null;
+		private Float iMaxCredit = null, iMinCredit = null;
 		private Set<Long> iAdvisorWaitListedCourseIds = null;
 		
 		public static enum EligibilityFlag implements IsSerializable {
@@ -134,6 +134,9 @@ public class OnlineSectioningInterface implements IsSerializable, Serializable {
 		public boolean hasMaxCredit() { return iMaxCredit != null && iMaxCredit > 0f; }
 		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
 		public Float getMaxCredit() { return iMaxCredit; }
+		public boolean hasMinCredit() { return iMinCredit != null && iMinCredit > 0f; }
+		public void setMinCredit(Float minCredit) { iMinCredit = minCredit; }
+		public Float getMinCredit() { return iMinCredit; }
 		
 		public boolean hasCurrentCredit() {
 			return iGradeModes != null && iGradeModes.hasCurrentCredit();

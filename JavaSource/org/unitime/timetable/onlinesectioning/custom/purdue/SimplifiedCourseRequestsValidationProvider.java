@@ -312,6 +312,8 @@ public class SimplifiedCourseRequestsValidationProvider extends DefaultCourseReq
 					helper.debug("Current registration: " + gson.toJson(original));
 				if (original != null && original.maxHours != null)
 					check.setMaxCredit(original.maxHours);
+				if (original != null && original.minHours != null)
+					check.setMinCredit(original.minHours);
 
 				String bannerErrors = getBannerErrors();
 				String error = null;
@@ -415,8 +417,9 @@ public class SimplifiedCourseRequestsValidationProvider extends DefaultCourseReq
 					check.setMaxCredit(eligibility.maxCredit);
 				}
 				Float minCredit = null;
-				if (eligibility.minCredit != null) {
+				if (eligibility.minCredit != null && eligibility.minCredit > 0) {
 					minCredit = eligibility.minCredit;
+					check.setMinCredit(eligibility.minCredit);
 				}
 				if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())) ||
 						(minCredit != null && !minCredit.equals(student.getMinCredit()))) {

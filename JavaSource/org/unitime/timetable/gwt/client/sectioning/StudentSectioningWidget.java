@@ -706,7 +706,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
 									iContext,
-									rc.getRequestId(), rc.getCourseId(),
+									rc.getRequestId(), rc.getCourseId(), rc.getCourseName(),
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
@@ -762,7 +762,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest req = new UpdateSpecialRegistrationRequest(
 									iContext,
-									request.getRequestId(), null,
+									request.getRequestId(), null, "MAXI",
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(req, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
@@ -803,11 +803,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					for (ErrorMessage e: reg.getErrors())
 						if ((course == null || course.isEmpty()) && "MAXI".equals(e.getCode()))
 							confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
+						else if ((course == null || course.isEmpty()) && "MINI".equals(e.getCode()))
+							confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
 						else if (course != null && course.equals(e.getCourse()))
 							confirm.addMessage(null, e.getCourse(), e.getCode(), e.getMessage(), 0, 2);
 				}
 				confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 3);
-				String previousNote = (course == null || course.isEmpty() ? reg.getNote("MAXI") : reg.getNote(course));
+				String previousNote = (course != null && !course.isEmpty() ? reg.getNote(course) :
+					reg.hasMinCredit() ? reg.getNote("MINI") : reg.getNote("MAXI"));
 				final CourseRequestInterface.CourseMessage note = confirm.addConfirmation(previousNote == null ? "" : previousNote, 0, 4); note.setCode("REQUEST_NOTE");
 				if (reg.hasSuggestions())
 					for (String suggestion: reg.getSuggestions())
@@ -820,6 +823,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							UpdateSpecialRegistrationRequest request = new UpdateSpecialRegistrationRequest(
 									iContext,
 									reg.getRequestId(), courseId,
+									(course != null && !course.isEmpty() ? course : reg.hasMinCredit() ? "MINI" : "MAXI"),
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(request, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override
@@ -827,7 +831,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									if (result.isFailure() && result.hasMessage()) {
 										iStatus.error(MESSAGES.updateSpecialRegistrationFail(result.getMessage()));
 									} else {
-										reg.setNote(course == null || course.isEmpty() ? "MAXI" : course, requestorNote);
+										reg.setNote((course != null && !course.isEmpty() ? course : reg.hasMinCredit() ? "MINI" : "MAXI"), requestorNote);
 										iSpecialRegistrationsPanel.populate(iSpecialRegistrationsPanel.getRegistrations(), iSavedAssignment);
 										updateHistory();
 									}
@@ -3524,10 +3528,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesNote(), 0, 2);
 		final Map<String, CourseRequestInterface.CourseMessage> notes = new HashMap<String, CourseRequestInterface.CourseMessage>();
 		boolean hasCredit = false;
+		boolean hasMinCredit = false;
 		for (ErrorMessage e: errors) {
 			if ("IGNORE".equals(e.getCode())) continue;
 			if ("MAXI".equals(e.getCode()) || "CREDIT".equals(e.getCode())) {
 				hasCredit = true; continue;
+			}
+			if ("MINI".equals(e.getCode())) {
+				hasMinCredit = true; continue;
 			}
 			if (e.getCourse() == null || e.getCourse().isEmpty()) continue;
 			if (!notes.containsKey(e.getCourse())) {
@@ -3546,6 +3554,14 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				for (String suggestion: eligibilityResponse.getSuggestions())
 					note.addSuggestion(suggestion);
 			notes.put("MAXI", note);
+		}
+		if (hasMinCredit) {
+			final CourseRequestInterface.CourseMessage note = confirm.addConfirmation("", 0, 3); note.setCode("REQUEST_NOTE");
+			note.setCourse(MESSAGES.tabRequestNoteMinCredit());
+			if (eligibilityResponse.hasSuggestions())
+				for (String suggestion: eligibilityResponse.getSuggestions())
+					note.addSuggestion(suggestion);
+			notes.put("MINI", note);
 		}
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesOptions(), 0, 4);
 		confirm.addConfirmation(MESSAGES.messageRequestOverridesDisclaimer(), 0, 7);
@@ -4160,7 +4176,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		}
 		iRequestVariableTitleCourseDialog.requestVariableTitleCourse(
 				iEligibilityCheck == null || !iEligibilityCheck.hasCurrentCredit() ? iCurrentCredit : iEligibilityCheck.getCurrentCredit(),
-				iEligibilityCheck == null ? null : iEligibilityCheck.getMaxCredit());
+				iEligibilityCheck == null ? null : iEligibilityCheck.getMaxCredit(),
+				iEligibilityCheck == null ? null : iEligibilityCheck.getMinCredit());
 	}
 	
 	public void setSessionId(Long sessionId) {

@@ -2473,7 +2473,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 		request.setSaved(true);
 		request.setMaxCredit(student.getMaxCredit());
 		request.setWaitListMode(student.getWaitListMode());
-		if (student.getOverrideMaxCredit() != null) {
+		if (student.getOverrideMaxCredit() != null && student.getOverrideMaxCredit() > 0) {
 			request.setMaxCreditOverride(student.getOverrideMaxCredit());
 			request.setMaxCreditOverrideExternalId(student.getOverrideExternalId());
 			request.setMaxCreditOverrideTimeStamp(student.getOverrideTimeStamp());

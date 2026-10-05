@@ -127,6 +127,7 @@ public class CheckEligibility implements OnlineSectioningAction<OnlineSectioning
 				}
 	
 				iCheck.setMaxCredit(student.getMaxCredit());
+				iCheck.setMinCredit(student.getMinCredit());
 				action.getStudentBuilder().setExternalId(student.getExternalUniqueId());
 				action.getStudentBuilder().setName(helper.getStudentNameFormat().format(student));
 				

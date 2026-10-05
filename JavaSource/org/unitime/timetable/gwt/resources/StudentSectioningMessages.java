@@ -2811,6 +2811,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Maximum of {1,number,0.#} credit hours exceeded. An override for {0,number,0.#} credit hours will be requested.")
 	String varCreditMaxExceeded(float curent, float max);
 	
+	@DefaultMessage("Below the minimum of {1,number,0.#} credit hours. An override for {0,number,0.#} minimum credit hours will be requested.")
+	String varCreditBelowMin(float curent, float min);
+	
 	@DefaultMessage("- {0}: No approval is needed.")
 	String gradeModeNoApprovalNeeded(String gradeMode);
 	
@@ -3560,6 +3563,9 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Max Credit")
 	String tabRequestNoteMaxCredit();
+	
+	@DefaultMessage("Min Credit")
+	String tabRequestNoteMinCredit();
 	
 	@DefaultMessage("There has been a change")
 	String emailReschedulingReason();

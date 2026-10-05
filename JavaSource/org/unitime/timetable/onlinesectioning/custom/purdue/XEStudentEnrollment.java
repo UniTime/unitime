@@ -383,6 +383,8 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 				helper.debug("Current registration: " + gson.toJson(original));
 			if (original != null && original.maxHours != null)
 				check.setMaxCredit(original.maxHours);
+			if (original != null && original.minHours != null)
+				check.setMinCredit(original.minHours);
 			if (original == null || !original.validStudent) {
 				String bannerRecheck = getBannerRecheck();
 				String reason = null;

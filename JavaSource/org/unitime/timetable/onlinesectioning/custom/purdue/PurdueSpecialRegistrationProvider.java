@@ -563,6 +563,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		}
 		
 		boolean maxi = false;
+		boolean mini = false;
 		if (errors != null) {
 			Map<String, Change> changes = new HashMap<String, Change>();
 			for (Change ch: request.changes)
@@ -598,6 +599,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				er.message = m.getMessage();
 				ch.errors.add(er);
 				if ("MAXI".equals(m.getCode())) maxi = true;
+				if ("MINI".equals(m.getCode())) mini = true;
 			}
 		}
 		
@@ -605,6 +607,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (maxi || (student.getMaxCredit() != null && student.getMaxCredit() < maxCredit)) {
 			request.maxCredit = maxCredit;
 			request.maxCreditRequestorNotes = (notes == null ? null : notes.get("MAXI"));
+		}
+		if (mini || (student.getMinCredit() != null && credit != null && student.getMinCredit() > 0 && student.getMinCredit() > credit)) {
+			request.minCredit = credit;
+			request.minCreditRequestorNotes = (notes == null ? null : notes.get("MINI"));
 		}
 		
 		if (!SpecialRegistrationHelper.isEmpty(validation))
@@ -899,6 +905,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				ret.addCancelRequestId(r.regRequestId);
 				if (r.changes == null) continue;
 				String maxi = null;
+				String mini = null;
 				Set<String> rAdds = new TreeSet<String>(), rDrops = new TreeSet<String>();
 				for (Change ch: r.changes) {
 					if (ch.subject != null && ch.courseNbr != null) {
@@ -914,14 +921,29 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							rDrops.add(ch.subject + " " + ch.courseNbr);
 					} else if (r.regRequestId.equals(input.getRequestId()) && isPending(ch.status)) {
 						if (ch.errors != null)
-							for (ChangeError e: ch.errors)
+							for (ChangeError e: ch.errors) {
 								if ("MAXI".equals(e.code)) maxi = e.message;
+								if ("MINI".equals(e.code)) mini = e.message;
+							}
 					}
 				}
 				if (maxi != null)
 					for (String c: rAdds)
 						if (!rDrops.contains(c))
 							errors.add(new ErrorMessage(c, "", "MAXI", maxi));
+				if (mini != null) {
+					boolean e = false;
+					for (String c: rDrops)
+						if (!rAdds.contains(c)) {
+							errors.add(new ErrorMessage(c, "", "MINI", mini));
+							e = true;
+						}
+					if (!e) {
+						for (String c: rAdds)
+							if (!rDrops.contains(c))
+								errors.add(new ErrorMessage(c, "", "MINI", mini));
+					}
+				}
 			}
 			if (!errors.isEmpty())
 				ret.setCancelErrors(errors);
@@ -990,6 +1012,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								ch.status = ChangeStatus.inProgress;
 					// if (r.requestorNotes == null) r.requestorNotes = input.getNote();
 					if (r.maxCredit == null && request.maxCredit != null) r.maxCredit = request.maxCredit;
+					if (r.minCredit == null && request.minCredit != null) r.minCredit = request.minCredit;
 					ret.addRequest(convert(server, helper, student, r, false));
 				}
 			} else {
@@ -1004,6 +1027,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				boolean studentChanged = false;
 				for (SubmitRegistrationResponse r: response.data) {
 					ChangeStatus maxiStatus = null;
+					ChangeStatus miniStatus = null;
 					Map<String, Set<String>> course2errors = new HashMap<String, Set<String>>();
 					Map<String, CourseRequest.CourseRequestOverrideIntent> course2intent = new HashMap<String, CourseRequest.CourseRequestOverrideIntent>();
 					Map<String, SpecialRegistrationStatus> course2status = new HashMap<String, SpecialRegistrationStatus>();
@@ -1028,6 +1052,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								for (ChangeError e: ch.errors) {
 									if ("MAXI".equals(e.code))
 										maxiStatus = ch.status;
+									if ("MINI".equals(e.code))
+										miniStatus = ch.status;
 								}
 							}
 						}
@@ -1041,6 +1067,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							dbStudent.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.ADD);
 							helper.getHibSession().merge(dbStudent);
 							student.setMaxCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)));
+							studentChanged = true;
+						}
+					} else if (r.minCredit != null) {
+						Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+						if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
+							dbStudent.setOverrideStatus(miniStatus != null ? toStatus(miniStatus) : toStatus(r));
+							dbStudent.setOverrideMaxCredit(-r.minCredit);
+							dbStudent.setOverrideExternalId(r.regRequestId);
+							dbStudent.setOverrideTimeStamp(r.dateCreated == null ? new Date() : r.dateCreated.toDate());
+							dbStudent.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.DROP);
+							helper.getHibSession().merge(dbStudent);
+							student.setMinCreditOverride(new XOverride(r.regRequestId, r.dateCreated == null ? new Date() : r.dateCreated.toDate(), miniStatus != null ? toStatus(miniStatus) : toStatus(r)));
 							studentChanged = true;
 						}
 					}
@@ -1085,6 +1123,15 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					if (ret.hasCancelledRequestIds()) {
 						if (student.getMaxCreditOverride() != null && ret.isCancelledRequest(student.getMaxCreditOverride().getExternalId())) {
 							student.getMaxCreditOverride().setStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+							if (dbStudent != null) {
+								dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+								helper.getHibSession().merge(dbStudent);
+							}
+							studentChanged = true;
+						}
+						if (student.getMinCreditOverride() != null && ret.isCancelledRequest(student.getMinCreditOverride().getExternalId())) {
+							student.getMinCreditOverride().setStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
 							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
 								dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
@@ -1459,6 +1506,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		String maxi = null;
 		ChangeStatus maxStatus = null;
 		String maxiNote = null;
+		String mini = null;
+		ChangeStatus minStatus = null;
+		String miniNote = null;
 		String honorsGradeMode = getResetGradeModesRegExp();
 		if (specialRequest.changes != null)
 			for (Change change: specialRequest.changes) {
@@ -1476,6 +1526,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
 								if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
 									maxStatus = ChangeStatus.approved;
+							}
+						} else if ("MINI".equals(err.code) && (change.crn == null || change.crn.isEmpty())) {
+							mini = err.message;
+							minStatus = change.status;
+							miniNote = SpecialRegistrationHelper.getLastNote(change);
+							ret.setMinCredit(specialRequest.minCredit);
+							if (specialRequest.minCredit != null && student.getMinCredit() != null) {
+								DecimalFormat df = new DecimalFormat("0.#");
+								mini = "Below minimum hours. Currently required " + df.format(student.getMinCredit()) + " but needs " + df.format(specialRequest.minCredit) + ".";
+								if (student.getMinCredit() <= specialRequest.minCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
+									minStatus = ChangeStatus.approved;
 							}
 						} else if ("VARTL".equals(err.code)) {
 							for (XRequest r: student.getRequests()) {
@@ -1720,6 +1781,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if ("CORQ".equals(err.code)) ret.setHasLinkedConflict(true);
 								if (err.code != null && err.code.startsWith("EX-")) ret.setExtended(true);
 								if ("MAXI".equals(err.code) && maxi != null) continue;
+								if ("MINI".equals(err.code) && mini != null) continue;
 								String message = err.message;
 								switch (getStatus(ch.status)) {
 								case Approved:
@@ -1886,6 +1948,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								if ("CLOS".equals(err.code)) ret.setHasSpaceConflict(true);
 								if (err.code != null && err.code.startsWith("EX-")) ret.setExtended(true);
 								if ("MAXI".equals(err.code) && maxi != null) continue;
+								if ("MINI".equals(err.code) && mini != null) continue;
 								String message = err.message;
 								switch (getStatus(ch.status)) {
 								case Approved:
@@ -1962,7 +2025,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ret.setStatus(getStatus(specialRequest));
 		ret.setCanCancel(canCancel(specialRequest));
 		ret.setNote("MAXI", specialRequest.maxCreditRequestorNotes);
-		ret.setNote("", specialRequest.requestorNotes);
+		ret.setNote("MINI", specialRequest.minCreditRequestorNotes);
 		if (maxi != null) { // !ret.hasChanges() && 
 			String message = maxi;
 			switch (getStatus(maxStatus)) {
@@ -1978,6 +2041,22 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			if (maxStatus != null)
 				message = "<span class='" + maxStatus + "'>" + message + "</span>";
 			ret.addError(new ErrorMessage("", "", "MAXI", message));
+		}
+		if (mini != null) { 
+			String message = mini;
+			switch (getStatus(minStatus)) {
+			case Approved:
+				message = "Approved: " + message;
+				break;
+			case Rejected:
+				message = "Denied: " + message;
+				break;
+			}
+			if (miniNote != null && !miniNote.toString().isEmpty())
+				message += "\n  <span class='note'>" + miniNote.trim() + "</span>";
+			if (minStatus != null)
+				message = "<span class='" + minStatus + "'>" + message + "</span>";
+			ret.addError(new ErrorMessage("", "", "MINI", message));
 		}
 		if (ret.isCreditChange() || ret.isCreditChange()) {
 			for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.gm.requestorNoteSuggestions", "").split("[\r\n]+"))
@@ -2071,10 +2150,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						if (r.changes != null)
 							for (Change ch: r.changes) {
 								if (ch.crn == null && ch.errors != null) {
-									for (ChangeError e: ch.errors) {
+									for (ChangeError e: ch.errors)
 										if ("MAXI".equals(e.code))
 											maxiStatus = ch.status;
-									}
 								}
 							}
 						// check student status
@@ -2083,6 +2161,28 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
 								dbStudent.setOverrideStatus(maxiStatus != null ? toStatus(maxiStatus) : toStatus(r));
+								helper.getHibSession().merge(dbStudent);
+							}
+							studentChanged = true;
+						}
+					}
+					if (r.minCredit != null) {
+						// max credit request -> get status
+						ChangeStatus miniStatus = null;
+						if (r.changes != null)
+							for (Change ch: r.changes) {
+								if (ch.crn == null && ch.errors != null) {
+									for (ChangeError e: ch.errors)
+										if ("MINI".equals(e.code))
+											miniStatus = ch.status;
+								}
+							}
+						// check student status
+						if (student.getMinCreditOverride() != null && r.regRequestId.equals(student.getMinCreditOverride().getExternalId()) && (student.getMinCreditOverride().getStatus() == null || student.getMinCreditOverride().getStatus() != (miniStatus != null ? toStatus(miniStatus) : toStatus(r)))) {
+							student.getMinCreditOverride().setStatus(miniStatus != null ?toStatus(miniStatus) : toStatus(r));
+							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+							if (dbStudent != null) {
+								dbStudent.setOverrideStatus(miniStatus != null ? toStatus(miniStatus) : toStatus(r));
 								helper.getHibSession().merge(dbStudent);
 							}
 							studentChanged = true;
@@ -2100,6 +2200,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								} else {
 									for (ChangeError e: ch.errors)
 										if ("MAXI".equals(e.code)) {
+											SpecialRegistrationStatus s = course2status.get(course);
+											course2status.put(course, s == null ? getCreditStatus(r) : combine(s, getCreditStatus(r)));
+										} else if ("MINI".equals(e.code)) {
 											SpecialRegistrationStatus s = course2status.get(course);
 											course2status.put(course, s == null ? getCreditStatus(r) : combine(s, getCreditStatus(r)));
 										}
@@ -2138,6 +2241,19 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						dbStudent.setOverrideIntent(null);
 						helper.getHibSession().merge(dbStudent);
 						student.setMaxCreditOverride(null);
+						studentChanged = true;
+					}
+				}
+				if (student.getMinCreditOverride() != null && !requestIds.contains(student.getMinCreditOverride().getExternalId())) {
+					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
+						dbStudent.setOverrideStatus(null);
+						dbStudent.setOverrideMaxCredit(null);
+						dbStudent.setOverrideExternalId(null);
+						dbStudent.setOverrideTimeStamp(null);
+						dbStudent.setOverrideIntent(null);
+						helper.getHibSession().merge(dbStudent);
+						student.setMinCreditOverride(null);
 						studentChanged = true;
 					}
 				}
@@ -2280,8 +2396,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				check.setMaxCredit(response.maxCredit);
 			}
 			Float minCredit = null;
-			if (response.minCredit != null) {
+			if (response.minCredit != null && response.minCredit > 0) {
 				minCredit = response.minCredit;
+				check.setMinCredit(response.minCredit);
 			}
 			if (student.getStudentId() != null && ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin()))
 				|| (minCredit != null && !minCredit.equals(student.getMinCredit())))) {
@@ -2373,6 +2490,16 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				if (student.getMaxCreditOverride() != null && request.getRequestId().equals(student.getMaxCreditOverride().getExternalId())) {
 					XOverride override = student.getMaxCreditOverride();
 					student.setMaxCreditOverride(new XOverride(override.getExternalId(), override.getTimeStamp(), CourseRequestOverrideStatus.CANCELLED.ordinal()));
+					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent != null) {
+						dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
+						helper.getHibSession().merge(dbStudent);
+					}
+					studentChanged = true;
+				}
+				if (student.getMinCreditOverride() != null && request.getRequestId().equals(student.getMinCreditOverride().getExternalId())) {
+					XOverride override = student.getMinCreditOverride();
+					student.setMinCreditOverride(new XOverride(override.getExternalId(), override.getTimeStamp(), CourseRequestOverrideStatus.CANCELLED.ordinal()));
 					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 					if (dbStudent != null) {
 						dbStudent.setOverrideStatus(CourseRequestOverrideStatus.CANCELLED.ordinal());
@@ -2484,6 +2611,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			
 			RetrieveAvailableGradeModesResponse ret = new RetrieveAvailableGradeModesResponse();
 			ret.setMaxCredit(response.data.maxCredit);
+			ret.setMinCredit(response.data.minCredit);
 			ret.setCurrentCredit(response.data.currentCredit);
 			
 			String honorsGradeMode = getResetGradeModesRegExp();
@@ -2570,7 +2698,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		ChangeGradeModesResponse ret = new ChangeGradeModesResponse();
 		
 		float cred = (request.getCurrentCredit() == null ? 0f : request.getCurrentCredit().floatValue());
-		if (request.hasCreditChanges() && request.getMaxCredit() != null) {
+		if (request.hasCreditChanges() && request.hasMaxCredit()) {
 			float app = 0f;
 			for (SpecialRegistrationCreditChange ch: request.getCreditChanges()) {
 				if (!ch.hasApprovals()) {
@@ -2581,6 +2709,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				}
 			}
 			cred += app;
+		}
+		if (request.hasCreditChanges() && request.hasMinCredit() && cred < request.getMinCredit()) {
+			for (SpecialRegistrationCreditChange ch: request.getCreditChanges()) {
+				if (!ch.hasApprovals()) {
+					if ((ch.getCredit() == null ? 0f : ch.getCredit().floatValue()) < (ch.getOriginalCredit() == null ? 0f : ch.getOriginalCredit().floatValue()))
+						ch.addApproval("MINI");
+				}
+			}
 		}
 		if (request.hasGradeModeChanges(false) || request.hasCreditChanges(false)) {
 			ClientResource resource = null;
@@ -2774,7 +2910,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					req.maxCredit = cred;
 					req.maxCreditRequestorNotes = request.getNote();
 				}
-				
+				if (request.getMinCredit() != null && cred < request.getMinCredit()) {
+					req.minCredit = cred;
+					req.minCreditRequestorNotes = request.getNote();
+				}
 				/*
 				Set<String> crns = new HashSet<String>();
 				for (XRequest r: student.getRequests()) {
@@ -2932,13 +3071,14 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				request.requestorId = getRequestorId(helper.getUser());
 				request.requestorRole = getRequestorType(helper.getUser(), student);
 			}
-			if (input.getCourseId() == null)
-				request.maxCreditRequestorNotes = input.getNote();
-			else {
+			if (input.getCourseId() == null) {
+				if ("MINI".equals(input.getCourse()))
+					request.minCreditRequestorNotes = input.getNote();
+				else
+					request.maxCreditRequestorNotes = input.getNote();
+			} else {
 				XCourse course = server.getCourse(input.getCourseId());
-				if (course == null) {
-					request.requestorNotes = input.getNote();
-				} else {
+				if (course != null) {
 					request.changes = new ArrayList<SpecialRegistrationInterface.Change>();
 					Change ch = new Change();
 					ch.setCourse(course.getSubjectArea(), course.getCourseNumber(), iExternalTermProvider, server.getAcademicSession());
@@ -3043,6 +3183,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			if (request.getMaxCredit() != null) {
 				req.maxCredit = request.getMaxCredit();
 				req.maxCreditRequestorNotes = request.getNote();
+			}
+			if (request.getMinCredit() != null) {
+				req.minCredit = request.getMinCredit();
+				req.minCreditRequestorNotes = request.getNote();
 			}
 			
 			Change change = new Change();

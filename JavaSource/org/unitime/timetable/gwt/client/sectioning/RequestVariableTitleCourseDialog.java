@@ -99,7 +99,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	private CheckBox iDisclaimer;
 	private int iDisclaimerLine;
 	private Timer iTimer;
-	private Float iCurrentCredit, iMaxCredit;
+	private Float iCurrentCredit, iMaxCredit, iMinCredit;
 	private Label iCreditMessage;
 	private int iCreditLine;
 	private List<String> iSuggestions = new ArrayList<String>();
@@ -262,7 +262,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		setWidget(iForm);
 	}
 	
-	public void requestVariableTitleCourse(Float currentCredit, Float maxCredit) {
+	public void requestVariableTitleCourse(Float currentCredit, Float maxCredit, Float minCredit) {
 		iCourseName.setText("");
 		iCourseTitle.getWidget().setText("");
 		iDisclaimer.setValue(false);
@@ -272,7 +272,7 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 		iGradeMode.clear();
 		iDateFrom.setValueInServerTimeZone(null); iDateTo.setValueInServerTimeZone(null);
 		setCourse(null);
-		iCurrentCredit = currentCredit; iMaxCredit = maxCredit;
+		iCurrentCredit = currentCredit; iMaxCredit = maxCredit; iMinCredit = minCredit;
 		center();
 		iCourseName.setFocus(true);
 		sLogger.fine("Current credit: " + currentCredit + " of " + maxCredit);
@@ -385,6 +385,9 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 			if (credit > iMaxCredit) {
 				iCreditMessage.setText(MESSAGES.varCreditMaxExceeded(credit, iMaxCredit));
 				iForm.getRowFormatter().setVisible(iCreditLine, true);
+			} else if (iMinCredit != null && credit < iMinCredit) {
+				iCreditMessage.setText(MESSAGES.varCreditBelowMin(credit, iMinCredit));
+				iForm.getRowFormatter().setVisible(iCreditLine, true);
 			} else {
 				iForm.getRowFormatter().setVisible(iCreditLine, false);
 			}
@@ -416,6 +419,12 @@ public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 			float credit = iCurrentCredit + Float.valueOf(iCredit.getSelectedValue());
 			if (credit > iMaxCredit) {
 				request.setMaxCredit(credit);
+			}
+		}
+		if (iCurrentCredit != null && iMinCredit != null) {
+			float credit = iCurrentCredit + Float.valueOf(iCredit.getSelectedValue());
+			if (credit < iMinCredit) {
+				request.setMinCredit(credit);
 			}
 		}
 		if (iInstructor.getWidget().getSelectedIndex() > 0 && !"-".equals(iInstructor.getWidget().getSelectedValue()))

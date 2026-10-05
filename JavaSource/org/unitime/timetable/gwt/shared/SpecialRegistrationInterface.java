@@ -278,7 +278,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iCanCancel = false;
 		private boolean iHasTimeConflict, iHasSpaceConflict, iExtended, iHasLinkedConflict;
 		private ArrayList<ErrorMessage> iErrors = null;
-		private Float iMaxCredit = null;
+		private Float iMaxCredit = null, iMinCredit = null;
 		private List<String> iSuggestions = null;
 		
 		
@@ -303,6 +303,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			if (note == null || note.isEmpty()) return;
 			if (iNotes == null) iNotes = new HashMap<String, String>();
 			iNotes.put(course, note);
+		}
+		public boolean hasNote(String course) {
+			return (iNotes == null ? false : iNotes.containsKey(course));
 		}
 		
 		public void setNote(Long courseId, String note) {
@@ -588,6 +591,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
 		public Float getMaxCredit() { return iMaxCredit; }
 		public boolean hasMaxCredit() { return iMaxCredit != null; }
+
+		public void setMinCredit(Float MinCredit) { iMinCredit = MinCredit; }
+		public Float getMinCredit() { return iMinCredit; }
+		public boolean hasMinCredit() { return iMinCredit != null; }
 		
 		public boolean hasSuggestions() { return iSuggestions != null && !iSuggestions.isEmpty(); }
 		public List<String> getSuggestions() { return iSuggestions; }
@@ -763,7 +770,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		Map<String, SpecialRegistrationGradeModeChanges> iModes = new HashMap<String, SpecialRegistrationGradeModeChanges>();
 		Map<String, SpecialRegistrationVariableCreditChange> iVarCreds = new HashMap<String, SpecialRegistrationVariableCreditChange>();
-		private Float iMaxCredit, iCurrentCredit;
+		private Float iMaxCredit, iMinCredit, iCurrentCredit;
 		private List<String> iSuggestions = null;
 		
 		public RetrieveAvailableGradeModesResponse() {}
@@ -794,6 +801,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public Float getMaxCredit() { return iMaxCredit; }
 		public void setMaxCredit(Float credit) { iMaxCredit = credit; }
+		public Float getMinCredit() { return iMinCredit; }
+		public void setMinCredit(Float credit) { iMinCredit = credit; }
 		
 		public Float getCurrentCredit() { return iCurrentCredit; }
 		public void setCurrentCredit(Float credit) { iCurrentCredit = credit; }
@@ -1004,7 +1013,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		List<SpecialRegistrationGradeModeChange> iChanges = new ArrayList<SpecialRegistrationGradeModeChange>();
 		List<SpecialRegistrationCreditChange> iCreditChanges = new ArrayList<SpecialRegistrationCreditChange>();
-		private Float iMaxCredit, iCurrentCredit;
+		private Float iMaxCredit, iCurrentCredit, iMinCredit;
 		private String iNote;
 		
 		public ChangeGradeModesRequest() {}
@@ -1060,8 +1069,13 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 			return false;
 		}
 		
+		public boolean hasMaxCredit() { return iMaxCredit != null && iMaxCredit > 0f; }
 		public Float getMaxCredit() { return iMaxCredit; }
 		public void setMaxCredit(Float credit) { iMaxCredit = credit; }
+
+		public boolean hasMinCredit() { return iMinCredit != null && iMinCredit > 0f; }
+		public Float getMinCredit() { return iMinCredit; }
+		public void setMinCredit(Float credit) { iMinCredit = credit; }
 		
 		public Float getCurrentCredit() { return iCurrentCredit; }
 		public void setCurrentCredit(Float credit) { iCurrentCredit = credit; }
@@ -1136,13 +1150,15 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private static final long serialVersionUID = 1L;
 		private String iRequestId;
 		private Long iCourseId;
+		private String iCourse;
 		private String iNote;
 		private boolean iPreReg = false;
 		
 		public UpdateSpecialRegistrationRequest() {}
-		public UpdateSpecialRegistrationRequest(StudentSectioningContext cx, String requestId, Long courseId, String note, boolean preReg) {
+		public UpdateSpecialRegistrationRequest(StudentSectioningContext cx, String requestId, Long courseId, String course, String note, boolean preReg) {
 			super(cx);
 			iCourseId = courseId;
+			iCourse = course;
 			iRequestId = requestId;
 			iNote = note;
 			iPreReg = preReg;
@@ -1152,6 +1168,8 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public void setRequestId(String requestId) { iRequestId = requestId; }
 		public Long getCourseId() { return iCourseId; }
 		public void setCourseId(Long courseId) { iCourseId = courseId; }
+		public String getCourse() { return iCourse; }
+		public void setCourse(String course) { iCourse = course; }
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }
 		public boolean isPreReg() { return iPreReg; }
@@ -1328,6 +1346,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private Date iStartDate, iEndDate;
 		private boolean iCheckIfExists = true;
 		private String iGradeMode;
+		private Float iMinCredit;
 		private Float iMaxCredit;
 		private String iSection;
 		
@@ -1362,6 +1381,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public Float getCredit() { return iCredit; }
 		public void setCredit(Float credit) { iCredit = credit; }
 		
+		public Float getMinCredit() { return iMinCredit; }
+		public void setMinCredit(Float minCredit) { iMinCredit = minCredit; }
+
 		public Float getMaxCredit() { return iMaxCredit; }
 		public void setMaxCredit(Float maxCredit) { iMaxCredit = maxCredit; }
 		

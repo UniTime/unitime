@@ -1556,7 +1556,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         float maxCredit = iMaxDefaultCredit;
         if (s.getMaxCredit() != null)
         	maxCredit = s.getMaxCredit();
-        if (s.getOverrideMaxCredit() != null) {
+        if (s.getOverrideMaxCredit() != null && s.getOverrideMaxCredit() > 0) {
         	if (s.isRequestCancelled() && !iCheckRequestStatusSkipCancelled)
         		maxCredit = s.getOverrideMaxCredit();
         	else if (s.isRequestPending() && !iCheckRequestStatusSkipPending)
@@ -1567,6 +1567,12 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         float minCredit = iMinDefaultCredit;
         if (s.getMinCredit() != null)
         	minCredit = s.getMinCredit();
+        if (s.getOverrideMaxCredit() != null && s.getOverrideMaxCredit() < 0) {
+        	if (s.isRequestCancelled() && !iCheckRequestStatusSkipCancelled)
+        		minCredit = -s.getOverrideMaxCredit();
+        	else if (s.isRequestPending() && !iCheckRequestStatusSkipPending)
+        		minCredit = -s.getOverrideMaxCredit();
+        }
         if (minCredit >= 0 && minCredit <= maxCredit)
         	student.setMinCredit(minCredit);
         

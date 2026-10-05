@@ -113,7 +113,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	private AriaTextArea iNote = null;
 	private AriaSuggestArea iNoteWithSuggestions;
 	private List<CheckBox> iDisclaimers = new ArrayList<CheckBox>();
-	private Float iCurrentCredit, iMaxCredit;
+	private Float iCurrentCredit, iMaxCredit, iMinCredit;
 	private List<String> iSuggestions = new ArrayList<String>();
 	private StudentSectioningContext iContext;
 	private P iCourseNotes = null;
@@ -303,7 +303,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			public void onSuccess(RetrieveAvailableGradeModesResponse result) {
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
 				iTable.clearData(true);
-				iCurrentCredit = result.getCurrentCredit(); iMaxCredit = result.getMaxCredit();
+				iCurrentCredit = result.getCurrentCredit(); iMaxCredit = result.getMaxCredit(); iMinCredit = result.getMinCredit();
 				iSuggestions.clear();
 				if (result.hasSuggestions())
 					iSuggestions.addAll(result.getSuggestions());
@@ -499,8 +499,11 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 			if (iMaxCredit != null && cred > iMaxCredit) {
 				m = new P("message", "credit-message"); m.setHTML(MESSAGES.varCreditMaxExceeded(cred, iMaxCredit)); iApproval.add(m);
 			}
+			if (iMinCredit != null && cred < iMinCredit) {
+				m = new P("message", "credit-message"); m.setHTML(MESSAGES.varCreditBelowMin(cred, iMinCredit)); iApproval.add(m);
+			}
 		}
-		if (approvals || credApprovals || (credChanges && iMaxCredit != null && cred > iMaxCredit)) {
+		if (approvals || credApprovals || (credChanges && iMaxCredit != null && cred > iMaxCredit) || (credChanges && iMinCredit != null && cred < iMinCredit)) {
 			P m = new P("message"); m.setHTML(MESSAGES.gradeModeChangesNote()); iApproval.add(m);
 			iNote.setText("");
 			for (String course: courses) {
@@ -518,6 +521,15 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				if ("MAXI".equals(lastCourse)) {
 					iCoursesTab.selectTab(iCoursesTab.getTabCount() - 1);
 					String message = iCourse2Note.get("MAXI");
+					iNote.setText(message == null ? "" : message);
+				}
+			}
+			if (credChanges && iMinCredit != null && cred < iMinCredit) {
+				iTab2Course.put(iCoursesTab.getTabCount(), "MINI");
+				iCoursesTab.addTab(MESSAGES.tabRequestNoteMinCredit());
+				if ("MINI".equals(lastCourse)) {
+					iCoursesTab.selectTab(iCoursesTab.getTabCount() - 1);
+					String message = iCourse2Note.get("MINI");
 					iNote.setText(message == null ? "" : message);
 				}
 			}
@@ -565,6 +577,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		ChangeGradeModesRequest request = new ChangeGradeModesRequest(iContext);
 		request.setCurrentCredit(iCurrentCredit);
 		request.setMaxCredit(iMaxCredit);
+		request.setMinCredit(iMinCredit);
 		request.setNote(iCourse2Note.get("MAXI"));
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();

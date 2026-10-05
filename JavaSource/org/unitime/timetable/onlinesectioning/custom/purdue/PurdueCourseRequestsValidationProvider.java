@@ -987,7 +987,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						m.setMessage(m.getMessage().replaceFirst(" \\(CRN [0-9][0-9][0-9][0-9][0-9]\\) ", " "));
 				}
 
-			String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
+			Float minCreditLimit = resp.minCredit;
+			if (minCreditLimit == null)
+				minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditCheck", "0"));
 			float minCredit = otherCredits[0];
 			for (CourseRequestInterface.Request r: request.getCourses()) {
 				if (r.hasRequestedCourse()) {
@@ -997,15 +999,15 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						}
 				}
 			}
-			if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
+			if (creditError == null && minCreditLimit != null && minCreditLimit > 0f && minCredit < minCreditLimit) {
 				String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
 				if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
 						new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
 					creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-							"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
+							"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit));
 					response.setCreditWarning(
 							ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-							"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+							"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit))
 							);
 					response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
 				}
@@ -1460,32 +1462,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				otherCredits = solverServer.getCreditRangeFromOtherSessions(server.getAcademicSession(), original.getExternalId());
 		}
 
-		request.setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
-		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
-		float minCredit = otherCredits[0];
-		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedCourse()) {
-				for (RequestedCourse rc: r.getRequestedCourse())
-					if (rc.hasCredit()) {
-						minCredit += rc.getCreditMin(); break;
-					}
-			}
-		}
-		if (minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
-			String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
-			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
-					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
-				request.setCreditWarning(
-						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
-						);
-				request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
-			}
-		}
-
 		ClientResource resource = null;
 		Map<String, Set<String>> overrides = new HashMap<String, Set<String>>();
 		Float maxCredit = null;
+		Float minCreditLimit = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
@@ -1519,6 +1499,10 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				maxCredit = status.data.maxCredit;
 				request.setMaxCredit(status.data.maxCredit);
 			}
+			if (status != null && status.data != null)
+				minCreditLimit = status.data.minCredit;
+			if (minCreditLimit == null)
+				minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditCheck", "0"));
 			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
 
 			if (status != null && status.data != null && status.data.requests != null) {
@@ -1554,6 +1538,28 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				resource.release();
 			}
 		}
+		
+		request.setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
+		float minCredit = otherCredits[0];
+		for (CourseRequestInterface.Request r: request.getCourses()) {
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (rc.hasCredit()) {
+						minCredit += rc.getCreditMin(); break;
+					}
+			}
+		}
+		if (minCreditLimit != null && minCreditLimit > 0f && minCredit < minCreditLimit) {
+			String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
+			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
+					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
+				request.setCreditWarning(
+						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit))
+						);
+				request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
+			}
+		}		
 
 		SpecialRegistrationRequest req = new SpecialRegistrationRequest();
 		req.studentId = getBannerId(original);
@@ -2562,7 +2568,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 						rcs.put(rc.getOverrideExternalId(), rc);
 		}
 
-		String minCreditLimit = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck");
+		Float minCreditLimit = original.getMinCredit();
+		if (minCreditLimit == null)
+			minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditCheck", "0"));
 		float minCredit = otherCredits[0];
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasRequestedCourse()) {
@@ -2572,13 +2580,13 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 			}
 		}
-		if (minCreditLimit != null && minCredit > 0 && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
+		if (minCreditLimit != null && minCreditLimit > 0 && minCredit > 0 && minCredit < minCreditLimit) {
 			String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
 			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
 					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
 				request.setCreditWarning(
 						ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit))
 						);
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
 			}
@@ -3504,8 +3512,9 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				check.setMaxCredit(eligibility.maxCredit);
 			}
 			Float minCredit = null;
-			if (eligibility.minCredit != null) {
+			if (eligibility.minCredit != null && eligibility.minCredit > 0) {
 				minCredit = eligibility.minCredit;
+				check.setMinCredit(eligibility.minCredit);
 			}
 			if ((maxCredit != null && !maxCredit.equals(student.getMaxCredit())) || (pin != null && !pin.equals(student.getPin())) ||
 				(minCredit != null && !minCredit.equals(student.getMinCredit()))) {
