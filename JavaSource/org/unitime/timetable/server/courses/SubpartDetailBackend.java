@@ -262,9 +262,31 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 							tpCell.add(tp.getTimePatternModel().toString()).setInline(false);
 						} else {
 							TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, context);
-							tpCell.add(null).setTimePreference(tpm);
-							if (dm != null && (dp == null || !dm.isValidCombination(minutes, dp, tp.getTimePattern())))
+							if (dm != null && (dp == null || !dm.isValidCombination(minutes, dp, tp.getTimePattern()) || dm.getDayCodes(minutes, dp, tp.getTimePattern()).isEmpty()))
 								tpm.setValid(false);
+							else if (dm != null && dp != null) {
+								Set<Integer> days = dm.getDayCodes(minutes, dp, tp.getTimePattern());
+								if (days.isEmpty()) {
+									tpm.setValid(false);
+								} else if (days.size() < tpm.getNrDays()) {
+									hasNotAvailable = true;
+									boolean req = tpm.hasRequired();
+									for (int d = 0; d < tpm.getNrDays(); d++) {
+										if (!days.contains(tpm.getDays().get(d))) {
+											for (int t = 0; t < tpm.getNrTimes(); t++)
+												tpm.setPreference(d, t, PreferenceLevel.sCharLevelNotAvailable);
+										}
+									}
+									if (req && !tpm.hasRequired()) {
+										for (int d = 0; d < tpm.getNrDays(); d++)
+											if (days.contains(tpm.getDays().get(d))) {
+												for (int t = 0; t < tpm.getNrTimes(); t++)
+													tpm.setPreference(d, t, PreferenceLevel.sCharLevelProhibited);
+											}
+									}
+								}
+							}
+							tpCell.add(null).setTimePreference(tpm);
 							/*
 							RequiredTimeTable rtt = tp.getRequiredTimeTable();
 				        	if (tp.getTimePatternModel().hasNotAvailablePreference()) hasNotAvailable = true;
