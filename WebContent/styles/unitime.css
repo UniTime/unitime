@@ -3447,6 +3447,17 @@ div.gwt-MenuBarPopup {
 	color: #5477ab; 
 }
 
+.unitime-RoomSharingWidget .name {
+	display: inline-block;
+}
+
+.unitime-RoomSharingWidget .warning {
+	display: inline-block;
+	padding-left: 30px;
+	color: #ec0000;
+	font-weight: bold;
+}
+
 .gwt-Button {
 	white-space: nowrap;
 	height: 25px;

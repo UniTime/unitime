@@ -31,6 +31,13 @@
 	<category>
 		<title>Course Timetabling</title>
 		<item>
+			<name>Scheduling Subpart Detail, Class Detail: Time Preferences</name>
+			<description>
+				<line>Show a warning when the time pattern has no days matching the selected date pattern.</line>
+				<line>Show incompatible days as not available.</line>
+			</description>
+		</item>
+		<item>
 			<name>Suggestions: Committed student conflicts</name>
 			<description>
 				<line>Improved handling of committed student conflict when they are loaded in (not computed).</line>

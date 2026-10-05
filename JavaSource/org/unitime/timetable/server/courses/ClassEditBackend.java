@@ -434,7 +434,7 @@ public class ClassEditBackend implements GwtRpcImplementation<ClassEditRequest, 
 	public static TimePatternModel createTimePatternModel(TimePref tp, SessionContext context) {
 		TimePatternModel model = createTimePatternModel(tp.getOwner(), tp.getTimePattern(), context);
 		model.setPreference(tp.getPreference());
-		List<PreferenceLevel> preferences = PreferenceLevel.getPreferenceLevelList(false);
+		List<PreferenceLevel> preferences = PreferenceLevel.getPreferenceLevelList(true);
 		for (PreferenceLevel pref: preferences) {
 			model.addPrefLevel(new PrefLevel(
 					pref.getUniqueId(), pref.getPrefProlog(), pref.getAbbreviation(), pref.getPrefName(), pref.prefcolor(),
