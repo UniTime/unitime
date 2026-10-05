@@ -671,6 +671,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		Set<String> keep = new HashSet<String>();
 		Map<String, String> crn2course = new HashMap<String, String>();
 		List<String> newCourses = new ArrayList<String>();
+		Set<String> keepCourses = new HashSet<String>();
+		List<String> dropCourses = new ArrayList<String>();
 		Set<String> adds = new HashSet<String>();
 		Map<String, XCourse> courses = new HashMap<String, XCourse>();
 		Map<String, List<XSection>> crn2sections = new HashMap<String, List<XSection>>();
@@ -711,6 +713,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				String crn = section.getExternalId(course.getCourseId());
 				if (current.contains(crn)) {
 					keep.add(crn);
+					keepCourses.add(course.getCourseName());
 				} else if (adds.add(crn)) {
 					SpecialRegistrationHelper.addCrn(req.changes, crn);
 					crn2course.put(crn, course.getCourseName());
@@ -727,8 +730,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				sections.add(section);
 			}
 		for (String crn: current)
-			if (!keep.contains(crn))
+			if (!keep.contains(crn)) {
 				SpecialRegistrationHelper.dropCrn(req.changes, crn);
+				String course = crn2course.get(crn);
+				if (course != null && !keepCourses.contains(course) && !dropCourses.contains(crn))
+					dropCourses.add(crn);
+			}
 		
 		CheckRestrictionsResponse resp = null;
 		ClientResource resource = null;
@@ -799,6 +806,18 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					// Move max credit error message to the last added course
 					String crn = newCourses.remove(newCourses.size() - 1);
 					errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+				} else if ("MINI".equals(problem.code)) {
+					// Move min credit error message to the last dropped course if possible
+					// Or the last added course othewise
+					if (!dropCourses.isEmpty()) {
+						String crn = dropCourses.remove(dropCourses.size() - 1);
+						errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+					} else if (!newCourses.isEmpty()) {
+						String crn = newCourses.remove(newCourses.size() - 1);
+						errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+					} else {
+						errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
+					}
 				} else {
 					errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
 				}
@@ -2139,9 +2158,32 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				helper.debug("Response: " + gson.toJson(response));
 			helper.getAction().addOptionBuilder().setKey("specreg_response").setValue(gson.toJson(response));
 			
+			Student dbStudent = null;
+			boolean studentChanged = false;
+			if (response.data != null) {
+				// check max credit
+				if (response.data.minCredit != null && !response.data.maxCredit.equals(student.getMaxCredit())) {
+					student.setMaxCredit(response.data.maxCredit);
+					if (dbStudent == null)
+						dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent != null) {
+						dbStudent.setMaxCredit(response.data.maxCredit);
+					}
+					studentChanged = true;
+				}
+				// check min credit
+				if (response.data.minCredit != null && !response.data.minCredit.equals(student.getMinCredit())) {
+					student.setMinCredit(response.data.minCredit);
+					if (dbStudent == null)
+						dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent != null) {
+						dbStudent.setMinCredit(response.data.minCredit);
+					}
+					studentChanged = true;
+				}
+			}
+			Set<String> requestIds = new HashSet<String>();
 			if (isUpdateUniTimeStatuses() && response.data != null && response.data.requests != null && !response.data.requests.isEmpty()) {
-				boolean studentChanged = false;
-				Set<String> requestIds = new HashSet<String>();
 				for (SpecialRegistration r: response.data.requests) {
 					requestIds.add(r.regRequestId);
 					if (r.maxCredit != null) {
@@ -2158,10 +2200,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						// check student status
 						if (student.getMaxCreditOverride() != null && r.regRequestId.equals(student.getMaxCreditOverride().getExternalId()) && (student.getMaxCreditOverride().getStatus() == null || student.getMaxCreditOverride().getStatus() != (maxiStatus != null ? toStatus(maxiStatus) : toStatus(r)))) {
 							student.getMaxCreditOverride().setStatus(maxiStatus != null ?toStatus(maxiStatus) : toStatus(r));
-							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+							if (dbStudent == null)
+								dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
 								dbStudent.setOverrideStatus(maxiStatus != null ? toStatus(maxiStatus) : toStatus(r));
-								helper.getHibSession().merge(dbStudent);
 							}
 							studentChanged = true;
 						}
@@ -2180,10 +2222,10 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						// check student status
 						if (student.getMinCreditOverride() != null && r.regRequestId.equals(student.getMinCreditOverride().getExternalId()) && (student.getMinCreditOverride().getStatus() == null || student.getMinCreditOverride().getStatus() != (miniStatus != null ? toStatus(miniStatus) : toStatus(r)))) {
 							student.getMinCreditOverride().setStatus(miniStatus != null ?toStatus(miniStatus) : toStatus(r));
-							Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+							if (dbStudent == null)
+								dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 							if (dbStudent != null) {
 								dbStudent.setOverrideStatus(miniStatus != null ? toStatus(miniStatus) : toStatus(r));
-								helper.getHibSession().merge(dbStudent);
 							}
 							studentChanged = true;
 						}
@@ -2232,27 +2274,27 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					}
 				}
 				if (student.getMaxCreditOverride() != null && !requestIds.contains(student.getMaxCreditOverride().getExternalId())) {
-					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent == null)
+						dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 					if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
 						dbStudent.setOverrideStatus(null);
 						dbStudent.setOverrideMaxCredit(null);
 						dbStudent.setOverrideExternalId(null);
 						dbStudent.setOverrideTimeStamp(null);
 						dbStudent.setOverrideIntent(null);
-						helper.getHibSession().merge(dbStudent);
 						student.setMaxCreditOverride(null);
 						studentChanged = true;
 					}
 				}
 				if (student.getMinCreditOverride() != null && !requestIds.contains(student.getMinCreditOverride().getExternalId())) {
-					Student dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
+					if (dbStudent == null)
+						dbStudent = StudentDAO.getInstance().get(student.getStudentId(), helper.getHibSession());
 					if (dbStudent != null && dbStudent.getMaxCreditOverrideIntent() != CourseRequestOverrideIntent.WAITLIST) {
 						dbStudent.setOverrideStatus(null);
 						dbStudent.setOverrideMaxCredit(null);
 						dbStudent.setOverrideExternalId(null);
 						dbStudent.setOverrideTimeStamp(null);
 						dbStudent.setOverrideIntent(null);
-						helper.getHibSession().merge(dbStudent);
 						student.setMinCreditOverride(null);
 						studentChanged = true;
 					}
@@ -2286,10 +2328,12 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 						}
 					}
 				}
-				if (studentChanged) {
-					server.update(student, false);
-					helper.getHibSession().flush();
-				}
+			}
+			if (studentChanged) {
+				server.update(student, false);
+				if (dbStudent != null)
+					helper.getHibSession().merge(dbStudent);
+				helper.getHibSession().flush();
 			}
 			
 			if (response != null && ResponseStatus.success == response.status && response.data != null && response.data.requests != null) {

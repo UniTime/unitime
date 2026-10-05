@@ -455,9 +455,9 @@ public class SpecialRegistrationsPanel extends P {
 				if (!noCourseErrors.isEmpty()) {
 					List<Widget> row = new ArrayList<Widget>();
 					row.add(new P("icons"));
-					String note = reg.getNote("MAXI");
+					String note = reg.getNote("MINI", "MAXI");
 					DateAndNoteCell dateAndNote = new DateAndNoteCell(null, note);
-					if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrorCode("MAXI")) {
+					if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && (reg.hasErrorCode("MINI") || reg.hasErrorCode("MAXI"))) {
 						if (note == null || note.isEmpty())
 							dateAndNote = new DateAndNoteCell(null, MESSAGES.noRequestNoteClickToChange());						
 						dateAndNote.getElement().getStyle().setCursor(Cursor.POINTER);
@@ -486,9 +486,9 @@ public class SpecialRegistrationsPanel extends P {
 			} else if (reg.hasErrors()) {
 				List<Widget> row = new ArrayList<Widget>();
 				row.add(p);
-				String note = reg.getNote("MAXI");
+				String note = reg.getNote("MINI", "MAXI");
 				DateAndNoteCell dateAndNote = new DateAndNoteCell(reg.getSubmitDate(), note);
-				if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && reg.hasErrorCode("MAXI")) {
+				if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && (reg.hasErrorCode("MINI") || reg.hasErrorCode("MAXI"))) {
 					if (note == null || note.isEmpty())
 						dateAndNote = new DateAndNoteCell(reg.getSubmitDate(), MESSAGES.noRequestNoteClickToChange());						
 					dateAndNote.getElement().getStyle().setCursor(Cursor.POINTER);

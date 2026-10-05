@@ -1323,7 +1323,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 					if (!noCourseErrors.isEmpty()) {
 						List<Widget> row = new ArrayList<Widget>();
 						row.add(new P("icons"));
-						row.add(new DateAndNoteCell(null, reg.getNote("MAXI")));
+						row.add(new DateAndNoteCell(null, reg.getNote("MINI", "MAXI")));
 						row.add(new DescriptionCell(null));
 						HTML errorsLabel = new HTML(noCourseErrors); errorsLabel.addStyleName("registration-errors");
 						row.add(errorsLabel);
@@ -1335,7 +1335,7 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				} else if (reg.hasErrors()) {
 					List<Widget> row = new ArrayList<Widget>();
 					row.add(p);
-					row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote("MAXI")));
+					row.add(new DateAndNoteCell(reg.getSubmitDate(), reg.getNote("MINI", "MAXI")));
 					row.add(new DescriptionCell(reg.getDescription()));
 					String errors = "";
 					for (ErrorMessage e: reg.getErrors())

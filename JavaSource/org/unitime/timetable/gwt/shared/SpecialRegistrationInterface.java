@@ -293,11 +293,18 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public String getDescription() { return iDescription; }
 		public void setDescription(String description) { iDescription = description; }
 		
-		public String getNote(String course) {
+		public String getNote(String... courses) {
 			if (iNotes == null) return null;
-			String note = iNotes.get(course);
-			if (note != null) return note;
-			return iNotes.get("");
+			String ret = null;
+			for (String course: courses) {
+				String note = iNotes.get(course);
+				if (note == null || note.isEmpty()) continue;
+				if (ret == null)
+					ret = note;
+				else
+					ret += "\n" + note;
+			}
+			return ret;
 		}
 		public void setNote(String course, String note) {
 			if (note == null || note.isEmpty()) return;
