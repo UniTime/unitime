@@ -61,12 +61,15 @@ public class ConflictBasedStatisticsTree extends AriaTree implements TakesValue<
 		if (node.hasLink()) {
 			ToolBox.open(GWT.getHostPageBaseURL() + node.getLink());
 		} else if (node.hasClassId()) {
-			UniTimeFrameDialog.openDialog(MESSAGES.pageSuggestions(), "suggestions?menu=hide&id=" + node.getClassId(), "900", "85%");
+			if (iProperties != null && iProperties.isCanShowSuggestions())
+				UniTimeFrameDialog.openDialog(MESSAGES.pageSuggestions(), "suggestions?menu=hide&id=" + node.getClassId(), "900", "85%");
 		} else if (node.hasSelection()) {
-			SelectedAssignment selection = node.getSelection();
-			UniTimeFrameDialog.openDialog(MESSAGES.pageSuggestions(), "suggestions?menu=hide&id=" + selection.getClassId()
-				+ "&days=" + selection.getDays() + "&slot=" + selection.getStartSlot() + "&room=" + selection.getRoomIds(",")
-				+ "&pid=" + selection.getPatternId() + "&did=" + selection.getDatePatternId(), "900", "85%");
+			if (iProperties != null && iProperties.isCanShowSuggestions()) {
+				SelectedAssignment selection = node.getSelection();
+				UniTimeFrameDialog.openDialog(MESSAGES.pageSuggestions(), "suggestions?menu=hide&id=" + selection.getClassId()
+					+ "&days=" + selection.getDays() + "&slot=" + selection.getStartSlot() + "&room=" + selection.getRoomIds(",")
+					+ "&pid=" + selection.getPatternId() + "&did=" + selection.getDatePatternId(), "900", "85%");
+			}
 		}
 	}
 

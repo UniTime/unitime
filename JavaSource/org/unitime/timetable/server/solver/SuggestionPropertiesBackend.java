@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionPropertie
 import org.unitime.timetable.gwt.shared.SuggestionsInterface.SuggestionPropertiesRequest;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
@@ -65,6 +66,7 @@ public class SuggestionPropertiesBackend implements GwtRpcImplementation<Suggest
 		}
 		response.setSolver(courseTimetablingSolverService.getSolver() != null);
 		response.setFirstDay(ApplicationProperty.TimePatternFirstDayOfWeek.intValue());
+		response.setCanShowSuggestions(context.hasPermission(Right.Suggestions));
 		//response.setUsePrefStyle(usePrefStyles);
 		
 		if (request.getHistoryId() != null) {

@@ -99,7 +99,13 @@ public class ClassAssignmentDetailsBackend implements GwtRpcImplementation<Class
 	@Override
 	public ClassAssignmentDetails execute(ClassAssignmentDetailsRequest request, SessionContext context) {
 		context.checkPermission(Right.Suggestions);
-		
+		ClassAssignmentDetails details = getClassDetails(request, context);
+		if (details != null)
+			details.setCanShowDetail(context.hasPermission(request.getClassId(), Right.ClassDetail));
+		return details;
+	}
+	
+	protected ClassAssignmentDetails getClassDetails(ClassAssignmentDetailsRequest request, SessionContext context) {
 		SuggestionsContext cx = new SuggestionsContext();
 		String instructorFormat = context.getUser().getProperty(UserProperty.NameFormat);
     	if (instructorFormat != null)

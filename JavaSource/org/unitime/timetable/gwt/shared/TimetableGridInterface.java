@@ -64,6 +64,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		private List<TimetableGridLegend> iAssignedLegend = new ArrayList<TimetableGridLegend>();
 		private List<TimetableGridLegend> iNotAssignedLegend = new ArrayList<TimetableGridLegend>();
 		private int iWeekOffset = 0;
+		private boolean iCanShowSuggestions = true;
 		
 		public void addModel(TimetableGridModel model) { iModels.add(model); }
 		public List<TimetableGridModel> getModels() { return iModels; }
@@ -85,6 +86,8 @@ public class TimetableGridInterface implements GwtRpcResponse {
 		
 		public int getWeekOffset() { return iWeekOffset; }
 		public void setWeekOffset(int weekOffset) { iWeekOffset = weekOffset; }
+		public boolean isCanShowSuggestions() { return iCanShowSuggestions; }
+		public void setCanShowSuggestions(boolean canShowSuggestions) { iCanShowSuggestions = canShowSuggestions; }
 	}
 	
 	public static class TimetableGridModel implements IsSerializable, Serializable {
@@ -139,7 +142,7 @@ public class TimetableGridInterface implements GwtRpcResponse {
 
 		public void setUtilization(double utilization) { iUtilization = utilization; }
 		public double getUtilization() { return iUtilization; }
-
+		
 		public void addCell(TimetableGridCell cell) { iCells.add(cell); }
 		public List<TimetableGridCell> getCells() { return iCells; }
 		

@@ -43,6 +43,16 @@
 				<line>Improved handling of committed student conflict when they are loaded in (not computed).</line>
 			</description>
 		</item>
+		<item>
+			<name>Timetable Grid: Minor Improvements</name>
+			<description>
+				<line>Faster load when the default room availability is used.</line>
+				<line>Do not open Suggestions when the user does not have permission to see the Suggestions page at the time
+					(e.g., the timetable was already published).</line>
+				<line>Suggestions: do not show a link to the Class Detail page when the user cannot access the Class Details page for the selected class
+					(e.g., for a committed class of a different problem).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Administration</title>

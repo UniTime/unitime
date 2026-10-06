@@ -215,7 +215,7 @@ public class TimetablePage extends Composite {
 		List<Page> pages = new ArrayList<Page>();
 		int index = 0;
 		for (final TimetableGridModel model: iLastResponse.getModels()) {
-			final TimetableGrid grid = new TimetableGrid(iLastFilter, model, index++, 1000, iLastResponse.getWeekOffset(), -1);
+			final TimetableGrid grid = new TimetableGrid(iLastFilter, model, index++, 1000, iLastResponse.getWeekOffset(), iLastResponse.isCanShowSuggestions(), -1);
 			pages.add(new Page() {
 				@Override
 				public String getName() {
@@ -278,7 +278,7 @@ public class TimetablePage extends Composite {
 		timetables.getElement().getStyle().clearOverflow();
 		int lastTabIndex = 0;
 		for (TimetableGridModel model: response.getModels()) {
-			TimetableGrid g = new TimetableGrid(filter, model, index++, width, response.getWeekOffset(), lastTabIndex); 
+			TimetableGrid g = new TimetableGrid(filter, model, index++, width, response.getWeekOffset(), response.isCanShowSuggestions(), lastTabIndex); 
 			timetables.add(g);
 			lastTabIndex += g.getLastTabIndex();
 		}

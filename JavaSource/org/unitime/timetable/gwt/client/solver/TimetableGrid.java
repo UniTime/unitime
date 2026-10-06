@@ -78,9 +78,11 @@ public class TimetableGrid extends Composite {
 	private List<Background> iBackbrounds = new ArrayList<Background>();
 	private int iCellWidth;
 	private int iLastTabIndex = 0;
+	private boolean iCanShowSuggestions = true;
 	
-	public TimetableGrid(FilterInterface filter, final TimetableGridModel model, int index, int pageWidth, final int weekOffset, int tabIndex) {
+	public TimetableGrid(FilterInterface filter, final TimetableGridModel model, int index, int pageWidth, final int weekOffset, boolean canShowSuggestions, int tabIndex) {
 		iLastTabIndex = tabIndex;
+		iCanShowSuggestions = canShowSuggestions;
 		final int displayMode = Integer.valueOf(filter.getParameterValue("dispMode", "0"));
 		boolean hasDay[] = { true, true, true, true, true, false, false };
 		String days = filter.getParameterValue("days");
@@ -742,7 +744,7 @@ public class TimetableGrid extends Composite {
 			EventTarget related = event.getRelatedEventTarget();
 		    switch (DOM.eventGetType(event)) {
 			case Event.ONCLICK:
-				if (getCell().hasId() && getCell().getType() == TimetableGridCell.Type.Class) {
+				if (getCell().hasId() && getCell().getType() == TimetableGridCell.Type.Class && iCanShowSuggestions) {
 					UniTimeFrameDialog.openDialog(MESSAGES.dialogSuggestions(), "suggestions?menu=hide&id=" + getCell().getId(),"900","90%");
 					select(false);
 				}

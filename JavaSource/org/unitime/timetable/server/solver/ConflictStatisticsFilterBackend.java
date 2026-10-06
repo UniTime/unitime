@@ -91,6 +91,7 @@ public class ConflictStatisticsFilterBackend implements GwtRpcImplementation<Con
 		properties.setSolver(courseTimetablingSolverService.getSolver() != null);
 		response.setSuggestionProperties(properties);
 		properties.setFirstDay(ApplicationProperty.TimePatternFirstDayOfWeek.intValue());
+		properties.setCanShowSuggestions(context.hasPermission(Right.Suggestions));
 		//properties.setUsePrefStyle(usePrefStyles);
 		
 		SolverPageBackend.fillSolverWarnings(context, courseTimetablingSolverService.getSolver(), SolverType.COURSE, response);
