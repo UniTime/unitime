@@ -73,6 +73,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.StudentGroupInfo;
 import org.unitime.timetable.solver.ui.TimetableInfo;
+import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
@@ -116,6 +117,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     	if (instructorFormat != null)
     		cx.setInstructorNameFormat(instructorFormat);
     	response.setWeekOffset(cx.getWeekOffset());
+    	response.setCanShowSuggestions(context.hasPermission(Right.Suggestions));
     	
     	SolverProxy solver = courseTimetablingSolverService.getSolver();
     	SolverPageBackend.fillSolverWarnings(context, solver, SolverType.COURSE, response);
@@ -185,7 +187,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     				tx = hibSession.beginTransaction();
     			
     			if (cx.getResourceType() == ResourceType.ROOM.ordinal()) {
-    				if (RoomAvailability.getInstance() != null) {
+    				if (RoomAvailability.getInstance() != null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
     			        RoomAvailability.getInstance().activate(acadSession.getUniqueId(), cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType, false);
     		            String ts = RoomAvailability.getInstance().getTimeStamp(cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType);
     		            if (ts == null)
@@ -207,7 +209,7 @@ public class TimetableGridBackend implements GwtRpcImplementation<TimetableGridR
     					response.addModel(m);
     				}
     			} else if (cx.getResourceType() == ResourceType.INSTRUCTOR.ordinal()) {
-    				if (RoomAvailability.getInstance() != null && cx.isShowEvents()) {
+    				if (RoomAvailability.getInstance() != null && cx.isShowEvents() && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
     			        RoomAvailability.getInstance().activate(acadSession.getUniqueId(), cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType, false);
     		            String ts = RoomAvailability.getInstance().getTimeStamp(cx.getSessionStartDate(), cx.getSessionEndDate(), RoomAvailabilityInterface.sClassType);
     		            if (ts == null)

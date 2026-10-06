@@ -111,9 +111,13 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		iDetails = details;
 		clear();
 		iHeader.clearMessage();
-		String html = "<a href='classDetail.action?cid=" + details.getClazz().getClassId()+"' class='header-link' target='_blank' title='" + MESSAGES.titleOpenClassDetail(SafeHtmlUtils.htmlEscape(details.getClazz().getName())) + "'>"
-			+ details.getClazz().getName() + "</a>";
-		iHeader.setHeaderTitle(MESSAGES.headerCurrentAssignment(html));
+		if (details.isCanShowDetail()) {
+			String html = "<a href='classDetail.action?cid=" + details.getClazz().getClassId()+"' class='header-link' target='_blank' title='" + MESSAGES.titleOpenClassDetail(SafeHtmlUtils.htmlEscape(details.getClazz().getName())) + "'>"
+				+ details.getClazz().getName() + "</a>";
+			iHeader.setHeaderTitle(MESSAGES.headerCurrentAssignment(html));
+		} else {
+			iHeader.setHeaderTitle(MESSAGES.headerCurrentAssignment(details.getClazz().getName()));
+		}
 		addHeaderRow(iHeader);
 		if (details.getTime() != null) {
 			 if (details.getTime().hasDatePattern()) {

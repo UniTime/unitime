@@ -625,6 +625,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		private Map<String, Double> iObjectives = null;
 		private Map<String, Double> iAssignedObjectives = null;
 		private boolean iCanUnassign = false;
+		private boolean iCanShowDetail = false;
 		
 		public ClassAssignmentDetails() {}
 		
@@ -677,6 +678,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		
 		public boolean isCanUnassign() { return iCanUnassign; }
 		public void setCanUnassign(boolean canUnassign) { iCanUnassign = canUnassign; }
+		public boolean isCanShowDetail() { return iCanShowDetail; }
+		public void setCanShowDetail(boolean canShowDetail) { iCanShowDetail = canShowDetail; }
 		
 		public SelectedAssignment getSelection() {
 			if (getTime() == null) return null;
@@ -829,6 +832,7 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		private boolean iSolver = false;
 		private List<SelectedAssignment> iSelectedAssignments = null;
 		private Integer iFirstDay;
+		private boolean iCanShowSuggestions = true;
 		
 		public void addPreference(PreferenceInterface preference) { iPreferences.add(preference); }
 		public List<PreferenceInterface> getPreferences() { return iPreferences; }
@@ -864,6 +868,8 @@ public class SuggestionsInterface implements IsSerializable, Serializable {
 		}
 		public void setFirstDay(Integer firstDay) { iFirstDay = firstDay; }
 		public Integer getFirstDay() { return iFirstDay; }
+		public boolean isCanShowSuggestions() { return iCanShowSuggestions; }
+		public void setCanShowSuggestions(boolean canShowSuggestions) { iCanShowSuggestions = canShowSuggestions; }
 	}
 	
 	public static class SuggestionPropertiesRequest implements GwtRpcRequest<SuggestionProperties>, Serializable {
