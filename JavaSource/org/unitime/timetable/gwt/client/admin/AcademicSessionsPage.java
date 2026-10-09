@@ -46,6 +46,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.NaturalOrderComparator;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
+import org.unitime.timetable.gwt.shared.GwtLocalDate;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
@@ -295,12 +296,12 @@ public class AcademicSessionsPage extends Composite {
 				}
 				
 				iSessionStart = new SingleDateSelector(null, false);
-				iSessionStart.setValueInServerTimeZone(iSession.getSessionStart());
+				iSessionStart.setLocalDate(iSession.getSessionStart());
 				iPanel.addRow(COURSE.columnSessionStartDate() + ":", iSessionStart);
 				iSessionStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setSessionStart(iSessionStart.getValueInServerTimeZone());
+						iSession.setSessionStart(iSessionStart.getLocalDate());
 						datesChanged();
 					}
 				});
@@ -308,12 +309,12 @@ public class AcademicSessionsPage extends Composite {
 				iSessionStart.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 				
 				iClassEnd = new SingleDateSelector(null, false);
-				iClassEnd.setValueInServerTimeZone(iSession.getClassEnd());
+				iClassEnd.setLocalDate(iSession.getClassEnd());
 				iPanel.addRow(COURSE.columnClassesEndDate() + ":", iClassEnd);
 				iClassEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setClassEnd(iClassEnd.getValueInServerTimeZone());
+						iSession.setClassEnd(iClassEnd.getLocalDate());
 						datesChanged();
 					}
 				});
@@ -321,12 +322,12 @@ public class AcademicSessionsPage extends Composite {
 				iClassEnd.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 				
 				iExamStart = new SingleDateSelector(null, false);
-				iExamStart.setValueInServerTimeZone(iSession.getExamStart());
+				iExamStart.setLocalDate(iSession.getExamStart());
 				iPanel.addRow(COURSE.columnExamStartDate() + ":", iExamStart);
 				iExamStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setExamStart(iExamStart.getValueInServerTimeZone());
+						iSession.setExamStart(iExamStart.getLocalDate());
 						datesChanged();
 					}
 				});
@@ -334,12 +335,12 @@ public class AcademicSessionsPage extends Composite {
 				iExamStart.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 
 				iSessionEnd = new SingleDateSelector(null, false);
-				iSessionEnd.setValueInServerTimeZone(iSession.getSessionEnd());
+				iSessionEnd.setLocalDate(iSession.getSessionEnd());
 				iPanel.addRow(COURSE.columnSessionEndDate() + ":", iSessionEnd);
 				iSessionEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setSessionEnd(iSessionEnd.getValueInServerTimeZone());
+						iSession.setSessionEnd(iSessionEnd.getLocalDate());
 						datesChanged();
 					}
 				});
@@ -347,12 +348,12 @@ public class AcademicSessionsPage extends Composite {
 				iSessionEnd.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 
 				iEventStart = new SingleDateSelector(null, false);
-				iEventStart.setValueInServerTimeZone(iSession.getEventStart());
+				iEventStart.setLocalDate(iSession.getEventStart());
 				iPanel.addRow(COURSE.columnEventStartDate() + ":", iEventStart);
 				iEventStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setEventStart(iEventStart.getValueInServerTimeZone());
+						iSession.setEventStart(iEventStart.getLocalDate());
 						datesChanged();
 					}
 				});
@@ -360,12 +361,12 @@ public class AcademicSessionsPage extends Composite {
 				iEventStart.getWidget().getElement().getStyle().setBorderWidth(2, Unit.PX);
 
 				iEventEnd = new SingleDateSelector(null, false);
-				iEventEnd.setValueInServerTimeZone(iSession.getEventEnd());
+				iEventEnd.setLocalDate(iSession.getEventEnd());
 				iPanel.addRow(COURSE.columnEventEndDate() + ":", iEventEnd);
 				iEventEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setEventEnd(iEventEnd.getValueInServerTimeZone());
+						iSession.setEventEnd(iEventEnd.getLocalDate());
 						datesChanged();
 					}
 				});
@@ -509,22 +510,22 @@ public class AcademicSessionsPage extends Composite {
 				iPanel.addRow(COURSE.propDefaultStudentStatus(), iStudentStatus);
 				
 				iNotificationStart = new SingleDateSelector(null, false);
-				iNotificationStart.setValueInServerTimeZone(iSession.getNotificationStart());
+				iNotificationStart.setLocalDate(iSession.getNotificationStart());
 				iPanel.addRow(COURSE.columnNotificationsBeginDate() + ":", iNotificationStart);
 				iNotificationStart.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setNotificationStart(iNotificationStart.getValueInServerTimeZone());
+						iSession.setNotificationStart(iNotificationStart.getLocalDate());
 					}
 				});
 				
 				iNotificationEnd = new SingleDateSelector(null, false);
-				iNotificationEnd.setValueInServerTimeZone(iSession.getNotificationEnd());
+				iNotificationEnd.setLocalDate(iSession.getNotificationEnd());
 				iPanel.addRow(COURSE.columnNotificationsEndDate() + ":", iNotificationEnd);
 				iNotificationEnd.addValueChangeHandler(new ValueChangeHandler<Date>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<Date> event) {
-						iSession.setNotificationEnd(iNotificationEnd.getValueInServerTimeZone());
+						iSession.setNotificationEnd(iNotificationEnd.getLocalDate());
 					}
 				});
 
@@ -536,9 +537,9 @@ public class AcademicSessionsPage extends Composite {
 		});
 	}
 	
-	protected Date first(Date... dates) {
-		Date ret = null;
-		for (Date d: dates) {
+	protected GwtLocalDate first(GwtLocalDate... dates) {
+		GwtLocalDate ret = null;
+		for (GwtLocalDate d: dates) {
 			if (d == null) continue;
 			if (ret == null || ret.after(d))
 				ret = d;
@@ -546,9 +547,9 @@ public class AcademicSessionsPage extends Composite {
 		return ret;
 	}
 	
-	protected Date last(Date... dates) {
-		Date ret = null;
-		for (Date d: dates) {
+	protected GwtLocalDate last(GwtLocalDate... dates) {
+		GwtLocalDate ret = null;
+		for (GwtLocalDate d: dates) {
 			if (d == null) continue;
 			if (ret == null || ret.before(d))
 				ret = d;
@@ -557,10 +558,10 @@ public class AcademicSessionsPage extends Composite {
 	}
 	
 	@SuppressWarnings("deprecation")
-	protected void check(SessionMonth m, SessionMonth.Flag f, Date d) {
+	protected void check(SessionMonth m, SessionMonth.Flag f, GwtLocalDate d) {
 		if (d == null) return;
-		if (m.getMonth() == d.getMonth() && m.getYear() == 1900 + d.getYear())
-			m.setFlag(d.getDate() - 1, f);
+		if (m.getMonth() + 1 == d.getMonth() && m.getYear() == d.getYear())
+			m.setFlag(d.getDay() - 1, f);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -568,13 +569,13 @@ public class AcademicSessionsPage extends Composite {
 		validateDates(null);
 		if (iHolidays.isVisible())
 			iLastDates = iHolidays.getValue();
-		Date fd = first(iSession.getSessionStart(), iSession.getEventStart());
-		Date ld = last(iSession.getSessionEnd(), iSession.getEventEnd());
-		if (fd == null || ld == null || ld.before(fd)) {
+		GwtLocalDate firstDate = first(iSession.getSessionStart(), iSession.getEventStart());
+		GwtLocalDate lastDate = last(iSession.getSessionEnd(), iSession.getEventEnd());
+		if (firstDate == null || lastDate == null || lastDate.before(firstDate)) {
 			iHolidays.setVisible(false);
 		} else {
-			fd = CalendarUtil.copyDate(fd);
-			ld = CalendarUtil.copyDate(ld);
+			Date fd = firstDate.getDate();
+			Date ld = lastDate.getDate();
 			CalendarUtil.addDaysToDate(fd, -iNrExcessDays);
 			CalendarUtil.addDaysToDate(ld, +iNrExcessDays);
 			iHolidays.setVisible(true);
@@ -600,6 +601,7 @@ public class AcademicSessionsPage extends Composite {
 	protected void saveOrUpdateSession() {
 		if (validateSession()) {
 			iSession.setHolidays(iHolidays.getPattern());
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new AcademicSessionEditRequest(Operation.SAVE, iSession), new AsyncCallback<AcademicSessionEditResponse>() {
 
 				@Override
@@ -612,6 +614,7 @@ public class AcademicSessionsPage extends Composite {
 
 				@Override
 				public void onSuccess(AcademicSessionEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showSessions(result.getSession() == null ? null : result.getSession().getSessionId());
 				}
@@ -693,9 +696,9 @@ public class AcademicSessionsPage extends Composite {
 				errors.add(COURSE.errorEventEndDateNotAfterEventStartDate());
 		} else iEventEnd.clearHint();
 		if (errors != null) {
-			Date fd = first(iSession.getSessionStart(), iSession.getEventStart());
-			Date ld = last(iSession.getSessionEnd(), iSession.getEventEnd());
-			if (fd != null && ld != null && CalendarUtil.getDaysBetween(fd, ld) > 366)
+			GwtLocalDate fd = first(iSession.getSessionStart(), iSession.getEventStart());
+			GwtLocalDate ld = last(iSession.getSessionEnd(), iSession.getEventEnd());
+			if (fd != null && ld != null && CalendarUtil.getDaysBetween(fd.getDate(), ld.getDate()) > 366)
 				errors.add(COURSE.errorSessionDatesOverAYear());
 		}
 		if (iSession.getNotificationStart() != null && iSession.getNotificationEnd() != null && !iSession.getNotificationStart().before(iSession.getNotificationEnd())) {
@@ -709,8 +712,8 @@ public class AcademicSessionsPage extends Composite {
 		UniTimeConfirmationDialog.confirm(COURSE.confirmDeleteAcademicSession(), new Command() {
 			@Override
 			public void execute() {
+				LoadingWidget.getInstance().show(MSG.waitPlease());
 				RPC.execute(new AcademicSessionEditRequest(Operation.DELETE, iSession.getSessionId()), new AsyncCallback<AcademicSessionEditResponse>() {
-
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -721,6 +724,7 @@ public class AcademicSessionsPage extends Composite {
 
 					@Override
 					public void onSuccess(AcademicSessionEditResponse result) {
+						LoadingWidget.getInstance().hide();
 						History.newItem(null, false);
 						showSessions(null);
 					}
@@ -773,7 +777,7 @@ public class AcademicSessionsPage extends Composite {
 		private Long iSessionId;
 		private String iInitiative, iTerm, iYear, iCampus;
 		private Long iDefaultDatePatternId, iSessionStatusId, iDefaultClassDurationId, iStudentStatusId, iInstructionalMethodId;
-		private Date iSessionStart, iClassEnd, iExamStart, iSessionEnd, iEventStart, iEventEnd, iNotificationStart, iNotificationEnd;
+		private GwtLocalDate iSessionStart, iClassEnd, iExamStart, iSessionEnd, iEventStart, iEventEnd, iNotificationStart, iNotificationEnd;
 		private String iHolidays;
 		private Integer iNewEnrollmentDeadline = 1, iClassChangesDeadline = 1, iCourseDropDeadline = 4;
 		
@@ -803,22 +807,22 @@ public class AcademicSessionsPage extends Composite {
 		public Long getInstructionalMethodId() { return iInstructionalMethodId; }
 		public void setInstructionalMethodId(Long instructionalMethodId) { iInstructionalMethodId = instructionalMethodId; }
 		
-		public Date getSessionStart() { return iSessionStart; }
-		public void setSessionStart(Date sessionStart) { iSessionStart = sessionStart; }
-		public Date getClassEnd() { return iClassEnd; }
-		public void setClassEnd(Date classEnd) { iClassEnd = classEnd; }
-		public Date getExamStart() { return iExamStart; }
-		public void setExamStart(Date examStart) { iExamStart = examStart; }
-		public Date getSessionEnd() { return iSessionEnd; }
-		public void setSessionEnd(Date sessionEnd) { iSessionEnd = sessionEnd; }
-		public Date getEventStart() { return iEventStart; }
-		public void setEventStart(Date eventStart) { iEventStart = eventStart; }
-		public Date getEventEnd() { return iEventEnd; }
-		public void setEventEnd(Date eventEnd) { iEventEnd = eventEnd; }
-		public Date getNotificationStart() { return iNotificationStart; }
-		public void setNotificationStart(Date notificationStart) { iNotificationStart = notificationStart; }
-		public Date getNotificationEnd() { return iNotificationEnd; }
-		public void setNotificationEnd(Date notificationEnd) { iNotificationEnd = notificationEnd; }
+		public GwtLocalDate getSessionStart() { return iSessionStart; }
+		public void setSessionStart(GwtLocalDate sessionStart) { iSessionStart = sessionStart; }
+		public GwtLocalDate getClassEnd() { return iClassEnd; }
+		public void setClassEnd(GwtLocalDate classEnd) { iClassEnd = classEnd; }
+		public GwtLocalDate getExamStart() { return iExamStart; }
+		public void setExamStart(GwtLocalDate examStart) { iExamStart = examStart; }
+		public GwtLocalDate getSessionEnd() { return iSessionEnd; }
+		public void setSessionEnd(GwtLocalDate sessionEnd) { iSessionEnd = sessionEnd; }
+		public GwtLocalDate getEventStart() { return iEventStart; }
+		public void setEventStart(GwtLocalDate eventStart) { iEventStart = eventStart; }
+		public GwtLocalDate getEventEnd() { return iEventEnd; }
+		public void setEventEnd(GwtLocalDate eventEnd) { iEventEnd = eventEnd; }
+		public GwtLocalDate getNotificationStart() { return iNotificationStart; }
+		public void setNotificationStart(GwtLocalDate notificationStart) { iNotificationStart = notificationStart; }
+		public GwtLocalDate getNotificationEnd() { return iNotificationEnd; }
+		public void setNotificationEnd(GwtLocalDate notificationEnd) { iNotificationEnd = notificationEnd; }
 		
 		public String getHolidays() { return iHolidays; }
 		public void setHolidays(String holidays) { iHolidays = holidays; }
