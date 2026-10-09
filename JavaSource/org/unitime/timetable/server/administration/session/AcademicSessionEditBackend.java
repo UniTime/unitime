@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.server.administration.session;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -29,6 +33,7 @@ import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage.AcademicSessi
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.GwtLocalDate;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassDurationType;
@@ -145,14 +150,14 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
 		form.setTerm(acadSession.getAcademicTerm());
 		form.setCampus(acadSession.getCampus());
 		
-		form.setSessionStart(acadSession.getSessionBeginDateTime());
-		form.setSessionEnd(acadSession.getSessionEndDateTime());
-		form.setClassEnd(acadSession.getClassesEndDateTime());
-		form.setExamStart(acadSession.getExamBeginDate());
-		form.setEventStart(acadSession.getEventBeginDate());
-		form.setEventEnd(acadSession.getEventEndDate());
-		form.setNotificationStart(acadSession.getNotificationsBeginDate());
-		form.setNotificationEnd(acadSession.getNotificationsEndDate());
+		form.setSessionStart(toLocalDate(acadSession.getSessionBeginDateTime()));
+		form.setSessionEnd(toLocalDate(acadSession.getSessionEndDateTime()));
+		form.setClassEnd(toLocalDate(acadSession.getClassesEndDateTime()));
+		form.setExamStart(toLocalDate(acadSession.getExamBeginDate()));
+		form.setEventStart(toLocalDate(acadSession.getEventBeginDate()));
+		form.setEventEnd(toLocalDate(acadSession.getEventEndDate()));
+		form.setNotificationStart(toLocalDate(acadSession.getNotificationsBeginDate()));
+		form.setNotificationEnd(toLocalDate(acadSession.getNotificationsEndDate()));
 		
 		form.setHolidays(acadSession.getHolidays());
 		
@@ -190,12 +195,12 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
             sessn.setAcademicYear(form.getYear());
     		sessn.setAcademicTerm(form.getTerm());
     		sessn.setCampus(form.getCampus());
-    		sessn.setSessionBeginDateTime(form.getSessionStart());
-    		sessn.setSessionEndDateTime(form.getSessionEnd());
-    		sessn.setClassesEndDateTime(form.getClassEnd());
-    		sessn.setExamBeginDate(form.getExamStart());
-    		sessn.setEventBeginDate(form.getEventStart());
-    		sessn.setEventEndDate(form.getEventEnd());
+    		sessn.setSessionBeginDateTime(toDate(form.getSessionStart()));
+    		sessn.setSessionEndDateTime(toDate(form.getSessionEnd()));
+    		sessn.setClassesEndDateTime(toDate(form.getClassEnd()));
+    		sessn.setExamBeginDate(toDate(form.getExamStart()));
+    		sessn.setEventBeginDate(toDate(form.getEventStart()));
+    		sessn.setEventEndDate(toDate(form.getEventEnd()));
     		sessn.setHolidays(form.getHolidays());
     		sessn.setLastWeekToEnroll(form.getNewEnrollmentDeadline());
     		sessn.setLastWeekToChange(form.getClassChangesDeadline());
@@ -203,8 +208,8 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
     		sessn.setDefaultSectioningStatus(form.getStudentStatusId() == null ? null : StudentSectioningStatusDAO.getInstance().get(form.getStudentStatusId(), hibSession));
     		sessn.setDefaultClassDurationType(form.getDefaultClassDurationId() == null ? null : ClassDurationTypeDAO.getInstance().get(form.getDefaultClassDurationId(), hibSession));
     		sessn.setDefaultInstructionalMethod(form.getInstructionalMethodId() == null ? null : InstructionalMethodDAO.getInstance().get(form.getInstructionalMethodId(), hibSession));
-    		sessn.setNotificationsBeginDate(form.getNotificationStart());
-    		sessn.setNotificationsEndDate(form.getNotificationEnd());
+    		sessn.setNotificationsBeginDate(toDate(form.getNotificationStart()));
+    		sessn.setNotificationsEndDate(toDate(form.getNotificationEnd()));
 
             if (sessn.getSessionId() == null)
             	hibSession.persist(sessn);
@@ -308,6 +313,18 @@ public class AcademicSessionEditBackend implements GwtRpcImplementation<Academic
             throw e;
         }
         return ret;
+	}
+	
+	public static GwtLocalDate toLocalDate(Date date) {
+		if (date == null) return null;
+		LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		return new GwtLocalDate(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
+	}
+	
+	public static Date toDate(GwtLocalDate date) {
+		if (date == null) return null;
+		LocalDate localDate = LocalDate.of(date.getYear(), date.getMonth(), date.getDay());
+		return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
 	}
 
 }

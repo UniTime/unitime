@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
+import org.unitime.timetable.gwt.shared.GwtLocalDate;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
@@ -855,6 +856,15 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 				ValueChangeEvent.fire(this, value);				
 		}
 		
+		public void setValue(GwtLocalDate value, boolean fireEvents) {
+			iYear = value.getYear();
+			iMonth = value.getMonth();
+			iDay = value.getDay();
+			init();
+			if (fireEvents)
+				ValueChangeEvent.fire(this, value.getDate());
+		}
+		
 		public String toString() {
 			return (getValue() == null ? "" : DateTimeFormat.getFormat(CONSTANTS.eventDateFormat()).format(getValue()));
 		}
@@ -981,5 +991,26 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 	
 	public boolean isPopupShowing() {
 		return iPopup.isShowing();
+	}
+	
+	public void setLocalDate(GwtLocalDate value, boolean fireEvents) {
+		if (value == null) {
+			iPicker.setText("");
+			iMonth.setValue(null);
+		} else {
+			iPicker.setText(iFormat.format(value.getDate()));
+			iMonth.setValue(value, false);
+		}
+		if (fireEvents)
+			ValueChangeEvent.fire(this, (value == null ? null : value.getDate()));
+	}
+	
+	public void setLocalDate(GwtLocalDate value) {
+		setLocalDate(value, false);
+	}
+	
+	public GwtLocalDate getLocalDate() {
+		if (iMonth.iDay <= 0 || iMonth.iDay > iMonth.iDays.size()) return null;
+		return new GwtLocalDate(iMonth.iYear, iMonth.iMonth, iMonth.iDay);
 	}
 }
