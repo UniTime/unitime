@@ -589,6 +589,7 @@ public class DatePatternsPage extends Composite {
 	
 	protected void saveOrUpdatePattern(final Long nextPatternId) {
 		if (validatePattern()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new DatePatternEditRequest(Operation.SAVE, iPattern), new AsyncCallback<DatePatternEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -600,7 +601,7 @@ public class DatePatternsPage extends Composite {
 
 				@Override
 				public void onSuccess(DatePatternEditResponse result) {
-					
+					LoadingWidget.getInstance().hide();
 					if (nextPatternId != null) {
 						History.newItem(nextPatternId.toString(), false);
 						editPattern(nextPatternId);
@@ -655,6 +656,7 @@ public class DatePatternsPage extends Composite {
 	}
 	
 	protected void deletePattern() {
+		LoadingWidget.getInstance().show(MSG.waitPlease());
 		RPC.execute(new DatePatternEditRequest(Operation.DELETE, iPattern.getPatternId()), new AsyncCallback<DatePatternEditResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -666,6 +668,7 @@ public class DatePatternsPage extends Composite {
 
 			@Override
 			public void onSuccess(DatePatternEditResponse result) {
+				LoadingWidget.getInstance().hide();
 				History.newItem(null, false);
 				showPatterns(null);
 			}

@@ -732,6 +732,7 @@ public class TimePatternsPage extends Composite {
 	
 	protected void saveOrUpdatePattern(final Long nextPatternId) {
 		if (validatePattern()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new TimePatternEditRequest(Operation.SAVE, iPattern), new AsyncCallback<TimePatternEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -743,6 +744,7 @@ public class TimePatternsPage extends Composite {
 
 				@Override
 				public void onSuccess(TimePatternEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					if (nextPatternId != null) {
 						History.newItem(nextPatternId.toString(), false);
 						editPattern(nextPatternId);
@@ -811,6 +813,7 @@ public class TimePatternsPage extends Composite {
 	}
 	
 	protected void deletePattern() {
+		LoadingWidget.getInstance().show(MSG.waitPlease());
 		RPC.execute(new TimePatternEditRequest(Operation.DELETE, iPattern.getPatternId()), new AsyncCallback<TimePatternEditResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -822,6 +825,7 @@ public class TimePatternsPage extends Composite {
 
 			@Override
 			public void onSuccess(TimePatternEditResponse result) {
+				LoadingWidget.getInstance().hide();
 				History.newItem(null, false);
 				showPatterns(null);
 			}

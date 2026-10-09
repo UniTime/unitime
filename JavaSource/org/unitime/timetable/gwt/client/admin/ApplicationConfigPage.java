@@ -419,6 +419,7 @@ public class ApplicationConfigPage extends Composite {
 	
 	protected void saveOrUpdateSetting(boolean update) {
 		if (validateSetting()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new ApplicationSettingEditRequest(update ? Operation.UPDATE : Operation.SAVE, iSetting), new AsyncCallback<ApplicationSettingEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -430,6 +431,7 @@ public class ApplicationConfigPage extends Composite {
 
 				@Override
 				public void onSuccess(ApplicationSettingEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showSettings(iSetting.getKey());
 				}
@@ -462,6 +464,7 @@ public class ApplicationConfigPage extends Composite {
 	}
 	
 	protected void deleteSetting() {
+		LoadingWidget.getInstance().show(MSG.waitPlease());
 		RPC.execute(new ApplicationSettingEditRequest(Operation.DELETE, iSettingId), new AsyncCallback<ApplicationSettingEditResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -473,6 +476,7 @@ public class ApplicationConfigPage extends Composite {
 
 			@Override
 			public void onSuccess(ApplicationSettingEditResponse result) {
+				LoadingWidget.getInstance().hide();
 				History.newItem(null, false);
 				showSettings(iSettingId);
 			}

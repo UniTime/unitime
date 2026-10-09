@@ -463,6 +463,7 @@ public class ExamPeriodsPage extends Composite {
 	
 	protected void saveOrUpdatePeriod(final Long nextPeriodId) {
 		if (validatePeriod()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new ExamPeriodEditRequest(Operation.SAVE, iPeriod), new AsyncCallback<ExamPeriodEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -474,6 +475,7 @@ public class ExamPeriodsPage extends Composite {
 
 				@Override
 				public void onSuccess(ExamPeriodEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					if (nextPeriodId != null) {
 						History.newItem(nextPeriodId.toString(), false);
 						editPeriod(nextPeriodId);
@@ -651,6 +653,7 @@ public class ExamPeriodsPage extends Composite {
 	
 	protected void saveSetup() {
 		if (validateSetup()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new ExamPeriodEditRequest(Operation.SAVE_SETUP, iSetup), new AsyncCallback<ExamPeriodEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -662,6 +665,7 @@ public class ExamPeriodsPage extends Composite {
 
 				@Override
 				public void onSuccess(ExamPeriodEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showPeriods(null);
 				}
@@ -711,6 +715,7 @@ public class ExamPeriodsPage extends Composite {
 	}
 	
 	protected void deletePeriod() {
+		LoadingWidget.getInstance().show(MSG.waitPlease());
 		RPC.execute(new ExamPeriodEditRequest(Operation.DELETE, iPeriod.getPeriodId()), new AsyncCallback<ExamPeriodEditResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -722,6 +727,7 @@ public class ExamPeriodsPage extends Composite {
 
 			@Override
 			public void onSuccess(ExamPeriodEditResponse result) {
+				LoadingWidget.getInstance().hide();
 				History.newItem(null, false);
 				showPeriods(null);
 			}
