@@ -189,6 +189,7 @@ public class SolverConfigsPage extends Composite {
 		UniTimeConfirmationDialog.confirm(COURSE.confirmDeleteSolverConfig(), new Command() {
 			@Override
 			public void execute() {
+				LoadingWidget.getInstance().show(MSG.waitPlease());
 				RPC.execute(new SolverConfigEditRequest(Operation.DELETE, iConfig.getSolverConfigId()), new AsyncCallback<SolverConfigEditResponse>() {
 
 					@Override
@@ -201,6 +202,7 @@ public class SolverConfigsPage extends Composite {
 
 					@Override
 					public void onSuccess(SolverConfigEditResponse result) {
+						LoadingWidget.getInstance().hide();
 						History.newItem(null, false);
 						showSolverConfigs(null);
 					}
@@ -339,6 +341,7 @@ public class SolverConfigsPage extends Composite {
 	
 	protected void saveOrUpdateSolverConfig() {
 		if (validateSolverConfig()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new SolverConfigEditRequest(Operation.SAVE, iConfig), new AsyncCallback<SolverConfigEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -350,6 +353,7 @@ public class SolverConfigsPage extends Composite {
 
 				@Override
 				public void onSuccess(SolverConfigEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showSolverConfigs(result.getSolverConfigId());
 				}

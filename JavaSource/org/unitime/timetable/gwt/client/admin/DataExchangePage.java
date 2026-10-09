@@ -156,6 +156,7 @@ public class DataExchangePage extends Composite {
 		if (validateImport()) {
 			DataImportRequest request = new DataImportRequest();
 			request.setEmail(iEmail.getValue() ? iAddress.getText() : null);
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(request, new AsyncCallback<DataImportExportResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -167,6 +168,7 @@ public class DataExchangePage extends Composite {
 
 				@Override
 				public void onSuccess(DataImportExportResponse result) {
+					LoadingWidget.getInstance().hide();
 					iUpload.reset();
 					iQueue.refreshQueue(result.getQueueId());
 				}
@@ -195,6 +197,7 @@ public class DataExchangePage extends Composite {
 			DataExportRequest request = new DataExportRequest();
 			request.setExportType(iExportTypes.getSelectedValue());
 			request.setEmail(iEmail.getValue() ? iAddress.getText() : null);
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(request, new AsyncCallback<DataImportExportResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -206,6 +209,7 @@ public class DataExchangePage extends Composite {
 
 				@Override
 				public void onSuccess(DataImportExportResponse result) {
+					LoadingWidget.getInstance().hide();
 					iExportTypes.setSelectedIndex(0);
 					iQueue.refreshQueue(result.getQueueId());
 				}

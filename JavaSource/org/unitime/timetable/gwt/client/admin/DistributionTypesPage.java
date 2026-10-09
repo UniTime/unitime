@@ -409,6 +409,7 @@ public class DistributionTypesPage extends Composite {
 	
 	protected void updateType(final Long nextTypeId) {
 		if (validateType()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new DistributionTypeEditRequest(Operation.SAVE, iType), new AsyncCallback<DistributionTypeEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -420,6 +421,7 @@ public class DistributionTypesPage extends Composite {
 
 				@Override
 				public void onSuccess(DistributionTypeEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					if (nextTypeId != null) {
 						History.newItem(nextTypeId.toString(), false);
 						editType(nextTypeId);

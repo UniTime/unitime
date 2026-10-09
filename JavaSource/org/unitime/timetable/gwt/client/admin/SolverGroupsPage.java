@@ -97,6 +97,7 @@ public class SolverGroupsPage extends Composite {
 				UniTimeConfirmationDialog.confirm(COURSE.confirmDeleteAllSolverGroups(), new Command() {
 					@Override
 					public void execute() {
+						LoadingWidget.getInstance().show(MSG.waitPlease());
 						RPC.execute(new SolverGroupEditRequest(Operation.DELETE_ALL), new AsyncCallback<SolverGroupEditResponse>() {
 							@Override
 							public void onFailure(Throwable caught) {
@@ -108,6 +109,7 @@ public class SolverGroupsPage extends Composite {
 
 							@Override
 							public void onSuccess(SolverGroupEditResponse result) {
+								LoadingWidget.getInstance().hide();
 								History.newItem(null, false);
 								showGroups(null);
 							}
@@ -124,6 +126,7 @@ public class SolverGroupsPage extends Composite {
 				UniTimeConfirmationDialog.confirm(COURSE.confirmCreateNewSolverGroups(), new Command() {
 					@Override
 					public void execute() {
+						LoadingWidget.getInstance().show(MSG.waitPlease());
 						RPC.execute(new SolverGroupEditRequest(Operation.AUTO_SETUP), new AsyncCallback<SolverGroupEditResponse>() {
 							@Override
 							public void onFailure(Throwable caught) {
@@ -135,6 +138,7 @@ public class SolverGroupsPage extends Composite {
 
 							@Override
 							public void onSuccess(SolverGroupEditResponse result) {
+								LoadingWidget.getInstance().hide();
 								History.newItem(null, false);
 								showGroups(null);
 							}
@@ -286,6 +290,7 @@ public class SolverGroupsPage extends Composite {
 		UniTimeConfirmationDialog.confirm(COURSE.confirmDeleteSolverGroup(), new Command() {
 			@Override
 			public void execute() {
+				LoadingWidget.getInstance().show(MSG.waitPlease());
 				RPC.execute(new SolverGroupEditRequest(Operation.DELETE, iGroup.getSolverGroupId()), new AsyncCallback<SolverGroupEditResponse>() {
 
 					@Override
@@ -298,6 +303,7 @@ public class SolverGroupsPage extends Composite {
 
 					@Override
 					public void onSuccess(SolverGroupEditResponse result) {
+						LoadingWidget.getInstance().hide();
 						History.newItem(null, false);
 						showGroups(null);
 					}
@@ -457,6 +463,7 @@ public class SolverGroupsPage extends Composite {
 	
 	protected void saveOrUpdateGroup() {
 		if (validateGroup()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new SolverGroupEditRequest(Operation.SAVE, iGroup), new AsyncCallback<SolverGroupEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -468,6 +475,7 @@ public class SolverGroupsPage extends Composite {
 
 				@Override
 				public void onSuccess(SolverGroupEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showGroups(result.getSolverGroupId());
 				}

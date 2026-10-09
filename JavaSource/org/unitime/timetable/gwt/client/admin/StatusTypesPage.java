@@ -336,6 +336,7 @@ public class StatusTypesPage extends Composite {
 	
 	protected void saveOrUpdateStatusType() {
 		if (validateStatusType()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new StatusTypeEditRequest(Operation.SAVE, iStatusType), new AsyncCallback<StatusTypeEditResponse>() {
 
 				@Override
@@ -348,6 +349,7 @@ public class StatusTypesPage extends Composite {
 
 				@Override
 				public void onSuccess(StatusTypeEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showStatusTypes(result.getStatusType() == null ? null : result.getStatusType().getUniqueId());
 				}
@@ -378,6 +380,7 @@ public class StatusTypesPage extends Composite {
 		UniTimeConfirmationDialog.confirm(COURSE.confirmStatusTypeDelete(), new Command() {
 			@Override
 			public void execute() {
+				LoadingWidget.getInstance().show(MSG.waitPlease());
 				RPC.execute(new StatusTypeEditRequest(Operation.DELETE, iStatusType.getUniqueId()), new AsyncCallback<StatusTypeEditResponse>() {
 
 					@Override
@@ -390,6 +393,7 @@ public class StatusTypesPage extends Composite {
 
 					@Override
 					public void onSuccess(StatusTypeEditResponse result) {
+						LoadingWidget.getInstance().hide();
 						History.newItem(null, false);
 						showStatusTypes(null);
 					}

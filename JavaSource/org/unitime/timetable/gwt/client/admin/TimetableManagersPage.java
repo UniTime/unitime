@@ -211,6 +211,7 @@ public class TimetableManagersPage extends Composite {
 		UniTimeConfirmationDialog.confirm(COURSE.confirmDeleteManager(), new Command() {
 			@Override
 			public void execute() {
+				LoadingWidget.getInstance().show(MSG.waitPlease());
 				RPC.execute(new TimetableManagerEditRequest(Operation.DELETE, iManager.getManagerId()), new AsyncCallback<TimetableManagerEditResponse>() {
 
 					@Override
@@ -223,6 +224,7 @@ public class TimetableManagersPage extends Composite {
 
 					@Override
 					public void onSuccess(TimetableManagerEditResponse result) {
+						LoadingWidget.getInstance().hide();
 						History.newItem(null, false);
 						showManagers(null);
 					}
@@ -535,6 +537,7 @@ public class TimetableManagersPage extends Composite {
 	
 	protected void saveOrUpdateManager() {
 		if (validateManager()) {
+			LoadingWidget.getInstance().show(MSG.waitPlease());
 			RPC.execute(new TimetableManagerEditRequest(Operation.SAVE, iManager), new AsyncCallback<TimetableManagerEditResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -546,6 +549,7 @@ public class TimetableManagersPage extends Composite {
 
 				@Override
 				public void onSuccess(TimetableManagerEditResponse result) {
+					LoadingWidget.getInstance().hide();
 					History.newItem(null, false);
 					showManagers(result.getManagerId());
 				}
