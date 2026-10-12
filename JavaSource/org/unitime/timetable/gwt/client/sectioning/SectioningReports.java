@@ -287,6 +287,7 @@ public class SectioningReports extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				iTableHeader.setErrorMessage(caught.getMessage());
+				ToolBox.checkAccess(caught);
 			}
 
 			@Override
@@ -1050,6 +1051,7 @@ public class SectioningReports extends Composite {
 			public void onFailure(Throwable caught) {
 				iTableHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().hide();
+				ToolBox.checkAccess(caught);
 			}
 			@Override
 			public void onSuccess(SectioningReportRpcResponse result) {
