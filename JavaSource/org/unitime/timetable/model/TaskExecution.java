@@ -32,7 +32,7 @@ import org.unitime.timetable.model.base.BaseTaskExecution;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Table(name = "task_execution")
-public class TaskExecution extends BaseTaskExecution {
+public class TaskExecution extends BaseTaskExecution implements Comparable<TaskExecution>{
 	private static final long serialVersionUID = 1L;
 
 	public TaskExecution() {
@@ -44,6 +44,13 @@ public class TaskExecution extends BaseTaskExecution {
 			setStatusMessage(message);
 		else
 			setStatusMessage(message.substring(0, 197) + "...");
+	}
+
+	@Override
+	public int compareTo(TaskExecution e) {
+		int cmp = getScheduledDate().compareTo(e.getScheduledDate());
+		if (cmp != 0) return cmp;
+		return getUniqueId().compareTo(e.getUniqueId());
 	}
 
 }

@@ -62,6 +62,7 @@ public enum ExportType {
 	LAST_LIKE_COURSE_DEMANDS("lastLikeCourseDemand", "Last-Like Student Course Demands"),
 	SCRIPTS("scripts", "Scripts"),
 	REPORTS("reports", "Reports"),
+	TASKS("tasks", "Task Scheduler"),
 	;
 	
 	private String iType, iLabel;
