@@ -41,6 +41,8 @@ import org.unitime.timetable.gwt.shared.ScriptInterface.QueueType;
 
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -98,14 +100,23 @@ public class DataExchangePage extends Composite {
 						doImport();
 					}
 				});
+				iImportHeader.setEnabled("import", false);
 				iFooter.addButton("import", COURSE.actionImport(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						doImport();
 					}
 				});
+				iFooter.setEnabled("import", false);
 				iPanel.addHeaderRow(iImportHeader);
 				iPanel.addRow(COURSE.fieldImportFile() + ":", iUpload);
+				iUpload.addValueChangeHandler(new ValueChangeHandler<String>() {
+					@Override
+					public void onValueChange(ValueChangeEvent<String> event) {
+						iImportHeader.setEnabled("import", event.getValue() != null);
+						iFooter.setEnabled("import", event.getValue() != null);
+					}
+				});
 				if (iConfig.hasExportTypes()) {
 					iExportHeader = new UniTimeHeaderPanel(COURSE.sectioDateExport());
 					iExportHeader.addButton("export", COURSE.actionExport(), new ClickHandler() {
@@ -114,12 +125,14 @@ public class DataExchangePage extends Composite {
 							doExport();
 						}
 					});
+					iExportHeader.setEnabled("export", false);
 					iFooter.addButton("export", COURSE.actionExport(), new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
 							doExport();
 						}
 					});
+					iFooter.setEnabled("export", false);
 					iPanel.addHeaderRow(iExportHeader);
 					iExportTypes = new ListBox();
 					iExportTypes.addItem(COURSE.itemSelect(), "");
@@ -127,6 +140,13 @@ public class DataExchangePage extends Composite {
 						iExportTypes.addItem(item.getExportName(), item.getExportType());
 					}
 					iPanel.addRow(COURSE.fieldExportType() + ":", iExportTypes);
+					iExportTypes.addChangeHandler(new ChangeHandler() {
+						@Override
+						public void onChange(ChangeEvent event) {
+							iExportHeader.setEnabled("export", iExportTypes.getSelectedIndex() > 0);
+							iFooter.setEnabled("export", iExportTypes.getSelectedIndex() > 0);
+						}
+					});
 				}
 				iOptionsHeader = new UniTimeHeaderPanel(COURSE.sectionDataExchangeOptions());
 				P em = new P("email-line");
@@ -170,6 +190,8 @@ public class DataExchangePage extends Composite {
 				public void onSuccess(DataImportExportResponse result) {
 					LoadingWidget.getInstance().hide();
 					iUpload.reset();
+					iImportHeader.setEnabled("import", false);
+					iFooter.setEnabled("import", false);
 					iQueue.refreshQueue(result.getQueueId());
 				}
 			});
