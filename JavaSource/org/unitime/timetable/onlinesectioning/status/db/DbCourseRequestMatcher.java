@@ -474,7 +474,7 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
 			String im = null;
 			try {
-				float a = Float.parseFloat(number);
+				float a = parseCredit(number);
 				switch (prefix) {
 					case eq: min = max = a; break; // = a
 					case le: max = a; break; // <= a
@@ -500,7 +500,7 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 				try {
 					String a = term.substring(0, term.indexOf(".."));
 					String b = term.substring(term.indexOf("..") + 2);
-					min = Float.parseFloat(a); max = Float.parseFloat(b);
+					min = parseCredit(a); max = parseCredit(b);
 				} catch (NumberFormatException e) {
 					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)").matcher(term);
 					if (m.matches()) {
@@ -535,7 +535,7 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 			else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
 			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
 			try {
-				float a = Float.parseFloat(number);
+				float a = parseCredit(number);
 				switch (prefix) {
 					case eq: min = max = a; break; // = a
 					case le: max = a; break; // <= a
@@ -548,7 +548,7 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 				try {
 					String a = term.substring(0, term.indexOf(".."));
 					String b = term.substring(term.indexOf("..") + 2);
-					min = Float.parseFloat(a); max = Float.parseFloat(b);
+					min = parseCredit(a); max = parseCredit(b);
 				} catch (NumberFormatException e) {}
 			}
 			if (min == 0 && max == Integer.MAX_VALUE) return true;
@@ -609,7 +609,7 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 			else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
 			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
 			try {
-				float a = Float.parseFloat(number);
+				float a = parseCredit(number);
 				switch (prefix) {
 					case eq: min = max = a; break; // = a
 					case le: max = a; break; // <= a
@@ -622,7 +622,7 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 				try {
 					String a = term.substring(0, term.indexOf(".."));
 					String b = term.substring(term.indexOf("..") + 2);
-					min = Float.parseFloat(a); max = Float.parseFloat(b);
+					min = parseCredit(a); max = parseCredit(b);
 				} catch (NumberFormatException e) {}
 			}
 			if (min == 0 && max == Integer.MAX_VALUE) return true;
@@ -1120,6 +1120,22 @@ public class DbCourseRequestMatcher extends DbCourseInfoMatcher {
 		} while (found);
 		return (token.isEmpty() ? days : 0);
 	}
+	
+	protected float parseCredit(String number) throws NumberFormatException {
+        if ("min".equalsIgnoreCase(number)) {
+            if (student().getMinCredit() != null)
+                return student().getMinCredit();
+            else
+                return 0f;
+        } else if ("max".equalsIgnoreCase(number)) {
+            if (student().getMaxCredit() != null)
+                return student().getMaxCredit();
+            else
+                return 1000f;
+        } else {
+            return Float.parseFloat(number);
+        }
+    }
 	
 	private int parseStart(String token) {
 		int startHour = 0, startMin = 0;

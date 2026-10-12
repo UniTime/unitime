@@ -140,7 +140,7 @@ public class StudentMatcher implements TermMatcher {
 			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
 			String im = null;
 			try {
-				float a = Float.parseFloat(number);
+				float a = parseCredit(number);
 				switch (prefix) {
 					case eq: min = max = a; break; // = a
 					case le: max = a; break; // <= a
@@ -166,7 +166,7 @@ public class StudentMatcher implements TermMatcher {
 				try {
 					String a = term.substring(0, term.indexOf(".."));
 					String b = term.substring(term.indexOf("..") + 2);
-					min = Float.parseFloat(a); max = Float.parseFloat(b);
+					min = parseCredit(a); max = parseCredit(b);
 				} catch (NumberFormatException e) {
 					Matcher m = Pattern.compile("([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)").matcher(term);
 					if (m.matches()) {
@@ -325,6 +325,22 @@ public class StudentMatcher implements TermMatcher {
 		}
 		return false;
 	}
+	
+	protected float parseCredit(String number) throws NumberFormatException {
+        if ("min".equalsIgnoreCase(number)) {
+            if (student().hasMinCredit())
+                return student().getMinCredit();
+            else
+                return 0f;
+        } else if ("max".equalsIgnoreCase(number)) {
+            if (student().hasMaxCredit())
+                return student().getMaxCredit();
+            else
+                return 1000f;
+        } else {
+            return Float.parseFloat(number);
+        }
+    }
 	
 	private boolean eq(String name, String term) {
 		if (name == null) return false;

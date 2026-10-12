@@ -55,6 +55,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Dashboards: Filter</name>
+			<description>
+				<line>Added an ability to filter by a student's minimum or maximum credit.</line>
+				<line>Use min for a student's minimum credit and max for a student's maximum credit.</line>
+				<line>For example, credit:&lt;min to get a list of students with assigned credit hours below their minimum.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Update / GWT</name>
