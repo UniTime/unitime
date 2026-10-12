@@ -33,8 +33,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.model.base.BaseSavedHQL;
+import org.unitime.timetable.model.dao.AcademicAreaDAO;
+import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.PointInTimeDataDAO;
+import org.unitime.timetable.model.dao.PosMajorDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentAccomodationDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
@@ -78,6 +88,8 @@ public class SavedHQL extends BaseSavedHQL {
 	private static interface OptionImplementation {
 		public Map<Long, String> getValues(UserContext user);
 		public Long lookupValue(UserContext user, String value);
+		public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value);
+		public String reverseLookup(org.hibernate.Session hibSession, Long id);
 		public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId);
 	}
 
@@ -109,6 +121,26 @@ public class SavedHQL extends BaseSavedHQL {
 			return null;
 		}
 		@Override
+		public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+			if (StudentSectioningStatus.class.equals(iReference)) {
+				StudentSectioningStatus o = StudentSectioningStatus.getStatus(value, sessionId, hibSession);
+				return (o == null ? null : o.getUniqueId());
+			} else {
+				RefTableEntry o = hibSession.createQuery(
+						"from " + iReference.getSimpleName() + " where reference = :value",
+						RefTableEntry.class).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
+			}
+		}
+		@Override
+		public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+			RefTableEntry entry = hibSession.createQuery(
+					"from " + iReference.getSimpleName() + " where uniqueId = :id", RefTableEntry.class 
+					).setParameter("id", id).uniqueResult();
+			return (entry == null ? id.toString() : entry.getReference());
+		}
+		@Override
 		public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
 			return originalId;
 		}
@@ -134,6 +166,21 @@ public class SavedHQL extends BaseSavedHQL {
 						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
 						setParameter("term", value).setMaxResults(1).uniqueResult();
 			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				return (Long)hibSession.createQuery(
+						"select s.uniqueId from Session s where " +
+						"s.academicTerm || s.academicYear = :term or " +
+						"s.academicTerm || s.academicYear || s.academicInitiative = :term", Long.class).
+						setParameter("term", value).setMaxResults(1).uniqueResult();
+			}
+			
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				Session session = SessionDAO.getInstance().get(id, hibSession);
+				return (session != null ? session.getLabel() : id.toString());
+			}
 
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
@@ -157,6 +204,18 @@ public class SavedHQL extends BaseSavedHQL {
 				for (Department d: Department.getUserDepartments(user))
 					if (value.equalsIgnoreCase(d.getDeptCode())) return d.getUniqueId();
 				return null;
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				Department d = Department.findByDeptCode(value, sessionId, hibSession);
+				return (d == null ? null : d.getUniqueId());
+			}
+
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				Department object = DepartmentDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getDeptCode() : id.toString());
 			}
 			
 			@Override
@@ -186,6 +245,18 @@ public class SavedHQL extends BaseSavedHQL {
 			}
 			
 			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				SubjectArea object = SubjectAreaDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getSubjectAreaAbbreviation() : id.toString());
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				SubjectArea sa = SubjectArea.findByAbbv(hibSession, sessionId, value);
+				return (sa == null ? null : sa.getUniqueId());
+			}
+			
+			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
 				return (Long)hibSession.createQuery("select d2.uniqueId from SubjectArea d1, SubjectArea d2 where d1.uniqueId = :id and d1.subjectAreaAbbreviation = d2.subjectAreaAbbreviation and d1.session.uniqueId = :s1 and d2.session.uniqueId = :s2", Long.class)
 						.setParameter("id", originalId).setParameter("s1", sessionId).setParameter("s2", newSessionId).setMaxResults(1).uniqueResult();
@@ -210,6 +281,18 @@ public class SavedHQL extends BaseSavedHQL {
 					for (Map.Entry<Long, String> e: values.entrySet())
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
+			}
+			
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				Building object = BuildingDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getAbbreviation() : id.toString());
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				Building b = Building.findByBldgAbbv(hibSession, sessionId, value);
+				return (b == null ? null : b.getUniqueId());
 			}
 			
 			@Override
@@ -241,6 +324,18 @@ public class SavedHQL extends BaseSavedHQL {
 			}
 			
 			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				Room object = RoomDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getLabel() : id.toString());
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				Location r = Room.findByName(hibSession, sessionId, value);
+				return (r == null || !(r instanceof Room) ? null : r.getUniqueId());
+			}
+			
+			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
 				return (Long)hibSession.createQuery("select d2.uniqueId from Room d1, Room d2 where d1.uniqueId = :id and d1.permanentId = d2.permanentId and d1.session.uniqueId = :s1 and d2.session.uniqueId = :s2", Long.class)
 						.setParameter("id", originalId).setParameter("s1", sessionId).setParameter("s2", newSessionId).setMaxResults(1).uniqueResult();
@@ -266,6 +361,18 @@ public class SavedHQL extends BaseSavedHQL {
 					for (Map.Entry<Long, String> e: values.entrySet())
 						if (value.equalsIgnoreCase(e.getValue())) return e.getKey();
 				return null;
+			}
+			
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				Location object = LocationDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getLabel() : id.toString());
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				Location r = Room.findByName(hibSession, sessionId, value);
+				return (r == null ? null : r.getUniqueId());
 			}
 			
 			@Override
@@ -297,6 +404,21 @@ public class SavedHQL extends BaseSavedHQL {
 				return null;
 			}
 			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				PointInTimeData object = PointInTimeDataDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getName() : id.toString());
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				PointInTimeData o = hibSession.createQuery(
+						"from PointInTimeData where session.uniqueId = :sessionId and name = :value",
+						PointInTimeData.class).setParameter("sessionId", sessionId).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
+			}
+			
+			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
 				return null;
 			}
@@ -323,6 +445,21 @@ public class SavedHQL extends BaseSavedHQL {
 			}
 			
 			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				Session o = hibSession.createQuery(
+						"from Session where s.academicTerm || s.academicYear || s.academicInitiative = :value",
+						Session.class).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
+			}
+			
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				Session session = SessionDAO.getInstance().get(id, hibSession);
+				return (session != null ? session.getReference() : id.toString());
+			}
+			
+			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
 				return originalId;
 			}
@@ -344,6 +481,21 @@ public class SavedHQL extends BaseSavedHQL {
 						"select uniqueId from StudentGroup where session.uniqueId = :sessionId and groupAbbreviation = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId())
 						.setParameter("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+			
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				StudentGroup object = StudentGroupDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getGroupAbbreviation() : id.toString());
+			}
+			
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				StudentGroup o = hibSession.createQuery(
+						"from StudentGroup where session.uniqueId = :sessionId and groupAbbreviation = :value",
+						StudentGroup.class).setParameter("sessionId", sessionId).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
 			}
 			
 			@Override
@@ -372,6 +524,20 @@ public class SavedHQL extends BaseSavedHQL {
 						"select uniqueId from AcademicArea where session.uniqueId = :sessionId and academicAreaAbbreviation = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId())
 						.setParameter("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				AcademicArea o = hibSession.createQuery(
+						"from AcademicArea where session.uniqueId = :sessionId and academicAreaAbbreviation = :value",
+						AcademicArea.class).setParameter("sessionId", sessionId).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
+			}
+			
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				AcademicArea object = AcademicAreaDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getAcademicAreaAbbreviation() : id.toString());
 			}
 			
 			@Override
@@ -408,6 +574,19 @@ public class SavedHQL extends BaseSavedHQL {
 						.setParameter("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
 			}
 			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				PosMajor object = PosMajorDAO.getInstance().get(id, hibSession);
+				return (object != null && !object.getAcademicAreas().isEmpty() ? object.getAcademicAreas().iterator().next().getAcademicAreaAbbreviation() + " " + object.getCode() : id.toString());
+			}
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				PosMajor o = hibSession.createQuery(
+						"select m from PosMajor m inner join m.academicAreas a where m.session.uniqueId = :sessionId and (a.academicAreaAbbreviation || ' ' || m.code) = :value",
+						PosMajor.class).setParameter("sessionId", sessionId).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
+			}
+			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
 				return (Long)hibSession.createQuery("select d2.uniqueId from PosMajor d1 inner join d1.academicAreas a1, PosMajor d2 inner join d2.academicAreas a2 where d1.uniqueId = :id and d1.code = d2.code and a1.academicAreaAbbreviation = a2.academicAreaAbbreviation and d1.session.uniqueId = :s1 and d2.session.uniqueId = :s2"
 						,Long.class)
@@ -432,6 +611,19 @@ public class SavedHQL extends BaseSavedHQL {
 						"select uniqueId from StudentAccomodation where session.uniqueId = :sessionId and abbreviation = :value", Long.class
 						).setParameter("sessionId", user.getCurrentAcademicSessionId())
 						.setParameter("value", value).setCacheable(true).setMaxResults(1).uniqueResult();
+			}
+			@Override
+			public String reverseLookup(org.hibernate.Session hibSession, Long id) {
+				StudentAccomodation object = StudentAccomodationDAO.getInstance().get(id, hibSession);
+				return (object != null ? object.getAbbreviation() : id.toString());
+			}
+			@Override
+			public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) {
+				StudentAccomodation o = hibSession.createQuery(
+						"from StudentAccomodation where session.uniqueId = :sessionId and abbreviation = :value",
+						StudentAccomodation.class).setParameter("sessionId", sessionId).setParameter("value", value)
+						.setMaxResults(1).uniqueResult();
+				return (o == null ? null : o.getUniqueId());
 			}
 			@Override
 			public Long rollForward(org.hibernate.Session hibSession, Long originalId, Long sessionId, Long newSessionId) {
@@ -490,6 +682,9 @@ public class SavedHQL extends BaseSavedHQL {
 		public boolean allowMultiSelection() { return iAllowSelection && iMultiSelect; }
 		public Map<Long, String> values(UserContext user) { return iImplementation.getValues(user); }
 		public Long lookupValue(UserContext user, String value) { return iImplementation.lookupValue(user, value); }
+		public String reverseLookup(org.hibernate.Session hibSession, Long id) { return iImplementation.reverseLookup(hibSession, id); }
+		public String reverseLookup(Long id) { return iImplementation.reverseLookup(SessionDAO.getInstance().getSession(), id); }
+		public Long lookupValue(org.hibernate.Session hibSession, Long sessionId, String value) { return iImplementation.lookupValue(hibSession, sessionId, value); }
 		public String rollForward(org.hibernate.Session hibSession, String value, Long sessionId, Long newSessionId) {
 			if (value == null || value.isEmpty()) return value;
 			if (iMultiSelect) {
@@ -512,6 +707,43 @@ public class SavedHQL extends BaseSavedHQL {
 				} catch (Exception e) {
 					return value;
 				}
+			}
+		}
+		
+		public String pretifyValue(org.hibernate.Session hibSession, String idOrIds) {
+			if (idOrIds == null || idOrIds.isEmpty()) return idOrIds;
+			if (allowMultiSelection()) {
+				String ret = "";
+				for (String id: idOrIds.split(",")) {
+					if (id.isEmpty()) continue;
+					try {
+						ret += (ret.isEmpty() ? "" : ",") + reverseLookup(hibSession, Long.valueOf(id));
+					} catch (Exception e) {
+						ret += (ret.isEmpty() ? "" : ",") + id;
+					}
+				}
+				return ret;
+			} else {
+				try {
+					return reverseLookup(hibSession, Long.valueOf(idOrIds));
+				} catch (Exception e) {
+					return idOrIds;
+				}
+			}
+		}
+		public String uglifyValue(org.hibernate.Session hibSession, Long sessionId, String values) {
+			if (values == null || values.isEmpty()) return values;
+			if (allowMultiSelection()) {
+				String ret = "";
+				for (String value: values.split(",")) {
+					if (value.isEmpty()) continue;
+					Long id = lookupValue(hibSession, sessionId, value);
+					ret += (ret.isEmpty() ? "" : ",") + (id == null ? value : id.toString());
+				}
+				return ret;
+			} else {
+				Long id = lookupValue(hibSession, sessionId, values);
+				return (id == null ? values : id.toString());
 			}
 		}
 	}

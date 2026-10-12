@@ -233,6 +233,8 @@ public class DataExchangePage extends Composite {
 				public void onSuccess(DataImportExportResponse result) {
 					LoadingWidget.getInstance().hide();
 					iExportTypes.setSelectedIndex(0);
+					iExportHeader.setEnabled("export", false);
+					iFooter.setEnabled("export", false);					
 					iQueue.refreshQueue(result.getQueueId());
 				}
 			});
