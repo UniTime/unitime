@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusFilterBox.SectioningStatusFilterRpcRequest;
@@ -106,6 +107,8 @@ public class SectioningStatusFilterBackend implements GwtRpcImplementation<Secti
 
 				return server.execute(server.createAction(SectioningStatusFilterAction.class).forRequest(request), currentUser(context));				
 			}
+		} catch (AccessDeniedException e) {
+			throw e;
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

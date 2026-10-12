@@ -83,7 +83,8 @@ public class SectioningReportsExporter implements Exporter {
 			parameters.put(name, helper.getParameter(name));
 		}
 		parameters.put("useAmPm", CONSTANTS.useAmPm() ? "true" : "false");
-		parameters.setProperty("user", helper.getSessionContext().getUser().getExternalUserId());
+		if (helper.getSessionContext().isAuthenticated())
+			parameters.setProperty("user", helper.getSessionContext().getUser().getExternalUserId());
 		
 		Long sessionId = helper.getAcademicSessionId();
 		if (sessionId == null && helper.getSessionContext().isAuthenticated())
@@ -102,8 +103,8 @@ public class SectioningReportsExporter implements Exporter {
 		SessionContext context = helper.getSessionContext();
 		DataProperties config = null;
 		if (online == null) {
-			if (!context.hasPermission(Right.StudentSectioningSolverReports))
-				context.checkPermission(Right.StudentSectioningSolver);
+			if (!context.hasPermission(sessionId, Right.StudentSectioningSolverReports))
+				context.checkPermission(sessionId, Right.StudentSectioningSolver);
 			
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver("PUBLISHED_" + sessionId, sessionId);
 			if (solver == null)
@@ -124,7 +125,7 @@ public class SectioningReportsExporter implements Exporter {
 					.setType(context.hasPermission(Right.StudentSchedulingAdvisor) ? OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
 			
 			csv = server.execute(server.createAction(GenerateSectioningReport.class).withParameters(parameters), user);
-		} else if (!sessionId.equals(context.getUser().getCurrentAcademicSessionId())) {
+		} else if (context.isAuthenticated() && !sessionId.equals(context.getUser().getCurrentAcademicSessionId())) {
 			context.checkPermissionAnyAuthority(sessionId, "Session", Right.StudentSectioningSolver);
 			
 			StudentSolverProxy solver = studentSectioningSolverService.getSolver(context.getUser().getExternalUserId(), sessionId);
