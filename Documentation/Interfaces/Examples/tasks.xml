@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tasks PUBLIC "-//UniTime//UniTime Periodic Tasks DTD/EN" "http://www.unitime.org/interface/Tasks.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<tasks campus="PWL" year="2026" term="Fall" dateFormat="yyyy/MM/dd" incremental="false">
+  <dates>
+    <date name="advising_start">2026/01/06</date>
+    <date name="advising_end">2026/08/31</date>
+    <date name="cont_test_first_run">2026/03/01</date>
+    <date name="schedule_published">2026/03/16</date>
+    <date name="cont_crf_end">2026/04/15</date>
+    <date name="cont_final_last_run">2026/04/20</date>
+    <date name="class_start">2026/08/24</date>
+  </dates>
+  <task name="Advisors: Update Advisor Emails" script="Advisors: Update Emails (IDATA)" owner="1">
+    <schedule startTime="2200" fromDate="advising_start" toDate="advising_end"/>
+  </task>
+  <task name="ContStCRF: Cont Student Requests Backup" script="Course Requests: Export XML" owner="1">
+    <schedule startTime="0500" days="MWF" fromDate="advising_start" toDate="cont_final_last_run" toOffset="+1"/>
+  </task>
+  <task name="ContStCRF: Re-Validate Student Overrides" script="Course Requests: Re-Validate All Student Overrides" owner="1">
+    <schedule startTime="0005" fromDate="schedule_published" fromOffset="+1" toDate="cont_crf_end"/>
+  </task>
+  <task name="ContStCRF: Re-Validate Student Overrides [Final Run]" script="Course Requests: Re-Validate All Student Overrides" owner="1">
+    <schedule startTime="1600" fromDate="cont_crf_end" toDate="cont_final_last_run"/>
+  </task>
+  <task name="ContStCRF: Start Final Run" script="Student Scheduling: Start Test Run" owner="1">
+    <parameter name="configName">ContStCRF Final</parameter>
+    <parameter name="avoid">Fall2026PWL</parameter>
+    <parameter name="validate">true</parameter>
+    <schedule startTime="1915" fromDate="cont_crf_end" toDate="cont_final_last_run"/>
+  </task>
+  <task name="ContStCRF: Start Test Run" script="Student Scheduling: Start Test Run" owner="1">
+    <parameter name="configName">ContStCRF Test</parameter>
+    <parameter name="avoid">Fall2026PWL</parameter>
+    <schedule startTime="1915" fromDate="cont_test_first_run" toDate="cont_crf_end" toOffset="-1"/>
+  </task>
+  <task name="ContStCRF: Students with HOLDs" script="Report:Students with HOLD" owner="1">
+    <parameter name="updateGroup">true</parameter>
+    <parameter name="studentGroupId">HOLD</parameter>
+    <schedule startTime="0130" fromDate="schedule_published" fromDate="+7" toDate="cont_final_last_run"/>
+  </task>
+  <task name="ContStCRF: Update Explorer's First Choice" script="Explorers: Assign 1st Choice Majors (DB)" owner="1">
+    <parameter name="controlGroupId">UNEX</parameter>
+    <schedule startTime="1745" fromDate="advising_start" toDate="cont_final_last_run"/>
+  </task>
+  <task name="Enrollment Audit" script="Students: Enrollment Audit" owner="1">
+    <schedule startTime="2300" fromDate="schedule_published" fromOffset="+7" toDate="class_start" toOffset="+31"/>
+  </task>
+</tasks>

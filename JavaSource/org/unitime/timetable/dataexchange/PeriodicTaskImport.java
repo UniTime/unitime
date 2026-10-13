@@ -81,11 +81,20 @@ public class PeriodicTaskImport extends BaseImport {
     	        	tasks.put(task.getName(), task);
     	        }
             }
+	        
+	        Element dates = root.element("dates");
+	        Map<String, String> dateMapping = new HashMap<String, String>();
+	        if (dates != null) {
+	        	for (Iterator i = dates.elementIterator("date"); i.hasNext(); ) {
+	                Element dateEl = (Element) i.next();
+	                dateMapping.put(dateEl.attributeValue("name"), dateEl.getText());
+	        	}
+	        }
 
 	        info("Importing tasks...");
-	        for (Iterator i = root.elementIterator(); i.hasNext(); ) {
+	        for (Iterator i = root.elementIterator("task"); i.hasNext(); ) {
                 Element taskElement = (Element) i.next();
-                importTask(taskElement, tasks.get(taskElement.attributeValue("name")));
+                importTask(taskElement, tasks.get(taskElement.attributeValue("name")), dateMapping);
 	        }
 			
 			commitTransaction();
@@ -95,7 +104,7 @@ public class PeriodicTaskImport extends BaseImport {
         }
 	}
 	
-	protected PeriodicTask importTask(Element taskEl, PeriodicTask task) {
+	protected PeriodicTask importTask(Element taskEl, PeriodicTask task, Map<String, String> dateMapping) {
 		Map<Integer, TaskExecution> execs = new HashMap<Integer, TaskExecution>();
 		Map<String, TaskParameter> params = new HashMap<String, TaskParameter>();
 		if (task == null) {
@@ -164,21 +173,29 @@ public class PeriodicTaskImport extends BaseImport {
 		for (Iterator i = taskEl.elementIterator("schedule"); i.hasNext(); ) {
 			Element scheduleEl = (Element)i.next();
 			int period = time2slot(Integer.valueOf(scheduleEl.attributeValue("startTime", "0000")));
-			int dayCode = days2code(scheduleEl.attributeValue("days", ""));
+			String days = scheduleEl.attributeValue("days", "");
+			if (dateMapping.containsKey(days)) days = dateMapping.get(days);
+			int dayCode = days2code(days);
 			Date sd = null, ed = null;
 			try {
-				sd = iDateFormat.parse(scheduleEl.attributeValue("fromDate", scheduleEl.attributeValue("date")));
+				String startDate = scheduleEl.attributeValue("fromDate", scheduleEl.attributeValue("date"));
+				if (dateMapping.containsKey(startDate)) startDate = dateMapping.get(startDate);
+				sd = iDateFormat.parse(startDate);
 			} catch (ParseException e) {
 				warn("Failed to parse date " + scheduleEl.attributeValue("fromDate", scheduleEl.attributeValue("date")));
 				continue;
 			}
 			int i1 = DateUtils.daysBetween(iSession.getSessionBeginDateTime(), sd);
+			i1 += Integer.parseInt(scheduleEl.attributeValue("fromOffset", scheduleEl.attributeValue("offset", "0")));
 			try {
-				ed = iDateFormat.parse(scheduleEl.attributeValue("toDate", scheduleEl.attributeValue("date")));
+				String endDate = scheduleEl.attributeValue("toDate", scheduleEl.attributeValue("date"));
+				if (dateMapping.containsKey(endDate)) endDate = dateMapping.get(endDate);
+				ed = iDateFormat.parse(endDate);
 			} catch (ParseException e) {
 				warn("Failed to parse date " + scheduleEl.attributeValue("toDate", scheduleEl.attributeValue("date"))); 
 			}
 			int i2 = DateUtils.daysBetween(iSession.getSessionBeginDateTime(), ed);
+			i2 += Integer.parseInt(scheduleEl.attributeValue("toOffset", scheduleEl.attributeValue("offset", "0")));
 			for (int j = i1; j <= i2; j++) {
 				if (dayCode != 0 && ((Constants.DAY_CODES[getDayOfWeek(iSession, j)] & dayCode) == 0)) continue;
 				TaskExecution exec = execs.remove(j * 288 + period);

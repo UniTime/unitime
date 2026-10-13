@@ -18,12 +18,17 @@
  * 
  -->
  
-<!ELEMENT tasks (task*) >
+<!ELEMENT tasks (dates*, task*) >
 <!ATTLIST tasks term CDATA #REQUIRED >
 <!ATTLIST tasks year CDATA #REQUIRED >
 <!ATTLIST tasks campus CDATA #REQUIRED >
 <!ATTLIST tasks dateFormat CDATA #IMPLIED >
 <!ATTLIST tasks created CDATA #IMPLIED >
+
+<!ELEMENT dates (date*) >
+
+<!ELEMENT date (#PCDATA) >
+<!ATTLIST date name CDATA #REQUIRED >
 
 <!ELEMENT task (email?, file?, parameter*, schedule+) >
 <!ATTLIST task name CDATA #REQUIRED >
@@ -42,3 +47,6 @@
 <!ATTLIST schedule fromDate CDATA #IMPLIED >
 <!ATTLIST schedule toDate CDATA #IMPLIED >
 <!ATTLIST schedule date CDATA #IMPLIED >
+<!ATTLIST schedule fromOffset CDATA #IMPLIED >
+<!ATTLIST schedule toOffset CDATA #IMPLIED >
+<!ATTLIST schedule offset CDATA #IMPLIED >
