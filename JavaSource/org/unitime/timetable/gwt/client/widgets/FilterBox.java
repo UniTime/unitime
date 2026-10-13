@@ -684,7 +684,14 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iChip = chip;
 			setStyleName("chip");
 			addStyleName(color);
-			iLabel = new Label(chip.getTranslatedValue());
+			String label = chip.getTranslatedValue();
+			if (label.matches("[<>=]+[0-9]+\\.?[0-9]*"))
+				label = chip.getTranslatedCommand() + " " + label;
+			else if (label.matches("[0-9]+\\.?[0-9]*"))
+				label = MESSAGES.filterChipEquals(chip.getTranslatedCommand(), label);
+			else if (label.matches("[0-9]+\\.?[0-9]*\\.\\.[0-9]+\\.?[0-9]*"))
+				label = MESSAGES.filterChipInRange(chip.getTranslatedCommand(), label);
+			iLabel = new Label(label);
 			iLabel.setStyleName("text");
 			add(iLabel);
 			iButton = new HTML("&times;");
@@ -918,9 +925,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public static class DefaultParser implements Parser {
 		private static RegExp[] sRegExps = new RegExp[] {
-				RegExp.compile("^(\\w+):\"([^\"]*)\"(.*)$", "i"),
-				RegExp.compile("^(\\w+):([^ ]*) (.*)$", "i"),
-				RegExp.compile("^(\\w+):([^ ]*)$", "i")};
+				RegExp.compile("^([\\w-]+):\"([^\"]*)\"(.*)$", "i"),
+				RegExp.compile("^([\\w-]+):([^ ]*) (.*)$", "i"),
+				RegExp.compile("^([\\w-]+):([^ ]*)$", "i")};
 		
 		@Override
 		public void parse(String text, Collection<Filter> filters, AsyncCallback<Parser.Results> callback) {

@@ -1362,6 +1362,98 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 			}
 		}
 		
+		if (request.hasOption("min-credit")) {
+			String term = request.getOption("min-credit");
+			float min = 0, max = Float.MAX_VALUE;
+			Credit prefix = Credit.eq;
+			String number = term;
+			if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+			else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+			else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+			else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+			try {
+				float a = Float.parseFloat(number);
+				switch (prefix) {
+					case eq: min = max = a; break; // = a
+					case le: max = a; break; // <= a
+					case ge: min = a; break; // >= a
+					case lt: max = a - 0.0001f; break; // < a
+					case gt: min = a + 0.0001f; break; // > a
+				}
+			} catch (NumberFormatException e) {}
+			if (term.contains("..")) {
+				try {
+					String a = term.substring(0, term.indexOf(".."));
+					String b = term.substring(term.indexOf("..") + 2);
+					min = Float.parseFloat(a); max = Float.parseFloat(b);
+				} catch (NumberFormatException e) {}
+			}
+			if (min > 0) {
+				if (max < Float.MAX_VALUE) {
+					query.addParameter("min-credit", "Xmncrmin", min);
+					query.addParameter("min-credit", "Xmncrmax", max);
+					query.addWhere("min-credit", "s.minCredit is not null and :Xmncrmin <= s.minCredit and s.minCredit <= :Xmncrmax");
+				} else {
+					query.addParameter("min-credit", "Xmncrmin", min);
+					query.addWhere("min-credit", "s.minCredit is not null and :Xmncrmin <= s.minCredit");
+				}
+			} else {
+				if (max < Float.MAX_VALUE) {
+					query.addParameter("min-credit", "Xmncrmax", max);
+					query.addWhere("min-credit", "s.minCredit is not null and s.minCredit <= :Xmncrmax");
+				} else {
+					query.addWhere("min-credit", "s.minCredit is not null");
+				}
+			}
+		}
+		
+		if (request.hasOption("max-credit")) {
+			String term = request.getOption("max-credit");
+			float min = 0, max = Float.MAX_VALUE;
+			Credit prefix = Credit.eq;
+			String number = term;
+			if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+			else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+			else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+			else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+			else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+			try {
+				float a = Float.parseFloat(number);
+				switch (prefix) {
+					case eq: min = max = a; break; // = a
+					case le: max = a; break; // <= a
+					case ge: min = a; break; // >= a
+					case lt: max = a - 0.0001f; break; // < a
+					case gt: min = a + 0.0001f; break; // > a
+				}
+			} catch (NumberFormatException e) {}
+			if (term.contains("..")) {
+				try {
+					String a = term.substring(0, term.indexOf(".."));
+					String b = term.substring(term.indexOf("..") + 2);
+					min = Float.parseFloat(a); max = Float.parseFloat(b);
+				} catch (NumberFormatException e) {}
+			}
+			if (min > 0) {
+				if (max < Float.MAX_VALUE) {
+					query.addParameter("max-credit", "Xmxcrmin", min);
+					query.addParameter("max-credit", "Xmxcrmax", max);
+					query.addWhere("max-credit", "s.maxCredit is not null and :Xmxcrmin <= s.maxCredit and s.maxCredit <= :Xmxcrmax");
+				} else {
+					query.addParameter("max-credit", "Xmxcrmin", min);
+					query.addWhere("max-credit", "s.maxCredit is not null and :Xmxcrmin <= s.maxCredit");
+				}
+			} else {
+				if (max < Float.MAX_VALUE) {
+					query.addParameter("max-credit", "Xmxcrmax", max);
+					query.addWhere("max-credit", "s.maxCredit is not null and s.maxCredit <= :Xmxcrmax");
+				} else {
+					query.addWhere("max-credit", "s.maxCredit is not null");
+				}
+			}
+		}
+		
 		if (request.hasOption("mode") && "My Students".equals(request.getOption("mode")) && request.hasOption("role")) {
 			query.addWhere("mode", "s.uniqueId in (select ads.uniqueId from Advisor adv inner join adv.students ads where adv.externalUniqueId = :Xuser and adv.role.reference = :Xrole and adv.session.uniqueId = s.session.uniqueId)");
 			query.addParameter("mode", "Xuser", request.getOption("user"));
@@ -1857,7 +1949,7 @@ public class SectioningStatusFilterAction implements OnlineSectioningAction<Filt
 				matchType = true; break;
 			}
 		if (matchType) return false;
-		if (request.hasOptions("student") || request.hasOption("advisor") || request.hasOption("credit"))
+		if (request.hasOptions("student") || request.hasOption("advisor") || request.hasOption("credit") || request.hasOption("min-credit") || request.hasOption("max-credit"))
 			return false;
 		if (request.hasOption("mode") || request.hasOptions("override") || request.hasOptions("prefer") || request.hasOptions("require"))
 			return false;

@@ -6501,6 +6501,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("credit")
 	String tagCredit();
 	
+	@DefaultMessage("requested credit")
+	String tagRequestedCredit();
+	
+	@DefaultMessage("minimum credit")
+	String tagMinCredit();
+	
+	@DefaultMessage("maximum credit")
+	String tagMaxCredit();
+	
 	@DefaultMessage("overlap")
 	String tagOverlap();
 	
@@ -8396,4 +8405,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("\u2191 The checkboxes indicate that the default configuration values are used. Uncheck the left-hand checkbox to change the parameter value on the right.")
 	String hintDefaultCheckbox();
+	
+	@DefaultMessage("{0} in {1}")
+	String filterChipInRange(String command, String range);
+	
+	@DefaultMessage("{0} is {1}")
+	String filterChipEquals(String command, String value);
 }

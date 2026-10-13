@@ -114,6 +114,9 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
 		addFilter(new FilterBox.StaticSimpleFilter("group", GWT_MESSAGES.tagStudentGroup()));
 		addFilter(new FilterBox.StaticSimpleFilter("accommodation", GWT_MESSAGES.tagStudentAccommodation()));
 		addFilter(new FilterBox.StaticSimpleFilter("credit", GWT_MESSAGES.tagCredit()));
+		addFilter(new FilterBox.StaticSimpleFilter("requested-credit", GWT_MESSAGES.tagRequestedCredit()));
+		addFilter(new FilterBox.StaticSimpleFilter("min-credit", GWT_MESSAGES.tagMinCredit()));
+		addFilter(new FilterBox.StaticSimpleFilter("max-credit", GWT_MESSAGES.tagMaxCredit()));
 		addFilter(new FilterBox.StaticSimpleFilter("overlap", GWT_MESSAGES.tagOverlap()));
 		addFilter(new FilterBox.StaticSimpleFilter("advisor", GWT_MESSAGES.tagAdvisor()));
 		FilterBox.StaticSimpleFilter override = new FilterBox.StaticSimpleFilter("override", MESSAGES.tagOverride());
@@ -410,6 +413,81 @@ public class SectioningStatusFilterBox extends UniTimeFilterBox<SectioningStatus
                                                 String second = text.substring(text.indexOf("..") + 2);
                                                 if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
                                                         suggestions.add(new Suggestion(new Chip("overlap", text).withTranslatedCommand(GWT_MESSAGES.tagOverlap()), old));
+                                                }
+                                        } catch (Exception e) {}
+                                }
+                                
+                                old = null;
+                                for (Chip c: chips) { if (c.getCommand().equals("requested-credit")) { old = c; break; } }
+                                try {
+                                        String number = text;
+                                        String prefix = "";
+                                        if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
+                                        else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
+                                        if (Integer.parseInt(number) <= 999) {
+                                                suggestions.add(new Suggestion(new Chip("requested-credit", text).withTranslatedCommand(GWT_MESSAGES.tagRequestedCredit()), old));
+                                                if (prefix.isEmpty()) {
+                                                        suggestions.add(new Suggestion(new Chip("requested-credit", "<" + text).withTranslatedCommand(GWT_MESSAGES.tagRequestedCredit()), old));
+                                                        suggestions.add(new Suggestion(new Chip("requested-credit", ">" + text).withTranslatedCommand(GWT_MESSAGES.tagRequestedCredit()), old));
+                                                }
+                                        }
+                                } catch (Exception e) {}
+                                if (text.contains("..")) {
+                                        try {
+                                                String first = text.substring(0, text.indexOf('.'));
+                                                String second = text.substring(text.indexOf("..") + 2);
+                                                if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
+                                                        suggestions.add(new Suggestion(new Chip("requested-credit", text).withTranslatedCommand(GWT_MESSAGES.tagRequestedCredit()), old));
+                                                }
+                                        } catch (Exception e) {}
+                                }
+                                
+                                old = null;
+                                for (Chip c: chips) { if (c.getCommand().equals("min-credit")) { old = c; break; } }
+                                try {
+                                        String number = text;
+                                        String prefix = "";
+                                        if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
+                                        else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
+                                        if (Integer.parseInt(number) <= 999) {
+                                                suggestions.add(new Suggestion(new Chip("min-credit", text).withTranslatedCommand(GWT_MESSAGES.tagMinCredit()), old));
+                                                if (prefix.isEmpty()) {
+                                                        suggestions.add(new Suggestion(new Chip("min-credit", "<" + text).withTranslatedCommand(GWT_MESSAGES.tagMinCredit()), old));
+                                                        suggestions.add(new Suggestion(new Chip("min-credit", ">" + text).withTranslatedCommand(GWT_MESSAGES.tagMinCredit()), old));
+                                                }
+                                        }
+                                } catch (Exception e) {}
+                                if (text.contains("..")) {
+                                        try {
+                                                String first = text.substring(0, text.indexOf('.'));
+                                                String second = text.substring(text.indexOf("..") + 2);
+                                                if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
+                                                        suggestions.add(new Suggestion(new Chip("min-credit", text).withTranslatedCommand(GWT_MESSAGES.tagMinCredit()), old));
+                                                }
+                                        } catch (Exception e) {}
+                                }
+                                
+                                old = null;
+                                for (Chip c: chips) { if (c.getCommand().equals("max-credit")) { old = c; break; } }
+                                try {
+                                        String number = text;
+                                        String prefix = "";
+                                        if (text.startsWith("<=") || text.startsWith(">=")) { number = number.substring(2); prefix = text.substring(0, 2); }
+                                        else if (text.startsWith("<") || text.startsWith(">")) { number = number.substring(1); prefix = text.substring(0, 1); }
+                                        if (Integer.parseInt(number) <= 999) {
+                                                suggestions.add(new Suggestion(new Chip("max-credit", text).withTranslatedCommand(GWT_MESSAGES.tagMaxCredit()), old));
+                                                if (prefix.isEmpty()) {
+                                                        suggestions.add(new Suggestion(new Chip("max-credit", "<" + text).withTranslatedCommand(GWT_MESSAGES.tagMaxCredit()), old));
+                                                        suggestions.add(new Suggestion(new Chip("max-credit", ">" + text).withTranslatedCommand(GWT_MESSAGES.tagMaxCredit()), old));
+                                                }
+                                        }
+                                } catch (Exception e) {}
+                                if (text.contains("..")) {
+                                        try {
+                                                String first = text.substring(0, text.indexOf('.'));
+                                                String second = text.substring(text.indexOf("..") + 2);
+                                                if (Integer.parseInt(first) < Integer.parseInt(second) &&  Integer.parseInt(second) <= 999) {
+                                                        suggestions.add(new Suggestion(new Chip("max-credit", text).withTranslatedCommand(GWT_MESSAGES.tagMaxCredit()), old));
                                                 }
                                         } catch (Exception e) {}
                                 }

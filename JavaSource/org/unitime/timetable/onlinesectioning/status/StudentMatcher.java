@@ -192,6 +192,41 @@ public class StudentMatcher implements TermMatcher {
 				}
 			}
 			return min <= credit && credit <= max;
+		} else if ("min-credit".equals(attr) || "max-credit".equals(attr)) {
+		    float min = 0, max = Float.MAX_VALUE;
+                    Credit prefix = Credit.eq;
+                    String number = term;
+                    if (number.startsWith("<=")) { prefix = Credit.le; number = number.substring(2); }
+                    else if (number.startsWith(">=")) { prefix =Credit.ge; number = number.substring(2); }
+                    else if (number.startsWith("<")) { prefix = Credit.lt; number = number.substring(1); }
+                    else if (number.startsWith(">")) { prefix = Credit.gt; number = number.substring(1); }
+                    else if (number.startsWith("=")) { prefix = Credit.eq; number = number.substring(1); }
+                    try {
+                            float a = parseCredit(number);
+                            switch (prefix) {
+                                    case eq: min = max = a; break; // = a
+                                    case le: max = a; break; // <= a
+                                    case ge: min = a; break; // >= a
+                                    case lt: max = a - 0.0001f; break; // < a
+                                    case gt: min = a + 0.0001f; break; // > a
+                            }
+                    } catch (NumberFormatException e) {}
+                    if (term.contains("..")) {
+                            try {
+                                    String a = term.substring(0, term.indexOf(".."));
+                                    String b = term.substring(term.indexOf("..") + 2);
+                                    min = parseCredit(a); max = parseCredit(b);
+                            } catch (NumberFormatException e) {}
+                    }
+                    float credit = 0;
+                    if ("min-credit".equals(attr)) {
+                        if (!student().hasMinCredit()) return false;
+                        credit = student().getMinCredit();
+                    } else {
+                        if (!student().hasMaxCredit()) return false;
+                        credit = student().getMaxCredit();
+                    }
+                    return min <= credit && credit <= max;
 		} else if ("overlap".equals(attr)) {
 			int min = 0, max = Integer.MAX_VALUE;
 			Credit prefix = Credit.eq;
