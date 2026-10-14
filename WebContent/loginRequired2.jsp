@@ -26,23 +26,37 @@
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.localization.impl.Localization"%>
 <loc:bundle name="CourseMessages">
-<HTML lang='<%=Localization.getLanguage()%>'>
-<HEAD>
-	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<loc:bundle name="org.unitime.timetable.gwt.resources.GwtAriaMessages" id="ARIA">
+<html lang='<%=Localization.getLanguage()%>'>
+<head>
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="gwt:property" content="locale=<%=Localization.getFirstLocale()%>">
     <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	<TITLE>UniTime <%=Constants.VERSION%>| Access Denied</TITLE>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime-mobile.css">
-	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css" />
-    <tt:hasProperty name="tmtbl.custom.css">
-		<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    <!--[if IE]>
+	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
+    <![endif]-->
+    <loc:rtl><link type="text/css" rel="stylesheet" href="styles/unitime-rtl.css"></loc:rtl>
+	<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
+    <tt:hasProperty name="tmtbl.addon.css">
+    	<link rel="stylesheet" type="text/css" href="%tmtbl.addon.css%" />
     </tt:hasProperty>
-    <script type="text/javascript" src="unitime/unitime.nocache.js"></script>
-</HEAD>
-<BODY class="bodyMain">
+    <tt:hasProperty name="tmtbl.custom.css">
+    	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
+    </tt:hasProperty>
+    <link rel="shortcut icon" href="images/timetabling.ico" />
+	<TITLE>UniTime <%=Constants.VERSION%>| Access Denied</TITLE>
+    <script type="text/javascript" src="scripts/loading.js"></script>
+	<script type="text/javascript" src="scripts/rtt.js"></script>
+	<script type="text/javascript" src="unitime/unitime.nocache.js"></script>
+</head>
+<body class="unitime-Body">
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
     <iframe src="javascript:''" id="__printingFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
 
@@ -125,8 +139,7 @@
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class="content">
 		
-<DIV align="center" class="H1">
-	<br><br>
+<span class="H1" style="text-align: center; display: block; padding: 20px 0px 20px 0px;">
 	<c:if test="${param.message != null}">
 		<span style='color:#ec0000;'><c:out value="${param.message}" escapeXml="true"/></span>
 	</c:if>
@@ -140,8 +153,7 @@
 			<A class="l7" href="${pageContext.request.contextPath}/login" target="_top"><loc:message name="linkLOGIN"/></A>
 		</c:otherwise>
 	</c:choose>
-	<BR><BR>
-</DIV>
+</span>
 
 		</span>
 	    </span><span class='footer' id="unitime-Footer">
@@ -164,5 +176,7 @@
 </span></span></span>
 
   </body>
-</HTML>
+</body>
+</html>
+</loc:bundle>
 </loc:bundle>
