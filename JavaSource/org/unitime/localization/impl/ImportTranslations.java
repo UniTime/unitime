@@ -36,15 +36,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.dom4j.Document;
@@ -52,9 +43,15 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.restlet.Client;
+import org.restlet.data.CharacterSet;
+import org.restlet.data.Form;
+import org.restlet.data.Protocol;
+import org.restlet.resource.ClientResource;
 import org.unitime.localization.impl.ExportTranslations.Locale;
 import org.unitime.localization.impl.POHelper.Bundle;
 import org.unitime.localization.messages.PageNames;
+import org.xml.sax.SAXException;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -159,54 +156,47 @@ public class ImportTranslations {
 			if (iDownload) {
 				info("Downloading translations to: " + translations);
 				
-				CloseableHttpClient client = HttpClients.createDefault();
+				List<Protocol> protocols = new ArrayList<Protocol>();
+				protocols.add(Protocol.HTTP);
+				protocols.add(Protocol.HTTPS);
+				Client client = new Client(protocols);
 				
 				for (Locale locale: iLocales) {
 					info("Locale " + locale.getValue().replace('_', '-').toLowerCase());
-					HttpPost post = new HttpPost("https://api.poeditor.com/v2/projects/export");
-					List<NameValuePair> params = new ArrayList<NameValuePair>(2);
-					params.add(new BasicNameValuePair("api_token", iToken));
-					params.add(new BasicNameValuePair("id", "568029"));
-					params.add(new BasicNameValuePair("language", locale.getValue().replace('_', '-').toLowerCase()));
-					params.add(new BasicNameValuePair("type", "po"));
-					post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-					CloseableHttpResponse response = client.execute(post);
-					HttpEntity entity = response.getEntity();
-					HttpGet get = null;
-					if (entity != null) {
-						JsonObject json = JsonParser.parseReader(new InputStreamReader(entity.getContent())).getAsJsonObject();
-						info("Response: " + json);
-						String url = json.getAsJsonObject("result").get("url").getAsString();
-						debug("URL: " + url);
-						get = new HttpGet(url);
+					ClientResource resource = new ClientResource("https://api.poeditor.com/v2/projects/export");
+					resource.setNext(client);
+					Form form = new Form();
+					form.add("api_token", iToken);
+					form.add("id", "568029");
+					form.add("language", locale.getValue().replace('_', '-').toLowerCase());
+					form.add("type", "po");
+					String response = resource.post(form.getWebRepresentation(CharacterSet.UTF_8)).getText();
+					JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+					info("Response: " + json);
+					String url = json.getAsJsonObject("result").get("url").getAsString();
+					debug("URL: " + url);
+					resource.release();
+					resource = new ClientResource(url);
+					info("Downloading " + url);
+					InputStream in = resource.get().getStream();
+					byte[] buffer = new byte[10240];
+					File file = new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale.getValue() + ".po");
+					debug("Writing " + file);
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					FileOutputStream out = new FileOutputStream(file);
+					int read = 0;
+					while ((read = in.read(buffer)) > 0) {
+						out.write(buffer, 0, read);
+						bos.write(buffer, 0, read);
 					}
-					response.close();
-					if (get != null) {
-						response = client.execute(get);
-						entity = response.getEntity();
-						if (entity != null) {
-							info("Downloading " + get.getURI());
-							InputStream in = entity.getContent();
-							byte[] buffer = new byte[10240];
-							File file = new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale.getValue() + ".po");
-							debug("Writing " + file);
-							ByteArrayOutputStream bos = new ByteArrayOutputStream();
-							FileOutputStream out = new FileOutputStream(file);
-							int read = 0;
-							while ((read = in.read(buffer)) > 0) {
-								out.write(buffer, 0, read);
-								bos.write(buffer, 0, read);
-							}
-							out.flush();
-							out.close();
-							bos.flush();
-							bos.close();
-							downloads.put(locale.getValue(), bos.toByteArray());
-						}
-					}
-					response.close();
+					out.flush();
+					out.close();
+					bos.flush();
+					bos.close();
+					downloads.put(locale.getValue(), bos.toByteArray());
+					resource.release();
 				}
-				client.close();
+				client.stop();
 			}
 			
 			if (downloads.isEmpty())
@@ -253,7 +243,13 @@ public class ImportTranslations {
 				info("Updating GWT configuration, if needed.");
 				File config = new File(iSource,
 						"org" + File.separator + "unitime" + File.separator + "timetable" + File.separator + "gwt"+  File.separator + "UniTime.gwt.xml");
-				Document document = SAXReader.createDefault().read(config);
+				SAXReader reader = new SAXReader();
+				try {
+					reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+					reader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+					reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+				} catch (SAXException e) {}
+				Document document = reader.read(config);
 				for (Iterator<Element> i = document.getRootElement().elementIterator("extend-property"); i.hasNext(); ) {
 					Element e = i.next();
 					if ("locale".equals(e.attributeValue("name")))

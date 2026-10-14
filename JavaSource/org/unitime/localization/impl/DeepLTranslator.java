@@ -7,16 +7,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.restlet.Client;
+import org.restlet.data.ChallengeResponse;
+import org.restlet.data.ChallengeScheme;
+import org.restlet.data.CharacterSet;
+import org.restlet.data.Form;
+import org.restlet.data.Protocol;
+import org.restlet.resource.ClientResource;
 import org.unitime.localization.impl.ExportTranslations.Locale;
 import org.unitime.localization.impl.POHelper.Block;
 import org.unitime.localization.impl.POHelper.Bundle;
@@ -99,7 +98,10 @@ public class DeepLTranslator {
 				POHelper helper = new POHelper(locale.getValue(), null);
 				helper.readPOFile(null, new InputStreamReader(new FileInputStream(new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale.getValue() + ".po")), StandardCharsets.UTF_8));
 				
-				CloseableHttpClient client = HttpClients.createDefault();
+				List<Protocol> protocols = new ArrayList<Protocol>();
+				protocols.add(Protocol.HTTP);
+				protocols.add(Protocol.HTTPS);
+				Client client = new Client(protocols);
 				
 				for (Bundle bundle: Bundle.values()) {
 					info("bundle:     " + bundle.name());
@@ -116,46 +118,39 @@ public class DeepLTranslator {
 							}
 							info("original:   " + source);
 							
-							HttpPost post = new HttpPost("https://api-free.deepl.com/v2/translate");
-							List<NameValuePair> params = new ArrayList<NameValuePair>(2);
-							params.add(new BasicNameValuePair("text", source));
-							params.add(new BasicNameValuePair("source_lang", "EN"));
-							params.add(new BasicNameValuePair("target_lang", locale.getValue().toUpperCase()));
-							params.add(new BasicNameValuePair("formality", "prefer_more"));
-							params.add(new BasicNameValuePair("tag_handling", "html"));
+							ClientResource resource = new ClientResource("https://api-free.deepl.com/v2/translate");
+							resource.setNext(client);
+							Form form = new Form();
+							form.add("text", source);
+							form.add("source_lang", "EN");
+							form.add("target_lang", locale.getValue().toUpperCase());
+							form.add("formality", "prefer_more");
+							form.add("tag_handling", "html");
+							ChallengeResponse challenge = new ChallengeResponse(new ChallengeScheme("", ""));
+							challenge.setRawValue("DeepL-Auth-Key " + iToken);
+							resource.setChallengeResponse(challenge);
 							
-							post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-							post.addHeader("Authorization", "DeepL-Auth-Key " + iToken);
-							CloseableHttpResponse response = client.execute(post);
-							HttpEntity entity = response.getEntity();
-							String translated = null;
-							if (entity != null) {
-								try {
-									JsonObject json = JsonParser.parseReader(new InputStreamReader(entity.getContent())).getAsJsonObject();
-									debug("response:   " + json);
-									translated = json.get("translations").getAsJsonArray().get(0).getAsJsonObject().get("text").getAsString();
-								} catch (IllegalStateException e) {
-									error(response.toString());
-									throw e;
-									
-								}
-								if (translated != null) {
-									info("translated: " + translated);
-									block.setTranslation(translated);
-									block.fuzzy = true;
-								}
+							String response = resource.post(form.getWebRepresentation(CharacterSet.UTF_8)).getText();
+							JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+							info("Response: " + json);
+							String translated = json.get("translations").getAsJsonArray().get(0).getAsJsonObject().get("text").getAsString();
+							if (translated != null) {
+								info("translated: " + translated);
+								block.setTranslation(translated);
+								block.fuzzy = true;
 							}
-							response.close();
+							resource.release();
 						}
 					}
 				}
-				client.close();
+				client.stop();
 				
 				helper.writePOFile(new File(translations, "UniTime" + org.unitime.timetable.util.Constants.VERSION + "_" + locale + ".po"));
 				
 			}
 			
     	} catch (Exception e) {
+    		e.printStackTrace();
 			throw new BuildException("Translation failed: " + e.getMessage(), e);
 		}
     }
