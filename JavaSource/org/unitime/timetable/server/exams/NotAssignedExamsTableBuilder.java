@@ -133,7 +133,7 @@ public class NotAssignedExamsTableBuilder extends ExaminationsTableBuilder {
         	examIds.add(exam.getExamId());
         	LineInterface line = ret.addLine();
         	if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationAssignment)) {
-        		line.setURL("examInfo.action?examId=" + exam.getExamId());
+        		line.setURL("examAssignment?menu=hide&examId=" + exam.getExamId());
         		line.setDialog(XMSG.dialogExamAssign());
         	}
         	CellInterface owner = line.addCell().setText(showSection ? exam.getSectionName("\n") : exam.getExamName())

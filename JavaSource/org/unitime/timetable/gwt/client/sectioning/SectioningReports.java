@@ -361,17 +361,17 @@ public class SectioningReports extends Composite {
 			public void onMouseClick(UniTimeTable.TableEvent<RowData> event) {
 				if (event.getRow() > 0 && event.getData() != null) {
 					if ("__Class".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "classDetail.action?cid=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "clazz?cid=" + event.getData().getCell(0));
 					else if ("__Offering".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "offering?op=view&io=" + event.getData().getCell(0));
 					else if ("__Subpart".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.action?ssuid=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "subpart?ssuid=" + event.getData().getCell(0));
 					else if ("__Room".equals(iHead.getCell(0)))
 						ToolBox.open(GWT.getHostPageBaseURL() + "rooms?back=1&id=" + event.getData().getCell(0));
 					else if ("__Instructor".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructorDetail.action?instructorId=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructor?instructorId=" + event.getData().getCell(0));
 					else if ("__Exam".equals(iHead.getCell(0)))
-						ToolBox.open(GWT.getHostPageBaseURL() + "examDetail.action?examId=" + event.getData().getCell(0));
+						ToolBox.open(GWT.getHostPageBaseURL() + "examination?examId=" + event.getData().getCell(0));
 					else if ("__Event".equals(iHead.getCell(0)))
 						ToolBox.open(GWT.getHostPageBaseURL() + "events#event=" + event.getData().getCell(0));
 					else if ("__Student".equals(iHead.getCell(0))) {

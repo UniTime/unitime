@@ -111,7 +111,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 						related.setNote(course.getScheduleBookNote());
 						if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-							related.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+							related.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 					} else {
 						related.setType(RelatedObjectInterface.RelatedObjectType.Course);
 						related.setUniqueId(course.getUniqueId());
@@ -122,7 +122,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 						related.setNote(course.getScheduleBookNote());
 						if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-							related.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+							related.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 					}
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.COURSE,
@@ -167,7 +167,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						relatedOffering.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						relatedOffering.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 						if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-							relatedOffering.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+							relatedOffering.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 						response.add(new RelatedObjectLookupRpcResponse(
 								RelatedObjectLookupRpcRequest.Level.OFFERING,
 								course.getInstructionalOffering().getUniqueId(),
@@ -185,7 +185,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedCourse.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedCourse.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 					if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-						relatedCourse.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+						relatedCourse.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.COURSE,
 							course.getUniqueId(),
@@ -208,7 +208,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 						relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
 						if (context.hasPermission(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-							relatedConfig.setDetailPage("instructionalOfferingDetail.action?io=" + config.getInstructionalOffering().getUniqueId());
+							relatedConfig.setDetailPage("offering?io=" + config.getInstructionalOffering().getUniqueId());
 						response.add(new RelatedObjectLookupRpcResponse(
 								RelatedObjectLookupRpcRequest.Level.CONFIG,
 								config.getUniqueId(),
@@ -285,7 +285,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), clazz.getSchedulingSubpart().getUniqueId(), clazz.getUniqueId()});
 					if (context.hasPermission(clazz, Right.ClassDetail))
-						relatedClass.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
+						relatedClass.setDetailPage("clazz?cid=" + clazz.getUniqueId());
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.CLASS,
 							clazz.getUniqueId(),
@@ -337,7 +337,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 					related.setNote(course.getScheduleBookNote());
 					if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-						related.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+						related.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 				} else {
 					related.setType(RelatedObjectInterface.RelatedObjectType.Course);
 					related.setUniqueId(course.getUniqueId());
@@ -348,7 +348,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 					related.setNote(course.getScheduleBookNote());
 					if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-						related.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+						related.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 				}
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.COURSE,
@@ -372,7 +372,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				relatedOffering.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedOffering.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 				if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-					relatedOffering.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+					relatedOffering.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.OFFERING,
 						course.getInstructionalOffering().getUniqueId(),
@@ -390,7 +390,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 			relatedCourse.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 			relatedCourse.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 			if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-				relatedCourse.setDetailPage("instructionalOfferingDetail.action?io=" + course.getInstructionalOffering().getUniqueId());
+				relatedCourse.setDetailPage("offering?io=" + course.getInstructionalOffering().getUniqueId());
 			response.add(new RelatedObjectLookupRpcResponse(
 					RelatedObjectLookupRpcRequest.Level.COURSE,
 					course.getUniqueId(),
@@ -417,7 +417,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
 					if (context.hasPermission(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-						relatedConfig.setDetailPage("instructionalOfferingDetail.action?io=" + config.getInstructionalOffering().getUniqueId());
+						relatedConfig.setDetailPage("offering?io=" + config.getInstructionalOffering().getUniqueId());
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.CONFIG,
 							config.getUniqueId(),
@@ -472,7 +472,7 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), subpart.getUniqueId(), clazz.getUniqueId()});
 				if (context.hasPermission(clazz, Right.ClassDetail))
-					relatedClass.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
+					relatedClass.setDetailPage("clazz?cid=" + clazz.getUniqueId());
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.CLASS,
 						clazz.getUniqueId(),

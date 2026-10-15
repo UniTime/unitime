@@ -30,7 +30,7 @@
 		<SCRIPT type="text/javascript">
 			function closeWin() {
 				// window.close();				
-				location.href='<%=request.getContextPath()%>/login.action';
+				location.href='<%=request.getContextPath()%>/login';
 			}
 		</SCRIPT>
 	</HEAD>

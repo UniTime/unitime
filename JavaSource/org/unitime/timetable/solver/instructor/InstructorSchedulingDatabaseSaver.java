@@ -140,19 +140,19 @@ public class InstructorSchedulingDatabaseSaver extends ProblemSaver<TeachingRequ
 	}
 	
     protected String toHtml(Class_ clazz) {
-    	return "<A href='classDetail.action?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
+    	return "<A href='clazz?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
     }
     
     protected String toHtml(DepartmentalInstructor instructor) {
-    	return "<a href='instructorDetail.action?instructorId=" + instructor.getUniqueId() + "&deptId=" + instructor.getDepartment().getUniqueId() + "'>" + instructor.getName(iInstructorFormat) + "</a>";
+    	return "<a href='instructor?instructorId=" + instructor.getUniqueId() + "&deptId=" + instructor.getDepartment().getUniqueId() + "'>" + instructor.getName(iInstructorFormat) + "</a>";
     }
     
     protected String toHtml(TeachingAssignment assignment) {
-    	return "<a href='instructorDetail.action?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
+    	return "<a href='instructor?instructorId=" + assignment.getInstructor().getInstructorId() + "'>" + assignment.getInstructor().getName() + "</a>";
     }
     
     protected String toHtml(TeachingRequest request) {
-    	return "<a href='classDetail.action?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
+    	return "<a href='clazz?cid=" + request.getSections().get(0).getSectionId() + "'>" + request.getCourse().getCourseName() + " " + request.getSections() + "</a>";
     }	
 	
 	protected void saveSolution(org.hibernate.Session hibSession) {

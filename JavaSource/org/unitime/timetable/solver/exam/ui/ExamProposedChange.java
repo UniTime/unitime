@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -30,8 +29,6 @@ import org.cpsolver.exam.model.ExamModel;
 import org.cpsolver.exam.model.ExamPlacement;
 import org.cpsolver.ifs.assignment.Assignment;
 import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 
 
 /**
@@ -178,126 +175,6 @@ public class ExamProposedChange implements Serializable, Comparable<ExamProposed
     
     public Long getSelected() {
     	return iSelectedExamId;
-    }
-    
-    public String getHtmlTable() {
-        String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
-        ret += "<tr>";
-        ret += "<td><i>Examination</i></td>";
-        ret += "<td><i>Period Change</i></td>";
-        ret += "<td><i>Room Change</i></td>";
-        ret += "<td><i>Direct</i></td>";
-        ret += "<td><i>&gt;2 A Day</i></td>";
-        ret += "<td><i>BTB</i></td>";
-        ret += "</tr>";
-        for (ExamAssignment current : iAssignments) {
-            ExamAssignment initial = iInitials.get(current.getExamId());
-            String bgColor = (current.getExamId().equals(iSelectedExamId)?"rgb(168,187,225)":null);
-            ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
-            		"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
-            		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-            		"onclick=\"document.location='examInfo.action?examId="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            ret += "<td nowrap>";
-            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='examInfo.action?delete="+current.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
-            ret += current.getExamNameHtml();
-            ret += "</td><td nowrap>";
-            if (initial!=null && !initial.getPeriodId().equals(current.getPeriodId()))
-                ret += initial.getPeriodAbbreviationWithPref() + " &rarr; ";
-            if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
-            ret += current.getPeriodAbbreviationWithPref();
-            ret += "</td><td nowrap>";
-            if (initial!=null && !initial.getRoomIds().equals(current.getRoomIds()))
-                ret += initial.getRoomsNameWithPref(", ") + " &rarr; ";
-            if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
-            ret += current.getRoomsNameWithPref(", ");
-            if (current.getNrRooms()==0 && current.getMaxRooms()>0) {
-                if (current.getExamId().equals(iSelectedExamId))
-                    ret += "<i>Select below ...</i>";
-                else
-                    ret += "<i><font color='#ec0000'>Not selected ...</font></i>";
-            }
-            ret += "</td><td nowrap>";
-            ret += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDirectConflicts()), current.getPlacementNrDirectConflicts());
-            ret += "</td><td nowrap>";
-            ret += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrMoreThanTwoADayConflicts()), current.getPlacementNrMoreThanTwoADayConflicts());
-            ret += "</td><td nowrap>";
-            ret += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrBackToBackConflicts()), current.getPlacementNrBackToBackConflicts());
-            if (current.getPlacementNrDistanceBackToBackConflicts()>0)
-                ret += " (d:"+ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDistanceBackToBackConflicts()), current.getPlacementNrDistanceBackToBackConflicts())+")";
-            ret += "</td></tr>";
-        }
-        for (ExamAssignment conflict : iConflicts) {
-            String bgColor = (conflict.getExamId().equals(iSelectedExamId)?"rgb(168,187,225)":null);
-            ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
-                "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
-                "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-                "onclick=\"document.location='examInfo.action?examId="+conflict.getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            ret += "<td nowrap>";
-            ret += conflict.getExamNameHtml();
-            ret += "</td><td nowrap>";
-            ret += conflict.getPeriodAbbreviationWithPref() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>"+"</td>";
-            ret += "</td><td nowrap>";
-            ret += conflict.getRoomsNameWithPref(", ") + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
-            ret += "</td><td nowrap>";
-            ret += ClassAssignmentDetails.dispNumberShort(true, conflict.getPlacementNrDirectConflicts(), 0);
-            ret += "</td><td nowrap>";
-            ret += ClassAssignmentDetails.dispNumberShort(true, conflict.getPlacementNrMoreThanTwoADayConflicts(), 0);
-            ret += "</td><td nowrap>";
-            ret += ClassAssignmentDetails.dispNumberShort(true, conflict.getPlacementNrBackToBackConflicts(), 0);
-            if (conflict.getPlacementNrDistanceBackToBackConflicts()>0)
-                ret += " (d:"+ClassAssignmentDetails.dispNumberShort(true,conflict.getPlacementNrDistanceBackToBackConflicts(), 0)+")";
-            ret += "</td></tr>";
-        }
-        ret += "</table>";
-        return ret;
-    }
-    
-    public String getHtmlLine(int index) {
-        String ret = "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.action?suggestion="+index+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-        String name = "", period = "", room = "", dc = "", btb = "", m2d = "";
-        for (ExamAssignment current : iAssignments) {
-            ExamAssignment initial = iInitials.get(current.getExamId());
-            if (name.length()>0) { name += "<br>"; period += "<br>"; room += "<br>"; dc += "<br>"; m2d += "<br>"; btb += "<br>"; }
-            name += current.getExamNameHtml();
-            if (initial!=null && !initial.getPeriodId().equals(current.getPeriodId()))
-                period += initial.getPeriodAbbreviationWithPref() + " &rarr; ";
-            period += current.getPeriodAbbreviationWithPref();
-            if (initial!=null && !initial.getRoomIds().equals(current.getRoomIds()))
-                room += initial.getRoomsNameWithPref(", ") + " &rarr; ";
-            room += current.getRoomsNameWithPref(", ");
-            dc += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDirectConflicts()), current.getPlacementNrDirectConflicts());
-            m2d += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrMoreThanTwoADayConflicts()), current.getPlacementNrMoreThanTwoADayConflicts());
-            btb += ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrBackToBackConflicts()), current.getPlacementNrBackToBackConflicts());
-            if (current.getPlacementNrDistanceBackToBackConflicts()>0)
-                btb += " (d:"+ClassAssignmentDetails.dispNumberShort(false,(initial==null?0:initial.getPlacementNrDistanceBackToBackConflicts()), current.getPlacementNrDistanceBackToBackConflicts())+")";
-        }
-        for (ExamAssignment conflict : iConflicts) {
-            if (name.length()>0) { name += "<br>"; period += "<br>"; room += "<br>"; dc += "<br>"; m2d += "<br>"; btb += "<br>"; }
-            name += conflict.getExamNameHtml();
-            period += conflict.getPeriodAbbreviationWithPref() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>"+"</td>";
-            room += conflict.getRoomsNameWithPref(", ") + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
-            dc += ClassAssignmentDetails.dispNumberShort(true, conflict.getPlacementNrDirectConflicts(), 0);
-            m2d += ClassAssignmentDetails.dispNumberShort(true, conflict.getPlacementNrMoreThanTwoADayConflicts(), 0);
-            btb += ClassAssignmentDetails.dispNumberShort(true, conflict.getPlacementNrBackToBackConflicts(), 0);
-            if (conflict.getPlacementNrDistanceBackToBackConflicts()>0)
-                btb += " (d:"+ClassAssignmentDetails.dispNumberShort(true,conflict.getPlacementNrDistanceBackToBackConflicts(), 0)+")";
-        }
-        ret += "<td align='right' width='1%' nowrap>"+ClassAssignmentDetails.dispNumber(Math.round(getValue()))+"</td><td nowrap>";
-        ret += name;
-        ret += "</td><td nowrap>";
-        ret += period;
-        ret += "</td><td nowrap>";
-        ret += room;
-        ret += "</td><td nowrap>";
-        ret += dc;
-        ret += "</td><td nowrap>";
-        ret += m2d;
-        ret += "</td><td nowrap>";
-        ret += btb;
-        ret += "</td></tr>";
-        return ret;
     }
     
     public String toString(String delim) {

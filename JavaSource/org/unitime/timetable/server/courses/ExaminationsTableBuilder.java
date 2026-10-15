@@ -292,7 +292,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 }
                 
                 LineInterface line = ret.addLine();
-                line.setURL("examDetail.action?examId="+exam.getUniqueId());
+                line.setURL("examination?examId="+exam.getUniqueId());
                 line.addCell(objects);
                 line.addCell(exam.getExamType().getLabel());
                 line.addCell(exam.getLength().toString()).setTextAlignment(Alignment.RIGHT);
@@ -524,7 +524,7 @@ public class ExaminationsTableBuilder extends TableBuilder {
             
             LineInterface line = ret.addLine();
             if (view)
-            	line.setURL("examDetail.action?examId="+exam.getUniqueId());
+            	line.setURL("examination?examId="+exam.getUniqueId());
             line.addCell(objects);
             line.addCell(exam.getLength().toString()).setTextAlignment(Alignment.RIGHT).setComparable(exam.getLength());
             line.addCell((Exam.sSeatingTypeNormal==exam.getSeatingType()?MSG.examSeatingTypeNormal():MSG.examSeatingTypeExam())).setTextAlignment(Alignment.CENTER).setComparable(exam.getSeatingType());

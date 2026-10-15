@@ -123,7 +123,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 				boolean showClassDetail = (solver == null && context.hasPermission(ucr.getId(), "Class_", Right.ClassDetail));
 		    	LineInterface line = response.addLine();
 		    	line.setId(ucr.getId());
-		    	line.setURL(showClassDetail ? "classDetail.action?cid=" + ucr.getId() : "suggestions?menu=hide&id="+ucr.getId());
+		    	line.setURL(showClassDetail ? "clazz?cid=" + ucr.getId() : "suggestions?menu=hide&id="+ucr.getId());
 		    	line.setDialog(showClassDetail ? null : MESSAGES.dialogSuggestions());
 		    	CellInterface clazz = line.addCell().setClassName("collection");
 		    	clazz.add(ucr.getName()).setInline(false).setNoWrap(true);

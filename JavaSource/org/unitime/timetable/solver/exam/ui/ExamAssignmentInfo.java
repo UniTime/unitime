@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.exam.ui;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -891,16 +890,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return iDistributions;
     }
     
-    public String getDistributionConflictsHtml(String delim) {
-        String ret = "";
-        for (Iterator i=iDistributions.iterator();i.hasNext();) {
-            DistributionConflict dc = (DistributionConflict)i.next();
-            if (ret.length()>0) ret+=delim;
-            ret+=dc.getTypeHtml();
-        }
-        return ret;
-    }
-    
     public String getDistributionConflictsList(String delim) {
         String ret = "";
         for (Iterator i=iDistributions.iterator();i.hasNext();) {
@@ -917,31 +906,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     
     public boolean getHasConflicts() {
         return !getDirectConflicts().isEmpty() || !getBackToBackConflicts().isEmpty() || !getMoreThanTwoADaysConflicts().isEmpty();
-    }
-    
-    public String getConflictTable() {
-        return getConflictTable(true);
-    }
-    
-    public String getConflictTable(boolean header) {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        if (header) {
-            ret += "<tr>";
-            ret += "<td><i>" + MSG.colStudents() + "</i></td>";
-            ret += "<td><i>" + MSG.colConflict() + "</i></td>";
-            ret += "<td><i>" + MSG.colExamination() + "</i></td>";
-            ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
-            ret += "<td><i>" + MSG.colRoom() + "</i></td>";
-            ret += "</tr>";
-        }
-        for (Iterator i=getDirectConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        for (Iterator i=getMoreThanTwoADaysConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        for (Iterator i=getBackToBackConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        ret += "</table>";
-        return ret;
     }
     
     public TableInterface generateConflictTable() {
@@ -962,7 +926,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	line.addCell().setText(dc.getOtherExam() == null ? (dc.isOtherClass() ? MSG.typeClass() :MSG.typeEvent()) : MSG.conflictDirect())
         		.setColor(PreferenceLevel.prolog2color("P")).addStyle("font-weight:bold;");
         	if (dc.getOtherExam() != null)
-        		line.setURL("examDetail.action?examId=" + dc.getOtherExam().getExamId());
+        		line.setURL("examination?examId=" + dc.getOtherExam().getExamId());
         	if (dc.getOtherExam() == null) {
                 if (dc.getOtherEventName() != null) {
                 	line.addCell().setText(dc.getOtherEventName());
@@ -987,7 +951,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             int idx = 0;
             for (ExamAssignment a: m2d.getOtherExams()) {
             	LineInterface line = table.addLine();
-            	line.setURL("examDetail.action?examId=" + a.getExamId());
+            	line.setURL("examination?examId=" + a.getExamId());
             	line.setId(id);
             	if (idx == 0) {
         			line.addCell().setRowSpan(m2d.getOtherExams().size())
@@ -1016,7 +980,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	line.setId(id);
         	line.addCell().setText(b2b.getNrStudents()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
         	line.addCell().setText(MSG.conflictBackToBack()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
-        	line.setURL("examDetail.action?examId=" + b2b.getOtherExam().getExamId());
+        	line.setURL("examination?examId=" + b2b.getOtherExam().getExamId());
         	line.addCell(b2b.getOtherExam().getExamNameCell());
         	line.addCell(b2b.getOtherExam().getPeriodCell());
         	CellInterface rooms = line.addCell();
@@ -1028,46 +992,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	id++;
         }
         return table;
-    }
-    
-    public String getConflictInfoTable() {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        ret += "<tr>";
-        ret += "<td><i>" + MSG.colStudents() + "</i></td>";
-        ret += "<td><i>" + MSG.colConflict() + "</i></td>";
-        ret += "<td><i>" + MSG.colExamination() + "</i></td>";
-        ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
-        ret += "<td><i>" + MSG.colRoom() + "</i></td>";
-        ret += "</tr>";
-        for (DirectConflict dc : getDirectConflicts())
-            ret += dc.toString(true);
-        for (MoreThanTwoADayConflict m2d : getMoreThanTwoADaysConflicts())
-            ret += m2d.toString(true);
-        for (BackToBackConflict btb : getBackToBackConflicts()) 
-            ret += btb.toString(true);
-        ret += "</table>";
-        return ret;
-    }
-    
-    public String getDistributionConflictTable() {
-        return getDistributionConflictTable(true);
-    }
-    
-    public String getDistributionConflictTable(boolean header) {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        if (header) {
-            ret += "<tr>";
-            ret += "<td><i>" + MSG.colPreference() + "</i></td>";
-            ret += "<td><i>" + MSG.colDistribution() + "</i></td>";
-            ret += "<td><i>" + MSG.colExamination() + "</i></td>";
-            ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
-            ret += "<td><i>" + MSG.colRoom() + "</i></td>";
-            ret += "</tr>";
-        }
-        for (Iterator i=getDistributionConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        ret += "</table>";
-        return ret;
     }
     
     public TableInterface generateDistributionConflictTable() {
@@ -1085,7 +1009,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     		for (ExamInfo a: dc.getOtherExams()) {
         		LineInterface line = table.addLine();
         		line.setId(dc.getId());
-        		line.setURL("examDetail.action?examId=" + a.getExamId());
+        		line.setURL("examination?examId=" + a.getExamId());
         		if (idx == 0) {
         			line.addCell().setRowSpan(dc.getOtherExams().size())
         				.setColor(PreferenceLevel.prolog2color(dc.getPreference()))
@@ -1115,21 +1039,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     		}
     	}
         return table;
-    }
-    
-    public String getDistributionInfoConflictTable() {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        ret += "<tr>";
-        ret += "<td><i>" + MSG.colPreference() + "</i></td>";
-        ret += "<td><i>" + MSG.colDistribution() + "</i></td>";
-        ret += "<td><i>" + MSG.colExamination() + "</i></td>";
-        ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
-        ret += "<td><i>" + MSG.colRoom() + "</i></td>";
-        ret += "</tr>";
-        for (DistributionConflict dc : getDistributionConflicts())
-            ret += dc.toString(true);
-        ret += "</table>";
-        return ret;
     }
     
     public TreeSet<DirectConflict> getInstructorDirectConflicts() {
@@ -1201,10 +1110,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         return !getInstructorDirectConflicts().isEmpty() || !getInstructorBackToBackConflicts().isEmpty() || !getInstructorMoreThanTwoADaysConflicts().isEmpty();
     }
     
-    public String getInstructorConflictTable() {
-        return getInstructorConflictTable(true);
-    }
-    
     public TableInterface generateInstructorConflictTable() {
     	TableInterface table = new TableInterface();
     	table.addStyle("width: 100%");
@@ -1223,7 +1128,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	line.addCell().setText(dc.getOtherExam() == null ? (dc.isOtherClass() ? MSG.typeClass() :MSG.typeEvent()) : MSG.conflictDirect())
         		.setColor(PreferenceLevel.prolog2color("P")).addStyle("font-weight:bold;");
         	if (dc.getOtherExam() != null)
-        		line.setURL("examDetail.action?examId=" + dc.getOtherExam().getExamId());
+        		line.setURL("examination?examId=" + dc.getOtherExam().getExamId());
         	if (dc.getOtherExam() == null) {
                 if (dc.getOtherEventName() != null) {
                 	line.addCell().setText(dc.getOtherEventName());
@@ -1248,7 +1153,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             int idx = 0;
             for (ExamAssignment a: m2d.getOtherExams()) {
             	LineInterface line = table.addLine();
-            	line.setURL("examDetail.action?examId=" + a.getExamId());
+            	line.setURL("examination?examId=" + a.getExamId());
             	line.setId(id);
             	if (idx == 0) {
         			line.addCell().setRowSpan(m2d.getOtherExams().size())
@@ -1277,7 +1182,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         	line.setId(id);
         	line.addCell().setText(b2b.getNrStudents()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
         	line.addCell().setText(MSG.conflictBackToBack()).setColor(PreferenceLevel.prolog2color("1")).addStyle("font-weight:bold;");
-        	line.setURL("examDetail.action?examId=" + b2b.getOtherExam().getExamId());
+        	line.setURL("examination?examId=" + b2b.getOtherExam().getExamId());
         	line.addCell(b2b.getOtherExam().getExamNameCell());
         	line.addCell(b2b.getOtherExam().getPeriodCell());
         	CellInterface rooms = line.addCell();
@@ -1290,48 +1195,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
         }
         return table;
     }
-    
-    public String getInstructorConflictTable(boolean header) {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        if (header) {
-            ret += "<tr>";
-            ret += "<td><i>" + MSG.colInstructors() + "</i></td>";
-            ret += "<td><i>" + MSG.colConflict() + "</i></td>";
-            ret += "<td><i>" + MSG.colExamination() + "</i></td>";
-            ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
-            ret += "<td><i>" + MSG.colRoom() + "</i></td>";
-            ret += "</tr>";
-        }
-        for (Iterator i=getInstructorDirectConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        for (Iterator i=getInstructorMoreThanTwoADaysConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        for (Iterator i=getInstructorBackToBackConflicts().iterator();i.hasNext();)
-            ret += i.next().toString();
-        ret += "</table>";
-        return ret;
-    }
-    
-    public String getInstructorConflictInfoTable() {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        ret += "<tr>";
-        ret += "<td><i>" + MSG.colInstructors() + "</i></td>";
-        ret += "<td><i>" + MSG.colConflict() + "</i></td>";
-        ret += "<td><i>" + MSG.colExamination() + "</i></td>";
-        ret += "<td><i>" + MSG.colPeriod() + "</i></td>";
-        ret += "<td><i>" + MSG.colRoom() + "</i></td>";
-        ret += "</tr>";
-        for (DirectConflict dc : getInstructorDirectConflicts())
-            ret += dc.toString(true);
-        for (MoreThanTwoADayConflict m2d : getInstructorMoreThanTwoADaysConflicts())
-            ret += m2d.toString(true);
-        for (BackToBackConflict btb : getInstructorBackToBackConflicts()) 
-            ret += btb.toString(true);
-        ret += "</table>";
-        return ret;
-    }
-
-    
     
     public static class DirectConflict implements Serializable, Comparable<DirectConflict> {
 		private static final long serialVersionUID = 1300925620564937810L;
@@ -1451,37 +1314,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             if (c.getOtherExam()==null) return 1;
             return getOtherExam().compareTo(c.getOtherExam());
         }
-        public String toString() {
-            return toString(false);
-        }
-        public String toString(boolean links) {
-            String ret = "";
-            if (links && getOtherExam()!=null)
-                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.action?examId="+getOtherExam().getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            else
-                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\">";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
-            ret += String.valueOf(getNrStudents());
-            ret += "</td>";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
-            ret += (getOtherExam()==null?(isOtherClass()?MSG.typeClass():MSG.typeEvent()):MSG.conflictDirect());
-            ret += "</td>";
-            if (getOtherExam()==null) {
-                if (iOtherEventName!=null) {
-                    ret += "<td>"+iOtherEventName+"</td>";
-                    ret += "<td>"+iOtherEventDate+" "+iOtherEventTime+"</td>";
-                    ret += "<td>"+iOtherEventRoom+"</td>";
-                } else {
-                    ret += "<td colspan='3'>" + MSG.infoNotAvailableForUnknownReason() + "</td>";
-                }
-            } else {
-                ret += "<td>"+getOtherExam().getExamNameHtml()+"</td>";
-                ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
-                ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
-            }
-            ret += "</tr>";
-            return ret;
-        }
     }
     
     public static class BackToBackConflict implements Serializable, Comparable<BackToBackConflict> {
@@ -1539,28 +1371,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             if (isDistance()!=c.isDistance()) return (isDistance()?-1:1);
             return getOtherExam().compareTo(c.getOtherExam());
         }
-        public String toString() {
-            return toString(false);
-        }
-        public String toString(boolean links) {
-            String ret = "";
-            if (links && getOtherExam()!=null)
-                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='examInfo.action?examId="+getOtherExam().getExamId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            else
-                ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';\" onmouseout=\"this.style.backgroundColor='transparent';\">";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
-            ret += String.valueOf(getNrStudents());
-            ret += "</td>";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("1")+";'>";
-            ret += MSG.conflictBackToBack();
-            if (isDistance()) ret+="<br>("+Math.round(10.0*getDistance())+" m)";
-            ret += "</td>";
-            ret += "<td>"+getOtherExam().getExamNameHtml()+"</td>";
-            ret += "<td>"+getOtherExam().getPeriodAbbreviationWithPref()+"</td>";
-            ret += "<td>"+getOtherExam().getRoomsNameWithPref(", ")+"</td>";
-            ret += "</tr>";
-            return ret;
-        }
     }
 
     public static class MoreThanTwoADayConflict implements Serializable, Comparable<MoreThanTwoADayConflict> {
@@ -1612,55 +1422,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 if (!a1.equals(a2)) return a1.compareTo(a2);
             }
             return 0;
-        }
-        public String toString() {
-            return toString(false);
-        }
-        public String toString(boolean links) {
-            String ret = "";
-            String mouseOver = "";
-            String mouseOut = "";
-            String id = "";
-            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
-                ExamAssignment a = (ExamAssignment)i.next();
-                id+=a.getExamId(); 
-                if (i.hasNext()) id+=":";
-            }
-            int idx = 0;
-            Vector<Long> ids = new Vector();
-            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
-                ExamAssignment a = (ExamAssignment)i.next();
-                ids.add(a.getExamId());
-                mouseOver += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='rgb(223,231,242)';";
-                if (links)
-                    mouseOver += "this.style.cursor='hand';this.style.cursor='pointer';";
-                mouseOut += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='transparent';";
-            }
-            idx = 0;
-            if (links)
-                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            else
-                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
-            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
-            ret += String.valueOf(getNrStudents());
-            ret += "</td>";
-            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color("2")+";'>";
-            ret += MSG.conflictMoreThanTwoADay().replace(">", "&gt;");
-            ret += "</td>";
-            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
-                ExamAssignment a = (ExamAssignment)i.next();
-                ret += "<td>"+a.getExamNameHtml()+"</td>";
-                ret += "<td>"+a.getPeriodAbbreviationWithPref()+"</td>";
-                ret += "<td>"+a.getRoomsNameWithPref(", ")+"</td>";
-                ret += "</tr>";
-                if (i.hasNext()) {
-                    if (links)
-                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(1+idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-                    else
-                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
-                }
-            }
-            return ret;
         }
     }
     
@@ -1720,15 +1481,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             cell.setColor(PreferenceLevel.prolog2color(getPreference()));
             return cell;
         }
-        public String getTypeHtml() {
-            String title = PreferenceLevel.prolog2string(getPreference())+" "+getType()+" with ";
-            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
-                ExamInfo a = (ExamInfo)i.next();
-                title += a.getExamName();
-                if (i.hasNext()) title += " and ";
-            }
-            return "<span style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";' title='"+title+"'>"+iType+"</span>";
-        }
         public String getPreference() {
             return iPreference;
         }
@@ -1752,62 +1504,6 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             }
             return getId().compareTo(c.getId());
         }
-        public String toString() {
-            return toString(false);
-        }
-        public String toString(boolean links) {
-            String ret = "";
-            String mouseOver = "";
-            String mouseOut = "";
-            String id = "";
-            for (Iterator i=getOtherExams().iterator();i.hasNext();) {
-                ExamInfo a = (ExamInfo)i.next();
-                id+=a.getExamId(); 
-                if (i.hasNext()) id+=":";
-            }
-            int idx = 0;
-            Vector<Long> ids = new Vector();
-            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
-                ExamInfo a = (ExamInfo)i.next();
-                ids.add(a.getExamId());
-                mouseOver += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='rgb(223,231,242)';";
-                if (links)
-                    mouseOver += "this.style.cursor='hand';this.style.cursor='pointer';";
-                mouseOut += "document.getElementById('"+id+":"+idx+"').style.backgroundColor='transparent';";
-            }
-            idx = 0;
-            if (links)
-                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            else
-                ret += "<tr id='"+id+":"+idx+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
-            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";'>";
-            ret += PreferenceLevel.prolog2string(getPreference());
-            ret += "</td>";
-            ret += "<td valign='top' rowspan='"+getOtherExams().size()+"' style='font-weight:bold;color:"+PreferenceLevel.prolog2color(getPreference())+";'>";
-            ret += getType();
-            ret += "</td>";
-            for (Iterator i=getOtherExams().iterator();i.hasNext();idx++) {
-                ExamInfo a = (ExamInfo)i.next();
-                ret += "<td>"+a.getExamNameHtml()+"</td>";
-                if (a instanceof ExamAssignment) {
-                    ExamAssignment ea = (ExamAssignment)a;
-                    ret += "<td>"+ea.getPeriodAbbreviationWithPref()+"</td>";
-                    ret += "<td>"+ea.getRoomsNameWithPref(", ")+"</td>";
-                } else {
-                    ret += "<td></td>";
-                    ret += "<td></td>";
-                }
-                ret += "</tr>";
-                if (i.hasNext()) {
-                    if (links)
-                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\" onclick=\"document.location='examInfo.action?examId="+ids.elementAt(1+idx)+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-                    else
-                        ret += "<tr id='"+id+":"+(1+idx)+"' onmouseover=\""+mouseOver+"\" onmouseout=\""+mouseOut+"\">";
-                }
-            }
-            return ret;
-        }
-        
     }
     
     public static class Parameters {

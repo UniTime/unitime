@@ -228,7 +228,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
     	    
 	    	LineInterface line = response.addLine();
 	    	line.setId(ca.getClazz().getClassId());
-	    	line.setURL(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId());
+	    	line.setURL(showClassDetail ? "clazz?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&id="+ca.getClazz().getClassId());
 	    	line.setDialog(showClassDetail ? null : MESSAGES.dialogSuggestions());
 	    	CellInterface clazz = line.addCell().setClassName("collection");
 	    	clazz.add(ca.getClazz().getName()).setColor(PreferenceLevel.prolog2color(ca.getClazz().getPref())).setInline(false).setNoWrap(true);

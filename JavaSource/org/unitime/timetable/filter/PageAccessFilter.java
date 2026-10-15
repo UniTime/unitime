@@ -155,7 +155,7 @@ public class PageAccessFilter implements Filter {
 							message = MESSAGES.authenticationInsufficient();
 						}
 					}
-					x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.action?message=" + message));
+					x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired?message=" + message));
 				} else if (exception instanceof ServletException) {
 					throw (ServletException)exception;
 				} else  if (exception instanceof IOException) {
