@@ -154,14 +154,14 @@ public class EnrollmentCheck {
     }
     
     private String getClassLabel(Lecture lecture) {
-        return "<A href='classDetail.action?cid="+lecture.getClassId()+"'>"+lecture.getName()+"</A>";
+        return "<A href='clazz?cid="+lecture.getClassId()+"'>"+lecture.getName()+"</A>";
     }
     
     private String getSubpartLabel(Long subpartId) {
         SchedulingSubpart subpart = (SchedulingSubpartDAO.getInstance()).get(subpartId);
         if (subpart!=null) {
             String suffix = subpart.getSchedulingSubpartSuffix();
-            return "<A href='schedulingSubpartDetail.action?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
+            return "<A href='subpart?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
         } else
             return subpartId.toString();
     }
@@ -169,7 +169,7 @@ public class EnrollmentCheck {
     private String getOfferingLabel(Long offeringId) {
         InstructionalOffering offering = (InstructionalOfferingDAO.getInstance()).get(offeringId);
         if (offering!=null)
-            return "<A href='instructionalOfferingDetail.action?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
+            return "<A href='offering?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
         else
             return offeringId.toString();
     }

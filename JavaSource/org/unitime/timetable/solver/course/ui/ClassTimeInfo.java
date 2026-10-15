@@ -183,22 +183,6 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     public String getLongName() { return getDayHeader()+" "+getStartTimeHeader()+" - "+getEndTimeHeader()+" "+getDatePatternName(); }
     public String getLongNameNoAdj() { return getDayHeader()+" "+getStartTimeHeader()+" - "+getEndTimeHeaderNoAdj()+" "+getDatePatternName(); }
     
-    public String getNameHtml() {
-        return
-            "<span onmouseover=\"showGwtTimeHint(this, '" + iClassId + "," + iDayCode + "," + iStartSlot + "');\" onmouseout=\"hideGwtTimeHint();\"" +
-            " style='color:" + PreferenceLevel.int2color(getPreference()) + ";'>" +
-            getName()+
-            "</span>";
-    }
-
-    public String getLongNameHtml() {
-        return
-            "<span onmouseover=\"showGwtTimeHint(this, '" + iClassId + "," + iDayCode + "," + iStartSlot + "');\" onmouseout=\"hideGwtTimeHint();\"" +
-            " style='color:" + PreferenceLevel.int2color(getPreference()) + ";'>" +
-            getDayHeader()+" "+getStartTimeHeader()+" - "+getEndTimeHeader()+
-            "</span>";
-    }
-    
     public CellInterface toCell() {
 		return new CellInterface()
 			.setText(getName())

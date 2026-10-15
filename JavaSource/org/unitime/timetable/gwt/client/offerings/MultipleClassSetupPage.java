@@ -155,7 +155,7 @@ public class MultipleClassSetupPage extends Composite {
 							RPC.execute(iData, new AsyncCallback<ClassSetupInterface>() {
 								@Override
 								public void onSuccess(ClassSetupInterface result) {
-									ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
+									ToolBox.open("offering?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
 								}
 								
 								@Override
@@ -185,7 +185,7 @@ public class MultipleClassSetupPage extends Composite {
 			public void onClick(ClickEvent event) {
 				iHeader.setEnabled("back", false);
 				iHeader.setEnabled("update", false);
-				ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
+				ToolBox.open("offering?op=view&io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
 			}
 		});
 		iHeader.setEnabled("update", false);

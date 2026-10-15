@@ -390,7 +390,7 @@ public class RedirectFilter implements Filter {
 		if (!"true".equals(request.getParameter("force"))) {
 			if ("forward".equalsIgnoreCase(ApplicationProperty.LoginMethod.value())) {
 				String login = ApplicationProperty.LoginPage.value();
-				if (login != null && !"login.jsp".equals(login) && !"/login.jsp".equals(login) && !"login".equals(login) && !"login.action".equals(login)) {
+				if (login != null && !"login.jsp".equals(login) && !"/login.jsp".equals(login) && !"login".equals(login) && !"login".equals(login)) {
 					request.getRequestDispatcher(login).forward(request, response);
 					return true;
 				}

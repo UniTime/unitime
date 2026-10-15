@@ -828,7 +828,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 				iStatusBox.error(MESSAGES.advisorRequestsLoadFailed(caught.getMessage()) + "\n" + MESSAGES.sessionExpiredClickToLogin(), caught, new Command() {
 					@Override
 					public void execute() {
-						Window.open("selectPrimaryRole.action?list=Y&m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
+						Window.open("selectPrimaryRole?list=Y&m=" + URL.encodeQueryString(MESSAGES.sessionExpiredClickToLogin())
 						+"&target=" + URL.encodeQueryString(Window.Location.getHref()), "_self", "");
 					}
 				});
@@ -1136,7 +1136,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 					iStatusBox.error(MESSAGES.advisorRequestsSubmitFailed(caught.getMessage()) + "\n" + MESSAGES.sessionExpiredClickToLogin(), caught, new Command() {
 						@Override
 						public void execute() {
-							Window.open("selectPrimaryRole.action?list=Y&target=close.jsp&menu=hide", "", 
+							Window.open("selectPrimaryRole?list=Y&target=close.jsp&menu=hide", "", 
 							"toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, " +
 							"width=720px, height=400px, top=" + ((Window.getClientHeight() - 400) / 2) + "px, left=" + ((Window.getClientWidth() - 720) / 2) + "px");
 						}
@@ -1204,7 +1204,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 					iStatusBox.error(MESSAGES.advisorRequestsValidationFailed(caught.getMessage()) + "\n" + MESSAGES.sessionExpiredClickToLogin(), caught, new Command() {
 						@Override
 						public void execute() {
-							Window.open("selectPrimaryRole.action?list=Y&target=close.jsp&menu=hide", "", 
+							Window.open("selectPrimaryRole?list=Y&target=close.jsp&menu=hide", "", 
 							"toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, " +
 							"width=720px, height=400px, top=" + ((Window.getClientHeight() - 400) / 2) + "px, left=" + ((Window.getClientWidth() - 720) / 2) + "px");
 						}

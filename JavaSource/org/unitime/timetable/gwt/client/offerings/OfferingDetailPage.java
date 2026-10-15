@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.instructor.survey.OfferingDetailWidget;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingConfigInterface;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingDetailRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.OfferingDetailResponse;
+import org.unitime.timetable.gwt.client.page.SolverWarnings;
 import org.unitime.timetable.gwt.client.page.UniTimeNavigation;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
@@ -129,7 +130,7 @@ public class OfferingDetailPage extends Composite {
 		iHeader.addButton("cross-list", COURSE.actionCrossLists(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "crossListsModify.action?instrOfferingId=" + iResponse.getOfferingId() + "&uid=" + iResponse.getCourseId() + "&op=" + URL.encodeQueryString(COURSE.actionCrossLists()));
+				ToolBox.open(GWT.getHostPageBaseURL() + "crosslist?instrOfferingId=" + iResponse.getOfferingId() + "&uid=" + iResponse.getCourseId() + "&op=" + URL.encodeQueryString(COURSE.actionCrossLists()));
 			}
 		});
 		iHeader.setEnabled("cross-list", false);
@@ -336,7 +337,7 @@ public class OfferingDetailPage extends Composite {
 						hp.addButton("add-exam", COURSE.actionAddExamination(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?firstType=InstructionalOffering&firstId=" + response.getOfferingId());
+								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit?firstType=InstructionalOffering&firstId=" + response.getOfferingId());
 							}
 						});
 						hp.getButton("add-exam").setAccessKey(COURSE.accessAddExamination().charAt(0));
@@ -385,6 +386,7 @@ public class OfferingDetailPage extends Composite {
 					iFooter.getButton("back").setTitle(COURSE.titleBackIODetail(COURSE.accessBackIODetail()).replace("%%", response.getBackTitle()));
 				}
 				UniTimeNavigation.getInstance().refresh();
+				SolverWarnings.refresh(SolverWarnings.Type.locks);
 			}
 		});
 	}

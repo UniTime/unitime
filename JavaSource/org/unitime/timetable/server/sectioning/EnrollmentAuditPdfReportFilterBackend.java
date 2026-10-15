@@ -23,7 +23,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
-import org.unitime.timetable.form.EnrollmentAuditPdfReportForm.RegisteredReport;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.EnrollmentAuditPdfReportFilterRequest;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExaminationPdfReportFilterRequesponse;
@@ -73,7 +72,7 @@ public class EnrollmentAuditPdfReportFilterBackend implements GwtRpcImplementati
 		reports.setMultiSelect(true);
 		reports.setType("checkboxlist");
 		reports.setLabel(MESSAGES.filterReport());
-		for (RegisteredReport report: RegisteredReport.values())
+		for (EnrollmentAuditPdfReportForm.RegisteredReport report: EnrollmentAuditPdfReportForm.RegisteredReport.values())
 			reports.addOption(report.name(), EnrollmentAuditPdfReportForm.getReportName(report));
 		reports.setDefaultValue(context.getUser().getProperty("EnrollmentAuditPdfReport.reports"));
 		reports.setCollapsible(false);

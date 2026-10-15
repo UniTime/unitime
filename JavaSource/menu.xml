@@ -32,28 +32,14 @@
 			</or>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
-			<item name="Instructional Offerings" page="instructionalOfferingSearch.action">
-				<condition>
-					<hasPermission name="InstructionalOfferings"/>
-					<propertyEquals name="unitime.legacy.course.offerings" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Instructional Offerings" page="offerings" type="gwt">
 				<condition>
 					<hasPermission name="InstructionalOfferings"/>
-					<propertyEquals name="unitime.legacy.course.offerings" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Classes" page="classSearch.action">
-				<condition>
-					<hasPermission name="Classes"/>
-					<propertyEquals name="unitime.legacy.course.classes" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Classes" page="classSearch" type="gwt">
 				<condition>
 					<hasPermission name="Classes"/>
-					<propertyEquals name="unitime.legacy.course.classes" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<separator/>
@@ -68,16 +54,9 @@
 				</item>
 			</menu>
 			<separator/>
-			<item name="Instructors" page="instructorSearch.action">
-				<condition>
-					<hasPermission name="Instructors"/>
-					<propertyEquals name="unitime.legacy.instructors" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Instructors" page="instructors" type="gwt">
 				<condition>
 					<hasPermission name="Instructors"/>
-					<propertyEquals name="unitime.legacy.instructors" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Instructor Attributes" page="instructorattributes" type="gwt">
@@ -85,7 +64,7 @@
 					<hasPermission name="InstructorAttributes"/>
 				</condition>
 			</item>
-			<item name="Instructor Detail" page="instructorDetail.action">
+			<item name="Instructor Detail" page="instructor" type="gwt">
 				<condition>
 					<hasPermission name="InstructorDetail"/>
 					<not>
@@ -126,16 +105,9 @@
 				</item>
 			</menu>
 			<separator/>
-			<item name="Distribution Preferences" page="distributionPrefs.action">
-				<condition>
-					<hasPermission name="DistributionPreferences"/>
-					<propertyEquals name="unitime.legacy.distributions" value="true"/>
-				</condition>
-			</item>
 			<item name="Distribution Preferences" page="distributions" type="gwt">
 				<condition>
 					<hasPermission name="DistributionPreferences"/>
-					<propertyEquals name="unitime.legacy.distributions" value="false"/>
 				</condition>
 			</item>
 			<item name="Reservations" page="reservations" type="gwt">
@@ -143,16 +115,9 @@
 					<hasPermission name="Reservations"/>
 				</condition>
 			</item>
-			<item name="Class Assignments" page="classAssignmentsReportSearch.action">
-				<condition>
-					<hasPermission name="ClassAssignments"/>
-					<propertyEquals name="unitime.legacy.course.assignments" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Class Assignments" page="classAssignments" type="gwt">
 				<condition>
 					<hasPermission name="ClassAssignments"/>
-					<propertyEquals name="unitime.legacy.course.assignments" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>
@@ -383,7 +348,7 @@
 			</condition>
 		</item>
 		<separator/>
-		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.action">
+		<item name="Enrollment Audits" page="enrollmentAuditPdfReport" type="gwt">
 			<condition>
 				<hasPermission name="EnrollmentAuditPDFReports"/>
 			</condition>
@@ -406,7 +371,7 @@
 			<condition>
 				<hasPermission name="Examinations"/>
 			</condition>
-			<item name="Instructors" page="instructorSearch.action">
+			<item name="Instructors" page="instructors" type="gwt">
 				<condition>
 					<hasPermission name="Instructors"/>
 				</condition>
@@ -429,33 +394,21 @@
 						<hasPermission name="RoomGroups"/>
 					</condition>
 				</item>
-				<item name="Room Availability" page="roomAvailability.action">
+				<item name="Room Availability" page="roomAvailability" type="gwt">
 					<condition>
 						<hasPermission name="RoomAvailability"/>
 					</condition>
 				</item>
 			</menu>
 			<separator/>
-			<item name="Examinations" page="examList.action">
-				<condition>
-					<propertyEquals name="unitime.legacy.examinations" value="true" defaultValue="false"/>
-				</condition>
-			</item>
 			<item name="Examinations" page="examinations" type="gwt">
 				<condition>
-					<propertyEquals name="unitime.legacy.examinations" value="false" defaultValue="false"/>
-				</condition>
-			</item>
-			<item name="Distribution Preferences" page="examDistributionPrefs.action">
-				<condition>
-					<hasPermission name="ExaminationDistributionPreferences"/>
-					<propertyEquals name="unitime.legacy.examDistributions" value="true" defaultValue="false"/>
+					<hasPermission name="Examinations"/>
 				</condition>
 			</item>
 			<item name="Distribution Preferences" page="examDistributions" type="gwt">
 				<condition>
 					<hasPermission name="ExaminationDistributionPreferences"/>
-					<propertyEquals name="unitime.legacy.examDistributions" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 		</menu>
@@ -469,28 +422,28 @@
 					<hasPermission name="ExaminationSolver"/>
 				</condition>
 			</item>
-			<item name="Timetable Grid" page="examGrid.action">
+			<item name="Timetable Grid" page="examGrid" type="gwt">
 				<condition>
 					<hasPermission name="ExaminationTimetable"/>
 				</condition>
 			</item>
 			<separator/>
-			<item name="Assigned Exams" page="assignedExams.action">
+			<item name="Assigned Exams" page="assignedExams" type="gwt">
 				<condition>
 					<hasPermission name="AssignedExaminations"/>
 				</condition>
 			</item>
-			<item name="Not-assigned Exams" page="unassignedExams.action">
+			<item name="Not-assigned Exams" page="unassignedExams" type="gwt">
 				<condition>
 					<hasPermission name="NotAssignedExaminations"/>
 				</condition>
 			</item>
-			<item name="Changes" page="examChanges.action">
+			<item name="Changes" page="examChanges" type="gwt">
 				<condition>
 					<hasPermission name="ExaminationAssignmentChanges"/>
 				</condition>
 			</item>
-			<item name="Conflict Statistics" page="ecbs.action">
+			<item name="Conflict Statistics" page="ecbs" type="gwt">
 				<condition>
 					<hasPermission name="ExaminationConflictStatistics"/>
 				</condition>
@@ -506,13 +459,13 @@
 					<hasPermission name="ExaminationReports"/>
 				</condition>
 			</separator>
-			<item name="Reports" page="examAssignmentReport.action">
+			<item name="Reports" page="examAssignmentReport" type="gwt">
 				<condition>
 					<hasPermission name="ExaminationReports"/>
 				</condition>
 			</item>
 		</menu>
-		<item name="Pdf Reports" page="examPdfReport.action">
+		<item name="Pdf Reports" page="examPdfReport" type="gwt">
 			<condition>
 				<hasPermission name="ExaminationPdfReports"/>
 			</condition>
@@ -642,44 +595,30 @@
 			<hasPermission name="IsAdmin"/>
 		</condition>
 		<menu name="Academic Sessions">
-			<item name="Academic Sessions" page="sessionList.action">
+			<item name="Academic Sessions" page="sessions" type="gwt">
 				<condition>
 					<hasPermission name="AcademicSessions"/>
 				</condition>
 			</item>
-			<item name="Managers" page="timetableManagerList.action">
+			<item name="Managers" page="managers" type="gwt">
 				<condition>
 					<hasPermission name="TimetableManagers"/>
-				</condition>
-			</item>
-			<item name="Departments" page="departmentList.action">
-				<condition>
-					<hasPermission name="Departments"/>
-					<propertyEquals name="unitime.legacy.admin.departments" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Departments" page="departments" type="gwt">
 				<condition>
 					<hasPermission name="Departments"/>
-					<propertyEquals name="unitime.legacy.admin.departments" value="false" defaultValue="false"/>
 				</condition>
 			</item>
-			<item name="Solver Groups" page="solverGroupEdit.action">
+			<item name="Solver Groups" page="solverGroups" type="gwt">
 				<condition>
 					<hasPermission name="SolverGroups"/>
-				</condition>
-			</item>
-			<item name="Subject Areas" page="subjectList.action">
-				<condition>
-					<hasPermission name="SubjectAreas"/>
-					<propertyEquals name="unitime.legacy.admin.subjectAreas" value="true" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Subject Areas" page="admin" type="gwt">
 				<parameter name="type">subjectArea</parameter>
 				<condition>
 					<hasPermission name="SubjectAreas"/>
-					<propertyEquals name="unitime.legacy.admin.subjectAreas" value="false" defaultValue="false"/>
 				</condition>
 			</item>
 			<item name="Buildings" page="buildings" type="gwt">
@@ -688,12 +627,12 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Date Patterns" page="datePatternEdit.action">
+			<item name="Date Patterns" page="datePatterns" type="gwt">
 				<condition>
 					<hasPermission name="DatePatterns"/>
 				</condition>
 			</item>
-			<item name="Time Patterns" page="timePatternEdit.action">
+			<item name="Time Patterns" page="timePatterns" type="gwt">
 				<condition>
 					<hasPermission name="TimePatterns"/>
 				</condition>
@@ -778,7 +717,7 @@
 					<hasPermission name="ExaminationStatuses"/>
 				</condition>
 			</item>
-			<item name="Examination Periods" page="examPeriodEdit.action">
+			<item name="Examination Periods" page="examPeriods" type="gwt">
 				<condition>
 					<hasPermission name="ExaminationPeriods"/>
 				</condition>
@@ -809,17 +748,17 @@
 				</condition>
 			</item>
 			<separator/>
-			<item name="Data Exchange" page="dataImport.action">
+			<item name="Data Exchange" page="dataExchange" type="gwt">
 				<condition>
 					<hasPermission name="DataExchange"/>
 				</condition>
 			</item>
-			<item name="Roll Forward Session" page="rollForwardSession.action">
+			<item name="Roll Forward Session" page="rollForward" type="gwt">
 				<condition>
 					<hasPermission name="SessionRollForward"/>
 				</condition>
 			</item>
-			<item name="Change Log" page="lastChanges.action">
+			<item name="Change Log" page="lastChanges" type="gwt">
 				<condition>
 					<hasPermission name="LastChanges"/>
 				</condition>
@@ -849,7 +788,7 @@
 						
 		</menu>
 		<menu name="Solver">
-			<item name="Manage Solvers" page="manageSolvers.action">
+			<item name="Manage Solvers" page="manageSolvers" type="gwt">
 				<condition>
 					<hasPermission name="ManageSolvers"/>
 				</condition>
@@ -867,20 +806,21 @@
 					<hasPermission name="SolverParameters"/>
 				</condition>
 			</item>
-			<item name="Configurations" page="solverSettings.action">
+			<item name="Configurations" page="solverConfig" type="gwt">
 				<condition>
 					<hasPermission name="SolverConfigurations"/>
 				</condition>
 			</item>
 			<separator/>
-			<item name="Distribution Types" page="distributionTypeList.action">
+			<item name="Distribution Types" page="distributionTypes" type="gwt">
 				<condition>
 					<hasPermission name="DistributionTypes"/>
 				</condition>
 			</item>
 		</menu>
 		<menu name="Other">
-			<item name="Instructional Types" page="itypeDescList.action">
+			<item name="Instructional Types" page="admin" type="gwt">
+				<parameter name="type">itype</parameter>
 				<condition>
 					<hasPermission name="InstructionalTypes"/>
 				</condition>
@@ -891,7 +831,7 @@
 					<hasPermission name="DurationTypes"/>
 				</condition>
 			</item>
-			<item name="Status Types" page="deptStatusTypeEdit.action">
+			<item name="Status Types" page="statusTypes" type="gwt">
 				<condition>
 					<hasPermission name="StatusTypes"/>
 				</condition>
@@ -1056,7 +996,7 @@
 			</item>
 		</menu>
 		<menu name="Defaults">
-			<item name="Configuration" page="applicationConfig.action">
+			<item name="Configuration" page="applicationConfig" type="gwt">
 				<condition>
 					<hasPermission name="ApplicationConfig"/>
 				</condition>
@@ -1075,22 +1015,22 @@
 			</item>
 		</menu>
 		<menu name="Utilities">
-			<item name="Page Statistics" page="stats.action">
+			<item name="Page Statistics" page="stats" type="gwt">
 				<condition>
 					<hasPermission name="PageStatistics"/>
 				</condition>
 			</item>
-			<item name="Access Statistics" page="accessStats.action">
+			<item name="Access Statistics" page="accessStats" type="gwt">
 				<condition>
 					<hasPermission name="AccessStatistics"/>
 				</condition>
 			</item>
-			<item name="Hibernate Statistics" page="hibernateStats.action">
+			<item name="Hibernate Statistics" page="hibernateStats" type="gwt">
 				<condition>
 					<hasPermission name="HibernateStatistics"/>
 				</condition>
 			</item>
-			<item name="Test HQL" page="hibernateQueryTest.action">
+			<item name="Test HQL" page="hibernateQueryTest" type="gwt">
 				<condition>
 					<hasPermission name="TestHQL"/>
 				</condition>
@@ -1108,17 +1048,18 @@
 		</menu>
 	</menu>
 	<menu name="Preferences">
-		<item name="Change Role" page="selectPrimaryRole.action?list=Y">
-				<condition>
-					<hasPermission name="HasRole"/>
-				</condition>
-			</item>
-		<item name="Switch User" page="chameleon.action">
+		<item name="Change Role" page="selectPrimaryRole" type="gwt">
+			<parameter name="list">Y</parameter>
+			<condition>
+				<hasPermission name="HasRole"/>
+			</condition>
+		</item>
+		<item name="Switch User" page="chameleon" type="gwt">
 			<condition>
 				<hasPermission name="Chameleon"/>
 			</condition>
 		</item>
-		<item name="Settings" page="managerSettings.action">
+		<item name="Settings" page="managerSettings" type="gwt">
 				<condition>
 					<hasPermission name="SettingsUser"/>
 				</condition>
@@ -1195,7 +1136,7 @@
 				<hasPermission name="ExaminationStatuses"/>
 			</condition>
 		</item>
-		<item name="Examination Periods" page="examPeriodEdit.action">
+		<item name="Examination Periods" page="examPeriods" type="gwt">
 			<condition>
 				<not>
 					<hasPermission name="IsAdmin"/>
@@ -1291,7 +1232,7 @@
 		<item name="Tips &amp; Tricks" page="tmtbl.help.tricks" type="property" target="tab"/>
 		<item name="FAQ" page="tmtbl.help.faq" type="property" target="tab"/>
 		<item name="Release Notes" page="tmtbl.help.release_notes" type="property" target="tab"/>
-		<item name="Contact Us" page="inquiry.action">
+		<item name="Contact Us" page="inquiry" type="gwt">
 			<condition>
 				<or>
 					<hasProperty name="unitime.email.notif"/>
@@ -1301,33 +1242,12 @@
 			</condition>
 		</item>
 	</menu>
-	<item name="Log Out" page="logout.action">
-		<condition>
-			<isAuthenticated/>
-			<not>
-				<hasRole name="Anonymous"/>
-			</not>
-			<propertyEquals name="unitime.legacy.login" value="true" defaultValue="false"/>
-		</condition>
-	</item>
-	<item name="Log In" page="login.action">
-		<condition>
-			<or>
-				<not>
-					<isAuthenticated/>
-				</not>
-				<hasRole name="Anonymous"/>
-			</or>
-			<propertyEquals name="unitime.legacy.login" value="true" defaultValue="false"/>
-		</condition>
-	</item>
 	<item name="Log Out" page="logout">
 		<condition>
 			<isAuthenticated/>
 			<not>
 				<hasRole name="Anonymous"/>
 			</not>
-			<propertyEquals name="unitime.legacy.login" value="false" defaultValue="false"/>
 		</condition>
 	</item>
 	<item name="Log In" page="login">
@@ -1338,7 +1258,6 @@
 				</not>
 				<hasRole name="Anonymous"/>
 			</or>
-			<propertyEquals name="unitime.legacy.login" value="false" defaultValue="false"/>
 		</condition>
 	</item>
 </unitime-menu>

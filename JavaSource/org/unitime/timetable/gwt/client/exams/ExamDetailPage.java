@@ -84,7 +84,7 @@ public class ExamDetailPage extends Composite {
 		iHeader.addButton("edit", EXAM.actionExamEdit(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?examId=" + iResponse.getExamId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "examEdit?examId=" + iResponse.getExamId());
 			}
 		});
 		iHeader.setEnabled("edit", false);
@@ -94,7 +94,7 @@ public class ExamDetailPage extends Composite {
 		iHeader.addButton("clone", EXAM.actionExamClone(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?examId=" + iResponse.getExamId() + "&clone=true");
+				ToolBox.open(GWT.getHostPageBaseURL() + "examEdit?examId=" + iResponse.getExamId() + "&clone=true");
 			}
 		});
 		iHeader.setEnabled("clone", false);
@@ -105,7 +105,7 @@ public class ExamDetailPage extends Composite {
 			@Override
 			public void onClick(ClickEvent evt) {
 				UniTimeFrameDialog.openDialog(EXAM.dialogExamAssign(),
-						"examInfo.action?examId=" + iResponse.getExamId(),
+						"examAssignment?menu=hide&examId=" + iResponse.getExamId(),
 						"900", "90%");
 			}
 		});
@@ -226,18 +226,7 @@ public class ExamDetailPage extends Composite {
 							}
 						});
 						hp.getButton("add-distribution").setAccessKey(EXAM.accessAddDistributionPreference().charAt(0));
-						hp.getButton("add-distribution").setTitle(EXAM.titleAddDistributionPreference(EXAM.accessAddDistributionPreference()));					
-					} else if (response.hasOperation("add-distribution-legacy")) {
-						hp.addButton("add-distribution", EXAM.actionAddDistributionPreference(), new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "examDistributionPrefs.action?examId=" + iResponse.getExamId() + "&op=" +
-										URL.encodeQueryString(EXAM.actionAddDistributionPreference())
-										);
-							}
-						});
-						hp.getButton("add-distribution").setAccessKey(EXAM.accessAddDistributionPreference().charAt(0));
-						hp.getButton("add-distribution").setTitle(EXAM.titleAddDistributionPreference(EXAM.accessAddDistributionPreference()));					
+						hp.getButton("add-distribution").setTitle(EXAM.titleAddDistributionPreference(EXAM.accessAddDistributionPreference()));										
 					}
 				}
 				

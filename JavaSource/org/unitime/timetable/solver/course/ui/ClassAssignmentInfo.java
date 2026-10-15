@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
@@ -30,7 +29,6 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
-import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -121,28 +119,6 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 		return all.size();
 	}
 	
-	public String getConflictTable() {
-        return getConflictTable(true);
-    }
-    
-    public String getConflictTable(boolean header) {
-        String ret = "<table border='0' width='100%' cellspacing='0' cellpadding='3'>";
-        if (header) {
-            ret += "<tr>";
-            ret += "<td><i>Students</i></td>";
-            ret += "<td><i>Class</i></td>";
-            ret += "<td><i>Date</i></td>";
-            ret += "<td><i>Time</i></td>";
-            ret += "<td><i>Room</i></td>";
-            ret += "</tr>";
-        }
-        for (StudentConflict conf: getStudentConflicts())
-        	ret += conf.toHtml();
-        ret += "</table>";
-        return ret;
-    }
-	 
-	
 	public static Set<Long> merge(Set<Long> a, Set<Long> b) {
 		Set<Long> ret = new HashSet<Long>();
 		for (Long x:a)
@@ -186,30 +162,6 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 			if (cmp!=0) return cmp;
 			return getOtherClass().compareTo(c.getOtherClass());
 		}
-        public String toHtml() {
-            String ret = "";
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='classInfo.action?classId="+getOtherClass().getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
-            ret += String.valueOf(getConflictingStudents().size());
-            ret += "<td>"+getOtherClass().getClassNameHtml()+"</td>";
-            ret += "<td>"+getOtherClass().getDate().toHtml()+"</td>";
-            ret += "<td>"+getOtherClass().getTime().getLongNameHtml()+"</td>";
-            ret += "<td>"+getOtherClass().getRoomNamesHtml(", ")+"</td>";
-            ret += "</tr>";
-            return ret;
-        }
-        public String toHtml2() {
-            String ret = "";
-            ret += "<tr onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" onmouseout=\"this.style.backgroundColor='transparent';\" onclick=\"document.location='classInfo.action?classId="+getOtherClass().getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\">";
-            ret += "<td nowrap style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
-            ret += String.valueOf(getConflictingStudents().size())+"<br>";
-            ret += "<td nowrap>"+getClassNameHtml()+"<br>"+getOtherClass().getClassNameHtml()+"</td>";
-            ret += "<td nowrap>"+getDate().toHtml()+"<br>"+getOtherClass().getDate().toHtml()+"</td>";
-            ret += "<td nowrap>"+getTime().getLongNameHtml()+"<br>"+getOtherClass().getTime().getLongNameHtml()+"</td>";
-            ret += "<td nowrap>"+getRoomNamesHtml(", ")+"<br>"+getOtherClass().getRoomNamesHtml(", ")+"</td>";
-            ret += "</tr>";
-            return ret;
-        }
 	}
 	
 }

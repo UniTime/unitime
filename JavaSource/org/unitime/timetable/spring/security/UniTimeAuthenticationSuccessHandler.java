@@ -50,7 +50,7 @@ public class UniTimeAuthenticationSuccessHandler extends SimpleUrlAuthentication
 	
 	public UniTimeAuthenticationSuccessHandler() {
 		setAlwaysUseDefaultTargetUrl(false);
-		setDefaultTargetUrl("/selectPrimaryRole.action");
+		setDefaultTargetUrl("/selectPrimaryRole");
 		setTargetUrlParameter("target");
 	}
 	
