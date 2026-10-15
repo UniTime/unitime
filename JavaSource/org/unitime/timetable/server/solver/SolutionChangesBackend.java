@@ -227,7 +227,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
         	    
     	    	LineInterface line = response.addLine();
     	    	line.setId(ca.getClazz().getClassId());
-    	    	line.setURL(showClassDetail ? "classDetail.action?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&" + link);
+    	    	line.setURL(showClassDetail ? "clazz?cid=" + ca.getClazz().getClassId() : "suggestions?menu=hide&" + link);
     	    	line.setDialog(showClassDetail ? null : MESSAGES.dialogSuggestions());
     	    	
     	    	CellInterface clazz = line.addCell().setClassName("collection");

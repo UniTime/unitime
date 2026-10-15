@@ -299,40 +299,16 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     	return cell;
     }
     
-    public String getPeriodAbbreviationWithPref() {
-        if (iPeriodPref==null) return getPeriodAbbreviation();
-        if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-            return
-                	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
-                    getPeriodAbbreviation()+
-                    "</span>";
-        } else {
-            return
-                	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtExamPeriodPreferencesHint(this,'" + getExamId() + "','" + getPeriodId() + "');\" onmouseout=\"hideGwtPeriodPreferencesHint();\">"+
-                    getPeriodAbbreviation()+
-                    "</span>";
-        }
-    }
-    
-    public String getDate(boolean pref) {
+    public String getDate() {
         if (getPeriod()==null) return "";
-        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sDateFormat.format(getPeriod().getStartDate());
-        return
-        "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-        sDateFormat.format(getPeriod().getStartDate())+
-        "</span>";
+        return sDateFormat.format(getPeriod().getStartDate());
     }
 
-    public String getTime(boolean pref) {
+    public String getTime() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int end = start + getLength();
-        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref))
-            return Constants.toTime(start)+" - "+Constants.toTime(end); 
-        return 
-            "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-            Constants.toTime(start)+" - "+Constants.toTime(end)+
-            "</span>";
+        return Constants.toTime(start)+" - "+Constants.toTime(end); 
     }
     
     public String getTimeFixedLength() {
@@ -368,29 +344,11 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     }
     
     public String getRoomsName(String delim) {
-        return getRoomsName(false, delim);
-    }
-
-    public String getRoomsNameWithPref(String delim) {
-        return getRoomsName(true, delim);
-    }
-    
-    public String getRoomsName(boolean pref, String delim) {
         if (getPeriod()==null) return "";
         String rooms = "";
         for (ExamRoomInfo room : getRooms()) {
             if (rooms.length()>0) rooms+=delim;
-            rooms += (pref?room.toString():room.getName());
-        }
-        return rooms;
-    }
-    
-    public String getRoomsNameWithHint(boolean pref, String delim) {
-        if (getPeriod()==null) return "";
-        String rooms = "";
-        for (ExamRoomInfo room : getRooms()) {
-            if (rooms.length()>0) rooms+=delim;
-            rooms += room.getNameWithHint(pref);
+            rooms += room.getName();
         }
         return rooms;
     }

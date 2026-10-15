@@ -20,11 +20,13 @@
 package org.unitime.timetable.server.solver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.client.page.SolverWarnings.SolverWarningsRequest;
 import org.unitime.timetable.gwt.client.page.SolverWarnings.SolverWarningsResponse;
@@ -33,14 +35,20 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -49,6 +57,7 @@ import org.unitime.timetable.solver.service.SolverService;
 @GwtRpcImplements(SolverWarningsRequest.class)
 public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarningsRequest, SolverWarningsResponse> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static CourseMessages CMSG = Localization.create(CourseMessages.class);
 
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
@@ -67,6 +76,8 @@ public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarning
 			return getExamAssignmentWarning(context, false);
 		case exam:
 			return getExamAssignmentWarning(context, false);
+		case locks:
+			return getOfferingLocksWarning(context);
 		}
 		return null;
 	}
@@ -201,6 +212,43 @@ public class SolverWarningsBackend implements GwtRpcImplementation<SolverWarning
 		} catch (Exception e) {}
 		
 		return null;
+	}
+	
+	public SolverWarningsResponse getOfferingLocksWarning(SessionContext context) {
+		UserContext user = context.getUser();
+		if (user == null || user.getCurrentAcademicSessionId() == null || !user.getCurrentAuthority().hasRight(Right.OfferingCanUnlock)) return null;
+		Session acadSession = SessionDAO.getInstance().get(user.getCurrentAcademicSessionId());
+		return getOfferingLocksWarning(context, acadSession);
+	}
+	
+	public SolverWarningsResponse getOfferingLocksWarning(SessionContext context, Session session) {
+		if (session == null || !session.getStatusType().canLockOfferings()) return null;
+		List<InstructionalOffering> lockedOfferings = new ArrayList<InstructionalOffering>();
+		if (session.getLockedOfferings() == null) return null;
+		for (Long offeringId: session.getLockedOfferings()) {
+			InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId);
+			if (io != null && context.hasPermission(io, Right.OfferingCanUnlock))
+				lockedOfferings.add(io);
+		}
+		if (lockedOfferings.isEmpty()) return null;
+		Collections.sort(lockedOfferings, new InstructionalOfferingComparator(null));
+		String course1 = null;
+		String course2 = null;
+		for (InstructionalOffering io: lockedOfferings) {
+			if (course1 == null) {
+				course1 = "<a href='offering?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
+			} else {
+				if (course2 != null) course1 += ", " + course2;
+				course2 = "<a href='offering?io=" + io.getUniqueId() + "'>" + io.getCourseName() + "</a>";
+			}
+		}
+		SolverWarningsResponse response = new SolverWarningsResponse();
+		response.setWarning(true);
+		if (course2 == null)
+			response.setMessage(CMSG.lockedCourse(course1));
+		else
+			response.setMessage(CMSG.lockedCourses(course1, course2));
+		return response;
 	}
 
 }

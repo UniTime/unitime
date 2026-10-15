@@ -189,8 +189,11 @@ public class Client implements EntryPoint {
 					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + p.name(MESSAGES));
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					
-					if (p.getSolverWarningType() != null) {
-						new SolverWarnings(RootPanel.get("UniTimeGWT:SolverWarnings"), p.getSolverWarningType());
+					RootPanel warns = RootPanel.get("UniTimeGWT:SolverWarnings");
+					if (warns != null) {
+						warns.add(SolverWarnings.createInstance(SolverWarnings.Type.locks));
+						if (p.getSolverWarningType() != null)
+							warns.add(SolverWarnings.createInstance(p.getSolverWarningType()));
 					}
 					return;
 				}

@@ -56,7 +56,7 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
  		
  		// no roles
  		if (user.getAuthorities().isEmpty()) {
- 			response.setUrl("main.action");
+ 			response.setUrl("main");
  			return response;
  		}
  		
@@ -70,7 +70,7 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
  	 	    		response.setUrl(request.getTarget());
  	 	    	} else {
  	 	    		// success 	    		
- 	 	    		response.setUrl("main.action");
+ 	 	    		response.setUrl("main");
  	 	    	}
  	 	    	return response;
  	    	}
@@ -83,7 +83,7 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
  	        		response.setUrl(request.getTarget());
  	 	    	} else {
  	 	    		// success 	    		
- 	 	    		response.setUrl("main.action");
+ 	 	    		response.setUrl("main");
  	 	    	}
  			}
  		}
@@ -99,7 +99,7 @@ public class SelectUserRoleBackend implements GwtRpcImplementation<SelectUserRol
         		response.setUrl(request.getTarget());
  	    	} else {
  	    		// success 	    		
- 	    		response.setUrl("main.action");
+ 	    		response.setUrl("main");
  	    	}
         }
         

@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver.exam.ui;
 
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,9 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-
-import jakarta.servlet.jsp.JspWriter;
-
 
 import org.cpsolver.exam.model.Exam;
 import org.cpsolver.exam.model.ExamDistributionConstraint;
@@ -53,7 +49,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.solver.ui.TimetableInfo;
-import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 /**
  * @author Tomas Muller
@@ -528,144 +523,6 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
         return ret;
     }
     
-    //--------- toHtml -------------------------------------------------
-    private static String IMG_BASE = "images/";
-    private static String IMG_EXPAND = IMG_BASE+"expand_node_btn.gif";
-    private static String IMG_COLLAPSE = IMG_BASE+"collapse_node_btn.gif";
-    private static String IMG_LEAF = IMG_BASE+"end_node_btn.gif";
-    
-    public static int TYPE_VARIABLE_BASED = 0;
-    public static int TYPE_CONSTRAINT_BASED = 1;
-    
-    private void menu_item(PrintWriter out, String id, String name, String description, String page, boolean isCollapsed) {
-        out.println("<div style=\"margin-left:5px;\">");
-        out.println("<A style=\"border:0;background:0\" id=\"__idMenu"+id+"\" href=\"javascript:toggle('"+id+"')\" name=\""+name+"\">");
-        out.println("<img id=\"__idMenuImg"+id+"\" border=\"0\" src=\""+(isCollapsed ? IMG_EXPAND : IMG_COLLAPSE)+"\" align=\"absmiddle\"></A>");
-        out.println("&nbsp;<A class='noFancyLinks' target=\"__idContentFrame\" "+(page == null ? "" : page+" onmouseover=\"this.style.cursor='hand';this.style.cursor='pointer';\" ")+"title=\""+(description == null ? "" : description)+"\" >"+ name+(description == null?"":" <font color='#646464'>[" + description + "]</font>")+"</A><br>");
-        out.println("</div>");
-        out.println("<div ID=\"__idMenuDiv"+id+"\" style=\"display:"+(isCollapsed ? "none" : "block")+";position:relative;margin-left:18px;\">");
-    }
-    
-    private void leaf_item(PrintWriter out, String name, String description, String page) {
-        out.println("<div style=\"margin-left:5px;\">");
-        out.println("<img border=\"0\" src=\""+IMG_LEAF+"\" align=\"absmiddle\">");
-        out.println("&nbsp;<A class='noFancyLinks' target=\"__idContentFrame\" "+(page == null ? "" : page + " onmouseover=\"this.style.cursor='hand';this.style.cursor='pointer';\" ")+"title=\""+(description == null ? "" : description)+"\" >"+name+(description == null ? "" : " <font color='#646464'>[" + description + "]</font>")+"</A><br>");
-        out.println("</div>");
-    }
-    
-    private void end_item(PrintWriter out) {
-        out.println("</div>");
-    }
-    
-    private void unassignedVariableMenuItem(PrintWriter out, String menuId, CBSVariable variable, boolean clickable) {
-    	String name = 
-    		"<font color='"+PreferenceLevel.prolog2color(variable.getPref())+"'>"+
-    		variable.getName()+
-    		"</font>";
-    	String description = null;
-    	String onClick = null;
-    	if (clickable)
-    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.action?examId="+variable.getId()+"&op=Reset','900','90%');\"";
-    	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
-    }
-    
-    private void unassignmentMenuItem(PrintWriter out, String menuId, CBSValue value, boolean clickable) {
-    	String name = 
-    		"<font color='"+PreferenceLevel.int2color(value.getPeriodPref())+"'>"+
-    		value.getPeriodName()+
-    		"</font> ";
-    	String roomLink = "";
-    	for (int i=0;i<value.getRoomIds().size();i++) {
-    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)value.getRoomPrefs().get(i)).intValue())+"'>"+ value.getRoomNames().get(i)+"</font>";
-    		roomLink += (i>0?":":"")+value.getRoomIds().get(i);
-    	}
-    	String description = null;
-    	String onClick = null;
-    	if (clickable)
-    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.action?examId="+value.variable().getId()+"&period="+value.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";	
-        menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
-    }
-    
-    private void constraintMenuItem(PrintWriter out, String menuId, CBSConstraint constraint, boolean clickable) {
-    	String name = "<font color='"+PreferenceLevel.prolog2color(constraint.getPref())+"'>";
-    	String link = null;
-    	switch (constraint.getType()) {
-    		case sConstraintTypeGroup :
-    			name += "Distribution "+constraint.getName();
-    			break;
-    		case sConstraintTypeInstructor :
-    			name += "Instructor "+constraint.getName();
-    			if (clickable) link = "examGrid.action?filter="+constraint.getName()+"&resource="+ExamGridTable.Resource.Instructor.ordinal()+"&op=Cbs";
-    			break;
-    		case sConstraintTypeRoom :
-    			name += "Room "+constraint.getName();
-    			if (clickable) link = "examGrid.action?filter="+constraint.getName()+"&resource="+ExamGridTable.Resource.Room.ordinal()+"&op=Cbs";
-    			break;
-            case sConstraintTypeStudent :
-                name += "Student "+constraint.getName();
-                break;
-    		default :
-    			name += (constraint.getName()==null?"Unknown":constraint.getName());
-    	}
-    	name += "</font>";
-    	String description = null;
-    	String onClick = null;
-    	if (link!=null)
-    		onClick = "href=\""+link+"\"";
-        menu_item(out, menuId, constraint.getCounter() + "&times; " + name, description, onClick, true);
-    }
-    
-    private void assignmentLeafItem(PrintWriter out, CBSAssignment assignment, boolean clickable) {
-    	String name = 
-    		"<font color='"+PreferenceLevel.prolog2color(assignment.getPref())+"'>"+
-    		assignment.getName()+
-    		"</font> &larr; "+
-    		"<font color='"+PreferenceLevel.int2color(assignment.getPeriodPref())+"'>"+
-    		assignment.getPeriodName()+
-    		"</font> ";
-    	String roomLink = "";
-    	for (int i=0;i<assignment.getRoomIds().size();i++) {
-    		name += (i>0?", ":"")+"<font color='"+PreferenceLevel.int2color(((Integer)assignment.getRoomPrefs().get(i)).intValue())+"'>"+ assignment.getRoomNames().get(i)+"</font>";
-    		roomLink += (i>0?":":"")+assignment.getRoomIds().get(i);
-    	}
-    	String onClick = null;
-    	if (clickable)
-    	    onClick = "onclick=\"(parent ? parent : window).showGwtDialog('" + MSG.dialogExamAssign() + "', 'examInfo.action?examId="+assignment.getId()+"&period="+assignment.getPeriodId()+"&room="+roomLink+"&op=Try&reset=1','900','90%');\"";
-        leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
-    }
-    
-    public static void printHtmlHeader(JspWriter jsp) {
-    	PrintWriter out = new PrintWriter(jsp);
-    	printHtmlHeader(out, false);
-    }
-    
-    public static void printHtmlHeader(PrintWriter out, boolean style) {
-    	if (style) {
-    		out.println("<style type=\"text/css\">");
-    		out.println("<!--");
-    		out.println("A:link     { color: blue; text-decoration: none; border:0; background:0; }");
-    		out.println("A:visited  { color: blue; text-decoration: none; border:0; background:0; }");
-    		out.println("A:active   { color: blue; text-decoration: none; border:0; background:0; }");
-    		out.println("A:hover    { color: blue; text-decoration: none; border:0; background:0; }");
-    		out.println(".TextBody  { background-color: white; color:black; font-size: 12px; }");
-    		out.println(".WelcomeHead { color: black; margin-top: 0px; margin-left: 0px; font-weight: bold; text-align: right; font-size: 30px; font-family: Comic Sans MS}");
-    		out.println("-->");
-    		out.println("</style>");
-    		out.println();
-    	}
-        out.println("<script language=\"javascript\" type=\"text/javascript\">");
-        out.println("function toggle(item) {");
-        out.println("	obj=document.getElementById(\"__idMenuDiv\"+item);");
-        out.println("	visible=(obj.style.display!=\"none\");");
-        out.println("	img=document.getElementById(\"__idMenuImg\" + item);");
-        out.println("	menu=document.getElementById(\"__idMenu\" + item);");
-        out.println("	if (visible) {obj.style.display=\"none\";img.src=\""+IMG_EXPAND+"\";}");
-        out.println("	else {obj.style.display=\"block\";img.src=\""+IMG_COLLAPSE+"\";}");
-        out.println("}");
-        out.println("</script>");
-        out.flush();
-    }
-    
     public static <E extends Counter> List<E> filter(Collection<E> counters, double limit) {
     	List<E> cnt = new ArrayList<E>(counters);
     	Collections.sort(cnt);
@@ -685,149 +542,6 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
     	}
     	
     	return ret;
-    }
-    
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(JspWriter jsp, double limit, int type, boolean clickable) {
-    	printHtml(jsp, null, new double[] {limit,limit,limit,limit}, type, clickable);
-    }
-
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(PrintWriter out, double limit, int type, boolean clickable) {
-    	printHtml(out, null, new double[] {limit,limit,limit,limit}, type, clickable);
-    }
-
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(JspWriter jsp, double[] limit, int type, boolean clickable) {
-    	printHtml(jsp, null, limit, type, clickable);
-    }
-    
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(PrintWriter out, double[] limit, int type, boolean clickable) {
-    	printHtml(out, null, limit, type, clickable);
-    }
-
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(JspWriter jsp, Long classId, double limit, int type, boolean clickable) {
-    	printHtml(jsp, classId, new double[] {limit,limit,limit,limit}, type, clickable);
-    }
-    
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(PrintWriter out, Long classId, double limit, int type, boolean clickable) {
-    	printHtml(out, classId, new double[] {limit,limit,limit,limit}, type, clickable);
-    }
-
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(JspWriter jsp, Long classId, double[] limit, int type, boolean clickable) {
-    	PrintWriter out = new PrintWriter(jsp);
-    	printHtml(out, classId, limit, type, clickable);
-    }
-    
-    /** Print conflict-based statistics in HTML format */
-    public void printHtml(PrintWriter out, Long classId, double[] limit, int type, boolean clickable) {
-        if (type == TYPE_VARIABLE_BASED) {
-        	List vars = filter(iVariables.values(), limit[0]);
-        	if (classId!=null) {
-        		CBSVariable var = (CBSVariable)iVariables.get(classId);
-        		vars.clear(); 
-        		if (var!=null) vars.add(var);
-        	}
-            for (Iterator e1 = vars.iterator(); e1.hasNext();) {
-            	CBSVariable variable = (CBSVariable)e1.next();
-            	String m1 = String.valueOf(variable.getId());
-            	if (classId==null)
-            		unassignedVariableMenuItem(out,m1,variable, clickable);
-            	List vals = filter(variable.values(), limit[1]);
-            	int id = 0;
-            	for (Iterator e2 = vals.iterator();e2.hasNext();) {
-            		CBSValue value = (CBSValue)e2.next();
-            		String m2 = m1+"."+(id++);
-                    unassignmentMenuItem(out,m2,value, clickable);
-                    List constraints =filter(value.constraints(),limit[2]);
-                    for (Iterator e3 = constraints.iterator(); e3.hasNext();) {
-                    	CBSConstraint constraint = (CBSConstraint)e3.next();
-                    	String m3 = m2 + constraint.getType()+"."+constraint.getId();
-                    	constraintMenuItem(out,m3,constraint, clickable);
-                    	List assignments = filter(constraint.assignments(),limit[3]);
-                    	for (Iterator e4 = assignments.iterator();e4.hasNext();) {
-                    		CBSAssignment assignment = (CBSAssignment)e4.next();
-                    		assignmentLeafItem(out, assignment, clickable);
-                        }
-                        end_item(out);
-                    }
-                    end_item(out);
-                }
-                end_item(out);
-            }
-        } else if (type == TYPE_CONSTRAINT_BASED) {
-        	Hashtable constraints = new Hashtable();
-        	for (CBSVariable variable: iVariables.values()) {
-            	if (classId!=null && classId.longValue()!=variable.getId())
-            		continue;
-            	for (Iterator e2=variable.values().iterator();e2.hasNext();) {
-            		CBSValue value = (CBSValue)e2.next();
-            		for (Iterator e3=value.constraints().iterator();e3.hasNext();) {
-            			CBSConstraint constraint = (CBSConstraint)e3.next();
-            			CBSConstraint xConstraint = (CBSConstraint)constraints.get(constraint.getType()+"."+constraint.getId());
-            			if (xConstraint==null) {
-            				xConstraint = new CBSConstraint(constraint.getType(),constraint.getId(),constraint.getName(),constraint.getPref());
-            				constraints.put(constraint.getType()+"."+constraint.getId(),xConstraint);
-            			}
-            			CBSVariable xVariable = null;
-            			for (Iterator i=xConstraint.variables().iterator();i.hasNext();) {
-            				CBSVariable v = (CBSVariable)i.next();
-            				if (v.getId()==variable.getId()) {
-            					xVariable = v; break;
-            				}
-            			}
-            			if (xVariable==null) {
-            				xVariable = new CBSVariable(xConstraint,variable.getId(),variable.getName(),variable.getPref()); 
-            				xConstraint.variables().add(xVariable);
-            			}
-            			CBSValue xValue = new CBSValue(xVariable,
-            			        value.getPeriodId(), value.getPeriodName(), value.getPeriodPref(), 
-            			        value.getRoomIds(), value.getRoomNames(), value.getRoomPrefs());
-            			xVariable.values().add(xValue);
-            			for (Iterator e4=constraint.assignments().iterator();e4.hasNext();) {
-            				CBSAssignment assignment = (CBSAssignment)e4.next();
-            				xValue.assignments().add(assignment);
-            				xValue.incCounter(assignment.getCounter());
-            			}
-            		}
-            	}
-            }
-        	List consts = filter(constraints.values(), limit[0]);
-            for (Iterator e1 = consts.iterator(); e1.hasNext();) {
-            	CBSConstraint constraint = (CBSConstraint)e1.next();
-            	String m1 = constraint.getType()+"."+constraint.getId();
-            	constraintMenuItem(out,m1,constraint, clickable);
-            	List variables = filter(constraint.variables(), limit[1]);
-            	Collections.sort(variables);
-                for (Iterator e2 = variables.iterator(); e2.hasNext();) {
-                	CBSVariable variable = (CBSVariable)e2.next();
-                	String m2 = m1+"."+variable.getId();
-                	if (classId==null)
-                		unassignedVariableMenuItem(out,m2,variable, clickable);
-                	List vals = filter(variable.values(), limit[2]);
-                	int id = 0;
-                	for (Iterator e3 = vals.iterator();e3.hasNext();) {
-                		CBSValue value = (CBSValue)e3.next();
-                		String m3 = m2+"."+(id++);
-                		unassignmentMenuItem(out,m3,value, clickable);
-                		List assignments = filter(value.assignments(), limit[3]);
-                    	for (Iterator e4 = assignments.iterator();e4.hasNext();) {
-                    		CBSAssignment assignment = (CBSAssignment)e4.next();
-                    		assignmentLeafItem(out, assignment, clickable);
-                        }
-                        end_item(out);
-                    }
-                	if (classId==null)
-                		end_item(out);
-                }
-                end_item(out);
-            }
-        }
-        out.flush();
     }
 
 	public boolean saveToFile() {

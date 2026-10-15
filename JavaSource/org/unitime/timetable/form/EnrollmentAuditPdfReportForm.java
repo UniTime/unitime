@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.form;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.EnrollmentsViolatingCourseStructureAuditReport;
@@ -44,7 +44,7 @@ import org.unitime.timetable.util.ComboBoxLookup;
 /*
  * @author Stephanie Schluttenhofer, Tomas Muller
  */
-public class EnrollmentAuditPdfReportForm implements UniTimeForm {
+public class EnrollmentAuditPdfReportForm implements Serializable {
 	private static final long serialVersionUID = -4537752846296511516L;
 	protected static Log sLog = LogFactory.getLog(EnrollmentAuditPdfReportForm.class);
 	protected static final ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
@@ -93,29 +93,6 @@ public class EnrollmentAuditPdfReportForm implements UniTimeForm {
     	default:
     		return report.name();
     	}
-    }
-    
-    @Override
-    public void validate(UniTimeAction action) {
-        if (iReports==null || iReports.length==0)
-            action.addFieldError("reports", MSG.errorNoReportSelected());
-        if (!iAll && (iSubjects==null || iSubjects.length==0))
-            action.addFieldError("reports", MSG.errorNoSubjectAreaSelected());
-    }
-
-    @Override
-    public void reset() {
-    	iOp = null;
-        iReports = null;
-        iMode = getModes().get(0).getValue();
-        iAll = false;
-        iEmail = false;
-        iExternalId = false;
-        iStudentName = false;
-        iAddr = null; iCc = null; iBcc = null; 
-        iSubject = MSG.subjectEnrollmentAuditReport();
-        iMessage = null;
-        iReport = null;
     }
     
     public void load(SessionContext context) {

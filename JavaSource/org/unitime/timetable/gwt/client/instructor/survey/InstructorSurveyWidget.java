@@ -391,7 +391,7 @@ public class InstructorSurveyWidget extends Composite {
 			@Override
 			public void onMouseClick(TableEvent<Course> event) {
 				if (event.getData() != null && event.getData().getId() != null)
-					ToolBox.open("instructionalOfferingDetail.action?op=view&co=" + event.getData().getId());
+					ToolBox.open("offering?op=view&co=" + event.getData().getId());
 			}
 		});
 		if (courses.getRowCount() > 1)

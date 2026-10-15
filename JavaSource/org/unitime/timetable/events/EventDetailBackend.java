@@ -227,7 +227,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 			related.setNote(note);
 			if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-				related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
+				related.setDetailPage("clazz?cid=" + clazz.getUniqueId());
 
     		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
     		related.addCourseId(courseOffering.getUniqueId());
@@ -346,7 +346,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.setInstructionType(xe.getExam().getExamType().getType());
     		related.setSectionNumber(xe.getExam().getLength().toString());
 			if (context != null && context.hasPermission(xe.getExam(), Right.ExaminationDetail))
-				related.setDetailPage("examDetail.action?examId=" + xe.getExam().getUniqueId());
+				related.setDetailPage("examination?examId=" + xe.getExam().getUniqueId());
     		if (xe.getExam().getAssignedPeriod() != null) {
     			ExamPeriod period = xe.getExam().getAssignedPeriod();
     			related.setDate(period.getStartDateLabel());
@@ -390,7 +390,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.addCourseName(owner.getCourse().getCourseName());
 				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
-					related.setDetailPage("instructionalOfferingDetail.action?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
+					related.setDetailPage("offering?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
 					related.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -433,7 +433,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    			}
 		    		}
 					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-						related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
+						related.setDetailPage("clazz?cid=" + clazz.getUniqueId());
 					if (clazz.getDisplayInstructor()) {
 		    			for (ClassInstructor i: clazz.getClassInstructors()) {
 		    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
@@ -506,7 +506,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setName(owner.getLabel());
 				related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId()});
 				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
-					related.setDetailPage("instructionalOfferingDetail.action?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
+					related.setDetailPage("offering?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
 					related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId(), clazz.getSchedulingSubpart().getUniqueId(), clazz.getUniqueId()});
@@ -550,7 +550,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    			}
 		    		}
 					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-						related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
+						related.setDetailPage("clazz?cid=" + clazz.getUniqueId());
 					if (clazz.getDisplayInstructor()) {
 		    			for (ClassInstructor i: clazz.getClassInstructors()) {
 		    				if (i.getResponsibility() != null && i.getResponsibility().hasOption(TeachingResponsibility.Option.noevents)) continue;
@@ -1102,7 +1102,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 		related.setNote(note);
 		if (context != null && context.hasPermission(clazz, Right.ClassDetail))
-			related.setDetailPage("classDetail.action?cid=" + clazz.getUniqueId());
+			related.setDetailPage("clazz?cid=" + clazz.getUniqueId());
 
 		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 		related.addCourseId(courseOffering.getUniqueId());

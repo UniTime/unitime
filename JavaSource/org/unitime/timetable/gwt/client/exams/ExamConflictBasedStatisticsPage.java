@@ -210,10 +210,10 @@ public class ExamConflictBasedStatisticsPage extends Composite {
 					if (node.hasLink()) {
 						ToolBox.open(GWT.getHostPageBaseURL() + node.getLink());
 					} else if (node.hasClassId()) {
-						UniTimeFrameDialog.openDialog(XMSG.dialogExamAssign(), "examInfo.action?menu=hide&examId=" + node.getClassId(), "900", "85%");
+						UniTimeFrameDialog.openDialog(XMSG.dialogExamAssign(), "examAssignment?menu=hide&examId=" + node.getClassId(), "900", "85%");
 					} else if (node.hasSelection()) {
 						SelectedAssignment selection = node.getSelection();
-						UniTimeFrameDialog.openDialog(XMSG.dialogExamAssign(), "examInfo.action?menu=hide&examId=" + selection.getClassId()
+						UniTimeFrameDialog.openDialog(XMSG.dialogExamAssign(), "examAssignment?menu=hide&examId=" + selection.getClassId()
 							+ "&period=" + selection.getPatternId() + "&room=" + selection.getRoomIds(":") + "&op=Try&reset=1", "900", "85%");
 					}
 				}

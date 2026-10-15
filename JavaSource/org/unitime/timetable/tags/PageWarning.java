@@ -23,7 +23,6 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.jsp.tagext.TagSupport;
 
-import org.apache.struts2.ServletActionContext;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.security.SessionContext;
@@ -84,11 +83,6 @@ public class PageWarning extends TagSupport {
 					}
 				}
 				String warning = ApplicationProperties.getProperty(getPrefix() + page);
-				if (warning != null && !warning.isEmpty()) return warning;
-			}
-			if (ServletActionContext.getActionContext() != null) {
-				String action = ServletActionContext.getActionMapping().getName();
-				String warning = ApplicationProperties.getProperty(getPrefix() + action);
 				if (warning != null && !warning.isEmpty()) return warning;
 			}
 		}

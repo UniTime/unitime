@@ -29,8 +29,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 
 import java.text.SimpleDateFormat;
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -428,50 +426,6 @@ public class DatePattern extends BaseDatePattern implements Comparable<DatePatte
 			sb.append("]");
 		}
 		sb.append("]");
-		return sb.toString();
-	}
-	
-	@Transient
-	public String getPatternHtml() {
-		return getPatternHtml(true, null);
-	}
-	
-	public String getPatternHtml(boolean editable) {
-		return getPatternHtml(editable, null);
-	}
-    
-    public String getPatternHtml(boolean editable, Long uniqueId) {
-        return getPatternHtml(editable, uniqueId, true);
-    }
-    
-	public String getPatternHtml(boolean editable, Long uniqueId, boolean includeScript) {
-		StringBuffer sb = new StringBuffer(); 
-        if (includeScript)
-            sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
-		sb.append("<script language='JavaScript'>\n");
-		sb.append("var CAL_WEEKDAYS = [");
-		for (int i = 0; i < 7; i++) {
-			if (i > 0) sb.append(", ");
-			sb.append("\"" + CONS.days()[(i + 6) % 7] + "\"");
-		}
-		sb.append("];\n");
-		sb.append("var CAL_MONTHS = [");
-		for (int i = 0; i < 12; i++) {
-			if (i > 0) sb.append(", ");
-			sb.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
-		}
-		sb.append("];\n");
-		sb.append(
-			"calGenerate2("+getSession().getSessionStartYear()+",\n\t"+
-				(getSession().getPatternStartMonth()) +",\n\t"+
-				(getSession().getPatternEndMonth())+",\n\t"+
-				getPatternArray()+",\n\t"+
-				"['1','0'],\n\t" +
-				"['" + MSG.legendClassesOffered() + "','" + MSG.legendClassesNotOffered() + "'],\n\t" +
-				"['rgb(240,240,50)','rgb(240,240,240)'],\n\t" +
-				"'1',\n\t" +
-				getBorderArray(uniqueId)+","+getSession().getColorArray()+","+editable+","+editable+");\n");
-		sb.append("</script>\n");
 		return sb.toString();
 	}
 	

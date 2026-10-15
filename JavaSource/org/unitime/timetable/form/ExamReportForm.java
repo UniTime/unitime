@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.form;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +27,6 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ConstantsMessages;
-import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -37,7 +37,7 @@ import org.unitime.timetable.util.IdValue;
 /** 
  * @author Tomas Muller
  */
-public class ExamReportForm implements UniTimeForm {
+public class ExamReportForm implements Serializable {
 	private static final long serialVersionUID = -8009733200124355056L;
 	protected static final ConstantsMessages CONST = Localization.create(ConstantsMessages.class);
 
@@ -49,18 +49,6 @@ public class ExamReportForm implements UniTimeForm {
 	private int iNrColumns;
 	private int iNrRows;
 	private Long iExamType;
-
-	@Override
-	public void validate(UniTimeAction action) {}
-
-	@Override
-	public void reset() {
-		iOp = null;
-		iShowSections = false;
-		iTable = null;
-		iNrRows = iNrColumns = 0;
-		iExamType = null;
-	}
 	
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }

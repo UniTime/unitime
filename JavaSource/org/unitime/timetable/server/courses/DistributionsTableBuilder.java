@@ -317,13 +317,10 @@ public class DistributionsTableBuilder extends TableBuilder {
             
             if (pg instanceof DepartmentalInstructor) {
             	if (getSessionContext().hasPermission(pg, Right.InstructorDetail))
-            		line.setURL("instructorDetail.action?instructorId=" + dp.getOwner().getUniqueId() + "&op=Show%20Instructor%20Preferences");
+            		line.setURL("instructor?instructorId=" + dp.getOwner().getUniqueId() + "&op=Show%20Instructor%20Preferences");
             } else {
             	if (getSessionContext().hasPermission(dp, Right.DistributionPreferenceEdit)) {
-            		if (ApplicationProperty.LegacyDistributions.isTrue())
-            			line.setURL("distributionPrefs.action?dp=" + dp.getUniqueId() + "&op=view");
-            		else
-            			line.setURL("distributionEdit?id=" + dp.getUniqueId());
+            		line.setURL("distributionEdit?id=" + dp.getUniqueId());
             	}
             }
             
@@ -468,10 +465,7 @@ public class DistributionsTableBuilder extends TableBuilder {
             LineInterface line = table.addLine();
 
             if (getSessionContext().hasPermission(dp, Right.ExaminationDistributionPreferenceEdit))
-            	line.setURL(ApplicationProperty.LegacyExamDistributions.isTrue() ? 
-            			"examDistributionPrefs.action?dp=" + dp.getUniqueId() + "&op=view" :
-            			"examDistributionEdit?id=" + dp.getUniqueId()
-            			);
+            	line.setURL("examDistributionEdit?id=" + dp.getUniqueId());
             
             if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
             if (isUsePrefStyles()) {

@@ -29,7 +29,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,7 +45,6 @@ import org.joda.time.Minutes;
 import org.joda.time.Months;
 import org.joda.time.ReadablePeriod;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.base.BaseQueryLog;
@@ -89,81 +87,6 @@ public class QueryLog extends BaseQueryLog {
 				setParameter("date", c.getTime()).uniqueResult()).intValue();
 	}
 
-	public static WebTable getTopQueries(int days) {
-		Calendar c = Calendar.getInstance(Locale.US);
-		c.setTime(new Date());
-		c.add(Calendar.DAY_OF_YEAR, -days);
-		WebTable table = new WebTable(8, MSG.sectPageStatistics(days), "stats.action?ord=%%",
-				new String[] {
-						MSG.columnQueryLogURI(),
-						MSG.columnQueryLogCalls(),
-						MSG.columnQueryLogCallsOver10ms(),
-						MSG.columnQueryLogCallsOver100ms(),
-						MSG.columnQueryLogCallsOver1min(),
-						MSG.columnQueryLogAverageTime(),
-						MSG.columnQueryLogMaxTime(),
-						MSG.columnQueryLogErrors()},
-				new String[] {"left", "right", "right", "right", "right", "right", "right", "right"},
-				new boolean[] {true, false, false, false, false, false, false, false});
-		DecimalFormat df = new DecimalFormat("#,##0.00");
-		HashMap<String, Integer> errors = new HashMap<String, Integer>();
-		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
-				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.exception is not null group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
-			errors.put((String)o[0],((Number)o[1]).intValue());
-		}
-		HashMap<String, Integer> overMinutes = new HashMap<String, Integer>();
-		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
-				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 1000 group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
-			overMinutes.put((String)o[0],((Number)o[1]).intValue());
-		}
-		HashMap<String, Integer> over100mss = new HashMap<String, Integer>();
-		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
-				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 100 group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
-			over100mss.put((String)o[0],((Number)o[1]).intValue());
-		}
-		HashMap<String, Integer> over10mss = new HashMap<String, Integer>();
-		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
-				"select q.uri, count(q) from "+
-				"QueryLog q where q.timeStamp > :date and q.timeSpent > 10 group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
-			over10mss.put((String)o[0],((Number)o[1]).intValue());
-		}
-
-		for (Object[] o: QueryLogDAO.getInstance().getSession().createQuery(
-				"select q.uri, count(q), avg(q.timeSpent), max(q.timeSpent) from "+
-				"QueryLog q where q.timeStamp > :date group by q.uri", Object[].class).setParameter("date", c.getTime()).list()) {
-			Integer nrErrors = errors.get((String)o[0]);
-			if (nrErrors == null) nrErrors = 0;
-			Integer overMinute = overMinutes.get((String)o[0]);
-			if (overMinute == null) overMinute = 0;
-			Integer over100ms = over100mss.get((String)o[0]);
-			if (over100ms == null) over100ms = 0;
-			Integer over10ms = over10mss.get((String)o[0]);
-			if (over10ms == null) over10ms = 0;
-			table.addLine(new String[] {
-					(String)o[0],
-					((Number)o[1]).toString(),
-					over10ms.toString(),
-					over100ms.toString(),
-					overMinute.toString(),
-					df.format(((Number)o[2]).doubleValue()),
-					df.format(((Number)o[3]).doubleValue() / 1000.0),
-					nrErrors.toString()},
-					new Comparable[] {
-						(String)o[0],
-						((Number)o[1]).intValue(),
-						over10ms,
-						over100ms,
-						overMinute,
-						((Number)o[2]).doubleValue(),
-						((Number)o[3]).doubleValue(),
-						nrErrors});
-		}
-		return table;
-	}
-	
 	public static enum ChartBaseUnit {
 		Minute,
 		Hour,

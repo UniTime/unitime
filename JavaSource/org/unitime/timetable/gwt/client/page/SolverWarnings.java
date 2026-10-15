@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.client.page;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -37,41 +40,84 @@ import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.google.gwt.user.client.ui.RootPanel;
 
 public class SolverWarnings extends P {
 	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	protected static final GwtMessages MSG = GWT.create(GwtMessages.class);
+	private Type iType;
+	private String iUrl;
+	private static Map<Type, SolverWarnings> sInstances = null;
 	
-	public SolverWarnings(final RootPanel panel, Type type) {
-		RPC.execute(new SolverWarningsRequest(type), new AsyncCallback<SolverWarningsResponse>() {
+	private SolverWarnings(Type type) {
+		iType = type;
+		addMouseOverHandler(new MouseOverHandler() {
+			@Override
+			public void onMouseOver(MouseOverEvent e) {
+				if (iUrl != null && !iUrl.isEmpty())
+					getElement().getStyle().setBackgroundColor("#BBCDD0");
+			}
+		});
+		addMouseOutHandler(new MouseOutHandler() {
+			@Override
+			public void onMouseOut(MouseOutEvent e) {
+				if (iUrl != null && !iUrl.isEmpty())
+					getElement().getStyle().clearBackgroundColor();
+			}
+		});
+		addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent c) {
+				if (iUrl != null && !iUrl.isEmpty())
+					ToolBox.open(GWT.getHostPageBaseURL() + iUrl);
+			}
+		});
+		refreshWarnings();
+	}
+	
+	public static SolverWarnings createInstance(Type type) {
+		if (sInstances == null)
+			 sInstances = new HashMap<Type, SolverWarnings>();
+		SolverWarnings instance = new SolverWarnings(type);
+		sInstances.put(type, instance);
+		return instance;
+	}
+	
+	public static void refresh(Type type) {
+		SolverWarnings instance = (sInstances == null ? null : sInstances.get(type));
+		if (instance != null)
+			instance.refreshWarnings();
+	}
+	
+	public static void refresh() {
+		if (sInstances != null)
+			for (SolverWarnings instance: sInstances.values())
+				instance.refreshWarnings();
+	}
+	
+	protected void setUrl(String url) {
+		iUrl = url;
+		if (iUrl != null && !iUrl.isEmpty())
+			getElement().getStyle().setCursor(Cursor.POINTER);
+		else
+			getElement().getStyle().clearCursor();
+	}
+	
+	protected void setMessage(String message) {
+		setHTML(message == null ? "" : message);
+		setVisible(message != null && !message.isEmpty());
+	}
+	
+	private void refreshWarnings() {
+		RPC.execute(new SolverWarningsRequest(iType), new AsyncCallback<SolverWarningsResponse>() {
 			@Override
 			public void onSuccess(final SolverWarningsResponse response) {
-				if (response == null || !response.hasMessage()) return;
-				final P p = new P(response.isWarning() ? "unitime-PageWarn" : "unitime-PageMessage");
-				if (response.hasUrl()) {
-					p.addMouseOverHandler(new MouseOverHandler() {
-						@Override
-						public void onMouseOver(MouseOverEvent e) {
-							p.getElement().getStyle().setBackgroundColor("#BBCDD0");
-						}
-					});
-					p.addMouseOutHandler(new MouseOutHandler() {
-						@Override
-						public void onMouseOut(MouseOutEvent e) {
-							p.getElement().getStyle().clearBackgroundColor();
-						}
-					});
-					p.addClickHandler(new ClickHandler() {
-						@Override
-						public void onClick(ClickEvent c) {
-							ToolBox.open(GWT.getHostPageBaseURL() + response.getUrl());
-						}
-					});
-					p.getElement().getStyle().setCursor(Cursor.POINTER);
+				if (response == null || !response.hasMessage()) {
+					setMessage(null); setUrl(null);
+					return;
 				}
-				p.setHTML(response.getMessage());
-				panel.add(p);
+				setStyleName(response.isWarning() ? "unitime-PageWarn" : "unitime-PageMessage");
+				setUrl(response.getUrl());
+				setMessage(response.getMessage());
 			}
 			
 			@Override
@@ -80,7 +126,6 @@ public class SolverWarnings extends P {
 			}
 		});
 	}
-	
 
 	public static class SolverWarningsRequest implements GwtRpcRequest<SolverWarningsResponse> {
 		private Type iType;
@@ -121,6 +166,7 @@ public class SolverWarnings extends P {
 	public static enum Type implements IsSerializable {
 		solver,
 		assignments,
-		exam
+		exam,
+		locks
 	}
 }

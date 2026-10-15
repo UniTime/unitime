@@ -135,8 +135,8 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 		    		conf.setName(other.getExamName());
 	    			conf.setType("Direct");
 	    			conf.setDate(getDateFormat().format(other.getPeriod().getStartDate()));
-	    			conf.setTime(other.getTime(false));
-	    			conf.setRoom(other.getRoomsName(false, ", "));
+	    			conf.setTime(other.getTime());
+	    			conf.setRoom(other.getRoomsName(", "));
 	    			conf.setStyle("dc");
 					
 					for (Long studentId: conflict.getStudents()) {
@@ -153,8 +153,8 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 			    		conf.setName(other.getExamName());
 						conf.setType("Back-To-Back");
 						conf.setDate(getDateFormat().format(other.getPeriod().getStartDate()));
-						conf.setTime(other.getTime(false));
-						conf.setRoom(other.getRoomsName(false, ", "));
+						conf.setTime(other.getTime());
+						conf.setRoom(other.getRoomsName(", "));
 						conf.setStyle("b2b");
 						
 						for (Long studentId: conflict.getStudents()) {
@@ -170,13 +170,13 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 		    			if (name == null) {
 		    				name = other.getExamName();
 		    				date = getDateFormat().format(other.getPeriod().getStartDate());
-		    				time = other.getTime(false);
-		    				room = other.getRoomsName(false, ", ");
+		    				time = other.getTime();
+		    				room = other.getRoomsName(", ");
 		    			} else {
 		    				name += "<br>" + other.getExamName();
 		    				date += "<br>" + getDateFormat().format(other.getPeriod().getStartDate());
-		    				time += "<br>" + other.getTime(false);
-		    				room += "<br>" + other.getRoomsName(false, ", ");
+		    				time += "<br>" + other.getTime();
+		    				room += "<br>" + other.getRoomsName(", ");
 		    			}
 		    		}
 		    		
