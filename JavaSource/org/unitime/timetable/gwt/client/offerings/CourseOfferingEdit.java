@@ -825,7 +825,7 @@ public class CourseOfferingEdit extends Composite {
 		if (iIsEdit) {
 			Long instructionalOfferingId = null;
 			instructionalOfferingId = iCourseOffering.getInstrOfferingId();
-			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + instructionalOfferingId);
+			ToolBox.open(GWT.getHostPageBaseURL() + "offering?op=view&io=" + instructionalOfferingId);
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingSearch.action");
 		}
@@ -883,7 +883,7 @@ public class CourseOfferingEdit extends Composite {
 	}
 	
 	protected void afterSaveOrUpdate(Long instructionalOfferingId) {
-		ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + instructionalOfferingId);
+		ToolBox.open(GWT.getHostPageBaseURL() + "offering?op=view&io=" + instructionalOfferingId);
 	}
 	
 	public void constructInstructorsTable(int addRows) {
@@ -1191,7 +1191,7 @@ public class CourseOfferingEdit extends Composite {
 					if (result.getCourseOfferingMustBeUnique()) {
 						if (result.getInstructionalOfferingId() != null) {
 							//Redirect
-							ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + result.getInstructionalOfferingId());
+							ToolBox.open(GWT.getHostPageBaseURL() + "offering?op=view&io=" + result.getInstructionalOfferingId());
 						}
 					}
 					

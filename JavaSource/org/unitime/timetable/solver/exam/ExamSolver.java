@@ -28,9 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.cpsolver.exam.heuristics.ExamNeighbourSelection;
 import org.cpsolver.exam.model.Exam;
@@ -65,7 +68,6 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
-import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 import org.unitime.timetable.solver.exam.ui.ExamProposedChange;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamSuggestionsInfo;
@@ -953,7 +955,7 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
                 int cap = room.getSize(exam.hasAltSeating());
                 if (minRoomSize>=0 && cap<minRoomSize) continue;
                 if (maxRoomSize>=0 && cap>maxRoomSize) continue;
-                if (!ExamInfoModel.match(room.getName(), filter)) continue;
+                if (!match(room.getName(), filter)) continue;
                 if (!room.isAvailable(period.getPeriod())) continue;
                 
                 boolean conf = !exam.checkDistributionConstraints(currentSolution().getAssignment(), room);
@@ -1124,4 +1126,26 @@ public class ExamSolver extends AbstractSolver<Exam, ExamPlacement, ExamModel> i
 	public SolverType getType() {
 		return SolverType.EXAM;
 	}
+	
+    public static boolean match(String name, String filter) {
+        if (filter==null || filter.trim().length()==0) return true;
+        String n = name.toUpperCase();
+        StringTokenizer stk1 = new StringTokenizer(filter.toUpperCase(),";");
+        while (stk1.hasMoreTokens()) {
+            StringTokenizer stk2 = new StringTokenizer(stk1.nextToken()," ,");
+            boolean match = true;
+            while (match && stk2.hasMoreTokens()) {
+                String token = stk2.nextToken().trim();
+                if (token.length()==0) continue;
+                if (token.indexOf('*')>=0 || token.indexOf('?')>=0) {
+                    try {
+                        String tokenRegExp = "\\s+"+token.replaceAll("\\.", "\\.").replaceAll("\\?", ".+").replaceAll("\\*", ".*")+"\\s";
+                        if (!Pattern.compile(tokenRegExp).matcher(" "+n+" ").find()) match = false;
+                    } catch (PatternSyntaxException e) { match = false; }
+                } else if (n.indexOf(token)<0) match = false;
+            }
+            if (match) return true;
+        }
+        return false;        
+    }
 }

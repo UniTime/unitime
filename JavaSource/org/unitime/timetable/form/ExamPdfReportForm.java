@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.action.UniTimeAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
@@ -46,7 +45,6 @@ import org.unitime.timetable.reports.exam.ScheduleByRoomReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.ComboBoxLookup;
-import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.IdValue;
 
 /*
@@ -149,50 +147,6 @@ public class ExamPdfReportForm extends ExamReportForm {
     	}
     }
 
-    @Override
-    public void validate(UniTimeAction action) {
-    	if (iReports==null || iReports.length==0)
-    		action.addFieldError("reports", MSG.errorNoReportSelected());
-        
-        if (!iAll && (iSubjects==null || iSubjects.length==0))
-        	action.addFieldError("subjects", MSG.errorNoSubjectAreaSelected());
-        
-        if (iSince != null && !iSince.isEmpty() && !Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT).isValid(iSince))
-        	action.addFieldError("since", MSG.errorNotValidDate(iSince));
-    }
-
-    
-    @Override
-	public void reset() {
-    	super.reset();
-        iReports = null;
-        iMode = PdfLegacyExamReport.Mode.LegacyPdfLetter.name();
-        iAll = false;
-        iDispRooms = false;
-        iNoRoom = null;
-        iDirect = false;
-        iM2d = false;
-        iBtb = false;
-        iLimit = null;
-        iTotals = false;
-        iRoomCodes = null;
-        iEmail = false;
-        iAddr = null; iCc = null; iBcc = null; 
-        iEmailDeputies = false;
-        iSubject = MSG.emailSubjectExaminationReport();
-        iMessage = null;
-        iDispLimit = false;
-        iSince = null;
-        iEmailInstructors = false; 
-        iEmailStudents = false;
-        iClassSchedule = false;
-        iIgnoreEmptyExams = false;
-        iItype = false;
-        iDispNote = false;
-        iCompact = false;
-        iRoomDispNames = false;
-    }
-    
     public void load(SessionContext session) {
     	super.load(session);
         setAll(session.getAttribute("ExamPdfReport.all")==null?true:(Boolean)session.getAttribute("ExamPdfReport.all"));

@@ -83,19 +83,6 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
         return LocationDAO.getInstance().get(getLocationId(), hibSession);
     }
     
-    
-    public String toString() {
-    	return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(getPreference()))+";' " +
-    		"onmouseover=\"showGwtRoomHint(this, '" + getLocationId() + "', '" + PreferenceLevel.int2string(getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">" +
-    		getName() + "</span>";
-    }
-    
-    public String getNameWithHint(boolean pref) {
-    	return "<span" + (pref? " style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(getPreference()))+";'": "") +
-    		" onmouseover=\"showGwtRoomHint(this, '" + getLocationId() + "', '" + PreferenceLevel.int2string(getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">" +
-    		getName() + "</span>";
-    }
-    
     public CellInterface toCell() {
     	CellInterface cell = new CellInterface();
     	cell.setText(getName());

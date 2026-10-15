@@ -112,7 +112,7 @@ public class CurrentAssignment extends SimpleForm implements TakesValue<ClassAss
 		clear();
 		iHeader.clearMessage();
 		if (details.isCanShowDetail()) {
-			String html = "<a href='classDetail.action?cid=" + details.getClazz().getClassId()+"' class='header-link' target='_blank' title='" + MESSAGES.titleOpenClassDetail(SafeHtmlUtils.htmlEscape(details.getClazz().getName())) + "'>"
+			String html = "<a href='clazz?cid=" + details.getClazz().getClassId()+"' class='header-link' target='_blank' title='" + MESSAGES.titleOpenClassDetail(SafeHtmlUtils.htmlEscape(details.getClazz().getName())) + "'>"
 				+ details.getClazz().getName() + "</a>";
 			iHeader.setHeaderTitle(MESSAGES.headerCurrentAssignment(html));
 		} else {

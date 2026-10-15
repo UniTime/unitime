@@ -22,10 +22,6 @@ This software originally granted to the Apereo Foundation by UniTime LLC.
 
 This project includes:
 
-Code Generation Library (cglib-2.2.2.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://cglib.sourceforge.net/
-
 ClassMate (classmate-1.5.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/FasterXML/java-classmate
@@ -42,7 +38,7 @@ jackson-databind (jackson-databind-2.16.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/FasterXML/jackson
 
-Caffeine cache (caffeine-3.2.2.jar)
+Caffeine cache (caffeine-3.2.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/ben-manes/caffeine
 
@@ -101,10 +97,6 @@ istack common utility code runtime (istack-commons-runtime-4.1.1.jar)
 SparseBitSet (SparseBitSet-1.3.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://github.com/brettwooldridge/SparseBitSet
-
-Commons BeanUtils (commons-beanutils-1.8.3.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/beanutils/
 
 Apache Commons Codec (commons-codec-1.20.0.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -190,10 +182,6 @@ biweekly (biweekly-0.6.8.jar)
 	under BSD or BSD-style License
 	http://github.com/mangstadt/biweekly
 
-OGNL - Object Graph Navigation Library (ognl-3.3.5.jar)
-	under Apache Software License (ASL), Version 2.0
-	https://github.com/jkuhnert/ognl/
-
 ANTLR 4 Runtime (antlr4-runtime-4.13.0.jar)
 	under BSD-3-Clause
 	https://www.antlr.org/antlr4-runtime/
@@ -201,10 +189,6 @@ ANTLR 4 Runtime (antlr4-runtime-4.13.0.jar)
 Apache Commons Collections (commons-collections4-4.5.0.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://commons.apache.org/proper/commons-collections/
-
-Apache Commons Digester (commons-digester3-3.2.jar)
-	under Apache Software License (ASL), Version 2.0
-	http://commons.apache.org/digester/
 
 Apache Commons FileUpload Core (commons-fileupload2-core-2.0.0-M4.jar)
 	under Apache Software License (ASL), Version 2.0
@@ -249,18 +233,6 @@ SLF4J 1 Binding for Log4j API (log4j-slf4j-impl-2.25.4.jar)
 Apache POI - Common (poi-5.5.1.jar)
 	under Apache Software License (ASL), Version 2.0
 	https://poi.apache.org/
-
-Struts 2 Convention Plugin (struts2-convention-plugin-7.1.1.jar)
-	under Apache Software License (ASL), Version 2.0
-	https://struts.apache.org/struts2-bom/struts2-parent/struts2-plugins/struts2-convention-plugin/
-
-Struts 2 Core (struts2-core-7.1.1.jar)
-	under Apache Software License (ASL), Version 2.0
-	https://struts.apache.org/struts2-bom/struts2-parent/struts2-core/
-
-Struts 2 Tiles Plugin (struts2-tiles-plugin-7.1.1.jar)
-	under Apache Software License (ASL), Version 2.0
-	https://struts.apache.org/struts2-bom/struts2-parent/struts2-plugins/struts2-tiles-plugin/
 
 Apereo CAS Client for Java - Core (cas-client-core-4.0.4.jar)
 	under Apache Software License (ASL), Version 2.0

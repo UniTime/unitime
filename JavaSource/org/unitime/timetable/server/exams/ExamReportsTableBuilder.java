@@ -338,7 +338,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
 	}
 	
 	protected CellInterface addDate(LineInterface line, ExamAssignment exam, ExamSectionInfo section, String cmp) {
-    	CellInterface date = (line == null ? new CellInterface().setText(exam.getDate(false)) : line.addCell(exam.getDate(false)));
+    	CellInterface date = (line == null ? new CellInterface().setText(exam.getDate()) : line.addCell(exam.getDate()));
 		date.setColor(PreferenceLevel.prolog2color(exam.getPeriodPref()));
 		if (cmp == null)
 			date.setComparable(exam.getPeriod().getStartDate(), exam.getPeriod().getStartSlot(), (section == null ? exam.getExamName() : section.getName()));
@@ -356,7 +356,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
 	}
 	
 	protected CellInterface addTime(LineInterface line, ExamAssignment exam, ExamSectionInfo section, String cmp) {
-    	CellInterface time = (line == null ? new CellInterface().setText(exam.getTime(false)) : line.addCell(exam.getTime(false)));
+    	CellInterface time = (line == null ? new CellInterface().setText(exam.getTime()) : line.addCell(exam.getTime()));
 		time.setColor(PreferenceLevel.prolog2color(exam.getPeriodPref()));
 		if (cmp == null)
 			time.setComparable(exam.getPeriod().getStartSlot(), (section == null ? exam.getExamName() : section.getName()));
@@ -458,7 +458,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                     LineInterface line = ret.addLine();
                     if (firstSection) line.setId(exam.getExamId());
                     if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                    	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                    	line.setURL("examination?examId=" + exam.getExamId());
                     
                     line.addCell(section.getName());
                     line.addCell(String.valueOf(section.getNrStudents())).setTextAlignment(Alignment.RIGHT)
@@ -494,7 +494,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
             	LineInterface line = ret.addLine();
                 line.setId(exam.getExamId());
                 if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                	line.setURL("examination?examId=" + exam.getExamId());
                 
                 line.addCell(exam.getExamName());
                 line.addCell(String.valueOf(exam.getNrStudents())).setTextAlignment(Alignment.RIGHT)
@@ -563,7 +563,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                         if (firstRoom)
                         	line.setId(exam.getExamId());
                         if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                        	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                        	line.setURL("examination?examId=" + exam.getExamId());
                     
                         line.addCell(room.getName());
                         line.addCell(String.valueOf(room.getCapacity())).setTextAlignment(Alignment.RIGHT)
@@ -611,7 +611,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                     if (firstRoom)
                     	line.setId(exam.getExamId());
                     if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                    	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                    	line.setURL("examination?examId=" + exam.getExamId());
                 
                     line.addCell(room.getName());
                     line.addCell(String.valueOf(room.getCapacity())).setTextAlignment(Alignment.RIGHT)
@@ -1129,7 +1129,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                     LineInterface line = ret.addLine();
                     if (firstSection) line.setId(exam.getExamId());
                     if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                    	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                    	line.setURL("examination?examId=" + exam.getExamId());
                     
                     line.addCell(section.getName());
                     line.addCell(df1.format(section.getNrStudents())).setTextAlignment(Alignment.RIGHT)
@@ -1168,7 +1168,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                 LineInterface line = ret.addLine();
                 line.setId(exam.getExamId());
                 if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                	line.setURL("examination?examId=" + exam.getExamId());
                 
                 line.addCell(exam.getExamName());
                 line.addCell(df1.format(exam.getNrStudents())).setTextAlignment(Alignment.RIGHT)
@@ -1758,7 +1758,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                             			.setComparable(-100.0*nrStudents/Math.min(section1.getNrStudents(), section2.getNrStudents()), section1.getName(), section2.getName())
                             			.setTextAlignment(Alignment.RIGHT);
                                     if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                                    	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                                    	line.setURL("examination?examId=" + exam.getExamId());
                                     line.setId(exam.getExamId());
                                 }
                             } else if (conflict.getOtherEventId()!=null) {
@@ -1793,7 +1793,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                                 	.setComparable(-100.0*nrStudents/Math.min(section1.getNrStudents(), conflict.getOtherEventSize()), section1.getName(), conflict.getOtherEventName())
                         			.setTextAlignment(Alignment.RIGHT);
                                 if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                                	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                                	line.setURL("examination?examId=" + exam.getExamId());
                                 line.setId(exam.getExamId());
                             }
                         }
@@ -1826,7 +1826,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                 			.setComparable(-100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), other.getNrStudents()), exam.getExamName(), other.getExamName())
                 			.setTextAlignment(Alignment.RIGHT);
                         if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                        	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                        	line.setURL("examination?examId=" + exam.getExamId());
                         line.setId(exam.getExamId());
         			} else if (conflict.getOtherEventId()!=null) {
         				LineInterface line = ret.addLine();
@@ -1855,7 +1855,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                 			.setComparable(-100.0*conflict.getNrStudents()/Math.min(exam.getNrStudents(), conflict.getOtherEventSize()), exam.getExamName(), conflict.getOtherEventName())
                 			.setTextAlignment(Alignment.RIGHT);
                         if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                        	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                        	line.setURL("examination?examId=" + exam.getExamId());
                         line.setId(exam.getExamId());
         			}
         		}
@@ -1930,7 +1930,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                                     	.setComparable(-conflict.getDistance(), section1.getName(), section2.getName())
                                     	.setTextAlignment(Alignment.RIGHT);
                                     if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                                    	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                                    	line.setURL("examination?examId=" + exam.getExamId());
                                     line.setId(exam.getExamId());
                                 }
                             }
@@ -1967,7 +1967,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                     		.setComparable(-conflict.getDistance(), exam.getExamName(), other.getExamName())
                     		.setTextAlignment(Alignment.RIGHT);
                         if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                        	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                        	line.setURL("examination?examId=" + exam.getExamId());
                         line.setId(exam.getExamId());
         			}
         		}
@@ -2047,7 +2047,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
             			.setComparable(-100.0*conflict.getNrStudents()/minStudents, exam.getExamName())
             			.setTextAlignment(Alignment.RIGHT);
                     if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                    	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                    	line.setURL("examination?examId=" + exam.getExamId());
                     line.setId(exam.getExamId());
                 }
 
@@ -2091,7 +2091,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
     			.setComparable(-100.0*students.size()/minStudents, exam.getExamName())
     			.setTextAlignment(Alignment.RIGHT);
             if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-            	line.setURL("examDetail.action?examId=" + exam.getExamId());
+            	line.setURL("examination?examId=" + exam.getExamId());
             line.setId(exam.getExamId());
 			return;
 		}
@@ -2277,7 +2277,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                             LineInterface line = ret.addLine();
                             line.setId(exam.getExamId());
                             if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                            	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                            	line.setURL("examination?examId=" + exam.getExamId());
                             line.addCell(s.getExternalUniqueId())
                             	.setComparable(s.getExternalUniqueId(), section.getName());
                             line.addCell(s.getName(getInstructorNameFormat()))
@@ -2295,7 +2295,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                             LineInterface line = ret.addLine();
                             line.setId(exam.getExamId());
                             if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                            	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                            	line.setURL("examination?examId=" + exam.getExamId());
                             line.addCell(instructor.getExternalUniqueId())
                             	.setComparable(instructor.getExternalUniqueId(), section.getName());
                             line.addCell(instructor.getName())
@@ -2317,7 +2317,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                         LineInterface line = ret.addLine();
                         line.setId(exam.getExamId());
                         if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                        	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                        	line.setURL("examination?examId=" + exam.getExamId());
                         line.addCell(s.getExternalUniqueId())
                         	.setComparable(s.getExternalUniqueId(), exam.getExamName());
                         line.addCell(s.getName(getInstructorNameFormat()))
@@ -2335,7 +2335,7 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
                         LineInterface line = ret.addLine();
                         line.setId(exam.getExamId());
                         if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationDetail))
-                        	line.setURL("examDetail.action?examId=" + exam.getExamId());
+                        	line.setURL("examination?examId=" + exam.getExamId());
                         line.addCell(instructor.getExternalUniqueId())
                         	.setComparable(instructor.getExternalUniqueId(), exam.getExamName());
                         line.addCell(instructor.getName())

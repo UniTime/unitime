@@ -96,7 +96,7 @@ public class StudentSectioningPage extends Composite {
 						if (CONSTANTS.allowUserLogin())
 							userAuthentication.authenticate();
 						else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
-							ToolBox.open(GWT.getHostPageBaseURL() + "login.action?target=" + URL.encodeQueryString(Location.getHref()));
+							ToolBox.open(GWT.getHostPageBaseURL() + "login?target=" + URL.encodeQueryString(Location.getHref()));
 						else
 							userAuthentication.authenticated(null);
 					}
@@ -107,7 +107,7 @@ public class StudentSectioningPage extends Composite {
 							if (CONSTANTS.allowUserLogin())
 								userAuthentication.authenticate();
 							else if (!mode.isSectioning() || CONSTANTS.isAuthenticationRequired())
-								ToolBox.open(GWT.getHostPageBaseURL() + "login.action?target=" + URL.encodeQueryString(Location.getHref()));
+								ToolBox.open(GWT.getHostPageBaseURL() + "login?target=" + URL.encodeQueryString(Location.getHref()));
 							else
 								userAuthentication.authenticated(result);
 						} else {
@@ -222,7 +222,7 @@ public class StudentSectioningPage extends Composite {
 				} else if (userAuthentication.isLoggedIn()) {
 					ToolBox.open(GWT.getHostPageBaseURL() + "logout.action");
 				} else {
-					ToolBox.open(GWT.getHostPageBaseURL() + "login.action?target=" + URL.encodeQueryString(Location.getHref()));
+					ToolBox.open(GWT.getHostPageBaseURL() + "login?target=" + URL.encodeQueryString(Location.getHref()));
 				}
 			}
 		});

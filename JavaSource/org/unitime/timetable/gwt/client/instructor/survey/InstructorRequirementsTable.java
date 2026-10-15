@@ -96,7 +96,7 @@ public class InstructorRequirementsTable extends UniTimeTable<CourseRequirement>
 							"instructorSurvey?menu=hide&id=" + event.getData().getExternalId(),
 							"900", "90%");
 				else if (event.getData().getInstructorId() != null)
-					ToolBox.open("instructorDetail.action?instructorId=" + event.getData().getInstructorId());
+					ToolBox.open("instructor?instructorId=" + event.getData().getInstructorId());
 			}
 		});
 		

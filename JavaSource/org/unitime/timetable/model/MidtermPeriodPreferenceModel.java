@@ -237,10 +237,6 @@ public class MidtermPeriodPreferenceModel {
 		}
 	}
 	
-	public String print(boolean editable) throws Exception {
-	    return print(editable, 0);
-	}
-	
 	private String getBorderArray(Integer start) {
         StringBuffer border = new StringBuffer("[");
         for (int m=getStartMonth();m<=getEndMonth();m++) {
@@ -288,71 +284,7 @@ public class MidtermPeriodPreferenceModel {
 	    }
 	    return true;
 	}
-	
-    public String print(boolean editable, int length) throws Exception {
-        TreeSet<Integer> starts = new TreeSet<Integer>();
-        for (Integer start: iStarts) {
-            if ((length <= Constants.SLOT_LENGTH_MIN * iLength.get(start)) && (editable || iLocation || !isAllProhibited(start))) 
-                starts.add(start);
-        }
-        if (starts.isEmpty()) {
-            boolean tooLong = true;
-            for (Integer start: iStarts) {
-                if (length <= Constants.SLOT_LENGTH_MIN * iLength.get(start)) { tooLong=false; break; }
-            }
-            if (tooLong)
-                return "<span style='color:#ec0000;'>Examination is too long, no period is availabile.</span>";
-            else
-                return "<span style='color:#ec0000;'>No period is availabile.</span>";
-        }
 
-        StringBuffer legendCode = new StringBuffer("[");
-        StringBuffer legendText = new StringBuffer("[");
-        StringBuffer legendColor = new StringBuffer("[");
-        for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
-        	if (p.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired)) continue;
-            legendCode.append("'"+p.getPrefProlog()+"',");
-            legendText.append("'"+p.getPrefName()+"',");
-            legendColor.append("'"+PreferenceLevel.prolog2bgColor(p.getPrefProlog())+"',");
-        }
-        legendCode.append("'@']");
-        legendText.append("'No Period']");
-        legendColor.append("'rgb(150,150,150)']");
-
-        StringBuffer sb = new StringBuffer(); 
-        sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
-        sb.append("<script language='JavaScript'>\n");
-        sb.append("var CAL_WEEKDAYS = [");
-		for (int i = 0; i < 7; i++) {
-			if (i > 0) sb.append(", ");
-			sb.append("\"" + CONSTANTS.days()[(i + 6) % 7] + "\"");
-		}
-		sb.append("];\n");
-		sb.append("var CAL_MONTHS = [");
-		for (int i = 0; i < 12; i++) {
-			if (i > 0) sb.append(", ");
-			sb.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
-		}
-		sb.append("];\n");
-        int legendIdx = (starts.size()==1?0:starts.size()==2?1:starts.size()/2);
-        int idx = 0;
-        for (Integer start: starts) {
-            String startTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN);
-            String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(start+iLength.get(start))+Constants.FIRST_SLOT_TIME_MIN);
-            sb.append(
-                    "calGenerate("+getYear()+",\n\t"+
-                        getStartMonth()+",\n\t"+
-                        getEndMonth()+",\n\t"+
-                        getPattern(start)+",\n\t"+
-                        legendCode+","+legendText+","+legendColor+",'0',\n\t"+
-                        getBorderArray(start)+","+editable+","+(editable && legendIdx==idx)+",\n\t"+
-                        "'"+iName+start+"','("+startTime+" - "+endTime+")',6,"+(start==starts.first())+","+(start==starts.last())+");\n");
-            idx++;
-        }
-        sb.append("</script>\n");
-		return sb.toString();
-	}
-    
 	public void load(HttpServletRequest request) {
 		int year = getYear();
 		for (int m=getStartMonth();m<=getEndMonth();m++) {

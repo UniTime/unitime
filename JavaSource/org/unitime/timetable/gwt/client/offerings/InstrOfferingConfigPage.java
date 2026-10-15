@@ -170,7 +170,7 @@ public class InstrOfferingConfigPage extends Composite {
 							RPC.execute(iData, new AsyncCallback<InstrOfferingConfigInterface>() {
 								@Override
 								public void onSuccess(InstrOfferingConfigInterface result) {
-									ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + result.getOfferingId() + "#ioc" + result.getConfigId());
+									ToolBox.open("offering?op=view&io=" + result.getOfferingId() + "#ioc" + result.getConfigId());
 								}
 								
 								@Override
@@ -230,7 +230,7 @@ public class InstrOfferingConfigPage extends Composite {
 								RPC.execute(iData, new AsyncCallback<InstrOfferingConfigInterface>() {
 									@Override
 									public void onSuccess(InstrOfferingConfigInterface result) {
-										ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + result.getOfferingId());
+										ToolBox.open("offering?op=view&io=" + result.getOfferingId());
 									}
 									
 									@Override
@@ -261,7 +261,7 @@ public class InstrOfferingConfigPage extends Composite {
 				iHeader.setEnabled("save", false);
 				iHeader.setEnabled("update", false);
 				iHeader.setEnabled("delete", false);
-				ToolBox.open("instructionalOfferingDetail.action?op=view&io=" + iData.getOfferingId() + (iData.getConfigId() == null ? "" : "#ioc" + iData.getConfigId()));
+				ToolBox.open("offering?op=view&io=" + iData.getOfferingId() + (iData.getConfigId() == null ? "" : "#ioc" + iData.getConfigId()));
 			}
 		});
 

@@ -415,7 +415,7 @@ public class ExamGridBackend implements GwtRpcImplementation<ExamGridRequest, Ex
         	cell.setBgColor(toBgColor(PreferenceLevel.sNeutral));
         	break;
 		}
-		cell.setUrl("examInfo.action?examId="+assignment.getExamId());
+		cell.setUrl("examAssignment?menu=hide&examId="+assignment.getExamId());
 		cell.setDialog(MESSAGES.dialogExamAssign());
 		return cell;
 	}

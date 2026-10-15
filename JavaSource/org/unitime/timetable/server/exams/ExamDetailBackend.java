@@ -30,7 +30,6 @@ import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamDetailReponse;
@@ -170,7 +169,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 			for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(exam.getInstructors())) {
 				LineInterface line = table.addLine();
 				if (context.hasPermission(instructor, Right.InstructorDetail))
-					line.setURL("instructorDetail.action?instructorId=" + instructor.getUniqueId());
+					line.setURL("instructor?instructorId=" + instructor.getUniqueId());
 				line.addCell(instructor.getName(nameFormat));
 				if (instructor.getEmail() != null && !instructor.getEmail().isEmpty())
 					line.addCell(instructor.getEmail());
@@ -216,12 +215,8 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
 			response.addOperation("edit");
 		if (context.hasPermission(exam, Right.ExaminationClone))
 			response.addOperation("clone");
-		if (context.hasPermission(exam, Right.DistributionPreferenceExam)) {
-			if (ApplicationProperty.LegacyExamDistributions.isTrue())
-				response.addOperation("add-distribution-legacy");
-			else
-				response.addOperation("add-distribution");
-		}
+		if (context.hasPermission(exam, Right.DistributionPreferenceExam))
+			response.addOperation("add-distribution");
 		if (context.hasPermission(exam, Right.ExaminationAssignment))
 			response.addOperation("assign");
 		if (context.hasPermission(exam, Right.ExaminationDelete))
@@ -265,7 +260,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
             case ExamOwner.sOwnerTypeClass :
                 Class_ clazz = (Class_)owner.getOwnerObject();
                 if (context.hasPermission(clazz, Right.ClassDetail))
-                	line.setURL("classDetail.action?cid="+clazz.getUniqueId());
+                	line.setURL("clazz?cid="+clazz.getUniqueId());
                 line.addCell().setText(owner.getLabel());
                 line.addCell().setText(MSG.examTypeClass()).setTextAlignment(Alignment.CENTER);
                 String title = clazz.getSchedulePrintNote();
@@ -288,7 +283,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
             case ExamOwner.sOwnerTypeConfig :
                 InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
                 if (context.hasPermission(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-                	line.setURL("instructionalOfferingDetail.action?io="+config.getInstructionalOffering().getUniqueId());
+                	line.setURL("offering?io="+config.getInstructionalOffering().getUniqueId());
                 line.addCell().setText(owner.getLabel());
                 line.addCell().setText(MSG.examTypeConfig()).setTextAlignment(Alignment.CENTER);
                 line.addCell().setText(config.getControllingCourseOffering().getTitle());
@@ -300,7 +295,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
             case ExamOwner.sOwnerTypeOffering :
                 InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
                 if (context.hasPermission(offering, Right.InstructionalOfferingDetail))
-                	line.setURL("instructionalOfferingDetail.action?io="+offering.getUniqueId());
+                	line.setURL("offering?io="+offering.getUniqueId());
                 line.addCell().setText(owner.getLabel());
                 line.addCell().setText(MSG.examTypeOffering()).setTextAlignment(Alignment.CENTER);
                 line.addCell().setText(offering.getControllingCourseOffering().getTitle());
@@ -312,7 +307,7 @@ public class ExamDetailBackend implements GwtRpcImplementation<ExamDetailRequest
             case ExamOwner.sOwnerTypeCourse :
                 CourseOffering course = (CourseOffering)owner.getOwnerObject();
                 if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
-                	line.setURL("instructionalOfferingDetail.action?io="+course.getInstructionalOffering().getUniqueId());
+                	line.setURL("offering?io="+course.getInstructionalOffering().getUniqueId());
                 line.addCell().setText(owner.getLabel());
                 line.addCell().setText(MSG.examTypeCourse()).setTextAlignment(Alignment.CENTER);
                 line.addCell().setText(course.getTitle());
