@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.server.administration.dataexchange;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.zip.GZIPInputStream;
@@ -33,7 +34,6 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.action.DataImportAction.NotClosingInputStream;
 import org.unitime.timetable.backup.SessionRestoreInterface;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 import org.unitime.timetable.defaults.ApplicationProperty;
@@ -171,4 +171,24 @@ public class DataImportBackend implements GwtRpcImplementation<DataImportRequest
 		}
 	}
 
+	public static class NotClosingInputStream extends InputStream {
+		private InputStream iParent;
+		
+		public NotClosingInputStream(InputStream in) { iParent = in; }
+
+		@Override
+		public int read() throws IOException { return iParent.read(); }
+		
+		@Override
+		public int read(byte b[], int off, int len) throws IOException { return iParent.read(b, off, len); }
+		
+		@Override
+		public long skip(long n) throws IOException { return iParent.skip(n); }
+		
+		@Override
+		public int available() throws IOException { return iParent.available(); }
+		
+		@Override
+		public void close() throws IOException {}
+	}
 }

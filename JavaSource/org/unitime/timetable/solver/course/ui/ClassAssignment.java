@@ -197,39 +197,13 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 		return s.toString();
 	}
 	
-	public String getRoomNamesHtml(String delim) {
-		if (getNrRooms()==0) return "";
-		StringBuffer s = new StringBuffer();
-		for (Iterator<ClassRoomInfo> i=getRooms().iterator(); i.hasNext();) {
-			s.append(i.next().getNameHtml());
-			if (i.hasNext()) s.append(delim);
-		}
-		return s.toString();
-	}
-	
 	public boolean isValid() {
 		return hasTime() && getNrRooms()==getNumberOfRooms();
 	}
 	
-	public String getTimeNameHtml() {
-		return (hasTime()?getTime().getNameHtml():"<i>" + MSG.timeNotApplicable() + "</i>");
-	}
-	
-	public String getTimeLongNameHtml() {
-		return (hasTime()?getTime().getLongNameHtml():"<i>" + MSG.timeNotApplicable() + "</i>");
-	}
-
 	public int getRoomSize() {
 		int count = 0;
 		for (ClassRoomInfo room: getRooms()) count += room.getCapacity();
 		return count;
-	}
-	
-	public String getDateNameHtml() {
-		return (hasDate()?getDate().toHtml():"<i>" + MSG.dateNotApplicable() + "</i>");
-	}
-	
-	public String getDateLongNameHtml() {
-		return (hasDate()?getDate().toLongHtml():"<i>" + MSG.dateNotApplicable() + "</i>");
 	}
 }

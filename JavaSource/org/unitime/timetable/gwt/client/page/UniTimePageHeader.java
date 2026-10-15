@@ -89,7 +89,7 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 					getRight().setText(result.getSession());
 					getRight().setInfo(result);
 					getRight().setHint(MESSAGES.hintClickToChangeSession());
-					getRight().setUrl("selectPrimaryRole.action?list=Y");
+					getRight().setUrl("selectPrimaryRole?list=Y");
 					getRight().setVisible(true);	
 				}
 			}
@@ -114,9 +114,9 @@ public class UniTimePageHeader implements PageHeaderDisplay {
 					getMiddle().setHint(result.getRole());
 					getMiddle().setInfo(result);
 					if (result.isChameleon()) {
-						getMiddle().setUrl("chameleon.action");
+						getMiddle().setUrl("chameleon");
 					} else {
-						getMiddle().setUrl("selectPrimaryRole.action?list=Y");
+						getMiddle().setUrl("selectPrimaryRole?list=Y");
 					}
 					getMiddle().setVisible(true);
 				}

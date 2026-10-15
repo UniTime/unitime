@@ -81,22 +81,6 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
         return LocationDAO.getInstance().get(getLocationId(), hibSession);
     }
     
-    
-    public String toString() {
-    	int pref = getPreference();
-    	boolean s = false;
-    	if (pref>5000) {
-    		s=true;
-    		pref-=5000;
-    	}
-        return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(pref))+";' " +
-        		"onmouseover=\"showGwtRoomHint(this, '" + iId + "', '" + PreferenceLevel.prolog2string(PreferenceLevel.int2prolog(pref)) + "'" + (hasNote() ? ", null, '" + getNote().replace("'", "\\'") + "'": "") + ");\" onmouseout=\"hideGwtRoomHint();\">"+
-        		(s?"<s>":"")+
-        		getName()+
-        		(s?"</s>":"")+
-        		"</span>";
-    }
-    
     public CellInterface toCell() {
     	int pref = getPreference();
     	boolean s = false;
@@ -142,13 +126,6 @@ public class ClassRoomInfo implements Serializable, Comparable<ClassRoomInfo>{
     	return sDistanceMetric.getDistanceInMeters(getLocationId(), getCoordX(), getCoordY(), other.getLocationId(), other.getCoordX(), other.getCoordY());
     }
     
-    public String getNameHtml() {
-        return
-        	"<span onmouseover=\"showGwtRoomHint(this, '" + iId + "', '" + PreferenceLevel.int2string(getPreference()) + "'" + ");\" onmouseout=\"hideGwtRoomHint();\">" +
-            getName()+
-            "</span>";
-    }
-
 	public boolean isIgnoreRoomChecks() {
 		return iIgnoreRoomChecks;
 	}

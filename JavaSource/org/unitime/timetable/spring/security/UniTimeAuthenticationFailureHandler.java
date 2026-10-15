@@ -43,10 +43,7 @@ import org.unitime.timetable.util.LoginManager;
 public class UniTimeAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
 	public UniTimeAuthenticationFailureHandler() {
-		if (ApplicationProperty.LegacyLogin.isTrue())
-			setDefaultFailureUrl("/login.action");
-		else
-			setDefaultFailureUrl("/login");
+		setDefaultFailureUrl("/login");
 	}
 
 	@Override
@@ -68,17 +65,10 @@ public class UniTimeAuthenticationFailureHandler extends SimpleUrlAuthentication
 		saveException(request, exception);
 
 		String targetUrl = request.getParameter("target");
-		if (ApplicationProperty.LegacyLogin.isTrue()) {
-			if (StringUtils.hasText(targetUrl))
-				getRedirectStrategy().sendRedirect(request, response, "/login.action" + "?target=" + URLEncoder.encode(targetUrl, "UTF-8"));
-			else
-				getRedirectStrategy().sendRedirect(request, response, "/login.action");
-		} else {
-			if (StringUtils.hasText(targetUrl))
-				getRedirectStrategy().sendRedirect(request, response, "/login" + "?target=" + URLEncoder.encode(targetUrl, "UTF-8"));
-			else
-				getRedirectStrategy().sendRedirect(request, response, "/login");
-		}
+		if (StringUtils.hasText(targetUrl))
+			getRedirectStrategy().sendRedirect(request, response, "/login?target=" + URLEncoder.encode(targetUrl, "UTF-8"));
+		else
+			getRedirectStrategy().sendRedirect(request, response, "/login");
 	}
 
 }

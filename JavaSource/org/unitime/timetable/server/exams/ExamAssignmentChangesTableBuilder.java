@@ -30,8 +30,7 @@ import java.util.Vector;
 
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.defaults.ApplicationProperty;
-import org.unitime.timetable.form.ExamChangesForm;
-import org.unitime.timetable.form.ExamChangesForm.ExamChange;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamChange;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
@@ -75,9 +74,9 @@ public class ExamAssignmentChangesTableBuilder extends ExaminationsTableBuilder 
 		
 		String changeType = filter.getParameterValue("changeType", ExamChange.Initial.name());
 		Collection<ExamAssignmentInfo[]> changes = null;
-		if (ExamChangesForm.ExamChange.Initial.name().equals(changeType))
+		if (ExamChange.Initial.name().equals(changeType))
             changes = solver.getChangesToInitial(ids);
-        else if (ExamChangesForm.ExamChange.Best.name().equals(changeType))
+        else if (ExamChange.Best.name().equals(changeType))
             changes = solver.getChangesToBest(ids);
         else { //sChangeSaved
             changes = new Vector<ExamAssignmentInfo[]>();
@@ -178,7 +177,7 @@ public class ExamAssignmentChangesTableBuilder extends ExaminationsTableBuilder 
         	examIds.add(exam.getExamId());
         	LineInterface line = ret.addLine();
         	if (getSessionContext().hasPermission(exam.getExam(), Right.ExaminationAssignment)) {
-        		line.setURL("examInfo.action?examId=" + exam.getExamId());
+        		line.setURL("examAssignment?menu=hide&examId=" + exam.getExamId());
         		line.setDialog(XMSG.dialogExamAssign());
         	}
         	CellInterface owner = line.addCell().setText(showSection ? exam.getSectionName("\n") : exam.getExamName())

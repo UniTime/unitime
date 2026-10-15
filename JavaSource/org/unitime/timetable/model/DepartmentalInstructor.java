@@ -24,8 +24,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -706,47 +704,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		sb.append("]");
 		return sb.toString();
 	}
-	
-	@Transient
-	public String getUnavailablePatternHtml() {
-		return getUnavailablePatternHtml(true, true);
-	}
-	
-	public String getUnavailablePatternHtml(boolean editable) {
-		return getUnavailablePatternHtml(editable, true);
-	}
-    
-	public String getUnavailablePatternHtml(boolean editable, boolean includeScript) {
-		StringBuffer sb = new StringBuffer(); 
-        if (includeScript)
-            sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>\n");
-		sb.append("<script language='JavaScript'>\n");
-		sb.append("var CAL_WEEKDAYS = [");
-		for (int i = 0; i < 7; i++) {
-			if (i > 0) sb.append(", ");
-			sb.append("\"" + CONS.days()[(i + 6) % 7] + "\"");
-		}
-		sb.append("];\n");
-		sb.append("var CAL_MONTHS = [");
-		for (int i = 0; i < 12; i++) {
-			if (i > 0) sb.append(", ");
-			sb.append("\"" + Month.of(1 + i).getDisplayName(TextStyle.FULL_STANDALONE, Localization.getJavaLocale()) + "\"");
-		}
-		sb.append("];\n");
-		sb.append(
-			"calGenerate2("+getSession().getSessionStartYear()+",\n\t"+
-				(getSession().getPatternStartMonth()) +",\n\t"+
-				(getSession().getPatternEndMonth())+",\n\t"+
-				getUnavailablePatternArray()+",\n\t"+
-				"['1','0'],\n\t"+
-				"['" + MSG.dateNotAvailable() + "','" + MSG.dateAvailable() + "'],\n\t"+
-				"['rgb(150,150,150)','rgb(240,240,240)'],\n\t"+
-				"'1',\n\t"+
-				getUnavailableBorderArray()+","+getSession().getColorArray()+","+editable+","+editable+");\n");
-		sb.append("</script>\n");
-		return sb.toString();
-	}
-	
+
 	public void setUnavailablePatternAndOffset(HttpServletRequest request) {
 		int startMonth = getSession().getPatternStartMonth();
 		int endMonth = getSession().getPatternEndMonth();

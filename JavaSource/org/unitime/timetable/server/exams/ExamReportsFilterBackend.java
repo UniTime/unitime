@@ -25,7 +25,7 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
-import org.unitime.timetable.form.ExamChangesForm.ExamChange;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamChange;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamReportsFilterRequest;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;

@@ -19,10 +19,11 @@ import org.restlet.resource.ClientResource;
 import org.unitime.localization.impl.ExportTranslations.Locale;
 import org.unitime.localization.impl.POHelper.Block;
 import org.unitime.localization.impl.POHelper.Bundle;
-import org.unitime.timetable.action.UniTimeAction;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 
 public class DeepLTranslator {
 	private List<Locale> iLocales = new ArrayList<Locale>();
@@ -108,9 +109,9 @@ public class DeepLTranslator {
 					for (Block block: helper.getBlocks(bundle)) {
 						if (block.getTranslation() == null && !block.getDefaultText().isEmpty()) {
 							String source = block.getDefaultText();
-							String access = UniTimeAction.guessAccessKey(source);
+							String access = guessAccessKey(source);
 				        	if (access != null)
-				        		source = UniTimeAction.stripAccessKey(source);
+				        		source = stripAccessKey(source);
 							if (source.length() <= 1) {
 								block.setTranslation(block.getDefaultText());
 								block.fuzzy = true;
@@ -155,6 +156,19 @@ public class DeepLTranslator {
 		}
     }
 	
+	private static RegExp sAcessKeyRegExp = RegExp.compile("<u>(\\w)</u>", "i");
+    public static String guessAccessKey(String name) {
+		if (name == null || name.isEmpty()) return null;
+		MatchResult result = sAcessKeyRegExp.exec(name);
+		return (result == null ? "" : result.getGroup(1).toLowerCase());
+	}
+    
+    private static RegExp sStripAcessKeyRegExp = RegExp.compile("(.*)<u>(\\w)</u>(.*)", "i");
+    public static String stripAccessKey(String name) {
+		if (name == null || name.isEmpty()) return "";
+		MatchResult result = sStripAcessKeyRegExp.exec(name);
+		return (result == null ? name : (result.getGroup(1) + result.getGroup(2) + result.getGroup(3))).replace("&nbsp;", " ");
+	}
 	
 	public static void main(String[] args) {
 		try {
