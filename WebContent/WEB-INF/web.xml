@@ -387,20 +387,6 @@
 		<filter-class>org.unitime.timetable.filter.BusySessions$Filter</filter-class>
 	</filter>
 	
-	<filter>
-		<filter-name>Apache Struts 2</filter-name>
-		<filter-class>org.apache.struts2.dispatcher.filter.StrutsPrepareAndExecuteFilter</filter-class>
-		<init-param>
-			<param-name>config</param-name>
-			<param-value>struts-default.xml,struts-plugin.xml,../struts.xml</param-value>
-		</init-param>
-    </filter>
-    
-    <filter>
-    	<filter-name>Do-Action Redirect</filter-name>
-    	<filter-class>org.unitime.timetable.filter.DoToActionRedirectFilter</filter-class>
-    </filter>
-    
     <filter>
     	<filter-name>User Settings Filter</filter-name>
     	<filter-class>org.unitime.timetable.filter.UserSettingsFilter</filter-class>
@@ -422,11 +408,6 @@
         <dispatcher>ASYNC</dispatcher><!-- Servlet 3.0 w/ disabled auto-initialization only; not supported in 2.5 -->
     </filter-mapping>
     
-    <filter-mapping>
-    	<filter-name>Do-Action Redirect</filter-name>
-    	<url-pattern>*.do</url-pattern>
-    </filter-mapping>
-	
 	<filter-mapping>
 		<filter-name>Encoding Filter</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -450,11 +431,6 @@
 	<filter-mapping>
 		<filter-name>Page Access Filter</filter-name>
 		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>Query Log Filter</filter-name>
-		<url-pattern>*.action</url-pattern>
 	</filter-mapping>
 
 	<filter-mapping>
@@ -502,11 +478,6 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
-	<filter-mapping>
-    	<filter-name>Apache Struts 2</filter-name>
-    	<url-pattern>*.action</url-pattern>
-    </filter-mapping>
-    
     <filter-mapping>
     	<filter-name>Redirect Filter</filter-name>
     	<url-pattern>/selectPrimaryRole</url-pattern>
@@ -544,11 +515,6 @@
 		<param-value>log4j2-UniTime.xml</param-value>
 	</context-param>
 	
-	<context-param>
-		<param-name>org.apache.tiles.definition.DefinitionsFactory.DEFINITIONS_CONFIG</param-name>
-		<param-value>/WEB-INF/tiles.xml</param-value>
-	</context-param> 
-	
 	<listener>
         <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
     </listener>
@@ -564,9 +530,6 @@
 	<!-- CAS Authentication -->
 	<listener>
 		<listener-class>org.apereo.cas.client.session.SingleSignOutHttpSessionListener</listener-class>
-	</listener>
-	<listener>
-		<listener-class>org.apache.struts2.tiles.StrutsTilesListener</listener-class>
 	</listener>
 	<listener>
 		<listener-class>org.unitime.timetable.server.access.AccessControllBackend$Listener</listener-class>

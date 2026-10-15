@@ -83,17 +83,17 @@ public class ResultsTable extends UniTimeTable<String[]> {
 			public void onMouseClick(UniTimeTable.TableEvent<String[]> event) {
 				if (event.getRow() > 0 && event.getData() != null) {
 					if ("__Class".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "classDetail.action?cid=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "clazz?cid=" + event.getData()[0]);
 					else if ("__Offering".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?op=view&io=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "offering?op=view&io=" + event.getData()[0]);
 					else if ("__Subpart".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartDetail.action?ssuid=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "subpart?ssuid=" + event.getData()[0]);
 					else if ("__Room".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "rooms?back=1&id=" + event.getData()[0]);
 					else if ("__Instructor".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructorDetail.action?instructorId=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructor?instructorId=" + event.getData()[0]);
 					else if ("__Exam".equals(iFirstField))
-						ToolBox.open(GWT.getHostPageBaseURL() + "examDetail.action?examId=" + event.getData()[0]);
+						ToolBox.open(GWT.getHostPageBaseURL() + "examination?examId=" + event.getData()[0]);
 					else if ("__Event".equals(iFirstField))
 						ToolBox.open(GWT.getHostPageBaseURL() + "events#event=" + event.getData()[0]);
 					else if ("__Student".equals(iFirstField)) {

@@ -83,7 +83,7 @@ public class SubpartDetailPage extends Composite {
 		iHeader.addButton("edit", COURSE.actionEditSubpart(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "schedulingSubpartEdit.action?ssuid=" + iResponse.getSubpartgId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "subpartEdit?ssuid=" + iResponse.getSubpartgId());
 			}
 		});
 		iHeader.setEnabled("edit", false);
@@ -182,18 +182,6 @@ public class SubpartDetailPage extends Composite {
 						hp.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
 						hp.getButton("add-distribution").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
 					}
-					if (response.hasOperation("add-distribution-legacy")) {
-						hp.addButton("add-distribution-legacy", COURSE.actionAddDistributionPreference(), new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
-										URL.encodeQueryString(COURSE.actionAddDistributionPreference()) + "&subpartId=" + iResponse.getSubpartgId()
-										);
-							}
-						});
-						hp.getButton("add-distribution-legacy").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
-						hp.getButton("add-distribution-legacy").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
-					}
 				}
 				
 				if (response.hasClasses()) {
@@ -230,7 +218,7 @@ public class SubpartDetailPage extends Composite {
 						hp.addButton("add-exam", COURSE.actionAddExamination(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?firstType=InstructionalOffering&firstId=" + response.getOfferingId());
+								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit?firstType=InstructionalOffering&firstId=" + response.getOfferingId());
 							}
 						});
 						hp.getButton("add-exam").setAccessKey(COURSE.accessAddExamination().charAt(0));

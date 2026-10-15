@@ -159,7 +159,7 @@ public abstract class AccessControlClient {
 	}-*/;
 	
 	protected void openMainPage() {
-		ToolBox.open(GWT.getHostPageBaseURL() + "main.action?message=" + URL.encodeQueryString(MESSAGES.closedDueToInactivity(getPageName())));
+		ToolBox.open(GWT.getHostPageBaseURL() + "main?message=" + URL.encodeQueryString(MESSAGES.closedDueToInactivity(getPageName())));
 	}
 	
 	protected void periodicCheckAccess() {

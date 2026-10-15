@@ -84,7 +84,7 @@ public class ClassDetailPage extends Composite {
 		iHeader.addButton("edit", COURSE.actionEditClass(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "classEdit.action?cid=" + iResponse.getClassId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "classEdit?cid=" + iResponse.getClassId());
 			}
 		});
 		iHeader.setEnabled("edit", false);
@@ -102,17 +102,6 @@ public class ClassDetailPage extends Composite {
 		iHeader.setEnabled("assign", false);
 		iHeader.getButton("assign").setAccessKey(COURSE.accessOpenClassAssignmentDialog().charAt(0));
 		iHeader.getButton("assign").setTitle(COURSE.titleOpenClassAssignmentDialog(COURSE.accessOpenClassAssignmentDialog()));
-		iHeader.addButton("assign-legacy", COURSE.actionOpenClassAssignmentDialog(), new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent evt) {
-				UniTimeFrameDialog.openDialog(COURSE.dialogClassAssignment(),
-						"classInfo.action?classId=" + iResponse.getClassId(),
-						"900", "90%");
-			}
-		});
-		iHeader.setEnabled("assign-legacy", false);
-		iHeader.getButton("assign-legacy").setAccessKey(COURSE.accessOpenClassAssignmentDialog().charAt(0));
-		iHeader.getButton("assign-legacy").setTitle(COURSE.titleOpenClassAssignmentDialog(COURSE.accessOpenClassAssignmentDialog()));
 		
 		iHeader.addButton("previous", COURSE.actionPreviousClass(), new ClickHandler() {
 			@Override
@@ -234,18 +223,6 @@ public class ClassDetailPage extends Composite {
 						hp.getButton("add-distribution").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
 						hp.getButton("add-distribution").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
 					}
-					if (response.hasOperation("add-distribution-legacy")) {
-						hp.addButton("add-distribution-legacy", COURSE.actionAddDistributionPreference(), new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
-										URL.encodeQueryString(COURSE.actionAddDistributionPreference()) + "&classId=" + iResponse.getClassId()
-										);
-							}
-						});
-						hp.getButton("add-distribution-legacy").setAccessKey(COURSE.accessAddDistributionPreference().charAt(0));
-						hp.getButton("add-distribution-legacy").setTitle(COURSE.titleAddDatePatternPreference(COURSE.accessAddDistributionPreference()));					
-					}
 				}
 				
 				if (response.hasExaminations()) {
@@ -256,7 +233,7 @@ public class ClassDetailPage extends Composite {
 						hp.addButton("add-exam", COURSE.actionAddExamination(), new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent evt) {
-								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action?firstType=Class_&firstId=" + response.getClassId());
+								ToolBox.open(GWT.getHostPageBaseURL() + "examEdit?firstType=Class_&firstId=" + response.getClassId());
 							}
 						});
 						hp.getButton("add-exam").setAccessKey(COURSE.accessAddExamination().charAt(0));

@@ -25,7 +25,7 @@
 	<head>
 	    <meta charset="UTF-8"/>
 	    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-		<meta http-equiv="Refresh" content="1; url=selectPrimaryRole.action">	
+		<meta http-equiv="Refresh" content="1; url=selectPrimaryRole">	
 		<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
 		<link rel="shortcut icon" href="images/timetabling.ico" />
 		<title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>

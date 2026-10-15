@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.ClassesFilterResponse;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsFilterResponse;
 import org.unitime.timetable.gwt.client.offerings.OfferingsInterface.DistributionsRequest;
@@ -813,4 +814,23 @@ public class ExamsInterface {
 		public String getInfoMessage() { return iInfoMessage; }
 		public void setInfoMessage(String infoMessage) { iInfoMessage = infoMessage; }
 	}
+	
+	public static enum ExamChange {
+    	Initial, Best, Saved,
+    }
+	
+	public static enum Resource {
+    	Room,
+    	Instructor,
+    	Subject,
+    	;
+    	public String getLabel(ExaminationMessages MSG) {
+    		switch (this) {
+    		case Room: return MSG.resourceRoom();
+    		case Instructor: return MSG.resourceInstructor();
+    		case Subject: return MSG.resourceSubjectArea();
+			default: return name();
+			}
+    	}
+    };
 }

@@ -117,10 +117,6 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     	return iClassTitle;
     }
     
-    public String getClassNameHtml() {
-    	return "<span title='"+iClassTitle+"'>"+iClassName+"</span>";
-    }
-    
     public Long getClassId() {
     	return iClassId;
     }
