@@ -216,7 +216,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
         	}
         	for (ClassInstructor ci: new TreeSet<ClassInstructor>(clazz.getClassInstructors())) {
         		LineInterface line = table.addLine();
-        		line.setURL("instructorDetail.action?instructorId=" + ci.getInstructor().getUniqueId() + "&deptId=" + ci.getInstructor().getDepartment().getUniqueId());
+        		line.setURL("instructor?instructorId=" + ci.getInstructor().getUniqueId() + "&deptId=" + ci.getInstructor().getDepartment().getUniqueId());
         		line.addCell(ci.getInstructor().getName(nameFormat));
         		line.addCell(ci.getPercentShare().toString()).setTextAlignment(Alignment.RIGHT);
         		if (ci.isLead())
@@ -311,16 +311,12 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
     		response.addOperation("next");
     	if (context.hasPermission(Right.ExaminationAdd))
     		response.addOperation("add-exam");
-    	if (context.hasPermission(Right.DistributionPreferenceAdd) && context.hasPermission(clazz, Right.DistributionPreferenceClass)) {
-    		if (ApplicationProperty.LegacyDistributions.isTrue())
-    			response.addOperation("add-distribution-legacy");
-    		else
-    			response.addOperation("add-distribution");
-    	}
+    	if (context.hasPermission(Right.DistributionPreferenceAdd) && context.hasPermission(clazz, Right.DistributionPreferenceClass))
+    		response.addOperation("add-distribution");
     	if (context.hasPermission(clazz, Right.ClassEdit))
     		response.addOperation("edit");
     	if (context.hasPermission(clazz, Right.ClassAssignment))
-    		response.addOperation(ApplicationProperty.LegacyClassAssignment.isTrue() ? "assign-legacy" : "assign");
+    		response.addOperation("assign");
 		
 		return response;
 	}
@@ -426,7 +422,7 @@ public class ClassDetailBackend implements GwtRpcImplementation<ClassDetailReque
 			CellInterface c = table.addProperty(MSG.propertyInstructor());
 			for (InstructorInfo instructor: ca.getInstructor()) {
 				if (c.hasItems()) c.add(", ");
-				c.add(instructor.getName()).setUrl("instructorDetail.action?instructorId=" + instructor.getId()).setClassName("link");
+				c.add(instructor.getName()).setUrl("instructor?instructorId=" + instructor.getId()).setClassName("link");
 			}
 			if (!ca.getBtbInstructors().isEmpty()) {
 				for (Enumeration e=ca.getBtbInstructors().elements();e.hasMoreElements();) {

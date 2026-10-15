@@ -52,8 +52,6 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico" />
 	<TITLE>UniTime <%=Constants.VERSION%>| Access Denied</TITLE>
-    <script type="text/javascript" src="scripts/loading.js"></script>
-	<script type="text/javascript" src="scripts/rtt.js"></script>
 	<script type="text/javascript" src="unitime/unitime.nocache.js"></script>
 </head>
 <body class="unitime-Body">
@@ -84,7 +82,6 @@
 	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-PageWarn" page="loginRequired"/>
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage" page="loginRequired"/>
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="loginRequired"/>
-	<tt:offering-locks/>
 	
 	<span class="unitime-Page"><span class='row'>
 	<span class='sidebar' id="unitime-SideMenu">
@@ -128,7 +125,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.action' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
+    			<a href='main' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title">Access Denied</span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>

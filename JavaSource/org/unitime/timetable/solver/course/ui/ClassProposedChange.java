@@ -21,15 +21,11 @@ package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -134,89 +130,6 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         iSelectedClassId = classId;
     }
     public Long getSelectedClassId() { return iSelectedClassId; }
-    
-    public String getHtmlTable(SessionContext context) {
-        String ret = "<table border='0' cellspacing='0' cellpadding='3' width='100%'>";
-        ret += "<tr>";
-        ret += "<td><i>"+MSG.columnClass()+"</i></td>";
-        ret += "<td><i>"+MSG.columnInstructor()+"</i></td>";
-        ret += "<td><i>"+MSG.columnDateChange()+"</i></td>";
-        ret += "<td><i>"+MSG.columnTimeChange()+"</i></td>";
-        ret += "<td><i>"+MSG.columnRoomChange()+"</i></td>";
-        ret += "</tr>";
-        for (ClassAssignment current : iAssignments) {
-            ClassAssignment initial = iInitials.get(current.getClassId());
-            String bgColor = (current.getClassId().equals(iSelectedClassId)?"rgb(168,187,225)":null);
-            boolean canAssign = context.hasPermission(current.getClazz(), Right.ClassAssignment);
-            ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
-            		(canAssign?"onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
-            		"onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-            		"onclick=\"document.location='classInfo.action?classId="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"": "") + ">";
-            ret += "<td nowrap>";
-            ret += "<img src='images/action_delete.png' border='0' onclick=\"document.location='classInfo.action?delete="+current.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';event.cancelBubble=true;\">&nbsp;";
-            if (!canAssign && context.hasPermission(current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
-            	ret += "<img src='images/error.png' border='0' " +
-            			"onclick='if (confirm(\"Course " + current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Do you want to lock it?\")) " +
-            			"document.location=\"classInfo.action?offering="+current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
-            			"title=\"Course " + current.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName() + " is not locked. Click the warning icon to lock it.\" style='cursor: pointer;'>&nbsp;";
-            }
-            ret += current.getClassNameHtml();
-            ret += "</td><td nowrap>";
-            ret += current.getLeadingInstructorNames(", ");
-            ret += "</td><td nowrap>";
-            if (initial!=null && !initial.getDateId().equals(current.getDateId()))
-                ret += initial.getDateNameHtml() + " &rarr; ";
-            if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font> &rarr; ";
-            ret += current.getDateNameHtml();
-            ret += "</td><td nowrap>";
-            if (initial!=null && !initial.getTimeId().equals(current.getTimeId()))
-                ret += initial.getTimeNameHtml() + " &rarr; ";
-            if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font> &rarr; ";
-            ret += current.getTimeNameHtml();
-            ret += "</td><td nowrap>";
-            if (initial!=null && !initial.getRoomIds().equals(current.getRoomIds()))
-                ret += initial.getRoomNamesHtml(", ") + " &rarr; ";
-            if (initial==null)
-                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font> &rarr; ";
-            ret += current.getRoomNamesHtml(", ");
-            if (current.getNrRooms()!=current.getNumberOfRooms()) {
-                if (current.getClassId().equals(iSelectedClassId))
-                    ret += "<i>"+MSG.assignmentRoomSelectBelow()+"</i>";
-                else
-                    ret += "<i><font color='#ec0000'>"+MSG.assignmentRoomNotSelected()+"</font></i>";
-            }
-            ret += "</td></tr>";
-        }
-        for (ClassAssignment conflict : iConflicts) {
-            String bgColor = (conflict.getClassId().equals(iSelectedClassId)?"rgb(168,187,225)":null);
-            boolean canAssign = context.hasPermission(conflict.getClazz(), Right.ClassAssignment);
-            ret += "<tr "+(bgColor==null?"":"style=\"background-color:"+bgColor+";\" ")+
-            	(canAssign ? "onmouseover=\"this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';\" "+
-                "onmouseout=\"this.style.backgroundColor='"+(bgColor==null?"transparent":bgColor)+"';\" "+
-                "onclick=\"document.location='classInfo.action?classId="+conflict.getClassId()+"&op=Select&noCacheTS=" + new Date().getTime()+"';\"" : "") + ">";
-            ret += "<td nowrap>";
-            if (!canAssign && context.hasPermission(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering(), Right.OfferingCanLock)) {
-            	ret += "<img src='images/error.png' border='0' " +
-            			"onclick='if (confirm(\"" + MSG.messageCourseNotLocked(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName()) + "\")) " +
-            			"document.location=\"classInfo.action?offering="+conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()+"&op=Lock&noCacheTS=" + new Date().getTime()+"\";event.cancelBubble=true;' " +
-            			"title=\"" + MSG.titleCourseNotLocked(conflict.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseName()) + "\" style='cursor: pointer;'>&nbsp;";
-            }
-            ret += conflict.getClassNameHtml();
-            ret += "</td><td nowrap>";
-            ret += conflict.getLeadingInstructorNames(", ");
-            ret += "</td><td nowrap>";
-            ret += conflict.getDateNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>"+"</td>";
-            ret += "</td><td nowrap>";
-            ret += conflict.getTimeNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>"+"</td>";
-            ret += "</td><td nowrap>";
-            ret += conflict.getRoomNamesHtml(", ") + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>"+MSG.notAssigned()+"</i></font>";
-            ret += "</td></tr>";
-        }
-        ret += "</table>";
-        return ret;
-    }
     
     public String toString(String delim) {
         String ret = "";

@@ -47,7 +47,6 @@
     </tt:hasProperty>
     <link rel="shortcut icon" href="images/timetabling.ico">
     <title>UniTime <%=Constants.VERSION%>| University Timetabling Application</title>
-    <script type="text/javascript" src="scripts/rtt.js"></script>
   </head>
   <body class="unitime-Body">
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1" style="position:absolute;width:0;height:0;border:0"></iframe>
@@ -79,7 +78,6 @@
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError"/>
 	<span id='UniTimeGWT:CustomPageMessages'></span>
 	<span id='UniTimeGWT:SolverWarnings'></span>
-	<tt:offering-locks/>
   	
 	<span class="unitime-Page"><span class='row'>
 	<span class='sidebar' id="unitime-SideMenu">
@@ -123,7 +121,7 @@
     	<span class="unitime-PageHeader" id="unitime-Header">
     		<span class="row">
     			<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
-    			<a href='main.action' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
+    			<a href='main' tabIndex="-1" class="logo" aria-label="${ARIA.pageUniTimeLogo()}"></a>
     			<span class="content">
 					<span id='UniTimeGWT:Title' class="title"></span>
 					<span class='unitime-Header'><span id='UniTimeGWT:Header' class="unitime-InfoPanel"></span></span>

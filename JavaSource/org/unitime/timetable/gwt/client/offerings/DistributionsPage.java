@@ -297,7 +297,7 @@ public class DistributionsPage extends Composite {
 					footer.addButton("add-distribution", COURSE.actionAddDistributionPreference(), new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent e) {
-							ToolBox.open(GWT.getHostPageBaseURL() + "distributionPrefs.action?op=" +
+							ToolBox.open(GWT.getHostPageBaseURL() + "distributions?op=" +
 									URL.encodeQueryString(COURSE.actionAddDistributionPreference()));
 						}
 					});

@@ -161,7 +161,7 @@ public class BackTracker {
 				(style==null?"":" style=\""+style+"\"")+
 				(clazz==null?"":" class=\""+clazz+"\"")+
 				" title=\""+title+"\""+
-				" onClick=\"document.location='back.action?uri="+encodeURL(backUrl)+"'"+
+				" onClick=\"document.location='back?uri="+encodeURL(backUrl)+"'"+
 				
 				";\""+
 				"/>";
@@ -251,7 +251,7 @@ public class BackTracker {
 			for (int i=Math.max(0,back.size()-MAX_BACK_STEPS); i<back.size(); i++) {
 				BackItem backItem = back.get(i);
 				if (ret.length()>0) ret.append(" &rarr; ");
-				ret.append("<span class='item'><A href='back.action?uri="+encodeURL(backItem.getUrl())+"'>"+backItem.getTitle()+"</A></span>");
+				ret.append("<span class='item'><A href='back?uri="+encodeURL(backItem.getUrl())+"'>"+backItem.getTitle()+"</A></span>");
 			}
 			return "&nbsp;"+ret.toString();
 		}

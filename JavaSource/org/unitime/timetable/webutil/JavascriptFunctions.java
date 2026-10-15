@@ -38,38 +38,5 @@ public class JavascriptFunctions {
     public static boolean isJsConfirm(SessionContext context) {
         return (context.isAuthenticated() ? CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)) : true);
     }
-
-    /**
-     * Returns the javascript variable 'jsConfirm' set to true/false depending
-     * on the user setting. This function is called from JSPs and is used to
-     * determine whether confirmation dialogs are displayed to the user
-     * @param user User Object
-     * @return String "var jsConfirm = true;" OR "var jsConfirm = false;"
-     */
-    public static String getJsConfirm(SessionContext context) {
-    	return "var jsConfirm = "+(isJsConfirm(context) ? "true" : "false")+";";
-    }
-    
-    public static String getInheritInstructorPreferencesCondition(SessionContext context) {
-    	String inheritInstrPref = context.getUser().getProperty(UserProperty.InheritInstructorPrefs);
-    	if (CommonValues.Always.eq(inheritInstrPref)) {
-    		return "true";
-    	} else if (CommonValues.Never.eq(inheritInstrPref)) {
-    		return "false";
-    	} else {
-    		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
-    	}
-    }
-    
-    public static String getCancelInheritInstructorPreferencesCondition(SessionContext context) {
-    	String inheritInstrPref = context.getUser().getProperty(UserProperty.InheritInstructorPrefs);
-    	if (CommonValues.Always.eq(inheritInstrPref)) {
-    		return "true";
-    	} else if (CommonValues.Never.eq(inheritInstrPref)) {
-    		return "false";
-    	} else {
-    		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
-    	}
-    }
     
 }

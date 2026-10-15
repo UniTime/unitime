@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,7 +43,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -52,11 +52,16 @@ import org.unitime.timetable.gwt.command.server.GwtRpcLogging;
 import org.unitime.timetable.gwt.command.server.GwtRpcLogging.Level;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.MenuRpcRequest;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.PointInTimeData;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
@@ -361,7 +366,7 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 			} else if ("hasRoomAvailability".equals(right)) {
 				return RoomAvailability.getInstance() != null;
 			} else if ("hasPersonalReport".equals(right)) {
-				return sessionContext.isAuthenticated() && PersonalizedExamReportAction.hasPersonalReport(sessionContext.getUser().getExternalUserId());
+				return sessionContext.isAuthenticated() && hasPersonalReport(sessionContext.getUser().getExternalUserId());
 			} else if ("isChameleon".equals(right)) {
 				return sessionContext.isAuthenticated() && (sessionContext.hasPermission(Right.Chameleon) || sessionContext.getUser() instanceof UserContext.Chameleon);
 			} else if ("isSectioningEnabled".equals(right)) {
@@ -407,4 +412,41 @@ public class MenuBackend implements GwtRpcImplementation<MenuRpcRequest, GwtRpcR
 		sLog.warn("Unknown condition " + cond + ".");
 		return true;
 	}
+	
+	public static boolean hasPersonalReport(String userId) {
+    	if (userId == null) return false;
+        //if (user.getRole()!=null) return false;
+        HashSet<Session> sessions = new HashSet();
+        DepartmentalInstructor instructor = null;
+        for (DepartmentalInstructor s: DepartmentalInstructorDAO.getInstance().getSession().
+                createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId", DepartmentalInstructor.class).
+                setParameter("externalId", userId).
+                setCacheable(true).list()) {
+            if (!canDisplay(s.getDepartment().getSession())) continue;
+            sessions.add(s.getDepartment().getSession());
+            if (instructor==null || instructor.getDepartment().getSession().compareTo(s.getDepartment().getSession())<0) instructor = s;
+        }
+        
+        Student student = null;
+        for (Student s: StudentDAO.getInstance().getSession().
+                createQuery("select s from Student s where s.externalUniqueId=:externalId", Student.class).
+                setParameter("externalId", userId).
+                setCacheable(true).list()) {
+            if (!canDisplay(s.getSession())) continue;
+            sessions.add(s.getSession());
+            if (student==null || student.getSession().compareTo(s.getSession())<0) student = s;
+        }
+        
+        if (instructor==null && student==null) return false;
+
+        return true;
+    }
+	
+    public static boolean canDisplay(Session session) {
+        if (session.getStatusType()==null) return false;
+        if (session.canNoRoleReportExamFinal()) return true;
+        if (session.canNoRoleReportExamMidterm()) return true;
+        if (session.canNoRoleReportClass()) return true;
+        return false;
+    }
 }

@@ -28,6 +28,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.client.exams.ExamsInterface;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamConflictBasedStatisticsRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -42,7 +43,6 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 @GwtRpcImplements(ExamConflictBasedStatisticsRequest.class)
 public class ExamConflictBasedStatisticsBackend implements GwtRpcImplementation<ExamConflictBasedStatisticsRequest, GwtRpcResponseList<CBSNode>> {
@@ -184,13 +184,13 @@ public class ExamConflictBasedStatisticsBackend implements GwtRpcImplementation<
     		case ExamConflictStatisticsInfo.sConstraintTypeInstructor :
     			node.setName(GMSG.constraintInstructor(constraint.getName()));
     			try {
-    				node.setLink("examGrid.action?filter="+URLEncoder.encode(constraint.getName(), "UTF-8")+"&resource="+ExamGridTable.Resource.Instructor.ordinal()+"&op=Cbs");
+    				node.setLink("examGrid?filter="+URLEncoder.encode(constraint.getName(), "UTF-8")+"&resource="+ExamsInterface.Resource.Instructor.ordinal()+"&op=Cbs");
     			} catch (UnsupportedEncodingException e) {}
     			break;
     		case ExamConflictStatisticsInfo.sConstraintTypeRoom :
     			node.setName(GMSG.constraintRoom(constraint.getName()));
     			try {
-    				node.setLink("examGrid.action?filter="+URLEncoder.encode(constraint.getName(), "UTF-8")+"&resource="+ExamGridTable.Resource.Room.ordinal()+"&op=Cbs");
+    				node.setLink("examGrid?filter="+URLEncoder.encode(constraint.getName(), "UTF-8")+"&resource="+ExamsInterface.Resource.Room.ordinal()+"&op=Cbs");
     			} catch (UnsupportedEncodingException e) {}
     			break;
     		default: 

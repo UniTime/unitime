@@ -139,37 +139,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-core</artifactId>
-			<version>${struts2.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-tiles-plugin</artifactId>
-			<version>${struts2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.struts</groupId>
-			<artifactId>struts2-convention-plugin</artifactId>
-			<version>${struts2.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.ow2.asm</groupId>
-					<artifactId>asm</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.ow2.asm</groupId>
-					<artifactId>asm-commons</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>org.ow2.asm</groupId>
 			<artifactId>asm</artifactId>
 			<version>${asm.version}</version>
@@ -502,6 +471,11 @@
 			<artifactId>jboss-logging</artifactId>
 			<version>${jboss-logging.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
+			<version>${fileupload2.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${project.build.directory}/src</sourceDirectory>
@@ -523,7 +497,6 @@
 				<excludes>
 					<exclude>**/Constants.java</exclude>
 					<exclude>org/unitime/commons/ant/**/*.*</exclude>
-					<exclude>org/unitime/commons/JDTCompiler15.java</exclude>
 					<exclude>org/unitime/timetable/gwt/command/generator/**/*.*</exclude>
 					<exclude>org/unitime/localization/impl/ImportTranslations.java</exclude>
 					<exclude>org/unitime/localization/impl/ExportTranslations.java</exclude>
@@ -761,7 +734,6 @@
 		<cpsolver.version>1.4.99</cpsolver.version>
 		<hibernate.version>6.6.46.Final</hibernate.version>
 		<itext.version>2.1.7</itext.version>
-		<struts2.version>7.1.1</struts2.version>
 		<protobuf.version>4.34.1</protobuf.version>
 		<gwt.version>2.13.0</gwt.version>
 		<spring.version>6.2.19</spring.version>
@@ -794,6 +766,7 @@
 		<infinispan-hibernate.version>15.2.6.Final</infinispan-hibernate.version>
 		<nashorn.version>15.7</nashorn.version>
 		<jboss-logging.version>3.6.3.Final</jboss-logging.version>
+		<fileupload2.version>2.0.0-M4</fileupload2.version>
 	</properties>
 
 	<distributionManagement>

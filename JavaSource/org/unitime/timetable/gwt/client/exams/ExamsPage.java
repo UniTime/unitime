@@ -127,7 +127,7 @@ public class ExamsPage extends Composite {
 		iFilter.getFooter().addButton("add-exam", EXAM.buttonAddExamination(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "examEdit.action");
+				ToolBox.open(GWT.getHostPageBaseURL() + "examEdit");
 			}
 		});
 		iFilter.getFooter().setEnabled("add-exam", false);

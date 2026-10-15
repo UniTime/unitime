@@ -371,22 +371,22 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private String getClassLabel(Class_ clazz) {
-    	return "<A href='classDetail.action?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
+    	return "<A href='clazz?cid="+clazz.getUniqueId()+"'>"+clazz.getClassLabel(iShowClassSuffix, iShowConfigName)+"</A>";
     }
     
     private String getClassLabel(Lecture lecture) {
-    	return "<A href='classDetail.action?cid="+lecture.getClassId()+"'>"+lecture.getName()+"</A>";
+    	return "<A href='clazz?cid="+lecture.getClassId()+"'>"+lecture.getName()+"</A>";
     }
     
     private String getOfferingLabel(InstructionalOffering offering) {
-    	return "<A href='instructionalOfferingDetail.action?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
+    	return "<A href='offering?io="+offering.getUniqueId()+"'>"+offering.getCourseName()+"</A>";
     }
     private String getOfferingLabel(CourseOffering offering) {
-    	return "<A href='instructionalOfferingDetail.action?io="+offering.getInstructionalOffering().getUniqueId()+"'>"+offering.getCourseName()+"</A>";
+    	return "<A href='offering?io="+offering.getInstructionalOffering().getUniqueId()+"'>"+offering.getCourseName()+"</A>";
     }
     private String getSubpartLabel(SchedulingSubpart subpart) {
     	String suffix = subpart.getSchedulingSubpartSuffix();
-    	return "<A href='schedulingSubpartDetail.action?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
+    	return "<A href='subpart?ssuid="+subpart.getUniqueId()+"'>"+subpart.getCourseName()+" "+subpart.getItypeDesc().trim()+(suffix==null || suffix.length()==0?"":" ("+suffix+")")+"</A>";
     }
     
     private Hashtable iRoomPreferences = null;

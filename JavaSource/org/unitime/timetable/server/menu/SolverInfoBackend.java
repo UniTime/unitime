@@ -26,7 +26,6 @@ import java.util.TreeSet;
 import org.cpsolver.ifs.util.DataProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.action.ManageSolversAction;
 import org.unitime.timetable.gwt.client.sectioning.PublishedSectioningSolutionsTable.InfoComparator;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -37,8 +36,13 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.MenuInterface.InfoPairInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoInterface;
 import org.unitime.timetable.gwt.shared.MenuInterface.SolverInfoRpcRequest;
+import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameterGroup.SolverType;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CommonSolverInterface;
@@ -90,7 +94,7 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 		String version = (String)progress.get("VERSION");
 		if (version==null || "-1".equals(version)) version = "N/A";
 		double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
-		String ownerName = ManageSolversAction.getSolverOwner(properties);
+		String ownerName = getSolverOwner(properties);
 		if (ownerName.length() > 50)
 			ownerName = ownerName.substring(0,47) + "...";
 
@@ -149,4 +153,37 @@ public class SolverInfoBackend implements GwtRpcImplementation<SolverInfoRpcRequ
 	return ret;
 		
 	}
+	
+	public static String getSolverOwner(DataProperties solverProperties) {
+    	String owner = solverProperties.getProperty("General.OwnerPuid", null);
+    	if (owner != null) {
+    		if (owner.startsWith("PUBLISHED_")) return "Published";
+    		TimetableManager mgr = TimetableManager.findByExternalId(owner);
+    		if (mgr != null)
+    			owner = mgr.getShortName();
+    	} else {
+    		owner = MESSAGES.itemNotApplicable();
+    	}
+    	Long[] solverGroupId = solverProperties.getPropertyLongArry("General.SolverGroupId",null);
+		String problem = null;
+		if (solverGroupId != null) {
+			problem = "";
+			for (int i = 0; i < solverGroupId.length; i++) {
+				SolverGroup g = SolverGroupDAO.getInstance().get(solverGroupId[i]);
+				if (g != null)
+					problem += (i == 0 ? "" : " & ") + g.getAbbv();
+			}
+		} else {
+			Long examTypeId = solverProperties.getPropertyLong("Exam.Type", null);
+			if (examTypeId != null) {
+				ExamType type = ExamTypeDAO.getInstance().get(examTypeId);
+				if (type != null) problem = type.getLabel();
+			}
+		}
+		if (problem == null || problem.isEmpty()) problem = MESSAGES.itemNotApplicable();
+		if (MESSAGES.itemNotApplicable().equals(problem)) return owner;
+		if (MESSAGES.itemNotApplicable().equals(owner)) return problem;
+		if (!owner.equals(problem)) return MESSAGES.solverOwner(owner, problem);
+		return owner;
+    }
 }

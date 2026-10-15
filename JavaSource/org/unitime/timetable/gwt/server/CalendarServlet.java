@@ -53,7 +53,6 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import org.unitime.commons.CalendarVTimeZoneGenerator;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventDetailBackend;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.export.events.EventsExportEventsToICal;
@@ -232,7 +231,7 @@ public class CalendarServlet extends HttpServlet {
                 for (DepartmentalInstructor instructor: hibSession.createQuery("select i from DepartmentalInstructor i " +
                 		"where i.externalUniqueId = :externalId and i.department.session.uniqueId = :sessionId", DepartmentalInstructor.class).
                 		setParameter("sessionId", sessionId).setParameter("externalId", userId).list()) {
-                	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
+                	if (!canDisplay(instructor.getDepartment().getSession())) continue;
                 	for (ExamType t: ExamType.findAll(hibSession)) {
                 		ExamStatus status = ExamStatus.findStatus(hibSession, instructor.getSession().getUniqueId(), t.getUniqueId());
                 		DepartmentStatusType type = (status == null || status.getStatus() == null ? instructor.getSession().getStatusType() : status.getStatus());
@@ -253,7 +252,7 @@ public class CalendarServlet extends HttpServlet {
                 for (Student student: hibSession.createQuery("select s from Student s where " +
                 		"s.externalUniqueId=:externalId and s.session.uniqueId = :sessionId", Student.class).
                 		setParameter("sessionId", sessionId).setParameter("externalId", userId).list()) {
-                	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
+                	if (!canDisplay(student.getSession())) continue;
                 	for (ExamType t: ExamType.findAll(hibSession)) {
                 		ExamStatus status = ExamStatus.findStatus(hibSession, student.getSession().getUniqueId(), t.getUniqueId());
                 		DepartmentStatusType type = (status == null || status.getStatus() == null ? student.getSession().getStatusType() : status.getStatus());
@@ -808,4 +807,11 @@ public class CalendarServlet extends HttpServlet {
 		
 	}
 
+	public static boolean canDisplay(Session session) {
+        if (session.getStatusType()==null) return false;
+        if (session.canNoRoleReportExamFinal()) return true;
+        if (session.canNoRoleReportExamMidterm()) return true;
+        if (session.canNoRoleReportClass()) return true;
+        return false;
+    }
 }

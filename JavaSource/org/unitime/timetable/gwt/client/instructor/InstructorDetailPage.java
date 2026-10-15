@@ -76,7 +76,7 @@ public class InstructorDetailPage extends Composite {
 		iHeader.addButton("edit", COURSE.actionEditInstructor(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "instructorInfoEdit.action?instructorId=" + iResponse.getInstructorId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "instructorEdit?instructorId=" + iResponse.getInstructorId());
 			}
 		});
 		iHeader.setEnabled("edit", false);
@@ -86,7 +86,7 @@ public class InstructorDetailPage extends Composite {
 		iHeader.addButton("assignment", COURSE.actionEditInstructorAssignmentPreferences(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "instructorAssignmentPref.action?instructorId=" + iResponse.getInstructorId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "instrAssignmentPrefs?instructorId=" + iResponse.getInstructorId());
 			}
 		});
 		iHeader.setEnabled("assignment", false);
@@ -96,7 +96,7 @@ public class InstructorDetailPage extends Composite {
 		iHeader.addButton("preferences", COURSE.actionEditInstructorPreferences(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent evt) {
-				ToolBox.open(GWT.getHostPageBaseURL() + "instructorPrefEdit.action?instructorId=" + iResponse.getInstructorId());
+				ToolBox.open(GWT.getHostPageBaseURL() + "instructorPrefs?instructorId=" + iResponse.getInstructorId());
 			}
 		});
 		iHeader.setEnabled("preferences", false);
