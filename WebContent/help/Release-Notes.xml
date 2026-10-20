@@ -55,6 +55,15 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Examination Detail: Size</name>
+			<description>
+				<line>Examination size: avoid double-counting students when an exam is put between two classes or courses that share some students.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Technology Update / GWT</name>

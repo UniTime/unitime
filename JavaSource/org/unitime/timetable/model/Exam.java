@@ -335,27 +335,25 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
 
     public int countStudents() {
-        int nrStudents = 0;
-        for (Iterator i=getOwners().iterator();i.hasNext();)
-            nrStudents += ((ExamOwner)i.next()).countStudents();
-        return nrStudents;
+    	return getStudentIds().size();
     }
     
 	@Transient
     public int getLimit() {
         int limit = 0;
-        for (Iterator i=getOwners().iterator();i.hasNext();)
-            limit += ((ExamOwner)i.next()).getLimit();
+        for (ExamOwner owner: getOwners())
+            limit += owner.getLimit();
         return limit;
     }
 
 	@Transient
     public int getSize() {
-        if (getExamSize()!=null) return getExamSize().intValue();
-        int size = 0;
-        for (Iterator i=getOwners().iterator();i.hasNext();)
-            size += ((ExamOwner)i.next()).getSize();
-        return size;
+        if (getExamSize() != null) return getExamSize().intValue();
+        if (ApplicationProperty.ExaminationSizeUseLimitInsteadOfEnrollment.isTrue(getExamType().getReference(), getExamType().getType() != ExamType.sExamTypeFinal)) {
+        	return Math.max(countStudents(), getLimit());
+        } else {
+        	return countStudents();
+        }
     }
 
     public Set effectivePreferences(Class type) {
