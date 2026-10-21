@@ -469,6 +469,20 @@ public class CourseRequestInterface extends StudentSectioningContext implements 
 		return total;
 	}
 	
+	public float getMinCredit() {
+		float total = 0f;
+		for (Request r: getCourses()) {
+			if (r.hasRequestedCourse()) {
+				for (RequestedCourse rc: r.getRequestedCourse())
+					if (rc.hasCredit()) {
+						total += rc.getCreditMin();
+						break;
+					}
+			}
+		}
+		return total;
+	}
+	
 	public float getAdvisorCredit() {
 		float total = 0f;
 		for (Request r: getCourses()) {

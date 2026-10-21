@@ -897,6 +897,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 					if ("DUPL".equals(problem.code)) continue;
 					if ("MAXI".equals(problem.code)) continue;
+					if ("MINI".equals(problem.code)) continue;
 					if ("CLOS".equals(problem.code)) continue;
 					if ("TIME".equals(problem.code)) continue;
 					XCourseId course = crn2course.get(problem.crn);
@@ -942,6 +943,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					}
 					if ("DUPL".equals(problem.code)) continue;
 					if ("MAXI".equals(problem.code)) continue;
+					if ("MINI".equals(problem.code)) continue;
 					if ("CLOS".equals(problem.code)) continue;
 					if ("TIME".equals(problem.code)) continue;
 					XCourseId course = crn2course.get(problem.crn);
@@ -990,15 +992,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			Float minCreditLimit = resp.minCredit;
 			if (minCreditLimit == null)
 				minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditCheck", "0"));
-			float minCredit = otherCredits[0];
-			for (CourseRequestInterface.Request r: request.getCourses()) {
-				if (r.hasRequestedCourse()) {
-					for (RequestedCourse rc: r.getRequestedCourse())
-						if (rc.hasCredit()) {
-							minCredit += rc.getCreditMin(); break;
-						}
-				}
-			}
+			float minCredit = otherCredits[0] + request.getMinCredit();
 			if (creditError == null && minCreditLimit != null && minCreditLimit > 0f && minCredit < minCreditLimit) {
 				String minCreditLimitFilter = ApplicationProperties.getProperty("purdue.specreg.minCreditCheck.studentFilter");
 				if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
@@ -1305,6 +1299,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				boolean hasCredit = false;
 				for (CourseMessage x: response.getMessages(CONF_BANNER)) {
 					if ("CREDIT".equals(x.getCode()) || "MAXI".equals(x.getCode())) { hasCredit = true; continue; }
+					if ("MINI".equals(x.getCode())) continue;
 					if (x.hasCourse() && courses.add(x.getCourse())) {
 						CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
 						cm.setCourse(x.getCourse()); cm.setCourseId(x.getCourseId());
@@ -1740,7 +1735,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 			}
 		}
 
-		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null) {
+		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null || req.minCredit != null) {
 			resource = null;
 			try {
 				resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
@@ -3204,6 +3199,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("HOLD".equals(problem.code)) continue;
 				if ("DUPL".equals(problem.code)) continue;
 				if ("MAXI".equals(problem.code)) continue;
+				if ("MINI".equals(problem.code)) continue;
 				if ("CLOS".equals(problem.code)) continue;
 				if ("TIME".equals(problem.code)) continue;
 				Course course = crn2course.get(problem.crn);
@@ -3238,6 +3234,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 				if ("HOLD".equals(problem.code)) continue;
 				if ("DUPL".equals(problem.code)) continue;
 				if ("MAXI".equals(problem.code)) continue;
+				if ("MINI".equals(problem.code)) continue;
 				if ("CLOS".equals(problem.code)) continue;
 				if ("TIME".equals(problem.code)) continue;
 				Course course = crn2course.get(problem.crn);
@@ -4355,6 +4352,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if ("HOLD".equals(problem.code)) continue;
 					if ("DUPL".equals(problem.code)) continue;
 					if ("MAXI".equals(problem.code)) continue;
+					if ("MINI".equals(problem.code)) continue;
 					if ("CLOS".equals(problem.code)) continue;
 					if ("TIME".equals(problem.code)) continue;
 					XCourseId course = crn2course.get(problem.crn);
@@ -4378,6 +4376,7 @@ public class PurdueCourseRequestsValidationProvider implements CourseRequestsVal
 					if ("HOLD".equals(problem.code)) continue;
 					if ("DUPL".equals(problem.code)) continue;
 					if ("MAXI".equals(problem.code)) continue;
+					if ("MINI".equals(problem.code)) continue;
 					if ("CLOS".equals(problem.code)) continue;
 					if ("TIME".equals(problem.code)) continue;
 					XCourseId course = crn2course.get(problem.crn);
