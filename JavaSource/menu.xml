@@ -433,7 +433,7 @@
 					<hasPermission name="AssignedExaminations"/>
 				</condition>
 			</item>
-			<item name="Not-assigned Exams" page="unassignedExams" type="gwt">
+			<item name="Not-assigned Exams" page="notAssignedExams" type="gwt">
 				<condition>
 					<hasPermission name="NotAssignedExaminations"/>
 				</condition>
