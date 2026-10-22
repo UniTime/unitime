@@ -1874,19 +1874,13 @@ public class SessionRollForward {
 	}
 	
 	private List<Exam> findExamToRollForward(Session toSession, int examType){
-		return(getHibSession().createQuery("select distinct e from ExamOwner as eo inner join eo.exam as e where e.examType.type = :examType " +
-				" and ((eo.ownerType=:ownerTypeClass and eo.ownerId in (select c.uniqueIdRolledForwardFrom from Class_ as c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :toSessionId)) " +
-				" or (eo.ownerType=:ownerTypeCourse and eo.ownerId in (select co.uniqueIdRolledForwardFrom from CourseOffering as co where co.subjectArea.session.uniqueId = :toSessionId)) " +
-				" or (eo.ownerType=:ownerTypeOffering and eo.ownerId in (select io.uniqueIdRolledForwardFrom from InstructionalOffering as io where io.session.uniqueId = :toSessionId)) " +
-				" or (eo.ownerType=:ownerTypeConfig and eo.ownerId in (select ioc.uniqueIdRolledForwardFrom from InstrOfferingConfig as ioc where ioc.instructionalOffering.session.uniqueId = :toSessionId)))",
+		return getHibSession().createQuery(
+				"select distinct o.exam from ExamOwner o, CourseOffering co where o.exam.examType.type = :examType " +
+				"and o.course.uniqueId = co.uniqueIdRolledForwardFrom and co.subjectArea.session.uniqueId = :toSessionId",
 				Exam.class)
 				.setParameter("toSessionId", toSession.getUniqueId().longValue())
 				.setParameter("examType", examType)
-				.setParameter("ownerTypeClass", ExamOwner.sOwnerTypeClass)
-				.setParameter("ownerTypeCourse", ExamOwner.sOwnerTypeCourse)
-				.setParameter("ownerTypeOffering", ExamOwner.sOwnerTypeOffering)
-				.setParameter("ownerTypeConfig", ExamOwner.sOwnerTypeConfig)
-				.list());
+				.list();
 	}
 	
 	protected Map<Long, Class_> getExamClassCache(Session toSession, int examType) {
