@@ -207,7 +207,7 @@
 	
 	.unitime-Page .mobile-menu {
 		display: block;
-		width: 100vw;
+		width: calc(100vw - 15px);
 		padding: 5px;
 	}
 
@@ -308,6 +308,10 @@
 		padding-left: 20px;
 	}
 	
+	.unitime-CourseFinderDialog .filter {
+		min-width: inherit;
+	}
+	
 	.unitime-CourseFinderDialog .course-table {
 		width: 90vw;
 		height: 30vh;
@@ -326,6 +330,10 @@
 		max-width: 90vw;
 		overflow: visible;
 		white-space: normal;
+	}
+	
+	.unitime-CourseRequests {
+		min-width: inherit;
 	}
 
 	.unitime-CourseRequests .line .course .unitime-FilterBox {

@@ -104,17 +104,25 @@
     <script type="text/javascript">
     	var sideMenu = document.getElementById("unitime-SideMenu").getElementsByTagName("span");
     	if (sideMenu.length > 0) {
-    		var c = unescape(document.cookie);
-    		var c_start = c.indexOf("UniTime:SideBar=");
-    		if (c_start >= 0) {
-    			c_start = c.indexOf("|W:", c_start) + 3;
-    			var c_end = c.indexOf(";", c_start);
-    			if (c_end < 0) c_end=c.length;
-    			var width = c.substring(c_start, c_end);
-    			sideMenu[0].style.width = width + "px";
-    			// alert(c.substring(c.indexOf("UniTime:SideBar=") + 16, c_end));
+    		if (sessionStorage) {
+    			c = sessionStorage.getItem('UniTime:SideBar');
+    			if (c && c.indexOf("|W:") > 0) {
+    				var width = c.substring(c.indexOf("|W:", c_start) + 3);
+    				sideMenu[0].style.width = width + "px";
+    			}
     		} else {
-    			sideMenu[0].style.width = (sideMenu[0].id.indexOf("StackMenu") >= 0 ? "172px" : "152px");
+	    		var c = unescape(document.cookie);
+	    		var c_start = c.indexOf("UniTime:SideBar=");
+	    		if (c_start >= 0) {
+	    			c_start = c.indexOf("|W:", c_start) + 3;
+	    			var c_end = c.indexOf(";", c_start);
+	    			if (c_end < 0) c_end=c.length;
+	    			var width = c.substring(c_start, c_end);
+	    			sideMenu[0].style.width = width + "px";
+	    			alert(c.substring(c.indexOf("UniTime:SideBar=") + 16, c_end));
+	    		} else {
+	    			sideMenu[0].style.width = (sideMenu[0].id.indexOf("StackMenu") >= 0 ? "172px" : "152px");
+	    		}
     		}
     	}
     </script>
