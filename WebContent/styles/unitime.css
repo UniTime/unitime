@@ -47,7 +47,8 @@ input[type="button"] {
 }
 
 #unitime-Page {
-	min-width: 800px;
+	--page-max-width: calc(100vw - 20px);
+	min-width: calc(min(800px, var(--page-max-width))); 
 }
 
 .unitime-Page .row {
@@ -136,6 +137,7 @@ input[type="button"] {
 .unitime-Footer {
 	display: table;
 	width: 100%;
+	max-width: calc(var(--page-max-width));
 }
 
 .unitime-Footer .row {
@@ -3837,6 +3839,7 @@ div.gwt-MenuBarPopup {
 .unitime-PageHeader {
 	display: table;
 	width: 100%;
+	max-width: calc(var(--page-max-width));
 }
 
 .unitime-PageHeader .row {
@@ -4722,7 +4725,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-ClassScheduleTabPanel .body {
-	max-width: calc(100vw - 20px);
+	max-width: calc(var(--page-max-width) - 20px);
 }
 
 .unitime-RestrictionsTable .cancelled {
@@ -5208,6 +5211,10 @@ div.gwt-MenuBarPopup {
 
 .unitime-CourseSelectionBox .error {
 	margin-top: 0px;
+}
+
+.unitime-CourseRequests {
+	min-width: 792px;
 }
 
 .unitime-CourseRequests .header {
@@ -5791,6 +5798,7 @@ div.gwt-MenuBarPopup {
 	overflow: auto;
 	position: relative;
 	zoom: 1;
+	max-width: calc(var(--page-max-width) - 10px);
 }
 
 .unitime-StickyTable {
@@ -5798,6 +5806,7 @@ div.gwt-MenuBarPopup {
 	position: relative;
 	zoom: 1;
 	max-height: 100vh;
+	max-width: calc(var(--page-max-width) - 10px);
 }
 
 .unitime-StickyTable .WebTableHeader {
@@ -5992,7 +6001,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-TimetablePage .scroll-panel {
-	max-width: 99vw;
+	max-width: calc(var(--page-max-width) - 20px);
 	overflow: auto;
 
 }
@@ -6373,7 +6382,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-SuggestionsPage .table-row {
-	max-width: calc(99vw - 12px);
+	max-width: calc(var(--page-max-width) - 20px);
 }
 
 .unitime-SuggestionsPage .info-message {
@@ -6512,7 +6521,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-SolutionReportsPage .table-row {
-	width: calc(99vw - 8px);
+	width: calc(var(--page-max-width) - 10px);
 }
 
 .unitime-SolutionReportsPage .single-report {
@@ -6863,7 +6872,7 @@ div.gwt-MenuBarPopup {
 .unitime-SpecialRegistrationsPanel .registrations-panel {
 	border: 1px solid #9CB0CE;	
 	overflow: auto;
-	max-width: calc(100vw - 20px);
+	max-width: calc(var(--page-max-width) - 20px);
 }
 
 .unitime-SpecialRegistrationsPanel .registrations-panel:focus {
@@ -6935,6 +6944,11 @@ div.gwt-MenuBarPopup {
 
 .unitime-SectioningStatusPage {
 	width: 100%;
+}
+
+.unitime-SectioningStatusPage .unitime-TabPanel {
+	overflow-y: auto;
+	width: calc(var(--page-max-width) - 10px);
 }
 
 .unitime-SectioningStatusPage .unitime-TabPanel table {
@@ -7481,7 +7495,7 @@ div.gwt-MenuBarPopup {
 .unitime-WaitListsPanel .waitlists-panel {
 	border: 1px solid #9CB0CE;	
 	overflow: auto;
-	max-width: calc(100vw - 20px);
+	max-width: calc(var(--page-max-width) - 20px);
 }
 
 .unitime-WaitListsPanel .waitlists-errors {
@@ -8153,7 +8167,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-InstructionalOfferingsPage .unitime-PageFilter .unitime-HeaderPanel {
-	max-width: calc(99vw - 220px);
+	max-width: calc(var(--page-max-width) - 10px);
 }
 
 .unitime-InstrOfferingConfig .scheduling-disclaimer textarea {
@@ -8925,7 +8939,7 @@ div.gwt-MenuBarPopup {
 
 .unitime-ExamGridPage .grid-scroll {
 	overflow-x: auto; 
-	max-width: calc(100vw - 20px);
+	max-width: calc(var(--page-max-width) - 20px);
 }
 
 .unitime-ExamGridPage .legend .box {
@@ -8986,7 +9000,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-ExamPdfReportsPage .unitime-HeaderPanel .title {
-	max-width: calc(100vw - 100px);
+	max-width: calc(var(--page-max-width) - 20px);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: block;
@@ -9049,19 +9063,20 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-HQLTablePanel {
-	max-width: calc(100vw - 50px);
+	max-width: calc(var(--page-max-width) - 10px);
 	width: 100%;
 	overflow: auto;
 }
 
 .unitime-TestHQLPage .generated-sql-panel {
-	max-width: calc(100vw - 50px);
+	max-width: calc(var(--page-max-width) - 10px);
 	width: 100%;
 	overflow: auto;
 }
 
 .unitime-TestHQLPage .generated-sql {
 	white-space: pre-wrap;
+	word-break: break-all; 
 }
 
 .unitime-TestHQLPage .label-cell {
@@ -9400,4 +9415,8 @@ div.gwt-MenuBarPopup {
 
 .unitime-HibernateStatisticsPage .unitime-MainTable tr:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-MainTable .table-row {
+	max-width: calc(var(--page-max-width) - 10px);
 }

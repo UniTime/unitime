@@ -243,6 +243,12 @@ public class UniTimeSideBar extends UniTimeMenu {
 		}
 	}
 	
+	protected void updatePageSize() {
+		RootPanel panel = RootPanel.get("unitime-Page");
+		if (panel != null)
+			setStyle(panel.getElement(), "--page-max-width", "calc(100vw - " + (20 + getOffsetWidth())  + "px)");
+	}
+	
 	private void attach(final RootPanel rootPanel) {
 		RPC.execute(new MenuInterface.MenuRpcRequest(), new AsyncCallback<GwtRpcResponseList<MenuInterface>>() {
 			@Override
@@ -309,6 +315,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		}
 		sideBarCookie += "|W:" + iPanel.getElement().getClientWidth();
 		ToolBox.setSessionCookie("UniTime:SideBar", sideBarCookie);
+		updatePageSize();
 		resizeWideTables();
 		if (iPanel.getElement().getClientWidth() != iDisclosurePanel.getElement().getClientWidth()) {
 			// panel width has not been updated, force redraw by hiding it and showing it again
@@ -590,5 +597,8 @@ public class UniTimeSideBar extends UniTimeMenu {
 	}-*/;
 	public static native void clickElement(Element elem) /*-{
 		elem.click();
+	}-*/;
+	public static native void setStyle(Element elem, String attribute, String value) /*-{
+		elem.style.setProperty(attribute, value);
 	}-*/;
 }
