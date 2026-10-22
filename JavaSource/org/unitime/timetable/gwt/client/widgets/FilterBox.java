@@ -684,13 +684,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iChip = chip;
 			setStyleName("chip");
 			addStyleName(color);
-			String label = chip.getTranslatedValue();
-			if (label.matches("[<>=]+[0-9]+\\.?[0-9]*"))
-				label = chip.getTranslatedCommand() + " " + label;
-			else if (label.matches("[0-9]+\\.?[0-9]*"))
-				label = MESSAGES.filterChipEquals(chip.getTranslatedCommand(), label);
-			else if (label.matches("[0-9]+\\.?[0-9]*\\.\\.[0-9]+\\.?[0-9]*"))
-				label = MESSAGES.filterChipInRange(chip.getTranslatedCommand(), label);
+			String label = (chip.hasTranslatedValue() ? chip.getTranslatedValue() : chip.getLongValue());
 			iLabel = new Label(label);
 			iLabel.setStyleName("text");
 			add(iLabel);
@@ -805,7 +799,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public static class Chip implements IsSerializable {
 		private String iCommand, iValue, iLabel, iHint;
-		private String iTranslatedCommand, iTranslatedValue;
+		private String iTranslatedCommand, iTranslatedValue, iLongValue;
 		private Integer iCount;
 		public Chip() {}
 		
@@ -827,6 +821,10 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iTranslatedValue = translation; return this;
 		}
 		
+		public Chip withLongValue(String longValue) {
+			iLongValue = longValue; return this;
+		}
+		
 		public Chip withToolTip(String hint) {
 			iHint = hint; return this;
 		}
@@ -841,6 +839,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public String getValue() { return iValue; }
 		public String getTranslatedValue() { return iTranslatedValue == null || iTranslatedValue.isEmpty() ? iValue : iTranslatedValue; }
 		public String getLabel() { return iLabel == null || iLabel.isEmpty() ? iTranslatedValue == null || iTranslatedValue.isEmpty() ? iValue : iTranslatedValue : iLabel; }
+		public boolean hasTranslatedValue() { return iTranslatedValue != null && !iTranslatedValue.isEmpty(); }
+		public String getLongValue() { return iLongValue == null || iLongValue.isEmpty() ? iValue : iLongValue; }
+		public boolean hasLongValue() { return iLongValue != null && !iLongValue.isEmpty(); }
 		
 		public boolean hasToolTip() { return iHint != null && !iHint.isEmpty(); }
 		public String getToolTip() { return iHint; }
@@ -1124,6 +1125,113 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			});
 		}
 		
+	}
+	
+	public static class StaticNumberFilter extends StaticSimpleFilter {
+		private boolean iRange = true;
+		private boolean iSuffix = false;
+		private float iMax = 99f;
+		
+		public StaticNumberFilter(String command, String label) {
+			super(command, label);
+		}
+		
+		public StaticNumberFilter withRange(boolean allowForMinMax) { iRange = allowForMinMax; return this; }
+		public StaticNumberFilter withSuffix(boolean allowForSuffix) { iSuffix = allowForSuffix; return this; }
+		public StaticNumberFilter withMax(float max) { iMax = max; return this; }
+		
+		@Override
+		public void validate(String text, AsyncCallback<Chip> callback) {
+			Chip chip = new Chip(getCommand(), text).withTranslatedCommand(getLabel());
+			if (iRange && text.matches("[<>=]+[0-9]+\\.?[0-9]*"))
+				chip.withLongValue(getLabel() + " " + text);
+			else if (text.matches("[0-9]+\\.?[0-9]*"))
+				chip.withLongValue(MESSAGES.filterChipEquals(getLabel(), text));
+			else if (iRange && text.matches("[0-9]+\\.?[0-9]*\\.\\.[0-9]+\\.?[0-9]*"))
+				chip.withLongValue(MESSAGES.filterChipInRange(getLabel(), text));
+			else if (iSuffix && text.matches("[0-9]+\\.?[0-9]*[^0-9\\.].*"))
+				chip.withLongValue(getLabel() + " " + text);
+			else if (iSuffix && iRange && text.matches("[<>=]+[0-9]+\\.?[0-9]*[^0-9\\.].*"))
+				chip.withLongValue(getLabel() + " " + text);
+			else if (iSuffix && iRange && text.matches("[0-9]+\\.?[0-9]*\\.\\.[0-9]+\\.?[0-9]*[^0-9\\.].*"))
+				chip.withLongValue(MESSAGES.filterChipInRange(getLabel(), text));
+			if (chip.hasLongValue())
+				callback.onSuccess(chip);
+			else
+				callback.onFailure(new Exception("Failed to parse " + text + "."));
+		}
+		
+		@Override
+		public void getSuggestions(final List<Chip> chips, final String text, final AsyncCallback<Collection<Suggestion>> callback) {
+			if (text.isEmpty()) {
+                callback.onSuccess(null);
+	        } else {
+	        	List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
+	        	Chip old = null;
+                for (Chip c: chips) { if (c.getCommand().equals(getCommand())) { old = c; break; } }
+                try {
+                	String number = text;
+                	String prefix = "";
+                	if (iRange && (text.startsWith("<=") || text.startsWith(">="))) { number = number.substring(2); prefix = text.substring(0, 2); }
+                	else if (iRange && (text.startsWith("<") || text.startsWith(">"))) { number = number.substring(1); prefix = text.substring(0, 1); }
+                	try {
+                		if (Float.parseFloat(number) <= iMax) {
+                			suggestions.add(new Suggestion(new Chip(getCommand(), text).withTranslatedCommand(getLabel())
+                					.withLongValue(prefix.isEmpty() ? MESSAGES.filterChipEquals(getLabel(), text) : getLabel() + " " + text), old));
+                			if (iRange && prefix.isEmpty()) {
+                                suggestions.add(new Suggestion(new Chip(getCommand(), "<=" + text).withTranslatedCommand(getLabel())
+                                		.withLongValue(getLabel() + " <=" + text), old));
+                                suggestions.add(new Suggestion(new Chip(getCommand(), ">=" + text).withTranslatedCommand(getLabel())
+                                		.withLongValue(getLabel() + " >=" + text), old));
+                			}
+                        }
+                	} catch (NumberFormatException e) {
+                		if (iSuffix) {
+                			RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)([^0-9\\.].*)$");
+                            MatchResult m = rx.exec(number);
+                            if (m != null) {
+                                Float.parseFloat(m.getGroup(1));
+                                String im = m.getGroup(2).trim();
+                                suggestions.add(new Suggestion(new Chip(getCommand(), prefix + m.getGroup(1) + " " + im)
+                                		.withTranslatedCommand(getLabel())
+                                		.withLongValue(prefix.isEmpty() ? MESSAGES.filterChipEquals(getLabel(), m.getGroup(1) + " " + im) : getLabel() + " " + m.getGroup(1) + " " + im), old));
+                                if (iRange && prefix.isEmpty()) {
+                                    suggestions.add(new Suggestion(new Chip(getCommand(), "<=" + m.getGroup(1) + " " + im).withTranslatedCommand(getLabel())
+                                    		.withLongValue(getLabel() + " <=" + m.getGroup(1) + " " + im), old));
+                                    suggestions.add(new Suggestion(new Chip(getCommand(), ">=" + m.getGroup(1) + " " + im).withTranslatedCommand(getLabel())
+                                    		.withLongValue(getLabel() + " >=" + m.getGroup(1) + " " + im), old));
+                                }
+                            }
+                        }
+                	}
+                } catch (Exception e) {}
+                if (iRange) {
+	                try {
+                        if (text.contains("..")) {
+                            try {
+                                String first = text.substring(0, text.indexOf('.'));
+                                String second = text.substring(text.indexOf("..") + 2);
+                                if (Float.parseFloat(first) < Float.parseFloat(second) &&  Float.parseFloat(second) <= iMax) {
+                                    suggestions.add(new Suggestion(new Chip(getCommand(), text).withTranslatedCommand(getLabel())
+                                    		.withLongValue(MESSAGES.filterChipInRange(getLabel(), text)), old));
+                                }
+                            } catch (NumberFormatException e) {
+                            	if (iSuffix) {
+		                            RegExp rx = RegExp.compile("^([0-9]+\\.?[0-9]*)\\.\\.([0-9]+\\.?[0-9]*)([^0-9].*)$");
+		                            MatchResult m = rx.exec(text);
+		                            if (m != null) {
+		                                suggestions.add(new Suggestion(new Chip(getCommand(), m.getGroup(1) + ".." + m.getGroup(2) + " " + m.getGroup(3).trim())
+		                                		.withTranslatedCommand(getLabel())
+		                                		.withLongValue(MESSAGES.filterChipInRange(getLabel(), m.getGroup(1) + ".." + m.getGroup(2) + " " + m.getGroup(3).trim())), old));
+		                            }
+                            	}
+                            }
+                        }
+	                } catch (Exception e) {}
+                }
+                callback.onSuccess(suggestions);
+	        }
+		}
 	}
 	
 	public static class StaticSimpleFilter extends SimpleFilter {
