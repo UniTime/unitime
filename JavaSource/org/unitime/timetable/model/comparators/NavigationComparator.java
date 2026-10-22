@@ -31,30 +31,31 @@ import org.unitime.timetable.model.SchedulingSubpart;
  * @author Tomas Muller
  *
  */
-public class NavigationComparator implements Comparator {
+public class NavigationComparator implements Comparator<Object> {
 	ClassComparator iClassComparator = new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY);
 	SchedulingSubpartComparator iSchedulingSubpartComparator = new SchedulingSubpartComparator();
 	InstructionalOfferingComparator iInstructionalOfferingComparator = new InstructionalOfferingComparator(null);
 	InstrOfferingConfigComparator iInstrOfferingConfigComparator = new InstrOfferingConfigComparator(null);
 	
+	@Override
 	public int compare(Object o1, Object o2) {
 		if (o1 instanceof Class_)
 			return iClassComparator.compare((Class_)o1, (Class_)o2);
 		if (o1 instanceof SchedulingSubpart)
-			return iSchedulingSubpartComparator.compare(o1, o2);
+			return iSchedulingSubpartComparator.compare((SchedulingSubpart) o1, (SchedulingSubpart) o2);
 		if (o1 instanceof InstrOfferingConfig) {
 			if (iInstrOfferingConfigComparator.getSubjectUID()==null) {
 				InstrOfferingConfig ioc = (InstrOfferingConfig)o1;
 				iInstrOfferingConfigComparator.setSubjectUID(ioc.getControllingCourseOffering().getSubjectArea().getUniqueId());
 			}
-			return iInstrOfferingConfigComparator.compare(o1, o2);
+			return iInstrOfferingConfigComparator.compare((InstrOfferingConfig) o1, (InstrOfferingConfig) o2);
 		}
 		if (o1 instanceof InstructionalOffering) {
 			if (iInstructionalOfferingComparator.getSubjectUID()==null) {
 				InstructionalOffering io = (InstructionalOffering)o1;
 				iInstructionalOfferingComparator.setSubjectUID(io.getControllingCourseOffering().getSubjectArea().getUniqueId());
 			}
-			return iInstructionalOfferingComparator.compare(o1, o2);
+			return iInstructionalOfferingComparator.compare((InstructionalOffering) o1, (InstructionalOffering) o2);
 		}
 		return o1.toString().compareTo(o2.toString());
 	}

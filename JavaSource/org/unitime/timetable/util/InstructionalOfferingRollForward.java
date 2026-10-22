@@ -141,8 +141,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				.list();
 			if (l != null){
 				CourseCatalog cc = null;
-				for (Iterator ccIt = l.iterator(); ccIt.hasNext();){
-					cc = (CourseCatalog) ccIt.next();
+				for (Iterator<CourseCatalog> ccIt = l.iterator(); ccIt.hasNext();){
+					cc = ccIt.next();
 					addInstructionalOffering(cc, toSession);
 				}
 			}
@@ -206,8 +206,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		if (fromInstructionalOffering.getInstrOfferingConfigs() != null && fromInstructionalOffering.getInstrOfferingConfigs().size() > 0){
 			List<InstrOfferingConfig> fromInstrOffrConfigs = new ArrayList<InstrOfferingConfig>(fromInstructionalOffering.getInstrOfferingConfigs());
 			Collections.sort(fromInstrOffrConfigs, new InstrOfferingConfigComparator(null));
-			for (Iterator it = fromInstrOffrConfigs.iterator(); it.hasNext();){
-				fromInstrOffrConfig = (InstrOfferingConfig) it.next();
+			for (Iterator<InstrOfferingConfig> it = fromInstrOffrConfigs.iterator(); it.hasNext();){
+				fromInstrOffrConfig = it.next();
 				toInstrOffrConfig = new InstrOfferingConfig();
 				toInstrOffrConfig.setLimit(fromInstrOffrConfig.getLimit());
 				toInstrOffrConfig.setInstructionalOffering(toInstructionalOffering);
@@ -233,8 +233,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 				if (courseCatalogEntry != null && courseCatalogEntry.getSubparts() != null){
 					CourseSubpartCredit csc = null;
 					boolean found = false;
-					for (Iterator cscIt = courseCatalogEntry.getSubparts().iterator(); (cscIt.hasNext() && !found);){
-						csc = (CourseSubpartCredit) cscIt.next();
+					for (Iterator<CourseSubpartCredit> cscIt = courseCatalogEntry.getSubparts().iterator(); (cscIt.hasNext() && !found);){
+						csc = cscIt.next();
 						if (csc.getSubpartId().equals(toSubpart.getItype().getItype().toString())){
 							found = true;
 						}
@@ -368,8 +368,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 			Class_ fromClass = null;
 			Class_ toClass = null;
-			for (Iterator it = classes.iterator(); it.hasNext();){
-				fromClass = (Class_) it.next();
+			for (Iterator<Class_> it = classes.iterator(); it.hasNext();){
+				fromClass = it.next();
 				if (CancelledClassAction.SKIP == getCancelledClassAction() && fromClass.isCancelled()) continue;
 				toClass = rollForwardClass(fromClass, toSubpart, toSession);
 				RollForwardClass rfc = new RollForwardClass();
@@ -403,8 +403,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			List<SchedulingSubpart> childSubparts = new ArrayList<SchedulingSubpart>(fromSubpart.getChildSubparts());
 			Collections.sort(childSubparts, new SchedulingSubpartComparator());
 			SchedulingSubpart childSubpart = null;
-			for(Iterator it = childSubparts.iterator(); it.hasNext();){
-				childSubpart = (SchedulingSubpart) it.next();
+			for(Iterator<SchedulingSubpart> it = childSubparts.iterator(); it.hasNext();){
+				childSubpart = it.next();
 				rollForwardSchedulingSubpart(toInstrOffrConfig, childSubpart, rfSs, toSession);
 			}
 		}
@@ -416,8 +416,8 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			SchedulingSubpart ss = null;
 			List<SchedulingSubpart> subparts = new ArrayList<SchedulingSubpart>(ioc.getSchedulingSubparts());
 			Collections.sort(subparts, new SchedulingSubpartComparator());
-			for(Iterator it = subparts.iterator(); it.hasNext();){
-				ss = (SchedulingSubpart) it.next();
+			for (Iterator<SchedulingSubpart> it = subparts.iterator(); it.hasNext();){
+				ss = it.next();
 				if (ss.getParentSubpart() == null){
 					rollForwardSchedulingSubpart(newIoc, ss, null, toSession);
 				}

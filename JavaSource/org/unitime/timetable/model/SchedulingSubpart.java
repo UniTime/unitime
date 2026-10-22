@@ -724,39 +724,51 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     }
     
     public void deleteAllDistributionPreferences(org.hibernate.Session hibSession) {
-		for (Iterator i3=getClasses().iterator();i3.hasNext();) {
-			Class_ c = (Class_)i3.next();
-			c.deleteAllDistributionPreferences(hibSession);
-		}
+    	if (getClasses() != null && !getClasses().isEmpty()) {
+			for (Iterator i3=getClasses().iterator();i3.hasNext();) {
+				Class_ c = (Class_)i3.next();
+				c.deleteAllDistributionPreferences(hibSession);
+			}
+    	}
     	boolean deleted = false;
-    	for (Iterator i=getDistributionObjects().iterator();i.hasNext();) {
-    		DistributionObject relatedObject = (DistributionObject)i.next();
-    		DistributionPref distributionPref = relatedObject.getDistributionPref();
-    		distributionPref.getDistributionObjects().remove(relatedObject);
-    		Integer seqNo = relatedObject.getSequenceNumber();
-			hibSession.remove(relatedObject);
-			deleted = true;
-			if (distributionPref.getDistributionObjects().isEmpty()) {
-				PreferenceGroup owner = distributionPref.getOwner();
-				owner.getPreferences().remove(distributionPref);
-				getPreferences().remove(distributionPref);
-				hibSession.merge(owner);
-				hibSession.remove(distributionPref);
-			} else {
-				if (seqNo!=null) {
-					for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
-						DistributionObject dObj = (DistributionObject)j.next();
-						if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
-							dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
-							hibSession.merge(dObj);
+    	if (getDistributionObjects() != null && !getDistributionObjects().isEmpty()) {
+	    	Set<DistributionObject> distObjects = new HashSet(getDistributionObjects());
+	    	distObjects.size();
+	    	for (Iterator i=distObjects.iterator();i.hasNext();) {
+	    		DistributionObject relatedObject = (DistributionObject)i.next();
+	    		DistributionPref distributionPref = relatedObject.getDistributionPref();
+	    		if (distributionPref.getDistributionObjects() != null && !distributionPref.getDistributionObjects().isEmpty()) {
+	    			distributionPref.getDistributionObjects().remove(relatedObject);
+	    		}
+				getDistributionObjects().remove(relatedObject);
+	    		Integer seqNo = relatedObject.getSequenceNumber();
+				hibSession.remove(relatedObject);
+				hibSession.merge(distributionPref);
+				deleted = true;
+				hibSession.flush();
+				hibSession.refresh(distributionPref);
+				if (distributionPref.getDistributionObjects() == null || distributionPref.getDistributionObjects().isEmpty()) {
+					PreferenceGroup owner = distributionPref.getOwner();
+					owner.getPreferences().remove(distributionPref);
+					hibSession.merge(owner);
+					hibSession.remove(distributionPref);
+				} else {
+					if (seqNo!=null) {
+						for (Iterator j=distributionPref.getDistributionObjects().iterator();j.hasNext();) {
+							DistributionObject dObj = (DistributionObject)j.next();
+							if (seqNo.compareTo(dObj.getSequenceNumber())<0) {
+								dObj.setSequenceNumber(Integer.valueOf(dObj.getSequenceNumber().intValue()-1));
+								hibSession.merge(dObj);
+							}
 						}
 					}
+					hibSession.merge(distributionPref);
 				}
-				hibSession.merge(distributionPref);
-			}
-			i.remove();
+	    	}
+	    	if (deleted) {
+	    		hibSession.merge(this);
+	    	}
     	}
-    	if (deleted) hibSession.merge(this);
     }
     
 	@Transient

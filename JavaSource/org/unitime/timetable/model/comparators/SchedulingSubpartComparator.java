@@ -21,6 +21,7 @@ package org.unitime.timetable.model.comparators;
 
 import java.util.Comparator;
 
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.SchedulingSubpart;
 
 
@@ -29,7 +30,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
  * 
  * @author Heston Fernandes, Tomas Muller
  */
-public class SchedulingSubpartComparator implements Comparator {
+public class SchedulingSubpartComparator implements Comparator<SchedulingSubpart> {
 	private Long subjectUID;
 	
     public SchedulingSubpartComparator(Long subjectUID) {
@@ -47,12 +48,10 @@ public class SchedulingSubpartComparator implements Comparator {
 		return isParent(p1, s2);
 	}
 
-    public int compare(Object o1, Object o2) {
-        SchedulingSubpart s1 = (SchedulingSubpart) o1;
-        SchedulingSubpart s2 = (SchedulingSubpart) o2;
+    public int compare(SchedulingSubpart s1, SchedulingSubpart s2) {
         
         if (!s1.getInstrOfferingConfig().equals(s2.getInstrOfferingConfig())) {
-        	Comparator cmp = new InstrOfferingConfigComparator(subjectUID);
+        	Comparator<InstrOfferingConfig> cmp = new InstrOfferingConfigComparator(subjectUID);
         	return cmp.compare(s1.getInstrOfferingConfig(), s2.getInstrOfferingConfig());
         }
         

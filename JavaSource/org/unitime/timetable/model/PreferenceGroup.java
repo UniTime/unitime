@@ -141,7 +141,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getEffectiveBuildingPreferences(){
+    public Set<BuildingPref> getEffectiveBuildingPreferences(){
     	return effectivePreferences(BuildingPref.class);
     }
 
@@ -168,7 +168,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getEffectiveRoomFeaturePreferences(){
+    public Set<RoomFeaturePref> getEffectiveRoomFeaturePreferences(){
     	return effectivePreferences(RoomFeaturePref.class);
     }
 
@@ -177,7 +177,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getDistributionPreferences() {
+    public Set<DistributionPref> getDistributionPreferences() {
     	return getPreferences(DistributionPref.class);
     }
    
@@ -186,7 +186,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getEffectiveDistributionPreferences(){
+    public Set<DistributionPref> getEffectiveDistributionPreferences(){
     	return effectivePreferences(DistributionPref.class);
     }
    
@@ -196,7 +196,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
      */
     
 	@Transient
-    public Set getDatePatternPreferences(){
+    public Set<DatePatternPref> getDatePatternPreferences(){
     	return getPreferences(DatePatternPref.class);
     }
     
@@ -410,12 +410,12 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     }
     
 	@Transient
-    public Set getExamPeriodPreferences(){
+    public Set<ExamPeriodPref> getExamPeriodPreferences(){
         return getPreferences(ExamPeriodPref.class);
     }
     
 	@Transient
-    public Set getEffectiveExamPeriodPreferences(){
+    public Set<ExamPeriodPref> getEffectiveExamPeriodPreferences(){
         return effectivePreferences(ExamPeriodPref.class);
     }
     
