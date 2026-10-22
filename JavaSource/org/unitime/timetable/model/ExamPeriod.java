@@ -675,14 +675,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     	return ExamPeriodDAO.getInstance().getSession().createQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
     			" and ep.examType.uniqueId = :examTypeId" +
     			" and ep.dateOffset = :dateOffset" +
-    			" and ep.length = :length" +
-    			" and ep.prefLevel.uniqueId = :prefLevelId" +
     			" and ep.startSlot = :startSlot", ExamPeriod.class)
     			.setParameter("sessionId", session.getUniqueId())
     			.setParameter("examTypeId", getExamType().getUniqueId())
     			.setParameter("dateOffset", getDateOffset())
-    			.setParameter("length", getLength())
-    			.setParameter("prefLevelId", getPrefLevel().getUniqueId())
     			.setParameter("startSlot", getStartSlot())
     			.setCacheable(true)
     			.uniqueResult();

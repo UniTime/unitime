@@ -28,7 +28,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 /**
  *  @author Heston Fernandes
  */
-public class InstructionalOfferingComparator implements Comparator {
+public class InstructionalOfferingComparator implements Comparator<InstructionalOffering> {
     
     private Long subjectUID;
 
@@ -36,9 +36,7 @@ public class InstructionalOfferingComparator implements Comparator {
         this.subjectUID = subjectUID;
     }
 
-    public int compare(Object o1, Object o2) {
-        InstructionalOffering i1 = (InstructionalOffering) o1;
-        InstructionalOffering i2 = (InstructionalOffering) o2;
+    public int compare(InstructionalOffering i1, InstructionalOffering i2) {
 
         if (i1.getCourseOfferings()==null || i1.getCourseOfferings().isEmpty())
             throw new IndexOutOfBoundsException("i1 - Instructional Offering must have at least on Course Offering");

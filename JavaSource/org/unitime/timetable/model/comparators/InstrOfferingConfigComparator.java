@@ -23,24 +23,23 @@ import java.util.Comparator;
 
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
 
 
 /**
  * @author Tomas Muller
  */
-public class InstrOfferingConfigComparator implements Comparator {
+public class InstrOfferingConfigComparator implements Comparator<InstrOfferingConfig> {
 	private Long subjectUID;
-	private Comparator iCmp = new NaturalOrderComparator();
+	private Comparator<String> iCmp = new NaturalOrderComparator();
 	
     public InstrOfferingConfigComparator(Long subjectUID) {
         this.subjectUID = subjectUID;
     }
 	
-	public int compare(Object o1, Object o2) {
-		InstrOfferingConfig ic1 = (InstrOfferingConfig)o1;
-		InstrOfferingConfig ic2 = (InstrOfferingConfig)o2;
+	public int compare(InstrOfferingConfig ic1, InstrOfferingConfig ic2) {
 		if (!ic1.getInstructionalOffering().equals(ic2.getInstructionalOffering())) {
-			Comparator cmp = new InstructionalOfferingComparator(subjectUID);
+			Comparator<InstructionalOffering> cmp = new InstructionalOfferingComparator(subjectUID);
 			return cmp.compare(ic1.getInstructionalOffering(),ic2.getInstructionalOffering());
 		}
 		int cmp = iCmp.compare(ic1.getName(), ic2.getName());

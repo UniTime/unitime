@@ -25,12 +25,14 @@ import java.util.List;
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrorLogger;
 import org.unitime.timetable.gwt.shared.RollForwardSessionInterface.RollForwardErrors;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.util.CopySessionRollForward;
 import org.unitime.timetable.util.SessionRollForward;
 import org.unitime.timetable.util.SessionRollForwardValidators;
 
@@ -73,20 +75,23 @@ public class RollForwardQueueItem extends QueueItem {
 				return iErrors.isEmpty();
 			}
 		};
-		SessionRollForward sessionRollForward = new SessionRollForward(this);
+		SessionRollForward sessionRollForward = null;
+		if (ApplicationProperty.RollForwardUseCopyHelper.isTrue())
+			sessionRollForward = new CopySessionRollForward(this, iForm);
+		else
+			sessionRollForward = new SessionRollForward(this);
         Session toAcadSession = Session.getSessionById(iForm.getSessionToRollForwardTo());
 		if (toAcadSession == null){
 			logger.addFieldError("mustSelectSession", MSG.errorRollForwardMissingToSession());
 		}
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		SessionRollForwardValidators validator = new SessionRollForwardValidators(iForm, logger);
-
     	if (logger.isEmpty() && iForm.getRollForwardDepartments()) {
 			Transaction tx = hibSession.beginTransaction();
 			try {
 				setStatus(MSG.rollForwardDepartments() + " ...");
 				if (validator.validateDepartmentRollForward(toAcadSession))
-					sessionRollForward.rollDepartmentsForward(logger, iForm);	
+					sessionRollForward.rollDepartmentsForward(logger, iForm);
 		        tx.commit();
 			} catch (Exception e) {
 				tx.rollback();

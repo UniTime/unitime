@@ -164,12 +164,12 @@ public class SessionRollForward {
 	protected Log iLog;
 	private org.hibernate.Session iHibSession;
 	
-	private HashMap roomList;
-	private HashMap sessionHasCourseCatalogList;
-	private HashMap sessionHasExternalBuildingList;
-	private HashMap sessionHasExternalRoomList;
-	private HashMap sessionHasExternalRoomDeptList;
-	private HashMap sessionHasExternalRoomFeatureList;
+	private HashMap<Long, Set<Location>> roomList;
+	private HashMap<Session, Boolean> sessionHasCourseCatalogList;
+	private HashMap<Session, Boolean> sessionHasExternalBuildingList;
+	private HashMap<Session, Boolean> sessionHasExternalRoomList;
+	private HashMap<Session, Boolean> sessionHasExternalRoomDeptList;
+	private HashMap<Session, Boolean> sessionHasExternalRoomFeatureList;
 	
 	private boolean subpartTimeRollForward;
 	private boolean subpartLocationRollForward;
@@ -259,36 +259,26 @@ public class SessionRollForward {
 	}
 
 	private void rollRoomGroupsForward(RollForwardErrorLogger errors, Session fromSession, Session toSession) {
-		RoomGroup fromRoomGroup = null;
-		RoomGroup toRoomGroup = null;
-		Collection fromRoomGroups = RoomGroup.getAllRoomGroupsForSession(fromSession);
-		if (fromRoomGroups != null && !fromRoomGroups.isEmpty()){
-			for (Iterator it = fromRoomGroups.iterator(); it.hasNext();){
-				fromRoomGroup = (RoomGroup) it.next();
-				if (fromRoomGroup != null){
-					toRoomGroup = (RoomGroup) fromRoomGroup.clone();
-					toRoomGroup.setSession(toSession);
-					if (fromRoomGroup.getDepartment() != null)
-						toRoomGroup.setDepartment(fromRoomGroup.getDepartment().findSameDepartmentInSession(toSession));
-					getHibSession().persist(toRoomGroup);
-				}
+		Collection<RoomGroup> fromRoomGroups = RoomGroup.getAllRoomGroupsForSession(fromSession);
+		if (fromRoomGroups != null && !fromRoomGroups.isEmpty()) {
+			for (RoomGroup fromRoomGroup: fromRoomGroups) {
+				RoomGroup toRoomGroup = (RoomGroup) fromRoomGroup.clone();
+				toRoomGroup.setSession(toSession);
+				if (fromRoomGroup.getDepartment() != null)
+					toRoomGroup.setDepartment(fromRoomGroup.getDepartment().findSameDepartmentInSession(toSession));
+				getHibSession().persist(toRoomGroup);
 			}
 		}
 		getHibSession().flush();
 	}
 
 	private void rollRoomFeaturesForward(RollForwardErrorLogger errors, Session fromSession, Session toSession) {
-		DepartmentRoomFeature fromRoomFeature = null;
-		DepartmentRoomFeature toRoomFeature = null;
-		Collection fromRoomFeatures = DepartmentRoomFeature.getAllRoomFeaturesForSession(fromSession);
+		Collection<DepartmentRoomFeature> fromRoomFeatures = DepartmentRoomFeature.getAllRoomFeaturesForSession(fromSession);
 		if (fromRoomFeatures != null && !fromRoomFeatures.isEmpty()){
-			for(Iterator it = fromRoomFeatures.iterator(); it.hasNext();){
-				fromRoomFeature = (DepartmentRoomFeature) it.next();
-				if (fromRoomFeature != null){
-					toRoomFeature = (DepartmentRoomFeature)fromRoomFeature.clone();
-					toRoomFeature.setDepartment(fromRoomFeature.getDepartment().findSameDepartmentInSession(toSession));
-					getHibSession().persist(toRoomFeature);
-				}
+			for (DepartmentRoomFeature fromRoomFeature: fromRoomFeatures) {
+				DepartmentRoomFeature toRoomFeature = (DepartmentRoomFeature)fromRoomFeature.clone();
+				toRoomFeature.setDepartment(fromRoomFeature.getDepartment().findSameDepartmentInSession(toSession));
+				getHibSession().persist(toRoomFeature);
 			}
 		}
 		Set<String> globalFeatures = new HashSet<String>();
@@ -324,9 +314,8 @@ public class SessionRollForward {
 		getHibSession().flush();
 	}
 
-	private void rollRoomFeaturesForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap roomFeatureCache){
-		if(fromLocation.getFeatures() != null && !fromLocation.getFeatures().isEmpty()){
-			RoomFeature fromFeature = null;
+	private void rollRoomFeaturesForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap<RoomFeature, RoomFeature> roomFeatureCache){
+		if (fromLocation.getFeatures() != null && !fromLocation.getFeatures().isEmpty()){
 			GlobalRoomFeature toGlobalFeature = null;
 			RoomFeature toFeature = null;
 			boolean rollGlobalFeaturesFromFromLocation = true;
@@ -337,9 +326,7 @@ public class SessionRollForward {
 					if (er != null){
 						rollGlobalFeaturesFromFromLocation = false;
 						if (er.getRoomFeatures() != null){
-							ExternalRoomFeature erf = null;
-							for (Iterator erfIt = er.getRoomFeatures().iterator(); erfIt.hasNext();){
-								erf = (ExternalRoomFeature) erfIt.next();
+							for (ExternalRoomFeature erf : er.getRoomFeatures()){
 								toGlobalFeature = GlobalRoomFeature.findGlobalRoomFeatureForLabel(toSession, erf.getValue());
 								toLocation.addTofeatures(toGlobalFeature);
 							}
@@ -347,8 +334,7 @@ public class SessionRollForward {
 					}
 				}
 			}
-			for(Iterator rfIt = fromLocation.getFeatures().iterator(); rfIt.hasNext();){
-				fromFeature = (RoomFeature) rfIt.next();
+			for(RoomFeature fromFeature : fromLocation.getFeatures()){
 				if (fromFeature instanceof GlobalRoomFeature && !rollGlobalFeaturesFromFromLocation) continue;
 				toFeature = (RoomFeature) roomFeatureCache.get(fromFeature);
 				if (toFeature == null){
@@ -356,10 +342,7 @@ public class SessionRollForward {
 					if (toFeature != null){
 						roomFeatureCache.put(fromFeature, toFeature);
 						toLocation.addTofeatures(toFeature);
-						if (toFeature.getRooms() == null){
-							toFeature.setRooms(new java.util.HashSet());
-						}
-						toFeature.getRooms().add(toLocation);
+						toFeature.addToRooms(toLocation);
 					}
 				}
 			}
@@ -371,11 +354,10 @@ public class SessionRollForward {
 		Room toRoom = null;
 		DepartmentDAO dDao = DepartmentDAO.getInstance();
 		Building toBuilding = null;
-		RoomDept fromRoomDept = null;
 		Department toDept = null;
 		Department fromDept = null;
-		HashMap roomFeatureCache = new HashMap();
-		HashMap roomGroupCache = new HashMap();
+		HashMap<RoomFeature, RoomFeature> roomFeatureCache = new HashMap<RoomFeature, RoomFeature>();
+		HashMap<RoomGroup, RoomGroup> roomGroupCache = new HashMap<RoomGroup, RoomGroup>();
 		
 		if (fromRoom.getExternalUniqueId() != null && sessionHasExternalRoomList(toSession)){
 			ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
@@ -442,15 +424,12 @@ public class SessionRollForward {
 			if (fromRoom.getExternalUniqueId() != null && sessionHasExternalRoomDeptList(toSession)){
 				ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
 				if (toExternalRoom.getRoomDepartments() != null && !toExternalRoom.getRoomDepartments().isEmpty()){
-					ExternalRoomDepartment toExternalRoomDept = null;
-					fromRoomDept = null;
-					for(Iterator erdIt = toExternalRoom.getRoomDepartments().iterator(); (erdIt.hasNext() && rollForwardExistingRoomDepts);){
+					for (ExternalRoomDepartment toExternalRoomDept : toExternalRoom.getRoomDepartments()){
 						boolean foundDept = false;
-						toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
-						for(Iterator rdIt = fromRoom.getRoomDepts().iterator(); (rdIt.hasNext() && !foundDept);){
-							fromRoomDept = (RoomDept) rdIt.next();
+						for (RoomDept fromRoomDept : fromRoom.getRoomDepts()){
 							if (fromRoomDept.getDepartment().getDeptCode().equals(toExternalRoomDept.getDepartmentCode())){
 								foundDept = true;
+								break;
 							}
 						}
 						if (!foundDept){
@@ -461,8 +440,7 @@ public class SessionRollForward {
 			} 
 			if (rollForwardExistingRoomDepts){
 				if (fromRoom.getRoomDepts() != null && !fromRoom.getRoomDepts().isEmpty()){
-					for (Iterator deptIt = fromRoom.getRoomDepts().iterator(); deptIt.hasNext();){
-						fromRoomDept = (RoomDept)deptIt.next();
+					for (RoomDept fromRoomDept : fromRoom.getRoomDepts()) {
 						rollForwardRoomDept(fromRoomDept, toRoom, toSession, fromRoom);
 					}
 				}
@@ -471,19 +449,16 @@ public class SessionRollForward {
 				toRoom.setPattern(null);
 				toRoom.setManagerIds(null);
 				ExternalRoom toExternalRoom = ExternalRoom.findExternalRoomForSession(fromRoom.getExternalUniqueId(), toSession);
-				ExternalRoomDepartment toExternalRoomDept = null;
-				fromRoomDept = null;
-				for(Iterator erdIt = toExternalRoom.getRoomDepartments().iterator(); erdIt.hasNext();){
-					boolean foundDept = false;
-					toExternalRoomDept = (ExternalRoomDepartment) erdIt.next();
-					for(Iterator rdIt = fromRoom.getRoomDepts().iterator(); (rdIt.hasNext() && !foundDept);){
-						fromRoomDept = (RoomDept) rdIt.next();
+				for (ExternalRoomDepartment toExternalRoomDept : toExternalRoom.getRoomDepartments()){
+					RoomDept foundFromRoomDept = null;
+					for(RoomDept fromRoomDept :  fromRoom.getRoomDepts()){
 						if (fromRoomDept.getDepartment().getDeptCode().equals(toExternalRoomDept.getDepartmentCode())){
-							foundDept = true;
+							foundFromRoomDept = fromRoomDept;
+							break;
 						}
 					}
-					if (foundDept){
-						rollForwardRoomDept(fromRoomDept, toRoom, toSession, fromRoom);
+					if (foundFromRoomDept != null){
+						rollForwardRoomDept(foundFromRoomDept, toRoom, toSession, fromRoom);
 					} else {
 						toRoom.addExternalRoomDept(toExternalRoomDept, toExternalRoom.getRoomDepartments());
 					}
@@ -530,23 +505,17 @@ public class SessionRollForward {
 	}
 
 	
-	private void rollRoomGroupsForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap roomGroupCache) {
+	private void rollRoomGroupsForLocationForward(Location fromLocation, Location toLocation, Session toSession, HashMap<RoomGroup, RoomGroup> roomGroupCache) {
 		if(fromLocation.getRoomGroups() != null && !fromLocation.getRoomGroups().isEmpty()){
-			RoomGroup fromRoomGroup = null;
 			RoomGroup toRoomGroup = null;
-			for(Iterator rfIt = fromLocation.getRoomGroups().iterator(); rfIt.hasNext();){
-				fromRoomGroup = (RoomGroup) rfIt.next();
+			for(RoomGroup fromRoomGroup : fromLocation.getRoomGroups()){
 				toRoomGroup = (RoomGroup) roomGroupCache.get(fromRoomGroup);
 				if (toRoomGroup == null)
 					toRoomGroup = fromRoomGroup.findSameRoomGroupInSession(toSession);
 				if (toRoomGroup != null) {
 					roomGroupCache.put(fromRoomGroup, toRoomGroup);
-					if (toLocation.getRoomGroups() == null)
-						toLocation.setRoomGroups(new java.util.HashSet());
-					toLocation.getRoomGroups().add(toRoomGroup);
-					if (toRoomGroup.getRooms() == null)
-						toRoomGroup.setRooms(new java.util.HashSet());
-					toRoomGroup.getRooms().add(toLocation);
+					toLocation.addToRoomGroups(toRoomGroup);
+					toRoomGroup.addToRooms(toLocation);
 				}
 			}
 		}
@@ -557,11 +526,10 @@ public class SessionRollForward {
 		NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) location;
 		NonUniversityLocation toNonUniversityLocation = null;
 		DepartmentDAO dDao = DepartmentDAO.getInstance();
-		RoomDept fromRoomDept = null;
 		Department toDept = null;
 		Department fromDept = null;
-		HashMap roomFeatureCache = new HashMap();
-		HashMap roomGroupCache = new HashMap();
+		HashMap<RoomFeature, RoomFeature> roomFeatureCache = new HashMap<RoomFeature, RoomFeature>();
+		HashMap<RoomGroup, RoomGroup> roomGroupCache = new HashMap<RoomGroup, RoomGroup>();
 		toNonUniversityLocation = (NonUniversityLocation)fromNonUniversityLocation.clone();
 		toNonUniversityLocation.setSession(toSession);
 		if (fromNonUniversityLocation.getEventDepartment() != null) {
@@ -606,8 +574,7 @@ public class SessionRollForward {
 		}
 
 		if (fromNonUniversityLocation.getRoomDepts() != null && !fromNonUniversityLocation.getRoomDepts().isEmpty()){
-			for (Iterator deptIt = fromNonUniversityLocation.getRoomDepts().iterator(); deptIt.hasNext();){
-				fromRoomDept = (RoomDept)deptIt.next();
+			for (RoomDept fromRoomDept : fromNonUniversityLocation.getRoomDepts()) {
 				rollForwardRoomDept(fromRoomDept, toNonUniversityLocation, toSession, fromNonUniversityLocation);
 			}
 			getHibSession().merge(toNonUniversityLocation);
@@ -617,9 +584,7 @@ public class SessionRollForward {
 
 	private void rollLocationsForward(RollForwardErrorLogger errors, Session fromSession, Session toSession) {
 		if (fromSession.getRooms() != null && !fromSession.getRooms().isEmpty()){
-			Location location = null;
-			for (Iterator it = fromSession.getRooms().iterator(); it.hasNext();){
-				location = (Location) it.next();
+			for (Location location : fromSession.getRooms()) {
 				if (location instanceof Room) {
 					rollRoomForward(errors, fromSession, toSession, location);
 				} else if (location instanceof NonUniversityLocation){
@@ -713,11 +678,9 @@ public class SessionRollForward {
 
 	private void rollBuildingsForward(RollForwardErrorLogger errors, Session fromSession, Session toSession) {
 		if (fromSession.getBuildings() != null && !fromSession.getBuildings().isEmpty()){
-			Building fromBldg = null;
 			Building toBldg = null;
 			ExternalBuilding toExternalBuilding = null;
-			for (Iterator it = fromSession.getBuildings().iterator(); it.hasNext();){
-				fromBldg = (Building)it.next();
+			for (Building fromBldg: fromSession.getBuildings()) {
 				if (fromBldg.getExternalUniqueId() != null && sessionHasExternalBuildingList(toSession)){
 					toExternalBuilding = ExternalBuilding.findExternalBuildingForSession(fromBldg.getExternalUniqueId(), toSession);
 					if (toExternalBuilding != null){
@@ -733,11 +696,8 @@ public class SessionRollForward {
 				} else {
 					toBldg = (Building) fromBldg.clone();
 				}
-				if (toSession.getBuildings() == null){
-					toSession.setBuildings(new java.util.HashSet());
-				}
 				toBldg.setSession(toSession);
-				toSession.getBuildings().add(toBldg);
+				toSession.addToBuildings(toBldg);
 				getHibSession().persist(toBldg);
 			}				
 		}
@@ -747,33 +707,24 @@ public class SessionRollForward {
 	public void rollManagersForward(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollManagersForwardFrom());
-		Department fromDepartment = null;
-		Department toDepartment = null;
-		for(Iterator it = fromSession.getDepartments().iterator(); it.hasNext();){
-			fromDepartment = (Department) it.next();
-			if (fromDepartment != null && fromDepartment.getTimetableManagers() != null){
-				toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
+		for(Department fromDepartment: fromSession.getDepartments()) {
+			if (fromDepartment.getTimetableManagers() != null){
+				Department toDepartment = fromDepartment.findSameDepartmentInSession(toSession);
 				if (toDepartment != null){
-					if (toDepartment.getTimetableManagers() == null){
-						toDepartment.setTimetableManagers(new java.util.HashSet());
-					}
-					TimetableManager tm = null;
-					for (Iterator tmIt = fromDepartment.getTimetableManagers().iterator(); tmIt.hasNext();){
-						tm = (TimetableManager) tmIt.next();
-						if (tm != null){
-							toDepartment.getTimetableManagers().add(tm);
-							tm.getDepartments().add(toDepartment);
-							getHibSession().merge(tm);
-							if (tm.getSolverGroups(toSession).isEmpty()){
-								for(Iterator sgIt = tm.getSolverGroups(fromSession).iterator(); sgIt.hasNext();){
-									SolverGroup fromSg = (SolverGroup) sgIt.next();
-									SolverGroup toSg = SolverGroup.findBySessionIdAbbv(toSession.getUniqueId(), fromSg.getAbbv());
-									if (toSg != null && !tm.getSolverGroups().contains(toSg)){
-										toSg.addToTimetableManagers(tm);
-										tm.addToSolverGroups(toSg);
-									}
+					for (TimetableManager tm: fromDepartment.getTimetableManagers()) {
+						toDepartment.addToTimetableManagers(tm);
+						tm.addToDepartments(toDepartment);
+						getHibSession().merge(tm);
+						if (tm.getSolverGroups(toSession).isEmpty()) {
+							for(SolverGroup fromSg: tm.getSolverGroups(fromSession)) {
+								SolverGroup toSg = SolverGroup.findBySessionIdAbbv(toSession.getUniqueId(), fromSg.getAbbv());
+								if (toSg != null && !tm.getSolverGroups().contains(toSg)){
+									toSg.addToTimetableManagers(tm);
+									tm.addToSolverGroups(toSg);
+									getHibSession().merge(toSg);
 								}
 							}
+							getHibSession().merge(tm);
 						}
 					}
 				}
@@ -787,8 +738,8 @@ public class SessionRollForward {
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDeptsFowardFrom());
 		Department fromDepartment = null;
 		Department toDepartment = null;
-		for(Iterator it = fromSession.getDepartments().iterator(); it.hasNext();){
-			fromDepartment = (Department) it.next();
+		for(Iterator<Department> it = fromSession.getDepartments().iterator(); it.hasNext();){
+			fromDepartment = it.next();
 			if (fromDepartment != null){
 				toDepartment = (Department) fromDepartment.clone();
 				toDepartment.setStatusType(null);
@@ -802,10 +753,7 @@ public class SessionRollForward {
 						sg.setSession(toSession);
 					}
 					if (sg != null){
-						if (null == sg.getDepartments()){
-							sg.setDepartments(new java.util.HashSet());
-						}
-						sg.getDepartments().add(toDepartment);
+						sg.addToDepartments(toDepartment);
 						toDepartment.setSolverGroup(sg);
 						if (sg.getUniqueId() == null)
 							getHibSession().persist(sg);
@@ -815,14 +763,11 @@ public class SessionRollForward {
 				}
 
 				getHibSession().merge(toDepartment);
-				List l = getHibSession().createQuery("select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = " + fromDepartment.getUniqueId().toString(), DistributionType.class).list();
-				if (l != null && !l.isEmpty()){
-					DistributionType distributionType = null;
-					for (Iterator dtIt = l.iterator(); dtIt.hasNext();){
-						distributionType = (DistributionType) dtIt.next();
-						distributionType.getDepartments().add(toDepartment);
-						getHibSession().merge(distributionType);
-					}
+				for (DistributionType distributionType: getHibSession().createQuery(
+						"select dt from DistributionType dt inner join dt.departments as d where d.uniqueId = :deptId", DistributionType.class)
+						.setParameter("deptId", fromDepartment.getUniqueId()).list()) {
+					distributionType.getDepartments().add(toDepartment);
+					getHibSession().merge(distributionType);
 				}
 			}
 		}
@@ -833,36 +778,26 @@ public class SessionRollForward {
 		if (fromDatePattern.getDepartments() != null && !fromDatePattern.getDepartments().isEmpty()){
 			for(Department fromDept : fromDatePattern.getDepartments()){
 				Department toDepartment = Department.findByDeptCode(fromDept.getDeptCode(), toDatePattern.getSession().getSessionId());
-				if (toDepartment != null){
-					if (null == toDepartment.getDatePatterns()){
-						toDepartment.setDatePatterns(new java.util.HashSet());
-					}
-					toDepartment.getDatePatterns().add(toDatePattern);
-					if (null == toDatePattern.getDepartments()){
-						toDatePattern.setDepartments(new java.util.HashSet());
-					}
+				if (toDepartment != null) {
+					toDepartment.addToDatePatterns(toDatePattern);
 					toDatePattern.addToDepartments(toDepartment);
 				}
 			}
-		}		
+		}
 	}
 
 	public void rollDatePatternsForward(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
 		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
-		DatePattern fromDatePattern = null;
 		DatePattern toDatePattern = null;
 		HashMap<DatePattern, DatePattern> fromToDatePatternMap = new HashMap<DatePattern, DatePattern>();
-		for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
-			fromDatePattern = (DatePattern) it.next();
-			if (fromDatePattern != null){
-				toDatePattern = (DatePattern) fromDatePattern.clone();
-				toDatePattern.setSession(toSession);
-				rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
-				getHibSession().persist(toDatePattern);
-				fromToDatePatternMap.put(fromDatePattern, toDatePattern);
-			}
+		for(DatePattern fromDatePattern : fromDatePatterns){
+			toDatePattern = (DatePattern) fromDatePattern.clone();
+			toDatePattern.setSession(toSession);
+			rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
+			getHibSession().persist(toDatePattern);
+			fromToDatePatternMap.put(fromDatePattern, toDatePattern);
 		}
 		
 		for (DatePattern fromDp: fromToDatePatternMap.keySet()){
@@ -893,9 +828,9 @@ public class SessionRollForward {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollSubjectAreasForwardFrom());
 		SubjectArea toSubjectArea = null;
-		SubjectArea fromSubjectArea = null;
 		Department toDepartment = null;
 		if (sessionHasCourseCatalog(toSession)) {
+			SubjectArea fromSubjectArea = null;
 			List<Object[]> subjects = getHibSession().createQuery(
 					"select distinct cc.subject, cc.previousSubject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject is not null",
 					Object[].class).setParameter("sessionId", toSession.getUniqueId()).list();
@@ -972,8 +907,7 @@ public class SessionRollForward {
 				}
 			}
 		} else if (fromSession.getSubjectAreas() != null && !fromSession.getSubjectAreas().isEmpty()){
-			for(Iterator it = fromSession.getSubjectAreas().iterator(); it.hasNext();){
-				fromSubjectArea = (SubjectArea) it.next();
+			for (SubjectArea fromSubjectArea: fromSession.getSubjectAreas()) {
 				if (fromSubjectArea != null){
 					toSubjectArea = (SubjectArea)fromSubjectArea.clone();
 					if (fromSubjectArea.getFundingDept() != null){
@@ -1030,7 +964,7 @@ public class SessionRollForward {
 		return(toDepartment);
 	}
 	
-	private void createToBuildingPref(BuildingPref fromBuildingPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations, boolean isExamPref) {
+	private void createToBuildingPref(BuildingPref fromBuildingPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set<Location> locations, boolean isExamPref) {
 		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		BuildingPref toBuildingPref = null;
 		Building toBuilding = fromBuildingPref.getBuilding().findSameBuildingInSession(toSession);
@@ -1039,7 +973,7 @@ public class SessionRollForward {
 			if(!isExamPref){
 				Location loc = null;
 				Room r = null;
-				Iterator rIt = locations.iterator();
+				Iterator<Location> rIt = locations.iterator();
 				while(rIt.hasNext() && !deptHasRoomInBuilding){
 					loc = (Location)rIt.next();
 					if (loc instanceof Room) {
@@ -1064,7 +998,7 @@ public class SessionRollForward {
 	
 	}
 	protected void rollForwardBuildingPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
-		Set locations = null;
+		Set<Location> locations = null;
 		boolean isExamPref = false;
 		if (fromPrefGroup instanceof Exam) {
 			isExamPref = true;
@@ -1077,7 +1011,7 @@ public class SessionRollForward {
 			if (!isExamPref && locations == null){
 				return;
 			}
-			for (Iterator it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
+			for (Iterator<BuildingPref> it = fromPrefGroup.getBuildingPreferences().iterator(); it.hasNext(); ){
 				createToBuildingPref((BuildingPref) it.next(), fromPrefGroup, toPrefGroup, toSession, locations, isExamPref);
 			}
 		}		
@@ -1091,12 +1025,12 @@ public class SessionRollForward {
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
 				int clsCnt = 0;
-				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+				for (Iterator<Class_> cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
 					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getBuildingPreferences() != null && !c.getBuildingPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getBuildingPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<BuildingPref> rfpIt = c.getBuildingPreferences().iterator(); rfpIt.hasNext();){
 							BuildingPref rfp = (BuildingPref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getBuilding().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -1118,7 +1052,7 @@ public class SessionRollForward {
 		}
 	}
 	
-	private void createToRoomPref(RoomPref fromRoomPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set locations){
+	private void createToRoomPref(RoomPref fromRoomPref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession, Set<Location> locations){
 		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomPref toRoomPref = new RoomPref();
 		toRoomPref.setRoomIndex(fromRoomPref.getRoomIndex());
@@ -1126,7 +1060,7 @@ public class SessionRollForward {
 			Room fromRoom = (Room) fromRoomPref.getRoom();
 			Location loc = null;
 			Room toRoom = null;
-			for (Iterator rmIt = locations.iterator(); rmIt.hasNext();){
+			for (Iterator<Location> rmIt = locations.iterator(); rmIt.hasNext();){
 				loc = (Location) rmIt.next();
 				if (loc instanceof Room) {
 					toRoom = (Room) loc;
@@ -1153,7 +1087,7 @@ public class SessionRollForward {
 			NonUniversityLocation fromNonUniversityLocation = (NonUniversityLocation) fromRoomPref.getRoom();
 			Location loc = null;
 			NonUniversityLocation toNonUniversityLocation = null;
-			for (Iterator rmIt = locations.iterator(); rmIt.hasNext();){
+			for (Iterator<Location> rmIt = locations.iterator(); rmIt.hasNext();){
 				loc = (Location) rmIt.next();
 				if (loc instanceof NonUniversityLocation) {
 					toNonUniversityLocation = (NonUniversityLocation) loc;
@@ -1171,31 +1105,32 @@ public class SessionRollForward {
 		}				
 	}
 	
-	private Set getLocationsFor(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+	private Set<Location> getLocationsFor(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup instanceof Exam) {
 			Exam exam = (Exam)fromPrefGroup;
-			if (!getRoomList().containsKey(exam.getExamType()))
-				getRoomList().put(exam.getExamType(), Location.findAllExamLocations(toSession.getUniqueId(), exam.getExamType()));
-			return (Set)getRoomList().get(exam.getExamType());
+			if (!getRoomList().containsKey(- exam.getExamType().getUniqueId()))
+				getRoomList().put(- exam.getExamType().getUniqueId(), Location.findAllExamLocations(toSession.getUniqueId(), exam.getExamType()));
+			return getRoomList().get(- exam.getExamType().getUniqueId());
 		}
 		Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
 		if (toDepartment == null){
-			return(null);
+			return null;
 		}
-		if (!getRoomList().containsKey(toDepartment)){
-			getRoomList().put(toDepartment, buildRoomListForDepartment(getHibSession(), toDepartment, toSession));
+		if (!getRoomList().containsKey(toDepartment.getUniqueId())){
+			getRoomList().put(toDepartment.getUniqueId(), buildRoomListForDepartment(getHibSession(), toDepartment, toSession));
 		} 
-		return ((Set)getRoomList().get(toDepartment));
+		return getRoomList().get(toDepartment.getUniqueId());
 	}
+
 	protected void rollForwardRoomPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		Set locations = null;
+		Set<Location> locations = null;
 		if (fromPrefGroup.getRoomPreferences() != null 
 				&& !fromPrefGroup.getRoomPreferences().isEmpty() 
 				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
 			locations = getLocationsFor(fromPrefGroup, toPrefGroup, toSession);
 			if (locations != null && locations.size() >0 ){					
-				for (Iterator it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
+				for (Iterator<RoomPref> it = fromPrefGroup.getRoomPreferences().iterator(); it.hasNext();){
 					createToRoomPref((RoomPref) it.next(), fromPrefGroup, toPrefGroup, toSession, locations);
 				}
 			}
@@ -1210,12 +1145,12 @@ public class SessionRollForward {
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
 				int clsCnt = 0;
-				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+				for (Iterator<Class_> cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
 					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getRoomPreferences() != null && !c.getRoomPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getRoomPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<RoomPref> rfpIt = c.getRoomPreferences().iterator(); rfpIt.hasNext();){
 							RoomPref rfp = (RoomPref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getRoom().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -1268,11 +1203,11 @@ public class SessionRollForward {
 			if (toDepartment == null){
 				return;
 			}
-			Collection l = DepartmentRoomFeature.getAllDepartmentRoomFeatures(toDepartment);
+			Collection<DepartmentRoomFeature> l = DepartmentRoomFeature.getAllDepartmentRoomFeatures(toDepartment);
 			DepartmentRoomFeature fromDepartmentRoomFeature = (DepartmentRoomFeature) fromRoomFeaturePref.getRoomFeature();
 			if (l != null && l.size() > 0){
 				DepartmentRoomFeature toDepartmentRoomFeature = null;
-				for (Iterator rfIt = l.iterator(); rfIt.hasNext();){
+				for (Iterator<DepartmentRoomFeature> rfIt = l.iterator(); rfIt.hasNext();){
 					toDepartmentRoomFeature = (DepartmentRoomFeature) rfIt.next();
 					if (toDepartmentRoomFeature.getLabel().equals(fromDepartmentRoomFeature.getLabel())){
 						break;
@@ -1294,7 +1229,7 @@ public class SessionRollForward {
 				&& !fromPrefGroup.getRoomFeaturePreferences().isEmpty() 
 				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
-			for (Iterator it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
+			for (Iterator<RoomFeaturePref> it = fromPrefGroup.getRoomFeaturePreferences().iterator(); it.hasNext(); ){
 				createToRoomFeaturePref((RoomFeaturePref) it.next(), fromPrefGroup, toPrefGroup, toSession);
 			}
 		}
@@ -1305,12 +1240,12 @@ public class SessionRollForward {
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
 				int clsCnt = 0;
-				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+				for (Iterator<Class_> cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
 					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getRoomFeaturePreferences() != null && !c.getRoomFeaturePreferences().isEmpty()){
-						for (Iterator rfpIt = c.getRoomFeaturePreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<RoomFeaturePref> rfpIt = c.getRoomFeaturePreferences().iterator(); rfpIt.hasNext();){
 							RoomFeaturePref rfp = (RoomFeaturePref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getRoomFeature().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -1355,10 +1290,10 @@ public class SessionRollForward {
 			if (toDepartment == null){
 				return;
 			}
-			Collection l = RoomGroup.getAllDepartmentRoomGroups(toDepartment);
+			Collection<RoomGroup> l = RoomGroup.getAllDepartmentRoomGroups(toDepartment);
 			if (l != null && l.size() > 0) {
 				RoomGroup toRoomGroup = null;
-				for (Iterator itRg = l.iterator(); itRg.hasNext();){
+				for (Iterator<RoomGroup> itRg = l.iterator(); itRg.hasNext();){
 					toRoomGroup = (RoomGroup) itRg.next();
 					if (toRoomGroup.getName().equals(fromRoomGroupPref.getRoomGroup().getName())){
 						break;
@@ -1379,7 +1314,7 @@ public class SessionRollForward {
 				&& !fromPrefGroup.getRoomGroupPreferences().isEmpty() 
 				&& (!(fromPrefGroup instanceof Class_) || isClassRollForward())
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartLocationRollForward())){
-			for (Iterator it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
+			for (Iterator<RoomGroupPref> it = fromPrefGroup.getRoomGroupPreferences().iterator(); it.hasNext();){
 				createToRoomGroupPref((RoomGroupPref) it.next(), fromPrefGroup, toPrefGroup, toSession);
 			}
 		}
@@ -1390,12 +1325,12 @@ public class SessionRollForward {
 				HashMap<String, Integer> prefCount = new HashMap<String, Integer>();
 				String key;
 				int clsCnt = 0;
-				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+				for (Iterator<Class_> cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
 					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getRoomGroupPreferences() != null && !c.getRoomGroupPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getRoomGroupPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<RoomGroupPref> rfpIt = c.getRoomGroupPreferences().iterator(); rfpIt.hasNext();){
 							RoomGroupPref rfp = (RoomGroupPref) rfpIt.next();
 							key = rfp.getPrefLevel().getPrefName() + rfp.getRoomGroup().getUniqueId().toString();
 							prefMap.put(key, rfp);
@@ -1424,7 +1359,7 @@ public class SessionRollForward {
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartTimeRollForward())){
 			TimePref fromTimePref = null;
 			TimePref toTimePref = null;
-			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
+			for (Iterator<TimePref> it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
 				fromTimePref = (TimePref) it.next();
 				if (fromTimePref.getTimePattern() == null) {
 					toTimePref = (TimePref)fromTimePref.clone();
@@ -1444,7 +1379,7 @@ public class SessionRollForward {
 		if (fromPrefGroup instanceof SchedulingSubpart && !isSubpartTimeRollForward()){
 			TimePref fromTimePref = null;
 			TimePref toTimePref = null;
-			for (Iterator it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
+			for (Iterator<TimePref> it = fromPrefGroup.getTimePreferences().iterator(); it.hasNext();){
 				fromTimePref = (TimePref) it.next();
 				if (fromTimePref.getTimePattern() == null) {
 					toTimePref = (TimePref)fromTimePref.clone();
@@ -1469,12 +1404,12 @@ public class SessionRollForward {
 				HashSet<TimePattern> timePatterns = new HashSet<TimePattern>();
 				String key;
 				int clsCnt = 0;
-				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+				for (Iterator<Class_> cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
 					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
 					clsCnt ++;
 					if (c.getTimePreferences() != null && !c.getTimePreferences().isEmpty()){
-						for (Iterator tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
+						for (Iterator<TimePref> tpIt = c.getTimePreferences().iterator(); tpIt.hasNext();){
 							TimePref tp = (TimePref) tpIt.next();
 							key = tp.getPrefLevel().getPrefName() + tp.getTimePattern().getUniqueId().toString() + tp.getPreference();
 							prefMap.put(key, tp);
@@ -1541,7 +1476,7 @@ public class SessionRollForward {
 				&& (!(fromPrefGroup instanceof SchedulingSubpart) || isSubpartTimeRollForward())){
 			DatePatternPref fromDatePatternPref = null;
 			DatePatternPref toDatePatternPref = null;
-			for (Iterator it = fromPrefGroup.getDatePatternPreferences().iterator(); it.hasNext();){
+			for (Iterator<DatePatternPref> it = fromPrefGroup.getDatePatternPreferences().iterator(); it.hasNext();){
 				fromDatePatternPref = (DatePatternPref) it.next();
 				DatePattern toDatePattern = DatePattern.findByName(toSession, fromDatePatternPref.getDatePattern().getName());
 				if (toDatePattern == null){
@@ -1562,7 +1497,7 @@ public class SessionRollForward {
 				String key;
 				int clsCnt = 0;
 				DatePattern firstDp = null; int dpCount = 0; 
-				for (Iterator cIt = ss.getClasses().iterator(); cIt.hasNext();){
+				for (Iterator<Class_> cIt = ss.getClasses().iterator(); cIt.hasNext();){
 					Class_ c = (Class_)cIt.next();
 					if (CancelledClassAction.SKIP == getCancelledClassAction() && c.isCancelled()) continue;
 					clsCnt ++;
@@ -1572,7 +1507,7 @@ public class SessionRollForward {
 						else if (firstDp.equals(dp)) dpCount ++;
 					}
 					if (c.getDatePatternPreferences() != null && !c.getDatePatternPreferences().isEmpty()){
-						for (Iterator rfpIt = c.getDatePatternPreferences().iterator(); rfpIt.hasNext();){
+						for (Iterator<DatePatternPref> rfpIt = c.getDatePatternPreferences().iterator(); rfpIt.hasNext();){
 							DatePatternPref dfp = (DatePatternPref) rfpIt.next();
 							key = dfp.getPrefLevel().getPrefName() + dfp.getDatePattern().getUniqueId().toString();
 							prefMap.put(key, dfp);
@@ -1621,7 +1556,7 @@ public class SessionRollForward {
 			DistributionObject toDistObj = null;
 			DistributionPref fromDistributionPref = null;
 			DistributionPref toDistributionPref = null;
-			for (Iterator it = fromPrefGroup.getDistributionObjects().iterator(); it.hasNext(); ){
+			for (Iterator<DistributionObject> it = fromPrefGroup.getDistributionObjects().iterator(); it.hasNext(); ){
 				fromDistObj = (DistributionObject) it.next();
 				toDistObj = new DistributionObject();
 				fromDistributionPref = fromDistObj.getDistributionPref();
@@ -1654,14 +1589,14 @@ public class SessionRollForward {
 	}
 	
 	protected void rollForwardInstructorCoursePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
-		Set preferences = fromPrefGroup.getPreferences(InstructorCoursePref.class);
+		Set<InstructorCoursePref> preferences = fromPrefGroup.getPreferences(InstructorCoursePref.class);
 		if (toPrefGroup.getPreferences() != null)
 			for (Iterator<Preference> i = toPrefGroup.getPreferences().iterator(); i.hasNext(); ) {
 				Preference p = i.next();
 				if (p instanceof InstructorCoursePref) i.remove();
 			}
 		if (preferences != null && !preferences.isEmpty()) {
-			for (Iterator it = preferences.iterator(); it.hasNext();){
+			for (Iterator<InstructorCoursePref> it = preferences.iterator(); it.hasNext();){
 				InstructorCoursePref fromCoursePref = (InstructorCoursePref) it.next();
 				CourseOffering course = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromCoursePref.getCourse().getUniqueId());
 				if (course != null) {
@@ -1738,9 +1673,9 @@ public class SessionRollForward {
 	}
 	
 	protected void rollForwardInstructorAttributePrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
-		Set preferences = fromPrefGroup.getPreferences(InstructorAttributePref.class);
+		Set<InstructorAttributePref> preferences = fromPrefGroup.getPreferences(InstructorAttributePref.class);
 		if (preferences != null && !preferences.isEmpty()) {
-			for (Iterator it = preferences.iterator(); it.hasNext();){
+			for (Iterator<InstructorAttributePref> it = preferences.iterator(); it.hasNext();){
 				InstructorAttributePref fromAttributePref = (InstructorAttributePref) it.next();
 				InstructorAttribute attribute = fromAttributePref.getAttribute().findSameAttributeInSession(toSession);
 				if (attribute != null) {
@@ -1754,9 +1689,9 @@ public class SessionRollForward {
 	}
 	
 	protected void rollForwardInstructorPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession) {
-		Set preferences = fromPrefGroup.getPreferences(InstructorPref.class);
+		Set<InstructorPref> preferences = fromPrefGroup.getPreferences(InstructorPref.class);
 		if (preferences != null && !preferences.isEmpty()) {
-			for (Iterator it = preferences.iterator(); it.hasNext();){
+			for (Iterator<InstructorPref> it = preferences.iterator(); it.hasNext();){
 				InstructorPref fromInstrPref = (InstructorPref) it.next();
 				DepartmentalInstructor instructor = fromInstrPref.getInstructor().findThisInstructorInSession(toSession.getUniqueId());
 				if (instructor != null) {
@@ -1772,14 +1707,17 @@ public class SessionRollForward {
 	private void rollForwardExamPeriods(Session toSession, Session fromSession){	
 		ExamPeriod fromExamPeriod = null;
 		ExamPeriod toExamPeriod = null;
-		TreeSet examPeriods = ExamPeriod.findAll(fromSession.getUniqueId(), (Long)null);
-		for(Iterator examPeriodIt = examPeriods.iterator(); examPeriodIt.hasNext();){
+		TreeSet<ExamPeriod> examPeriods = ExamPeriod.findAll(fromSession.getUniqueId(), (Long)null);
+		for(Iterator<ExamPeriod> examPeriodIt = examPeriods.iterator(); examPeriodIt.hasNext();){
 			fromExamPeriod = (ExamPeriod)examPeriodIt.next();
-			toExamPeriod = (ExamPeriod)fromExamPeriod.clone();
-			toExamPeriod.setSession(toSession);
-			if (toExamPeriod.getEventStartOffset()==null) toExamPeriod.setEventStartOffset(0);
-			if (toExamPeriod.getEventStopOffset()==null) toExamPeriod.setEventStopOffset(0);
-			getHibSession().persist(toExamPeriod);
+			toExamPeriod = ExamPeriod.findByDateStart(toSession.getUniqueId(), fromExamPeriod.getDateOffset(), fromExamPeriod.getStartSlot(), fromExamPeriod.getExamType().getUniqueId());
+			if (toExamPeriod == null) {
+				toExamPeriod = (ExamPeriod)fromExamPeriod.clone();
+				toExamPeriod.setSession(toSession);
+				if (toExamPeriod.getEventStartOffset()==null) toExamPeriod.setEventStartOffset(0);
+				if (toExamPeriod.getEventStopOffset()==null) toExamPeriod.setEventStopOffset(0);
+				getHibSession().persist(toExamPeriod);
+			}
 		}
 		getHibSession().flush();
 	}
@@ -1792,11 +1730,16 @@ public class SessionRollForward {
 		Room toRoom = null;
 		ExamLocationPref fromPref = null;
 		ExamPeriod toPeriod = null;
-		for (Iterator rIt = rooms.iterator(); rIt.hasNext();){
+		for (Iterator<Room> rIt = rooms.iterator(); rIt.hasNext();){
 			fromRoom = (Room) rIt.next();
 			toRoom = fromRoom.findSameRoomInSession(toSession);
 			if (toRoom != null){
-				for(Iterator elpIt = fromRoom.getExamPreferences().iterator(); elpIt.hasNext();){
+				if (toRoom.getExamPreferences() != null) {
+					for (Iterator<ExamLocationPref> it = toRoom.getExamPreferences().iterator(); it.hasNext();) {
+						getHibSession().remove(it.next()); it.remove();
+					}
+				}
+				for (Iterator<ExamLocationPref> elpIt = fromRoom.getExamPreferences().iterator(); elpIt.hasNext();){
 					fromPref = (ExamLocationPref) elpIt.next();
 					toPeriod = fromPref.getExamPeriod().findSameExamPeriodInSession(toSession);
 					if (toPeriod != null){
@@ -1810,11 +1753,16 @@ public class SessionRollForward {
 				.setParameter("sessionId", fromSession.getUniqueId().longValue()).list();
 		NonUniversityLocation fromNonUniversityLocation = null;	
 		NonUniversityLocation toNonUniversityLocation = null;
-		for (Iterator nulIt = nonUniversityLocations.iterator(); nulIt.hasNext();){
+		for (Iterator<NonUniversityLocation> nulIt = nonUniversityLocations.iterator(); nulIt.hasNext();){
 			fromNonUniversityLocation = (NonUniversityLocation) nulIt.next();
 			toNonUniversityLocation = fromNonUniversityLocation.findSameNonUniversityLocationInSession(toSession);
 			if (toNonUniversityLocation != null){
-				for(Iterator elpIt = fromNonUniversityLocation.getExamPreferences().iterator(); elpIt.hasNext();){
+				if (toNonUniversityLocation.getExamPreferences() != null) {
+					for (Iterator<ExamLocationPref> it = toNonUniversityLocation.getExamPreferences().iterator(); it.hasNext();) {
+						getHibSession().remove(it.next()); it.remove();
+					}
+				}
+				for(Iterator<ExamLocationPref> elpIt = fromNonUniversityLocation.getExamPreferences().iterator(); elpIt.hasNext();){
 					fromPref = (ExamLocationPref) elpIt.next();
 					toPeriod = fromPref.getExamPeriod().findSameExamPeriodInSession(toSession);
 					if (toPeriod != null){
@@ -1854,56 +1802,63 @@ public class SessionRollForward {
 		}
 	}
 	
-	private void rollForwardExam(Exam fromExam, Session toSession, RollAction prefOption) {
-		Exam toExam = new Exam();
-		toExam.setExamType(fromExam.getExamType());
-		toExam.setLength(fromExam.getLength());
-		toExam.setMaxNbrRooms(fromExam.getMaxNbrRooms());
-		toExam.setNote(fromExam.getNote());
-		toExam.setSeatingType(fromExam.getSeatingType());
-		toExam.setSession(toSession);
-		toExam.setUniqueIdRolledForwardFrom(fromExam.getUniqueId());
-		if (fromExam.getAveragePeriod() != null && fromExam.getAssignedPeriod() != null){
-			toExam.setAvgPeriod(Integer.valueOf((fromExam.getAvgPeriod().intValue() + fromExam.getAssignedPeriod().getIndex())/2));
-		} else if (fromExam.getAveragePeriod() != null){
-			toExam.setAvgPeriod(fromExam.getAvgPeriod());
-		} else if (fromExam.getAssignedPeriod() != null){
-			toExam.setAvgPeriod(fromExam.getAssignedPeriod().getIndex());
-		}
-		for(Iterator oIt = fromExam.getOwners().iterator(); oIt.hasNext();){
+	private void rollForwardExam(Exam fromExam, Session toSession, RollAction prefOption,
+			Map<Long, Class_> classCache, Map<Long, InstrOfferingConfig> configCache, Map<Long, InstructionalOffering> offeringCache, Map<Long, CourseOffering> courseCache) {
+		if (Exam.findByIdRolledForwardFrom(toSession.getUniqueId(), fromExam.getUniqueId()) != null) return;
+		iLog.info(fromExam.getLabel());
+		List<ExamOwner> owners = new ArrayList<ExamOwner>();
+		for(Iterator<ExamOwner> oIt = fromExam.getOwners().iterator(); oIt.hasNext();){
 			ExamOwner fromOwner = (ExamOwner) oIt.next();
-			ExamOwner toOwner = new ExamOwner();
-			if(fromOwner.getOwnerType().equals(ExamOwner.sOwnerTypeClass)){
-				Class_ fromClass = (Class_)fromOwner.getOwnerObject();
-				Class_ toClass = Class_.findByIdRolledForwardFrom(toSession.getUniqueId(), fromClass.getUniqueId());
-				if (toClass != null){
+			if (fromOwner.getOwnerType().equals(ExamOwner.sOwnerTypeClass)){
+				Class_ toClass = classCache.get(fromOwner.getOwnerId());
+				if (toClass != null) {
+					ExamOwner toOwner = new ExamOwner();
 					toOwner.setOwner(toClass);
+					owners.add(toOwner);
 				}
 			} else if (fromOwner.getOwnerType().equals(ExamOwner.sOwnerTypeConfig)){
-				InstrOfferingConfig fromIoc = (InstrOfferingConfig) fromOwner.getOwnerObject();
-				InstrOfferingConfig toIoc = InstrOfferingConfig.findByIdRolledForwardFrom(toSession.getUniqueId(), fromIoc.getUniqueId());
-				if (toIoc != null){
+				InstrOfferingConfig toIoc = configCache.get(fromOwner.getOwnerId());
+				if (toIoc != null) {
+					ExamOwner toOwner = new ExamOwner();
 					toOwner.setOwner(toIoc);
+					owners.add(toOwner);
 				}
 			} else if (fromOwner.getOwnerType().equals(ExamOwner.sOwnerTypeOffering)){
-				InstructionalOffering fromIo = (InstructionalOffering) fromOwner.getOwnerObject();
-				InstructionalOffering toIo = InstructionalOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromIo.getUniqueId());
-				if (toIo != null){
+				InstructionalOffering toIo = offeringCache.get(fromOwner.getOwnerId());
+				if (toIo != null) {
+					ExamOwner toOwner = new ExamOwner();
 					toOwner.setOwner(toIo);
+					owners.add(toOwner);
 				}
 			} else if (fromOwner.getOwnerType().equals(ExamOwner.sOwnerTypeCourse)){
-				CourseOffering fromCo = (CourseOffering) fromOwner.getOwnerObject();
-				CourseOffering toCo = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromCo.getUniqueId());
-				if (toCo != null){
+				CourseOffering toCo = courseCache.get(fromOwner.getOwnerId());
+				if (toCo != null) {
+					ExamOwner toOwner = new ExamOwner();
 					toOwner.setOwner(toCo);
+					owners.add(toOwner);
 				}
 			}
-			if (toOwner.getOwnerType() != null){
-				toOwner.setExam(toExam);
-				toExam.addToOwners(toOwner);
-			}
 		}
-		if (toExam.getOwners() != null && toExam.getOwners().size() > 0){
+		if (!owners.isEmpty()) {
+			Exam toExam = new Exam();
+			toExam.setExamType(fromExam.getExamType());
+			toExam.setLength(fromExam.getLength());
+			toExam.setMaxNbrRooms(fromExam.getMaxNbrRooms());
+			toExam.setNote(fromExam.getNote());
+			toExam.setSeatingType(fromExam.getSeatingType());
+			toExam.setSession(toSession);
+			toExam.setUniqueIdRolledForwardFrom(fromExam.getUniqueId());
+			if (fromExam.getAveragePeriod() != null && fromExam.getAssignedPeriod() != null){
+				toExam.setAvgPeriod(Integer.valueOf((fromExam.getAvgPeriod().intValue() + fromExam.getAssignedPeriod().getIndex())/2));
+			} else if (fromExam.getAveragePeriod() != null){
+				toExam.setAvgPeriod(fromExam.getAvgPeriod());
+			} else if (fromExam.getAssignedPeriod() != null){
+				toExam.setAvgPeriod(fromExam.getAssignedPeriod().getIndex());
+			}
+			for (ExamOwner owner: owners) {
+				owner.setExam(toExam);
+				toExam.addToOwners(owner);
+			}
 			getHibSession().persist(toExam);
 			if (prefOption == RollAction.EXAMS_ROOM_PREFS || prefOption == RollAction.EXAMS_ALL_PREF) {
 				rollForwardBuildingPrefs(fromExam, toExam, toSession);
@@ -1934,11 +1889,80 @@ public class SessionRollForward {
 				.list());
 	}
 	
+	protected Map<Long, Class_> getExamClassCache(Session toSession, int examType) {
+		Map<Long, Class_> cache = new HashMap<Long, Class_>();
+		for (Class_ c: getHibSession().createQuery(
+				"from Class_ c " +
+				"where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :toSessionId " +
+				"and (select count(o) from ExamOwner o where o.ownerType=:ownerTypeClass and " +
+				"o.exam.examType.type = :examType and o.ownerId = c.uniqueIdRolledForwardFrom) > 0", Class_.class)
+				.setParameter("toSessionId", toSession.getUniqueId().longValue())
+				.setParameter("examType", examType)
+				.setParameter("ownerTypeClass", ExamOwner.sOwnerTypeClass)
+				.list()) {
+			cache.put(c.getUniqueIdRolledForwardFrom(), c);
+		}
+		return cache;
+	}
+	
+	protected Map<Long, CourseOffering> getExamCourseCache(Session toSession, int examType) {
+		Map<Long, CourseOffering> cache = new HashMap<Long, CourseOffering>();
+		for (CourseOffering c: getHibSession().createQuery(
+				"from CourseOffering co " +
+				"where co.subjectArea.session.uniqueId = :toSessionId " +
+				"and (select count(o) from ExamOwner o where o.ownerType=:ownerTypeCourse and " +
+				"o.exam.examType.type = :examType and o.ownerId = co.uniqueIdRolledForwardFrom) > 0", CourseOffering.class)
+				.setParameter("toSessionId", toSession.getUniqueId().longValue())
+				.setParameter("examType", examType)
+				.setParameter("ownerTypeCourse", ExamOwner.sOwnerTypeCourse)
+				.list()) {
+			cache.put(c.getUniqueIdRolledForwardFrom(), c);
+		}
+		return cache;
+	}
+	
+	protected Map<Long, InstrOfferingConfig> getExamConfigCache(Session toSession, int examType) {
+		Map<Long, InstrOfferingConfig> cache = new HashMap<Long, InstrOfferingConfig>();
+		for (InstrOfferingConfig c: getHibSession().createQuery(
+				"from InstrOfferingConfig ioc " +
+				"where ioc.instructionalOffering.session.uniqueId = :toSessionId " +
+				"and (select count(o) from ExamOwner o where o.ownerType=:ownerTypeConfig and " +
+				"o.exam.examType.type = :examType and o.ownerId = ioc.uniqueIdRolledForwardFrom) > 0", InstrOfferingConfig.class)
+				.setParameter("toSessionId", toSession.getUniqueId().longValue())
+				.setParameter("examType", examType)
+				.setParameter("ownerTypeConfig", ExamOwner.sOwnerTypeConfig)
+				.list()) {
+			cache.put(c.getUniqueIdRolledForwardFrom(), c);
+		}
+		return cache;
+	}
+	
+	protected Map<Long, InstructionalOffering> getExamOfferingCache(Session toSession, int examType) {
+		Map<Long, InstructionalOffering> cache = new HashMap<Long, InstructionalOffering>();
+		for (InstructionalOffering c: getHibSession().createQuery(
+				"from InstructionalOffering io " +
+				"where io.session.uniqueId = :toSessionId " +
+				"and (select count(o) from ExamOwner o where o.ownerType=:ownerTypeOffering and " +
+				"o.exam.examType.type = :examType and o.ownerId = io.uniqueIdRolledForwardFrom) > 0", InstructionalOffering.class)
+				.setParameter("toSessionId", toSession.getUniqueId().longValue())
+				.setParameter("examType", examType)
+				.setParameter("ownerTypeOffering", ExamOwner.sOwnerTypeOffering)
+				.list()) {
+			cache.put(c.getUniqueIdRolledForwardFrom(), c);
+		}
+		return cache;
+	}
+	
 	public void rollMidtermExamsForward(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm){
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		List<Exam> exams = findExamToRollForward(toSession, ExamType.sExamTypeMidterm);
+		Map<Long, Class_> classCache = getExamClassCache(toSession, ExamType.sExamTypeMidterm);
+		Map<Long, InstrOfferingConfig> configCache = getExamConfigCache(toSession, ExamType.sExamTypeMidterm);
+		Map<Long, InstructionalOffering> offeringCache = getExamOfferingCache(toSession, ExamType.sExamTypeMidterm);
+		Map<Long, CourseOffering> courseCache = getExamCourseCache(toSession, ExamType.sExamTypeMidterm);
 		for (Exam exam: exams) {
-			rollForwardExam(exam, toSession, rollForwardSessionForm.getMidtermExamsPrefsAction());
+			rollForwardExam(exam, toSession, rollForwardSessionForm.getMidtermExamsPrefsAction(),
+					classCache, configCache, offeringCache, courseCache);
 		}
 		getHibSession().flush();
 	}
@@ -1946,8 +1970,13 @@ public class SessionRollForward {
 	public void rollFinalExamsForward(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm){
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		List<Exam> exams = findExamToRollForward(toSession, ExamType.sExamTypeFinal);
+		Map<Long, Class_> classCache = getExamClassCache(toSession, ExamType.sExamTypeFinal);
+		Map<Long, InstrOfferingConfig> configCache = getExamConfigCache(toSession, ExamType.sExamTypeFinal);
+		Map<Long, InstructionalOffering> offeringCache = getExamOfferingCache(toSession, ExamType.sExamTypeFinal);
+		Map<Long, CourseOffering> courseCache = getExamCourseCache(toSession, ExamType.sExamTypeFinal);
 		for (Exam exam: exams) {
-			rollForwardExam(exam, toSession, rollForwardSessionForm.getFinalExamsPrefsAction());
+			rollForwardExam(exam, toSession, rollForwardSessionForm.getFinalExamsPrefsAction(),
+					classCache, configCache, offeringCache, courseCache);
 		}
 		getHibSession().flush();
 	}
@@ -1965,17 +1994,14 @@ public class SessionRollForward {
 		if (fromInstructor.getDistributionPreferences() != null && fromInstructor.getDistributionPreferences().size() > 0){
 			DistributionPref fromDistributionPref = null;
 			DistributionPref toDistributionPref = null;
-			for (Iterator it = fromInstructor.getDistributionPreferences().iterator(); it.hasNext();){
+			for (Iterator<DistributionPref> it = fromInstructor.getDistributionPreferences().iterator(); it.hasNext();){
 				fromDistributionPref = (DistributionPref) it.next();
 				toDistributionPref = new DistributionPref();
-				if(fromDistributionPref.getDistributionType() != null) {
-					toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
-				}
-				if(fromDistributionPref.getGrouping() != null) {
-					toDistributionPref.setGrouping(fromDistributionPref.getGrouping());
-				}
+				toDistributionPref.setDistributionType(fromDistributionPref.getDistributionType());
+				toDistributionPref.setGrouping(fromDistributionPref.getGrouping());
 				toDistributionPref.setPrefLevel(fromDistributionPref.getPrefLevel());
 				toDistributionPref.setOwner(toInstructor);
+				toDistributionPref.setUniqueIdRolledForwardFrom(fromDistributionPref.getUniqueId());
 				toInstructor.addToPreferences(toDistributionPref);
 			}
 		}
@@ -2071,6 +2097,10 @@ public class SessionRollForward {
 			}
 			getHibSession().clear();
 		}
+		rollForwardParentOfferingsIfNeeded(errors, rollForwardSessionForm);
+	}
+	
+	protected void rollForwardParentOfferingsIfNeeded(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm) {
 		if (Boolean.TRUE.equals(rollForwardSessionForm.getRollForwardParentOfferings())) {
 			iLog.info("Checking for associated courses...");
 			Transaction tx = getHibSession().beginTransaction();
@@ -2081,7 +2111,7 @@ public class SessionRollForward {
 						"co.subjectArea.session.uniqueId = :targetSessionId and parent.subjectArea.session.uniqueId = :targetSessionId and " +
 						"co.uniqueIdRolledForwardFrom = orig.uniqueId and " +
 						"parent.uniqueIdRolledForwardFrom = orig.parentOffering.uniqueId and " +
-						"cast(co.subjectArea.uniqueId as string) in :subjectAreaIds", Object[].class)
+						"co.subjectArea.uniqueId in :subjectAreaIds", Object[].class)
 						.setParameter("targetSessionId", rollForwardSessionForm.getSessionToRollForwardTo())
 						.setParameterList("subjectAreaIds", rollForwardSessionForm.getRollForwardSubjectAreaIds())
 						.list()) {
@@ -2134,7 +2164,7 @@ public class SessionRollForward {
 		Set<Location> ts = new TreeSet<Location>();
 		for (Room r: hibSession.createQuery(buildRoomQueryForDepartment(department, session, "Room"), Room.class).list()) {
 			RoomDept rd = null;
-			for (Iterator it2 = r.getRoomDepts().iterator(); it2.hasNext();){
+			for (Iterator<RoomDept> it2 = r.getRoomDepts().iterator(); it2.hasNext();){
 				rd = (RoomDept) it2.next();
 				rd.getDepartment();
 			}
@@ -2142,7 +2172,7 @@ public class SessionRollForward {
 		}
 		for (NonUniversityLocation l: hibSession.createQuery(buildRoomQueryForDepartment(department, session, "NonUniversityLocation"), NonUniversityLocation.class).list()) {
 			RoomDept rd = null;
-			for (Iterator it2 = l.getRoomDepts().iterator(); it2.hasNext();){
+			for (Iterator<RoomDept> it2 = l.getRoomDepts().iterator(); it2.hasNext();){
 				rd = (RoomDept) it2.next();
 				rd.getDepartment();
 			}
@@ -2151,9 +2181,9 @@ public class SessionRollForward {
 		return(ts);
 	}
 
-	public HashMap getRoomList() {
+	public HashMap<Long, Set<Location>> getRoomList() {
 		if (roomList == null){
-			roomList = new HashMap();
+			roomList = new HashMap<Long, Set<Location>>();
 		}
 		return roomList;
 	}
@@ -2170,9 +2200,9 @@ public class SessionRollForward {
 		return(((Boolean)getSessionHasCourseCatalogList().get(session)).booleanValue());
 	}
 	
-	public HashMap getSessionHasCourseCatalogList() {
+	public HashMap<Session, Boolean> getSessionHasCourseCatalogList() {
 		if (sessionHasCourseCatalogList == null){
-			sessionHasCourseCatalogList = new HashMap();
+			sessionHasCourseCatalogList = new HashMap<Session, Boolean>();
 		}
 		return(sessionHasCourseCatalogList);
 	}
@@ -2186,9 +2216,9 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalBuildingList().get(session)).booleanValue());
 	}
 	
-	public HashMap getSessionHasExternalBuildingList(){
+	public HashMap<Session, Boolean> getSessionHasExternalBuildingList(){
 		if (sessionHasExternalBuildingList == null){
-			sessionHasExternalBuildingList = new HashMap();
+			sessionHasExternalBuildingList = new HashMap<Session, Boolean>();
 		}
 		return(sessionHasExternalBuildingList);
 	}
@@ -2202,9 +2232,9 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalRoomList().get(session)).booleanValue());
 	}
 	
-	public HashMap getSessionHasExternalRoomList(){
+	public HashMap<Session, Boolean> getSessionHasExternalRoomList(){
 		if (sessionHasExternalRoomList == null){
-			sessionHasExternalRoomList = new HashMap();
+			sessionHasExternalRoomList = new HashMap<Session, Boolean>();
 		}
 		return(sessionHasExternalRoomList);
 	}
@@ -2218,9 +2248,9 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalRoomDeptList().get(session)).booleanValue());
 	}
 	
-	public HashMap getSessionHasExternalRoomDeptList(){
+	public HashMap<Session, Boolean> getSessionHasExternalRoomDeptList(){
 		if (sessionHasExternalRoomDeptList == null){
-			sessionHasExternalRoomDeptList = new HashMap();
+			sessionHasExternalRoomDeptList = new HashMap<Session, Boolean>();
 		}
 		return(sessionHasExternalRoomDeptList);
 	}
@@ -2234,9 +2264,9 @@ public class SessionRollForward {
 		return(((Boolean) getSessionHasExternalRoomFeatureList().get(session)).booleanValue());
 	}
 	
-	public HashMap getSessionHasExternalRoomFeatureList(){
+	public HashMap<Session, Boolean> getSessionHasExternalRoomFeatureList(){
 		if (sessionHasExternalRoomFeatureList == null){
-			sessionHasExternalRoomFeatureList = new HashMap();
+			sessionHasExternalRoomFeatureList = new HashMap<Session, Boolean>();
 		}
 		return(sessionHasExternalRoomFeatureList);
 	}
@@ -2246,13 +2276,7 @@ public class SessionRollForward {
 			for(Department fromDept : fromTimePattern.getDepartments()){
 				Department toDepartment = Department.findByDeptCode(fromDept.getDeptCode(), toTimePattern.getSession().getSessionId());
 				if (toDepartment != null){
-					if (null == toDepartment.getTimePatterns()){
-						toDepartment.setTimePatterns(new java.util.HashSet());
-					}
-					toDepartment.getTimePatterns().add(toTimePattern);
-					if (null == toTimePattern.getDepartments()){
-						toTimePattern.setDepartments(new java.util.HashSet());
-					}
+					toDepartment.addToTimePatterns(toTimePattern);
 					toTimePattern.addToDepartments(toDepartment);
 				}
 			}
@@ -2263,17 +2287,13 @@ public class SessionRollForward {
 	public void rollTimePatternsForward(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollTimePatternsForwardFrom());
-		List<TimePattern> fromDatePatterns = TimePattern.findAll(fromSession, null);
-		TimePattern fromTimePattern = null;
+		List<TimePattern> fromTimePatterns = TimePattern.findAll(fromSession, null);
 		TimePattern toTimePattern = null;
-		for(Iterator<TimePattern> it = fromDatePatterns.iterator(); it.hasNext();){
-			fromTimePattern = it.next();
-			if (fromTimePattern != null){
-				toTimePattern = (TimePattern) fromTimePattern.clone();
-				toTimePattern.setSession(toSession);
-				rollTimePatternOntoDepartments(fromTimePattern, toTimePattern);
-				getHibSession().persist(toTimePattern);
-			}
+		for(TimePattern fromTimePattern : fromTimePatterns){
+			toTimePattern = (TimePattern) fromTimePattern.clone();
+			toTimePattern.setSession(toSession);
+			rollTimePatternOntoDepartments(fromTimePattern, toTimePattern);
+			getHibSession().persist(toTimePattern);
 		}
 		getHibSession().flush();
 	}
@@ -2305,11 +2325,11 @@ public class SessionRollForward {
 	private void rollForwardClassInstructorsForASubjectArea(String subjectAreaAbbreviation, Session toSession) {
 		iLog.info("Rolling forward class instructors for:  " + subjectAreaAbbreviation);
 		Class_DAO clsDao = new Class_DAO();
-		List classes = Class_.findAllForControllingSubjectArea(subjectAreaAbbreviation, toSession.getUniqueId(), getHibSession());
+		List<Class_> classes = Class_.findAllForControllingSubjectArea(subjectAreaAbbreviation, toSession.getUniqueId(), getHibSession());
 		if (classes != null && !classes.isEmpty()){
 			Class_ toClass = null;
 			Class_ fromClass = null;
-			for (Iterator cIt = classes.iterator(); cIt.hasNext();){
+			for (Iterator<Class_> cIt = classes.iterator(); cIt.hasNext();){
 				toClass = (Class_) cIt.next();
 				if (toClass.getUniqueIdRolledForwardFrom() != null){
 					
@@ -2319,7 +2339,7 @@ public class SessionRollForward {
 							ClassInstructor fromClassInstr = null;
 							ClassInstructor toClassInstr = null;
 							DepartmentalInstructor toDeptInstr = null;
-							for (Iterator ciIt = fromClass.getClassInstructors().iterator(); ciIt.hasNext();){
+							for (Iterator<ClassInstructor> ciIt = fromClass.getClassInstructors().iterator(); ciIt.hasNext();){
 								fromClassInstr = (ClassInstructor) ciIt.next();
 								if (fromClassInstr.getTeachingRequest() != null) continue;
 								toDeptInstr = fromClassInstr.getInstructor().findThisInstructorInSession(toSession.getUniqueId(), getHibSession());
@@ -2376,7 +2396,7 @@ public class SessionRollForward {
 				.setParameter("subjectAreaId", subjectArea.getUniqueId()).list()) {
 			InstructionalOffering fromInstructionalOffering = InstructionalOfferingDAO.getInstance().get(toInstructionalOffering.getUniqueIdRolledForwardFrom());
 			if (fromInstructionalOffering != null) {
-				for (Iterator coIt = fromInstructionalOffering.getOfferingCoordinators().iterator(); coIt.hasNext();){
+				for (Iterator<OfferingCoordinator> coIt = fromInstructionalOffering.getOfferingCoordinators().iterator(); coIt.hasNext();){
 					OfferingCoordinator fromOfferingCoordinator = (OfferingCoordinator) coIt.next();
 					if (fromOfferingCoordinator.getTeachingRequest() != null) continue;
 					DepartmentalInstructor toInstructor = fromOfferingCoordinator.getInstructor().findThisInstructorInSession(toSession.getUniqueId());
@@ -2427,7 +2447,7 @@ public class SessionRollForward {
         
         getHibSession().createMutationQuery("delete LastLikeCourseDemand d where d.subjectArea.uniqueId in " +
         		"(select s.uniqueId from SubjectArea s where s.session.uniqueId=:toSessionId)")
-        		.setParameter("toSessionId", toSession.getUniqueId().longValue()).executeUpdate();;
+        		.setParameter("toSessionId", toSession.getUniqueId().longValue()).executeUpdate();
         
         for (int i=0;i<query.length;i++) {
             for (Object[] o: getHibSession().createQuery(query[i], Object[].class)
@@ -2875,7 +2895,6 @@ public class SessionRollForward {
 	}
 
 	public void rollReservationsForward(RollForwardErrorLogger errors, RollForwardSessionInterface rollForwardSessionForm) {
-		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_ENTRY_FORMAT);
 		List<SubjectArea> subjects = new ArrayList<SubjectArea>();
 		List<Long> subjectIds = new ArrayList<Long>();
 		List<String> subjectAbbvs = new ArrayList<String>();
@@ -3379,15 +3398,11 @@ public class SessionRollForward {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
 		List<LearningManagementSystemInfo> fromLearningManagementSystems = LearningManagementSystemInfo.findAll(fromSession.getUniqueId());
-		LearningManagementSystemInfo fromLms = null;
 		LearningManagementSystemInfo toLms = null;
-		for(Iterator it = fromLearningManagementSystems.iterator(); it.hasNext();){
-			fromLms = (LearningManagementSystemInfo) it.next();
-			if (fromLms != null){
-				toLms = (LearningManagementSystemInfo) fromLms.clone();
-				toLms.setSession(toSession);
-				getHibSession().persist(toLms);
-			}
+		for(LearningManagementSystemInfo fromLms : fromLearningManagementSystems){
+			toLms = (LearningManagementSystemInfo) fromLms.clone();
+			toLms.setSession(toSession);
+			getHibSession().persist(toLms);
 		}
 		getHibSession().flush();		
 	}
