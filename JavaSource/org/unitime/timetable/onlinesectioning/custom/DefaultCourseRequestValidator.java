@@ -321,24 +321,18 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 			}
 		}
 
-		String minCreditLimit = ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck");
-		float minCredit = 0;
-		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedCourse()) {
-				for (RequestedCourse rc: r.getRequestedCourse())
-					if (rc.hasCredit()) {
-						minCredit += rc.getCreditMin(); break;
-					}
-			}
-		}
+		Float minCreditLimit = original.getMinCredit();
+		if (minCreditLimit == null)
+			minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck", "0"));
+		float minCredit = request.getMinCredit();
 		if (!request.isEmpty()) request.setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
-		if (minCreditLimit != null && minCredit > 0 && minCredit < Float.parseFloat(minCreditLimit) && (original.getMaxCredit() == null || original.getMaxCredit() > Float.parseFloat(minCreditLimit))) {
+		if (minCreditLimit != null && minCreditLimit > 0f && minCredit > 0 && minCredit < minCreditLimit) {
 			String minCreditLimitFilter = ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck.studentFilter");
 			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
 					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
 				request.setCreditWarning(
 						ApplicationProperties.getProperty(iParameterPrefix + "messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit))
 						);
 				request.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
 			}
@@ -1411,25 +1405,19 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(advisorWaitListedCourseIds)));
 		}
 
-		String minCreditLimit = ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck");
-		float minCredit = 0;
-		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedCourse()) {
-				for (RequestedCourse rc: r.getRequestedCourse())
-					if (rc.hasCredit()) {
-						minCredit += rc.getCreditMin(); break;
-					}
-			}
-		}
-		if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
+		Float minCreditLimit = original.getMinCredit();
+		if (minCreditLimit == null)
+			minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck", "0"));
+		float minCredit = request.getMinCredit();
+		if (creditError == null && minCreditLimit != null && minCreditLimit > 0f && minCredit > 0 && minCredit < minCreditLimit) {
 			String minCreditLimitFilter = ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck.studentFilter");
 			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
 					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
 				creditError = ApplicationProperties.getProperty(iParameterPrefix + "messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit));
 				response.setCreditWarning(
 						ApplicationProperties.getProperty(iParameterPrefix + "messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit))
 						);
 				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
 			}
@@ -2142,7 +2130,9 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 					.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(request.getCredit(null)));
 		}
 
-		String minCreditLimit = ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck");
+		Float minCreditLimit = original.getMinCredit();
+		if (minCreditLimit == null)
+			minCreditLimit = Float.parseFloat(ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck", "0"));
 		float minCredit = 0;
 		for (CourseRequestInterface.Request r: request.getCourses()) {
 			if (r.hasAdvisorCredit()) {
@@ -2154,15 +2144,15 @@ public class DefaultCourseRequestValidator implements CourseRequestsValidationPr
 					}
 			}
 		}
-		if (creditError == null && minCreditLimit != null && minCredit < Float.parseFloat(minCreditLimit) && (maxCredit == null || maxCredit > Float.parseFloat(minCreditLimit))) {
+		if (creditError == null && minCreditLimit != null && minCreditLimit > 0f && minCredit > 0 && minCredit < minCreditLimit) {
 			String minCreditLimitFilter = ApplicationProperties.getProperty(iParameterPrefix + "minCreditCheck.studentFilter");
 			if (minCreditLimitFilter == null || minCreditLimitFilter.isEmpty() ||
 					new Query(minCreditLimitFilter).match(new StudentMatcher(original, server.getAcademicSession().getDefaultSectioningStatus(), server, false))) {
 				creditError = ApplicationProperties.getProperty(iParameterPrefix + "messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit));
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit));
 				response.setCreditWarning(
 						ApplicationProperties.getProperty(iParameterPrefix + "messages.minCredit",
-						"Less than {min} credit hours requested.").replace("{min}", minCreditLimit).replace("{credit}", sCreditFormat.format(minCredit))
+						"Less than {min} credit hours requested.").replace("{min}", sCreditFormat.format(minCreditLimit)).replace("{credit}", sCreditFormat.format(minCredit))
 						);
 				response.setMaxCreditOverrideStatus(RequestedCourseStatus.CREDIT_LOW);
 			}
