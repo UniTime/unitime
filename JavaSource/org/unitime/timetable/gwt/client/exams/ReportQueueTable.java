@@ -167,10 +167,8 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	}
 	
 	private void populate(GwtRpcResponseList<QueueItemInterface> queue, String selectId) {
-		if (getSelectedRow() > 0 && selectId == null) {
-			QueueItemInterface q = getData(getSelectedRow());
-			if (q != null) selectId = q.getId();
-		}
+		if (getSelectedRow() > 0 && selectId == null)
+			selectId = getSelectedId();
 		QueueItemInterface selectedQueue = null;
 		clearTable(1);
 		iLastSelectedRow = -1;
@@ -224,6 +222,11 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 		iPanel.getRowFormatter().setVisible(iQueueRow + 1, visible);
 	}
 	
+	protected String getSelectedId() {
+		QueueItemInterface item = getData(getSelectedRow());
+		return item == null ? null : item.getId();
+	}
+
 	protected void showLog(QueueItemInterface item) {
 		if (item == null) {
 			iPanel.getRowFormatter().setVisible(iLogRow, false);
@@ -242,7 +245,9 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 				@Override
 				public void onSuccess(QueueItemLogInterface result) {
 					iLogHeader.clearMessage();
-					if (result == null || result.getLog() == null || result.getLog().isEmpty()) {
+					if (result != null && result.getId() != null && !result.getId().equals(getSelectedId())) {
+						// no longer selected -> ignore the update
+					} else if (result == null || result.getLog() == null || result.getLog().isEmpty()) {
 						iPanel.getRowFormatter().setVisible(iLogRow, false);
 						iPanel.getRowFormatter().setVisible(iLogRow + 1, false);
 					} else {
