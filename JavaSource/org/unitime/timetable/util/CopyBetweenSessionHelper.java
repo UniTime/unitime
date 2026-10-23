@@ -2197,6 +2197,7 @@ public class CopyBetweenSessionHelper {
 					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
 						primaryToDepartment = findToDepartment(fromDepartment, defaultPrefix);
 						if (primaryToDepartment != null && (deptsToRollDataFor == null || deptsToRollDataFor.contains(primaryToDepartment.getUniqueId()))) {
+							iLog.info("Rolling instructors for " + fromDepartment);
 							mergeDepartmentalInstructorAttributesToSession(fromDepartment, primaryToDepartment);							
 							for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
 								for (Department toDepartment : findToDepartmentsForInstructor(fromInstructor, defaultPrefix)) {
