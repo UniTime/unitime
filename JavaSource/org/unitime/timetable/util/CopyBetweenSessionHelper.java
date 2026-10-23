@@ -2197,6 +2197,7 @@ public class CopyBetweenSessionHelper {
 					if (fromDepartment != null && fromDepartment.getInstructors() != null && !fromDepartment.getInstructors().isEmpty()){
 						primaryToDepartment = findToDepartment(fromDepartment, defaultPrefix);
 						if (primaryToDepartment != null && (deptsToRollDataFor == null || deptsToRollDataFor.contains(primaryToDepartment.getUniqueId()))) {
+							iLog.info("Rolling instructors for " + fromDepartment);
 							mergeDepartmentalInstructorAttributesToSession(fromDepartment, primaryToDepartment);							
 							for (DepartmentalInstructor fromInstructor : fromDepartment.getInstructors()){
 								for (Department toDepartment : findToDepartmentsForInstructor(fromInstructor, defaultPrefix)) {
@@ -3320,11 +3321,13 @@ public class CopyBetweenSessionHelper {
 										toClassInstr.setUniqueId(null);
 										toClass.addToClassInstructors(toClassInstr);
 										toDeptInstr.addToClasses(toClassInstr);
+										getHibSession().persist(toClassInstr);
 									} else {
 										toClassInstr = toInstructors.get(0);
 										toInstructors.remove(toClassInstr);
 										toClassInstr.setLead(fromClassInstr.isLead());
 										toClassInstr.setPercentShare(fromClassInstr.getPercentShare());
+										getHibSession().merge(toClassInstr);
 									}
 								} 
 							}
@@ -3387,6 +3390,7 @@ public class CopyBetweenSessionHelper {
 							OfferingCoordinator toOfferingCoordinator = toInstructors.get(0);
 							toInstructors.remove(toOfferingCoordinator);
 							toOfferingCoordinator.setPercentShare(fromOfferingCoordinator.getPercentShare());
+							getHibSession().merge(toOfferingCoordinator);
 						}
 					}
 				}
