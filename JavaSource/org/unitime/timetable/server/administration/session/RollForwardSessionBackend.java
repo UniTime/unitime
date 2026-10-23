@@ -118,6 +118,35 @@ public class RollForwardSessionBackend implements GwtRpcImplementation<RollForwa
 				RollForwardQueueItem q = (RollForwardQueueItem)item;
 				response.setData(q.getForm());
 				response.setErrors(q.getErrors());
+				sessionId = q.getForm().getSessionToRollForwardTo();
+				if (sessionId != null) {
+					allSessions = new ArrayList<Session>(Session.getAllSessions());
+					currentSession = SessionDAO.getInstance().get(sessionId);
+					Collections.sort(allSessions, new SessionComparator(currentSession.getAcademicInitiative()));
+					for (Session s: allSessions) {
+						if (s.getStatusType().isAllowRollForward()) {
+							response.addToSession(s.getUniqueId(), s.getLabel());
+						} else {
+							response.addFromSession(s.getUniqueId(), s.getLabel());
+						}
+					}
+					response.setToSessionId(sessionId);
+					for (SubjectArea subject: SubjectArea.getAllSubjectAreas(sessionId))
+						response.addSubject(subject.getUniqueId(), subject.getLabel());
+					for (Department dept: Department.findAll(sessionId))
+						response.addDepartment(dept.getUniqueId(), dept.getLabel());
+					for (PointInTimeData pit: PointInTimeDataDAO.getInstance().getSession().createQuery(
+							"from PointInTimeData pitd where pitd.session.uniqueId in (select distinct rfio.session.uniqueId " +
+							" from InstructionalOffering rfio, Session s inner join s.instructionalOfferings as io " +
+							" where s.uniqueId = :sessId " +
+							" and rfio.uniqueId = io.uniqueIdRolledForwardFrom )" +
+							" and pitd.savedSuccessfully = true ", PointInTimeData.class)
+							.setParameter("sessId", sessionId) .list())
+						response.addPointInTime(pit.getUniqueId(), pit.getName());
+					response.setDates(GwtRpcServlet.execute(new ReservationInterface.ReservationDefaultExpirationDatesRpcRequest(sessionId), applicationContext, context));
+					response.setAllowClassPrefs(ApplicationProperty.RollForwardAllowClassPreferences.isTrue());
+					response.setParentCourses(ApplicationProperty.StudentSchedulingParentCourse.isTrue());
+				}
 			}
 			return response;
 		}

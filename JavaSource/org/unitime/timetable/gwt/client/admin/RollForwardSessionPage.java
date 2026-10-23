@@ -215,6 +215,7 @@ public class RollForwardSessionPage extends Composite {
 			public void onSuccess(RollForwardSessionResponse result) {
 				iHeader.clearMessage();
 				if (result.getData() != null) {
+					if (result.getToSessionId() != null) iConfig = result;
 					iData = result.getData();
 					initForm();
 					iErrors.clearErrors();
