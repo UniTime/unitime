@@ -72,6 +72,7 @@ public class SolutionChangesBackend implements GwtRpcImplementation<SolutionChan
 	public SolutionChangesResponse execute(SolutionChangesRequest request, SessionContext context) {
 		context.checkPermission(Right.SolutionChanges);
 		SolutionChangesResponse response = new SolutionChangesResponse();
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));

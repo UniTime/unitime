@@ -217,7 +217,10 @@ public class InstructorAttributeEdit extends Composite {
 		
 		iInstructors = new InstructorsTable(iProperties, true);
 		iInstructors.setWidth("100%");
-		iForm.addRow(iInstructors);
+		if (iProperties.isSticky())
+			iForm.addRow(iInstructors.asStickyTable());
+		else
+			iForm.addRow(iInstructors);
 		iInstructors.addMouseClickListener(new MouseClickListener<InstructorInterface>() {
 			@Override
 			public void onMouseClick(TableEvent<InstructorInterface> event) {

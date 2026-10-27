@@ -29,6 +29,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.SolverGroupsPage.SolverGroupsRequest;
 import org.unitime.timetable.gwt.client.admin.SolverGroupsPage.SolverGroupsResponse;
@@ -55,6 +56,7 @@ public class SolverGroupsBackend implements GwtRpcImplementation<SolverGroupsReq
 		context.checkPermission(Right.SolverGroups);
 		
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("SolverGroups");
 		table.setDefaultSortCookie(MSG.fieldAbbv());
 		table.setName(MSG.sectSolverGroupsForSession(context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()));

@@ -109,13 +109,19 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 		});
 	}
 	
+	public Widget asWidgetStickyIfNeeded() {
+		if (iTable != null && iTable.isSticky()) {
+			return asStickyTable();
+		} else {
+			return this;
+		}
+	}
+	
 	public TableWidget(TableInterface table) {
 		this();
 		setData(table);
 		if (table.hasStyle())
 			applyStyle(getElement().getStyle(), table.getStyle());
-		if (table.hasClassName())
-			addStyleName(table.getClassName());
 	}
 	
 	@Override
@@ -143,7 +149,21 @@ public class TableWidget extends UniTimeTable<LineInterface> {
 	}
 	
 	public void setData(TableInterface table) {
+		if (iTable != null) {
+			if (iTable.hasClassName())
+				removeStyleName(table.getClassName());
+			else if (iTable.hasLines())
+				removeStyleName("unitime-TableWidget");
+			else if (iTable.hasProperties())
+				removeStyleName("unitime-Properties");
+		}
 		iTable = table;
+		if (iTable.hasClassName())
+			addStyleName(table.getClassName());
+		else if (iTable.hasLines())
+			addStyleName("unitime-TableWidget");
+		else if (iTable.hasProperties())
+			addStyleName("unitime-Properties");
 		clearTable();
 		iNavigationLevel = table.getNavigationLevel();
 		String sortCookie = ToolBox.getSessionCookie(table.getId() + ".Sort");

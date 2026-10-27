@@ -50,6 +50,7 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 	private Boolean iMultiRows;
 	private String iDefaultSortCookie;
 	private Boolean iBlankWhenSame;
+	private boolean iSticky = false;
 	
 	public TableInterface() {}
 	public TableInterface(String id, String name) {
@@ -163,6 +164,9 @@ public class TableInterface implements GwtRpcResponse, Serializable {
 	
 	public boolean isBlankWhenSame() { return iBlankWhenSame != null && iBlankWhenSame.booleanValue(); }
 	public void setBlankWhenSame(boolean blankWhenSame) { iBlankWhenSame = blankWhenSame; }
+	
+	public boolean isSticky() { return iSticky; }
+	public void setSticky(boolean sticky) { iSticky = sticky; }		
 	
 	public static class PropertyInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = -876791922511430431L;

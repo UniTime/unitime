@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.server.instructor;
 
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.InstructorInterface.AttributeTypeInterface;
@@ -43,6 +45,8 @@ public class InstructorAttributePropertiesBackend implements GwtRpcImplementatio
 		context.checkPermission(Right.InstructorAttributes);
 		
 		InstructorAttributePropertiesInterface response = new InstructorAttributePropertiesInterface();
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
+		
 		for (Department department: Department.getUserDepartments(context.getUser())) {
 			DepartmentInterface d = new DepartmentInterface();
 			d.setId(department.getUniqueId());

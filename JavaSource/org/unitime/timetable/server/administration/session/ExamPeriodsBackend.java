@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.ExaminationMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.ExamPeriodsPage.ExamPeriodsRequest;
 import org.unitime.timetable.gwt.client.admin.ExamPeriodsPage.ExamPeriodsResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
@@ -57,6 +59,7 @@ public class ExamPeriodsBackend implements GwtRpcImplementation<ExamPeriodsReque
 		
 		ExamPeriodsResponse response = new ExamPeriodsResponse();
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("ExamPeriods");
 		table.setDefaultSortCookie(MSG.colType());
 		table.setName(MSG.sectExaminationPeriods());

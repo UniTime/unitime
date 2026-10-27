@@ -67,6 +67,7 @@ public class AssignmentHistoryBackend implements GwtRpcImplementation<Assignment
 	public AssignmentHistoryResponse execute(AssignmentHistoryRequest request, SessionContext context) {
 		context.checkPermission(Right.AssignmentHistory);
 		AssignmentHistoryResponse response = new AssignmentHistoryResponse();
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));

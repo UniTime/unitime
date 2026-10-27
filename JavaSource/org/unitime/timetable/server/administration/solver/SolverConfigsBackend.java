@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.SolverConfigsPage.SolverConfigsRequest;
 import org.unitime.timetable.gwt.client.admin.SolverConfigsPage.SolverConfigsResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
@@ -44,6 +46,7 @@ public class SolverConfigsBackend implements GwtRpcImplementation<SolverConfigsR
 		context.checkPermission(Right.SolverConfigurations);
 		SolverConfigsResponse response = new SolverConfigsResponse();
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("SolverConfigs");
 		table.setDefaultSortCookie(MSG.fieldReference());
 		table.setName(MSG.sectSolverConfigurations());

@@ -4328,9 +4328,10 @@ div.gwt-MenuBarPopup {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow-x: hidden;
+	padding-right: 5px;
 }
 
-.unitime-Departments td {
+.unitime-Departments tr:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;
 }
 
@@ -4752,10 +4753,6 @@ div.gwt-MenuBarPopup {
 	padding-right: 3px;
 }
 
-.unitime-InstructorAttributes {
-	border-bottom: 1px dashed #9CB0CE;
-}
-
 .unitime-InstructorAttributes .attribute {
 	display: inline-block;
 	width: 24%;
@@ -4901,7 +4898,7 @@ div.gwt-MenuBarPopup {
 	padding-left: 50px;
 }
 
-.unitime-TeachingRequestDetail .instructors td {
+.unitime-TeachingRequestDetail .instructors tr:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;
 }
 
@@ -4944,6 +4941,7 @@ div.gwt-MenuBarPopup {
 .unitime-TeachingRequestDetail .suggestions .sections {
 	display: block;
 	height: 18px;
+	white-space: nowrap;
 }
 
 .unitime-TeachingRequestDetail .suggestions .section {
@@ -8186,7 +8184,7 @@ div.gwt-MenuBarPopup {
 	text-decoration: underline;	
 }
 
-.unitime-InstructorsPage .unitime-MainTable .instructor-line td {
+.unitime-InstructorsPage .unitime-MainTable .instructor-line:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;
 }
 
@@ -8820,8 +8818,8 @@ div.gwt-MenuBarPopup {
 	padding-bottom: 2px;
 }
 
-.unitime-AdminTable tr:nth-child(odd) {
-	background-color: #eee;
+.unitime-AdminTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
 }
 
 .unitime-QueueTable .unitime-ImageButton-focus {
@@ -9419,4 +9417,60 @@ div.gwt-MenuBarPopup {
 
 .unitime-MainTable .table-row {
 	max-width: calc(var(--page-max-width) - 10px);
+}
+
+.unitime-LastChangesPage .unitime-FocusableTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-StatusTypesPage .unitime-MainTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-Rooms tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-RoomGroups tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-RoomFeatures tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-RoomDepartmentsEdit tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-InstructorAttributes tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-Instructors tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-TeachingAssignmentChanges tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-TeachingRequestDetail .domain tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.gwt-PopupPanelGlass {
+	z-index: 1000;	
+}
+
+.unitime-TableWidget tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-DataTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-Buildings tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
 }

@@ -26,6 +26,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage.AcademicSessionsRequest;
 import org.unitime.timetable.gwt.client.admin.AcademicSessionsPage.AcademicSessionsResponse;
@@ -56,6 +57,7 @@ public class AcademicSessionsBackend implements GwtRpcImplementation<AcademicSes
 		Formats.Format<Date> dsf = Formats.getDateFormat(Formats.Pattern.DATE_SHORT);
 
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("AcademicSessions");
 		table.setDefaultSortCookie("!" + MSG.columnAcademicSessionStartDate());
 		

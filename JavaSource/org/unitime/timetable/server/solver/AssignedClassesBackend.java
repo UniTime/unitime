@@ -94,6 +94,7 @@ public class AssignedClassesBackend implements GwtRpcImplementation<AssignedClas
 	public AssignedClassesResponse execute(AssignedClassesRequest request, SessionContext context) {
 		context.checkPermission(Right.AssignedClasses);
 		AssignedClassesResponse response = new AssignedClassesResponse();
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		
 		context.getUser().setProperty("SuggestionsModel.simpleMode", request.getFilter().getParameterValue("simpleMode"));
 		boolean simple = "1".equals(request.getFilter().getParameterValue("simpleMode"));

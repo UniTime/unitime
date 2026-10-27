@@ -136,7 +136,6 @@ public class SimpleEditPage extends Composite {
 	private int iTableRow = -1;
 	private boolean iHasLazy = false;
 	private Integer iOrderColumn = null;
-	private boolean iSticky = false;
 
 	private SimpleEditInterface iData;
 	private SimplePanel iSimple;
@@ -670,7 +669,6 @@ public class SimpleEditPage extends Composite {
 						p.getElement().getStyle().clearOverflow();
 						p.add(iTable);
 						iPanel.setWidget(iTableRow, 0, p);
-						iSticky = true;
 					}
 					load(null);
 				} else {
@@ -692,10 +690,8 @@ public class SimpleEditPage extends Composite {
 						p.getElement().getStyle().clearOverflow();
 						p.add(iTable);
 						iTableRow = iPanel.addRow(p);
-						iSticky = true;
 					} else {
 						iTableRow = iPanel.addRow(iTable);
-						iSticky = false;
 					}
 					iPanel.addNotPrintableBottomRow(iBottom);
 					iHeader.setEnabled("search", true);
@@ -1098,7 +1094,6 @@ public class SimpleEditPage extends Composite {
 		for (Record r: iData.getRecords()) {
 			fillRow(r, row++);
 			empty = r.isEmpty(iData);
-			if (!iSticky && (row % 31) == 0 && !hasDetails() && !iData.isCanMoveUpAndDown()) { iTable.addRow(null, header(false)); row++; }
 		}
 		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
 			fillRow(iData.addRecord(null), row);

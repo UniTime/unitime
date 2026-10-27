@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.tables.TableWidget;
 
 import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
@@ -68,6 +69,8 @@ public class SimpleForm extends FlexTable {
 	}
 
 	public int addRow(Widget widget) {
+		if (widget instanceof TableWidget)
+			widget = ((TableWidget)widget).asWidgetStickyIfNeeded();
 		int row = getRowCount();
 		getFlexCellFormatter().setColSpan(row, 0, iColSpan);
 		if (widget instanceof HasMobileScroll) {

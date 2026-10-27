@@ -2210,6 +2210,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     
     protected TableInterface initTable(Long sessionId, String durationColName){
     	TableInterface table = new TableInterface();
+    	table.setClassName("unitime-OfferingsTable");
         buildTableHeader(table, sessionId, durationColName);
         return table;
     }
@@ -2447,6 +2448,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	}
     	
     	OfferingConfigInterface ret = new OfferingConfigInterface();
+    	ret.setClassName("unitime-InstrOfferingConfigTable");
     	
     	ret.setConfigId(ioc.getUniqueId());
     	ret.setSchedulingDisclaimer(ioc.getSchedulingDisclaimer());

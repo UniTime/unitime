@@ -102,6 +102,15 @@
 				<line>Added an ability to export and import periodic tasks.</line>
 			</description>
 		</item>
+		<item>
+			<name>Tables (various pages)</name>
+			<description>
+				<line>Use consistent styling for various tables across UniTime, namely:
+					<line>Freeze the header row when the stickyTables user property is set to yes.</line>
+					<line>Show a dashed line between rows.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

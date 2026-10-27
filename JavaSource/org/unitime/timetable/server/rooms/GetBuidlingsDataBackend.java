@@ -21,6 +21,8 @@ package org.unitime.timetable.server.rooms;
 
 import org.cpsolver.ifs.util.DistanceMetric;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.RoomInterface.BuildingInterface;
@@ -38,6 +40,7 @@ public class GetBuidlingsDataBackend implements GwtRpcImplementation<GetBuilding
 		context.checkPermission(Right.BuildingList);
 		
 		BuildingsDataResponse response = new BuildingsDataResponse();
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		response.setCanAdd(context.hasPermission(Right.BuildingAdd));
 		response.setCanExportPDF(context.hasPermission(Right.BuildingExportPdf));
 		response.setCanUpdateData(context.hasPermission(Right.BuildingUpdateData));

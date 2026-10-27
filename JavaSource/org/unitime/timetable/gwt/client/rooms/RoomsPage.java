@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
@@ -87,7 +88,6 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -109,6 +109,7 @@ public class RoomsPage extends Composite {
 	private AriaButton iMore = null;
 	private AriaButton iEditRoomSharing = null;
 	private RoomsTable iRoomsTable = null;
+	private P iRoomsScrollPanel = null;
 	private RoomDetail iRoomDetail = null;
 	
 	private VerticalPanel iRoomsPanel = null;
@@ -466,9 +467,9 @@ public class RoomsPage extends Composite {
 		
 		iRoomsTable = new RoomsTable(iMode);
 		iRoomsTable.getElement().getStyle().setMarginTop(10, Unit.PX);
-		ScrollPanel scroll = new ScrollPanel(iRoomsTable);
-		scroll.addStyleName("scroll");
-		iRoomsPanel.add(scroll);
+		iRoomsScrollPanel = new P("unitime-ScrollPanel");
+		iRoomsScrollPanel.add(iRoomsTable);
+		iRoomsPanel.add(iRoomsScrollPanel);
 		
 		iRootPanel = new SimplePanel(iRoomsPanel);
 		iPanel.setWidget(iRootPanel);
@@ -725,6 +726,11 @@ public class RoomsPage extends Composite {
 				
 				iRoomDetail.setProperties(iProperties);
 				iRoomsTable.setProperties(iProperties);
+				if (iProperties.isSticky()) {
+					iRoomsScrollPanel.setStyleName("unitime-StickyTable");
+					iRoomsScrollPanel.getElement().getStyle().clearPosition();
+					iRoomsScrollPanel.getElement().getStyle().clearOverflow();
+				}
 				iRoomEdit.setProperties(iProperties);
 				iRoomDepartmentsEdit.setProperties(iProperties);
 

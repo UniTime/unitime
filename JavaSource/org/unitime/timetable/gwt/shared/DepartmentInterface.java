@@ -275,8 +275,8 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
 
 		public boolean isCanChangeExtManager() { return iCanChangeExtManager; }
-		public void setCanChangeExtManager(boolean canChangeExtManager) { iCanChangeExtManager = canChangeExtManager; }	
-
+		public void setCanChangeExtManager(boolean canChangeExtManager) { iCanChangeExtManager = canChangeExtManager; }
+		
 	} //end DepartmentPropertiesInterface
 	
 	public static class StatusOption implements IsSerializable {
@@ -323,6 +323,7 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		private List<DepartmentInterface> iDepartments;
 		private boolean iCanAdd , iFundingDeptEnabled;
 		private boolean iCanExportPdf = true;
+		private boolean iSticky = false;
 
 		public boolean isCanAdd() { return iCanAdd; }
 		public void setCanAdd(boolean canAdd) { iCanAdd = canAdd; }
@@ -347,7 +348,9 @@ public class DepartmentInterface implements IsSerializable, Comparable<Departmen
 		public List<DepartmentInterface> getDepartments() { return iDepartments; }
 		
 		public boolean hasDepartments() { return iDepartments != null && !iDepartments.isEmpty(); }
-		
+
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
 	}
 	
 }

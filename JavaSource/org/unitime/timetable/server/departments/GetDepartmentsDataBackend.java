@@ -52,6 +52,7 @@ public class GetDepartmentsDataBackend implements GwtRpcImplementation<GetDepart
 		response.setCanAdd(context.hasPermission(Right.DepartmentAdd));
 		response.setCanExportPdf(context.hasPermission(Right.Departments));
 		response.setFundingDeptEnabled(ApplicationProperty.CoursesFundingDepartmentsEnabled.isTrue());
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
  		
 		/*department list */
 		for (Department dept: Department.findAll(context.getUser().getCurrentAcademicSessionId())) {

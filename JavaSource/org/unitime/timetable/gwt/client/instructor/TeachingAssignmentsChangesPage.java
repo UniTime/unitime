@@ -86,6 +86,7 @@ public class TeachingAssignmentsChangesPage extends SimpleForm {
 	private ListBox iFilter;
 	private TeachingRequestsPagePropertiesResponse iProperties;
 	private UniTimeTable<SingleTeachingAssingment> iTable;
+	private int iTableRow = -1;
 	private TeachingRequestDetailPage iDetail = null;
 	
 	public TeachingAssignmentsChangesPage() {
@@ -111,7 +112,7 @@ public class TeachingAssignmentsChangesPage extends SimpleForm {
 		iTable = new UniTimeTable<SingleTeachingAssingment>();
 		iTable.setVisible(false);
 		iTable.addStyleName("unitime-TeachingAssignmentChanges");
-		addRow(iTable);
+		iTableRow = addRow(iTable);
 		
 		iTable.addMouseClickListener(new MouseClickListener<SingleTeachingAssingment>() {
 			@Override
@@ -149,6 +150,9 @@ public class TeachingAssignmentsChangesPage extends SimpleForm {
 			@Override
 			public void onSuccess(TeachingRequestsPagePropertiesResponse result) {
 				LoadingWidget.getInstance().hide();
+				if (result.isSticky()) {
+					setWidget(iTableRow, 0, iTable.asStickyTable());
+				}
 				iProperties = result;
 				iFilterPanel.setEnabled("search", true);
 			}

@@ -32,6 +32,8 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.DatePatternsPage.DatePatternsRequest;
 import org.unitime.timetable.gwt.client.admin.DatePatternsPage.DatePatternsResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
@@ -57,6 +59,7 @@ public class DatePatternsBackend implements GwtRpcImplementation<DatePatternsReq
 		DatePatternsResponse response = new DatePatternsResponse();
 		
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("DatePatterns");
 		table.setDefaultSortCookie(MSG.columnDatePatternName());
 		table.setName(MSG.sectDatePatterns());

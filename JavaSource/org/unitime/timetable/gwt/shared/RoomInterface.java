@@ -2125,6 +2125,7 @@ public class RoomInterface implements IsSerializable {
 		private boolean iCanExportPdf = false, iCanExportCsv = false;
 		private boolean iCanEditDepartments = false;
 		private boolean iCanEditRoomExams = false;
+		private boolean iSticky = false;
 		private List<RoomTypeInterface> iRoomTypes = new ArrayList<RoomTypeInterface>();
 		private List<BuildingInterface> iBuildings = new ArrayList<BuildingInterface>();
 		private List<FeatureTypeInterface> iFeatureTypes = new ArrayList<FeatureTypeInterface>();
@@ -2392,6 +2393,9 @@ public class RoomInterface implements IsSerializable {
 			if (iEventServiceProviders == null) iEventServiceProviders = new TreeSet<EventServiceProviderInterface>();
 			iEventServiceProviders.add(provider);
 		}
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
 	}
 	
 	public static enum RoomsColumn {
@@ -2920,6 +2924,7 @@ public class RoomInterface implements IsSerializable {
 		private List<BuildingInterface> iBuildings;
 		private boolean iCanAdd, iCanExportPDF, iCanUpdateData;
 		private String iEllipsoid = null;
+		private boolean iSticky = false;
 		
 		public BuildingsDataResponse() {}
 		
@@ -2940,6 +2945,9 @@ public class RoomInterface implements IsSerializable {
 		public String getEllipsoid() { return iEllipsoid; }
 		public boolean hasEllipsoid() { return iEllipsoid != null & !iEllipsoid.isEmpty(); }
 		public void setEllipsoid(String ellipsoid) { iEllipsoid = ellipsoid; }
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
 	}
 	
 	public static class GetRoomsOfABuildingRequest implements GwtRpcRequest<GwtRpcResponseList<RoomDetailInterface>> {
