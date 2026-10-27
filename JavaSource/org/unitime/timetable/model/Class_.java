@@ -608,39 +608,6 @@ public class Class_ extends BaseClass_ {
 		return fixDurationInTimePreferences ? fixDurationInTimePreferences(ret) : ret;
     }
 
-    public String instructorHtml(String instructorNameFormat){
-    	StringBuffer sb = new StringBuffer();
-    	if (this.getClassInstructors()==null) return "";
-    	InstructorComparator ic = new InstructorComparator();
-    	if (ApplicationProperty.InstructorsDropdownFollowNameFormatting.isTrue()) ic.setNameFormat(instructorNameFormat);
-    	TreeSet sortedInstructors = new TreeSet(ic);
-    	sortedInstructors.addAll(this.getClassInstructors());
-
-    	Iterator it = sortedInstructors.iterator();
-    	ClassInstructor ci = null;
-    	while (it.hasNext()){
-    		ci = (ClassInstructor) it.next();
-    		String title = ci.getInstructor().getNameLastFirst();
-    		title += " (" + (ci.getResponsibility() == null ? "" : ci.getResponsibility().getLabel() + " ") +
-    				ci.getPercentShare()+"%"+(ci.isLead().booleanValue()?", " + MSG.toolTipInstructorLead():"")+")";
-    		if (!isDisplayInstructor().booleanValue()){
-    			title += MSG.toolTipInstructorDoNotDisplay();
-    		}
-    		if (ci.isLead().booleanValue()){
-    			sb.append("<span style='font-weight:bold;"+(isDisplayInstructor().booleanValue()?"":"font-style:italic;")+"' title='"+title+"'>");
-    		} else {
-    			sb.append("<span title='"+title+"'>");
-    		}
-    		sb.append(ci.getInstructor().getName(instructorNameFormat));
-    		if (ci.getResponsibility() != null && ci.getResponsibility().getAbbreviation() != null && !ci.getResponsibility().getAbbreviation().isEmpty())
-    			sb.append(" (" + ci.getResponsibility().getAbbreviation() + ")");
-    		sb.append("</span>");
-    		if (it.hasNext()) sb.append("<br>");
-    		sb.append("\n");
-    	}
-    	return (sb.toString());
-    }
-    
     public String instructorText(String instructorNameFormat, String separator){
     	if (getClassInstructors() == null) return "";
     	
@@ -660,39 +627,6 @@ public class Class_ extends BaseClass_ {
     	return sb.toString();
     }
 
-
-	private String htmlForTimePatterns(Set patterns){
-		StringBuffer sb = new StringBuffer();
-		if (patterns != null){
-			Iterator it = patterns.iterator();
-			TimePattern t = null;
-			while (it.hasNext()){
-				t = (TimePattern) it.next();
-				sb.append(t.getName());
-				if (it.hasNext()) {
-					sb.append("<BR>");
-				}
-			}
-		}
-        if (patterns == null || patterns.isEmpty()) {
-        	DurationModel dm = getSchedulingSubpart().getInstrOfferingConfig().getDurationModel();
-			Integer ah = dm.getArrangedHours(getSchedulingSubpart().getMinutesPerWk(), effectiveDatePattern());
-            if (ah == null) {
-                sb.append("<span title='" + MSG.arrangeHours() + "'>" + MSG.arrHrs() + "</span>");
-            } else {
-                sb.append("<span title='" + MSG.arrangeHoursN(ah) + "'>" + MSG.arrHrsN(ah) + "</span>");
-            }
-        }
-		return(sb.toString());
-	}
-
-	public String effectiveTimePatternHtml(){
-		return(htmlForTimePatterns(this.effectiveTimePatterns()));
-	}
-
-	public String timePatternHtml(){
-		return(htmlForTimePatterns(this.getTimePatterns()));
-	}
 
 	@Transient
 	public Integer getSectionNumber() {

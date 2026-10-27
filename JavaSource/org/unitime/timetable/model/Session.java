@@ -25,8 +25,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import java.io.Serializable;
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;

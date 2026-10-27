@@ -2727,11 +2727,6 @@ public enum ApplicationProperty {
 	@DefaultValue("false")
 	@Description("Student Group Timetable: count enrollments within the group")
 	StudentGroupsTimetableGroupEnrollments("unitime.events.group.showGroupEnrollment"),
-	
-	@Type(Boolean.class)
-	@DefaultValue("false")
-	@Description("Examinations: switch the user interface back to the old period preferences")
-	LegacyPeriodPreferences("unitime.legacy.periodPrefs"),
 
 	@Type(Integer.class)
 	@DefaultValue("998")

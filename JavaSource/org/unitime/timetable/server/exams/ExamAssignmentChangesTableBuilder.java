@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.cpsolver.ifs.util.ToolBox;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.exams.ExamsInterface.ExamChange;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
@@ -198,13 +197,8 @@ public class ExamAssignmentChangesTableBuilder extends ExaminationsTableBuilder 
             		period.setComparable(exam.getPeriodIndex());
             	else
             		period.setComparable(exam.getPeriod().getStartTime().getTime());
-            	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-            		period.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getExamId() + "," + exam.getPeriodId() + "');");
-            		period.setMouseOut("$wnd.hideGwtTimeHint();");
-            	} else {
-            		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
-            		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-            	}
+        		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
+        		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
         	} else {
         		CellInterface cell = line.addCell();
         		if (old.getPeriodId() == null) {
@@ -215,13 +209,8 @@ public class ExamAssignmentChangesTableBuilder extends ExaminationsTableBuilder 
                 		period.setClassName("pref-" + PreferenceLevel.prolog2char(old.getPeriodPref()));
                 	else
                 		period.setColor(PreferenceLevel.prolog2color(old.getPeriodPref()));
-                	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-                		period.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + old.getExamId() + "," + old.getPeriodId() + "');");
-                		period.setMouseOut("$wnd.hideGwtTimeHint();");
-                	} else {
-                		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + old.getExamId() + "','" + old.getPeriodId() + "');");
-                		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-                	}
+            		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + old.getExamId() + "','" + old.getPeriodId() + "');");
+            		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
                 	if (old.getPeriodIndex() != null && old.getPeriodIndex() >= 0)
                 		cell.setComparable(old.getPeriodIndex());
         		}
@@ -234,13 +223,8 @@ public class ExamAssignmentChangesTableBuilder extends ExaminationsTableBuilder 
                 		period.setClassName("pref-" + PreferenceLevel.prolog2char(exam.getPeriodPref()));
                 	else
                 		period.setColor(PreferenceLevel.prolog2color(exam.getPeriodPref()));
-                	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-                		period.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getExamId() + "," + exam.getPeriodId() + "');");
-                		period.setMouseOut("$wnd.hideGwtTimeHint();");
-                	} else {
-                		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
-                		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-                	}
+            		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
+            		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
                 	if (exam.getPeriodIndex() != null && exam.getPeriodIndex() >= 0)
                 		cell.setComparable(exam.getPeriodIndex());
         		}
