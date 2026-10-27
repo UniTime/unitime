@@ -19,18 +19,19 @@
 */
 package org.unitime.timetable.gwt.client;
 
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.offerings.TimePreferenceWidget;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
+import org.unitime.timetable.gwt.client.rooms.PeriodPreferencesWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -42,20 +43,21 @@ public class TimeHint {
 	private static boolean sShowHint = false;
 	
 	public static Widget content(TimeHintResponse response) {
-		SimplePanel panel = null;
-		try {
-		if (response.getContent().startsWith("$")) {
-			HTML content = new HTML(ToolBox.eval(response.getContent()), false);
-			panel = new SimplePanel(content);
-		} else {
-			panel = new SimplePanel();
-			panel.getElement().setInnerHTML(response.getContent());
+		if (response.getTimePrefs() != null) {
+			TimePreferenceWidget w = new TimePreferenceWidget(false,
+					response.getTimePrefs().getPrefLevels(),
+					response.getTimePrefs().isHorizontal());
+			w.setShowLegend(true);
+			w.setModel(response.getTimePrefs());
+			return w;
 		}
-		} catch (Exception e) {
-			UniTimeNotifications.error("Failed to display: " + response.getContent(), e);
+		if (response.getPeriodPrefs() != null) {
+			PeriodPreferencesWidget w = new PeriodPreferencesWidget(false);
+			w.setModel(response.getPeriodPrefs());
+			w.setShowLegend(true);
+			return w;
 		}
-		panel.setStyleName("unitime-TimeHint");
-		return panel;
+		return null;
 	}
 	
 	/** Never use from GWT code */
@@ -73,8 +75,11 @@ public class TimeHint {
 			
 			@Override
 			public void onSuccess(TimeHintResponse result) {
-				if (result != null && sLastParameter.equals(parameter) && sShowHint)
-					GwtHint.showHint(relativeObject, content(result));
+				if (result != null && sLastParameter.equals(parameter) && sShowHint) {
+					Widget w = content(result);
+					if (w != null)
+						GwtHint.showHint(relativeObject, w);
+				}
 			}
 		});
 	}
@@ -110,17 +115,22 @@ public class TimeHint {
 	}
 	
 	public static class TimeHintResponse implements GwtRpcResponse {
-		private String iContent = null;
+		private PeriodPreferenceModel iPeriodPrefs;
+		private TimePatternModel iTimePrefs;
+		
 		
 		public TimeHintResponse() {}
-		public TimeHintResponse(String content) {
-			iContent = content;
+		public TimeHintResponse(TimePatternModel model) {
+			iTimePrefs = model;
+		}
+		public TimeHintResponse(PeriodPreferenceModel model) {
+			iPeriodPrefs = model;
 		}
 		
-		public String getContent() { return iContent; }
-		public void setContent(String content) { iContent = content; }
-		
-		@Override
-		public String toString() { return getContent(); }
+		public TimePatternModel getTimePrefs() { return iTimePrefs; }
+		public void setTimePrefs(TimePatternModel model) { iTimePrefs = model; }
+
+		public PeriodPreferenceModel getPeriodPrefs() { return iPeriodPrefs; }
+		public void setPeriodPrefs(PeriodPreferenceModel model) { iPeriodPrefs = model; }
 	}
 }
