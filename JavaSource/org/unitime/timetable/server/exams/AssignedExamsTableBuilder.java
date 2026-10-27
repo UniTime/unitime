@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
@@ -153,13 +152,8 @@ public class AssignedExamsTableBuilder extends TableBuilder {
         		period.setComparable(exam.getPeriodIndex());
         	else
         		period.setComparable(exam.getPeriod().getStartTime().getTime());
-        	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-        		period.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getExamId() + "," + exam.getPeriodId() + "');");
-        		period.setMouseOut("$wnd.hideGwtTimeHint();");
-        	} else {
-        		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
-        		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-        	}
+    		period.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
+    		period.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
         	CellInterface rooms = line.addCell();
         	if (exam.getRooms() != null)
                 for (ExamRoomInfo room : exam.getRooms()) {

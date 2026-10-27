@@ -344,13 +344,8 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
 			date.setComparable(exam.getPeriod().getStartDate(), exam.getPeriod().getStartSlot(), (section == null ? exam.getExamName() : section.getName()));
 		else
 			date.setComparable(cmp, exam.getPeriod().getStartDate(), exam.getPeriod().getStartSlot(), (section == null ? exam.getExamName() : section.getName()));
-    	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-    		date.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getExamId() + "," + exam.getPeriodId() + "');");
-    		date.setMouseOut("$wnd.hideGwtTimeHint();");
-    	} else {
-    		date.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
-    		date.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-    	}
+		date.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
+		date.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
     	date.setNoWrap(true);
     	return date;
 	}
@@ -362,13 +357,8 @@ public class ExamReportsTableBuilder extends ExaminationsTableBuilder {
 			time.setComparable(exam.getPeriod().getStartSlot(), (section == null ? exam.getExamName() : section.getName()));
 		else
 			time.setComparable(cmp, exam.getPeriod().getStartSlot(), (section == null ? exam.getExamName() : section.getName()));
-    	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-    		time.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
-    		time.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-    	} else {
-    		time.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
-    		time.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-    	}
+		time.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getExamId() + "','" + exam.getPeriodId() + "');");
+		time.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
     	time.setNoWrap(true);
     	return time;
 	}
