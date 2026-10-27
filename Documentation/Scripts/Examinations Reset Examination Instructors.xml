@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Script.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+ <script name="Examinations: Reset Examination Instructors" permission="Examination Periods" engine="ECMAScript" created="Tue Oct 27 04:16:14 EDT 2026">
+  <description><![CDATA[Assign examination instructors based on the examination classes / courses.]]></description>
+  <parameter name="override" label="Override existing instructors" type="boolean" default="true"/>
+  <parameter name="classOnly" label="Process only class exams" type="boolean" default="false"/>
+  <parameter name="type" label="Examination type" type="reference(ExamType)" default="final"/>
+  <body><![CDATA[var examType = org.unitime.timetable.model.ExamType.findByReference(type);
+var exams = new java.util.TreeSet(org.unitime.timetable.model.Exam.findAll(new java.lang.Long(session.getUniqueId()), examType));
+
+log.setStatus('Updading ' + exams.size() + ' exams ...', exams.size());
+
+for (var i = exams.iterator(); i.hasNext(); ) {
+	var exam = i.next();
+	log.incProgress();
+	if (!override && !exam.getInstructors().isEmpty()) continue;
+	log.info('Updating ' + exam.getLabel());
+	
+	for (var j = exam.getInstructors().iterator(); j.hasNext();) {
+		var instructor = j.next();
+		instructor.getExams().remove(exam);
+		j.remove();
+	}
+
+    for (var j = exam.getOwners().iterator(); j.hasNext(); ) {
+		var owner = j.next();
+		log.info('  owner ' + owner.getLabel());
+		var object = owner.getOwnerObject();
+		if (object instanceof org.unitime.timetable.model.Class_) {
+			for (var k = object.getClassInstructors().iterator(); k.hasNext(); ) {
+				var instructor = k.next();
+				if (instructor.getPercentShare() >= 100)
+					exam.getInstructors().add(instructor.getInstructor());
+			}
+		} else if (object instanceof org.unitime.timetable.model.InstrOfferingConfig && !classOnly) {
+			var top = null;
+			for (var k = object.getSchedulingSubparts().iterator(); k.hasNext(); ) {
+				var s = k.next();
+				if (s.getParentSubpart() == null && (top == null ||
+						s.getItype().compareTo(top.getItype()) < 0 ||
+						(s.getItype().compareTo(top.getItype()) == 0 && s.getClasses().size() < top.getClasses().size())))
+					top = s;
+			}
+			if (top != null) {
+				var classes = new java.util.ArrayList(top.getClasses());
+				for (var c = 0; c < classes.size(); c++) {
+					var clazz = classes.get(c);
+					log.info("   using " + clazz);
+					for (var k = clazz.getClassInstructors().iterator(); k.hasNext(); ) {
+						var instructor = k.next();
+						if (instructor.getPercentShare() >= 100)
+							exam.getInstructors().add(instructor.getInstructor());
+					}
+				}
+			}
+		} else if (!classOnly) {
+			for (var k = owner.getCourse().getInstructionalOffering().getInstrOfferingConfigs().iterator(); k.hasNext(); ) {
+				var config = k.next();
+				var top = null;
+				for (var l = config.getSchedulingSubparts().iterator(); l.hasNext(); ) {
+					var s = l.next();
+					if (s.getParentSubpart() == null && (top == null ||
+							s.getItype().compareTo(top.getItype()) < 0 ||
+							(s.getItype().compareTo(top.getItype()) == 0 && s.getClasses().size() < top.getClasses().size())))
+						top = s;
+				}
+				if (top != null) {
+					var classes = new java.util.ArrayList(top.getClasses());
+					for (var c = 0; c < classes.size(); c++) {
+						var clazz = classes.get(c);
+						log.info("   using " + clazz);
+						for (var k = clazz.getClassInstructors().iterator(); k.hasNext(); ) {
+							var instructor = k.next();
+							if (instructor.getPercentShare() >= 100)
+								exam.getInstructors().add(instructor.getInstructor());
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	if (exam.getInstructors().isEmpty())
+		log.info("    no instructors");
+	else
+		log.info("    instructors " + new java.util.TreeSet(exam.getInstructors()));
+	
+	for (var j = exam.getInstructors().iterator(); j.hasNext();) {
+		var instructor = j.next();
+		instructor.getExams().add(exam);
+		hibSession.saveOrUpdate(instructor);
+	}
+	
+	hibSession.saveOrUpdate(exam);
+}]]></body>
+</script>

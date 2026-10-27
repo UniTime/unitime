@@ -122,6 +122,9 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 
 				ClassEditBackend.doClear(exam.getPreferences(),
 						Preference.Type.PERIOD, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING, Preference.Type.DATE);
+				
+				exam.generateDefaultPreferences(false);
+				
 				hibSession.merge(exam);
 				hibSession.flush();
 
@@ -214,6 +217,8 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 			        
 					ClassEditBackend.doUpdate(exam, exam.getPreferences(), data,
 							Preference.Type.PERIOD, Preference.Type.ROOM, Preference.Type.ROOM_FEATURE, Preference.Type.ROOM_GROUP, Preference.Type.BUILDING);
+					
+					exam.generateDefaultPreferences(false);
 					
 					hibSession.merge(exam);
 			        
@@ -474,6 +479,7 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
             Long prevId = Navigation.getPrevious(context, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
             if (prevId != null && context.hasPermission(prevId, Right.ExaminationEdit))
             	ret.setPreviousId(prevId);
+            ret.setCanClearPrefs(context.hasPermission(exam, Right.ExaminationEditClearPreferences));
         }
         
 		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser(), true))
