@@ -22,26 +22,24 @@ package org.unitime.timetable.server;
 import java.util.Set;
 
 
-import org.cpsolver.coursett.model.TimeLocation;
 import org.unitime.timetable.gwt.client.TimeHint.TimeHintRequest;
 import org.unitime.timetable.gwt.client.TimeHint.TimeHintResponse;
+import org.unitime.timetable.gwt.client.offerings.PrefGroupEditInterface.TimePatternModel;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.shared.RoomInterface.PeriodPreferenceModel;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.ExamPeriod;
-import org.unitime.timetable.model.ExamType;
-import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
-import org.unitime.timetable.model.PeriodPreferenceModel;
+import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.webutil.RequiredTimeTable;
+import org.unitime.timetable.server.courses.ClassEditBackend;
+import org.unitime.timetable.server.rooms.PeriodPreferencesBackend;
 
 /**
  * @author Tomas Muller
@@ -56,17 +54,13 @@ public class TimeHintBackend implements GwtRpcImplementation<TimeHintRequest, Ti
 			Long examId = Long.valueOf(params[0]);
 			Long periodId = Long.valueOf(params[1]);
 			Exam exam = ExamDAO.getInstance().get(examId);
-			ExamPeriod period = ExamPeriodDAO.getInstance().get(periodId);
-			if (exam.getExamType().getType() == ExamType.sExamTypeMidterm) {
-				MidtermPeriodPreferenceModel mpp = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType(), period);
-				mpp.load(exam);
-				return new TimeHintResponse("<div style='max-width: 200px;'>" + mpp.toString(true) + "</div>");
-			} else {
-				PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), period, exam.getExamType().getUniqueId());
-				px.load(exam);
-				RequiredTimeTable m = new RequiredTimeTable(px);
-				return new TimeHintResponse("$wnd." + m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " "));
-			}
+			PeriodPreferenceModel model = PeriodPreferencesBackend.createPeriodPreferenceModel(exam.getSession(), exam.getExamType(), context, false);
+			model.setExamId(exam.getUniqueId());
+			for (ExamPeriodPref pref: exam.getPreferences(ExamPeriodPref.class))
+	            model.setPreference(pref.getExamPeriod().getDateOffset(), pref.getExamPeriod().getStartSlot(), pref.getPrefLevel().getUniqueId());
+			if (periodId != null && periodId > 0l)
+				model.setAssignedPeriodId(periodId);
+			return new TimeHintResponse(model);
 		} else if (params.length == 3) {
 			Long classId = Long.valueOf(params[0]);
 			int days = Integer.parseInt(params[1]);
@@ -85,8 +79,9 @@ public class TimeHintBackend implements GwtRpcImplementation<TimeHintRequest, Ti
 					if (t.getStartSlot() == slot) { match = true; break; }
 				}
 				if (!match) continue;
-				RequiredTimeTable m = p.getRequiredTimeTable(new TimeLocation(days, slot, 0, 0, 0.0, null, null, null, 0));
-				return new TimeHintResponse("$wnd." + m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " "));
+				TimePatternModel tpm = ClassEditBackend.createTimePatternModel(p, context);
+	    		tpm.setAssignment(days, slot);
+	    		return new TimeHintResponse(tpm);
 			}
 		}
 		throw new GwtRpcException("No matching time preference found.");

@@ -763,11 +763,13 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     		} else {
     			owner = " (" + MSG.prefOwnerCombined() + ")";
     		}
-        	if (gridAsText || rtt.getModel().isExactTime()) {
-        		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-        		CellInterface c = rtt.getModel().toCell(isUsePrefStyles())
-    			.setMouseOver("$wnd.showGwtHint($wnd.lastMouseOverElement, $wnd." + hint + ");")
-    			.setMouseOut("$wnd.hideGwtHint();");
+    		TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, getSessionContext());
+    		if (assignment != null && assignment.getTimeLocation() != null && tpm.getId().equals(assignment.getTimeLocation().getTimePatternId()))
+    			tpm.setAssignment(assignment.getTimeLocation().getDayCode(), assignment.getTimeLocation().getStartSlot());
+    		tpm.setName(tpm.getName() + owner);
+        	if (gridAsText || tpm.isExactTime()) {
+        		CellInterface c = rtt.getModel().toCell(isUsePrefStyles());
+        		if (!tpm.isExactTime()) c.setToolTip(tpm);
         		cell.addItem(c);
         		if (isUsePrefStyles()) {
         			if (tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs && c.hasItems())
@@ -779,9 +781,6 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
         		}
         	} else {
         		rtt.getModel().setDefaultSelection(timeGridSize);
-        		TimePatternModel tpm = ClassEditBackend.createTimePatternModel(tp, getSessionContext());
-        		if (assignment != null && assignment.getTimeLocation() != null && tpm.getId().equals(assignment.getTimeLocation().getTimePatternId()))
-        			tpm.setAssignment(assignment.getTimeLocation().getDayCode(), assignment.getTimeLocation().getStartSlot());
         		cell.add(null).setImage(
         				new ImageInterface().setSource("pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&tp=" + tp.getTimePattern().getUniqueId() + "&p=" + rtt.getModel().getPreferences() +
             					(assignment == null || assignment.getTimeLocation() == null ? "" : "&as=" + assignment.getTimeLocation().getStartSlot() + "&ad=" + assignment.getTimeLocation().getDayCode()) +
