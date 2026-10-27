@@ -1146,11 +1146,7 @@ public class InstructionalOfferingTableBuilder extends TableBuilder {
     	cell.setText(ea.getPeriodAbbreviation());
     	if (ea.getPeriodPref() != null && !PreferenceLevel.sNeutral.equals(ea.getPeriodPref()))
     		cell.setColor(PreferenceLevel.prolog2color(ea.getPeriodPref()));
-    	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-			cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement, '" + ea.getExamId() + "," + ea.getPeriodId() + "');");
-		} else {
-			cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement,'" + ea.getExamId() + "','" + ea.getPeriodId() + "');");
-		}
+		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement,'" + ea.getExamId() + "','" + ea.getPeriodId() + "');");
 		cell.setMouseOut("hideGwtTimeHint();");
     	return cell;
     }

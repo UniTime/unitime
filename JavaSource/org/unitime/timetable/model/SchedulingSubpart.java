@@ -154,30 +154,6 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	public String htmlLabel(){
 		return(this.getItype().getDesc());
 	}
-	private String htmlForTimePatterns(Set patterns){
-		StringBuffer sb = new StringBuffer();
-		if (patterns != null){
-			Iterator it = patterns.iterator();
-			TimePattern t = null;
-			while (it.hasNext()){
-				t = (TimePattern) it.next();
-				sb.append(t.getName());
-				if (it.hasNext()) {
-					sb.append("<BR>");
-				}
-			}
-		}
-		return(sb.toString());
-	}
-	
-	public String effectiveTimePatternHtml(){
-		return(htmlForTimePatterns(this.effectiveTimePatterns()));
-	}
-	
-	public String timePatternHtml(){
-		return(htmlForTimePatterns(this.getTimePatterns()));
-	}
-
 	
 	/**
 	 * Gets the minimum class limit for the sub class

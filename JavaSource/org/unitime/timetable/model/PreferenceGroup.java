@@ -37,11 +37,8 @@ import org.hibernate.ObjectNotFoundException;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.base.BasePreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /**
@@ -199,114 +196,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     public Set<DatePatternPref> getDatePatternPreferences(){
     	return getPreferences(DatePatternPref.class);
     }
-    
-    private String htmlForPrefs(AssignmentInfo assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat) {
-    	return htmlForPrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize, nameFormat, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue());
-    }
-    
-    private String htmlForPrefs(AssignmentInfo assignment, Set prefList, boolean timeVertical, boolean gridAsText, String timeGridSize, String nameFormat, boolean highlightClassPrefs){
-       	StringBuffer sb = new StringBuffer();
-       	if (prefList != null && !prefList.isEmpty()) {
-       		if (prefList.toArray()[0] instanceof TimePref){
-       			sb.append(htmlForTimePrefs(assignment, prefList, timeVertical, gridAsText, timeGridSize, highlightClassPrefs));
-       		} else {
-		    	Iterator it = prefList.iterator();
-		    	Preference aPref = null;
-		    	boolean notFirst = false;
-		    	while (it.hasNext()){
-		    		if (notFirst){
-		    			sb.append("<BR>");
-		    		} else {
-		    			notFirst = true;
-		    		}
-		    		aPref = (Preference) it.next();
-		    		sb.append(aPref.preferenceHtml(nameFormat, highlightClassPrefs));
-		    	}
-       		}
-       	}
-    	return (sb.toString());
-    }
-    
-    private String htmlForPrefs(Assignment assignment, Set prefList){
-    	return (htmlForTimePrefs(assignment, prefList, false, false, null, ApplicationProperty.PreferencesHighlighClassPreferences.isTrue()));
-    }
-    
-    private String htmlForTimePrefs(AssignmentInfo assignment, Set timePrefList, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
-    	StringBuffer sb = new StringBuffer();
-    	for (Iterator i=timePrefList.iterator();i.hasNext();) {
-    		TimePref tp = (TimePref)i.next();
-    		RequiredTimeTable rtt = tp.getRequiredTimeTable(assignment == null ? null : assignment.getTimeLocation());
-    		String owner = "";
-    		if (tp.getOwner() != null && tp.getOwner() instanceof Class_) {
-    			owner = " (" + MSG.prefOwnerClass() + ")";
-    		} else if (tp.getOwner() != null && tp.getOwner() instanceof SchedulingSubpart) {
-    			owner = " (" + MSG.prefOwnerSchedulingSubpart() + ")";
-    		} else if (tp.getOwner() != null && tp.getOwner() instanceof DepartmentalInstructor) {
-    			owner = " (" + MSG.prefOwnerInstructor() + ")";
-    		} else if (tp.getOwner() != null && tp.getOwner() instanceof Exam) {
-    			owner = " (" + MSG.prefOwnerExamination() + ")";
-    		} else if (tp.getOwner() != null && tp.getOwner() instanceof Department) {
-    			owner = " (" + MSG.prefOwnerDepartment() + ")";
-    		} else if (tp.getOwner() != null && tp.getOwner() instanceof Session) {
-    			owner = " (" + MSG.prefOwnerSession() + ")";
-    		} else {
-    			owner = " (" + MSG.prefOwnerCombined() + ")";
-    		}
-    		String hint = rtt.print(false, timeVertical, true, false, rtt.getModel().getName() + owner).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-        	if (gridAsText || rtt.getModel().isExactTime()) {
-        		sb.append("<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" "+
-        				(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? " style='background: #ffa;'" : "") +
-        				">"+rtt.getModel().toString().replaceAll(", ","<br>")+"</span>");
-        	} else {
-        		rtt.getModel().setDefaultSelection(timeGridSize);
-    			sb.append("<img border='0' src='" +
-    					"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&tp=" + tp.getTimePattern().getUniqueId() + "&p=" + rtt.getModel().getPreferences() +
-    					(assignment == null || assignment.getTimeLocation() == null ? "" : "&as=" + assignment.getTimeLocation().getStartSlot() + "&ad=" + assignment.getTimeLocation().getDayCode()) +
-    					(tp.getOwner() != null && tp.getOwner() instanceof Class_ && highlightClassPrefs ? "&hc=1" : "") +
-    					"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">&nbsp;");
-        	}
-			if (i.hasNext()) sb.append("<br>");
-    	}
-    	return sb.toString();
-    }
-    
-    public abstract String htmlLabel();
-    
-    public String effectiveTimePatternHtml(){
-    	return(new String());
-    }
-    
-    public String getPrefHtmlForPrefType(Class type){
-    	return (htmlForPrefs(null, getPreferences(type)));
-    }
-    
-    public String getEffectivePrefHtmlForPrefType(Class type){
-    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, null));
-    }
-    
-    public String getEffectivePrefHtmlForPrefType(Class type, boolean highlightClassPrefs){
-    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, null, highlightClassPrefs));
-    }
-    
-    public String getEffectivePrefHtmlForPrefType(Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
-    	return (htmlForPrefs(null, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
-    }
-    
-    public String getEffectivePrefHtmlForPrefType(Class type, String nameFormat){
-    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, nameFormat));
-    }
-    
-    public String getEffectivePrefHtmlForPrefType(Class type, String nameFormat, boolean highlightClassPrefs){
-    	return (htmlForPrefs(null, effectivePreferences(type), false, false, null, nameFormat, highlightClassPrefs));
-    }
-
-    public String getEffectivePrefHtmlForPrefType(AssignmentInfo assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize){
-    	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null));
-    }
-    
-    public String getEffectivePrefHtmlForPrefType(AssignmentInfo assignment, Class type, boolean timeVertical, boolean gridAsText, String timeGridSize, boolean highlightClassPrefs){
-    	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize, null, highlightClassPrefs));
-    }
 
 	@Transient
     public Class getInstanceOf() {
@@ -424,4 +313,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     
 	@Transient
     public boolean isInstructorAssignmentNeeded() { return false; }
+	
+	public abstract String htmlLabel();
 }
