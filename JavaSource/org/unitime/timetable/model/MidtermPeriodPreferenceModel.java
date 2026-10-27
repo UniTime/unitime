@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.time.Month;
-import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
@@ -237,54 +235,6 @@ public class MidtermPeriodPreferenceModel {
 		}
 	}
 	
-	private String getBorderArray(Integer start) {
-        StringBuffer border = new StringBuffer("[");
-        for (int m=getStartMonth();m<=getEndMonth();m++) {
-            if (m!=getStartMonth()) border.append(","); 
-            border.append("["); 
-            int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
-            for (int d=1;d<=daysOfMonth;d++) {
-                if (d>1) border.append(","); 
-                border.append(getBorder(d,m,start));
-            }
-            border.append("]");
-        }
-        border.append("]");
-        return border.toString();
-	}
-	
-	private String getPattern(Integer start) {
-        StringBuffer pattern = new StringBuffer("[");
-        for (int m=getStartMonth();m<=getEndMonth();m++) {
-            if (m!=getStartMonth()) pattern.append(",");
-            pattern.append("[");
-            int daysOfMonth = DateUtils.getNrDaysOfMonth(m, getYear());;
-            for (int d=1;d<=daysOfMonth;d++) {
-                if (d>1) pattern.append(",");
-                Integer date = getDateOffset(d, m);
-                if (iDates.contains(date)) {
-                    String pref = iPreferences.get(date).get(start);
-                    if (pref==null)
-                        pattern.append("'@'");
-                    else
-                        pattern.append("'"+pref+"'");
-                } else 
-                    pattern.append("'@'");
-            }
-            pattern.append("]");
-        }
-        pattern.append("]");
-        return pattern.toString();
-	}
-	
-	private boolean isAllProhibited(Integer start) {
-	    for (Integer date : iDates) {
-	        String pref = iPreferences.get(date).get(start);
-	        if (pref!=null && !PreferenceLevel.sProhibited.equals(pref)) return false;
-	    }
-	    return true;
-	}
-
 	public void load(HttpServletRequest request) {
 		int year = getYear();
 		for (int m=getStartMonth();m<=getEndMonth();m++) {

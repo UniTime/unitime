@@ -52,7 +52,6 @@ import org.cpsolver.ifs.assignment.Assignment;
 import org.cpsolver.ifs.util.ToolBox;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
@@ -270,17 +269,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     
     public String getPeriodNameWithPref() {
         if (iPeriodPref==null) return getPeriodName();
-        if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-            return
-                    "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
-                    getPeriodName()+
-                    "</span>";
-        } else {
-            return
-                    "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtExamPeriodPreferencesHint(this,'" + getExamId() + "','" + getPeriodId() + "');\" onmouseout=\"hideGwtPeriodPreferencesHint();\">"+
-                    getPeriodName()+
-                    "</span>";
-        }
+        return
+                "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtExamPeriodPreferencesHint(this,'" + getExamId() + "','" + getPeriodId() + "');\" onmouseout=\"hideGwtPeriodPreferencesHint();\">"+
+                getPeriodName()+
+                "</span>";
     }
     
     public CellInterface getPeriodCell() {
@@ -288,13 +280,8 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     	cell.setText(getPeriodName());
     	cell.setColor(PreferenceLevel.prolog2color(getPeriodPref()));
     	if (getPeriodId() != null) {
-        	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-        		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + getExamId() + "," + getPeriodId() + "');");
-        		cell.setMouseOut("$wnd.hideGwtTimeHint();");
-        	} else {
-        		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + getExamId() + "'," + getPeriodId() + ");");
-        		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-        	}
+    		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + getExamId() + "'," + getPeriodId() + ");");
+    		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
     	}
     	return cell;
     }

@@ -29,7 +29,6 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
 import org.unitime.timetable.gwt.client.tables.TableInterface.FilterInterface;
@@ -77,13 +76,8 @@ public class ExaminationsTableBuilder extends TableBuilder {
             MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
             epx.load(exam);
             CellInterface cell = epx.toCellInterface(isUsePrefStyles());
-        	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-        		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + ",-1');");
-        		cell.setMouseOut("$wnd.hideGwtTimeHint();");
-        	} else {
-        		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "',null);");
-        		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-        	}
+    		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "',null);");
+    		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
         	return cell;
         } else if (getGridAsText()) {
         	CellInterface cell = new CellInterface();
@@ -100,13 +94,8 @@ public class ExaminationsTableBuilder extends TableBuilder {
         				.setInline(false);
         		}
         	}
-        	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-        		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + ",-1');");
-        		cell.setMouseOut("$wnd.hideGwtTimeHint();");
-        	} else {
-        		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "',null);");
-        		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-        	}
+    		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "',null);");
+    		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
         	return cell;
         } else {
         	final PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), exam.getExamType().getUniqueId());
@@ -122,13 +111,8 @@ public class ExaminationsTableBuilder extends TableBuilder {
 					}));
         	c.addStyle("display: inline-block;");
         	c.setAria(px.toString().replace(", ", "\n"));
-        	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-        		c.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + ",-1');");
-        		c.setMouseOut("$wnd.hideGwtTimeHint();");
-        	} else {
-        		c.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "',null);");
-        		c.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-        	}
+    		c.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "',null);");
+    		c.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
         	return c;
         }
     }
@@ -236,13 +220,8 @@ public class ExaminationsTableBuilder extends TableBuilder {
                 	if (view && assignment.getPeriodPref() != null) {
                 		CellInterface cell = perPref.add(assignment.getPeriodAbbreviation());
                 		cell.setColor(PreferenceLevel.prolog2color(assignment.getPeriodPref()));
-                    	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-                    		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + "," + assignment.getPeriodId() + "');");
-                    		cell.setMouseOut("$wnd.hideGwtTimeHint();");
-                    	} else {
-                    		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "','"+assignment.getPeriodId()+"');");
-                    		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-                    	}                    		
+                		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "','"+assignment.getPeriodId()+"');");
+                		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
                 	} else {
                 		perPref.add(assignment.getPeriodAbbreviation());
                 	}
@@ -485,13 +464,8 @@ public class ExaminationsTableBuilder extends TableBuilder {
 				if (assignment.getPeriodPref() != null) {
 	        		CellInterface cell = assPer.add(assignment.getPeriodAbbreviation()).setColor(PreferenceLevel.prolog2color(assignment.getPeriodPref()));
 	        		cell.setNoWrap(true);
-	            	if (ApplicationProperty.LegacyPeriodPreferences.isTrue()) {
-	            		cell.setMouseOver("$wnd.showGwtTimeHint($wnd.lastMouseOverElement,'" + exam.getUniqueId() + "," + assignment.getPeriodId() + "');");
-	            		cell.setMouseOut("$wnd.hideGwtTimeHint();");
-	            	} else {
-	            		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "','"+assignment.getPeriodId()+"');");
-	            		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
-	            	}
+            		cell.setMouseOver("$wnd.showGwtExamPeriodPreferencesHint($wnd.lastMouseOverElement, '" + exam.getUniqueId() + "','"+assignment.getPeriodId()+"');");
+            		cell.setMouseOut("$wnd.hideGwtPeriodPreferencesHint();");
 	        	} else {
 	        		assPer.add(assignment.getPeriodAbbreviation()).setNoWrap(true);
 	        	}
