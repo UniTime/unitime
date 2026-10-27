@@ -267,7 +267,17 @@ public class TeachingRequestsTable extends UniTimeTable<SingleTeachingAssingment
 	}
 	
 	public void hideDuplicateRequests(Boolean assigned) {
-		if (assigned != null && !assigned) return;
+		if (assigned != null && !assigned) {
+			for (int i = 0; i < getRowCount(); i++) {
+				SingleTeachingAssingment ta = getData(i);
+				if (ta != null) {
+					for (final COLUMN column: COLUMN.values()) {
+						getCellFormatter().setStyleName(i, column.ordinal(), "first-line");
+					}
+				}
+			}
+			return;
+		}
 		TeachingRequestInfo last = null;
 		for (int i = 0; i < getRowCount(); i++) {
 			SingleTeachingAssingment ta = getData(i);
