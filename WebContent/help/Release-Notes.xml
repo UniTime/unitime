@@ -73,6 +73,13 @@
 				<line>Examination size: avoid double-counting students when an exam is put between two classes or courses that share some students.</line>
 			</description>
 		</item>
+		<item>
+			<name>Examinations: Default Preferences</name>
+			<description>
+				<line>The new GWT-based Add/Edit Examination page did not set the default examination preferences. Edit Examination page did not show the Clear Exam Prefs button.</line>
+				<line>Added Examinations: Reset Examination Preferences and Examinations: Reset Examination Instructors scripts in Documentation/Scripts.</line>
+			</description>
+		</item>
 	</category>	
 	<category>
 		<title>Administration</title>
