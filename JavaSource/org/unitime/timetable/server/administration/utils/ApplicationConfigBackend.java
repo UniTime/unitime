@@ -28,6 +28,8 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.ApplicationConfigPage.ApplicationConfigRequest;
 import org.unitime.timetable.gwt.client.admin.ApplicationConfigPage.ApplicationConfigResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
@@ -59,6 +61,7 @@ public class ApplicationConfigBackend implements GwtRpcImplementation<Applicatio
 		}
 		
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("ApplicationConfig");
 		table.setDefaultSortCookie(MSG.columnAppConfigKey());
 		table.setName(MSG.sectAppSettings());

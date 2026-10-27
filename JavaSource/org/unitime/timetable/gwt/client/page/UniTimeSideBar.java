@@ -59,6 +59,8 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -241,6 +243,13 @@ public class UniTimeSideBar extends UniTimeMenu {
 				}
 			});			
 		}
+		
+		Window.addResizeHandler(new ResizeHandler() {
+			@Override
+			public void onResize(ResizeEvent event) {
+				updatePageSize();
+			}
+		});
 	}
 	
 	protected void updatePageSize() {

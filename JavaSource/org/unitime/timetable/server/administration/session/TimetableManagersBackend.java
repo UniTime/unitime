@@ -57,6 +57,7 @@ public class TimetableManagersBackend implements GwtRpcImplementation<TimetableM
 		Long currentAcadSession = context.getUser().getCurrentAcademicSessionId();
 		
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("TimetableManagers");
 		table.setDefaultSortCookie(MSG.columnRoles());
 		table.setName(MSG.sectManagerList(currentAcadSession == null ? "" : context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel()));

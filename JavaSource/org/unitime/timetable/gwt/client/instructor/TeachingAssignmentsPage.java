@@ -68,6 +68,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 	private FilterPanel iFilterPanel;
 	private TeachingRequestsFilterBox iFilterBox;
 	private TeachingAssignmentsTable iTable;
+	private int iTableRow = -1;
 	private Button iSearch, iExportCSV, iExportPDF;
 	
 	public TeachingAssignmentsPage() {
@@ -126,7 +127,7 @@ public class TeachingAssignmentsPage extends SimpleForm {
 			}
 		};
 		iTable.setVisible(false);
-		addRow(iTable);
+		iTableRow = addRow(iTable);
 		
 		LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 		RPC.execute(new TeachingRequestsPagePropertiesRequest(), new AsyncCallback<TeachingRequestsPagePropertiesResponse>() {
@@ -142,6 +143,8 @@ public class TeachingAssignmentsPage extends SimpleForm {
 			public void onSuccess(TeachingRequestsPagePropertiesResponse result) {
 				LoadingWidget.getInstance().hide();
 				iTable.setProperties(result);
+				if (result.isSticky())
+					setWidget(iTableRow, 0, iTable.asStickyTable());	
 				Chip department = iFilterBox.getChip("department");
 				if (department != null) {
 					boolean match = false;

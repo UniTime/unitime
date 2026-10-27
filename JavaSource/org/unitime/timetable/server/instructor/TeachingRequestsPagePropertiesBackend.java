@@ -137,6 +137,7 @@ public class TeachingRequestsPagePropertiesBackend implements GwtRpcImplementati
 		}
 		
 		ret.setHasSolver(solver != null);
+		ret.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		
 		InstructorAvailabilityModel model = new InstructorAvailabilityModel();
 		for (int i = 0; true; i++) {

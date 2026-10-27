@@ -131,7 +131,10 @@ public class TeachingRequestsWidget extends SimpleForm {
 				};
 				iTable.setProperties(result);
 				iTable.setVisible(false);
-				addRow(iTable);
+				if (result.isSticky())
+					addRow(iTable.asStickyTable());
+				else
+					addRow(iTable);
 				populate();
 			}
 		});

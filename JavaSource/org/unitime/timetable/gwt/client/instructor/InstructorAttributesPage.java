@@ -234,6 +234,10 @@ public class InstructorAttributesPage extends Composite {
 			public void onSuccess(InstructorAttributePropertiesInterface result) {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
+				if (iProperties.isSticky()) {
+					iAttributesPanel.setWidget(iGlobalAttributesRow + 1, 0, iGlobalAttributesTable.asStickyTable());
+					iAttributesPanel.setWidget(iDepartmentalAttributesRow + 1, 0, iDepartmentalAttributesTable.asStickyTable());
+				}				
 				iInstructorAttributeEdit = new InstructorAttributeEdit(iProperties) {
 					@Override
 					protected void onShow() {

@@ -329,7 +329,7 @@ public class DistributionsTableBuilder extends TableBuilder {
             
             if (isSimple()) line.addCell(prefLevel).setColor(prefColor).setNoWrap(true);
             if (isUsePrefStyles()) {
-            	line.addCell(distType).setClassName("pref-" + PreferenceLevel.prolog2char(dp.getPrefLevel().getPrefProlog()))
+            	line.addCell().add(distType).setClassName("pref-" + PreferenceLevel.prolog2char(dp.getPrefLevel().getPrefProlog()))
             		.setTitle(prefLevel + " " + distType)
             		.setAria(isSimple() ? distType : prefLevel + " " + distType)
             		.setNoWrap(true)

@@ -87,6 +87,7 @@ public class RoomPropertiesBackend implements GwtRpcImplementation<RoomPropertie
 			if (!request.hasSessionId()) request.setSessionId(session.getUniqueId());
 		}
 		
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		response.setCanEditDepartments(context.hasPermission(Right.EditRoomDepartments));
 		response.setCanExportCsv(context.hasPermission(Right.RoomsExportCsv));
 		response.setCanExportPdf(context.hasPermission(Right.RoomsExportPdf));

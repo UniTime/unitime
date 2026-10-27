@@ -429,6 +429,10 @@ public class RoomFeaturesPage extends Composite {
 				iRoomFeatureEdit.setProperties(iProperties);
 				iGlobalFeaturesTable.setProperties(iProperties);
 				iDepartmentalFeaturesTable.setProperties(iProperties);
+				if (iProperties.isSticky()) {
+					iFeaturesPanel.setWidget(iGlobalFeaturesRow + 1, 0, iGlobalFeaturesTable.asStickyTable());
+					iFeaturesPanel.setWidget(iDepartmentalFeaturesRow + 1, 0, iDepartmentalFeaturesTable.asStickyTable());
+				}
 				
 				if (iProperties.isCanSaveFilterDefaults()) {
 					iHistoryToken.setDefaultParameter("q", result.getFilterDefault("filter"));

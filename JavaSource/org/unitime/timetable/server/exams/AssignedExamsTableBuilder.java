@@ -144,7 +144,7 @@ public class AssignedExamsTableBuilder extends TableBuilder {
             	owner.addAnchor("back");
             }
         	owner.addAnchor(String.valueOf(exam.getExamId()));
-        	CellInterface period = line.addCell(exam.getPeriodAbbreviation());
+        	CellInterface period = line.addCell().add(exam.getPeriodAbbreviation());
         	if (isUsePrefStyles())
         		period.setClassName("pref-" + PreferenceLevel.prolog2char(exam.getPeriodPref()));
         	else

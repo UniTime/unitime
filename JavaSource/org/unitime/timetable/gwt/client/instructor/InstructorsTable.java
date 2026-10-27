@@ -66,7 +66,7 @@ public class InstructorsTable extends UniTimeTable<InstructorInterface>  {
 	private InstructorAttributePropertiesInterface iProperties = null;
 	
 	public InstructorsTable(InstructorAttributePropertiesInterface properties, boolean selectable) {
-		setStyleName("unitime-Instructorss");
+		setStyleName("unitime-Instructors");
 		iSelectable = selectable;
 		iProperties = properties;
 		

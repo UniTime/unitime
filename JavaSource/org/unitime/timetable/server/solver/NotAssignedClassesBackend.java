@@ -29,6 +29,7 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.tables.TableInterface.CellInterface;
@@ -68,6 +69,7 @@ public class NotAssignedClassesBackend implements GwtRpcImplementation<NotAssign
 	public NotAssignedClassesResponse execute(NotAssignedClassesRequest request, SessionContext context) {
 		context.checkPermission(Right.NotAssignedClasses);
 		NotAssignedClassesResponse response = new NotAssignedClassesResponse();
+		response.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		
 		SolverProxy solver = courseTimetablingSolverService.getSolver();
 		String subjects = request.getFilter().getParameterValue("subjectArea");

@@ -1392,4 +1392,12 @@ public class UniTimeTable<T> extends FlexTable implements SimpleForm.HasMobileSc
 			if (s.equals(style)) return true;
 		return false;
 	}
+	
+	public Widget asStickyTable() {
+		P p = new P("unitime-StickyTable");
+		p.getElement().getStyle().clearPosition();
+		p.getElement().getStyle().clearOverflow();
+		p.add(this);
+		return p;
+	}
 }

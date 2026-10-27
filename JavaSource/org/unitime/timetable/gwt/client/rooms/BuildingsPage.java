@@ -52,9 +52,11 @@ public class BuildingsPage extends Composite {
 	private UniTimeHeaderPanel iListBuildingsHeader, iListBuildingsFooter;
 	private BuildingsTable iBuildingsTable;
 	private BuildingsEdit iBuildingsEdit;
+	private int iBuildingsRow = 0;
 	
 	public BuildingsPage() {
 		iPanel = new SimplePanel();
+		iPanel.addStyleName("unitime-BuildingsPage");
 		
 		iListBuildingsForm = new SimpleForm();
 		
@@ -97,7 +99,7 @@ public class BuildingsPage extends Composite {
 		iListBuildingsForm.addHeaderRow(iListBuildingsHeader);
 		
 		iBuildingsTable = new BuildingsTable();
-		iListBuildingsForm.addRow(iBuildingsTable);
+		iBuildingsRow = iListBuildingsForm.addRow(iBuildingsTable);
 		iBuildingsTable.setAllowSelection(true); iBuildingsTable.setAllowMultiSelect(false);
 		
 		iListBuildingsFooter = iListBuildingsHeader.clonePanel("");
@@ -118,6 +120,11 @@ public class BuildingsPage extends Composite {
 				iListBuildingsHeader.setEnabled("add", result.isCanAdd());
 				iListBuildingsHeader.setEnabled("export", result.isCanExportPDF());
 				iListBuildingsHeader.setEnabled("updateData", result.isCanUpdateData());
+				if (result.isSticky()) {
+					iListBuildingsForm.setWidget(iBuildingsRow, 0, iBuildingsTable.asStickyTable());
+				} else {
+					iListBuildingsForm.setWidget(iBuildingsRow, 0, iBuildingsTable);
+				}
 				iBuildingsTable.setData(result.getBuildings());
 				LoadingWidget.getInstance().hide();
 				if (result.getEllipsoid() != null)

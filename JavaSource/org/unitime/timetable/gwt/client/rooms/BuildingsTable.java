@@ -42,6 +42,7 @@ public class BuildingsTable extends UniTimeTable<BuildingInterface>{
 	private boolean iAsc = true;
 
 	public BuildingsTable() {
+		addStyleName("unitime-Buildings");
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		for (final BuildingsColumn col: BuildingsColumn.values()) {
 			final UniTimeTableHeader h = new UniTimeTableHeader(getColumnName(col));

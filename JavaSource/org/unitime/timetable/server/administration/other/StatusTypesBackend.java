@@ -24,6 +24,8 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.client.admin.StatusTypesPage.StatusTypesRequest;
 import org.unitime.timetable.gwt.client.admin.StatusTypesPage.StatusTypesResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
@@ -47,6 +49,7 @@ public class StatusTypesBackend implements GwtRpcImplementation<StatusTypesReque
 		context.checkPermission(Right.StatusTypes);
 		
 		TableInterface table = new TableInterface();
+		table.setSticky(CommonValues.Yes.eq(UserProperty.StickyTables.get(context.getUser())));
 		table.setId("AcademicSessions");
 		table.setDefaultSortCookie("");
 

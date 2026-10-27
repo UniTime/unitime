@@ -64,6 +64,7 @@ public class RoomDepartmentsEdit extends Composite {
 	private ExamTypeInterface iExamType = null;
 	
 	private RoomsTable iRooms = null;
+	private int iRoomsRow = -1;
 	
 	public RoomDepartmentsEdit() {
 		iForm = new SimpleForm();
@@ -124,7 +125,7 @@ public class RoomDepartmentsEdit extends Composite {
 		iForm.addHeaderRow(iHeader);
 		
 		iRooms = new RoomsTable(RoomsPageMode.COURSES, true);
-		iForm.addRow(iRooms);
+		iRoomsRow = iForm.addRow(iRooms);
 		iRooms.addMouseClickListener(new MouseClickListener<RoomDetailInterface>() {
 			@Override
 			public void onMouseClick(TableEvent<RoomDetailInterface> event) {
@@ -141,6 +142,8 @@ public class RoomDepartmentsEdit extends Composite {
 	public void setProperties(RoomPropertiesInterface properties) {
 		iProperties = properties;
 		iRooms.setProperties(iProperties);
+		if (iProperties.isSticky())
+			iForm.setWidget(iRoomsRow, 0, iRooms.asStickyTable());
 	}
 	
 	private void hide(boolean refresh) {

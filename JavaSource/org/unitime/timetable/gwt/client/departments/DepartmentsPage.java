@@ -59,6 +59,7 @@ public class DepartmentsPage extends Composite {
 	private DepartmentsTable iDepartmentsTable;
 	private DepartmentsDataResponse departmentsDataFullList;
 	private DepartmentsEdit iDepartmentsEdit;
+	private int iDepartmentsRow = -1;
 	private CheckBox iShowAllDept;
 
 	public DepartmentsPage() {
@@ -95,7 +96,7 @@ public class DepartmentsPage extends Composite {
 
 		//Body
 		iDepartmentsTable = new DepartmentsTable();
-		iListDepartmentsForm.addRow(iDepartmentsTable);
+		iDepartmentsRow = iListDepartmentsForm.addRow(iDepartmentsTable);
 		
 		
 		//Footer
@@ -279,6 +280,11 @@ public class DepartmentsPage extends Composite {
 					@Override
 					public void onSuccess(DepartmentsDataResponse result) {
 						departmentsDataFullList = result;
+						if (result.isSticky()) {
+							iListDepartmentsForm.setWidget(iDepartmentsRow, 0, iDepartmentsTable.asStickyTable());
+						} else {
+							iListDepartmentsForm.setWidget(iDepartmentsRow, 0, iDepartmentsTable);
+						}
 						iListDepartmentsHeader.setEnabled("add",result.isCanAdd());
 						iListDepartmentsHeader.setEnabled("export",result.isCanExportPdf());
 						iDepartmentsTable.removeAllRows();

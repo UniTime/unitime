@@ -425,6 +425,10 @@ public class RoomGroupsPage extends Composite {
 			public void onSuccess(RoomPropertiesInterface result) {
 				LoadingWidget.getInstance().hide();
 				iProperties = result;
+				if (iProperties.isSticky()) {
+					iGroupsPanel.setWidget(iGlobalGroupsRow + 1, 0, iGlobalGroupsTable.asStickyTable());
+					iGroupsPanel.setWidget(iDepartmentalGroupsRow + 1, 0, iDepartmentalGroupsTable.asStickyTable());
+				}
 				iRoomGroupEdit.setProperties(iProperties);
 				iGlobalGroupsTable.setProperties(iProperties);
 				iDepartmentalGroupsTable.setProperties(iProperties);

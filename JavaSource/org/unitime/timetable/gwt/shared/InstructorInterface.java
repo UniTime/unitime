@@ -465,6 +465,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private List<AttributeTypeInterface> iAttributeTypes = new ArrayList<AttributeTypeInterface>();
 		private boolean iCanAddGlobalAttribute = false;
 		private Long iLastDepartmentId = null;
+		private boolean iSticky = false;
 		
 		public InstructorAttributePropertiesInterface() {}
 		
@@ -491,6 +492,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public Long getLastDepartmentId() { return iLastDepartmentId; }
 		public void setLastDepartmentId(Long departmentId) { iLastDepartmentId = departmentId; }
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
 	}
 	
 	public static class InstructorAttributePropertiesRequest implements GwtRpcRequest<InstructorAttributePropertiesInterface>, Serializable {
@@ -1091,6 +1095,7 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		private List<RoomSharingDisplayMode> iModes;
 		private boolean iHasSolver;
 		private InstructorAvailabilityModel iAvailabilityModel;
+		private boolean iSticky = false;
 		
 		public TeachingRequestsPagePropertiesResponse() {}
 		
@@ -1139,6 +1144,9 @@ public class InstructorInterface implements IsSerializable, Comparable<Instructo
 		
 		public InstructorAvailabilityModel getInstructorAvailabilityModel() { return iAvailabilityModel; }
 		public void setInstructorAvailabilityModel(InstructorAvailabilityModel model) { iAvailabilityModel = model; }
+		
+		public boolean isSticky() { return iSticky; }
+		public void setSticky(boolean sticky) { iSticky = sticky; }
 	}
 	
 	public static class TeachingRequestDetailRequest implements GwtRpcRequest<TeachingRequestInfo>, Serializable {
