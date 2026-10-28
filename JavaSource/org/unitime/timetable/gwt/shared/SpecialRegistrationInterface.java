@@ -1097,6 +1097,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private GradeModes iGradeModes = null;
 		private List<RetrieveSpecialRegistrationResponse> iRequests = null;
 		private Set<String> iCancelRequestIds = null;
+		private String iErrorMessage;
 		
 		public ChangeGradeModesResponse() {}
 		
@@ -1145,6 +1146,10 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		public boolean hasCancelRequestIds() { return iCancelRequestIds != null && !iCancelRequestIds.isEmpty(); }
 		public Set<String> getCancelRequestIds() { return iCancelRequestIds; }
 		public boolean isToBeCancelled(String requestId) { return iCancelRequestIds != null && iCancelRequestIds.contains(requestId); }
+		
+		public void setErrorMessage(String message) { iErrorMessage = message; }
+		public boolean hasErrorMessage() { return iErrorMessage != null && !iErrorMessage.isEmpty(); }
+		public String getErrorMessage() { return iErrorMessage; }
 	}
 	
 	public static interface ChangeRequestorNoteInterface {

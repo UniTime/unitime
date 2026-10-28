@@ -288,6 +288,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 				} else if (approval.getStatus() == SpecialRegistrationStatus.Pending && approval.hasErrors()) {
 					String note = approval.getNote("MAXI");
 					if (note != null) iCourse2Note.put("MAXI", note);
+					if (approval.hasNote("MINI")) iCourse2Note.put("MINI", approval.getNote("MINI"));
 				}
 			}
 		}
@@ -578,7 +579,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 		request.setCurrentCredit(iCurrentCredit);
 		request.setMaxCredit(iMaxCredit);
 		request.setMinCredit(iMinCredit);
-		request.setNote(iCourse2Note.get("MAXI"));
+		request.setNote(iCourse2Note.containsKey("MAXI") ? iCourse2Note.get("MAXI") : iCourse2Note.get("MINI"));
 		for (GradeModeChange cell: iChanges) {
 			SpecialRegistrationGradeMode change = cell.getChange();
 			if (change == null) continue;

@@ -2656,6 +2656,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			RetrieveAvailableGradeModesResponse ret = new RetrieveAvailableGradeModesResponse();
 			ret.setMaxCredit(response.data.maxCredit);
 			ret.setMinCredit(response.data.minCredit);
+			if (response.data.minCredit == null && student.hasMinCredit())
+				ret.setMinCredit(student.getMinCredit());
 			ret.setCurrentCredit(response.data.currentCredit);
 			
 			String honorsGradeMode = getResetGradeModesRegExp();
@@ -2924,6 +2926,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 							}
 						}
 					}
+					
+					ret.setErrorMessage(response.registrationException);
 				}
 			} catch (SectioningException e) {
 				helper.getAction().setApiException(e.getMessage() == null ? "null" : e.getMessage());

@@ -4134,6 +4134,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						}
 					}
 					fillIn(iSavedAssignment);
+					if (response.hasErrorMessage())
+						iStatus.error(response.getErrorMessage());
 					addHistory();
 				}
 			};
