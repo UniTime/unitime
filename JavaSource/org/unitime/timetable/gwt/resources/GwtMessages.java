@@ -1740,6 +1740,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
 	
+	@DefaultMessage("Export")
+	String buttonExportLog();
+	
 	@DefaultMessage("M<u>o</u>re<span class='unitime-ButtonArrow'>&#9660;</span>")
 	String buttonMoreOperations();
 

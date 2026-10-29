@@ -80,8 +80,11 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		
 		String local = solverServerService.getLocalServer().getHost();
 		for (QueueItemInterface item: queue) {
-			item.setCanDelete(context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId()));
-			if (item.getOtuput() != null && !local.equals(item.getHost()))
+			boolean canAccess = context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId());
+			item.setCanDelete(canAccess);
+			if (!canAccess)
+				item.setOutputLink(null);
+			else if (item.getOtuput() != null && !local.equals(item.getHost()))
 				item.setOutputLink("qpfile?q=" + QueryEncoderBackend.encode(item.getId()));
 			table.add(item);
 		}
@@ -89,7 +92,7 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 		return table;
 	}
 	
-	public static QueueItemInterface convert(QueueItem item, SessionContext context) {
+	public static QueueItemInterface convert(QueueItem item) {
 		QueueItemInterface q = new QueueItemInterface();
 		
 		q.setId(item.getId());
@@ -108,9 +111,6 @@ public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableR
 			q.setOutput(item.getOutputName());
 			q.setOutputLink(item.getOutputLink());
 		}
-		//q.setLog(item.log());
-		if (context != null)
-			q.setCanDelete((context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId())));
 		
 		if (item instanceof ScriptExecution)
 			q.setExecutionRequest(((ScriptExecution)item).getRequest());

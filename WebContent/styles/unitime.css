@@ -8998,7 +8998,7 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-ExamPdfReportsPage .unitime-HeaderPanel .title {
-	max-width: calc(var(--page-max-width) - 20px);
+	max-width: calc(var(--page-max-width) - 100px);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: block;

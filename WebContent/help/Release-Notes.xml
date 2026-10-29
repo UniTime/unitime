@@ -100,6 +100,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange, Scripts, Examination PDF Reports, Roll Forward Session: Progress Queue</name>
+			<description>
+				<line>Added an ability to export the log of the currently selected task.</line>
+				<line>Tasks from other users are visible in the table but don't show the log or output file.
+					<line>Except for users with the Chameleon permission.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 <release>

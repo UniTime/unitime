@@ -55,11 +55,12 @@ public class GetQueueLogRpcBackend implements GwtRpcImplementation<GetQueueLogRp
 		}
 		
 		QueueItem item = solverServerService.getQueueProcessor().get(request.getQueueId());
-		if (item != null) {
+		if (item != null && (context.hasPermissionAnyAuthority(item.getSessionId(), "Session", Right.Chameleon) || context.getUser().getExternalUserId().equals(item.getOwnerId()))) {
 			QueueItemLogInterface ret = new QueueItemLogInterface();
 			ret.setId(item.getId());
 			ret.setName(item.name());
-			ret.setLog(item.log());
+			ret.setLog(item.log(request.isHtml()));
+			
 			return ret;
 		}
 		

@@ -95,6 +95,28 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 			}
 		});
 		iLogHeader = new UniTimeHeaderPanel();
+		iLogHeader.addButton("export", MESSAGES.buttonExportLog(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final QueueItemInterface item = getData(getSelectedRow());
+				if (item != null && item.isCanDelete()) {
+					iLogHeader.setEnabled("export", false);
+					RPC.execute(new GetQueueLogRpcRequest(item.getId()).setType(iType).setHtml(false), new AsyncCallback<QueueItemLogInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							iLogHeader.setEnabled("export", true);
+							UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()), caught);
+						}
+	
+						@Override
+						public void onSuccess(QueueItemLogInterface result) {
+							iLogHeader.setEnabled("export", true);
+							download(result.getLog().getBytes(), item.getName());
+						}
+					});
+				};
+			}
+		});
 		iLog = new HTML();
 		iLog.addStyleName("unitime-QueueLog");
 		
@@ -184,7 +206,10 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 			line.add(new Label(q.getStarted() == null ? "" : sTS.format(q.getStarted())));
 			line.add(new Label(q.getFinished() == null ? "" : sTS.format(q.getFinished())));
 			if (q.getOtuput() != null) {
-				line.add(new Anchor(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.')), q.getOtuputLink()));
+				if (q.getOtuputLink() != null)
+					line.add(new Anchor(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.')), q.getOtuputLink()));
+				else
+					line.add(new Label(q.getOtuput().substring(1 + q.getOtuput().lastIndexOf('.'))));
 			} else {
 				line.add(new Label(""));
 			}
@@ -228,13 +253,13 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	}
 
 	protected void showLog(QueueItemInterface item) {
-		if (item == null) {
+		if (item == null || !item.isCanDelete()) {
 			iPanel.getRowFormatter().setVisible(iLogRow, false);
 			iPanel.getRowFormatter().setVisible(iLogRow + 1, false);
 			iTimer.schedule(5000);
 		} else {
 			iLogHeader.showLoading();
-			RPC.execute(new GetQueueLogRpcRequest(item.getId()), new AsyncCallback<QueueItemLogInterface>() {
+			RPC.execute(new GetQueueLogRpcRequest(item.getId()).setType(iType), new AsyncCallback<QueueItemLogInterface>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					iLogHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
@@ -262,4 +287,20 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 		}
 	}
 
+	public static final native String download(byte[] bytes, String name) /*-{
+		var data = new Uint8Array(bytes);
+		var blob = new Blob([data], {type: "text/plain"});
+		if ($wnd.navigator && $wnd.navigator.msSaveOrOpenBlob) {
+			$wnd.navigator.msSaveOrOpenBlob(blob, name + ".log");
+		} else {
+			var link = $doc.createElement("a");
+			link.href = $wnd.URL.createObjectURL(blob);
+			link.download = name + ".log";
+			link.target = "_blank";
+			$doc.body.appendChild(link);
+			link.click();
+			$doc.body.removeChild(link);
+			$wnd.URL.revokeObjectURL(link.href);
+		}
+	}-*/;	
 }
