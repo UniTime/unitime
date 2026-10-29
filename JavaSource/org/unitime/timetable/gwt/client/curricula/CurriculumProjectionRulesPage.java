@@ -30,6 +30,8 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -190,10 +192,24 @@ public class CurriculumProjectionRulesPage extends Composite {
 		
 		iTable = new MyFlexTable();
 		iTable.setVisible(false);
+		iTable.addStyleName("unitime-TableWidget");
 		
-		ScrollPanel tableScroll = new ScrollPanel(iTable);
+		final ScrollPanel tableScroll = new ScrollPanel(iTable);
 		tableScroll.addStyleName("unitime-ScrollTable");
 		iPanel.addRow(tableScroll);
+		
+		RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+			@Override
+			public void onFailure(Throwable t) {}
+			@Override
+			public void onSuccess(ManagerSettingResponse r) {
+				if ("yes".equalsIgnoreCase(r.getValue())) {
+					tableScroll.setStyleName("unitime-StickyTable");
+					tableScroll.getElement().getStyle().clearPosition();
+					tableScroll.getElement().getStyle().clearOverflow();
+				}
+			}
+		});
 		
 		iBottom = iHeader.clonePanel();
 		iPanel.addNotPrintableBottomRow(iBottom);

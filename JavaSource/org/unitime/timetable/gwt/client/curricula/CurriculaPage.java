@@ -29,8 +29,12 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.widgets.FilterPanel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -66,12 +70,14 @@ public class CurriculaPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
+	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private CurriculumFilterBox iFilter = null;
 	private AriaButton iSearch = null;
 	private AriaButton iNew = null;
 	private AriaButton iPrint = null;
 	private CurriculaTable iCurriculaTable = null;
+	private ScrollPanel iCurriculumTableScroll;
 	
 	private VerticalPanel iCurriculaPanel = null;
 	
@@ -122,14 +128,15 @@ public class CurriculaPage extends Composite {
 		iCurriculaPanel.setCellHorizontalAlignment(iFilterPanel, HasHorizontalAlignment.ALIGN_CENTER);
 		
 		iCurriculaTable = new CurriculaTable();
+		iCurriculaTable.addStyleName("unitime-TableWidget");
 		iCurriculaTable.getElement().getStyle().setMarginTop(10, Unit.PX);
 		iFilterPanel.addRight(iCurriculaTable.getOperations());
 		iCurriculaTable.getOperations().setEnabled(false);
 		iCurriculaTable.setVisible(false);
 		
-		ScrollPanel curriculumTableScroll = new ScrollPanel(iCurriculaTable);
-		curriculumTableScroll.addStyleName("unitime-ScrollTable");
-		iCurriculaPanel.add(curriculumTableScroll);
+		iCurriculumTableScroll = new ScrollPanel(iCurriculaTable);
+		iCurriculumTableScroll.addStyleName("unitime-ScrollTable");
+		iCurriculaPanel.add(iCurriculumTableScroll);
 		
 		iCurriculaPanel.setWidth("100%");
 		
@@ -371,6 +378,19 @@ public class CurriculaPage extends Composite {
 			public void onSuccess(TreeSet<AcademicClassificationInterface> result) {
 				iCurriculumPanel.setupClassifications(result);
 				iCurriculaTable.setup(new ArrayList<AcademicClassificationInterface>(result));
+			}
+		});
+		
+		RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+			@Override
+			public void onFailure(Throwable t) {}
+			@Override
+			public void onSuccess(ManagerSettingResponse r) {
+				if ("yes".equalsIgnoreCase(r.getValue())) {
+					iCurriculumTableScroll.setStyleName("unitime-StickyTable");
+					iCurriculumTableScroll.getElement().getStyle().clearPosition();
+					iCurriculumTableScroll.getElement().getStyle().clearOverflow();
+				}
 			}
 		});
 	}

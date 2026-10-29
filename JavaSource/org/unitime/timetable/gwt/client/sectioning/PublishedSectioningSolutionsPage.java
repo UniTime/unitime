@@ -20,6 +20,8 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -51,6 +53,7 @@ public class PublishedSectioningSolutionsPage extends Composite {
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private PublishedSectioningSolutionsTable iTable;
+	private boolean iSticky = false;
 	
 	public PublishedSectioningSolutionsPage() {
 		iForm = new SimpleForm();
@@ -76,10 +79,21 @@ public class PublishedSectioningSolutionsPage extends Composite {
 		iForm.addHeaderRow(iHeader);
 		
 		iTable = new PublishedSectioningSolutionsTable();
-		iForm.addRow(iTable);
+		final int tableRow = iForm.addRow(iTable);
 		
 		iFooter = iHeader.clonePanel("");
 		iForm.addBottomRow(iFooter);
+		
+		RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+			@Override
+			public void onFailure(Throwable t) {}
+			@Override
+			public void onSuccess(ManagerSettingResponse r) {
+				if ("yes".equalsIgnoreCase(r.getValue())) {
+					iForm.setWidget(tableRow, 0, iTable.asStickyTable());
+				}
+			}
+		});
 		
 		LoadingWidget.getInstance().show(MESSAGES.waitPlease());
 		RPC.execute(new PublishedSectioningSolutionsRequest(Operation.LIST), new AsyncCallback<GwtRpcResponseList<PublishedSectioningSolutionInterface>>() {

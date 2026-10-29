@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -255,5 +256,22 @@ public class ManagerSettingsPage extends Composite {
 				if (item.getValue().equals(option)) return item.getText();
 			return option;
 		}
+	}
+	
+	public static class ManagerSettingRequest implements GwtRpcRequest<ManagerSettingResponse> {
+		private String iName;
+		public ManagerSettingRequest() {}
+		public ManagerSettingRequest(String name) { iName = name; }
+		public void setName(String name) { iName = name; }
+		public String getName() { return iName; }
+	}
+	
+	public static class ManagerSettingResponse implements GwtRpcResponse {
+		private String iValue;
+		public ManagerSettingResponse() {}
+		public ManagerSettingResponse(String value) { iValue = value; }
+		
+		public void setValue(String value) { iValue = value; }
+		public String getValue() { return iValue; }
 	}
 }

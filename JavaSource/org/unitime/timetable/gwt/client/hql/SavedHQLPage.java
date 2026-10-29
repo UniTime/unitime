@@ -33,6 +33,8 @@ import org.unitime.timetable.gwt.client.admin.ScriptPage.DateTimeBox;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -91,7 +93,6 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -120,6 +121,7 @@ public class SavedHQLPage extends Composite {
 	private String iLastHistory = null;
 	private int iParametersRow = -1;
 	private int iLastSort = 0;
+	private boolean iSticky = false;
 
 	public SavedHQLPage() {
 		iAppearance = Window.Location.getParameter("appearance");
@@ -161,6 +163,15 @@ public class SavedHQLPage extends Composite {
 				setBack();
 			}
 		};
+		
+		RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+			@Override
+			public void onFailure(Throwable t) {}
+			@Override
+			public void onSuccess(ManagerSettingResponse r) {
+				iSticky = "yes".equalsIgnoreCase(r.getValue());
+			}
+		});
 		
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
@@ -452,6 +463,8 @@ public class SavedHQLPage extends Composite {
 						}
 					});
 				}
+				iFooter = iHeader.clonePanel("");
+				iParametersRow = iForm.addBottomRow(iFooter);
 				iTableHeader = new UniTimeHeaderPanel(MESSAGES.sectResults());
 				iTableHeader.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
 					@Override
@@ -469,16 +482,9 @@ public class SavedHQLPage extends Composite {
 				});
 				iTableHeader.setEnabled("previous", false);
 				iTableHeader.setEnabled("next", false);
-				iParametersRow = iForm.addHeaderRow(iTableHeader);
 				iTable.addStyleName("unitime-HQLTable");
-				ScrollPanel tableScroll = new ScrollPanel(iTable);
-				tableScroll.addStyleName("unitime-HQLTablePanel");
-				iForm.addRow(tableScroll);
 				iTableFooter = iTableHeader.clonePanel("");
 				iTableFooter.setVisible(false);
-				iForm.addRow(iTableFooter);
-				iFooter = iHeader.clonePanel("");
-				iForm.addBottomRow(iFooter);
 				loadQueries(null, true);
 			}
 		});
@@ -1014,10 +1020,13 @@ public class SavedHQLPage extends Composite {
 				}
 			}
 		}
-		iForm.addHeaderRow(iTableHeader);
-		iForm.addRow(iTable);
-		iForm.addRow(iTableFooter);
 		iForm.addBottomRow(iFooter);
+		iForm.addHeaderRow(iTableHeader);
+		if (iSticky)
+			iForm.addRow(iTable.asStickyTable());
+		else
+			iForm.addRow(iTable);
+		iForm.addBottomRow(iTableFooter);
 	}
 	
 	public static int compare(String[] a, String[] b, int col) {
