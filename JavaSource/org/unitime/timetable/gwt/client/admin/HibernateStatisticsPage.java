@@ -25,6 +25,8 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.admin.HibernateStatisticsPage.HibernateStatisticsRequest.Operation;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.tables.TableInterface;
 import org.unitime.timetable.gwt.client.tables.TableWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -47,6 +49,7 @@ public class HibernateStatisticsPage extends Composite {
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private boolean iDetails = false;
+	private boolean iSticky = false;
 	
 	public HibernateStatisticsPage() {
 		iPanel = new SimpleForm();
@@ -92,6 +95,15 @@ public class HibernateStatisticsPage extends Composite {
 		initWidget(iPanel);
 		iFooter = iHeader.clonePanel("");
 		
+		RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+			@Override
+			public void onFailure(Throwable t) {}
+			@Override
+			public void onSuccess(ManagerSettingResponse r) {
+				iSticky = "yes".equalsIgnoreCase(r.getValue());
+			}
+		});
+
 		execute(Operation.LOAD, iDetails);
 	}
 	
@@ -137,8 +149,11 @@ public class HibernateStatisticsPage extends Composite {
 					}
 					iPanel.addHeaderRow(header);
 				}
-				TableWidget w = new TableWidget(table); 
-				iPanel.addRow(w);
+				TableWidget w = new TableWidget(table);
+				if (iSticky)
+					iPanel.addRow(w.asStickyTable());
+				else
+					iPanel.addRow(w);
 				if (token != null && token.equals(table.getAnchor()) && header != null) {
 					ToolBox.scrollToElement(header.getElement());
 					scroll = true;

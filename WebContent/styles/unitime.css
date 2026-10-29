@@ -9463,7 +9463,7 @@ div.gwt-MenuBarPopup {
 	z-index: 1000;	
 }
 
-.unitime-TableWidget tr:not(:last-child) td {
+.unitime-TableWidget > tbody > tr:not(:last-child) > td {
 	border-bottom: 1px dashed #9CB0CE;
 }
 
@@ -9472,5 +9472,17 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-Buildings tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-HQLTable tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-PublishedSectioningSolutions tr:not(:last-child) td {
+	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-ClassAssignmentTableConflicts tr:not(:last-child) td {
 	border-bottom: 1px dashed #9CB0CE;
 }

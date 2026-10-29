@@ -24,6 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -35,6 +37,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -81,6 +85,7 @@ public class ReservationTable extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 	private static DateTimeFormat sDF = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private Long iOfferingId = null;
@@ -130,13 +135,8 @@ public class ReservationTable extends Composite {
 
 		
 		iReservations = new UniTimeTable<ReservationInterface>();
-		iReservationPanel.addRow(iReservations);
 		iReservations.setVisible(false);
 		
-
-		if (!showHeader)
-			iReservationPanel.addRow(iHeader);
-
 		initWidget(iReservationPanel);
 		
 		if (editable) {
@@ -149,6 +149,29 @@ public class ReservationTable extends Composite {
 							h.onClick(e);
 						}
 					}
+				}
+			});
+		}
+		
+		if (showHeader) {
+			iReservationPanel.addRow(iReservations);
+		} else {
+			iReservations.addStyleName("unitime-TableWidget");
+			RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+				@Override
+				public void onFailure(Throwable t) {
+					iReservationPanel.addRow(iReservations);
+					iReservationPanel.addRow(iHeader);
+				}
+				@Override
+				public void onSuccess(ManagerSettingResponse r) {
+					if ("yes".equalsIgnoreCase(r.getValue())) {
+						iReservationPanel.remove(iReservations);
+						iReservationPanel.addRow(iReservations.asStickyTable());
+					} else {
+						iReservationPanel.addRow(iReservations);
+					}
+					iReservationPanel.addRow(iHeader);
 				}
 			});
 		}

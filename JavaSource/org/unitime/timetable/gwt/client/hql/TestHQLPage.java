@@ -26,6 +26,8 @@ import java.util.List;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingRequest;
+import org.unitime.timetable.gwt.client.page.ManagerSettingsPage.ManagerSettingResponse;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -76,6 +78,7 @@ public class TestHQLPage extends Composite {
 	private UniTimeHeaderPanel iHeader = null, iFooter = null, iTableHeader = null, iTableFooter = null, iGenSQLHeader = null;
 	private TextArea iQuery;
 	private ResultsTable iTable;
+	private boolean iSticky = false;
 	
 	private List<SavedHQLInterface.Option> iOptions = new ArrayList<SavedHQLInterface.Option>();
 
@@ -316,9 +319,10 @@ public class TestHQLPage extends Composite {
 				iTableHeaderLine = iForm.addHeaderRow(iTableHeader);
 				iForm.getRowFormatter().setVisible(iTableHeaderLine, false);
 				iTable.addStyleName("unitime-HQLTable");
-				ScrollPanel tableScroll = new ScrollPanel(iTable);
-				tableScroll.addStyleName("unitime-HQLTablePanel");
-				iForm.addRow(tableScroll);
+				if (iSticky)
+					iForm.addRow(iTable.asStickyTable());
+				else
+					iForm.addRow(iTable);
 				iTableFooter = iTableHeader.clonePanel("");
 				iTableFooter.setVisible(false);
 				iForm.addRow(iTableFooter);
@@ -345,6 +349,15 @@ public class TestHQLPage extends Composite {
 		});
 		
 		iTable.setVisible(false);
+		
+		RPC.execute(new ManagerSettingRequest("stickyTables"), new AsyncCallback<ManagerSettingResponse>() {
+			@Override
+			public void onFailure(Throwable t) {}
+			@Override
+			public void onSuccess(ManagerSettingResponse r) {
+				iSticky = "yes".equalsIgnoreCase(r.getValue());
+			}
+		});
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
