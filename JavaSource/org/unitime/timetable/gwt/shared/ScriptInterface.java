@@ -360,7 +360,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 
 		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
 		public boolean isCanDelete() { return Boolean.TRUE.equals(iCanDelete); }
-		
+
 		public void setExecutionRequest(ExecuteScriptRpcRequest request) { iExecutionRequest = request; }
 		public ExecuteScriptRpcRequest getExecutionRequest() { return iExecutionRequest; }
 
@@ -400,6 +400,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 	public static class GetQueueLogRpcRequest implements GwtRpcRequest<QueueItemLogInterface> {
 		private String iQueueId = null;
 		private QueueType iType = QueueType.Script;
+		private boolean iHtml = true;
 
 		public GetQueueLogRpcRequest() {}
 		public GetQueueLogRpcRequest(String queueId) {  iQueueId = queueId; }
@@ -407,6 +408,8 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public String getQueueId() { return iQueueId; }
 		public QueueType getType() { return iType; }
 		public GetQueueLogRpcRequest setType(QueueType type) { iType = type; return this; }
+		public boolean isHtml() { return iHtml; }
+		public GetQueueLogRpcRequest setHtml(boolean html) { iHtml = html; return this; }
 		
 		@Override
 		public String toString() {

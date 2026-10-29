@@ -96,7 +96,7 @@ public class ScriptConnector extends ApiConnector {
 			QueueItem item = solverServerService.getQueueProcessor().get(helper.getParameter("id"));
 			if (item == null)
 				helper.sendError(HttpServletResponse.SC_NO_CONTENT, "No task found for " + helper.getParameter("id"));
-			helper.setResponse(GetQueueTableBackend.convert(item, helper.getSessionContext()));
+			helper.setResponse(GetQueueTableBackend.convert(item));
 		} else if (helper.getParameter("finished") != null) {
 			solverServerService.getQueueProcessor().get(helper.getParameter("finished"));
 			QueueItem item = solverServerService.getQueueProcessor().get(helper.getParameter("finished"));
@@ -114,7 +114,7 @@ public class ScriptConnector extends ApiConnector {
 			List<QueueItemInterface> converted = new ArrayList<QueueItemInterface>();
 			if (items != null)
 				for (QueueItem item: items)
-					converted.add(GetQueueTableBackend.convert(item, helper.getSessionContext()));
+					converted.add(GetQueueTableBackend.convert(item));
 			helper.setResponse(converted);
 		}
 	}
@@ -178,7 +178,7 @@ public class ScriptConnector extends ApiConnector {
 			}
 		} else {
 			QueueItem item = solverServerService.getQueueProcessor().add(new ScriptExecution(request, helper.getSessionContext()));
-			helper.setResponse(GetQueueTableBackend.convert(item, helper.getSessionContext()));
+			helper.setResponse(GetQueueTableBackend.convert(item));
 		}
 	}
 	

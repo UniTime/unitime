@@ -147,11 +147,14 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		}
 	}
 	public String log() {
+		return log(true);
+	}
+	public String log(boolean html) {
 		synchronized (iLog) {
 			String ret = "";
 			for (QueueMessage m: iLog) {
-				if (!ret.isEmpty()) ret += "<br>";
-				ret += m.toHTML();
+				if (!ret.isEmpty()) ret += (html ? "<br>" : "\n");
+				ret += (html ? m.toHTML() : m.toString());
 			}
 			return ret;
 		}

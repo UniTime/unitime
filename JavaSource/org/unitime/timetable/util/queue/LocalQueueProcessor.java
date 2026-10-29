@@ -280,7 +280,7 @@ public class LocalQueueProcessor extends Thread implements QueueProcessor {
 				if (sessionId != null && !sessionId.equals(item.getSessionId())) continue;
 				if (type!=null && !type.equals(item.type())) continue;
 				if (timeToShow != null && item.finished() != null && now - item.finished().getTime() > timeToShow) continue;
-				ret.add(GetQueueTableBackend.convert(item, null));
+				ret.add(GetQueueTableBackend.convert(item));
 			}
 			
 			if (iItem != null) {
@@ -288,14 +288,14 @@ public class LocalQueueProcessor extends Thread implements QueueProcessor {
 				if (ownerId != null && !ownerId.equals(iItem.getOwnerId())) add = false;
 				if (sessionId != null && !sessionId.equals(iItem.getSessionId())) add = false;
 				if (type!=null && !type.equals(iItem.type())) add = false;
-				if (add) ret.add(GetQueueTableBackend.convert(iItem, null));
+				if (add) ret.add(GetQueueTableBackend.convert(iItem));
 			}
 			
 			for (QueueItem item: iQueue) {
 				if (ownerId != null && !ownerId.equals(item.getOwnerId())) continue;
 				if (sessionId != null && !sessionId.equals(item.getSessionId())) continue;
 				if (type!=null && !type.equals(item.type())) continue;
-				ret.add(GetQueueTableBackend.convert(item, null));
+				ret.add(GetQueueTableBackend.convert(item));
 			}
 			
 			return ret;

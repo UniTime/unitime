@@ -46,7 +46,7 @@ public class ExecuteScriptBackend implements GwtRpcImplementation<ExecuteScriptR
 		
 		QueueItem executed = solverServerService.getQueueProcessor().add(execution);
 		
-		return GetQueueTableBackend.convert(executed, context);
+		return GetQueueTableBackend.convert(executed);
 		
 		} catch (Exception e) {
 			e.printStackTrace();
