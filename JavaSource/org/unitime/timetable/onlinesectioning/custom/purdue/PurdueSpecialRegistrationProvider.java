@@ -43,7 +43,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
 import org.restlet.Context;
-import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
@@ -2593,31 +2592,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 			}
 		}
 	}
-	
-	protected String getBannerSite() {
-		return ApplicationProperties.getProperty("banner.xe.site");
-	}
-	
-	protected String getBannerUser(boolean admin) {
-		if (admin) {
-			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
-			if (user != null) return user;
-		}
-		return ApplicationProperties.getProperty("banner.xe.user");
-	}
-	
-	protected String getBannerPassword(boolean admin) {
-		if (admin) {
-			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
-			if (pwd != null) return pwd;
-		}
-		return ApplicationProperties.getProperty("banner.xe.password");
-	}
-	
-	protected String getAdminParameter() {
-		return ApplicationProperties.getProperty("banner.xe.adminParameter", "systemIn");
-	}
-
+		
 	@Override
 	public RetrieveAvailableGradeModesResponse retrieveAvailableGradeModes(OnlineSectioningServer server, OnlineSectioningHelper helper, XStudent student) throws SectioningException {
 		ClientResource resource = null;
@@ -2767,9 +2742,9 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		if (request.hasGradeModeChanges(false) || request.hasCreditChanges(false)) {
 			ClientResource resource = null;
 			try {
-				resource = new ClientResource(getBannerSite());
+				resource = new ClientResource(XEStudentEnrollment.getBannerSite());
 				resource.setNext(iClient);
-				resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(true), getBannerPassword(true));
+				XEStudentEnrollment.authenticate(resource, helper.isAdmin());
 				Gson gson = getGson(helper);
 				XEInterface.RegisterResponse original = null;
 				
@@ -2780,7 +2755,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				helper.getAction().addOptionBuilder().setKey("term").setValue(term);
 				helper.getAction().addOptionBuilder().setKey("bannerId").setValue(getBannerId(student));
 				
-				String param = getAdminParameter();
+				String param = XEStudentEnrollment.getAdminParameter();
 				resource.addQueryParameter(param, "SB");
 				helper.getAction().addOptionBuilder().setKey(param).setValue("SB");
 				Map<String, String> code2desc = new HashMap<String, String>();

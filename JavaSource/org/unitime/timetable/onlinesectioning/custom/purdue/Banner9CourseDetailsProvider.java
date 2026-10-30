@@ -107,7 +107,7 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 	protected String getAccessToken() throws IOException, ResourceException {
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource("https://integrate.elluciancloud.com/auth");
+			resource = new ClientResource(ApplicationProperties.getProperty("banner.integration.url", "https://integrate.elluciancloud.com") + "/auth");
 			resource.setNext(iClient);
 			ChallengeResponse challenge = new ChallengeResponse(ChallengeScheme.HTTP_OAUTH_BEARER);
 			challenge.setRawValue(getApiKey());
@@ -201,15 +201,16 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 			input.put("cmsg", CMSG);
 			input.put("gmsg", GMSG);
 			input.put("session", session);
-			Map<?, ?> base = executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-bases", accessToken, params);
+			String site = ApplicationProperties.getProperty("banner.integration.url", "https://integrate.elluciancloud.com");
+			Map<?, ?> base = executeAPI(site + "/qapi/catalog-course-bases", accessToken, params);
 			if (base == null || base.isEmpty())
 				throw new SectioningException(MSG.catalogCourseNotInCatalog(subject, courseNbr));
 			input.put("base", base);
-			input.put("details", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-additional-details", accessToken, params));
-			input.put("prerequisites", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
-			input.put("restrictions", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-restrictions", accessToken, params));
-			input.put("descriptors", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-descriptors", accessToken, params));
-			input.put("fees", executeAPI("https://integrate.elluciancloud.com/qapi/course-detail-information-fee-codes", accessToken, params2));
+			input.put("details", executeAPI(site + "/qapi/catalog-course-additional-details", accessToken, params));
+			input.put("prerequisites", executeAPI(site + "/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
+			input.put("restrictions", executeAPI(site + "/qapi/catalog-course-restrictions", accessToken, params));
+			input.put("descriptors", executeAPI(site + "/qapi/catalog-course-descriptors", accessToken, params));
+			input.put("fees", executeAPI(site + "/qapi/course-detail-information-fee-codes", accessToken, params2));
 			input.put("lookup", new Lookup() {
 				@Override
 				public String getPrereqsFromCatalog() {
@@ -268,12 +269,13 @@ public class Banner9CourseDetailsProvider implements CourseDetailsProvider {
 			input.put("cmsg", CMSG);
 			input.put("gmsg", GMSG);
 			input.put("session", session);
-			Map<?, ?> base = executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-bases", accessToken, params);
+			String site = ApplicationProperties.getProperty("banner.integration.url", "https://integrate.elluciancloud.com");
+			Map<?, ?> base = executeAPI(site + "/qapi/catalog-course-bases", accessToken, params);
 			if (base == null || base.isEmpty())
 				throw new SectioningException(MSG.catalogCourseNotInCatalog(subject, courseNbr));
 			input.put("base", base);
-			input.put("details", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-additional-details", accessToken, params));
-			input.put("prerequisites", executeAPI("https://integrate.elluciancloud.com/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
+			input.put("details", executeAPI(site + "/qapi/catalog-course-additional-details", accessToken, params));
+			input.put("prerequisites", executeAPI(site + "/qapi/catalog-course-requisites-and-equivalents", accessToken, params));
 			
 			StringWriter s = new StringWriter();
 			template.process(input, new PrintWriter(s));

@@ -64,6 +64,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -528,9 +529,9 @@ public class XEBatchSolverSaver extends StudentSectioningSaver {
 		
 		ClientResource resource = null;
 		try {
-			resource = new ClientResource(ApplicationProperties.getProperty("banner.xe.site"));
+			resource = new ClientResource(XEStudentEnrollment.getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, ApplicationProperties.getProperty("banner.xe.admin.user"), ApplicationProperties.getProperty("banner.xe.admin.password"));
+			XEStudentEnrollment.authenticate(resource, true);
 			
 			String term = iExternalTermProvider.getExternalTerm(iSession);
 			String campus = iExternalTermProvider.getExternalCampus(iSession);
