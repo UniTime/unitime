@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.onlinesectioning.custom.purdue;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,6 +43,7 @@ import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.restlet.Client;
 import org.restlet.Context;
+import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
@@ -141,15 +143,49 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		}
 	}
 	
+	protected static String getAccessToken(Client client) throws IOException, ResourceException {
+		String apiKey = ApplicationProperties.getProperty("banner.xe.apiKey");
+		if (apiKey == null || apiKey.isEmpty()) return null;
+		ClientResource resource = null;
+		try {
+			resource = new ClientResource(ApplicationProperties.getProperty("banner.integration.url", "https://integrate.elluciancloud.com") + "/auth");
+			resource.setNext(client);
+			ChallengeResponse challenge = new ChallengeResponse(ChallengeScheme.HTTP_OAUTH_BEARER);
+			challenge.setRawValue(apiKey);
+			resource.setChallengeResponse(challenge);
+			return resource.post(null).getText();
+		} finally {
+			if (resource != null) {
+				if (resource.getResponse() != null) resource.getResponse().release();
+				resource.release();
+			}
+		}
+	}
+	
+	protected static void authenticate(ClientResource resource, boolean manager) throws IOException, ResourceException {
+		String accessToken = getAccessToken((Client) resource.getNext());
+		if (accessToken != null) {
+			ChallengeResponse challenge = new ChallengeResponse(ChallengeScheme.HTTP_OAUTH_BEARER);
+			challenge.setRawValue(accessToken);
+			resource.setChallengeResponse(challenge);
+		} else {
+			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(manager), getBannerPassword(manager));
+		}
+	}
+	
 	protected String getBannerReadTimeout() {
 		return ApplicationProperties.getProperty("banner.xe.readTimeout", "60000");
 	}
 	
-	protected String getBannerSite() {
-		return ApplicationProperties.getProperty("banner.xe.site");
+	protected static String getBannerSite() {
+		String apiKey = ApplicationProperties.getProperty("banner.xe.apiKey");
+		if (apiKey == null || apiKey.isEmpty())
+			return ApplicationProperties.getProperty("banner.xe.site");
+		else
+			return ApplicationProperties.getProperty("banner.integration.url", "https://integrate.elluciancloud.com") + "/api/registration-register";
 	}
 	
-	protected String getBannerUser(boolean manager) {
+	protected static String getBannerUser(boolean manager) {
 		if (manager) {
 			String user = ApplicationProperties.getProperty("banner.xe.admin.user");
 			if (user != null) return user;
@@ -157,7 +193,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return ApplicationProperties.getProperty("banner.xe.user");
 	}
 	
-	protected String getBannerPassword(boolean manager) {
+	protected static  String getBannerPassword(boolean manager) {
 		if (manager) {
 			String pwd = ApplicationProperties.getProperty("banner.xe.admin.password");
 			if (pwd != null) return pwd;
@@ -239,7 +275,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 		return Float.parseFloat(ApplicationProperties.getProperty("banner.xe.maxHoursDefault", "18"));
 	}
 	
-	protected String getAdminParameter() {
+	protected static String getAdminParameter() {
 		return ApplicationProperties.getProperty("banner.xe.adminParameter", "systemIn");
 	}
 	
@@ -330,7 +366,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
+			authenticate(resource, helper.isAdmin());
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 
@@ -652,7 +688,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
+			authenticate(resource, helper.isAdmin());
 			Gson gson = getGson(helper);
 			XEInterface.RegisterResponse original = null;
 			
@@ -1367,7 +1403,7 @@ public class XEStudentEnrollment implements StudentEnrollmentProvider {
 			// First, check student registration status
 			resource = new ClientResource(getBannerSite());
 			resource.setNext(iClient);
-			resource.setChallengeResponse(ChallengeScheme.HTTP_BASIC, getBannerUser(helper), getBannerPassword(helper));
+			authenticate(resource, helper.isAdmin());
 
 			resource.addQueryParameter("term", term);
 			resource.addQueryParameter("bannerId", getBannerId(student));
