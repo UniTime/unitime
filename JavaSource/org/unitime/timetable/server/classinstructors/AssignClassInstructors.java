@@ -180,6 +180,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 			
 		}
 		InstrOfferingConfig ioc = InstrOfferingConfigDAO.getInstance().get(cfgId, hibSession);
+		context.checkPermission(ioc, Right.AssignInstructors);
 		Field[] fields = new Field[DataColumn.values().length];
 		for (DataColumn dc : DataColumn.values()) {
 			fields[dc.ordinal()] = getFieldForColumn(dc, ioc, context);
@@ -394,6 +395,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 		if (ioc == null) {
 			throw new Error(MESSAGES.errorConfigurationIdNotFound());
 		}
+		context.checkPermission(ioc, Right.AssignInstructors);
 		HashMap<String, ArrayList<Record>> classIdRecordMap = new HashMap<String, ArrayList<Record>>();
 		for (Record r : data.getRecords()) {
 			ArrayList<Record> records = classIdRecordMap.get(r.getField(DataColumn.CLASS_UID.ordinal()));
@@ -407,6 +409,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 		boolean errorsFound = false;
 		for (SchedulingSubpart ss : ioc.getSchedulingSubparts()) {
 			for (Class_ c : ss.getClasses()) {
+				if (!context.hasPermission(c, Right.AssignInstructorsClass)) continue;
 				ArrayList<Record> records = classIdRecordMap.get(c.getUniqueId().toString());
 				if (records == null) {
 					errorsFound = true;
@@ -610,6 +613,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 		if (ioc == null) {
 			throw new Exception(MESSAGES.errorConfigurationIdNotFound());
 		}
+		context.checkPermission(ioc, Right.AssignInstructors);
 
 		for (SchedulingSubpart ss : ioc.getSchedulingSubparts()) {
 			for (Class_ c : ss.getClasses()) {
