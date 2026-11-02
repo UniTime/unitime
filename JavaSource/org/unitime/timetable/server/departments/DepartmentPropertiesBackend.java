@@ -55,6 +55,10 @@ public class DepartmentPropertiesBackend implements GwtRpcImplementation<Departm
 
 	@Override
 	public DepartmentPropertiesInterface execute(DepartmentPropertiesRequest request, SessionContext context) {
+		if (request.getDepartmentId() == null)
+			context.checkPermission(Right.DepartmentAdd);
+		else
+			context.checkPermission(request.getDepartmentId(), Right.DepartmentEdit);
 		DepartmentPropertiesInterface d = new DepartmentPropertiesInterface();	
 		d.setStatusOptions(getStatusOptions());
 		d.setExtDepartmentOptions(getAllDependentDepartments(context));
