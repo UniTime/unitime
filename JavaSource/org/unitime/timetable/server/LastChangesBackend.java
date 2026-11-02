@@ -29,11 +29,16 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.LastChangesInterface.ChangeLogInterface;
 import org.unitime.timetable.gwt.shared.LastChangesInterface.LastChangesRequest;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -43,6 +48,18 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 
 	@Override
 	public GwtRpcResponseList<ChangeLogInterface> execute(LastChangesRequest request, SessionContext context) {
+		if (Location.class.getName().equals(request.getObjectType()))
+			context.checkPermission(request.getObjectId(), Right.RoomDetail);
+		else if (Class_.class.getName().equals(request.getObjectType())) 
+			context.checkPermission(request.getObjectId(), Right.ClassDetail);
+		else if (SchedulingSubpart.class.getName().equals(request.getObjectType())) 
+			context.checkPermission(request.getObjectId(), Right.SchedulingSubpartDetail);
+		else if (InstructionalOffering.class.getName().equals(request.getObjectType())) 
+			context.checkPermission(request.getObjectId(), Right.InstructionalOfferingDetail);
+		else if (DepartmentalInstructor.class.getName().equals(request.getObjectType())) 
+			context.checkPermission(request.getObjectId(), Right.InstructorDetail);
+		else if (Class_.class.getName().equals(request.getObjectType()))
+			context.checkPermission(Right.LastChanges);
 		GwtRpcResponseList<ChangeLogInterface> response = new GwtRpcResponseList<ChangeLogInterface>();
 		
 		for (ChangeLog cl: findChangeLog(request)) {

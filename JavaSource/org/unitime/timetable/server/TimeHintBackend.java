@@ -38,6 +38,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.courses.ClassEditBackend;
 import org.unitime.timetable.server.rooms.PeriodPreferencesBackend;
 
@@ -53,6 +54,8 @@ public class TimeHintBackend implements GwtRpcImplementation<TimeHintRequest, Ti
 		if (params.length == 2) {
 			Long examId = Long.valueOf(params[0]);
 			Long periodId = Long.valueOf(params[1]);
+			context.checkPermission(Right.Examinations);
+
 			Exam exam = ExamDAO.getInstance().get(examId);
 			PeriodPreferenceModel model = PeriodPreferencesBackend.createPeriodPreferenceModel(exam.getSession(), exam.getExamType(), context, false);
 			model.setExamId(exam.getUniqueId());
@@ -65,6 +68,7 @@ public class TimeHintBackend implements GwtRpcImplementation<TimeHintRequest, Ti
 			Long classId = Long.valueOf(params[0]);
 			int days = Integer.parseInt(params[1]);
 			int slot = Integer.parseInt(params[2]);
+			context.checkPermission(Right.Classes);
 			
 			Class_ clazz = Class_DAO.getInstance().get(classId);
 			for (TimePref p: (Set<TimePref>)clazz.effectivePreferences(TimePref.class)) {

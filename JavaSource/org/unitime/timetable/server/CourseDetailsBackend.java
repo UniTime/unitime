@@ -35,6 +35,7 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
 import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -45,6 +46,8 @@ public class CourseDetailsBackend implements GwtRpcImplementation<CourseDetailsR
 	@Override
 	public CourseDetailsRpcResponse execute(CourseDetailsRpcRequest request, SessionContext context) {
 		org.hibernate.Session hibSession = CourseOfferingDAO.getInstance().getSession();
+		if (!context.hasPermission(Right.InstructionalOfferings))
+			context.checkPermission(Right.CourseCatalog);
 		
 		AcademicSessionInfo session = null;
 		String subject = null, course = null;
