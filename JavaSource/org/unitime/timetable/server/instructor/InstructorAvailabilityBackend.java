@@ -40,6 +40,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructorSurveyDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 /**
@@ -81,6 +82,7 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 			if (request.getInstructorId().length() > 200) {
 				model.setPattern(request.getInstructorId());
 			} else if (request.getInstructorId().startsWith("IS#")) {
+				context.checkPermission(Right.InstructionalOfferings);
 				String surveyId = request.getInstructorId().substring(3);
 				String deptCode = null;
 				if (surveyId.indexOf('#') > 0) {
@@ -93,18 +95,19 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 						model.setPattern(((TimePref) pref).getPreference());
 						break;
 					}
-					model.getModes().clear();
-					String mode = null;
-					if (deptCode != null)
-						mode = ApplicationProperty.InstructorSurveyTimePreferencesDept.value(deptCode);
-					if (mode == null)
-						mode = ApplicationProperty.InstructorSurveyTimePreferences.value();
-					model.addMode(new RoomSharingDisplayMode(MESSAGES.sectInstructorSurvey() + "|" + mode));
-					model.setDefaultMode(model.getModes().size() - 1);
-					model.setDefaultHorizontal(true);
 				}
+				model.getModes().clear();
+				String mode = null;
+				if (deptCode != null)
+					mode = ApplicationProperty.InstructorSurveyTimePreferencesDept.value(deptCode);
+				if (mode == null)
+					mode = ApplicationProperty.InstructorSurveyTimePreferences.value();
+				model.addMode(new RoomSharingDisplayMode(MESSAGES.sectInstructorSurvey() + "|" + mode));
+				model.setDefaultMode(model.getModes().size() - 1);
+				model.setDefaultHorizontal(true);
 			} else {
 				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(request.getInstructorId()));
+				context.hasPermission(Right.Instructors);
 				for (Preference pref: instructor.getPreferences()) {
 					if (pref instanceof TimePref) {
 						model.setPattern(((TimePref) pref).getPreference());

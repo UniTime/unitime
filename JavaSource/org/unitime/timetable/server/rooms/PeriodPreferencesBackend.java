@@ -91,6 +91,7 @@ public class PeriodPreferencesBackend implements GwtRpcImplementation<PeriodPref
 	public PeriodPreferenceModel loadExamPeriodPreferences(PeriodPreferenceRequest request, SessionContext context) {
 		Exam exam = (request.getExamId() == null ? null : ExamDAO.getInstance().get(request.getExamId()));
 		ExamType type = (exam == null ? ExamTypeDAO.getInstance().get(request.getExamTypeId()) : exam.getExamType());
+		context.checkPermission(Right.Examinations);
 		return loadExamPeriodPreferences(exam, type, context);
 	}
 	

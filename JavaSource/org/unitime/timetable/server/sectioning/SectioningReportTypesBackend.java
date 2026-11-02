@@ -127,6 +127,10 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 
 	@Override
 	public GwtRpcResponseList<ReportTypeInterface> execute(SectioningReportTypesRpcRequest request, SessionContext context) {
+		if (request.isOnline())
+			context.checkPermission(Right.SchedulingReports);
+		else if (!context.hasPermission(Right.StudentSectioningSolverReports))
+			context.checkPermission(Right.StudentSectioningSolver);
 		GwtRpcResponseList<ReportTypeInterface> ret = new GwtRpcResponseList<ReportTypeInterface>();
 		boolean includeAdmins = context.hasPermission(Right.StudentSectioningSolverAdminReports);
 		for (ReportType type: ReportType.values())
