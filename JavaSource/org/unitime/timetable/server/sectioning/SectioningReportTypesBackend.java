@@ -44,6 +44,7 @@ import org.unitime.timetable.reports.studentsct.StudentAvailabilityConflicts;
 import org.unitime.timetable.reports.studentsct.UnasignedCourseRequests;
 import org.unitime.timetable.reports.studentsct.UnusedReservations;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
@@ -100,6 +101,10 @@ public class SectioningReportTypesBackend implements GwtRpcImplementation<Sectio
 
 	@Override
 	public GwtRpcResponseList<ReportTypeInterface> execute(SectioningReportTypesRpcRequest request, SessionContext context) {
+		if (request.isOnline())
+			context.checkPermission(Right.SchedulingReports);
+		else if (!context.hasPermission(Right.StudentSectioningSolverReports))
+			context.checkPermission(Right.StudentSectioningSolver);
 		GwtRpcResponseList<ReportTypeInterface> ret = new GwtRpcResponseList<ReportTypeInterface>();
 		for (ReportType type: ReportType.values())
 			ret.add(type.toReportTypeInterface());

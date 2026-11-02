@@ -48,6 +48,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.rooms.RoomDetailsBackend.UrlSigner;
 
 /**
@@ -62,6 +63,8 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	@Override
 	public RoomHintResponse execute(RoomHintRequest request, SessionContext context) {
 		RoomHintResponse response = new RoomHintResponse();
+		if (!context.hasPermission(Right.Events))
+			context.checkPermission(Right.Rooms);
 		
 		if (request.getLocationId() >= 0) {
 			Location location = LocationDAO.getInstance().get(request.getLocationId());
