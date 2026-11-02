@@ -28,7 +28,7 @@ import org.unitime.timetable.gwt.shared.CourseOfferingInterface.CourseOfferingCh
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.SessionContext;import org.unitime.timetable.security.rights.Right;
 
 @GwtRpcImplements(CourseOfferingCheckExists.class)
 public class CourseOfferingCheckExistsBackend implements GwtRpcImplementation<CourseOfferingCheckExists, CourseOfferingCheckExistsInterface> {
@@ -37,6 +37,15 @@ public class CourseOfferingCheckExistsBackend implements GwtRpcImplementation<Co
 
 	@Override
 	public CourseOfferingCheckExistsInterface execute(CourseOfferingCheckExists request, SessionContext context) {
+		if (request.getCourseOfferingId() != null) { // edit -- must have at least one edit permission
+		    if (!context.hasPermission(request.getCourseOfferingId(), Right.EditCourseOffering) &&
+		        !context.hasPermission(request.getCourseOfferingId(), Right.EditCourseOfferingCoordinators) &&
+		        !context.hasPermission(request.getCourseOfferingId(), Right.EditCourseOfferingNote)) {
+		        context.checkPermission(request.getCourseOfferingId(), Right.EditCourseOffering);
+		    }
+		} else { // check Add permission otherwise (the user has at least one subject area for which he/she can add a course)
+		    context.checkPermission(Right.AddCourseOffering);
+		}
 
 		CourseOfferingCheckExistsInterface response = new CourseOfferingCheckExistsInterface();
 
