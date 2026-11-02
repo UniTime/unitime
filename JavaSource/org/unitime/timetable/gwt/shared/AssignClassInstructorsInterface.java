@@ -75,7 +75,6 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 	private List<Record> iRecords = new ArrayList<Record>();
 	private Field[] iFields = null;
 	private boolean iEditable = true;
-	private PageName iPageName = null;
 	private Long iConfigId = null;
 	private Long iOfferingId = null;
 	private boolean iSaveSuccessful = true;
@@ -125,12 +124,6 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 		this.iShowTimeAndRoom = showTimeAndRoom;
 	}
 
-	public void setPageName(PageName name) { iPageName = name; }
-	
-	public boolean hasPageName() { return iPageName != null; }
-	
-	public PageName getPageName() { return iPageName; } 
-	
 	public List<Record> getRecords() { return iRecords; }
 	public Record addRecord(Long uniqueId, boolean deletable) {
 		Record r = new Record(uniqueId, iFields.length, deletable);
@@ -453,35 +446,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 		}
 	}
 	
-	public static class PageName implements IsSerializable, GwtRpcResponse {
-		private String iSingular = null, iPlural = null;
-		
-		public PageName() {}
-		public PageName(String name) { iSingular = name; }
-		public PageName(String singularName, String pluralName) { iSingular = singularName; iPlural = pluralName; }
-		
-		public String singular() { return iSingular; }
-		public String plural() { return iPlural == null ? iSingular + "s" : iPlural; }
-		
-		public String toString() { return plural(); }
-	}
-	
-	public static abstract class SimpleEditRpcRequest implements IsSerializable {
-		
-		public SimpleEditRpcRequest() {}
-		
-	}
-	
-	public static class GetPageNameRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<PageName> {
-		public GetPageNameRpcRequest() {}
-		
-		public static GetPageNameRpcRequest getPageName() {
-			GetPageNameRpcRequest request = new GetPageNameRpcRequest();
-			return request;
-		}
-	}
-	
-	public static class LoadDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
+	public static class LoadDataRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
 		private String iConfigIdStr;
 		
 		public LoadDataRpcRequest() {}
@@ -496,7 +461,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 		}
 	}
 	
-	public static class SaveDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
+	public static class SaveDataRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
 		private AssignClassInstructorsInterface iData;
 		
 		public SaveDataRpcRequest() {}
@@ -512,7 +477,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 
 	}
 
-	public static class SaveDataGoToPreviousRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
+	public static class SaveDataGoToPreviousRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
 		private AssignClassInstructorsInterface iData;
 		
 		public SaveDataGoToPreviousRpcRequest() {}
@@ -528,7 +493,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 
 	}
 
-	public static class SaveDataGoToNextRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
+	public static class SaveDataGoToNextRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
 		private AssignClassInstructorsInterface iData;
 		
 		public SaveDataGoToNextRpcRequest() {}
@@ -544,7 +509,7 @@ public class AssignClassInstructorsInterface implements IsSerializable, GwtRpcRe
 
 	}
 	
-	public static class RemoveAllClassInstructorsDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
+	public static class RemoveAllClassInstructorsDataRpcRequest implements GwtRpcRequest<AssignClassInstructorsInterface> {
 		private AssignClassInstructorsInterface iData;
 		
 		public RemoveAllClassInstructorsDataRpcRequest() {}

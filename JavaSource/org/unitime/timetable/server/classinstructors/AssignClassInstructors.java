@@ -36,6 +36,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.DataColumn;
@@ -43,7 +44,6 @@ import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.Field;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.FieldType;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.Flag;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.ListItem;
-import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.PageName;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.Record;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ChangeLog;
@@ -90,11 +90,6 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 			if (tr.hasOption(Option.isdefault))
 				return tr.getUniqueId().toString();
 		return "";
-	}
-
-	@Override
-	public PageName name() {
-		return new PageName(MESSAGES.pageAssignInstructors(), MESSAGES.pageAssignInstructors());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -163,15 +158,17 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 	}
 
 	@Override
-	public AssignClassInstructorsInterface load(String cfgIdStr, SessionContext context, Session hibSession) throws Exception {
+	public AssignClassInstructorsInterface load(String cfgIdStr, SessionContext context, Session hibSession) {
 		Long cfgId = null;
 		if (cfgIdStr != null && !cfgIdStr.trim().equals("")) {
 			cfgId = Long.parseLong(cfgIdStr);
 		} else {
-			throw new Exception(MESSAGES.errorConfigurationIdNotFound());
-			
+			throw new GwtRpcException(MESSAGES.errorConfigurationIdNotProvided());
 		}
 		InstrOfferingConfig ioc = InstrOfferingConfigDAO.getInstance().get(cfgId, hibSession);
+		if (ioc == null) {
+			throw new GwtRpcException(MESSAGES.errorConfigurationIdNotFound());
+		}
 		context.checkPermission(ioc, Right.AssignInstructors);
 		Field[] fields = new Field[DataColumn.values().length];
 		for (DataColumn dc : DataColumn.values()) {
@@ -205,25 +202,21 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 			data.setPreviousConfigId(prev.getUniqueId());
 		}
 		
-		try {
-			addRecordsForConfig(ioc, data, context);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		addRecordsForConfig(ioc, data, context);
 
 		data.setEditable(true);
 		return data;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void addRecordsForConfig(InstrOfferingConfig ioc, AssignClassInstructorsInterface data, SessionContext context) throws Exception {
+	private void addRecordsForConfig(InstrOfferingConfig ioc, AssignClassInstructorsInterface data, SessionContext context) {
 		 Debug.info("In addRecordsForConfig");
 		 ArrayList<SchedulingSubpart> subpartList = new ArrayList<SchedulingSubpart>(ioc.getSchedulingSubparts());
 	        Collections.sort(subpartList, new SchedulingSubpartComparator());
 
 	        for(SchedulingSubpart ss : subpartList){
 	    		if (ss.getClasses() == null || ss.getClasses().size() == 0)
-	    			throw new Exception(MESSAGES.exceptionInitialIOSetupIncomplete());
+	    			throw new GwtRpcException(MESSAGES.exceptionInitialIOSetupIncomplete());
 	    		if (ss.getParentSubpart() == null){
 	        		loadClasses(data, ss.getClasses(), new String(), context);
 	        	}
@@ -232,7 +225,7 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 	}
 	
     @SuppressWarnings("unchecked")
-	private void loadClasses(AssignClassInstructorsInterface data, Set<Class_> classes, String indent, SessionContext context){
+	private void loadClasses(AssignClassInstructorsInterface data, Set<Class_> classes, String indent, SessionContext context) {
     	if (classes != null && classes.size() > 0){
     		ArrayList<Class_> classesList = new ArrayList<Class_>(classes);
 
@@ -382,11 +375,11 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 	public void save(AssignClassInstructorsInterface data, SessionContext context, org.hibernate.Session hibSession) {
         boolean somethingChanged = false;
 		if (data.getConfigId() == null) {
-			throw new Error(MESSAGES.errorConfigurationIdNotProvided());
+			throw new GwtRpcException(MESSAGES.errorConfigurationIdNotProvided());
 		}
 		InstrOfferingConfig ioc = InstrOfferingConfigDAO.getInstance().get(data.getConfigId());
 		if (ioc == null) {
-			throw new Error(MESSAGES.errorConfigurationIdNotFound());
+			throw new GwtRpcException(MESSAGES.errorConfigurationIdNotFound());
 		}
 		context.checkPermission(ioc, Right.AssignInstructors);
 		HashMap<String, ArrayList<Record>> classIdRecordMap = new HashMap<String, ArrayList<Record>>();
@@ -565,26 +558,19 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 				try {
 					assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 				} catch (InstantiationException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (IllegalAccessException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (IllegalArgumentException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (InvocationTargetException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (NoSuchMethodException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (SecurityException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (ClassNotFoundException e) {
-					Debug.info(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className));
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				}
 				if (assignAction != null) {
 					assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, InstrOfferingConfigDAO.getInstance().getSession());
@@ -598,21 +584,21 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 	
 
 	@Override
-	public void removeAllInstructors(AssignClassInstructorsInterface data, SessionContext context, Session hibSession) throws Exception {
+	public void removeAllInstructors(AssignClassInstructorsInterface data, SessionContext context, Session hibSession) {
 
 		if (data.getConfigId() == null) {
-			throw new Exception(MESSAGES.errorConfigurationIdNotProvided());
+			throw new GwtRpcException(MESSAGES.errorConfigurationIdNotProvided());
 		}
 		InstrOfferingConfig ioc = InstrOfferingConfigDAO.getInstance().get(data.getConfigId());
 		if (ioc == null) {
-			throw new Exception(MESSAGES.errorConfigurationIdNotFound());
+			throw new GwtRpcException(MESSAGES.errorConfigurationIdNotFound());
 		}
 		context.checkPermission(ioc, Right.AssignInstructors);
 
 		for (SchedulingSubpart ss : ioc.getSchedulingSubparts()) {
 			for (Class_ c : ss.getClasses()) {
 				if (!context.hasPermission(c, Right.AssignInstructorsClass)) {
-					throw (new Exception(MESSAGES.errorDeleteAllInstructorsPermission()));
+					throw (new GwtRpcException(MESSAGES.errorDeleteAllInstructorsPermission()));
 				}
 			}
 		}
@@ -669,26 +655,19 @@ public class AssignClassInstructors implements AssignClassInstructorsTable {
 				try {
 					assignAction = (ExternalInstrOfferingConfigAssignInstructorsAction) (Class.forName(className).getDeclaredConstructor().newInstance());
 				} catch (InstantiationException e) {
-					Debug.info("Failed to Send Update to External System:  InstantiationException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (IllegalAccessException e) {
-					Debug.info("Failed to Send Update to External System:  IllegalAccessException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (IllegalArgumentException e) {
-					Debug.info("Failed to Send Update to External System:  IllegalArgumentException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (InvocationTargetException e) {
-					Debug.info("Failed to Send Update to External System:  InvocationTargetException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (NoSuchMethodException e) {
-					Debug.info("Failed to Send Update to External System:  NoSuchMethodException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (SecurityException e) {
-					Debug.info("Failed to Send Update to External System:  SecurityException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				} catch (ClassNotFoundException e) {
-					Debug.info("Failed to Send Update to External System:  ClassNotFoundException = " + className);
-					e.printStackTrace();
+					Debug.error(MESSAGES.exceptionExternalSystemUpdateFailure(e.getClass().getSimpleName(), className), e);
 				}
 				if (assignAction != null) {
 					assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, InstrOfferingConfigDAO.getInstance().getSession());

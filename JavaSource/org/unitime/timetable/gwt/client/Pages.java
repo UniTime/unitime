@@ -345,7 +345,7 @@ public enum Pages {
 			}),
 	assignClassInstructors(new PageFactory() {
 		public Widget create() { return new AssignClassInstructorsPage(); }
-		public String name(GwtMessages messages) { return messages.pageAdministration(); }
+		public String name(GwtMessages messages) { return messages.pageAssignInstructors(); }
 		}),
 	instructorSurvey(new PageFactory() {
 		public Widget create() { return new InstructorSurveyPage(); }
