@@ -19,11 +19,9 @@
 */
 package org.unitime.timetable.action;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -134,14 +132,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
      */
     public String execute() throws Exception {
     	if (ApplicationProperty.LegacyOfferingDetail.isFalse()) {
-    		String url = "offering";
-    		boolean first = true;
-    		for (Enumeration<String> e = getRequest().getParameterNames(); e.hasMoreElements(); ) {
-    			String param = e.nextElement();
-    			url += (first ? "?" : "&") + param + "=" + URLEncoder.encode(getRequest().getParameter(param), "utf-8");
-    			first = false;
-    		}
-    		response.sendRedirect(url);
+    		response.sendRedirect("offering" + (getRequest().getQueryString() != null ? "?" + getRequest().getQueryString() : ""));
 			return null;
     	}
     	

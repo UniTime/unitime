@@ -26,12 +26,9 @@ import org.unitime.timetable.security.SessionContext;
  * @author Stephanie Schluttenhofer
  */
 public interface AssignClassInstructorsTable {
-	public AssignClassInstructorsInterface.PageName name();
-	
-	public AssignClassInstructorsInterface load(String configIdStr, SessionContext context, org.hibernate.Session hibSession) throws Exception;
+	public AssignClassInstructorsInterface load(String configIdStr, SessionContext context, org.hibernate.Session hibSession);
 	
 	public void save(AssignClassInstructorsInterface data, SessionContext context, org.hibernate.Session hibSession);
 			
-	public abstract void removeAllInstructors(AssignClassInstructorsInterface data, SessionContext context, org.hibernate.Session hibSession) throws Exception;
-	
+	public void removeAllInstructors(AssignClassInstructorsInterface data, SessionContext context, org.hibernate.Session hibSession);
 }

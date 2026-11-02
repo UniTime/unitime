@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
-import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -48,7 +47,6 @@ import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.DataColu
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.Field;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.FieldType;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.ListItem;
-import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.PageName;
 import org.unitime.timetable.gwt.shared.AssignClassInstructorsInterface.Record;
 
 import com.google.gwt.core.client.GWT;
@@ -98,9 +96,7 @@ public class AssignClassInstructorsPage extends Composite {
 	protected HorizontalPanel iCoordinators; 
 	protected HTML iCourseCoordinator;
 	protected UniTimeHeaderPanel iHeader, iBottom;
-	protected PageName iPageName = null;
 	protected UniTimeTable<Record> iTable;
-//	protected boolean iHasLazy = false;
 	
 	protected AssignClassInstructorsInterface iData;
 	protected SimplePanel iSimple;
@@ -141,7 +137,7 @@ public class AssignClassInstructorsPage extends Composite {
 									UniTimeNotifications.error(MESSAGES.failedSave(iData.getErrors()), null, null);									
 								} else {
 									LoadingWidget.hideLoading();
-									ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId());
+									ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
 								}
 							}
 						});
@@ -177,7 +173,7 @@ public class AssignClassInstructorsPage extends Composite {
 							public void onSuccess(AssignClassInstructorsInterface result) {
 								iData = result;
 								LoadingWidget.hideLoading();
-								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId());
+								ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
 							}
 						});
 					}
@@ -270,7 +266,7 @@ public class AssignClassInstructorsPage extends Composite {
 					@Override
 					public void execute() {
 						LoadingWidget.hideLoading();
-						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId());
+						ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.action?io=" + iData.getOfferingId() + "#ioc" + iData.getConfigId());
 					}
 				});
 			}
@@ -373,21 +369,8 @@ public class AssignClassInstructorsPage extends Composite {
 		iSimple = new SimplePanel(iPanel);
 		
 		initWidget(iSimple);
-						
-		RPC.execute(AssignClassInstructorsInterface.GetPageNameRpcRequest.getPageName(), new AsyncCallback<PageName>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage(MESSAGES.failedWrongEditType(caught.getMessage()));
-				UniTimeNotifications.error(caught.getMessage(), caught);
-			}
 
-			@Override
-			public void onSuccess(PageName result) {
-				iPageName = result;
-				UniTimePageLabel.getInstance().setPageName(iPageName.plural());
-				init();
-			}
-		});
+		init();
 	}
 	
 	public void init() {
@@ -522,7 +505,6 @@ public class AssignClassInstructorsPage extends Composite {
 		iCourseCoordinator.setText(iData.getCourseCoordinators());
 		iCoordinators.setVisible(iData.getCourseCoordinators() != null && !iData.getCourseCoordinators().equals(""));
 
-		UniTimePageLabel.getInstance().setPageName(iPageName.plural());
 		iTable.clearTable();
 		
 		iTable.setAllowSelection(false);
