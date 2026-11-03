@@ -219,7 +219,7 @@ public class DatePatternEditBackend implements GwtRpcImplementation<DatePatternE
             }
 
         	dp.setName(pattern.getName());
-        	dp.setNumberOfWeeks(pattern.getNbrWeeks() == null ? null : Float.valueOf(pattern.getNbrWeeks()));
+        	dp.setNumberOfWeeks(pattern.getNbrWeeks());
         	dp.setType(pattern.getType().ordinal());
         	dp.setVisible(pattern.isVisible());
         	if (dp.getDatePatternType() == DatePatternType.PatternSet || !pattern.hasPattern()) {
