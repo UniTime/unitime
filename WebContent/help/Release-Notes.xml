@@ -36,6 +36,13 @@
 				<line>Additional permission checking on various tooltip backend calls.</line>
 			</description>
 		</item>
+		<item>
+			<name>Date Pattern: Number of Weeks</name>
+			<description>
+				<line>Do not set the number of weeks to zero when the field is left blank.</line>
+				<line>Allow for fractional numbers.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
