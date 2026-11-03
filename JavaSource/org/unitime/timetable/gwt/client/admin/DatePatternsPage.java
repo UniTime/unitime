@@ -61,6 +61,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -421,13 +422,14 @@ public class DatePatternsPage extends Composite {
 					}
 				});
 				
-				iNbrWeeks = new NumberBox(); iNbrWeeks.setNegative(false); iNbrWeeks.setDecimal(false);
-				iNbrWeeks.setValue(iPattern.getNbrWeeks());
+				iNbrWeeks = new NumberBox(); iNbrWeeks.setNegative(false); iNbrWeeks.setDecimal(true);
+				if (iPattern.getNbrWeeks() != null)
+					iNbrWeeks.setValue(NumberFormat.getFormat("0.##").format(iPattern.getNbrWeeks()));
 				iPanel.addRow(COURSE.propDatePatternNbrWeeks(), iNbrWeeks);
 				iNbrWeeks.addValueChangeHandler(new ValueChangeHandler<String>() {
 					@Override
 					public void onValueChange(ValueChangeEvent<String> event) {
-						iPattern.setNbrWeeks(iNbrWeeks.toInteger());
+						iPattern.setNbrWeeks(iNbrWeeks.toFloat());
 					}
 				});
 				
@@ -815,7 +817,7 @@ public class DatePatternsPage extends Composite {
 		private Long iPatternId;
 		private String iName;
 		private Type iType;
-		private Integer iNbrWeeks;
+		private Float iNbrWeeks;
 		private boolean iVisible = true, iDefault = false;
 		private Set<Long> iDepartmentIds, iParentIds, iChildrenIds;
 		private String iPattern;
@@ -829,8 +831,8 @@ public class DatePatternsPage extends Composite {
 		public void setName(String firstName) { iName = firstName; }
 		public Type getType() { return iType; }
 		public void setType(Type type) { iType = type; }
-		public Integer getNbrWeeks() { return iNbrWeeks; }
-		public void setNbrWeeks(Integer nbrWeeks) { iNbrWeeks = nbrWeeks; }
+		public Float getNbrWeeks() { return iNbrWeeks; }
+		public void setNbrWeeks(Float nbrWeeks) { iNbrWeeks = nbrWeeks; }
 		public boolean isVisible() { return iVisible; }
 		public void setVisible(boolean visible) { iVisible = visible; }
 		public boolean isDefault() { return iDefault; }
