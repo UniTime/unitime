@@ -62,9 +62,9 @@ public class OfferingsFilterBackend implements GwtRpcImplementation<OfferingsFil
 			filter.addParameter(createToggle(context, "fundingDepartment", MESSAGES.columnFundingDepartment(), false));
 		
 		filter.addParameter(createToggle(context, "dateTimeInformation", MESSAGES.columnDateTimeInformation(), null));
-		filter.addParameter(createToggle(context, "datePattern", MESSAGES.columnDatePattern(), true, "datePattern"));
-		filter.addParameter(createToggle(context, "minPerWk", MESSAGES.columnMinPerWk(), true, "datePattern"));
-		filter.addParameter(createToggle(context, "timePattern", MESSAGES.columnTimePattern(), true, "datePattern"));
+		filter.addParameter(createToggle(context, "datePattern", MESSAGES.columnDatePattern(), true, "dateTimeInformation"));
+		filter.addParameter(createToggle(context, "minPerWk", MESSAGES.columnMinPerWk(), true, "dateTimeInformation"));
+		filter.addParameter(createToggle(context, "timePattern", MESSAGES.columnTimePattern(), true, "dateTimeInformation"));
 		setParentDefault(filter, "dateTimeInformation");
 		
 		filter.addParameter(createToggle(context, "preferences", MESSAGES.columnPreferences(), true));
