@@ -280,7 +280,7 @@ public class ApplicationConfigPage extends Composite {
 				
 				if (iSettingId == null || !result.isCanDelete()) {
 					iKey = new TextBox();
-					iKey.setWidth("1000px"); iKey.setMaxLength(1000);
+					iKey.setWidth("100%"); iKey.setMaxLength(1000);
 					if (iSetting.hasKey())
 						iKey.setValue(iSetting.getKey());
 					iPanel.addRow(COURSE.propAppConfigKey(), iKey);
@@ -394,7 +394,7 @@ public class ApplicationConfigPage extends Composite {
 					});
 					value.setStyleName("unitime-TextArea");
 					value.setVisibleLines(10);
-					value.setWidth("1000px");
+					value.setWidth("100%");
 					iPanel.addRow(COURSE.propAppConfigValue(), value);
 				}
 				
@@ -409,7 +409,7 @@ public class ApplicationConfigPage extends Composite {
 				});
 				iDescription.setStyleName("unitime-TextArea");
 				iDescription.setVisibleLines(5);
-				iDescription.setWidth("1000px");
+				iDescription.setWidth("100%");
 				iPanel.addRow(COURSE.propAppConfigDescription(), iDescription);
 				
 				iPanel.addBottomRow(iFooter);

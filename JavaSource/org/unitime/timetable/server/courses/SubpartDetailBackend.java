@@ -473,7 +473,7 @@ public class SubpartDetailBackend implements GwtRpcImplementation<SubpartDetailR
 			c.addStyle("padding-right: 20px;");
 		}
 		legend.addStyle("text-align: center;");
-		legend.addStyle("border-top: 1px dashed #9CB0CE;");
+		cell.setClassName("unitime-TopLineDash");
 		return legend;
 	}
 	
