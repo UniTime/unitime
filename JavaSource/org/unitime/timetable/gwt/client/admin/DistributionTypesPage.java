@@ -355,7 +355,7 @@ public class DistributionTypesPage extends Composite {
 				iDescription = new TextArea();
 				iDescription.setStyleName("unitime-TextArea");
 				iDescription.setVisibleLines(5);
-				iDescription.setCharacterWidth(160);
+				iDescription.setWidth("100%");
 				if (iType.hasDescription())
 					iDescription.setText(iType.getDescription());
 				iDescription.addValueChangeHandler(new ValueChangeHandler<String>() {

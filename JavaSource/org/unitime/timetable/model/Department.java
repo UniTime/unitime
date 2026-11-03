@@ -326,7 +326,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
 		getSession().
 		createQuery(
 				"select distinct c from Class_ as c where (c.managingDept.uniqueId=:departmentId or (c.managingDept is null and c.controllingDept.uniqueId=:departmentId)) and "+
-				"not exists (from c.assignments as a where a.solution.uniqueId=:solutionId)", Class_.class
+				"c.uniqueId not in (select a.clazz.uniqueId from Assignment a where a.solution.uniqueId = :solutionId)", Class_.class
 				).
 		setParameter("departmentId", getUniqueId()).
 		setParameter("solutionId", solution.getUniqueId()).

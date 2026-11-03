@@ -239,7 +239,7 @@ public class TestHQLPage extends Composite {
 		
 		iQuery = new TextArea();
 		iQuery.addStyleName("unitime-TextArea");
-		iQuery.setWidth("800px");
+		iQuery.setWidth("100%");
 		iQuery.setHeight("300px");
 		String q = Window.Location.getParameter("query");
 		if (q != null) iQuery.setText(q);
