@@ -668,7 +668,9 @@ public class OnlineSectioningHelper implements ExternalClassNameHelperInterface 
     		else if (r instanceof CurriculumReservation) {
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.CURRICULUM_RESERVATION);
     			CurriculumReservation cr = (CurriculumReservation)r;
-    			reservation.setName(cr.getAcademicArea() + (cr.getClassifications().isEmpty() ? "" : " " + cr.getClassifications()) + (cr.getMajors().isEmpty() ? "" : cr.getMajors()));
+    			reservation.setName(
+    					(cr.getAcademicAreas().isEmpty() ? "" : cr.getAcademicAreas().size() == 1 ? cr.getAcademicAreas().iterator().next() : cr.getAcademicAreas()) +
+    					(cr.getClassifications().isEmpty() ? "" : " " + cr.getClassifications()) + (cr.getMajors().isEmpty() ? "" : cr.getMajors()));
     		} else if (r instanceof UniversalOverride) {
     			reservation.setType(OnlineSectioningLog.Entity.EntityType.RESERVATION);
     			UniversalOverride ur = (UniversalOverride)r;
