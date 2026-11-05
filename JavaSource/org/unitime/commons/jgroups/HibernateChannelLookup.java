@@ -28,7 +28,8 @@ import org.unitime.timetable.defaults.ApplicationProperty;
 /**
  * @author Tomas Muller
  */
-@Deprecated
+@Deprecated(forRemoval=true)
+@SuppressWarnings("removal")
 public class HibernateChannelLookup implements JGroupsChannelLookup {
 
 	@Override

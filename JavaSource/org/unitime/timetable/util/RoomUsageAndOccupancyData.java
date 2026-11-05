@@ -129,10 +129,6 @@ public class RoomUsageAndOccupancyData {
 		  .append(" is null");
 	}
 
-	private void fromClause(StringBuffer sb, Session acadSession, boolean hasDayTime, boolean includeSubjectArea, boolean includeDept, boolean isCheckNull) {
-		fromClause(sb, acadSession, hasDayTime, includeSubjectArea, includeDept, false, false, isCheckNull);
-	}
-
 	private void fromClause(StringBuffer sb, Session acadSession, boolean hasDayTime, boolean includeSubjectArea, boolean includeDept, 
 			boolean includeSection, boolean includeRoomControlingDepartment, boolean isCheckNull) {
 		ArrayList<Object> headerRow1 = new ArrayList<Object>();
