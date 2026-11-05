@@ -53,7 +53,6 @@ public class PublishedSectioningSolutionsPage extends Composite {
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private PublishedSectioningSolutionsTable iTable;
-	private boolean iSticky = false;
 	
 	public PublishedSectioningSolutionsPage() {
 		iForm = new SimpleForm();
