@@ -15390,7 +15390,8 @@ public final class OnlineSectioningLog {
       }
 
       private void buildPartial0(org.unitime.timetable.onlinesectioning.OnlineSectioningLog.Log result) {
-        int from_bitField0_ = bitField0_;
+        @SuppressWarnings("unused")
+		int from_bitField0_ = bitField0_;
       }
 
       @java.lang.Override

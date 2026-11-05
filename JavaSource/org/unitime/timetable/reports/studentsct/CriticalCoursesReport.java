@@ -73,7 +73,8 @@ public class CriticalCoursesReport extends AbstractStudentSectioningReport {
         return advisors;
     }
     
-    @Override
+	@Override
+    @SuppressWarnings("deprecation")
     public CSVFile createTable(Assignment<Request, Enrollment> assignment, DataProperties properties) {
         CSVFile csv = new CSVFile();
         csv.setHeader(new CSVFile.CSVField[] {

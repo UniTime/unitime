@@ -101,7 +101,7 @@ public class ExportReport implements OnlineSectioningReport.Report {
 			if (iPrint != null) {
 				iPrint.println("student: " + student);
 				for (OnlineSectioningLog.Action action: actions)
-					iPrint.println(TextFormat.shortDebugString(action));
+					iPrint.println(TextFormat.printer().emittingSingleLine(true).printToString(action));
 				iPrint.flush();
 			}
 			
