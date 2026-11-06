@@ -22,7 +22,6 @@ package org.unitime.timetable.solver.course.ui;
 import java.io.Serializable;
 import java.util.BitSet;
 
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -80,12 +79,6 @@ public class ClassDateInfo implements Serializable, Comparable<ClassDateInfo> {
 	}
 	
 	public String toString() { return getName(); }
-	public String toHtml() { return "<span style='color:" + PreferenceLevel.int2color(getPreference()) + "'>" + getName() + "</span>"; }
-	public String toLongHtml() {
-		return "<span style='color:" + PreferenceLevel.int2color(getPreference()) + "'>" + getName() + "</span>" +
-				" <img style=\"cursor: pointer;\" src=\"images/calendar.png\" border=\"0\" " +
-					"onclick=\"showGwtDialog('" + HtmlUtils.htmlEscape(MSG.sectPreviewOfDatePattern(getName())) + "', 'dispDatePattern.action?id=" + getId() + "&classId=" + getClassId() + "','840','520');\">";
-	}
 	public CellInterface toCell() {
 		CellInterface cell = new CellInterface();
 		cell.add(getName()).setColor(PreferenceLevel.int2color(getPreference()));
