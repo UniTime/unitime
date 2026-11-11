@@ -43,6 +43,13 @@
 				<line>Allow for fractional numbers.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange: Instructors, Rooms</name>
+			<description>
+				<line>Added XML export and import for instructors and rooms.</line>
+				<line>Unlike the existing Staff and Buildings &amp; Rooms XML imports, the instructors and rooms are updated directly.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

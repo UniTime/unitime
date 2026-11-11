@@ -84,6 +84,11 @@ public class DataImportForm implements UniTimeForm {
     	LAST_LIKE_COURSE_DEMANDS("lastLikeCourseDemand", "Last-Like Student Course Demands"),
     	SCRIPTS("scripts", "Scripts"),
     	REPORTS("reports", "Reports"),
+    	INSTRUCTORS_PREF("instructors", "Instructors (including preferences)",
+    			"tmtbl.export.preferences", "true"),
+    	INSTRUCTORS("instructors", "Instructors",
+    			"tmtbl.export.preferences", "false"),
+    	ROOMS("rooms", "Rooms"),
     	;
     	
     	private String iType, iLabel;

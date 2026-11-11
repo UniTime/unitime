@@ -63,6 +63,11 @@ public enum ExportType {
 	SCRIPTS("scripts", "Scripts"),
 	REPORTS("reports", "Reports"),
 	TASKS("tasks", "Task Scheduler"),
+	INSTRUCTORS_PREF("instructors", "Instructors (including preferences)",
+			"tmtbl.export.preferences", "true"),
+	INSTRUCTORS("instructors", "Instructors",
+			"tmtbl.export.preferences", "false"),
+	ROOMS("rooms", "Rooms"),
 	;
 	
 	private String iType, iLabel;

@@ -72,6 +72,10 @@ public abstract class BaseImport extends DataExchangeHelper {
     
     public abstract void loadXml(Element rootElement) throws Exception;
     
+    protected String getRequiredStringAttribute(Element element, String attributeName) throws Exception {
+    	return getRequiredStringAttribute(element, attributeName, element.getName());
+    }
+    
     protected String getRequiredStringAttribute(Element element, String attributeName, String elementName) throws Exception{		
 		String attributeValue = element.attributeValue(attributeName);
 		if (attributeValue == null || attributeValue.trim().length() == 0){
@@ -92,6 +96,10 @@ public abstract class BaseImport extends DataExchangeHelper {
 		return(attributeValue);		
 	}
 	
+	protected Integer getRequiredIntegerAttribute(Element element, String attributeName) throws Exception {
+		return getRequiredIntegerAttribute(element, attributeName, element.getName());
+	}
+	
 	protected Integer getRequiredIntegerAttribute(Element element, String attributeName, String elementName) throws Exception {
 		String attributeStr = getRequiredStringAttribute(element, attributeName, elementName);
 		return(Integer.parseInt(attributeStr));
@@ -110,6 +118,15 @@ public abstract class BaseImport extends DataExchangeHelper {
 		String attributeStr = getOptionalStringAttribute(element, attributeName);
 		if (attributeStr != null){
 			return(Float.parseFloat(attributeStr));
+		} else {
+			return(null);
+		}
+	}
+	
+	protected Double getOptionalDoubleAttribute(Element element, String attributeName) {
+		String attributeStr = getOptionalStringAttribute(element, attributeName);
+		if (attributeStr != null){
+			return(Double.parseDouble(attributeStr));
 		} else {
 			return(null);
 		}

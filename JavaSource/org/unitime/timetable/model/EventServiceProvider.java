@@ -56,6 +56,29 @@ public class EventServiceProvider extends BaseEventServiceProvider implements Co
 				"from EventServiceProvider where reference = :reference", EventServiceProvider.class)
 				.setParameter("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
+	
+	public static EventServiceProvider getEventServiceProvider(String reference, Long sessionId, Long departmentId, org.hibernate.Session hibSession) {
+		if (reference == null || reference.isEmpty()) return null;
+		if (departmentId != null) {
+			EventServiceProvider service = hibSession.createQuery(
+					"from EventServiceProvider where reference = :reference and department.uniqueId = :departmentId", EventServiceProvider.class)
+					.setParameter("reference", reference)
+					.setParameter("departmentId", departmentId)
+					.setMaxResults(1).setCacheable(true).uniqueResult();
+			if (service != null) return service;
+		}
+		if (sessionId != null) {
+			EventServiceProvider service = hibSession.createQuery(
+					"from EventServiceProvider where reference = :reference and session.uniqueId = :sessionId", EventServiceProvider.class)
+					.setParameter("reference", reference)
+					.setParameter("sessionId", sessionId)
+					.setMaxResults(1).setCacheable(true).uniqueResult();
+			if (service != null) return service;
+		}
+		return hibSession.createQuery(
+				"from EventServiceProvider where reference = :reference and session is null and department is null", EventServiceProvider.class)
+				.setParameter("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
+	}
 
 	@Transient
 	public boolean isUsed() {
