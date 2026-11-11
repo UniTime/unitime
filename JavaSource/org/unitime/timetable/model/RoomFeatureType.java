@@ -49,6 +49,12 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 		return (getUniqueId() == null ? Long.valueOf(-1) : getUniqueId()).compareTo(t.getUniqueId() == null ? -1 : t.getUniqueId());
 	}
 	
+	public static RoomFeatureType findByRef(String ref) {
+		return RoomFeatureTypeDAO.getInstance().getSession().createQuery(
+				"from RoomFeatureType where reference = :ref", RoomFeatureType.class)
+				.setParameter("ref", ref).uniqueResult();
+	}
+	
 	public static boolean hasFeatureTypes(Long sessionId) {
 		if (sessionId == null)
 			return !RoomFeatureTypeDAO.getInstance().findAll().isEmpty();

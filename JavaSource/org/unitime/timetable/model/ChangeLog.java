@@ -145,6 +145,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
         INSTRUCTOR_ASSIGNMENT("Instructor Assignment"),
         DATA_IMPORT_PREFERENCES("Data Import: Prerefences"),
         VARIABLE_TITLE_API("Variable Title API"),
+        DATA_IMPORT_INSTRUCTORS("Data Import: Instructors"),
+        DATA_IMPORT_ROOMS("Data Import: Rooms"),
         ;
         
         private String iTitle;

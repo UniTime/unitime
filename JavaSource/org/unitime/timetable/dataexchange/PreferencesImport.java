@@ -83,7 +83,7 @@ public class PreferencesImport  extends BaseImport {
 	
     public void loadXml(Element root) throws Exception {
         if (!root.getName().equalsIgnoreCase("preferences")) {
-        	throw new Exception("Given XML file is not reservations load file.");
+        	throw new Exception("Given XML file is not preferences load file.");
         }
         try {
             beginTransaction();

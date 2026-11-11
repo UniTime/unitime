@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instructors PUBLIC "-//UniTime//UniTime Instructors DTD/EN" "http://www.unitime.org/interface/Instructors.dtd">
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+<instructors term="Fal" year="2010" campus="woebegon" created="Wed Nov 11 14:35:48 CET 2026" dateFormat="yyyy/M/d" incremental="false" preferences="false">
+  <instructor department="0100" externalId="100" lastName="Doe" middleName="S" firstName="Joe" email="doe@unitime.org"/>
+  <instructor department="0100" externalId="105" lastName="Muller" firstName="Tomas" title="Ph.D." ignoreTooFar="true" position="PROF">
+    <note><![CDATA[Test]]></note>
+  </instructor>
+  <instructor department="0101" externalId="100" lastName="DOE" firstName="JOE" email="doe@unitime.org" position="CONT_LEC">
+    <attribute code="Test" name="Test Attribute" type="Certification" department="0101"/>
+    <attribute code="Another" name="Another Attribute" type="Certification" department="0101"/>
+  </instructor>
+  <instructor department="0101" externalId="101" lastName="Newman" firstName="George" position="ASSOC_PROF">
+    <attribute code="Another" name="Another Attribute" type="Certification" department="0101"/>
+  </instructor>
+  <instructor department="0101" externalId="103" lastName="Nowak" middleName="Pepa" firstName="Josef"/>
+  <instructor department="0101" externalId="102" lastName="SMITH" middleName="WILLIAM" firstName="John" position="PROF">
+    <attribute code="Test" name="Test Attribute" type="Certification" department="0101"/>
+  </instructor>
+  <instructor department="0101" externalId="1001" lastName="Student" firstName="Andrew" email="andrew@unitime.org"/>
+  <instructor department="0101" externalId="1003" lastName="Student" firstName="Charles" position="GRAD_TEACH_ASST"/>
+  <instructor department="0101" externalId="1004" lastName="Student" firstName="David" position="UNDRGRD_TEACH_ASST"/>
+  <instructor department="0101" externalId="1005" lastName="Student" firstName="Edward" position="UNDRGRD_TEACH_ASST"/>
+  <instructor department="0101" externalId="1002" lastName="Student" firstName="Steven" email="" ignoreTooFar="true" position="UNDRGRD_TEACH_ASST">
+    <note><![CDATA[Some note
+two lines]]></note>
+    <attribute code="Test" name="Test Attribute" type="Certification" department="0101"/>
+  </instructor>
+  <instructor department="0102" externalId="100" lastName="Doe" middleName="S" firstName="Joe" email=""/>
+</instructors>

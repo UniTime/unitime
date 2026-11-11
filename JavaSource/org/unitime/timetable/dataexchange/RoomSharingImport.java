@@ -45,7 +45,7 @@ import org.unitime.timetable.util.Formats;
  */
 public class RoomSharingImport  extends BaseImport {
 	protected static Formats.Format<Date> sTimeFormat = Formats.getDateFormat("HHmm");
-	private String iTimeFormat = null;
+	private String iTimeFormat = "HHmm";
 
     public void loadXml(Element root) throws Exception {
         if (!root.getName().equalsIgnoreCase("roomSharing")) {

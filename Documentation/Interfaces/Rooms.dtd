@@ -1,0 +1,136 @@
+<!-- 
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership.
+ *
+ * The Apereo Foundation licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at:
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ -->
+
+<!ELEMENT rooms ((building|room|location)*) >
+<!ATTLIST rooms campus CDATA #REQUIRED >
+<!ATTLIST rooms term CDATA #REQUIRED >
+<!ATTLIST rooms year CDATA #REQUIRED >
+<!ATTLIST rooms created CDATA #IMPLIED >
+<!ATTLIST rooms dateFormat CDATA #IMPLIED >
+<!ATTLIST rooms timeFormat CDATA #IMPLIED >
+<!ATTLIST rooms incremental (true | false) #IMPLIED >
+<!ATTLIST rooms buildings (true | false) #IMPLIED >
+<!ATTLIST rooms sharing (true | false) #IMPLIED >
+<!ATTLIST rooms pictures (true | false) #IMPLIED >
+<!ATTLIST rooms events (true | false) #IMPLIED >
+<!ATTLIST rooms exams (true | false) #IMPLIED >
+
+
+<!ELEMENT building EMPTY >
+<!ATTLIST building externalId CDATA #IMPLIED >
+<!ATTLIST building abbreviation CDATA #REQUIRED >
+<!ATTLIST building name CDATA #IMPLIED >
+<!ATTLIST building latitude CDATA #IMPLIED >
+<!ATTLIST building longitude CDATA #IMPLIED >
+
+<!ELEMENT room ((picture|service|eventNote|feature|group|department|sharing|exam|availability)*) >
+<!ATTLIST room externalId CDATA #IMPLIED >
+<!ATTLIST room building CDATA #REQUIRED >
+<!ATTLIST room roomNumber CDATA #REQUIRED >
+<!ATTLIST room capacity CDATA #REQUIRED >
+<!ATTLIST room type CDATA #REQUIRED >
+<!ATTLIST room latitude CDATA #IMPLIED >
+<!ATTLIST room longitude CDATA #IMPLIED >
+<!ATTLIST room eventDepartment CDATA #IMPLIED >
+<!ATTLIST room examCapacity CDATA #IMPLIED >
+<!ATTLIST room displayName CDATA #IMPLIED >
+<!ATTLIST room eventStatus (NoEventManagement|AuthenticatedUsersCanRequestEventsManagersCanApprove|DepartmentalUsersCanRequestEventsManagersCanApprove|EventManagersCanRequestOrApproveEvents|AuthenticatedUsersCanRequestEventsNoApproval|DepartmentalUsersCanRequestEventsNoApproval|EventManagersCanRequestEventsNoApproval|AuthenticatedUsersCanRequestAutomaticApproval|DepartmentalUsersCanRequestAutomaticApproval|EventManagersCanRequestAutomaticApproval) #IMPLIED >
+<!ATTLIST room parent CDATA #IMPLIED >
+<!ATTLIST room ignoreTooFar (true|false) #IMPLIED >
+<!ATTLIST room ignoreRoomCheck (true|false) #IMPLIED >
+<!ATTLIST room area CDATA #IMPLIED >
+<!ATTLIST room breakTime CDATA #IMPLIED >
+<!ATTLIST room eventEmail CDATA #IMPLIED >
+
+<!ELEMENT location ((picture|service|eventNote|feature|group|department|sharing|exam|availability)*) >
+<!ATTLIST location externalId CDATA #IMPLIED >
+<!ATTLIST location permanentId ID #IMPLIED >
+<!ATTLIST location name CDATA #REQUIRED >
+<!ATTLIST location capacity CDATA #REQUIRED >
+<!ATTLIST location type CDATA #REQUIRED >
+<!ATTLIST location latitude CDATA #IMPLIED >
+<!ATTLIST location longitude CDATA #IMPLIED >
+<!ATTLIST location eventDepartment CDATA #IMPLIED >
+<!ATTLIST location examCapacity CDATA #IMPLIED >
+<!ATTLIST location displayName CDATA #IMPLIED >
+<!ATTLIST location eventStatus (NoEventManagement|AuthenticatedUsersCanRequestEventsManagersCanApprove|DepartmentalUsersCanRequestEventsManagersCanApprove|EventManagersCanRequestOrApproveEvents|AuthenticatedUsersCanRequestEventsNoApproval|DepartmentalUsersCanRequestEventsNoApproval|EventManagersCanRequestEventsNoApproval|AuthenticatedUsersCanRequestAutomaticApproval|DepartmentalUsersCanRequestAutomaticApproval|EventManagersCanRequestAutomaticApproval) #IMPLIED >
+<!ATTLIST location parent CDATA #IMPLIED >
+<!ATTLIST location ignoreTooFar (true|false) #IMPLIED >
+<!ATTLIST location ignoreRoomCheck (true|false) #IMPLIED >
+<!ATTLIST location area CDATA #IMPLIED >
+<!ATTLIST location breakTime CDATA #IMPLIED >
+<!ATTLIST location eventEmail CDATA #IMPLIED >
+
+<!ELEMENT picture (#PCDATA) >
+<!ATTLIST picture fileName CDATA #REQUIRED >
+<!ATTLIST picture contentType CDATA #REQUIRED >
+<!ATTLIST picture type CDATA #IMPLIED >
+
+<!ELEMENT service (#PCDATA) >
+<!ATTLIST service reference CDATA #REQUIRED >
+<!ATTLIST service name CDATA #IMPLIED >
+<!ATTLIST service visible (true|false) #IMPLIED >
+<!ATTLIST service note CDATA #IMPLIED >
+<!ATTLIST service email CDATA #IMPLIED >
+<!ATTLIST service department CDATA #IMPLIED >
+
+<!ELEMENT eventNote (#PCDATA) >
+
+<!ELEMENT feature EMPTY >
+<!ATTLIST feature code CDATA #REQUIRED >
+<!ATTLIST feature name CDATA #IMPLIED >
+<!ATTLIST feature description CDATA #IMPLIED >
+<!ATTLIST feature department CDATA #IMPLIED >
+<!ATTLIST feature type CDATA #IMPLIED >
+
+<!ELEMENT group EMPTY >
+<!ATTLIST group code CDATA #REQUIRED >
+<!ATTLIST group name CDATA #IMPLIED >
+<!ATTLIST group description CDATA #IMPLIED >
+<!ATTLIST group department CDATA #IMPLIED >
+
+<!ELEMENT department EMPTY >
+<!ATTLIST department code CDATA #REQUIRED >
+<!ATTLIST department control (true|false) #IMPLIED >
+<!ATTLIST department preference  ( R | -2 | -1 | 0 | 1 | 2 | P ) #IMPLIED >
+
+<!ELEMENT sharing ((unavailable|assigned)*) >
+<!ATTLIST sharing note CDATA #IMPLIED >
+
+<!ELEMENT unavailable EMPTY>
+<!ATTLIST unavailable days CDATA #IMPLIED >
+<!ATTLIST unavailable start CDATA #IMPLIED >
+<!ATTLIST unavailable end CDATA #IMPLIED >
+
+<!ELEMENT assigned EMPTY>
+<!ATTLIST assigned code CDATA #REQUIRED >
+<!ATTLIST assigned days CDATA #IMPLIED >
+<!ATTLIST assigned start CDATA #IMPLIED >
+<!ATTLIST assigned end CDATA #IMPLIED >
+
+<!ELEMENT exam (preference*)>
+<!ATTLIST exam type CDATA #REQUIRED >
+
+<!ELEMENT preference EMPTY >
+<!ATTLIST preference level ( R | -2 | -1 | 0 | 1 | 2 | P ) #REQUIRED >
+<!ATTLIST preference start CDATA #REQUIRED >
+<!ATTLIST preference date CDATA #REQUIRED >
+
+<!ELEMENT availability (unavailable*) >
