@@ -662,6 +662,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if ("WL-OVERLAP".equals(m.getCode())) continue;
 						if ("WL-INACTIVE".equals(m.getCode())) continue;
 						if ("WL-CREDIT".equals(m.getCode())) continue;
+						if ("WL-MIN-CREDIT".equals(m.getCode())) continue;
 						if ("WL-DISCLAIMER".equals(m.getCode())) continue;
 						if (message == null)
 							message = MESSAGES.courseMessage(m.getMessage());
@@ -677,6 +678,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if ("WL-OVERLAP".equals(m.getCode())) continue;
 						if ("WL-INACTIVE".equals(m.getCode())) continue;
 						if ("WL-CREDIT".equals(m.getCode())) continue;
+						if ("WL-MIN-CREDIT".equals(m.getCode())) continue;
 						if ("WL-DISCLAIMER".equals(m.getCode())) continue;
 						if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 							if (message == null)
@@ -762,7 +764,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							final String requestorNote = note.getMessage();
 							UpdateSpecialRegistrationRequest req = new UpdateSpecialRegistrationRequest(
 									iContext,
-									request.getRequestId(), null, "MAXI",
+									request.getRequestId(), null, request.hasMaxCreditOverride() && request.getMaxCreditOverride() <= 0 ? "MINI" : "MAXI",
 									requestorNote, iMode == Mode.REQUESTS);
 							iSectioningService.updateSpecialRequest(req, new AsyncCallback<UpdateSpecialRegistrationResponse>() {
 								@Override

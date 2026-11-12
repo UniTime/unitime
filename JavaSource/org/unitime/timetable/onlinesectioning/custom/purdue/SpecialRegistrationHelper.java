@@ -103,6 +103,13 @@ public class SpecialRegistrationHelper {
 		return r.requestorNotes;
 	}
 	
+	@SuppressWarnings("deprecation")
+	public static String minCreditRequestorNotes(SpecialRegistration r) {
+		if (r.minCreditRequestorNotes != null)
+			return r.minCreditRequestorNotes;
+		return r.requestorNotes;
+	}
+	
 	public static RestrictionsCheckRequest createValidationRequest(CheckRestrictionsRequest req, ValidationMode mode, boolean includeRegistration) {
 		RestrictionsCheckRequest ret = new RestrictionsCheckRequest();
 		ret.sisId = req.studentId;

@@ -672,6 +672,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		List<String> newCourses = new ArrayList<String>();
 		Set<String> keepCourses = new HashSet<String>();
 		List<String> dropCourses = new ArrayList<String>();
+		List<String> swapCourses = new ArrayList<String>();
 		Set<String> adds = new HashSet<String>();
 		Map<String, XCourse> courses = new HashMap<String, XCourse>();
 		Map<String, List<XSection>> crn2sections = new HashMap<String, List<XSection>>();
@@ -734,6 +735,8 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				String course = crn2course.get(crn);
 				if (course != null && !keepCourses.contains(course) && !dropCourses.contains(crn))
 					dropCourses.add(crn);
+				else if (course != null && keepCourses.contains(course) && !swapCourses.contains(crn))
+					swapCourses.add(crn);
 			}
 		
 		CheckRestrictionsResponse resp = null;
@@ -796,6 +799,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 		
 		SpecialRegistrationEligibilityResponse ret = new SpecialRegistrationEligibilityResponse(true, message);
 		Set<String> ext = new HashSet<String>();
+		boolean hasMiniError = false;
 		if (resp.outJson != null && resp.outJson.problems != null) {
 			Set<ErrorMessage> errors = new TreeSet<ErrorMessage>();
 			for (Problem problem: resp.outJson.problems) {
@@ -806,16 +810,17 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 					String crn = newCourses.remove(newCourses.size() - 1);
 					errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
 				} else if ("MINI".equals(problem.code)) {
-					// Move min credit error message to the last dropped course if possible
-					// Or the last added course othewise
-					if (!dropCourses.isEmpty()) {
-						String crn = dropCourses.remove(dropCourses.size() - 1);
-						errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
-					} else if (!newCourses.isEmpty()) {
-						String crn = newCourses.remove(newCourses.size() - 1);
-						errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
-					} else {
-						errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
+					if (!hasMiniError) {
+						// Show min credit error message on all courses that are being dropped
+						// Or when no course is dropped, on the courses that have a swap
+						if (!dropCourses.isEmpty()) {
+							for (String crn: dropCourses)
+								errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+						} else if (!swapCourses.isEmpty()) {
+							for (String crn: swapCourses)
+								errors.add(new ErrorMessage(crn2course.get(crn), crn, problem.code, problem.message));
+						}
+						hasMiniError = true;
 					}
 				} else {
 					errors.add(new ErrorMessage(crn2course.get(problem.crn), problem.crn, problem.code, problem.message));
@@ -1544,6 +1549,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								maxi = "Maximum hours exceeded. Currently allowed " + df.format(student.getMaxCredit()) + " but needs " + df.format(specialRequest.maxCredit) + ".";
 								if (student.getMaxCredit() >= specialRequest.maxCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
 									maxStatus = ChangeStatus.approved;
+								if (student.getMaxCredit() < specialRequest.maxCredit && maxStatus != ChangeStatus.approved) ret.setNeedCreditChange(true);
 							}
 						} else if ("MINI".equals(err.code) && (change.crn == null || change.crn.isEmpty())) {
 							mini = err.message;
@@ -1555,6 +1561,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 								mini = "Below minimum hours. Currently required " + df.format(student.getMinCredit()) + " but needs " + df.format(specialRequest.minCredit) + ".";
 								if (student.getMinCredit() <= specialRequest.minCredit && getStatus(change.status) == SpecialRegistrationStatus.Pending)
 									minStatus = ChangeStatus.approved;
+								if (student.getMinCredit() > specialRequest.minCredit && maxStatus != ChangeStatus.approved) ret.setNeedCreditChange(true);
 							}
 						} else if ("VARTL".equals(err.code)) {
 							for (XRequest r: student.getRequests()) {
@@ -2076,7 +2083,7 @@ public class PurdueSpecialRegistrationProvider implements SpecialRegistrationPro
 				message = "<span class='" + minStatus + "'>" + message + "</span>";
 			ret.addError(new ErrorMessage("", "", "MINI", message));
 		}
-		if (ret.isCreditChange() || ret.isCreditChange()) {
+		if (ret.isCreditChange() || ret.isGradeModeChange()) {
 			for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.gm.requestorNoteSuggestions", "").split("[\r\n]+"))
 				if (!suggestion.isEmpty()) ret.addSuggestion(suggestion);
 		} else if (ret.isVariableTitleCourseChange()) {

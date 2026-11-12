@@ -2697,6 +2697,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Maximum of {0,number,0.#} credit hours exceeded.")
 	String creditWarning(float credit);
 	
+	@DefaultMessage("Below the minimum of {0,number,0.#} credit hours.")
+	String minCreditWarning(float credit);
+	
 	@DefaultMessage("Published")
 	String infoPublished();
 	

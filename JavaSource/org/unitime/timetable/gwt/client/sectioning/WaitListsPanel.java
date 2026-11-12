@@ -283,6 +283,7 @@ public class WaitListsPanel extends P {
 									if ("NO_ALT".equals(m.getCode())) continue;
 									if ("CREDIT".equals(m.getCode())) continue;
 									if ("WL-CREDIT".equals(m.getCode())) continue;
+									if ("WL-MIN-CREDIT".equals(m.getCode())) continue;
 									if ("REQUEST_NOTE".equals(m.getCode())) continue;
 									if (m.hasCourse() && rc.getCourseId().equals(m.getCourseId())) {
 										if (note == null) {
@@ -364,7 +365,7 @@ public class WaitListsPanel extends P {
 				row.add(date);
 				row.add(new Label(""));
 				row.add(new Label(""));
-				row.add(new Label(df.format(iRequests.getMaxCreditOverride())));
+				row.add(new Label(df.format(Math.abs(iRequests.getMaxCreditOverride()))));
 				row.add(new Label(""));
 				row.add(new Label(""));
 				row.add(new Label(""));

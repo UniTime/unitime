@@ -327,11 +327,11 @@ public class SpecialRegistrationsPanel extends P {
 				Long lastCourseId = null;
 				List<ClassAssignment> rows = new ArrayList<ClassAssignment>();
 				for (ClassAssignment ca: reg.getChanges()) {
-					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId())))) {
+					if (!iShowAllChanges.getValue() && (reg.isApplied(ca.getCourseId(), saved) || (!reg.hasErrors(ca.getCourseId()) && !reg.isDrop(ca.getCourseId()) && !reg.isNeedCreditChange()))) {
 						// UniTimeNotifications.info(ca.getCourseName() + ": applied=" + reg.isApplied(ca.getCourseId(), saved) + ", errors:" + reg.hasErrors(ca.getCourseId()) + ", drop: " + reg.isDrop(ca.getCourseId()));
 						continue;
 					}
-					if (!iShowAllChanges.getValue() && reg.isChange(ca.getCourseId()) && !ca.hasError()) {
+					if (!iShowAllChanges.getValue() && reg.isChange(ca.getCourseId()) && !ca.hasError() && !reg.isNeedCreditChange()) {
 						// UniTimeNotifications.info(ca.getCourseName() + ": change:" + reg.isChange(ca.getCourseId()) + ", error:" + ca.hasError());
 						continue;
 					}
@@ -454,7 +454,11 @@ public class SpecialRegistrationsPanel extends P {
 							noCourseErrors += (noCourseErrors.isEmpty() ? "" : "\n") + e.getMessage();
 				if (!noCourseErrors.isEmpty()) {
 					List<Widget> row = new ArrayList<Widget>();
-					row.add(new P("icons"));
+					if (lastCourseId == null) {
+						row.add(p);
+					} else {
+						row.add(new P("icons"));
+					}
 					String note = reg.getNote("MINI", "MAXI");
 					DateAndNoteCell dateAndNote = new DateAndNoteCell(null, note);
 					if (iSpecReg.isAllowChangeRequestNote() && reg.getStatus() == SpecialRegistrationStatus.Pending && (reg.hasErrorCode("MINI") || reg.hasErrorCode("MAXI"))) {
@@ -474,14 +478,21 @@ public class SpecialRegistrationsPanel extends P {
 					HTML errorsLabel = new HTML(noCourseErrors); errorsLabel.addStyleName("registration-errors");
 					row.add(errorsLabel);
 					row.add(new Label());
-					row.add(new Label());
+					if (delete != null)
+						row.add(delete);
+					else
+						row.add(new Label());
 					int idx = iTable.addRow(reg, row);
 					if (reg.getStatus() == SpecialRegistrationStatus.Approved)
 						iTable.setBackGroundColor(idx, "#D7FFD7");
 					if (reg.getRequestId().equals(iSpecReg.getRequestId()))
 						iTable.setSelected(idx, true);
-					for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
-						iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
+					if (idx > 1 && lastCourseId == null)
+						for (int c = 0; c < iTable.getCellCount(idx); c++)
+							iTable.getCellFormatter().addStyleName(idx, c, "top-border-solid");
+					else if (lastCourseId != null)
+						for (int c = 2; c < iTable.getCellCount(idx) - 1; c++)
+							iTable.getCellFormatter().addStyleName(idx, c, "top-border-dashed");
 				}
 			} else if (reg.hasErrors()) {
 				List<Widget> row = new ArrayList<Widget>();

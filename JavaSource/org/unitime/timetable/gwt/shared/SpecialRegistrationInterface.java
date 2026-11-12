@@ -279,6 +279,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		private boolean iHasTimeConflict, iHasSpaceConflict, iExtended, iHasLinkedConflict;
 		private ArrayList<ErrorMessage> iErrors = null;
 		private Float iMaxCredit = null, iMinCredit = null;
+		private boolean iNeedCreditChange = false;
 		private List<String> iSuggestions = null;
 		
 		
@@ -427,7 +428,7 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		}
 		
 		public boolean isFullyApplied(ClassAssignmentInterface saved) {
-			if (!hasChanges() || isGradeModeChange() || isCreditChange() || isExtended()) return getStatus() == SpecialRegistrationStatus.Approved;
+			if (!hasChanges() || isGradeModeChange() || isCreditChange() || isExtended() || isNeedCreditChange()) return getStatus() == SpecialRegistrationStatus.Approved;
 			if (saved == null) return false;
 			Set<Long> courseIds = new HashSet<Long>();
 			boolean enrolled = true, gmChange = false;
@@ -571,6 +572,9 @@ public class SpecialRegistrationInterface implements IsSerializable, Serializabl
 		
 		public boolean isExtended() { return iExtended; }
 		public void setExtended(boolean extended) { iExtended = extended; }
+		
+		public boolean isNeedCreditChange() { return iNeedCreditChange; }
+		public void setNeedCreditChange(boolean needCreditChange) { iNeedCreditChange = needCreditChange; }
 		
 		public void addError(ErrorMessage error) {
 			if (iErrors == null) iErrors = new ArrayList<ErrorMessage>();

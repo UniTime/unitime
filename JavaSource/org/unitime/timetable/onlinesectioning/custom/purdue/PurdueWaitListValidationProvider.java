@@ -95,6 +95,7 @@ import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationI
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CheckRestrictionsResponse;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.CourseCredit;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedMaxCredit;
+import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedMinCredit;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.DeniedRequest;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.EligibilityProblem;
 import org.unitime.timetable.onlinesectioning.custom.purdue.SpecialRegistrationInterface.Problem;
@@ -386,6 +387,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		Integer CONF_BANNER = 1;
 		String creditError = null;
 		Float maxCreditNeeded = null;
+		Float minCreditNeeded = null;
 		
 		XSchedulingRule rule = server.getSchedulingRule(original,
 				StudentSchedulingRule.Mode.Online,
@@ -567,6 +569,11 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						// student max credit
 						Float maxCredit = resp.maxCredit;
 						if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
+						// student min credit
+						Float minCredit = resp.minCredit;
+						if (minCredit == null && original.hasMinCredit())
+							minCredit = original.getMinCredit();
+						if (minCredit == null) minCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditDefault", "0"));
 
 						Float maxCreditDenied = null;
 						if (resp.deniedMaxCreditRequests != null) {
@@ -575,10 +582,19 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									maxCreditDenied = r.maxCredit;
 							}
 						}
+						Float minCreditDenied = null;
+						if (resp.deniedMinCreditRequests != null) {
+							for (DeniedMinCredit r: resp.deniedMinCreditRequests) {
+								if (r.minCredit != null && r.minCredit < minCredit && (minCreditDenied == null || minCreditDenied < r.minCredit))
+									minCreditDenied = r.minCredit;
+							}
+						}
 						
 						Map<String, Map<String, RequestedCourseStatus>> overrides = new HashMap<String, Map<String, RequestedCourseStatus>>();
 						Float maxCreditOverride = null;
 						RequestedCourseStatus maxCreditOverrideStatus = null;
+						Float minCreditOverride = null;
+						RequestedCourseStatus minCreditOverrideStatus = null;
 						
 						if (resp.cancelRegistrationRequests != null)
 							for (SpecialRegistration r: resp.cancelRegistrationRequests) {
@@ -600,6 +616,9 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									} else if (r.maxCredit != null && (maxCreditOverride == null || maxCreditOverride < r.maxCredit)) {
 										maxCreditOverride = r.maxCredit;
 										maxCreditOverrideStatus = status(ch.status);
+									} else if (r.minCredit != null && (minCreditOverride == null || minCreditOverride > r.minCredit)) {
+										minCreditOverride = r.minCredit;
+										minCreditOverrideStatus = status(ch.status);
 									}
 								}
 							}
@@ -610,6 +629,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						if (neededCredit != null) {
 							if (maxCreditNeeded == null || maxCreditNeeded < neededCredit)
 								maxCreditNeeded = neededCredit;
+							if (minCreditNeeded == null || minCreditNeeded > neededCredit)
+								minCreditNeeded = neededCredit;
 						}
 
 						
@@ -623,9 +644,24 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							);
 							response.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
 							creditError = ApplicationProperties.getProperty("purdue.specreg.messages.maxCreditDeniedError",
-											"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.\nYou may not be able to get a full schedule.")
+											"Maximum of {max} credit hours exceeded.\nThe request to increase the maximum credit hours to {maxCreditDenied} has been denied.")
 									.replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(neededCredit)).replace("{maxCreditDenied}", sCreditFormat.format(maxCreditDenied));
 							response.setMaxCreditNeeded(maxCreditNeeded);
+						}
+						
+						if (minCreditDenied != null && neededCredit != null && neededCredit <= minCreditDenied) {
+							response.addMessage(rc.getCourseId(), rc.getCourseName(), "WL-MIN-CREDIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.minCredit", "Below the minimum of {min} credit hours.").replace("{min}", sCreditFormat.format(minCredit)).replace("{credit}", sCreditFormat.format(neededCredit))
+									, CONF_NONE);
+							response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.minCredit",
+									"Below the minimum of {min} credit hours.")
+									.replace("{min}", sCreditFormat.format(minCredit)).replace("{credit}", sCreditFormat.format(neededCredit)).replace("{minCreditDenied}", sCreditFormat.format(minCreditDenied))
+							);
+							response.setMaxCreditOverrideStatus(RequestedCourseStatus.OVERRIDE_REJECTED);
+							creditError = ApplicationProperties.getProperty("purdue.specreg.messages.minCreditDeniedError",
+											"Below the minimum of {min} credit hours.\nThe request to decrease the minimum credit hours to {minCreditDenied} has been denied.")
+									.replace("{min}", sCreditFormat.format(minCredit)).replace("{credit}", sCreditFormat.format(neededCredit)).replace("{minCreditDenied}", sCreditFormat.format(minCreditDenied));
+							response.setMaxCreditNeeded(minCreditNeeded);
 						}
 						
 						if (creditError == null && neededCredit != null && maxCredit < neededCredit) {
@@ -635,6 +671,14 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.maxCredit", "Maximum of {max} credit hours exceeded.").replace("{max}", sCreditFormat.format(maxCredit)).replace("{credit}", sCreditFormat.format(neededCredit)));
 							response.setMaxCreditOverrideStatus(maxCreditOverrideStatus == null || maxCreditOverride < neededCredit ? RequestedCourseStatus.OVERRIDE_NEEDED : maxCreditOverrideStatus);
 							response.setMaxCreditNeeded(maxCreditNeeded);
+						}
+						if (creditError == null && neededCredit != null && minCredit > neededCredit) {
+							response.addMessage(rc.getCourseId(), rc.getCourseName(), "WL-MIN-CREDIT",
+									ApplicationProperties.getProperty("purdue.specreg.messages.minCredit", "Below the minimum of {min} credit hours.").replace("{min}", sCreditFormat.format(minCredit)).replace("{credit}", sCreditFormat.format(neededCredit)),
+									minCreditOverride == null || minCreditOverride < neededCredit ? CONF_BANNER : CONF_NONE);
+							response.setCreditWarning(ApplicationProperties.getProperty("purdue.specreg.messages.minCredit", "Below the minimum of {min} credit hours.").replace("{min}", sCreditFormat.format(minCredit)).replace("{credit}", sCreditFormat.format(neededCredit)));
+							response.setMaxCreditOverrideStatus(minCreditOverrideStatus == null || minCreditOverride > neededCredit ? RequestedCourseStatus.OVERRIDE_NEEDED : minCreditOverrideStatus);
+							response.setMaxCreditNeeded(minCreditNeeded);
 						}
 						
 						Map<String, Set<String>> deniedOverrides = new HashMap<String, Set<String>>();
@@ -664,6 +708,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 								}
 								if ("DUPL".equals(problem.code)) continue;
 								if ("MAXI".equals(problem.code)) continue;
+								if ("MINI".equals(problem.code)) continue;
 								if ("CLOS".equals(problem.code)) continue;
 								if ("TIME".equals(problem.code)) continue;
 								if (!crns.contains(problem.crn)) continue;
@@ -728,9 +773,11 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			if (note != null && !note.isEmpty()) {
 				response.addConfirmation(note, CONF_BANNER, idx++);
 				Set<String> courses = new HashSet<String>();
-				boolean hasCredit = false;
+				boolean hasMaxCredit = false;
+				boolean hasMinCredit = false;
 				for (CourseMessage x: response.getMessages(CONF_BANNER)) {
-					if ("WL-CREDIT".equals(x.getCode()) || "MAXI".equals(x.getCode())) { hasCredit = true; continue; }
+					if ("WL-CREDIT".equals(x.getCode()) || "MAXI".equals(x.getCode())) { hasMaxCredit = true; continue; }
+					if ("WL-MIN-CREDIT".equals(x.getCode()) || "MINI".equals(x.getCode())) { hasMinCredit = true; continue; }
 					if (x.hasCourse() && courses.add(x.getCourse())) {
 						CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
 						cm.setCourse(x.getCourse()); cm.setCourseId(x.getCourseId());
@@ -739,9 +786,16 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if (!suggestion.isEmpty()) cm.addSuggestion(suggestion); 
 					}
 				}
-				if (hasCredit) {
+				if (hasMaxCredit) {
 					CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
 					cm.setCourse(MESSAGES.tabRequestNoteMaxCredit());
+					cm.setCode("REQUEST_NOTE");
+					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
+						if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
+				}
+				if (hasMinCredit) {
+					CourseMessage cm = response.addConfirmation("", CONF_BANNER, idx++);
+					cm.setCourse(MESSAGES.tabRequestNoteMinCredit());
 					cm.setCode("REQUEST_NOTE");
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.prereg.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) cm.addSuggestion(suggestion);
@@ -777,7 +831,9 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		ClientResource resource = null;
 		Map<String, Set<String>> overrides = new HashMap<String, Set<String>>();
 		Float maxCredit = null;
-		Float oldCredit = null;
+		Float minCredit = null;
+		Float oldMaxCredit = null;
+		Float oldMinCredit = null;
 		try {
 			resource = new ClientResource(getSpecialRegistrationApiSiteCheckSpecialRegistrationStatus());
 			resource.setNext(iClient);
@@ -810,8 +866,10 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			if (status != null && status.data != null) {
 				maxCredit = status.data.maxCredit;
 				request.setMaxCredit(status.data.maxCredit);
+				minCredit = status.data.minCredit;
 			}
 			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
+			if (minCredit == null) minCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditDefault", "0"));
 			
 			if (status != null && status.data != null && status.data.requests != null) {
 				for (SpecialRegistration r: status.data.requests) {
@@ -830,7 +888,9 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 											problems.add(err.code);
 									}
 							} else if (status(ch.status) == RequestedCourseStatus.OVERRIDE_PENDING && r.maxCredit != null) {
-								oldCredit = r.maxCredit;
+								oldMaxCredit = r.maxCredit;
+							} else if (status(ch.status) == RequestedCourseStatus.OVERRIDE_PENDING && r.minCredit != null) {
+								oldMinCredit = r.minCredit;
 							}
 						}
 				}
@@ -862,10 +922,14 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			req.requestorRole = getRequestorType(helper.getUser(), original);
 		}
 
+		String creditRequestorNotes = null;
 		if (request.hasConfirmations()) {
 			for (CourseMessage m: request.getConfirmations()) {
 				if ("REQUEST_NOTE".equals(m.getCode()) && m.getMessage() != null && !m.getMessage().isEmpty() && !m.hasCourseId()) {
-					req.maxCreditRequestorNotes = m.getMessage();
+					if (MESSAGES.tabRequestNoteMinCredit().equals(m.getCourse()))
+						creditRequestorNotes = m.getMessage();
+					else
+						creditRequestorNotes = m.getMessage();
 				}
 			}
 			for (Iterator<CourseMessage> i = request.getConfirmations().iterator(); i.hasNext(); ) {
@@ -884,6 +948,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 						List<ChangeError> errors = new ArrayList<ChangeError>();
 						for (CourseMessage m: request.getConfirmations()) {
 							if ("WL-CREDIT".equals(m.getCode())) continue;
+							if ("WL-MIN-CREDIT".equals(m.getCode())) continue;
 							if ("NO_ALT".equals(m.getCode())) continue;
 							if ("DROP_CRIT".equals(m.getCode())) continue;
 							if ("WL-OVERLAP".equals(m.getCode())) continue;
@@ -948,9 +1013,14 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		}
 		if (neededCredit != null && maxCredit < neededCredit) {
 			req.maxCredit = neededCredit;
+			req.maxCreditRequestorNotes = creditRequestorNotes;
+		}
+		if (neededCredit != null && minCredit > neededCredit) {
+			req.minCredit = neededCredit;
+			req.minCreditRequestorNotes = creditRequestorNotes;
 		}
 		
-		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null || oldCredit != null) {
+		if (!req.changes.isEmpty() || !overrides.isEmpty() || req.maxCredit != null || oldMaxCredit != null || req.minCredit != null || oldMinCredit != null) {
 			resource = null;
 			try {
 				resource = new ClientResource(getSpecialRegistrationApiSiteSubmitRegistration());
@@ -1052,8 +1122,24 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 								break;
 							}
 						}
-					} else {
-						request.setMaxCreditOverrideStatus(RequestedCourseStatus.SAVED);
+					}
+					if (req.minCredit != null) {
+						for (SpecialRegistration r: response.data) {
+							if (r.minCredit != null) {
+								request.setMaxCreditOverride(-r.minCredit);
+								request.setMaxCreditOverrideExternalId(r.regRequestId);
+								request.setMaxCreditOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+								request.setMaxCreditOverrideStatus(status(r, true));
+								request.setCreditWarning(
+										ApplicationProperties.getProperty("purdue.specreg.messages.minCredit", "Below the minimum of {min} credit hours.")
+										.replace("{min}", sCreditFormat.format(minCredit)).replace("{credit}", sCreditFormat.format(req.minCredit))
+										);
+								request.setCreditNote(SpecialRegistrationHelper.note(r, true));
+								request.setRequestorNote(SpecialRegistrationHelper.minCreditRequestorNotes(r));
+								request.setRequestId(r.regRequestId);
+								break;
+							}
+						}
 					}
 				}
 				if (request.hasConfirmations()) {
@@ -1165,20 +1251,27 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 			helper.getAction().addOptionBuilder().setKey("wl-status").setValue(gson.toJson(status));
 			
 			Float maxCredit = null;
+			Float minCredit = null;
 			if (status != null && status.data != null) {
 				maxCredit = status.data.maxCredit;
+				minCredit = status.data.minCredit;
 				request.setMaxCredit(status.data.maxCredit);
 			}
 			if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
+			if (minCredit == null) minCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditDefault", "0"));
 
 			if (status != null && status.data != null && status.data.requests != null) {
 				// Retrieve max credit request
 				SpecialRegistration maxCreditReq = null;
+				// Retrieve min credit request
+				SpecialRegistration minCreditReq = null;
 				// Try matching request first
 				if (request.getMaxCreditOverrideExternalId() != null)
 					for (SpecialRegistration r: status.data.requests) {
 						if (r.maxCredit != null && request.getMaxCreditOverrideExternalId().equals(r.regRequestId)) {
 							maxCreditReq = r; break;
+						} else if (r.minCredit != null && request.getMaxCreditOverrideExternalId().equals(r.regRequestId)) {
+							minCreditReq = r; break;
 						}
 					}
 				// Get latest not-cancelled max credit override request otherwise
@@ -1186,6 +1279,12 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					for (SpecialRegistration r: status.data.requests) {
 						if (r.maxCredit != null && status(r, true) != RequestedCourseStatus.OVERRIDE_CANCELLED && (maxCreditReq == null || r.dateCreated.isAfter(maxCreditReq.dateCreated))) {
 							maxCreditReq = r;
+						}
+					}
+				if (minCreditReq == null)
+					for (SpecialRegistration r: status.data.requests) {
+						if (r.minCredit != null && status(r, true) != RequestedCourseStatus.OVERRIDE_CANCELLED && (minCreditReq == null || r.dateCreated.isAfter(minCreditReq.dateCreated))) {
+							minCreditReq = r;
 						}
 					}
 				
@@ -1203,9 +1302,34 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 									for (ChangeError er: ch.errors)
 										if ("MAXI".equals(er.code) && er.message != null)
 											warning = (warning == null ? "" : warning + "\n") + er.message;
+					if (warning == null)
+						warning = "Maximum hours exceeded. Currently allowed " + sCreditFormat.format(maxCredit) + " but needs " + sCreditFormat.format(maxCreditReq.maxCredit) + ".";					
 					request.setCreditWarning(warning);
 					request.setRequestorNote(SpecialRegistrationHelper.maxCreditRequestorNotes(maxCreditReq));
 					request.setRequestId(maxCreditReq.regRequestId);
+					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
+						if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
+				}
+				
+				if (minCreditReq != null) {
+					request.setMaxCreditOverrideExternalId(minCreditReq.regRequestId);
+					request.setMaxCreditOverrideStatus(status(minCreditReq, true));
+					request.setMaxCreditOverride(-minCreditReq.minCredit);
+					request.setMaxCreditOverrideTimeStamp(minCreditReq.dateCreated == null ? null : minCreditReq.dateCreated.toDate());
+					request.setCreditNote(SpecialRegistrationHelper.note(minCreditReq, true));
+					String warning = null;
+					if (minCreditReq.changes != null)
+						for (Change ch: minCreditReq.changes)
+							if (ch.subject == null && ch.courseNbr == null)
+								if (ch.errors != null)
+									for (ChangeError er: ch.errors)
+										if ("MINI".equals(er.code) && er.message != null)
+											warning = (warning == null ? "" : warning + "\n") + er.message;
+					if (warning == null)
+						warning = "Below minimum hours. Currently required " + sCreditFormat.format(minCredit) + " but needs " + sCreditFormat.format(minCreditReq.minCredit) + ".";
+					request.setCreditWarning(warning);
+					request.setRequestorNote(SpecialRegistrationHelper.minCreditRequestorNotes(minCreditReq));
+					request.setRequestId(minCreditReq.regRequestId);
 					for (String suggestion: ApplicationProperties.getProperty("purdue.specreg.waitlist.requestorNoteSuggestions", "").split("[\r\n]+"))
 						if (!suggestion.isEmpty()) request.addRequestorNoteSuggestion(suggestion);
 				}
@@ -1538,6 +1662,8 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 		
 		Float maxCredit = null;
 		Float maxCreditNeeded = null;
+		Float minCredit = null;
+		Float minCreditNeeded = null;
 		for (CourseDemand cd: student.getCourseDemands()) {
 			XCourseId dropCourse = null;
 			Set<String> dropCrns = null;
@@ -1691,6 +1817,7 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 							if ("HOLD".equals(problem.code)) continue;
 							if ("DUPL".equals(problem.code)) continue;
 							if ("MAXI".equals(problem.code)) continue;
+							if ("MINI".equals(problem.code)) continue;
 							if ("CLOS".equals(problem.code)) continue;
 							if ("TIME".equals(problem.code)) continue;
 							if (!crns.contains(problem.crn)) continue;
@@ -1721,18 +1848,27 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					
 					if (maxCredit == null && validation.maxCredit != null)
 						maxCredit = validation.maxCredit;
+					if (minCredit == null && validation.minCredit != null)
+						minCredit = validation.minCredit;
 					
 					if (validation.outJson.maxHoursCalc != null) {
 						if (maxCreditNeeded == null || maxCreditNeeded < validation.outJson.maxHoursCalc)
 							maxCreditNeeded = validation.outJson.maxHoursCalc;
+						if (minCreditNeeded == null || minCreditNeeded > validation.outJson.maxHoursCalc)
+							minCreditNeeded = validation.outJson.maxHoursCalc;
 					}
 				}
 			}
 		}
 		
 		if (maxCredit == null) maxCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.maxCreditDefault", "18"));
+		if (minCredit == null && original.hasMinCredit())
+			minCredit = original.getMinCredit();
+		if (minCredit == null) minCredit = Float.parseFloat(ApplicationProperties.getProperty("purdue.specreg.minCreditDefault", "0"));
 		if (maxCreditNeeded != null && maxCreditNeeded > maxCredit)
 			submitRequest.maxCredit = maxCreditNeeded;
+		if (minCreditNeeded != null && minCreditNeeded < minCredit)
+			submitRequest.minCredit = minCreditNeeded;
 		
 		submitRequest.courseCreditHrs = new ArrayList<CourseCredit>();
 		for (XRequest r: original.getRequests()) {
@@ -1873,6 +2009,37 @@ public class PurdueWaitListValidationProvider implements WaitListValidationProvi
 					if (student.getOverrideMaxCredit() == null || !student.getOverrideMaxCredit().equals(r.maxCredit))
 						studentChanged = true;
 					student.setOverrideMaxCredit(r.maxCredit);
+					if (student.getOverrideExternalId() == null || !student.getOverrideExternalId().equals(r.regRequestId))
+						studentChanged = true;
+					student.setOverrideExternalId(r.regRequestId);
+					student.setOverrideTimeStamp(r.dateCreated == null ? null : r.dateCreated.toDate());
+					student.setMaxCreditOverrideIntent(CourseRequestOverrideIntent.WAITLIST);
+					break;
+				}
+			}
+		} else if (submitRequest.minCredit != null) {
+			for (SpecialRegistration r: response.data) {
+				if (r.minCredit != null) {
+					Integer oldStatus = student.getOverrideStatus();
+					switch (status(r, true)) {
+					case OVERRIDE_REJECTED: 
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.REJECTED);
+						break;
+					case OVERRIDE_APPROVED:
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.APPROVED);
+						break;
+					case OVERRIDE_CANCELLED:
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.CANCELLED);
+						break;
+					case OVERRIDE_PENDING:
+						student.setMaxCreditOverrideStatus(CourseRequestOverrideStatus.PENDING);
+						break;
+					}
+					if (oldStatus == null || !oldStatus.equals(student.getOverrideStatus()))
+						studentChanged = true;
+					if (student.getOverrideMaxCredit() == null || !student.getOverrideMaxCredit().equals(- r.minCredit))
+						studentChanged = true;
+					student.setOverrideMaxCredit(- r.minCredit);
 					if (student.getOverrideExternalId() == null || !student.getOverrideExternalId().equals(r.regRequestId))
 						studentChanged = true;
 					student.setOverrideExternalId(r.regRequestId);

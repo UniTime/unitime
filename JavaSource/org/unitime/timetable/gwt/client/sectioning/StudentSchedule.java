@@ -1537,15 +1537,17 @@ public class StudentSchedule extends Composite implements TakesValue<ClassAssign
 				row.add(date);
 				row.add(new Label(""));
 				row.add(new Label(""));
-				row.add(new Label(df.format(iAssignment.getRequest().getMaxCreditOverride())));
+				row.add(new Label(df.format(Math.abs(iAssignment.getRequest().getMaxCreditOverride()))));
 				row.add(new Label(""));
 				row.add(new Label(""));
 				row.add(new Label(""));
 				String note = null;
 				if (iAssignment.getRequest().hasCreditWarning())
 					note = "<span class='"+style+"'>" + iAssignment.getRequest().getCreditWarning() + "</span>";
-				else
+				else if (iAssignment.getRequest().getMaxCredit() > 0)
 					note = "<span class='"+style+"'>" + MESSAGES.creditWarning(iAssignment.getRequest().getMaxCredit()) + "</span>";
+				else
+					note = "<span class='"+style+"'>" + MESSAGES.minCreditWarning(- iAssignment.getRequest().getMaxCredit()) + "</span>";
 				if (iAssignment.getRequest().hasCreditNote())
 					note += "\n<span class='note'>" + iAssignment.getRequest().getCreditNote() + "</span>";
 				HTML errorsLabel = new HTML(note); errorsLabel.addStyleName("waitlists-errors");
