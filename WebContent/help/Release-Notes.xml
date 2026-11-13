@@ -50,6 +50,15 @@
 				<line>Unlike the existing Staff and Buildings &amp; Rooms XML imports, the instructors and rooms are updated directly.</line>
 			</description>
 		</item>
+		<item>
+			<name>Session Roll Forward</name>
+			<description>
+				<line>Added an ability to merge/restart roll forward at (almost) any step of the process.
+					<line>Not enabled by default; set unitime.rollforward.allowForMerge=true for the new procedure.</line>
+				</line>
+				<line>Improved speed of examination roll forward.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
