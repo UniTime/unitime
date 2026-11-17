@@ -1,0 +1,92 @@
+# Licensed to The Apereo Foundation under one or more contributor license
+# agreements. See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.
+#
+# The Apereo Foundation licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at:
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+services:
+
+    unitime-db:
+        container_name: unitime-db
+        command: --default-authentication-plugin=mysql_native_password
+        environment: 
+            - MYSQL_RANDOM_ROOT_PASSWORD=yes
+            - MYSQL_USER=timetable
+            - MYSQL_PASSWORD=unitime
+            - MYSQL_DATABASE=timetable
+        build:
+            context: ../..
+            dockerfile: docker/mysql.Dockerfile
+        expose:
+            - 3306
+        volumes:
+            - "unitime-db:/var/lib/mysql"
+
+    unitime-web-1:
+        container_name: unitime-web-1
+        depends_on:
+            - unitime-db
+        environment:
+            - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-web-1[7800],unitime-web-2[7800] -Dunitime.hibernate.cluster=true -Dunitime.hibernate.port=7833 -Dunitime.hibernate.initial_hosts=unitime-web-1[7833],unitime-web-2[7833]
+        build:
+            context: ../..
+            dockerfile: docker/tomcat.Dockerfile
+        volumes:
+            - "unitime-data-1:/usr/local/tomcat/data"
+
+    unitime-web-2:
+        container_name: unitime-web-2
+        depends_on:
+            - unitime-db
+        environment:
+            - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-web-1[7800],unitime-web-2[7800] -Dunitime.hibernate.cluster=true -Dunitime.hibernate.port=7833 -Dunitime.hibernate.initial_hosts=unitime-web-1[7833],unitime-web-2[7833]
+        build:
+            context: ../..
+            dockerfile: docker/tomcat.Dockerfile
+        volumes:
+            - "unitime-data-2:/usr/local/tomcat/data"
+
+    solver-1:
+        container_name: solver-1
+        depends_on:
+            - unitime-db
+        build:
+            context: ../..
+            dockerfile: docker/cluster/solver.Dockerfile
+        environment:
+            - JDK_JAVA_OPTIONS=-Xmx4g -Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-web-1[7800],unitime-web-2[7800]
+        volumes:
+            - "unitime-solver-logs:/usr/local/solver/logs"
+            - "unitime-solver-backup:/usr/local/solver/restore"
+
+    unitime-web:
+        container_name: unitime-web
+        depends_on:
+            - unitime-web-1
+            - unitime-web-2
+        build:
+            context: .
+            dockerfile: nginx.Dockerfile
+        ports:
+            - 80:80
+        links:
+            - unitime-web-1
+            - unitime-web-2
+
+volumes:
+    unitime-data-1:
+    unitime-data-2:
+    unitime-db:
+    unitime-solver-logs:
+    unitime-solver-backup:

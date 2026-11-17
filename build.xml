@@ -287,6 +287,7 @@
 			<tarfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<tarfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<tarfileset dir="${basedir}/Documentation/Docker" includes="*.*" prefix="docker"/>
+			<tarfileset dir="${basedir}/Documentation/Docker/Cluster" includes="*.*" prefix="docker/cluster"/>
 			<tarfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
 			<tarfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<tarfileset dir="${lib.dir}" prefix="solver">
@@ -355,6 +356,7 @@
 			<zipfileset dir="${basedir}/Documentation/Database/MySQL" includes="*.sql" prefix="doc/mysql"/>
 			<zipfileset dir="${basedir}/Documentation/Database/Oracle" includes="*.sql" prefix="doc/oracle"/>
 			<zipfileset dir="${basedir}/Documentation/Docker" includes="*.*" prefix="docker"/>
+			<tarfileset dir="${basedir}/Documentation/Docker/Cluster" includes="*.*" prefix="docker/cluster"/>
 			<zipfileset dir="${dist.dir}" includes="*.war" prefix="web"/>
 			<zipfileset dir="${dist.dir}" includes="timetable.jar" prefix="solver"/>
 			<zipfileset dir="${lib.dir}" prefix="solver">
