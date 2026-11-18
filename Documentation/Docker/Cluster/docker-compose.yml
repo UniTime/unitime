@@ -33,39 +33,42 @@ services:
         volumes:
             - "unitime-db:/var/lib/mysql"
 
-    unitime-web-1:
-        container_name: unitime-web-1
+    unitime-tomcat-1:
+        container_name: unitime-tomcat-1
+        hostname: unitime-tomcat-1
         depends_on:
             - unitime-db
         environment:
-            - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-web-1[7800],unitime-web-2[7800] -Dunitime.hibernate.cluster=true -Dunitime.hibernate.port=7833 -Dunitime.hibernate.initial_hosts=unitime-web-1[7833],unitime-web-2[7833]
+            - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-tomcat-1[7800],unitime-tomcat-2[7800],unitime-solver-1[7800] -Dunitime.hibernate.cluster=true -Dunitime.hibernate.port=7833 -Dunitime.hibernate.initial_hosts=unitime-tomcat-1[7833],unitime-tomcat-2[7833]
         build:
             context: ../..
             dockerfile: docker/tomcat.Dockerfile
         volumes:
             - "unitime-data-1:/usr/local/tomcat/data"
 
-    unitime-web-2:
-        container_name: unitime-web-2
+    unitime-tomcat-2:
+        container_name: unitime-tomcat-2
+        hostname: unitime-tomcat-2
         depends_on:
             - unitime-db
         environment:
-            - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-web-1[7800],unitime-web-2[7800] -Dunitime.hibernate.cluster=true -Dunitime.hibernate.port=7833 -Dunitime.hibernate.initial_hosts=unitime-web-1[7833],unitime-web-2[7833]
+            - JAVA_OPTS=-Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-tomcat-1[7800],unitime-tomcat-2[7800],unitime-solver-1[7800] -Dunitime.hibernate.cluster=true -Dunitime.hibernate.port=7833 -Dunitime.hibernate.initial_hosts=unitime-tomcat-1[7833],unitime-tomcat-2[7833]
         build:
             context: ../..
             dockerfile: docker/tomcat.Dockerfile
         volumes:
             - "unitime-data-2:/usr/local/tomcat/data"
 
-    solver-1:
-        container_name: solver-1
+    unitime-solver-1:
+        container_name: unitime-solver-1
+        hostname: unitime-solver-1
         depends_on:
             - unitime-db
         build:
             context: ../..
             dockerfile: docker/cluster/solver.Dockerfile
         environment:
-            - JDK_JAVA_OPTIONS=-Xmx4g -Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-web-1[7800],unitime-web-2[7800]
+            - JDK_JAVA_OPTIONS=-Xmx4g -Dconnection.url=jdbc:mysql://unitime-db:3306/timetable -Dunitime.solver.cluster=true -Dunitime.solver.port=7800 -Dunitime.solver.initial_hosts=unitime-tomcat-1[7800],unitime-tomcat-2[7800],unitime-solver-1[7800]
         volumes:
             - "unitime-solver-logs:/usr/local/solver/logs"
             - "unitime-solver-backup:/usr/local/solver/restore"
@@ -73,16 +76,16 @@ services:
     unitime-web:
         container_name: unitime-web
         depends_on:
-            - unitime-web-1
-            - unitime-web-2
+            - unitime-tomcat-1
+            - unitime-tomcat-2
         build:
             context: .
             dockerfile: nginx.Dockerfile
         ports:
             - 80:80
         links:
-            - unitime-web-1
-            - unitime-web-2
+            - unitime-tomcat-1
+            - unitime-tomcat-2
 
 volumes:
     unitime-data-1:
