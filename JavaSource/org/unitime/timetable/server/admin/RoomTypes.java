@@ -193,6 +193,4 @@ public class RoomTypes implements AdminTable {
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		delete(RoomTypeDAO.getInstance().get(record.getUniqueId(), hibSession), context, hibSession);
 	}
-
-
 }

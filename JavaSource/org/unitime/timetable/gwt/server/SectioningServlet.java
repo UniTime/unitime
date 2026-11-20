@@ -2209,6 +2209,10 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 				if (sessionContext.getUser().getCurrentAuthority() != null)
 					filter.setOption("role", sessionContext.getUser().getCurrentAuthority().getRole());
 			}
+			CourseOffering course = CourseOfferingDAO.getInstance().get(courseId);
+			if (course == null)
+				throw new SectioningException(MSG.validationUnknownCourseNotExists());
+			getSessionContext().checkPermission(course.getInstructionalOffering(), Right.OfferingEnrollments);
 			if (online) {
 				Long sessionId = getStatusPageSessionId();
 				

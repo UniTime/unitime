@@ -43,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
@@ -2574,13 +2573,6 @@ public class CurriculaServlet implements CurriculaService {
 			sLog.error(e.getMessage(), e);
 			throw new CurriculaException(e.getMessage());
 		}
-	}
-	
-	public String[] getApplicationProperty(String[] name) throws CurriculaException, PageAccessException {
-		String[] ret = new String[name.length];
-		for (int i = 0; i < name.length; i++)
-			ret[i] = ApplicationProperties.getProperty(name[i]);
-		return ret;
 	}
 	
 	@PreAuthorize("checkPermission('CurriculumAdd') and checkPermission('CurriculumView')")
