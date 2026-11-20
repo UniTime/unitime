@@ -18,11 +18,11 @@
  * limitations under the License.
  * 
 --%>
+<%@page import="org.springframework.web.util.HtmlUtils"%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" isErrorPage="true"%>
 <%@ taglib uri="http://www.unitime.org/tags-custom" prefix="tt" %>
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-
 <HTML>
 <HEAD>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -122,21 +122,27 @@
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class="content">
 	<% if (exception!=null) { %>
-		<TABLE style="unitime-MainTable">
+		<TABLE class="unitime-MainTable">
 			<TR>
 				<TD colspan="2">
-					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%= 
-						(exception.getMessage() != null
-	                        && exception.getMessage().indexOf("$jsp:") >= 0 
-	                    ? exception.getMessage()
-	                               .substring( exception.getMessage().indexOf(':') + 2 )
-	                    : exception.getMessage())%></FONT>
+					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%=HtmlUtils.htmlEscape(
+							exception.getMessage() != null && exception.getMessage().indexOf("$jsp:") >= 0 ?
+							exception.getMessage().substring( exception.getMessage().indexOf(':') + 2 ) :
+							exception.getMessage())%></FONT>
 	                </DIV>
 				</TD>
 			</TR>
 			<TR align="left" valign="top">
 				<TD>Trace:</TD>
-				<TD><FONT color="898989" style="white-space: pre;"><% exception.printStackTrace(new PrintWriter(out));%></FONT></TD>
+				<TD><FONT color="898989"><%=exception.getClass().getName() + ": " + HtmlUtils.htmlEscape(exception.getMessage())%>
+				<%
+					for (StackTraceElement e: exception.getStackTrace()) {
+						if (e.toString().startsWith("org.unitime.timetable.filter")) break;
+						if (e.toString().startsWith("org.unitime"))
+							out.println("<br>at " + HtmlUtils.htmlEscape(e.toString()));
+					}
+					%>
+				</FONT></TD>
 			</TR>
 		</TABLE>
 	<% } %>

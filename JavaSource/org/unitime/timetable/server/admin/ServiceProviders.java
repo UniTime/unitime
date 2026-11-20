@@ -194,6 +194,12 @@ public class ServiceProviders implements AdminTable {
 			ToolBox.equals(provider.getEmail(), record.getField(3)) &&
 			ToolBox.equals(provider.isAllRooms(), "true".equalsIgnoreCase(record.getField(5))) &&
 			ToolBox.equals(provider.isAllRooms(), "true".equalsIgnoreCase(record.getField(6)))) return;
+		if (provider.getDepartment() != null)
+			context.checkPermission(provider.getDepartment(), Right.EventServiceProviderEditDepartment);
+		else if (provider.getSession() != null)
+			context.checkPermission(provider.getSession(), Right.EventServiceProviderEditSession);
+		else
+			context.checkPermission(Right.EventServiceProviderEditGlobal);
 		provider.setReference(record.getField(0));
 		provider.setLabel(record.getField(1));
 		provider.setNote(record.getField(2));
@@ -218,6 +224,12 @@ public class ServiceProviders implements AdminTable {
 
 	protected void delete(EventServiceProvider provider, SessionContext context, Session hibSession) {
 		if (provider == null) return;
+		if (provider.getDepartment() != null)
+			context.checkPermission(provider.getDepartment(), Right.EventServiceProviderEditDepartment);
+		else if (provider.getSession() != null)
+			context.checkPermission(provider.getSession(), Right.EventServiceProviderEditSession);
+		else
+			context.checkPermission(Right.EventServiceProviderEditGlobal);		
 		ChangeLog.addChange(hibSession,
 				context,
 				provider,

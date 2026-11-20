@@ -78,7 +78,7 @@ public class CourseSelectionBoxBackend {
 		ApplicationProperties.setSessionId(sessionId);
 		boolean admin = context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		if (!admin)
-			context.hasPermissionAnySession(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
+			context.checkPermissionAnySession(Right.InstructorSurvey, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 	}
 
 	@GwtRpcImplements(ListCourseOfferings.class)

@@ -157,7 +157,7 @@ public class RequestInstructorSurveyBackend implements GwtRpcImplementation<Inst
 		boolean admin = context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)});
 		String externalId = context.getUser().getExternalUserId();
 		if (request.getExternalId() != null && !request.getExternalId().isEmpty() && !externalId.equals(request.getExternalId())) {
-			context.hasPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)}); 
+			context.checkPermissionAnySession(Right.InstructorSurveyAdmin, new Qualifiable[] { new SimpleQualifier("Session", sessionId)}); 
 			externalId = request.getExternalId();
 		}
 		boolean editable = true;

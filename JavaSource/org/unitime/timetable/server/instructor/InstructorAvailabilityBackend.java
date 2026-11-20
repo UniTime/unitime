@@ -106,7 +106,7 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 				model.setDefaultHorizontal(true);
 			} else {
 				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(request.getInstructorId()));
-				context.hasPermission(Right.Instructors);
+				context.checkPermission(instructor.getDepartment(), Right.Instructors);
 				for (Preference pref: instructor.getPreferences()) {
 					if (pref instanceof TimePref) {
 						model.setPattern(((TimePref) pref).getPreference());
