@@ -897,11 +897,13 @@ public class ReservationServlet implements ReservationService {
 						r = new LearningCommunityReservation();
 					else
 						throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
+					r.setInstructionalOffering(offering);
+				} else if (!offering.equals(r.getInstructionalOffering())) {
+					throw new ReservationException("Offering cannot be changed for an existing reservation");
 				}
 				r.setLimit(r instanceof IndividualReservation ? null : reservation.getLimit());
 				r.setStartDate(reservation.getStartDate());
 				r.setExpirationDate(reservation.getExpirationDate());
-				r.setInstructionalOffering(offering);
 				r.setInclusive(reservation.isInclusive());
 				if (r instanceof IndividualOverrideReservation) {
 					((IndividualOverrideReservation)r).setAllowOverlap(reservation.isAllowOverlaps());

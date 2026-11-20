@@ -24,6 +24,7 @@
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
+<%@ page import="org.springframework.web.util.HtmlUtils"%>
 
 <%
 	try {
@@ -144,8 +145,8 @@
 				<TD colspan="2">
 					<DIV class="WelcomeRowHead">
 						<FONT color="898989">Error: </FONT>
-						<FONT color="#FF0000"><%= 
-						(exception.getMessage() != null
+						<FONT color="#FF0000"><%=HtmlUtils.htmlEscape( 
+						exception.getMessage() != null
 	                        && exception.getMessage().indexOf("$jsp:") >= 0 
 	                    ? exception.getMessage()
 	                               .substring( exception.getMessage().indexOf(':') + 2 )
@@ -161,11 +162,16 @@
 			String stackTrace = wos.toString();
 		%>
 			<TR align="left" valign="top">
-				<TD><FONT color="898989">Trace: </FONT></TD>
-				<TD> <FONT color="898989"> <%
-					       out.print(stackTrace);
-				    %></FONT>
-				</TD>
+				<TD>Trace:</TD>
+				<TD><FONT color="898989"><%=exception.getClass().getName() + ": " + HtmlUtils.htmlEscape(exception.getMessage())%>
+				<%
+					for (StackTraceElement e: exception.getStackTrace()) {
+						if (e.toString().startsWith("org.unitime.timetable.filter")) break;
+						if (e.toString().startsWith("org.unitime"))
+							out.println("<br>at " + HtmlUtils.htmlEscape(e.toString()));
+					}
+					%>
+				</FONT></TD>
 			</TR>
 		</TABLE>
 	<% } %>

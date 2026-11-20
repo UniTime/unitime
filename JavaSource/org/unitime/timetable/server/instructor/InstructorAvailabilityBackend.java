@@ -37,6 +37,7 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 /**
@@ -78,6 +79,7 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 				model.setPattern(request.getInstructorId());
 			} else {
 				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(request.getInstructorId()));
+				context.checkPermission(instructor.getDepartment(), Right.Instructors);
 				for (Preference pref: instructor.getPreferences()) {
 					if (pref instanceof TimePref) {
 						model.setPattern(((TimePref) pref).getPreference());

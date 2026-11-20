@@ -37,9 +37,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
-import org.unitime.timetable.gwt.server.CalendarServlet.HttpParams;
-import org.unitime.timetable.gwt.server.CalendarServlet.Params;
-import org.unitime.timetable.gwt.server.CalendarServlet.QParams;
+import org.unitime.timetable.export.ExportServletHelper;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -61,19 +59,12 @@ public class UploadServlet extends HttpServlet {
 	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		Params params = null;
-		String q = request.getParameter("q");
-		if (q != null) {
-			params = new QParams(q);
-		} else {
-			params = new HttpParams(request);
-		}
-		if (params.getParameter("event") != null) {
-			Long eventId = Long.parseLong(params.getParameter("event"));
-			String fileName = params.getParameter("name");
-			Long noteId = (params.getParameter("note") == null ? null : Long.valueOf(params.getParameter("note")));
-			if (q == null)
-				getSessionContext().checkPermissionAnyAuthority(Long.valueOf(eventId), "Event", Right.EventDetail);
+		ExportServletHelper helper = new ExportServletHelper(request, response, getSessionContext());
+		if (helper.getParameter("event") != null) {
+			Long eventId = Long.parseLong(helper.getParameter("event"));
+			String fileName = helper.getParameter("name");
+			Long noteId = (helper.getParameter("note") == null ? null : Long.valueOf(helper.getParameter("note")));
+			helper.getSessionContext().checkPermissionAnyAuthority(Long.valueOf(eventId), "Event", Right.EventDetail);
 			Event event = EventDAO.getInstance().get(eventId);
 			TreeSet<EventNote> notes = new TreeSet<EventNote>();
 			if (event != null)
@@ -129,7 +120,7 @@ public class UploadServlet extends HttpServlet {
 				message = "No file is selected.";
 			}
 			
-			response.setContentType("text/html; charset=UTF-8");
+			response.setContentType("text/plain; charset=UTF-8");
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter out = response.getWriter();
 			out.print(message);

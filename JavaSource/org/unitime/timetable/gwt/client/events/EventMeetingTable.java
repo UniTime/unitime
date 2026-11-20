@@ -79,6 +79,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -2295,7 +2296,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				for (int i = line + 1; i < iValue.size(); i++)
 					html += "<br>" + iValue.get(i);
 			}
-			setHTML(html);
+			setHTML(SimpleHtmlSanitizer.sanitizeHtml(html));
 		}
 	}
 	

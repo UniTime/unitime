@@ -77,6 +77,9 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -522,7 +525,7 @@ public class EventDetail extends Composite {
 				row.add(new HTML(note.getUser() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getUser()));
 				row.add(new HTML(note.getType() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getType().getName()));
 				row.add(new HTML(note.getMeetings() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : note.getMeetings()));
-				row.add(new HTML(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>")));
+				row.add(new HTML(SimpleHtmlSanitizer.sanitizeHtml(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>"))));
 				if (note.hasAttachment()) {
 					ImageLink link = new ImageLink(new Image(RESOURCES.download()), note.hasLink() ?
 							GWT.getHostPageBaseURL() + "upload?q=" + note.getLink() :
