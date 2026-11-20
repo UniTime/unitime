@@ -63,6 +63,7 @@ import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
@@ -1141,7 +1142,7 @@ public class TimeGrid extends Composite {
 					iHint.addRow(MESSAGES.propType(), new Label(iEvent.getType().getAbbreviation(CONSTANTS), false));
 				}
 				if (iEvent.hasEventNote())
-					iHint.addRow(MESSAGES.propNote(), new HTML(iEvent.getEventNote("<br>").replace("\n", "<br>"), true));
+					iHint.addRow(MESSAGES.propNote(), new HTML(SimpleHtmlSanitizer.sanitizeHtml(iEvent.getEventNote("<br>").replace("\n", "<br>"))));
 				ToolBox.setMaxWidth(iHint.getElement().getStyle(), "400px");
 				iHint.addRow(MESSAGES.propDate(), new HTML(iDates, true));
 				iHint.addRow(MESSAGES.propPublishedTime(), new Label(iMeeting.getMeetingTime(CONSTANTS), false));

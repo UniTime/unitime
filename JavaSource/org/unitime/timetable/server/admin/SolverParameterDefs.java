@@ -308,6 +308,7 @@ public class SolverParameterDefs implements AdminTable, HasFilter, AdminTable.Ha
 	}
 	
 	@Override
+	@PreAuthorize("checkPermission('SolverParameters')")
 	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
 		SolverParameterDef type = SolverParameterDefDAO.getInstance().get(record.getUniqueId(), hibSession);
 		if (type != null) {

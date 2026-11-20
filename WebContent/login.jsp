@@ -24,6 +24,7 @@
 <%@ taglib prefix="tt" uri="http://www.unitime.org/tags-custom" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <loc:bundle name="CourseMessages">
 <html lang='<%=Localization.getLanguage()%>'>
 <head>
@@ -75,7 +76,8 @@
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="login"/>
 <form action="login" name="f" method="POST">
 	<INPUT type="hidden" name="cs" value="login">
-	<input type="hidden" name="target" value="${param.target}"/>
+	
+	<input type="hidden" name="target" value="${fn:escapeXml(param.target)}"/>
 	<div class='unitime-Login'>
 		<span class="mobile-menu-button" id='UniTimeGWT:MobileMenuButton'></span>
 		<span class='logo'><img src="images/unitime.png" border="0" alt="UniTime"></span>

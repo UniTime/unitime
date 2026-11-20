@@ -336,11 +336,11 @@ public class ReservationEdit extends Composite {
 		
 		iCourseBox = new ReservationCourseSelectionBox();
 		iCourseBox.setWidth("130px");
-		iCurriculaService.getApplicationProperty(new String[] {"unitime.curricula.courseWidth"}, new AsyncCallback<String[]>() {
+		iCurriculaService.getCourseWidth(new AsyncCallback<String>() {
 			@Override
-			public void onSuccess(String[] ret) {
-				if (ret != null && ret.length >= 1 && ret[0] != null && ret[0].length() > 0) {
-					iCourseBox.setWidth(ret[0]);
+			public void onSuccess(String ret) {
+				if (ret != null && ret != null && ret.length() > 0) {
+					iCourseBox.setWidth(ret);
 				}
 			}
 			@Override

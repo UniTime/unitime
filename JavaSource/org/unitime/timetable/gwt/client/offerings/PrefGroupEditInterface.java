@@ -1216,7 +1216,7 @@ public class PrefGroupEditInterface {
 		
 		public DistributionEditRequest() {}
 
-		public Long getPreferenceId() { return iPreferenceId; }
+		public Long getPreferenceId() { return iData == null ? iPreferenceId : iData.getPreferenceId(); }
 		public void setPreferenceId(Long preferenceId) { iPreferenceId = preferenceId; }
 		public Long getClassId() { return iClassId; }
 		public void setClassId(Long classId) { iClassId = classId; }

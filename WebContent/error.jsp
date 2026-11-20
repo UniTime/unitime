@@ -24,6 +24,7 @@
 <%@ page import="java.io.PrintWriter"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.localization.impl.Localization"%>
+<%@ page import="org.springframework.web.util.HtmlUtils"%>
 <loc:bundle name="org.unitime.timetable.gwt.resources.GwtAriaMessages" id="ARIA">
 <HTML lang='<%=Localization.getLanguage()%>'>
 <HEAD>
@@ -124,21 +125,27 @@
 		<span class="mobile-menu" id='UniTimeGWT:MobileMenuPanel'></span>
 		<span class="content">
 	<% if (exception!=null) { %>
-		<TABLE style="unitime-MainTable">
+		<TABLE class="unitime-MainTable">
 			<TR>
 				<TD colspan="2">
-					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%= 
-						(exception.getMessage() != null
-	                        && exception.getMessage().indexOf("$jsp:") >= 0 
-	                    ? exception.getMessage()
-	                               .substring( exception.getMessage().indexOf(':') + 2 )
-	                    : exception.getMessage())%></FONT>
+					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%=HtmlUtils.htmlEscape(
+							exception.getMessage() != null && exception.getMessage().indexOf("$jsp:") >= 0 ?
+							exception.getMessage().substring( exception.getMessage().indexOf(':') + 2 ) :
+							exception.getMessage())%></FONT>
 	                </DIV>
 				</TD>
 			</TR>
 			<TR align="left" valign="top">
 				<TD>Trace:</TD>
-				<TD><FONT color="898989" style="white-space: pre;"><% exception.printStackTrace(new PrintWriter(out));%></FONT></TD>
+				<TD><FONT color="898989"><%=exception.getClass().getName() + ": " + HtmlUtils.htmlEscape(exception.getMessage())%>
+				<%
+					for (StackTraceElement e: exception.getStackTrace()) {
+						if (e.toString().startsWith("org.unitime.timetable.filter")) break;
+						if (e.toString().startsWith("org.unitime"))
+							out.println("<br>at " + HtmlUtils.htmlEscape(e.toString()));
+					}
+					%>
+				</FONT></TD>
 			</TR>
 		</TABLE>
 	<% } %>

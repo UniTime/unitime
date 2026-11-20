@@ -87,11 +87,13 @@ public class Users implements AdminTable {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Users')")
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		throw new GwtRpcException(MESSAGES.errorOperationNotSupported());
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Users')")
 	public void save(Record record, SessionContext context, Session hibSession) {
 		User user = new User();
 		user.setExternalUniqueId(record.getField(0));
@@ -108,6 +110,7 @@ public class Users implements AdminTable {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Users')")
 	public void update(Record record, SessionContext context, Session hibSession) {
 		User user = User.findByExternalId(record.getField(0));
 		if (user != null) {
@@ -135,6 +138,7 @@ public class Users implements AdminTable {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Users')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		User user = User.findByExternalId(record.getField(0));
 		if (user != null)

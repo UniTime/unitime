@@ -189,11 +189,12 @@ public class ExamEditBackend implements GwtRpcImplementation<ExamEditRequest, Ex
 					}
 					
 					exam.getOwners().clear();
+					TreeSet<SubjectArea> subjects = SubjectArea.getUserSubjectAreas(context.getUser(), true);
 					if (data.hasExamObjects()) {
 						for (ExamObjectInterface eo: data.getExamObjects()) {
 							if (eo.getCourseId() == null || !eo.isValid()) continue;
 							CourseOffering course = CourseOfferingDAO.getInstance().get(eo.getCourseId(), hibSession);
-							if (course == null) continue;
+							if (course == null || !subjects.contains(course.getSubjectArea())) continue;
 							ExamOwner owner = new ExamOwner();
 							if (eo.getSubpartId() == Long.MIN_VALUE) { //course
 					            owner.setOwner(course);

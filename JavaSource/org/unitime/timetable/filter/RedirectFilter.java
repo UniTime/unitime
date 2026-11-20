@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.StartupService;
@@ -478,7 +479,7 @@ public class RedirectFilter implements Filter {
 		target = target.trim();
 		if (target.isEmpty()) return null;
 		if (target.indexOf('\r') >= 0 || target.indexOf('\n') >= 0) return null;
-		if (target.contains("://") || target.startsWith("//") || target.startsWith("\\\\")) return null;
+		if (target.matches("(/|\\\\|%5[cC])(/|\\\\|%5[cC]).*") || target.matches(".*:(/|\\\\|%5[cC])(/|\\\\|%5[cC]).*")) return null;
 		return target;
 	}
 }

@@ -44,7 +44,12 @@ public class RoomPictureServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String idStr = request.getParameter("id");
 		if (idStr != null) {
-			Long id = Long.valueOf(idStr);
+			Long id = null;
+			try {
+				id = Long.valueOf(idStr);
+			} catch (NumberFormatException e) {
+				throw new ServletException("Room picture id is not a number.");
+			}
 			LocationPicture picture = null;
 			if (id >= 0) {
 				picture = LocationPictureDAO.getInstance().get(id);

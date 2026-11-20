@@ -252,14 +252,14 @@ public class SavedHQLInterface implements IsSerializable {
 	}
 	
 	public static class HQLExecuteRpcRequest implements GwtRpcRequest<Table> {
-		private Query iQuery;
+		private Long iQueryId;
 		private List<IdValue> iOptions = new ArrayList<IdValue>();
 		private int iFromRow, iMaxRows;
 		
 		public HQLExecuteRpcRequest() {}
 		
-		public void setQuery(Query query) { iQuery = query; }
-		public Query getQuery() { return iQuery; }
+		public void setQueryId(Long queryId) { iQueryId = queryId; }
+		public Long getQueryId() { return iQueryId; }
 		
 		public void addOption(String value, String text) {
 			iOptions.add(new IdValue(value, text));
@@ -274,8 +274,17 @@ public class SavedHQLInterface implements IsSerializable {
 		
 		@Override
 		public String toString() {
-			return iQuery.getName() + " {options: " + getOptions() + ", from:" + getFromRow() + ", max:" + getMaxRows() + "}";
+			return iQueryId + " {options: " + getOptions() + ", from:" + getFromRow() + ", max:" + getMaxRows() + "}";
 		}
+	}
+	
+	public static class HQLTestRpcRequest implements GwtRpcRequest<GwtRpcResponseLong> {
+		private Query iQuery;
+		
+		public HQLTestRpcRequest() {}
+		
+		public void setQuery(Query query) { iQuery = query; }
+		public Query getQuery() { return iQuery; }
 	}
 	
 	public static class HQLStoreRpcRequest extends Query implements GwtRpcRequest<GwtRpcResponseLong> {

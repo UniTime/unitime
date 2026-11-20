@@ -64,6 +64,7 @@ import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLOptionsRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLQueriesRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLSetBackRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLStoreRpcRequest;
+import org.unitime.timetable.gwt.shared.SavedHQLInterface.HQLTestRpcRequest;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Parameter;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
@@ -178,23 +179,26 @@ public class SavedHQLPage extends Composite {
 			public void onClick(ClickEvent event) {
 				HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
 				Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
+				SavedHQLInterface.Query query = null;
 				for (SavedHQLInterface.Query q: iQueries) {
 					if (id.equals(q.getId())) {
-						request.setQuery(q); break;
+						query = q;
+						request.setQueryId(query.getId());
+						break;
 					}
 				}
-				if (request.getQuery() == null) {
+				if (query == null) {
 					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 					return;
 				}
 				final SimpleForm form = new SimpleForm();
-				form.addHeaderRow(request.getQuery().getName());
-				if (!request.getQuery().getDescription().isEmpty())
-					form.addRow(MESSAGES.propDescription(), new HTML(request.getQuery().getDescription()));
+				form.addHeaderRow(query.getName());
+				if (!query.getDescription().isEmpty())
+					form.addRow(MESSAGES.propDescription(), new HTML(query.getDescription()));
 				
 				for (int i = 0; i < iOptions.size(); i++) {
 					SavedHQLInterface.Option option = iOptions.get(i);
-					if (request.getQuery().getQuery().contains("%" + option.getType() + "%")) {
+					if (query.getQuery().contains("%" + option.getType() + "%")) {
 						ListBox list = ((UniTimeWidget<ListBox>)iForm.getWidget(3 + i, 1)).getWidget();
 						String value = "";
 						String values = "";
@@ -221,8 +225,8 @@ public class SavedHQLPage extends Composite {
 						form.addRow(option.getName() + ":", new Label(values, true));
 					}
 				}
-				if (request.getQuery().hasParameters()) {
-					for (Parameter p: request.getQuery().getParameters()) {
+				if (query.hasParameters()) {
+					for (Parameter p: query.getParameters()) {
 						String value = iParams.get(p.getName());
 						if (value != null)
 							request.addOption(p.getName(), value);
@@ -253,7 +257,7 @@ public class SavedHQLPage extends Composite {
 						}
 					}
 				}
-				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(request.getQuery().getName()));
+				LoadingWidget.getInstance().show(MESSAGES.waitExecuting(query.getName()));
 				request.setFromRow(0); request.setMaxRows(10000);
 				RPC.execute(request, new AsyncCallback<Table>() {
 					@Override
@@ -710,11 +714,9 @@ public class SavedHQLPage extends Composite {
 						}
 					}
 					LoadingWidget.getInstance().show(MESSAGES.waitTestingQuery());
-					HQLExecuteRpcRequest request = new HQLExecuteRpcRequest();
+					HQLTestRpcRequest request = new HQLTestRpcRequest();
 					request.setQuery(iDialogQuery);
-					request.setFromRow(0);
-					request.setMaxRows(101);
-					RPC.execute(request, new AsyncCallback<Table>() {
+					RPC.execute(request, new AsyncCallback<GwtRpcResponseLong>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							iDialogHeader.setErrorMessage(MESSAGES.failedTestNoReason());
@@ -723,8 +725,8 @@ public class SavedHQLPage extends Composite {
 						}
 
 						@Override
-						public void onSuccess(Table result) {
-							iDialogHeader.setMessage(result.size() <= 1 ? MESSAGES.infoTestSucceededNoResults() : result.size() > 101 ? MESSAGES.infoTestSucceededWith100OrMoreRows() : MESSAGES.infoTestSucceededWithRows(result.size() - 1));
+						public void onSuccess(GwtRpcResponseLong result) {
+							iDialogHeader.setMessage(result.getValue() <= 0 ? MESSAGES.infoTestSucceededNoResults() : result.getValue() > 100 ? MESSAGES.infoTestSucceededWith100OrMoreRows() : MESSAGES.infoTestSucceededWithRows(result.getValue().intValue()));
 							LoadingWidget.getInstance().hide();
 						}
 					});
@@ -1189,19 +1191,22 @@ public class SavedHQLPage extends Composite {
 		iHeader.setEnabled("exportXls", false);
 
 		Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
+		SavedHQLInterface.Query query = null;
 		for (SavedHQLInterface.Query q: iQueries) {
 			if (id.equals(q.getId())) {
-				request.setQuery(q); break;
+				query = q;
+				request.setQueryId(q.getId());
+				break;
 			}
 		}
-		if (request.getQuery() == null) {
+		if (query == null) {
 			iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 			return;
 		}
-		iLastHistory = request.getQuery().getId().toString();
+		iLastHistory = query.getId().toString();
 		for (int i = 0; i < iOptions.size(); i++) {
 			SavedHQLInterface.Option option = iOptions.get(i);
-			if (request.getQuery().getQuery().contains("%" + option.getType() + "%")) {
+			if (query.getQuery().contains("%" + option.getType() + "%")) {
 				SavedHQLInterface.IdValue o = new SavedHQLInterface.IdValue();
 				o.setValue(option.getType());
 				ListBox list = ((UniTimeWidget<ListBox>)iForm.getWidget(3 + i, 1)).getWidget();
@@ -1226,8 +1231,8 @@ public class SavedHQLPage extends Composite {
 				iLastHistory += ":" + (list.isMultipleSelect() && allSelected ? "" : value);
 			}
 		}
-		if (request.getQuery().hasParameters()) {
-			for (Parameter p: request.getQuery().getParameters()) {
+		if (query.hasParameters()) {
+			for (Parameter p: query.getParameters()) {
 				String value = iParams.get(p.getName());
 				if (p.hasOptions() && !p.isMultiSelect()) {
 					String v = iParams.get(p.getName());
@@ -1245,7 +1250,7 @@ public class SavedHQLPage extends Composite {
 		iTable.clearTable();
 		iTableHeader.clearMessage();
 		iHeader.clearMessage();
-		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(request.getQuery().getName()));
+		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(query.getName()));
 		History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
 		request.setFromRow(iFirstLine);
 		request.setMaxRows(101);

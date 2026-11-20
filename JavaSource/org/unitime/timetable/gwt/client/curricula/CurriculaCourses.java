@@ -205,12 +205,12 @@ public class CurriculaCourses extends Composite implements SimpleForm.HasMobileS
 				return null;
 			}
 		});
-		iCurriculaService.getApplicationProperty(new String[] {"unitime.curricula.courseWidth"}, new AsyncCallback<String[]>() {
+		iCurriculaService.getCourseWidth(new AsyncCallback<String>() {
 			
 			@Override
-			public void onSuccess(String[] ret) {
-				if (ret != null && ret.length >= 1 && ret[0] != null && ret[0].length() > 0) {
-					iCurriculumBoxWidth = ret[0];
+			public void onSuccess(String ret) {
+				if (ret != null && ret != null && ret.length() > 0) {
+					iCurriculumBoxWidth = ret;
 					for (int row = iTable.getRowCount() - 1; row > 0; row --) {
 						CurriculaCourseSelectionBox course = (CurriculaCourseSelectionBox)iTable.getWidget(row, 1);
 						course.setWidth(iCurriculumBoxWidth);

@@ -44,7 +44,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
@@ -2588,11 +2587,8 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	public String[] getApplicationProperty(String[] name) throws CurriculaException, PageAccessException {
-		String[] ret = new String[name.length];
-		for (int i = 0; i < name.length; i++)
-			ret[i] = ApplicationProperties.getProperty(name[i]);
-		return ret;
+	public String getCourseWidth() throws CurriculaException, PageAccessException {
+		return ApplicationProperty.CurriculaCourseWidth.value();
 	}
 	
 	@PreAuthorize("checkPermission('CurriculumAdd') and checkPermission('CurriculumView')")
