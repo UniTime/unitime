@@ -976,7 +976,7 @@ public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<
 	
 	private class AdvisorAcademicSessionSelector extends AcademicSessionSelector {
 		public AdvisorAcademicSessionSelector() {
-			super(UniTimePageHeader.getInstance().getRight(), StudentSectioningPage.Mode.REQUESTS);
+			super(UniTimePageHeader.getInstance().getRight(), StudentSectioningPage.Mode.REQUESTS, false);
 		}
 
 		public void selectSession() {

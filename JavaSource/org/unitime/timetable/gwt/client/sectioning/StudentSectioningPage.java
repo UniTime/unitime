@@ -119,7 +119,7 @@ public class StudentSectioningPage extends Composite {
 				}
 			});
 		
-		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), mode);
+		final AcademicSessionSelector sessionSelector = new AcademicSessionSelector(UniTimePageHeader.getInstance().getRight(), mode, true);
 		final String hash = Location.getHash();
 		
 		iSectioningService.getProperties(null, new AsyncCallback<SectioningProperties>() {

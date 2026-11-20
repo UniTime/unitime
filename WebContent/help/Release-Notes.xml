@@ -29,6 +29,27 @@
 	<version>4.9.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Student Scheduling</title>
+		<item>
+			<name>Advisor Course Recommendations: Session Selection</name>
+			<description>
+				<line>Do not change the current academic session (below the page name) until a student is selected.
+					<line>This makes it clearer which academic session is used when the Lookup Student dialog is used.</line>
+				</line>
+				<line>Do not show Mode in the Select Academic Session dialog.
+					<line>It is not relevant; the page shows Course Requests for all available academic sessions.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Assistant, Student Course Requests: Session Selection</name>
+			<description>
+				<line>When the page is not used by a student (e.g., showing all available academic sessions), only show those where the mode matches the page.</line>
+				<line>For example, when used by an admin/advisor without having a student selected, the page would only show Scheduling Assistant sessions for the Student Scheduling Assistant page and Course Requests sessions for the Student Course Requests page.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Administration</title>
 		<item>
 			<name>Various Tooltips: Additional Permission Checking</name>

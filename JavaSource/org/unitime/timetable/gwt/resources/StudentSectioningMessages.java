@@ -2959,6 +2959,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Lookup Student")
 	String dialogStudentLookup();
 	
+	@DefaultMessage("Lookup Student for {0}")
+	String dialogStudentLookupForSession(String session);
+	
 	@DefaultMessage("Credit Hours&nbsp;&nbsp;&nbsp;Notes")
 	String headCreditHoursNotes();
 		

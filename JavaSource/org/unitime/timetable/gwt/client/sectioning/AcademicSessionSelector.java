@@ -64,16 +64,13 @@ public class AcademicSessionSelector implements AcademicSessionProvider, Academi
 	
 	private Vector<AcademicSessionChangeHandler> iAcademicSessionChangeHandlers = new Vector<AcademicSessionChangeHandler>();
 	private StudentSectioningPage.Mode iMode;
+	private boolean iShowMode = true;
 	
-	public AcademicSessionSelector(InfoPanel panel, StudentSectioningPage.Mode mode) {
+	public AcademicSessionSelector(InfoPanel panel, StudentSectioningPage.Mode mode, boolean showMode) {
 		iMode = mode;
 		iPanel = panel;
-		iPanel.setPreventDefault(true);
-		iPanel.setVisible(true);
-		iPanel.setText(MESSAGES.sessionSelectorNoSession());
-		iPanel.setHint(MESSAGES.sessionSelectorHint());
-		iPanel.setAriaLabel(ARIA.sessionNoSession());
-		iPanel.setInfo(null);
+		iShowMode = showMode;
+		if (showMode) setupPanelIfNeeded();
 		
 		iDialog = new MyDialogBox();
 		iDialog.setText(MESSAGES.sessionSelectorSelect());
@@ -83,24 +80,30 @@ public class AcademicSessionSelector implements AcademicSessionProvider, Academi
 		iDialog.setModal(true);
 		
 		iSessions = new UniTimeTable<AcademicSessionInfo>();
-		iSessions.addRow(null,
-				new UniTimeTableHeader(MESSAGES.colYear()),
-				new UniTimeTableHeader(MESSAGES.colTerm()),
-				new UniTimeTableHeader(MESSAGES.colCampus()),
-				new UniTimeTableHeader(MESSAGES.colMode()));
+		if (iShowMode)
+			iSessions.addRow(null,
+					new UniTimeTableHeader(MESSAGES.colYear()),
+					new UniTimeTableHeader(MESSAGES.colTerm()),
+					new UniTimeTableHeader(MESSAGES.colCampus()),
+					new UniTimeTableHeader(MESSAGES.colMode()));
+		else
+			iSessions.addRow(null,
+					new UniTimeTableHeader(MESSAGES.colYear()),
+					new UniTimeTableHeader(MESSAGES.colTerm()),
+					new UniTimeTableHeader(MESSAGES.colCampus()));
 		iSessions.addRow(null, new EmptyTableCell(MESSAGES.sessionSelectorLoading()));
 		iSessions.setAllowSelection(true);
 		iSessions.setWidth("100%");
 		
 		iDialog.add(iSessions);
 		
-		ClickHandler ch = new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				selectSession();
-			}
-		};
-		
-		iPanel.setClickHandler(ch);
+		if (showMode) {
+			iPanel.setClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					selectSession();
+				}
+			});
+		}
 		
 		iSessions.addMouseClickListener(new UniTimeTable.MouseClickListener<AcademicSessionInfo>() {
 
@@ -113,8 +116,25 @@ public class AcademicSessionSelector implements AcademicSessionProvider, Academi
 		});
 	}
 	
+	protected void setupPanelIfNeeded() {
+		if (!iPanel.isPreventDefault()) {
+			iPanel.setPreventDefault(true);
+			iPanel.setVisible(true);
+			iPanel.setText(MESSAGES.sessionSelectorNoSession());
+			iPanel.setAriaLabel(ARIA.sessionNoSession());
+			iPanel.setHint(MESSAGES.sessionSelectorHint());
+			iPanel.setInfo(null);
+			iPanel.setClickHandler(new ClickHandler() {
+				public void onClick(ClickEvent event) {
+					selectSession();
+				}
+			});
+		}
+	}
+	
 	private void rowSelected(int row, AcademicSessionInfo session) {
 		iDialog.hide();
+		setupPanelIfNeeded();
 		iPanel.setText(MESSAGES.sessionSelectorLabel(session.getYear(), session.getTerm(), session.getInitiative()));
 		iPanel.setAriaLabel(ARIA.sessionCurrent(session.getYear(), session.getTerm(), session.getCampus()));
 		selectSession(session, true);
@@ -136,12 +156,18 @@ public class AcademicSessionSelector implements AcademicSessionProvider, Academi
 				int row = 1;
 				int lastSession = -1;
 				for (AcademicSessionInfo session: result) {
-					iSessions.addRow(session, 
-							new Label(session.getYear()),
-							new Label(session.getTerm()),
-							new Label(session.getCampus()),
-							new Label(session.isSectioning() ? MESSAGES.modeSectioning() : MESSAGES.modeRequests())
-							);
+					if (iShowMode)
+						iSessions.addRow(session, 
+								new Label(session.getYear()),
+								new Label(session.getTerm()),
+								new Label(session.getCampus()),
+								new Label(session.isSectioning() ? MESSAGES.modeSectioning() : MESSAGES.modeRequests())
+								);
+					else
+						iSessions.addRow(session, 
+								new Label(session.getYear()),
+								new Label(session.getTerm()),
+								new Label(session.getCampus()));
 					if (session.equals(iSession)) lastSession = row;
 					row++;
 				}
@@ -212,6 +238,7 @@ public class AcademicSessionSelector implements AcademicSessionProvider, Academi
 	public void selectSession(AcademicSessionInfo session, boolean fireChangeEvent) {
 		Long oldSessionId = (iSession == null ? null : iSession.getSessionId());
 		iSession = session;
+		setupPanelIfNeeded();
 		if (iSession == null) {
 			iPanel.setText(MESSAGES.sessionSelectorNoSession());
 			iPanel.setAriaLabel(ARIA.sessionNoSession());

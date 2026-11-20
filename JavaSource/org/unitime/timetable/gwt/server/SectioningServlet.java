@@ -843,8 +843,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 						) continue;
 				} else {
 					if (!getSessionContext().hasPermissionOtherAuthority(session, Right.SchedulingAssistant, getStudentAuthority(session))) continue;
+					Long studentId = getStudentId(session.getUniqueId());
+					if (studentId == null && !sectioning) continue;
 					if (preferStudentCampus) {
-						Long studentId = getStudentId(session.getUniqueId());
 						if (studentId != null) {
 							Student student = StudentDAO.getInstance().get(studentId);
 							StudentAreaClassificationMajor primary = (student == null ? null : student.getPrimaryAreaClasfMajor());
@@ -886,8 +887,9 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 							) continue;
 					} else {
 						if (!getSessionContext().hasPermissionOtherAuthority(session, Right.CourseRequests, getStudentAuthority(session))) continue;
+						Long studentId = getStudentId(session.getUniqueId());
+						if (studentId == null && sectioning) continue;
 						if (preferStudentCampus) {
-							Long studentId = getStudentId(session.getUniqueId());
 							if (studentId != null) {
 								Student student = StudentDAO.getInstance().get(studentId);
 								StudentAreaClassificationMajor primary = (student == null ? null : student.getPrimaryAreaClasfMajor());
