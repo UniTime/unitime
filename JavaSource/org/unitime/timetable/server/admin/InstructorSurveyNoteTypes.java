@@ -191,6 +191,7 @@ public class InstructorSurveyNoteTypes implements AdminTable, AdminTable.HasUpDo
 	}
 	
 	@Override
+	@PreAuthorize("checkPermission('InstructorSurveyNoteTypeEdit')")
 	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
 		InstructorCourseRequirementType type = InstructorCourseRequirementTypeDAO.getInstance().get(record.getUniqueId(), hibSession);
 		if (type != null) {

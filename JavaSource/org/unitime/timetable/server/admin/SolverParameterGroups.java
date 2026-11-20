@@ -258,6 +258,7 @@ public class SolverParameterGroups implements AdminTable, HasFilter, AdminTable.
 	}
 	
 	@Override
+	@PreAuthorize("checkPermission('SolverParameterGroups')")
 	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
 		SolverParameterGroup type = SolverParameterGroupDAO.getInstance().get(record.getUniqueId(), hibSession);
 		if (type != null) {

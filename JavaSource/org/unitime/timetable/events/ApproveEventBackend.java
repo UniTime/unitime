@@ -128,6 +128,22 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						hibSession.merge(meeting);
 
     						break;
+    					default:
+    						switch (meeting.getEvent().getEventType()) {
+    						case Event.sEventTypeFinalExam:
+    						case Event.sEventTypeMidtermExam:
+        						if (!context.hasPermission(meeting, Right.EventMeetingInquireExam))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
+        						break;
+    						case Event.sEventTypeClass:
+        						if (!context.hasPermission(meeting, Right.EventMeetingInquireClass))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
+        						break;
+        					default:
+        						if (!context.hasPermission(meeting, Right.EventMeetingInquire))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
+        						break;
+    						}
     					}
     					
     					continue meetings;

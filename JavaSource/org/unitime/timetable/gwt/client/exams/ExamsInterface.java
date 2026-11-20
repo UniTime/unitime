@@ -165,7 +165,7 @@ public class ExamsInterface {
 		
 		public ExamDistributionEditRequest() {}
 
-		public Long getPreferenceId() { return iPreferenceId; }
+		public Long getPreferenceId() { return iData == null ? iPreferenceId : iData.getPreferenceId(); }
 		public void setPreferenceId(Long preferenceId) { iPreferenceId = preferenceId; }
 		public Long getExamId() { return iExamId; }
 		public void setExamId(Long examId) { iExamId = examId; }

@@ -49,7 +49,7 @@ public class GetTaskExecutionLogBackend implements GwtRpcImplementation<GetTaskE
 
 	@Override
 	public TaskExecutionLogInterface execute(GetTaskExecutionLogRpcRequest request, SessionContext context) {
-		context.hasPermission(Right.TaskDetail);
+		context.checkPermission(Right.TaskDetail);
 		TaskExecution e = TaskExecutionDAO.getInstance().get(request.getTaskExecutionId());
 		if (e == null)
 			return null;

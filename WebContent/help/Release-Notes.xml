@@ -59,6 +59,12 @@
 				<line>Improved speed of examination roll forward.</line>
 			</description>
 		</item>
+		<item>
+			<name>Various Pages</name>
+			<description>
+				<line>A number of security updates following the recent advisories.</line>
+			</description>
+		</item>		
 	</category>
 </release>
 

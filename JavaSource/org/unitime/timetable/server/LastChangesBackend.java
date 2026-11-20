@@ -58,7 +58,7 @@ public class LastChangesBackend implements GwtRpcImplementation<LastChangesReque
 			context.checkPermission(request.getObjectId(), Right.InstructionalOfferingDetail);
 		else if (DepartmentalInstructor.class.getName().equals(request.getObjectType())) 
 			context.checkPermission(request.getObjectId(), Right.InstructorDetail);
-		else if (Class_.class.getName().equals(request.getObjectType()))
+		else
 			context.checkPermission(Right.LastChanges);
 		GwtRpcResponseList<ChangeLogInterface> response = new GwtRpcResponseList<ChangeLogInterface>();
 		

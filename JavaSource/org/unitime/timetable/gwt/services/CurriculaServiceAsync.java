@@ -59,7 +59,7 @@ public interface CurriculaServiceAsync {
 	public void listCourseOfferings(String query, Integer limit, boolean includeNotOffered, boolean checkDepartment, AsyncCallback<Collection<ClassAssignmentInterface.CourseAssignment>> callback) throws CurriculaException, PageAccessException;
 	public void retrieveCourseDetails(String course, AsyncCallback<String> callback) throws CurriculaException, PageAccessException;
 	public void listClasses(String course, AsyncCallback<Collection<ClassAssignmentInterface.ClassAssignment>> callback) throws CurriculaException, PageAccessException;
-	public void getApplicationProperty(String[] name, AsyncCallback<String[]> callback) throws CurriculaException, PageAccessException;
+	public void getCourseWidth(AsyncCallback<String> callback) throws CurriculaException, PageAccessException;
 	public void canAddCurriculum(AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 	public void isAdmin(AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;
 	public void makeupCurriculaFromLastLikeDemands(boolean lastLike, AsyncCallback<Boolean> callback) throws CurriculaException, PageAccessException;

@@ -196,6 +196,7 @@ public class RoomTypes implements AdminTable, AdminTable.HasUpDown {
 	}
 	
 	@Override
+	@PreAuthorize("checkPermission('RoomTypes')")
 	public void move(Record record, boolean up, SessionContext context, Session hibSession) {
 		RoomType type = RoomTypeDAO.getInstance().get(record.getUniqueId(), hibSession);
 		if (type != null) {

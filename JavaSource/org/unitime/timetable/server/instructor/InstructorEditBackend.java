@@ -59,13 +59,16 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 	
 	@Override
 	public InstructorEditResponse execute(InstructorEditRequest request, SessionContext context) {
-		context.hasPermission(request.getInstructorId(), "Instructor", Right.InstructorEdit);
 		Long instructorId = request.getInstructorId();
 		Long deptId = request.getDepartmentId();
 		if (request.getData() != null) {
 			instructorId = request.getData().getInstructorId();
 			deptId = request.getData().getDepartmentId();
 		}
+		if (instructorId != null)
+			context.checkPermission(request.getInstructorId(), Right.InstructorEdit);
+		else
+			context.checkPermission(Right.InstructorAdd);
 		if (deptId == null) {
 			String dept = (String)context.getAttribute(SessionAttribute.DepartmentId);
 			if (dept != null) {
@@ -74,7 +77,6 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 				} catch (NumberFormatException e) {}
 			}
 		}
-		
 		if (request.getOperation() != null) {
 			switch (request.getOperation()) {
 			case SAVE:
@@ -100,7 +102,7 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 	}
 	
 	protected void saveInstructor(InstructorEditResponse data, SessionContext context) {
-		context.hasPermission(data.getInstructorId(), Right.InstructorEdit);
+		context.checkPermission(data.getInstructorId(), Right.InstructorEdit);
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		Transaction tx = null;
 		try {	
@@ -170,7 +172,7 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 	}
 
 	protected void deleteInstructor(Long instructorId, SessionContext context) {
-		context.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete);
+		context.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete);
 		org.hibernate.Session hibSession = DepartmentalInstructorDAO.getInstance().getSession();
 		Transaction tx = null;
 		try {	
@@ -243,7 +245,7 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 		
 		DepartmentalInstructor instructor = (instructorId == null ? null : DepartmentalInstructorDAO.getInstance().get(instructorId));
 		if (instructor != null) {
-			context.hasPermission(instructor, Right.InstructorEdit);
+			context.checkPermission(instructor, Right.InstructorEdit);
 			data.setInstructorId(instructor.getUniqueId());
 			data.setDepartmentId(instructor.getDepartment().getUniqueId());
 			data.setExternalId(instructor.getExternalUniqueId());
@@ -273,7 +275,7 @@ public class InstructorEditBackend implements GwtRpcImplementation<InstructorEdi
 			data.setDepartmentId(departmentId);
 			Department dept = DepartmentDAO.getInstance().get(departmentId);
 			data.setDepartment(dept.toString());
-			context.hasPermission(dept, Right.InstructorAdd);
+			context.checkPermission(dept, Right.InstructorAdd);
 		} else {
 			throw new GwtRpcException(MSG.errorDoesNotExists(MSG.columnInstructor()));
 		}
