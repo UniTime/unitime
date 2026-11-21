@@ -62,7 +62,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class ResultsTable extends UniTimeTable<String[]> {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final StudentSectioningMessages SCT_MSG = GWT.create(StudentSectioningMessages.class);
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private UniTimeHeaderPanel iTableHeader;
 

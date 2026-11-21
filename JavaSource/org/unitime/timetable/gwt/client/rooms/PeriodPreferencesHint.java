@@ -36,7 +36,7 @@ public class PeriodPreferencesHint {
 	private static PeriodPreferencesWidget sSharing;
 	private static Long sLastLocationId = null;
 	private static boolean sShowHint = false;
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public static PeriodPreferencesWidget content(RoomInterface.PeriodPreferenceModel model) {
 		if (sSharing == null)

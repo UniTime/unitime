@@ -35,19 +35,19 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.PopulateProjectedDemandSnapshotData;
 
+import com.google.gwt.user.server.rpc.jakarta.XsrfProtectedServiceServlet;
+
 /**
  * @author Stephanie Schluttenhofer
  */
 @Service("snapshot.gwt")
-public class LimitAndProjectionSnapshotServlet implements LimitAndProjectionSnapshotService {
+public class LimitAndProjectionSnapshotServlet extends XsrfProtectedServiceServlet implements LimitAndProjectionSnapshotService {
+	private static final long serialVersionUID = 6928301270244223282L;
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-//	private static Log sLog = LogFactory.getLog(LimitAndProjectionSnapshotServlet.class);
 
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
-//	protected static DateTimeFormat sLoadDateFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
-		
-			
+	
 	private Long getAcademicSessionId() throws PageAccessException {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(

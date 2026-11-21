@@ -50,7 +50,7 @@
     	<custom-filter ref="casRequestSingleLogoutFilter" before="LOGOUT_FILTER"/>
     	<custom-filter ref="casSingleLogoutFilter" before="CAS_FILTER"/>
     	<http-basic/>
-    	<csrf disabled="true"/>
+    	<csrf request-matcher-ref="unitimeCsrfMatcher"/>
     	<headers>
 		    <frame-options policy="SAMEORIGIN"/>
 		</headers>

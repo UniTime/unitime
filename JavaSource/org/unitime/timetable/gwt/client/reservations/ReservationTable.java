@@ -85,8 +85,8 @@ public class ReservationTable extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
+	private final ReservationServiceAsync iReservationService = new org.unitime.timetable.gwt.services.XsrfReservationService(GWT.create(ReservationService.class));
 	private static DateTimeFormat sDF = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private Long iOfferingId = null;
 	

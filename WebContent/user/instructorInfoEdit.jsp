@@ -18,7 +18,7 @@
  * 
 --%>
 <%@ taglib prefix="s" uri="/struts-tags" %>
-<s:form action="instructorInfoEdit">
+<s:form action="instructorInfoEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.instructorId"/>
 	<s:hidden name="form.nextId"/>
 	<s:hidden name="form.previousId"/>

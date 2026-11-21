@@ -65,7 +65,7 @@
 		}
 	}
 </SCRIPT>
-<s:form action="schedulingSubpartEdit">
+<s:form action="schedulingSubpartEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.schedulingSubpartId"/>
 	<s:hidden name="form.creditText"/>
 	<s:hidden name="form.subpartCreditEditAllowed"/>

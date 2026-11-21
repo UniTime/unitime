@@ -28,11 +28,11 @@
 			<tt:section-header>
 				<tt:section-title><loc:message name="sectionInstructionalTypes"/></tt:section-title>
 				<sec:authorize access="hasPermission(null, null, 'InstructionalTypeAdd')">
-					<s:form action="itypeDescEdit" style="display: inline-block;">
+					<s:form action="itypeDescEdit" style="display: inline-block;"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 						<s:submit accesskey='%{#msg.accessAddIType()}' name='op' value='%{#msg.actionAddIType()}' title='%{#msg.titleAddIType(#msg.accessAddIType())}'/>
 					</s:form>
 				</sec:authorize>
-				<s:form action="itypeDescList" style="display: inline-block;">
+				<s:form action="itypeDescList" style="display: inline-block;"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 					<s:submit accesskey='%{#msg.accessExportPdf()}' name='op' value='%{#msg.actionExportPdf()}' title='%{#msg.titleExportPdf(#msg.accessExportPdf())}'/>
 				</s:form>
 			</tt:section-header>
@@ -43,11 +43,11 @@
 	<TR>
 		<TD colspan='7' align="right">
 			<sec:authorize access="hasPermission(null, null, 'InstructionalTypeAdd')">
-				<s:form action="itypeDescEdit" style="display: inline-block;">
+				<s:form action="itypeDescEdit" style="display: inline-block;"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 					<s:submit accesskey='%{#msg.accessAddIType()}' name='op' value='%{#msg.actionAddIType()}' title='%{#msg.titleAddIType(#msg.accessAddIType())}'/>
 				</s:form>
 			</sec:authorize>
-			<s:form action="itypeDescList" style="display: inline-block;">
+			<s:form action="itypeDescList" style="display: inline-block;"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 				<s:submit accesskey='%{#msg.accessExportPdf()}' name='op' value='%{#msg.actionExportPdf()}' title='%{#msg.titleExportPdf(#msg.accessExportPdf())}'/>
 			</s:form>
 		</TD>

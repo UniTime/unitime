@@ -67,11 +67,13 @@ import org.unitime.timetable.gwt.shared.OnlineSectioningInterface.StudentStatusI
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 /**
  * @author Tomas Muller
  */
 @RemoteServiceRelativePath("sectioning.gwt")
+@XsrfProtect
 public interface SectioningService extends RemoteService {
 	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(StudentSectioningContext cx, Filter filter, String query, Integer limit) throws SectioningException, PageAccessException;
 	Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;

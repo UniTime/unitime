@@ -93,7 +93,7 @@ public class ExamAssignmentPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final ExaminationMessages MSG = GWT.create(ExaminationMessages.class);
 	private static final CourseMessages CMSG = GWT.create(CourseMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimplePanel iRootPanel;
 	private SimpleForm iPanel;

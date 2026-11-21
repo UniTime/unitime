@@ -46,7 +46,7 @@ public class ConflictsWidget extends SimpleForm implements TakesValue<Long> {
 	private SuggestionsPageContext iContext;
 	private UniTimeHeaderPanel iHeader;
 	private ConflictTable iTable;
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private Long iClassId = null;
 	private boolean iConflictsComputed = false;
 	

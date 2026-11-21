@@ -56,7 +56,7 @@ public class ReportQueueTable extends UniTimeTable<QueueItemInterface> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
 	private static DateTimeFormat sTS = DateTimeFormat.getFormat(CONSTANTS.timeStampFormatShort());
 	

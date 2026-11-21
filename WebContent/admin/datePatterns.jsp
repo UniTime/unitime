@@ -24,7 +24,7 @@
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDatePattern"/></tt:confirm>
 <tt:confirm name="confirmMakeDefault"><loc:message name="confirmDefaultDatePatternChange"/></tt:confirm>
-<s:form action="datePatternEdit">
+<s:form action="datePatternEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <s:hidden name="form.uniqueId"/><s:fielderror fieldName="form.uniqueId"/>
 <s:if test="form.op != 'List'">
 	<s:hidden name="form.isUsed"/>

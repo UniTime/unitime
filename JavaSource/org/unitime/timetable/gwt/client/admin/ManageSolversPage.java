@@ -45,7 +45,7 @@ import com.google.gwt.user.client.ui.Composite;
 public class ManageSolversPage extends Composite {
 	protected static final CourseMessages MSG = GWT.create(CourseMessages.class);
 	protected static final GwtMessages GWT_MSG = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	SimpleForm iPanel;
 	UniTimeHeaderPanel iHeaderSolversCourse, iHeaderSolversExam, iHeaderSolversStudent, iHeaderSolversInstructor, iHeaderSolversOnline, iHeaderServers, iFooter;

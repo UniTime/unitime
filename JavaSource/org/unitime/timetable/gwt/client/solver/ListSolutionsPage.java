@@ -75,7 +75,7 @@ import com.google.gwt.user.client.ui.TextArea;
 public class ListSolutionsPage extends SimpleForm {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private UniTimeHeaderPanel iTableHeader;
 	private TableWidget iTable;
 	private TextArea iCurrentSolutionNote;

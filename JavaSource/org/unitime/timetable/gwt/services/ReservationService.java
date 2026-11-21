@@ -27,12 +27,14 @@ import org.unitime.timetable.gwt.shared.ReservationInterface;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 /**
  * @author Tomas Muller
  */
 
 @RemoteServiceRelativePath("reservation.gwt")
+@XsrfProtect
 public interface ReservationService extends RemoteService {
 	public ReservationInterface.Offering getOffering(Long offeringId, Long courseId) throws ReservationException, PageAccessException;
 	public ReservationInterface.Offering getOfferingByCourseName(String course) throws ReservationException, PageAccessException;

@@ -22,7 +22,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="inquiry" focusElement="type" enctype="multipart/form-data" method="POST" id="form">
+<s:form action="inquiry" focusElement="type" enctype="multipart/form-data" method="POST" id="form"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <SCRIPT type="text/javascript">
 	function doDel(id) {
 		document.getElementById('deleteId').value = id;

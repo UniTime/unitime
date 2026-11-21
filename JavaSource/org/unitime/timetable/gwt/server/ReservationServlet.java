@@ -100,11 +100,14 @@ import org.unitime.timetable.solver.ClassAssignmentProxy.AssignmentInfo;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.Constants;
 
+import com.google.gwt.user.server.rpc.jakarta.XsrfProtectedServiceServlet;
+
 /**
  * @author Tomas Muller
  */
 @Service("reservation.gwt")
-public class ReservationServlet implements ReservationService {
+public class ReservationServlet extends XsrfProtectedServiceServlet implements ReservationService {
+	private static final long serialVersionUID = 5440598157590150806L;
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Log sLog = LogFactory.getLog(ReservationServlet.class);
@@ -117,7 +120,7 @@ public class ReservationServlet implements ReservationService {
 	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededOnlyWhenWaitListing;
 	
 	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
-
+	
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
 	public List<ReservationInterface.Area> getAreas() throws ReservationException, PageAccessException {

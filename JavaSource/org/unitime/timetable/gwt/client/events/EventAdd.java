@@ -122,7 +122,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class EventAdd extends Composite implements EventMeetingTable.Implementation, AcademicSessionSelectionBox.AcademicSessionFilter {
 	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);

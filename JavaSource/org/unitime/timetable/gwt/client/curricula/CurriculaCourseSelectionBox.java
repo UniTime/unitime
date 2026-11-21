@@ -45,7 +45,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public class CurriculaCourseSelectionBox extends CourseSelectionSuggestBox {
-	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iCurriculaService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 	
 	public CurriculaCourseSelectionBox() {
 		this(true, false);

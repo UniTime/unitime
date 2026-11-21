@@ -18,7 +18,7 @@
  * 
 --%>
 <%@ taglib prefix="s" uri="/struts-tags" %>
-<s:form action="instructorAdd">
+<s:form action="instructorAdd"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.instructorId"/>
 	<table class="unitime-MainTable">
 		<s:if test="form.matchFound">

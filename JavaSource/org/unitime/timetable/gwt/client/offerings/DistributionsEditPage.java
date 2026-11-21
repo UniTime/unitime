@@ -65,7 +65,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class DistributionsEditPage extends Composite {
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private SimplePanel iRootPanel;

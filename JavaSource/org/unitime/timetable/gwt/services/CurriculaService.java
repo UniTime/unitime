@@ -35,11 +35,13 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 /**
  * @author Tomas Muller
  */
 @RemoteServiceRelativePath("curricula.gwt")
+@XsrfProtect
 public interface CurriculaService extends RemoteService {
 	public TreeSet<CurriculumInterface> findCurricula(CurriculumInterface.CurriculumFilterRpcRequest filter) throws CurriculaException, PageAccessException;
 	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException;

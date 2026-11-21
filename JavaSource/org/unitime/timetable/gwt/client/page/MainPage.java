@@ -40,7 +40,7 @@ public class MainPage extends P {
 	protected static GwtMessages MSG = GWT.create(GwtMessages.class);
 	protected static GwtConstants CONST = GWT.create(GwtConstants.class);
 	protected static CourseMessages COURSE = GWT.create(CourseMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public MainPage() {
 		super("unitime-MainContent", "unitime-MainLogo");

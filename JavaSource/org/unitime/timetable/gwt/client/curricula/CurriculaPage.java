@@ -70,7 +70,7 @@ public class CurriculaPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
 	private CurriculumFilterBox iFilter = null;
 	private AriaButton iSearch = null;
@@ -84,7 +84,7 @@ public class CurriculaPage extends Composite {
 	private SimplePanel iPanel = null;
 	private FilterPanel iFilterPanel = null;
 	
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 	
 	private CurriculumEdit iCurriculumPanel = null;
 	private ClassificationsEdit iClassificationsEdit = null;

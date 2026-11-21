@@ -42,7 +42,7 @@ import com.google.gwt.user.client.ui.TextBox;
  */
 public class PasswordPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimpleForm iForm;
 	private TextBox iUser = null, iEmail = null;

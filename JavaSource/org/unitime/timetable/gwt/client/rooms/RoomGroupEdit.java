@@ -67,7 +67,7 @@ import com.google.gwt.user.client.ui.TextBox;
  * @author Tomas Muller
  */
 public class RoomGroupEdit extends Composite {
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private SimpleForm iForm;

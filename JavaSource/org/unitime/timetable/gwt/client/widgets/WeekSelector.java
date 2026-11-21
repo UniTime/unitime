@@ -51,7 +51,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class WeekSelector extends IntervalSelector<WeekInterface>{
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private RegExp[] iRegExp = new RegExp[] {
 			RegExp.compile("^[^0-9]*([0-9]+)[/ ]*([0-9]*)[ -]*([0-9]*)[/ ]*([0-9]*)$"),
 			RegExp.compile("^[^0-9]*([0-9]+)\\.?([0-9]*)\\.?[ -]*([0-9]*)\\.?([0-9]*)\\.?$")

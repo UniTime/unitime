@@ -88,7 +88,7 @@ public class AdvisorCourseRequestLine implements HasValue<Request> {
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	protected static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
+	protected static final SectioningServiceAsync sSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private P iP, iButtons;
 	

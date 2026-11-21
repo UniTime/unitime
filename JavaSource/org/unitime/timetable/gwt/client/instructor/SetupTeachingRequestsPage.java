@@ -88,7 +88,7 @@ public class SetupTeachingRequestsPage extends SimpleForm {
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	protected static final StudentSectioningMessages SECTMSG = GWT.create(StudentSectioningMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private Long iOfferingId = null;
 	private Properties iProperties;

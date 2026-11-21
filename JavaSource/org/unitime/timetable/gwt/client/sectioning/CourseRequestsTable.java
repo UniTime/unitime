@@ -69,7 +69,7 @@ public class CourseRequestsTable extends P implements HasValue<CourseRequestInte
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private StudentSectioningContext iContext;
 	private ArrayList<CourseRequestLine> iCourses;

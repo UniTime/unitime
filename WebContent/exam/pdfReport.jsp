@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="examPdfReport">
+<s:form action="examPdfReport"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<table class="unitime-MainTable">
 	<s:if test="!fieldErrors.isEmpty()">
 		<TR>

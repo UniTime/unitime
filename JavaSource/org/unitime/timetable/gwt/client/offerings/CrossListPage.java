@@ -69,7 +69,7 @@ public class CrossListPage extends Composite {
 	private static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	private static final GwtResources RES = GWT.create(GwtResources.class);
 	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimpleForm iPanel;
 	private Label iLimit;

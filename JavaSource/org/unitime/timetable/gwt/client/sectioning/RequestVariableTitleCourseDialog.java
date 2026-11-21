@@ -78,7 +78,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 public class RequestVariableTitleCourseDialog extends UniTimeDialogBox {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static GwtMessages GWT_MSG = GWT.create(GwtMessages.class);
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	protected static Logger sLogger = Logger.getLogger(RequestVariableTitleCourseDialog.class.getName());
 	
 	private ScheduleStatus iStatus;

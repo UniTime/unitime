@@ -22,7 +22,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="accessStats">
+<s:form action="accessStats"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <table class="unitime-MainTable">
 	<TR><TD valign="middle" colspan='3'>
 		<tt:section-title><loc:message name="filter"/></tt:section-title>

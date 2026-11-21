@@ -39,7 +39,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class TimeHint {
 	private static String sLastParameter = null;
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static boolean sShowHint = false;
 	
 	public static Widget content(TimeHintResponse response) {

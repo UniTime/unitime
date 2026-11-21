@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteSolverConfig"/></tt:confirm>
-<s:form action="solverSettings">
+<s:form action="solverSettings"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <s:if test="form.op == #msg.actionAddNewSolverConfig()">
  	<table class="unitime-MainTable">
 		<TR>

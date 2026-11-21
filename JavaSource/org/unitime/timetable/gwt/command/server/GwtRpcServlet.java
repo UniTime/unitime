@@ -65,12 +65,12 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.google.gwt.user.server.rpc.jakarta.RemoteServiceServlet;
+import com.google.gwt.user.server.rpc.jakarta.XsrfProtectedServiceServlet;
 
 /**
  * @author Tomas Muller
  */
-public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService {
+public class GwtRpcServlet extends XsrfProtectedServiceServlet implements GwtRpcService {
 	private static final long serialVersionUID = 1L;
 	private static Log sLog = LogFactory.getLog(GwtRpcServlet.class);
 	private QueryLogFilter.Saver iSaver = null;
@@ -90,6 +90,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	
 	@Override
 	public void init() throws ServletException {
+		super.init();
 		iSaver = new QueryLogFilter.Saver();
 		iSaver.setName("GwtRpcLogSaver");
 		iSaver.start();

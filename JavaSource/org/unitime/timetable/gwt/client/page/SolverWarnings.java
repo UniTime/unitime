@@ -40,7 +40,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class SolverWarnings extends P {
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected static final GwtMessages MSG = GWT.create(GwtMessages.class);
 	
 	public SolverWarnings(final RootPanel panel, Type type) {

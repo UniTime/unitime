@@ -46,7 +46,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  */
 public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessionSelectionBox.AcademicSession> implements AcademicSessionProvider {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private List<AcademicSession> iAllSessions = null;
 	private AcademicSessionFilter iFilter = null;

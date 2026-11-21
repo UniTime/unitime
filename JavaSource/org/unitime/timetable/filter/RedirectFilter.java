@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.StartupService;

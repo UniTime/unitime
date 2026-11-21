@@ -72,7 +72,7 @@ public class TestHQLPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
 	private SimpleForm iForm = null;
 	private UniTimeHeaderPanel iHeader = null, iFooter = null, iTableHeader = null, iTableFooter = null, iGenSQLHeader = null;
