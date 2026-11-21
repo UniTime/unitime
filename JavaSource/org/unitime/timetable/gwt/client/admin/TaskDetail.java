@@ -56,7 +56,7 @@ import com.google.gwt.user.client.ui.Label;
 public class TaskDetail extends SimpleForm implements TakesValue<TaskInterface> {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private static DateTimeFormat sDateFormatMeeting = ServerDateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
 	

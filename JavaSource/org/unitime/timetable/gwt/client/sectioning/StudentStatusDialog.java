@@ -57,7 +57,7 @@ public class StudentStatusDialog extends UniTimeDialogBox{
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	private UniTimeTextBox iSubject, iCC;
 	private CheckBox iCourseRequests, iClassSchedule, iAdvisorRequests;
 	private CheckBox iOptionalEmailToggle = null;

@@ -63,7 +63,7 @@ public class ReservationsPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
+	private final ReservationServiceAsync iReservationService = new org.unitime.timetable.gwt.services.XsrfReservationService(GWT.create(ReservationService.class));
 
 	private ReservationFilterBox iFilter = null;
 	private Button iSearch = null;

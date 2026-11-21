@@ -37,7 +37,7 @@ import com.google.gwt.user.client.ui.HTML;
 
 public class CourseCatalogPage extends HTML {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public CourseCatalogPage() {
 		addStyleName("unitime-CourseCatalogPage");

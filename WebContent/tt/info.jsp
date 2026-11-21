@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="classInfo">
+<s:form action="classInfo"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:submit name='form.op' value="%{#msg.actionFilterApply()}" style="display:none;" onclick="displayLoading();"/>
 	<s:hidden name='op2' value='' id="op2"/>
 	<s:set var="model" value="form.model"/>

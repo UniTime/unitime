@@ -48,7 +48,7 @@
     <session-config>
         <session-timeout>45</session-timeout>
     </session-config>
-
+    
 	<!-- Sprint Servlets -->
 	<servlet>
 		<servlet-name>gwt-dispatcher</servlet-name>
@@ -116,6 +116,12 @@
     	<jsp-file>/gwt.jsp</jsp-file>
     </servlet>
         
+    <!-- Register XsrfTokenServiceServlet -->
+    <servlet>
+    	<servlet-name>xsrf</servlet-name>
+    	<servlet-class>com.google.gwt.user.server.rpc.jakarta.XsrfTokenServiceServlet</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
         <servlet-name>gwt-dispatcher</servlet-name>
         <url-pattern>*.gwt</url-pattern>
@@ -175,6 +181,11 @@
 	<servlet-mapping>
 		<servlet-name>remoteLogging</servlet-name>
 		<url-pattern>/unitime/remote_logging</url-pattern>
+	</servlet-mapping>
+	
+    <servlet-mapping>
+		<servlet-name>xsrf</servlet-name>
+		<url-pattern>/unitime/xsrf</url-pattern>
 	</servlet-mapping>
 	
 	<servlet-mapping>
@@ -548,6 +559,11 @@
 		<param-name>org.apache.tiles.definition.DefinitionsFactory.DEFINITIONS_CONFIG</param-name>
 		<param-value>/WEB-INF/tiles.xml</param-value>
 	</context-param> 
+	
+	<context-param>
+    	<param-name>gwt.xsrf.session_cookie_name</param-name>
+    	<param-value>JSESSIONID</param-value>
+  	</context-param>
 	
 	<listener>
         <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>

@@ -60,7 +60,7 @@ import com.google.gwt.user.client.ui.ListBox;
 public class AccessStatisticsPage extends Composite {
 	protected static final CourseMessages MSG = GWT.create(CourseMessages.class);
 	protected static final GwtMessages GWT_MSG = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat("yyyyMMddHHmm");
 	private static AccessStatisticsPage sInstance;
 	

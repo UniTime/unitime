@@ -77,7 +77,7 @@ public class SolverConfigsPage extends Composite {
 	protected static GwtMessages MSG = GWT.create(GwtMessages.class);
 	protected static CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iListHeader, iListFooter;
 	private TableWidget iTable;

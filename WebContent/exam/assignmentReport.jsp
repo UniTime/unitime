@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="examAssignmentReport">
+<s:form action="examAssignmentReport"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 	<table class="unitime-MainTable">
 		<TR>

@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="personalSchedule">
+<s:form action="personalSchedule"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.sessionId"/>
 	<table class="unitime-MainTable">
 		<TR><TD align='right'>

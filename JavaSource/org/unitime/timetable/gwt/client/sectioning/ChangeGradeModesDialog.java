@@ -93,7 +93,7 @@ public class ChangeGradeModesDialog extends UniTimeDialogBox {
 	protected static GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	protected static StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	protected static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private SimpleForm iForm;

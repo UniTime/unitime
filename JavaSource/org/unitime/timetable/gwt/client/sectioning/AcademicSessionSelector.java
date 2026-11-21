@@ -60,7 +60,7 @@ public class AcademicSessionSelector implements AcademicSessionProvider, Academi
 	private DialogBox iDialog;
 	private UniTimeTable<AcademicSessionInfo> iSessions;
 	
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private Vector<AcademicSessionChangeHandler> iAcademicSessionChangeHandlers = new Vector<AcademicSessionChangeHandler>();
 	private StudentSectioningPage.Mode iMode;

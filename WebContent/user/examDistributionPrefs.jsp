@@ -22,7 +22,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="examDistributionPrefs" id="examDistributionPrefsForm"> 
+<s:form action="examDistributionPrefs" id="examDistributionPrefsForm"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/> 
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteDistributionPreference"/></tt:confirm>
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">

@@ -67,7 +67,7 @@ public class CourseFinderFilter extends SimpleForm implements HasValue<Filter> {
 	protected static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES = GWT.create(StudentSectioningResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.patternDateFormat());
 	
 	private SingleDateSelector iDateFrom, iDateTo;

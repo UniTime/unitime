@@ -39,7 +39,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RootPanel;
 
 public class UniTimeNavigation {
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected static CourseMessages MSG = GWT.create(CourseMessages.class);
 	private static UniTimeNavigation sInstance;
 	

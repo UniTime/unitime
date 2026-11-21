@@ -73,7 +73,7 @@ public class CurriculumEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 
 	private SimpleForm iCurriculaTable;
 	

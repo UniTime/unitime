@@ -41,7 +41,7 @@ import com.google.gwt.user.client.ui.FormPanel;
  * @author Tomas Muller
  */
 public class UniTimeFileUpload extends FormPanel implements HasValueChangeHandlers<String> {
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private FileUpload iUpload;
 	

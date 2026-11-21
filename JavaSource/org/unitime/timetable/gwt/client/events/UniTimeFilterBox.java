@@ -64,7 +64,7 @@ import com.google.gwt.user.client.ui.HasValue;
  * @author Tomas Muller
  */
 public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel, FilterBoxInterface<T> {
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
 	protected UniTimeWidget<FilterBox> iFilter;

@@ -55,7 +55,7 @@ public class StudentSectioningPage extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	public static enum Mode {
 		SECTIONING(true),

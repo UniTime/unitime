@@ -26,7 +26,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="classEdit">
+<s:form action="classEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <tt:session-context/>
 <script type="text/javascript">
 	function instructorChanged(idx, source) {

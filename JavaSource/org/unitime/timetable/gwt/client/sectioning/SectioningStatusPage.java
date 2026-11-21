@@ -164,9 +164,9 @@ public class SectioningStatusPage extends Composite {
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestDateFormat());
 	private static DateTimeFormat sTSF = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private static NumberFormat sNF = NumberFormat.getFormat(CONSTANTS.executionTimeFormat());
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 
 	private SectioningStatusFilterBox iFilter;
 

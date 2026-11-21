@@ -59,7 +59,7 @@ import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
  */
 public class RoomPicturesPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	
 	private SimpleForm iForm;

@@ -89,7 +89,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class CurriculaCourses extends Composite implements SimpleForm.HasMobileScroll {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iCurriculaService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 	private UniTimeTable<String> iTable = null;
 	private String iCurriculumBoxWidth = "130px";
 	

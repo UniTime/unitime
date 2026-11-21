@@ -26,12 +26,14 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 /**
  * @author Stephanie Schluttenhofer
  */
 
 @RemoteServiceRelativePath("snapshot.gwt")
+@XsrfProtect
 public interface LimitAndProjectionSnapshotService extends RemoteService {
 	public Boolean canTakeSnapshot() throws LimitAndProjectionSnapshotException, PageAccessException;
 	public Date getCurrentSnapshotDate() throws LimitAndProjectionSnapshotException, PageAccessException;

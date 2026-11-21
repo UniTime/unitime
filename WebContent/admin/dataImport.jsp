@@ -22,7 +22,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="dataImport" enctype="multipart/form-data" method="POST">
+<s:form action="dataImport" enctype="multipart/form-data" method="POST"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<table style="width:100%;">
 		<s:if test="#request.table != null">
 			<tr><td colspan='2'>

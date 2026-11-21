@@ -88,7 +88,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 
 	private ClassAssignmentInterface.ClassAssignment iAssignment;
 	private AsyncCallback<Collection<ClassAssignmentInterface>> iCallback = null;

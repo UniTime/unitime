@@ -82,7 +82,7 @@ public class CurriculaTable extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 
 	private UniTimeTable<CurriculumInterface> iTable = null;
 	private CurriculumFilterRpcRequest iLastQuery = null;

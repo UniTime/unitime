@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteAppConfig"/></tt:confirm>
-<s:form action="applicationConfig">
+<s:form action="applicationConfig"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <s:hidden name="form.op"/>
 <s:if test="form.op != 'list'">
 	<table class="unitime-MainTable">

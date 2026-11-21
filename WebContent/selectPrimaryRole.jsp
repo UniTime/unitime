@@ -20,7 +20,7 @@
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages">
-<s:form action="selectPrimaryRole" id="form" target="_top">
+<s:form action="selectPrimaryRole" id="form" target="_top"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.authority" id="authority"/>
 	<s:hidden name="form.target"/>
 	<table class="unitime-MainTable">

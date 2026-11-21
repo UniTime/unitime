@@ -82,7 +82,7 @@ public class TimetableManagersPage extends Composite {
 	protected static CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iListHeader, iListFooter;
 	private CheckBox iShowAllManagers;

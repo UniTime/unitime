@@ -95,7 +95,7 @@ public class ReservationEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
 	private List<EditFinishedHandler> iEditFinishedHandlers = new ArrayList<EditFinishedHandler>();
 	
@@ -117,8 +117,8 @@ public class ReservationEdit extends Composite {
 	private DefaultExpirationDates iExpirations = null;
 	private UniTimeWidget<TextArea> iStudentFilter;
 	
-	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
-	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
+	private final ReservationServiceAsync iReservationService = new org.unitime.timetable.gwt.services.XsrfReservationService(GWT.create(ReservationService.class));
+	private final CurriculaServiceAsync iCurriculaService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 	private int iStartDateLine, iExpirationLine, iReservedSpaceLine, iGroupLine, iCourseLine, iAreaLine, iStudentsLine, iCurriculumLine, iInclusionLine, iFilterLine;
 	
 	private CheckBox iCanOverlap, iMustBeUsed, iOverLimit, iAlwaysExpired;

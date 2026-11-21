@@ -56,7 +56,7 @@ public class SuggestionsWidget extends SimpleForm {
 	private ComputeSuggestionsRequest iRequest;
 	private SuggestionsTable iTable;
 	private int iHeaderRow = 0, iFooterRow = 0;
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private boolean iSuggestionsComputed = false;
 	private SuggestionsFilter iFilter = null;
 	private AriaButton iApply = null;

@@ -53,7 +53,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
  */
 public class ConflictBasedStatisticsPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private PageFilter iFilter;
 	private SimplePanel iRootPanel;
 	private SimpleForm iPanel;

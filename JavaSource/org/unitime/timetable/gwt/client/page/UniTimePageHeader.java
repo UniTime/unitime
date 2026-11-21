@@ -38,7 +38,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class UniTimePageHeader implements PageHeaderDisplay {
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private PageHeader iHeader;

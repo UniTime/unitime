@@ -24,7 +24,7 @@
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
 <tt:back-mark back="true" clear="true" title="${MSG.backExaminationAssignmentChanges()}" uri="examChanges.action"/>
-<s:form action="examChanges">
+<s:form action="examChanges"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.examType"/>
 	<script type="text/javascript">blToggleHeader('<loc:message name="filter"/>','dispFilter');blStart('dispFilter');</script>
 	<table class="unitime-MainTable">

@@ -22,11 +22,13 @@ package org.unitime.timetable.gwt.command.client;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.google.gwt.user.server.rpc.XsrfProtect;
 
 /**
  * @author Tomas Muller
  */
 @RemoteServiceRelativePath("gwt.rpc")
+@XsrfProtect
 public interface GwtRpcService extends RemoteService {
 	public <T extends GwtRpcResponse> T execute(GwtRpcRequest<T> request) throws GwtRpcException;
 	public <T extends GwtRpcResponse> Long executeAsync(GwtRpcRequest<T> request) throws GwtRpcException;

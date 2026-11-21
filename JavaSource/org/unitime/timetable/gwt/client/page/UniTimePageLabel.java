@@ -39,7 +39,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  */
 public class UniTimePageLabel implements HasValue<PageNameInterface> {
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
 	private PageLabel iLabel = new PageLabel();
 	

@@ -45,7 +45,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 
 public class HibernateStatisticsPage extends Composite {
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private boolean iDetails = false;

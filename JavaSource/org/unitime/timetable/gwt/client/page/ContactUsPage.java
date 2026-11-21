@@ -62,7 +62,7 @@ import com.google.gwt.user.client.ui.Label;
 public class ContactUsPage extends Composite {
 	protected static CourseMessages COURSE = GWT.create(CourseMessages.class);
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	
 	SimpleForm iPanel;
