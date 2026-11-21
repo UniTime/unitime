@@ -70,7 +70,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class ClassificationsEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeaderPanel = null;

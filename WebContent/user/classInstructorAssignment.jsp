@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmUnassignAll"><loc:message name="confirmUnassignAllInstructors"/></tt:confirm>
-<s:form action="classInstructorAssignment" id="form">
+<s:form action="classInstructorAssignment" id="form"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <SCRIPT type="text/javascript" >
 function resetAllDisplayFlags(value) {
 	for (var i=0;i<${form.getClassIds().size()};i++) {

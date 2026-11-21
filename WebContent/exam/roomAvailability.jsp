@@ -24,7 +24,7 @@
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
 <tt:back-mark back="true" clear="true" title="${MSG.sectRoomAvailability()}" uri="roomAvailability.action"/>
-<s:form action="roomAvailability">
+<s:form action="roomAvailability"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.showSections"/>
 	<s:hidden name="form.subjectArea"/>
 	<table class="unitime-MainTable">

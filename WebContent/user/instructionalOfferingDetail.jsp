@@ -26,7 +26,7 @@
 <tt:confirm name="confirmMakeNotOffered"><loc:message name="confirmMakeNotOffered"/></tt:confirm>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteIO"/></tt:confirm>
 	<table class="unitime-MainTable">
-		<s:form action="instructionalOfferingDetail">
+		<s:form action="instructionalOfferingDetail"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 			<s:hidden name="form.instrOfferingId"/>
 			<s:hidden name="form.ctrlCrsOfferingId"/>
 			<s:hidden name="form.nextId"/>
@@ -466,7 +466,7 @@
 			</TR>
 		</s:if>
 		
-		<s:form action="instructionalOfferingDetail">
+		<s:form action="instructionalOfferingDetail"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 			<s:hidden name="form.instrOfferingId"/>
 			<s:hidden name="form.ctrlCrsOfferingId"/>
 			<s:hidden name="form.nextId"/>

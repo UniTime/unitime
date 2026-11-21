@@ -22,7 +22,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="schedulingSubpartDetail">
+<s:form action="schedulingSubpartDetail"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<tt:confirm name="confirmClearAllClassPreference"><loc:message name="confirmClearAllClassPreferences"/></tt:confirm>
 	<input type='hidden' name='confirm' value='y'/>
 	<s:hidden name="form.schedulingSubpartId"/>

@@ -46,7 +46,7 @@
 		<anonymous enabled="false"/>
 		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
 		<http-basic/>
-		<csrf disabled="true"/>
+		<csrf request-matcher-ref="unitimeCsrfMatcher"/>
 		<headers>
 		    <frame-options policy="SAMEORIGIN"/>
 		</headers>

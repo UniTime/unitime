@@ -36,7 +36,7 @@ public class RoomSharingHint {
 	private static RoomSharingWidget sSharing;
 	private static long sLastLocationId = -1;
 	private static boolean sShowHint = false;
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public static RoomSharingWidget content(RoomInterface.RoomSharingModel model) {
 		if (sSharing == null)

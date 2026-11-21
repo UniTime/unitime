@@ -77,7 +77,7 @@ public class CourseCurriculaTable extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
-	private final CurriculaServiceAsync iCurriculaService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iCurriculaService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 
 	private SimpleForm iCurriculaPanel;
 	private MyFlexTable iCurricula;

@@ -53,7 +53,7 @@ public class PinDialog extends AriaDialogBox {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
-	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
+	private static final SectioningServiceAsync sSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private AriaTextBox iPin = null;
 	private AriaButton iButton = null, iCancel = null;

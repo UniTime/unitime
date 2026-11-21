@@ -82,7 +82,7 @@ import com.google.gwt.user.client.ui.TreeItem;
 public class UniTimeSideBar extends UniTimeMenu {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private Timer iScrollTimer = null;
 

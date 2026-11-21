@@ -54,7 +54,7 @@ import com.google.gwt.user.client.ui.Label;
  * @author Tomas Muller
  */
 public class CourseSelectionBox extends CourseSelectionSuggestBox {
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private Long iSessionId;
 	private Label iTitle;
 	

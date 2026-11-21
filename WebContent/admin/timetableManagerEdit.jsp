@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteManager"/></tt:confirm>
-<s:form action="timetableManagerEdit">
+<s:form action="timetableManagerEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.uniqueId"/>
 	<s:hidden name="form.op"/>
 	<s:hidden name="deleteId" value="" id="deleteId"/>

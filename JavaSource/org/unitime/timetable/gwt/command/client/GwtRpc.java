@@ -26,7 +26,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public class GwtRpc {
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public static <T extends GwtRpcResponse> void execute(GwtRpcRequest<T> request, AsyncCallback<T> callback) {
 		RPC.execute(request, callback);

@@ -72,7 +72,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class PointInTimeDataReportsPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimpleForm iForm = null;
 	private UniTimeHeaderPanel iHeader = null, iTableHeader = null;;

@@ -38,7 +38,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class InstructorAvailabilityHint {
 	private static RoomSharingWidget sSharing;
 	private static String sLastInstructorId = null;
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public static RoomSharingWidget content(RoomInterface.RoomSharingModel model) {
 		if (sSharing == null)

@@ -85,8 +85,8 @@ import com.google.gwt.user.client.ui.Widget;
 public class CurriculumProjectionRulesPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
+	private final CurriculaServiceAsync iService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 
 	private MyFlexTable iTable;

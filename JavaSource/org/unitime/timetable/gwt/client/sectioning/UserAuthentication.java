@@ -84,7 +84,7 @@ public class UserAuthentication implements UserAuthenticationProvider {
 	
 	private ArrayList<UserAuthenticatedHandler> iUserAuthenticatedHandlers = new ArrayList<UserAuthenticatedHandler>();
 	
-	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
+	private static final SectioningServiceAsync sSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private static AsyncCallback<String> sAuthenticateCallback = null;
 	

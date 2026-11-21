@@ -54,7 +54,7 @@ public class StudentScheduleTable extends Composite {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	protected static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
+	protected static final SectioningServiceAsync sSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	private boolean iOnline;
 	
 	private SimpleForm iPanel;

@@ -43,7 +43,7 @@
 </script>
 
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="instructorListUpdate">
+<s:form action="instructorListUpdate"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 
 	<table class="unitime-MainTable">
 		<TR>

@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="org.unitime.timetable.gwt.resources.GwtMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDepartmentDelete"/></tt:confirm>
-<s:form action="departmentEdit">
+<s:form action="departmentEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<table class="unitime-MainTable">
  	<s:hidden name="form.id"/>
 	<s:hidden name="form.sessionId"/>

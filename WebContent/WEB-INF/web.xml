@@ -49,7 +49,7 @@
     <session-config>
         <session-timeout>45</session-timeout>
     </session-config>
-
+    
 	<!-- Sprint Servlets -->
 	<servlet>
 		<servlet-name>gwt-dispatcher</servlet-name>
@@ -110,6 +110,12 @@
     <servlet>
     	<servlet-name>mapServlet</servlet-name>
     	<servlet-class>org.unitime.timetable.server.rooms.StaticMapServlet</servlet-class>
+    </servlet>
+    
+    <!-- Register XsrfTokenServiceServlet -->
+    <servlet>
+    	<servlet-name>xsrf</servlet-name>
+    	<servlet-class>com.google.gwt.user.server.rpc.XsrfTokenServiceServlet</servlet-class>
     </servlet>
     
     <servlet-mapping>
@@ -173,6 +179,11 @@
 		<url-pattern>/unitime/remote_logging</url-pattern>
 	</servlet-mapping>
 	
+    <servlet-mapping>
+		<servlet-name>xsrf</servlet-name>
+		<url-pattern>/unitime/xsrf</url-pattern>
+	</servlet-mapping>
+
 	<filter>
         <filter-name>log4jServletFilter</filter-name>
         <filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
@@ -416,6 +427,11 @@
 		<param-name>org.apache.tiles.definition.DefinitionsFactory.DEFINITIONS_CONFIG</param-name>
 		<param-value>/WEB-INF/tiles.xml</param-value>
 	</context-param> 
+	
+	<context-param>
+    	<param-name>gwt.xsrf.session_cookie_name</param-name>
+    	<param-value>JSESSIONID</param-value>
+  	</context-param>
 	
 	<listener>
         <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>

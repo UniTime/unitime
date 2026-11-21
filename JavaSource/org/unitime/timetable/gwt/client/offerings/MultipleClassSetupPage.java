@@ -70,7 +70,7 @@ public class MultipleClassSetupPage extends Composite {
 	protected static final GwtMessages GWTMSG = GWT.create(GwtMessages.class);
 	protected static final CourseMessages MESSAGES = GWT.create(CourseMessages.class);
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter;
