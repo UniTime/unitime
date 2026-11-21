@@ -51,7 +51,7 @@ import com.google.gwt.user.client.ui.TextBox;
 
 public class BuildingsEdit extends Composite implements TakesValue<BuildingInterface>{
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter;

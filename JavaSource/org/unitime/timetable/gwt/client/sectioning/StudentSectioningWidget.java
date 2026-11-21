@@ -157,7 +157,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	public static final GwtMessages GWT_MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestWaitListedDateFormat());
 
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private AcademicSessionProvider iSessionSelector;
 	private UserAuthenticationProvider iUserAuthentication;

@@ -96,7 +96,7 @@ public class ScriptPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private static DateTimeFormat sTS = DateTimeFormat.getFormat(CONSTANTS.timeStampFormatShort());
 

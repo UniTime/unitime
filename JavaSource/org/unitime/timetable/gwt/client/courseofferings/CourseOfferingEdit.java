@@ -89,7 +89,7 @@ public class CourseOfferingEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	Logger logger = java.util.logging.Logger.getLogger("CourseOfferingEdit");
 
 	private SimpleForm iPanel;

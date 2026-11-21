@@ -117,9 +117,9 @@ public class SavedHQLPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	protected static final StudentSectioningMessages SCT_MSG = GWT.create(StudentSectioningMessages.class);
 	
 	private SimpleForm iForm = null;

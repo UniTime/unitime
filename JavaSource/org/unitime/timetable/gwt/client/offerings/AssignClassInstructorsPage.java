@@ -91,7 +91,7 @@ public class AssignClassInstructorsPage extends Composite {
 
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 
 	protected SimpleForm iPanel;
 	protected Label iCourseTitle;

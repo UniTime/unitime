@@ -38,7 +38,7 @@ import com.google.gwt.user.client.ui.TextBox;
  * @author Tomas Muller
  */
 public abstract class MapWidget extends AbsolutePanel implements HasEnabled {
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected TextBox iX, iY;
 	private boolean iInitialized = false;
 	protected AbsolutePanel iMapControl;

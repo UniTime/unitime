@@ -255,20 +255,19 @@ import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.util.NameFormat;
 
+import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * @author Tomas Muller
  */
 @Service("sectioning.gwt")
-public class SectioningServlet implements SectioningService, DisposableBean {
+public class SectioningServlet extends XsrfProtectedServiceServlet implements SectioningService, DisposableBean {
+	private static final long serialVersionUID = -290562558109973815L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static StudentSectioningConstants CONSTANTS = Localization.create(StudentSectioningConstants.class);
 	private static SecurityMessages SEC_MSG = Localization.create(SecurityMessages.class);
 	private static Log sLog = LogFactory.getLog(SectioningServlet.class);
-	
-	public SectioningServlet() {
-	}
 	
 	private CourseDetailsProvider getCourseDetailsProvider() {
 		return Customization.CourseDetailsProvider.getProvider();
@@ -3151,7 +3150,7 @@ public class SectioningServlet implements SectioningService, DisposableBean {
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		for (Customization customization: Customization.values())
 			customization.release();
 	}

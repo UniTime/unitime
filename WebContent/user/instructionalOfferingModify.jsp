@@ -23,7 +23,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="instructionalOfferingModify">
+<s:form action="instructionalOfferingModify"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <script type="text/javascript">
 function doClick(op, id) {
 	document.forms[0].elements["hdnOp"].value=op;

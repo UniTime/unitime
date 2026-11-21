@@ -24,7 +24,7 @@
 
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
 <loc:bundle name="ConstantsMessages" id="CONST"><s:set var="const" value="#attr.CONST"/>
-<s:form action="instructorSearch">
+<s:form action="instructorSearch"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <table class="unitime-MainTable">
 	<tr><td>
 		<tt:section-header>

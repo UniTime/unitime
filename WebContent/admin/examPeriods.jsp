@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteExamPerid"/></tt:confirm>
-<s:form action="examPeriodEdit">
+<s:form action="examPeriodEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <s:hidden name="form.op"/>
 <s:if test="form.op != 'List'">
 	<s:hidden name="form.uniqueId"/><s:fielderror escape="false" fieldName="form.uniqueId"/>

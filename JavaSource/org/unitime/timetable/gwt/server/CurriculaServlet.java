@@ -102,17 +102,18 @@ import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.NameFormat;
 
+import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
+
 /**
  * @author Tomas Muller
  */
 @Service("curricula.gwt")
-public class CurriculaServlet implements CurriculaService {
+public class CurriculaServlet extends XsrfProtectedServiceServlet implements CurriculaService {
+	private static final long serialVersionUID = -5337299816632455594L;
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Log sLog = LogFactory.getLog(CurriculaServlet.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
 	private CourseDetailsProvider iCourseDetailsProvider;
-	
-	public CurriculaServlet() {}
 	
 	private CourseDetailsProvider getCourseDetailsProvider() {
 		if (iCourseDetailsProvider == null) {

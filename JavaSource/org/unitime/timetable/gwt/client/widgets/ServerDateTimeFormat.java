@@ -40,7 +40,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Tomas Muller
  */
 public class ServerDateTimeFormat extends DateTimeFormat {
-	protected static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static TimeZone sServerTimeZone = null;
 	private static final Map<String, ServerDateTimeFormat> sFormatCache;
 	

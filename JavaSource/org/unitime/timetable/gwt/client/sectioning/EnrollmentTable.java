@@ -117,7 +117,7 @@ public class EnrollmentTable extends Composite {
 	private static NumberFormat sNF = NumberFormat.getFormat(CONSTANTS.executionTimeFormat());
 	private Long iOfferingId = null;
 
-	protected static final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	protected static final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	
 	private SimpleForm iEnrollmentPanel;
 	private UniTimeTable<ClassAssignmentInterface.Enrollment> iEnrollments;

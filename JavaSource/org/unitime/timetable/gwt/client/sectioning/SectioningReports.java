@@ -91,11 +91,11 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SectioningReports extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static NumberFormat PF = NumberFormat.getFormat("0.0%");
 	private static NumberFormat DF = NumberFormat.getFormat("0.00");
 	
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	protected static final StudentSectioningMessages SCT_MSG = GWT.create(StudentSectioningMessages.class);
 	
 	private SimpleForm iForm = null;

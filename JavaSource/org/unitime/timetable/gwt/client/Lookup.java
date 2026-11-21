@@ -85,7 +85,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 	private String iLastQuery = null;
 	private PersonInterface iValue = null;
 	
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public Lookup() {
 		super(true, true);

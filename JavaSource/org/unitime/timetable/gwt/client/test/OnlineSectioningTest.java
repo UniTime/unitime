@@ -65,7 +65,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author Tomas Muller
  */
 public class OnlineSectioningTest extends Composite {
-	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
+	private final SectioningServiceAsync iSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	private DateTimeFormat iDF = DateTimeFormat.getFormat("HH:mm:ss.SSS");
 	private NumberFormat iDecF = NumberFormat.getFormat("00");
 	private NumberFormat iAvgF = NumberFormat.getFormat("0.000");

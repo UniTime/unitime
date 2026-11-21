@@ -54,7 +54,7 @@ import com.google.gwt.user.client.ui.TextBox;
  */
 public class CourseDetailsWidget extends Composite {
 	protected static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	protected static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	protected static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private FlowPanel iPanel;
 	private Image iLoadingImage;

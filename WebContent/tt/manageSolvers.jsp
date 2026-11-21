@@ -21,7 +21,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <script type="text/javascript" src="scripts/block.js"></script>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="manageSolvers">
+<s:form action="manageSolvers"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:iterator value="solverTypes" var="type">
 		<table class="unitime-MainTable" style="padding-bottom: 20px;">
 			<s:property value="getSolverTable(#type)" escapeHtml="false"/>

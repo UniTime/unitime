@@ -59,7 +59,7 @@
 		}
 	// -->
 </SCRIPT>
-<s:form action="instructionalOfferingConfigEdit">
+<s:form action="instructionalOfferingConfigEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.configId" />
 	<s:hidden name="form.instrOfferingId" />
 	<s:hidden name="form.subjectArea"/>

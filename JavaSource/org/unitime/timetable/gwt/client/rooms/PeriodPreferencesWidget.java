@@ -61,7 +61,7 @@ import com.google.gwt.user.datepicker.client.CalendarUtil;
  * @author Tomas Muller
  */
 public class PeriodPreferencesWidget extends Composite implements HasValue<PeriodPreferenceModel>, HasMobileScroll {
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AbsolutePanel iPanel;

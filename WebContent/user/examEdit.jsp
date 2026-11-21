@@ -22,7 +22,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="ExaminationMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="examEdit">
+<s:form action="examEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.examId"/>
 	<s:hidden name="form.nextId"/>
 	<s:hidden name="form.previousId"/>

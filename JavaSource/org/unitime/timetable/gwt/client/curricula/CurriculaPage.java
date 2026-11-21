@@ -78,7 +78,7 @@ public class CurriculaPage extends Composite {
 	private SimplePanel iPanel = null;
 	private FilterPanel iFilterPanel = null;
 	
-	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
+	private final CurriculaServiceAsync iService = new org.unitime.timetable.gwt.services.XsrfCurriculaService(GWT.create(CurriculaService.class));
 	
 	private CurriculumEdit iCurriculumPanel = null;
 	private ClassificationsEdit iClassificationsEdit = null;

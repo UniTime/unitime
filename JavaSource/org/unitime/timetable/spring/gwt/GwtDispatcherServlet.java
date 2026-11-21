@@ -47,13 +47,13 @@ import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.server.rpc.RPC;
 import com.google.gwt.user.server.rpc.RPCRequest;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.UnexpectedException;
+import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
 /**
  * @author Tomas Muller
  */
-public class GwtDispatcherServlet extends RemoteServiceServlet {
+public class GwtDispatcherServlet extends XsrfProtectedServiceServlet {
 	private static final long serialVersionUID = 1L;
 	private Gson iGson = null;
 	private static ThreadLocal<GwtCallInfo> sLastQuery = new ThreadLocal<GwtCallInfo>();

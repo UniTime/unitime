@@ -37,7 +37,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
  */
 public class SolverAllocatedMemory extends SimplePanel {
 	private static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	public SolverAllocatedMemory() {
 		setWidget(new Image(RESOURCES.loading_small()));

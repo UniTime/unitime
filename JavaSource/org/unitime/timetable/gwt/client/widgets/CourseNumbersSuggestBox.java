@@ -49,7 +49,7 @@ import com.google.gwt.user.client.ui.TextBox;
  * @author Tomas Muller
  */
 public class CourseNumbersSuggestBox extends SuggestOracle {
-	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static final GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private String iConfiguration = null;
 	private RegExp iRegExp = RegExp.compile("\\$\\{([a-zA-Z_0-9]+)\\}");
 	

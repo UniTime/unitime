@@ -41,7 +41,7 @@ import com.google.gwt.user.client.ui.Composite;
  */
 public class RoomSharingPage extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	
 	private SimpleForm iForm;
 	private RoomSharingWidget iSharing;

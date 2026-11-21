@@ -71,6 +71,7 @@
 	<tt:page-warning prefix="tmtbl.page.info." style="unitime-PageMessage" page="login"/>
 	<tt:page-warning prefix="tmtbl.page.error." style="unitime-PageError" page="login"/>
 <form action="login" name="f" method="POST">
+	<input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<INPUT type="hidden" name="cs" value="login">
 	<s:hidden name="menu"/>
 	<s:hidden name="target"/>

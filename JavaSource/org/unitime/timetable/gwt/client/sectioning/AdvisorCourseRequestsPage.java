@@ -119,7 +119,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class AdvisorCourseRequestsPage extends SimpleForm implements TakesValue<CourseRequestInterface> {
-	private static final SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
+	private static final SectioningServiceAsync sSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);

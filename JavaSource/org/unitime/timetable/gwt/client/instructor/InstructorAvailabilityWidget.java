@@ -39,7 +39,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public class InstructorAvailabilityWidget extends RoomSharingWidget {
-	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
+	private static GwtRpcServiceAsync RPC = new org.unitime.timetable.gwt.command.client.XsrfWrapper(GWT.create(GwtRpcService.class));
 	private Hidden iPattern = null;
 	
 	public InstructorAvailabilityWidget() {

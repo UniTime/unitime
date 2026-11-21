@@ -23,7 +23,7 @@
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/>
-<s:form action="instructorPrefEdit">
+<s:form action="instructorPrefEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 	<s:hidden name="form.instructorId"/>
 	<s:hidden name="form.nextId"/>
 	<s:hidden name="form.previousId"/>

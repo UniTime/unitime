@@ -22,7 +22,7 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="loc" uri="http://www.unitime.org/tags-localization" %>
 <loc:bundle name="CourseMessages"><s:set var="msg" value="#attr.MSG"/> 
-<s:form action="solverGroupEdit">
+<s:form action="solverGroupEdit"><input type='hidden' name='${_csrf.parameterName}' value='${_csrf.token}'/>
 <tt:confirm name="confirmDelete"><loc:message name="confirmDeleteSolverGroup"/></tt:confirm>
 <tt:confirm name="confirmDeleteAll"><loc:message name="confirmDeleteAllSolverGroups"/></tt:confirm>
 <tt:confirm name="confirmAutoSetup"><loc:message name="confirmCreateNewSolverGroups"/></tt:confirm>

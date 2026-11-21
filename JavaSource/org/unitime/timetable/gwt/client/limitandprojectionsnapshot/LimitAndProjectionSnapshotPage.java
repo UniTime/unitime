@@ -53,7 +53,7 @@ public class LimitAndProjectionSnapshotPage extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private final LimitAndProjectionSnapshotServiceAsync iLimitAndProjectionSnapshotService = GWT.create(LimitAndProjectionSnapshotService.class);
+	private final LimitAndProjectionSnapshotServiceAsync iLimitAndProjectionSnapshotService = new org.unitime.timetable.gwt.services.XsrfLimitAndProjectionSnapshotService(GWT.create(LimitAndProjectionSnapshotService.class));
 	protected static DateTimeFormat sLoadDateFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	
 	private Label iCurrentSnapshotDateLabel = null;

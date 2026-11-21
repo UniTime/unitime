@@ -90,7 +90,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class WaitListedRequestPreferences extends UniTimeDialogBox implements HasValue<Request>, HasSelectionHandlers<Request>, KeyUpHandler {
 	protected static StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	protected static GwtMessages GWT_MSG = GWT.create(GwtMessages.class);
-	protected static SectioningServiceAsync sSectioningService = GWT.create(SectioningService.class);
+	protected static SectioningServiceAsync sSectioningService = new org.unitime.timetable.gwt.services.XsrfSectioningService(GWT.create(SectioningService.class));
 	protected static Logger sLogger = Logger.getLogger(WaitListedRequestPreferences.class.getName());
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.requestWaitListedDateFormat());
