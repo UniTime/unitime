@@ -121,14 +121,14 @@ public class UploadServlet extends HttpServlet {
 					message = MSG.failedUploadNoFile();
 				} else {
 					request.getSession().setAttribute(SESSION_LAST_FILE, file);
-					message = MSG.fileUploaded(file.getName(), file.getSize());
+					message = MSG.fileUploaded(HtmlUtils.htmlEscape(file.getName()), file.getSize());
 				}
 			} else {
 				request.getSession().removeAttribute(SESSION_LAST_FILE);
 				message = MSG.failedUploadNoFile();
 			}
 			
-			response.setContentType("text/plain; charset=UTF-8");
+			response.setContentType("text/html; charset=UTF-8");
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter out = response.getWriter();
 			out.print(message);
@@ -136,7 +136,7 @@ public class UploadServlet extends HttpServlet {
 			out.close();
 		} catch (FileUploadException e) {
 			sLog.error("Upload failed: " + e.getMessage(), e);
-			response.setContentType("text/plain; charset=UTF-8");
+			response.setContentType("text/html; charset=UTF-8");
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter out = response.getWriter();
 			out.print("ERROR:" + MSG.failedUpload(e.getMessage()));
