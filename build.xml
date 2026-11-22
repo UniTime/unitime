@@ -154,6 +154,11 @@
 				<exclude name="classes/**/*.*" />
 			</fileset>
 		</copy>
+		<copy todir="${war.dir}/META-INF" overwrite="Yes" preservelastmodified="Yes">
+			<fileset dir="${jsp.dir}/META-INF">
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="copy-jsp" depends="init, compile-java">
