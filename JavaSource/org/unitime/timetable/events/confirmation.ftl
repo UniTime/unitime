@@ -403,7 +403,7 @@
 							<tr>
 						</#switch>
 							<td style='white-space: nowrap;'>${note.date?string(const.timeStampFormat())}</td>
-							<td style='white-space: nowrap;'>${note.user}</td>
+							<td style='white-space: nowrap;'><#if note.user??>${note.user}</#if></td>
 							<td style='white-space: nowrap;'>${note.getType().getName()}</td>
 							<td style='white-space: nowrap;'><#if note.meetings??>${note.getMeetings()}</#if></td>
 							<td><#if note.note??>${note.note?replace("\n", "<br>")}</#if></td>

@@ -362,7 +362,10 @@ public class SubjectAreaEditAction extends UniTimeAction<SubjectAreaEditForm> {
 	        sa.setExternalUniqueId(form.getExternalId());
 	        sa.setTitle(form.getTitle());
 	        
-	        hibSession.merge(sa);
+	        if (sa.getUniqueId() == null)
+	        	hibSession.persist(sa);
+	        else
+	        	hibSession.merge(sa);
 			
             ChangeLog.addChange(
                     hibSession, 
