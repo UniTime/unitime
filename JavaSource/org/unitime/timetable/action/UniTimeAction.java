@@ -40,6 +40,7 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
+import org.unitime.timetable.util.AccessDeniedException;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -131,4 +132,12 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 		MatchResult result = sStripAcessKeyRegExp.exec(name);
 		return (result == null ? name : (result.getGroup(1) + result.getGroup(2) + result.getGroup(3))).replace("&nbsp;", " ");
 	}
+    
+    @Override
+    public boolean hasFieldErrors() {
+    	// Field errors are result of a form validation -- form should be only validated and the resultant action make changes after a POST
+    	if (!getRequest().getMethod().equals("POST"))
+    		throw new IllegalAccessError("Method " + getRequest().getMethod() + " not allowed for form submission.");
+    	return super.hasFieldErrors();
+    }
 }
