@@ -84,6 +84,7 @@ public class RoleListAction extends UniTimeAction<RoleListForm> {
     		form = new RoleListForm();
     		form.reset();
     	}
+    	target = sanitizeRedirectTarget(target);
     	if (target != null) form.setTarget(target);
 
         UserContext user = null;
@@ -219,4 +220,12 @@ public class RoleListAction extends UniTimeAction<RoleListForm> {
     	return user.getCurrentAuthority();
     }
 
+    protected String sanitizeRedirectTarget(String target) {
+		if (target == null) return null;
+		target = target.trim();
+		if (target.isEmpty()) return null;
+		if (target.indexOf('\r') >= 0 || target.indexOf('\n') >= 0) return null;
+		if (target.matches("(/|\\\\|%5[cC])(/|\\\\|%5[cC]).*") || target.matches(".*:(/|\\\\|%5[cC])(/|\\\\|%5[cC]).*")) return null;
+		return target;
+	}
 }
