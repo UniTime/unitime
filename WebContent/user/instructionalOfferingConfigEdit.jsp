@@ -324,7 +324,7 @@
 		};
 	
 		// Request
-		var vars = "basic="+basic;
+		var vars = "basic="+basic+"&_csrf=${_csrf.token}";
 		req.open( "POST", "ajax/itypesAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);

@@ -402,7 +402,7 @@
 		};
 	
 		// Request
-		var vars = "id="+id+"&type="+type;
+		var vars = "id="+id+"&type="+type + "&_csrf=${_csrf.token}";
 		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
@@ -456,7 +456,7 @@
 		};
 	
 		// Request
-		var vars = "id="+id+"&type=distType";
+		var vars = "id="+id+"&type=distType&_csrf=${_csrf.token}";
 		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);
@@ -502,7 +502,7 @@
 		};
 	
 		// Request
-		var vars = "id="+id+"&type=grouping";
+		var vars = "id="+id+"&type=grouping&_csrf=${_csrf.token}";
 		req.open( "POST", "ajax/distributionPrefsAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);

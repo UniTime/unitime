@@ -132,11 +132,15 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 		MatchResult result = sStripAcessKeyRegExp.exec(name);
 		return (result == null ? name : (result.getGroup(1) + result.getGroup(2) + result.getGroup(3))).replace("&nbsp;", " ");
 	}
-    
-    @Override
+
+	@Override
     public boolean hasFieldErrors() {
+		return hasFieldErrors(true);
+	}
+    
+    public boolean hasFieldErrors(boolean requirePost) {
     	// Field errors are result of a form validation -- form should be only validated and the resultant action make changes after a POST
-    	if (!getRequest().getMethod().equals("POST"))
+    	if (requirePost && !getRequest().getMethod().equals("POST"))
     		throw new IllegalAccessError("Method " + getRequest().getMethod() + " not allowed for form submission.");
     	return super.hasFieldErrors();
     }

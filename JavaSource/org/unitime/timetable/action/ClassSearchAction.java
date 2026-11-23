@@ -190,7 +190,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
 				StringBuffer subjIds = new StringBuffer();
 				
 				form.validate(this);
-		    	if (hasFieldErrors()) {
+		    	if (hasFieldErrors(false)) {
 		    		setShowTable(false);
 					return "showClassSearch";
 		    	}
@@ -295,7 +295,7 @@ public class ClassSearchAction extends UniTimeAction<ClassListForm> {
     	form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
     	
     	form.validate(this);
-    	if (hasFieldErrors()) {
+    	if (hasFieldErrors(false)) {
     		setShowTable(false);
 			return "showClassSearch";
     	}
