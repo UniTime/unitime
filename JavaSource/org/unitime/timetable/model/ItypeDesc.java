@@ -68,6 +68,11 @@ public class ItypeDesc extends BaseItypeDesc implements Comparable<Object> {
                 setCacheable(true).
                 list());
     }
+    
+    @Transient
+    public Long getUniueId() {
+    	return getItype() == null ? null : (long)getItype();
+    }
 
 	@Transient
     public String getBasicType() {
