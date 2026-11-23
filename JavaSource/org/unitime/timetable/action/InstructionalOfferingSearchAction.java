@@ -252,7 +252,7 @@ public class InstructionalOfferingSearchAction extends UniTimeAction<Instruction
 		    form.validate(this);
 		    
 		    // Validation fails
-		    if (hasFieldErrors()) {
+		    if (hasFieldErrors(false)) {
 			    form.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
 			    form.setInstructionalOfferings(null);
 			    setShowTable(false);

@@ -263,7 +263,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable<ChangeLog> {
             chl.setManager(manager);
             chl.setTimeStamp(new Date());
             chl.setObjectType(objectType);
-            chl.setObjectUniqueId(Long.valueOf(objectUniqueId.longValue()));
+            chl.setObjectUniqueId(objectUniqueId == null ? null : Long.valueOf(objectUniqueId.longValue()));
             chl.setObjectTitle(objectTitle==null || objectTitle.length()==0?"N/A":(objectTitle.length() <= 255?objectTitle:objectTitle.substring(0,255)));
             chl.setSubjectArea(subjArea);
             if (dept==null && subjArea!=null) dept = subjArea.getDepartment();
