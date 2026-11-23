@@ -128,7 +128,7 @@
 		<TABLE class="unitime-MainTable">
 			<TR>
 				<TD colspan="2">
-					<DIV class="WelcomeRowHead">Error: <FONT color="#FF0000"><%=HtmlUtils.htmlEscape(
+					<DIV class="WelcomeRowHead">Error: <FONT color="#ec0000"><%=HtmlUtils.htmlEscape(
 							exception.getMessage() != null && exception.getMessage().indexOf("$jsp:") >= 0 ?
 							exception.getMessage().substring( exception.getMessage().indexOf(':') + 2 ) :
 							exception.getMessage())%></FONT>
