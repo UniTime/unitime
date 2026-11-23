@@ -27,6 +27,7 @@ import org.apache.struts2.StrutsStatics;
 import org.apache.struts2.action.ServletRequestAware;
 import org.apache.struts2.action.ServletResponseAware;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.unitime.timetable.form.UniTimeForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
@@ -40,7 +41,6 @@ import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.service.StudentSectioningSolverService;
 import org.unitime.timetable.spring.SpringApplicationContextHolder;
-import org.unitime.timetable.util.AccessDeniedException;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -140,4 +140,9 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
     		throw new IllegalAccessError("Method " + getRequest().getMethod() + " not allowed for form submission.");
     	return super.hasFieldErrors();
     }
+    
+	protected String getCsrfToken() {
+		CsrfToken token = (CsrfToken)request.getAttribute("_csrf");
+		return token == null ? null : token.getToken();
+	}
 }

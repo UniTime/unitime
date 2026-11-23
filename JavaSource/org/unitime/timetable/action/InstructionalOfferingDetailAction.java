@@ -162,7 +162,7 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 			if (ApplicationProperty.LegacyCourseEdit.isTrue()) {
 				return "editCourse";
 			} else {
-				response.sendRedirect("courseOffering?offering=" + form.getCrsOfferingId() + "&op=editCourseOffering");
+				response.sendRedirect("courseOffering?offering=" + form.getCrsOfferingId() + "&op=editCourseOffering&_csrf");
 				return null;
 			}
 		}
@@ -693,7 +693,8 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 									form.getInstrOfferingId(), 
 				    		        getPageContext().getOut(),
 				    		        request.getParameter("backType"),
-				    		        request.getParameter("backId"));
+				    		        request.getParameter("backId"),
+				    		        getCsrfToken());
 		return "";
 	}
 }
