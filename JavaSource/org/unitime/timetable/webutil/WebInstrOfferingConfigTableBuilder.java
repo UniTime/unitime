@@ -66,7 +66,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		super();
 	}
 	
-	public String buttonsTable(InstrOfferingConfig ioc, SessionContext context) {
+	public String buttonsTable(InstrOfferingConfig ioc, SessionContext context, String _csrf) {
 		StringBuffer btnTable = new StringBuffer("");
 		btnTable.append("<A name=\"ioc" + ioc.getUniqueId() + "\"></A>");
 		btnTable.append("<div class='unitime-MainTableHeader'><div class='unitime-HeaderPanel' style='margin-bottom: 0px;'>");
@@ -86,6 +86,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        if (ApplicationProperty.LegacyInstrOfferingConfig.isTrue() && context.hasPermission(ioc, Right.InstrOfferingConfigEdit)) {
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.action' class='FormWithNoPadding'>");
+		        btnTable.append("		<input type='hidden' name='_csrf' value='" + _csrf + "'/>");
 		        btnTable.append("		<input type='hidden' name='form.configId' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionEditConfiguration() + "' title='" + MSG.titleEditConfiguration() + "' class='gwt-Button'>");
 		        btnTable.append("	</form>");
@@ -103,6 +104,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        if (ApplicationProperty.LegacyClassSetup.isTrue() && context.hasPermission(ioc, Right.MultipleClassSetup)) {
 	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingModify.action' class='FormWithNoPadding'>");
+		        btnTable.append("		<input type='hidden' name='_csrf' value='" + _csrf + "'/>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionClassSetup() +"' title='" + MSG.titleClassSetup() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
@@ -120,6 +122,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        if (ApplicationProperty.LegacyCourseAssignInstructors.isTrue() && context.hasPermission(ioc, Right.AssignInstructors)) {
 	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='classInstructorAssignment.action' class='FormWithNoPadding'>");
+		        btnTable.append("		<input type='hidden' name='_csrf' value='" + _csrf + "'/>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
 		        btnTable.append("		<input type='submit' name='op' value='" + MSG.actionAssignInstructors() + "' title='" + MSG.titleAssignInstructors() + "' class='gwt-Button'> ");
 		        btnTable.append("	</form>");
@@ -147,13 +150,14 @@ public class WebInstrOfferingConfigTableBuilder extends
     		ExamAssignmentProxy examAssignment,
             Long instrOfferingConfigId, 
             SessionContext context,
-            JspWriter outputStream){
+            JspWriter outputStream,
+            String _csrf){
     	
     	if (instrOfferingConfigId != null){
 	        InstrOfferingConfigDAO iocDao = InstrOfferingConfigDAO.getInstance();
 	        InstrOfferingConfig ioc = iocDao.get(instrOfferingConfigId);
 	        
-	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream);
+	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream, _csrf);
     	}
     }
     
@@ -163,7 +167,8 @@ public class WebInstrOfferingConfigTableBuilder extends
     		ExamAssignmentProxy examAssignment,
             InstrOfferingConfig ioc, 
             SessionContext context,
-            JspWriter outputStream){
+            JspWriter outputStream,
+            String _csrf){
     	
     	if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ClassesKeepSort))) {
     		setClassComparator(
@@ -181,7 +186,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        
 	        if (getDisplayConfigOpButtons()) {
         		try {
-        			outputStream.write(this.buttonsTable(ioc, context));
+        			outputStream.write(this.buttonsTable(ioc, context, _csrf));
         		} catch (IOException e) {}
 	        }
 
@@ -280,7 +285,8 @@ public class WebInstrOfferingConfigTableBuilder extends
             Long instructionalOffering, 
             JspWriter outputStream,
             String backType,
-            String backId){
+            String backId,
+            String _csrf){
     	
     	setBackType(backType);
         setBackId(backId);    	
@@ -315,7 +321,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        				outputStream.println("<br>");
 	        			} catch (IOException e) {}
 	        		}
-	        		this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream);
+	        		this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream, _csrf);
 	        	}
 	        }
 			

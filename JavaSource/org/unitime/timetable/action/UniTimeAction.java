@@ -27,6 +27,7 @@ import org.apache.struts2.StrutsStatics;
 import org.apache.struts2.action.ServletRequestAware;
 import org.apache.struts2.action.ServletResponseAware;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.unitime.timetable.form.UniTimeForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
@@ -130,5 +131,10 @@ public abstract class UniTimeAction<T extends UniTimeForm> extends ActionSupport
 		if (name == null || name.isEmpty()) return "";
 		MatchResult result = sStripAcessKeyRegExp.exec(name);
 		return (result == null ? name : (result.getGroup(1) + result.getGroup(2) + result.getGroup(3))).replace("&nbsp;", " ");
+	}
+
+	protected String getCsrfToken() {
+		CsrfToken token = (CsrfToken)request.getAttribute("_csrf");
+		return token == null ? null : token.getToken();
 	}
 }

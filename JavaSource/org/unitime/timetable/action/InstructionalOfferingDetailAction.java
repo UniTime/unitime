@@ -688,7 +688,8 @@ public class InstructionalOfferingDetailAction extends UniTimeAction<Instruction
 									form.getInstrOfferingId(), 
 				    		        getPageContext().getOut(),
 				    		        request.getParameter("backType"),
-				    		        request.getParameter("backId"));
+				    		        request.getParameter("backId"),
+				    		        getCsrfToken());
 		return "";
 	}
 }
