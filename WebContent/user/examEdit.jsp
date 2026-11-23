@@ -312,7 +312,7 @@
 		};
 	
 		// Request
-		var vars = "id="+id+"&type="+type+extra;
+		var vars = "id="+id+"&type="+type+extra+"&_csrf=${_csrf.token}";
 		req.open( "POST", "ajax/examEditAjax.action", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		// req.setRequestHeader("Content-Length", vars.length);

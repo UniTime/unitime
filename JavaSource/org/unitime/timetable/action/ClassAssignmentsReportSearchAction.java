@@ -147,7 +147,7 @@ public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssig
 		        }
 		        
 				form.validate(this);
-		    	if (hasFieldErrors()) {
+		    	if (hasFieldErrors(false)) {
 		    		setShowTable(false);
 					return "showClassAssignmentsReportSearch";
 		    	} 
@@ -238,7 +238,7 @@ public class ClassAssignmentsReportSearchAction extends UniTimeAction<ClassAssig
 	    form.setSubjectAreas(SubjectArea.getAllSubjectAreas(sessionContext.getUser().getCurrentAcademicSessionId()));
 	    
 		form.validate(this);
-    	if (hasFieldErrors()) {
+    	if (hasFieldErrors(false)) {
     		setShowTable(false);
 			return "showClassAssignmentsReportSearch";
     	} 
