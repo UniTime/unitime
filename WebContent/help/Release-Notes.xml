@@ -34,8 +34,30 @@
 			<name>Various Pages</name>
 			<description>
 				<line>A number of security updates following the recent advisories.</line>
+				<line>
+					Most issues cannot be reproduced directly in the UniTime application and
+					require forging a custom GWT RPC call and extensive UniTime knowledge and/or AI assistance.
+					The rest are related to possible cross-site request forgery or cross-site scripting attacks.
+				</line>
+				<line>The fixes include the following changes:
+					<line>Reservations: an existing reservation cannot have the offering swapped</line>
+					<line>Event Approvals: corrected permission checking for inquiry.</line>
+					<line>Event Notes: sanitized event notes display (only basic HTML tags are allowed)</line>
+					<line>Event Attachments: permission checking for encoded URLs, file upload returns HTML-escaped file name</line>
+					<line>Event Exports: JSON export needs an additional Api Retrieve Events permission</line>
+					<line>Student Scheduling Dashboards: departmental users can only see enrollments of their courses</line>
+ 					<line>HQL Reports: separate API call for testing HQL queries</line>
+ 					<line>Select User Role: improved sanitization of the target parameter</line>
+ 					<line>Replaced getApplicationProperty server call with a more specific one</line>
+ 					<line>Last Change: corrected permission checking when the source object is other than a room, a class, a scheduling subpart, an offering, or an instructor</line>
+ 					<line>Service Providers: corrected permission checking for update and delete</line>
+ 					<line>Tasks: corrected permission checking for task log requests</line>
+ 					<line>Runtime Error: sanitized exception message</line>
+ 					<line>Cookies: same-site setting set to strict by default</line>
+ 					<line>Cross-Site: CSRF/XSRF protection enabled for all Struts forms and GWT RPC calls; Struts forms require POST to make changes</line>
+ 				</line>
 			</description>
-		</item>		
+		</item>
 		<item>
 			<name>Docker Installation</name>
 			<description>
