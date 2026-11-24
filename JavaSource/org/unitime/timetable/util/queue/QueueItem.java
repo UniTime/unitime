@@ -23,7 +23,10 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +34,7 @@ import org.jgroups.Address;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Session;
@@ -51,6 +55,8 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	private String iOwnerName;
 	private String iOwnerEmail;
 	private transient File iOutput = null;
+	private Map<String, NamedOuput> iNamedOutputs = null;
+	private boolean iOutputInTemp = true;
 	private String iOutputName = null;
 	private String iOutputLink = null;
 	private List<QueueMessage> iLog = new ArrayList<QueueMessage>();
@@ -130,15 +136,52 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 	}
 	protected File createOutput(String prefix, String ext) {
 		if (iOutput != null) throw new RuntimeException(GWT_MSG.scriptErrorOutputAlreadyCreated());
-		iOutput = ApplicationProperties.getTempFile(prefix, ext);
-		iOutputName = prefix + "." + ext;
-		iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());
+		if (ApplicationProperty.ScriptOutputsUseDataFolder.isTrue()) {
+			iOutput = ApplicationProperties.getDataTempFile(prefix, ext);
+			iOutputName = prefix + "." + ext;
+			iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());
+			iOutputInTemp = false;
+		} else {
+			iOutput = ApplicationProperties.getTempFile(prefix, ext);
+			iOutputName = prefix + "." + ext;
+			iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString());
+			iOutputInTemp = true;
+		}
 		return iOutput;
 	}
 	public String getOutputName() { return iOutputName; }
 	public String getOutputLink() {
-		if (iOutput != null) return "temp/" + iOutput.getName();
+		if (iOutput != null && iOutputInTemp) return "temp/" + iOutput.getName();
 		return iOutputLink;
+	}
+	
+	protected NamedOuput createNamedOutput(String prefix, String ext) {
+		return createNamedOutput(prefix, ext, null);
+	}
+	
+	protected NamedOuput createNamedOutput(String prefix, String ext, String name) {
+		if (iNamedOutputs == null)
+			iNamedOutputs = new HashMap<String, NamedOuput>();
+		while (name == null || name.isEmpty() || iNamedOutputs.get(name) != null) {
+			name = UUID.randomUUID().toString();
+		}
+		NamedOuput output = new NamedOuput(prefix, ext, name);
+		iNamedOutputs.put(name, output);
+		return output;	
+	}
+	
+	public String getOutputLink(String name) {
+		if (name == null || name.isEmpty()) return getOutputLink();
+		if (iNamedOutputs == null) return null;
+		NamedOuput output = iNamedOutputs.get(name);
+		return output == null ? null : output.getOutputLink();
+	}
+	
+	public File getOutput(String name) {
+		if (name == null || name.isEmpty()) return output();
+		if (iNamedOutputs == null) return null;
+		NamedOuput output = iNamedOutputs.get(name);
+		return output == null ? null : output.getOutput();
 	}
 	
 	public List<QueueMessage> getLog() {
@@ -325,5 +368,35 @@ public abstract class QueueItem implements Log, Serializable, Comparable<QueueIt
 		int cmp = created().compareTo(item.created());
 		if (cmp != 0) return cmp;
 		return getId().compareTo(item.getId());
+	}
+	
+	protected class NamedOuput implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private transient File iOutput = null;
+		private boolean iOutputInTemp = true;
+		private String iOutputName = null;
+		private String iOutputLink = null;
+		
+		private NamedOuput(String prefix, String ext, String name) {
+			if (ApplicationProperty.ScriptOutputsUseDataFolder.isTrue()) {
+				iOutput = ApplicationProperties.getDataTempFile(prefix, ext);
+				iOutputName = prefix + "." + ext;
+				iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString() + (name == null ? "" : ":" + name));
+				iOutputInTemp = false;
+			} else {
+				iOutput = ApplicationProperties.getTempFile(prefix, ext);
+				iOutputName = prefix + "." + ext;
+				iOutputLink = "qpfile?q=" + QueryEncoderBackend.encode(getId().toString() + (name == null ? "" : ":" + name));
+				iOutputInTemp = true;
+			}
+		}
+
+		public File getOutput() { return iOutput; }
+		public String getOutputName() { return iOutputName; }
+		public String getOutputLink() {
+			if (iOutput != null && iOutputInTemp) return "temp/" + iOutput.getName();
+			return iOutputLink;
+		}
+
 	}
 }

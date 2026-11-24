@@ -379,6 +379,26 @@ public class ApplicationProperties {
 		return file;
 	}
 	
+	
+	public static File getDataTempFolder() {
+		File dir = new File(getDataFolder(),"temp");
+		dir.mkdir();
+		return dir;
+	}
+	
+	public static synchronized File getDataTempFile(String prefix, String ext) {
+		File file = null;
+		String ts = sTempFileDateFormat.format(new Date());
+		try {
+			file = File.createTempFile(prefix + "_" + ts, "." + ext, getDataTempFolder());
+		} catch (IOException e) {
+			Debug.error(e);
+			file = new File(getDataTempFolder(), prefix + "_" + ts + "." + ext);
+		}
+		file.deleteOnExit();
+		return file;
+	}
+	
 	/**
 	 * Stop Property File Change Listener Thread 
 	 */

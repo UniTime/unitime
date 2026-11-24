@@ -4086,6 +4086,12 @@ public enum ApplicationProperty {
 	@Description("Session Roll Forward: allow for the data to be merged from two or more academic sessions")
 	@Since(4.9)
 	RollForwardUseCopyHelper("unitime.rollforward.allowForMerge"),
+	
+	@Type(Boolean.class)
+	@DefaultValue("true")
+	@Description("Scripts and Data Exchange: use ${unitime.data.dir}/temp folder for output files")
+	@Since(4.9)
+	ScriptOutputsUseDataFolder("unitime.script.useDataFolder"),
 	;
 
 	String iKey;

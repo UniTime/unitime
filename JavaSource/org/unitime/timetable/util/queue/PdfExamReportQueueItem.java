@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -41,7 +42,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.form.ExamPdfReportForm.RegisteredReport;
@@ -308,11 +308,11 @@ public class PdfExamReportQueueItem extends QueueItem {
                 if (reportName==null) reportName = "r"+(i+1);
                 String name = session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
                 if (iForm.getAll()) {
-                    File file = ApplicationProperties.getTempFile(name, PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
-                    log("  " + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
+                	NamedOuput file = createNamedOutput(name, PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
+                    log("  " + MSG.statusWritingReport("<a href='"+file.getOutputLink()+"'>"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + (iSubjectIndependent ? " " + MSG.hintNbrExams(exams.size()) : ""));
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                         getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
-                        newInstance(iForm.getReportMode().ordinal(), file, SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
+                        newInstance(iForm.getReportMode().ordinal(), file.getOutput(), SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
                     report.setDirect(iForm.getDirect());
                     report.setM2d(iForm.getM2d());
                     report.setBtb(iForm.getBtb());
@@ -330,7 +330,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     report.setUseRoomDisplayNames(iForm.getRoomDispNames());
                     report.printReport();
                     report.close();
-                    output.put(reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file);
+                    output.put(reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file.getOutput());
                     if (report instanceof InstructorExamReport && iForm.getEmailInstructors()) {
                         ireports = ((InstructorExamReport)report).printInstructorReports(name, new FileGenerator(name));
                     } else if (report instanceof StudentExamReport && iForm.getEmailStudents()) {
@@ -339,16 +339,16 @@ public class PdfExamReportQueueItem extends QueueItem {
                 } else {
                     for (int j=0;j<iForm.getSubjects().length;j++) {
                         SubjectArea subject = SubjectAreaDAO.getInstance().get(Long.valueOf(iForm.getSubjects()[j]));
-                        File file = ApplicationProperties.getTempFile(name+"_"+subject.getSubjectAreaAbbreviation(), PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
+                        NamedOuput file = createNamedOutput(name+"_"+subject.getSubjectAreaAbbreviation(), PdfLegacyExamReport.getExtension(iForm.getReportMode()).substring(1));
                         int nrExams = 0;
                         for (ExamAssignmentInfo exam : exams) {
                             if (exam.isOfSubjectArea(subject)) nrExams++;
                         }
-                        log("  " + MSG.statusWritingReport("<a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + " " + MSG.hintNbrExams(nrExams));
+                        log("  " + MSG.statusWritingReport("<a href='"+file.getOutputLink()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode())+"</a>") + " " + MSG.hintNbrExams(nrExams));
                         List<SubjectArea> subjects = new ArrayList<SubjectArea>(); subjects.add(subject);
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
-                            newInstance(iForm.getReportMode().ordinal(), file, SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
+                            newInstance(iForm.getReportMode().ordinal(), file.getOutput(), SessionDAO.getInstance().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
                         report.setDirect(iForm.getDirect());
                         report.setM2d(iForm.getM2d());
                         report.setBtb(iForm.getBtb());
@@ -365,12 +365,12 @@ public class PdfExamReportQueueItem extends QueueItem {
                         report.setUseRoomDisplayNames(iForm.getRoomDispNames());
                         report.printReport();
                         report.close();
-                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file);
+                        output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file.getOutput());
                         Hashtable<String,File> files = outputPerSubject.get(subject);
                         if (files==null) {
                             files = new Hashtable(); outputPerSubject.put(subject,files);
                         }
-                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file);
+                        files.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+PdfLegacyExamReport.getExtension(iForm.getReportMode()),file.getOutput());
                         if (report instanceof InstructorExamReport && iForm.getEmailInstructors()) {
                             ireports = ((InstructorExamReport)report).printInstructorReports( name, new FileGenerator(name));
                         } else if (report instanceof StudentExamReport && iForm.getEmailStudents()) {
@@ -442,7 +442,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     mail.addRecipientBCC(s.nextToken(), null);
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
                                 	mail.addAttachment(entry.getValue(), session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
-                                    log("  " + MSG.infoAttaching("<a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>"));
+                                    log("  " + MSG.infoAttaching("<a href='"+getLink(entry.getValue())+"'>"+entry.getKey()+"</a>"));
                                 }
                                 mail.send();
                                 log(MSG.infoEmailSent());
@@ -481,7 +481,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         File report = ireports.get(instructor);
                         String email = instructor.getInstructor().getEmail();
                         if (email==null || email.length()==0) {
-                            warn("  " + MSG.errorUnableToSentInstructorNoEmail("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
+                            warn("  " + MSG.errorUnableToSentInstructorNoEmail("<a href='"+getLink(report)+"'>"+instructor.getName()+"</a>"));
                             continue;
                         }
                         try {
@@ -497,9 +497,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientBCC(s.nextToken(), null);
                             mail.addAttachment(report, session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
-                            log("  " + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>"));
+                            log("  " + MSG.infoEmailSentTo("<a href='"+getLink(report)+"'>"+instructor.getName()+"</a>"));
                         } catch (Exception e) {
-                            warn("  " + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>", e.getMessage()));
+                            warn("  " + MSG.errorUnableToSendEmailTo("<a href='"+getLink(report)+"'>"+instructor.getName()+"</a>", e.getMessage()));
                             setError(e);
                         }
                     }
@@ -511,7 +511,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         File report = sreports.get(student);
                         String email = student.getEmail();
                         if (email==null || email.length()==0) {
-                            warn("  " + MSG.errorUnableToSentStudentNoEmail("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
+                            warn("  " + MSG.errorUnableToSentStudentNoEmail("<a href='"+getLink(report)+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                             continue;
                         }
                         try {
@@ -527,9 +527,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientBCC(s.nextToken(), null);
                             mail.addAttachment(report, session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+PdfLegacyExamReport.getExtension(iForm.getReportMode()));
                             mail.send();
-                            log("  " + MSG.infoEmailSentTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
+                            log("  " + MSG.infoEmailSentTo("<a href='"+getLink(report)+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>"));
                         } catch (Exception e) {
-                        	warn("  " + MSG.errorUnableToSendEmailTo("<a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage()));
+                        	warn("  " + MSG.errorUnableToSendEmailTo("<a href='"+getLink(report)+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>", e.getMessage()));
                             setError(e);
                         }
                     }
@@ -544,8 +544,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                 FileInputStream fis = null;
                 ZipOutputStream zip = null;
                 try {
-                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference(), "zip");
-                    log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>"));
+                    File zipFile = createOutput(session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference(), "zip");
+                    log(MSG.statusWritingReport("<a href='"+getOutputLink()+"'>"+session.getAcademicTerm()+session.getAcademicYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>"));
                     zip = new ZipOutputStream(new FileOutputStream(zipFile));
                     for (Map.Entry<String, File> entry : output.entrySet()) {
                         zip.putNextEntry(new ZipEntry(entry.getKey()));
@@ -555,7 +555,6 @@ public class PdfExamReportQueueItem extends QueueItem {
                         zip.closeEntry();
                     }
                     zip.flush(); zip.close();
-                    setOutput(zipFile);
                 } catch (IOException e) {
                     if (fis!=null) fis.close();
                     if (zip!=null) zip.close();
@@ -584,13 +583,27 @@ public class PdfExamReportQueueItem extends QueueItem {
 		return TYPE;
 	}
 	
-	public static class FileGenerator implements InstructorExamReport.FileGenerator {
+    Map<String, String> iLinks = new HashMap<String, String>();
+    public String getLink(File file) {
+    	return iLinks.get(file.getName());
+    }
+    
+    @Override
+    protected NamedOuput createNamedOutput(String prefix, String ext) {
+    	NamedOuput ret = super.createNamedOutput(prefix, ext);
+    	iLinks.put(ret.getOutput().getName(), ret.getOutputLink());
+    	return ret;
+    }
+
+	public class FileGenerator implements InstructorExamReport.FileGenerator {
         String iName;
         public FileGenerator(String name) {
             iName = name;
         }
         public File generate(String prefix, String ext) {
-            return ApplicationProperties.getTempFile(iName+"_"+prefix, ext);
+        	NamedOuput out = createNamedOutput(iName+"_"+prefix, ext);
+        	iLinks.put(out.getOutput().getName(), out.getOutputLink());
+        	return out.getOutput();
         }
     }
 
