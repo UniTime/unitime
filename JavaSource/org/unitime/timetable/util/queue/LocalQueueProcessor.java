@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.util.queue;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -264,11 +265,17 @@ public class LocalQueueProcessor extends Thread implements QueueProcessor {
 
 	@Override
 	public DataSource getFile(String id) {
-		QueueItem item = get(id);
-		if (item != null && item.hasOutput()) return new FileDataSource(item.output());
-		return null;
+		if (id != null && id.indexOf(':') >= 0) {
+			QueueItem item = get(id.substring(0, id.indexOf(':')));
+			File file = (item == null ? null : item.getOutput(id.substring(id.indexOf(':') + 1)));
+			return file == null ? null : new FileDataSource(file);
+		} else {
+			QueueItem item = get(id);
+			if (item != null && item.hasOutput()) return new FileDataSource(item.output());
+			return null;
+		}
 	}
-
+	
 	@Override
 	public List<QueueItemInterface> getItemsTable(String ownerId, Long sessionId, String type, Integer timeToShow) {
 		synchronized (iQueue) {

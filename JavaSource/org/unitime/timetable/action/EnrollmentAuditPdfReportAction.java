@@ -49,7 +49,6 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
-import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
@@ -210,15 +209,5 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
         
         return "show";
 	}
-	
-	public static class FileGenerator implements InstructorExamReport.FileGenerator {
-        String iName;
-        public FileGenerator(String name) {
-            iName = name;
-        }
-        public File generate(String prefix, String ext) {
-            return ApplicationProperties.getTempFile(iName+"_"+prefix, ext);
-        }
-    }
 }
 

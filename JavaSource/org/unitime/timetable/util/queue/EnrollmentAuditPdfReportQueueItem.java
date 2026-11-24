@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
 import org.unitime.timetable.model.Session;
@@ -41,7 +40,6 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
-import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
@@ -102,16 +100,16 @@ public class EnrollmentAuditPdfReportQueueItem extends QueueItem {
             	String ext = PdfLegacyExamReport.getExtension(iForm.getReportMode().ordinal());
                 log(MSG.statusGeneratingReport(reportName));
                 if (iForm.getAll()) {
-                    File file = ApplicationProperties.getTempFile(name, ext);
-                    log("  "+MSG.infoWritingReport("<a href='temp/"+file.getName()+"'>"+reportName+ext+"</a>"));
+                	NamedOuput file = createNamedOutput(name, ext);
+                    log("  "+MSG.infoWritingReport("<a href='"+file.getOutputLink()+"'>"+reportName+ext+"</a>"));
                     PdfEnrollmentAuditReport report = (PdfEnrollmentAuditReport)reportClass.
                         getConstructor(int.class, File.class, Session.class).
-                        newInstance(iForm.getReportMode().ordinal(), file, session);
+                        newInstance(iForm.getReportMode().ordinal(), file.getOutput(), session);
                     report.setShowId(iForm.getExternalId());
                     report.setShowName(iForm.getStudentName());
                     report.printReport();
                     report.close();
-                    output.put(reportName+ext,file);
+                    output.put(reportName+ext,file.getOutput());
                 } else {
                 	TreeSet<SubjectArea> subjectAreas = new TreeSet<SubjectArea>();
                 	String subjAbbvs = "";
@@ -126,17 +124,17 @@ public class EnrollmentAuditPdfReportQueueItem extends QueueItem {
                         }
                         subjectAreas.add(subject);
                     }
-                    File file = ApplicationProperties.getTempFile(name+subjAbbvs, ext);
+                    NamedOuput file = createNamedOutput(name+subjAbbvs, ext);
                     
-                    log("  "+MSG.infoWritingReport("<a href='temp/"+file.getName()+"'>"+subjAbbvs+"_"+reportName+ext+"</a>"));
+                    log("  "+MSG.infoWritingReport("<a href='"+file.getOutputLink()+"'>"+subjAbbvs+"_"+reportName+ext+"</a>"));
                     PdfEnrollmentAuditReport report = (PdfEnrollmentAuditReport)reportClass.
                         getConstructor(int.class, File.class, Session.class, TreeSet.class, String.class).
-                        newInstance(iForm.getReportMode().ordinal(), file, session, subjectAreas, subjAbbvs);
+                        newInstance(iForm.getReportMode().ordinal(), file.getOutput(), session, subjectAreas, subjAbbvs);
                     report.setShowId(iForm.getExternalId());
                     report.setShowName(iForm.getStudentName());
                     report.printReport();
                     report.close();
-                    output.put(subjAbbvs+"_"+reportName+ext,file);
+                    output.put(subjAbbvs+"_"+reportName+ext,file.getOutput());
                 }
             }
             iProgressPct = 0.9;
@@ -176,9 +174,9 @@ public class EnrollmentAuditPdfReportQueueItem extends QueueItem {
                 FileInputStream fis = null;
                 ZipOutputStream zip = null;
                 try {
-                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getAcademicYear(), "zip");
-                    log(MSG.statusWritingReport("<a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getAcademicYear()+".zip</a>"));
-                    zip = new ZipOutputStream(new FileOutputStream(zipFile));
+                	NamedOuput zipFile = createNamedOutput(session.getAcademicTerm()+session.getAcademicYear(), "zip");
+                    log(MSG.statusWritingReport("<a href='"+zipFile.getOutputLink()+"'>"+session.getAcademicTerm()+session.getAcademicYear()+".zip</a>"));
+                    zip = new ZipOutputStream(new FileOutputStream(zipFile.getOutput()));
                     for (Map.Entry<String, File> entry : output.entrySet()) {
                         zip.putNextEntry(new ZipEntry(entry.getKey()));
                         fis = new FileInputStream(entry.getValue());
@@ -187,7 +185,6 @@ public class EnrollmentAuditPdfReportQueueItem extends QueueItem {
                         zip.closeEntry();
                     }
                     zip.flush(); zip.close();
-                    setOutput(zipFile);
                 } catch (IOException e) {
                     if (fis!=null) fis.close();
                     if (zip!=null) zip.close();
@@ -214,15 +211,4 @@ public class EnrollmentAuditPdfReportQueueItem extends QueueItem {
 	public String type() {
 		return TYPE;
 	}
-	
-	public static class FileGenerator implements InstructorExamReport.FileGenerator {
-        String iName;
-        public FileGenerator(String name) {
-            iName = name;
-        }
-        public File generate(String prefix, String ext) {
-            return ApplicationProperties.getTempFile(iName+"_"+prefix, ext);
-        }
-    }
-
 }
